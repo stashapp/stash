@@ -9,7 +9,7 @@ import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { createClient as createWSClient } from "graphql-ws";
 import { onError } from "@apollo/client/link/error";
 import { getMainDefinition } from "@apollo/client/utilities";
-import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
+import UploadHttpLink from "apollo-upload-client/UploadHttpLink.mjs";
 import * as GQL from "src/core/generated-graphql";
 import { FieldReadFunction } from "@apollo/client/cache";
 
@@ -138,7 +138,7 @@ export const createClient = () => {
     wsUrl.protocol = "ws:";
   }
 
-  const httpLink = createUploadLink({ uri: url.toString() });
+  const httpLink = new UploadHttpLink({ uri: url.toString() });
 
   const wsClient = createWSClient({
     url: wsUrl.toString(),

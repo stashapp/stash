@@ -8,12 +8,14 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "es2020",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "noEmit": true,
     "jsx": "react-jsx",
     "experimentalDecorators": true,
-    "baseUrl": ".",
+    "paths": {
+      "*": ["./*"]
+    },
     "sourceMap": true,
     "allowJs": true,
     "isolatedModules": true,

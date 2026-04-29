@@ -4,7 +4,7 @@ import { isFunction } from "lodash-es";
 import { IHasID } from "src/utils/data";
 import { useFilter } from "./FilterProvider";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { QueryResult } from "@apollo/client";
+import type { useQuery } from "@apollo/client/react";
 
 interface IListContextOptions<T extends IHasID> {
   selectable?: boolean;
@@ -80,7 +80,7 @@ export function useListContextOptional<T extends IHasID = IHasID>() {
 }
 
 interface IQueryResultContextOptions<
-  T extends QueryResult,
+  T extends useQuery.Result,
   E extends IHasID = IHasID,
   M = unknown
 > {
@@ -92,7 +92,7 @@ interface IQueryResultContextOptions<
 }
 
 export interface IQueryResultContextState<
-  T extends QueryResult = QueryResult,
+  T extends useQuery.Result = useQuery.Result,
   E extends IHasID = IHasID,
   M = unknown
 > {
@@ -108,7 +108,7 @@ export const QueryResultStateContext =
   React.createContext<IQueryResultContextState | null>(null);
 
 export const QueryResultContext = <
-  T extends QueryResult,
+  T extends useQuery.Result,
   E extends IHasID = IHasID,
   M = unknown
 >(
@@ -174,7 +174,7 @@ export const QueryResultContext = <
 };
 
 export function useQueryResultContext<
-  T extends QueryResult,
+  T extends useQuery.Result,
   E extends IHasID = IHasID,
   M = unknown
 >() {

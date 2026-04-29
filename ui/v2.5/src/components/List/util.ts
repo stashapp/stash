@@ -3,7 +3,7 @@ import Mousetrap from "mousetrap";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { useHistory, useLocation } from "react-router-dom";
 import { isEqual, isFunction } from "lodash-es";
-import { QueryResult } from "@apollo/client";
+import type { useQuery } from "@apollo/client/react";
 import { IHasID } from "src/utils/data";
 import { useConfigurationContext } from "src/hooks/Config";
 import { View } from "./views";
@@ -484,7 +484,7 @@ function totalCountImpacted(
 // this hook caches a query result and count, and only updates it when the filter changes
 // in a way that would impact the result count
 // it is used to prevent the result count/pagination from flickering when changing pages or sorting
-export function useCachedQueryResult<T extends QueryResult>(
+export function useCachedQueryResult<T extends useQuery.Result>(
   filter: ListFilterModel,
   result: T
 ) {
@@ -508,7 +508,7 @@ export function useCachedQueryResult<T extends QueryResult>(
 }
 
 export interface IQueryResultHook<
-  T extends QueryResult,
+  T extends useQuery.Result,
   E extends IHasID = IHasID,
   M = unknown
 > {
@@ -520,7 +520,7 @@ export interface IQueryResultHook<
 }
 
 export function useQueryResult<
-  T extends QueryResult,
+  T extends useQuery.Result,
   E extends IHasID = IHasID,
   M = unknown
 >(
@@ -574,7 +574,7 @@ export function useQueryResult<
 export function useCloseEditDelete(props: {
   onSelectNone: () => void;
   closeModal: () => void;
-  result: QueryResult;
+  result: useQuery.Result;
 }) {
   const { onSelectNone, closeModal, result } = props;
 

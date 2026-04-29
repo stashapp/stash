@@ -1,4 +1,4 @@
-import { QueryResult } from "@apollo/client";
+import type { useQuery } from "@apollo/client/react";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { useShowEditFilter } from "src/components/List/EditFilterDialog";
 import { IHasID } from "src/utils/data";
@@ -17,7 +17,7 @@ import {
 import { useConfigurationContext } from "src/hooks/Config";
 
 interface IFilteredItemList<
-  T extends QueryResult,
+  T extends useQuery.Result,
   E extends IHasID = IHasID,
   M = unknown
 > {
@@ -27,7 +27,7 @@ interface IFilteredItemList<
 
 // Provides the common state and behaviour for filtered item list components
 export function useFilteredItemList<
-  T extends QueryResult,
+  T extends useQuery.Result,
   E extends IHasID = IHasID,
   M = unknown
 >(props: IFilteredItemList<T, E, M>) {
@@ -89,7 +89,7 @@ export function useFilteredItemList<
   };
 }
 
-export const showWhenSelected = <T extends QueryResult>(
+export const showWhenSelected = <T extends useQuery.Result>(
   result: T,
   filter: ListFilterModel,
   selectedIds: Set<string>
@@ -97,7 +97,7 @@ export const showWhenSelected = <T extends QueryResult>(
   return selectedIds.size > 0;
 };
 
-export const showWhenSingleSelection = <T extends QueryResult>(
+export const showWhenSingleSelection = <T extends useQuery.Result>(
   result: T,
   filter: ListFilterModel,
   selectedIds: Set<string>
@@ -105,7 +105,7 @@ export const showWhenSingleSelection = <T extends QueryResult>(
   return selectedIds.size == 1;
 };
 
-export const showWhenNoneSelected = <T extends QueryResult>(
+export const showWhenNoneSelected = <T extends useQuery.Result>(
   result: T,
   filter: ListFilterModel,
   selectedIds: Set<string>

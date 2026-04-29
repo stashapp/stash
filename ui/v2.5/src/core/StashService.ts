@@ -1,22 +1,20 @@
 import {
   ApolloCache,
   DocumentNode,
-  FetchResult,
   NetworkStatus,
-  useQuery,
+  ApolloLink,
 } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { Modifiers } from "@apollo/client/cache";
-import {
-  isField,
-  getQueryDefinition,
-  StoreObject,
-} from "@apollo/client/utilities";
+import { StoreObject } from "@apollo/client/utilities";
+import { isField, getQueryDefinition } from "@apollo/client/utilities/internal";
 import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
 
 import { createClient } from "./createClient";
 import { Client } from "graphql-ws";
 import { useEffect, useState } from "react";
+import { IUIConfig } from "./config";
 
 const { client, wsClient, cache: clientCache } = createClient();
 
@@ -48,10 +46,7 @@ export function useWSState(ws: Client) {
 
 // Evicts cached results for the given queries.
 // Will also call a cache GC afterwards.
-export function evictQueries(
-  cache: ApolloCache<unknown>,
-  queries: DocumentNode[]
-) {
+export function evictQueries(cache: ApolloCache, queries: DocumentNode[]) {
   const fields: Modifiers = {};
   for (const query of queries) {
     const { selections } = getQueryDefinition(query).selectionSet;
@@ -76,11 +71,12 @@ export function evictQueries(
  * @param ignore  optionally specify a cache id to ignore and not modify
  */
 function evictTypeFields(
-  cache: ApolloCache<Record<string, StoreObject>>,
+  cache: ApolloCache,
   input: Record<string, string[]>,
   ignore?: string
 ) {
-  const data = cache.extract();
+  const data: Record<string, StoreObject> =
+    cache.extract() as unknown as Record<string, StoreObject>;
   for (const key in data) {
     if (ignore?.includes(key)) continue;
 
@@ -104,7 +100,7 @@ function evictTypeFields(
 // cached result of the given query to null.
 // Use with "Destroy" mutations.
 function deleteObject(
-  cache: ApolloCache<unknown>,
+  cache: ApolloCache,
   obj: StoreObject,
   query: DocumentNode
 ) {
@@ -536,7 +532,7 @@ export const queryFindSubFolders = (id: string, excludeZipFolders?: boolean) =>
 /// Object Mutations
 
 // Increases/decreases the given field of the Stats query by diff
-function updateStats(cache: ApolloCache<unknown>, field: string, diff: number) {
+function updateStats(cache: ApolloCache, field: string, diff: number) {
   cache.modify({
     fields: {
       stats(value) {
@@ -550,7 +546,7 @@ function updateStats(cache: ApolloCache<unknown>, field: string, diff: number) {
 }
 
 function updateO(
-  cache: ApolloCache<unknown>,
+  cache: ApolloCache,
   typename: string,
   id: string,
   updatedOCount: number
@@ -620,7 +616,7 @@ export const mutateCreateScene = (input: GQL.SceneCreateInput) =>
 
 export const useSceneUpdate = () =>
   GQL.useSceneUpdateMutation({
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.SceneUpdateMutation }) {
       if (!result.data?.sceneUpdate) return;
 
       evictTypeFields(cache, sceneMutationImpactedTypeFields);
@@ -630,7 +626,7 @@ export const useSceneUpdate = () =>
 
 export const useBulkSceneUpdate = () =>
   GQL.useBulkSceneUpdateMutation({
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.BulkSceneUpdateMutation }) {
       if (!result.data?.bulkSceneUpdate) return;
 
       evictTypeFields(cache, sceneMutationImpactedTypeFields);
@@ -641,7 +637,7 @@ export const useBulkSceneUpdate = () =>
 export const useScenesUpdate = (input: GQL.SceneUpdateInput[]) =>
   GQL.useScenesUpdateMutation({
     variables: { input },
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.ScenesUpdateMutation }) {
       if (!result.data?.scenesUpdate) return;
 
       evictTypeFields(cache, sceneMutationImpactedTypeFields);
@@ -652,7 +648,7 @@ export const useScenesUpdate = (input: GQL.SceneUpdateInput[]) =>
 export const useSceneDestroy = (input: GQL.SceneDestroyInput) =>
   GQL.useSceneDestroyMutation({
     variables: input,
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.SceneDestroyMutation }) {
       if (!result.data?.sceneDestroy) return;
 
       const obj = { __typename: "Scene", id: input.id };
@@ -670,7 +666,7 @@ export const useSceneDestroy = (input: GQL.SceneDestroyInput) =>
 export const useScenesDestroy = (input: GQL.ScenesDestroyInput) =>
   GQL.useScenesDestroyMutation({
     variables: input,
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.ScenesDestroyMutation }) {
       if (!result.data?.scenesDestroy) return;
 
       for (const id of input.ids) {
@@ -690,7 +686,11 @@ export const useScenesDestroy = (input: GQL.ScenesDestroyInput) =>
 export const useSceneIncrementO = (id: string) =>
   GQL.useSceneAddOMutation({
     variables: { id },
-    update(cache, result, { variables }) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.SceneAddOMutation },
+      { variables }: { variables: GQL.SceneAddOMutationVariables }
+    ) {
       // this is not perfectly accurate, the time is set server-side
       // it isn't even displayed anywhere in the UI anyway
       const at = new Date().toISOString();
@@ -749,7 +749,11 @@ export const useSceneIncrementO = (id: string) =>
 export const useSceneDecrementO = (id: string) =>
   GQL.useSceneDeleteOMutation({
     variables: { id },
-    update(cache, result, { variables }) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.SceneDeleteOMutation },
+      { variables }: { variables: GQL.SceneDeleteOMutationVariables }
+    ) {
       const mutationResult = result.data?.sceneDeleteO;
       if (!mutationResult || !variables) return;
 
@@ -804,7 +808,7 @@ export const useSceneDecrementO = (id: string) =>
 export const useSceneResetO = (id: string) =>
   GQL.useSceneResetOMutation({
     variables: { id },
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.SceneResetOMutation }) {
       const updatedOCount = result.data?.sceneResetO;
       if (updatedOCount === undefined) return;
 
@@ -868,8 +872,11 @@ export const useSceneResetActivity = (
   reset_duration: boolean
 ) =>
   GQL.useSceneResetActivityMutation({
-    variables: { id, reset_resume, reset_duration },
-    update(cache, result) {
+    variables: { variables: { id, reset_resume, reset_duration } },
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.SceneResetActivityMutation }
+    ) {
       if (!result.data?.sceneResetActivity) return;
 
       evictTypeFields(cache, sceneMutationImpactedTypeFields);
@@ -964,7 +971,11 @@ export const mutateSceneMerge = (
 
 export const useSceneSaveActivity = () =>
   GQL.useSceneSaveActivityMutation({
-    update(cache, result, { variables }) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.SceneSaveActivityMutation },
+      { variables }: { variables: GQL.SceneSaveActivityMutationVariables }
+    ) {
       if (!result.data?.sceneSaveActivity || !variables) return;
 
       const { id, playDuration, resume_time: resumeTime } = variables;
@@ -993,7 +1004,11 @@ export const useSceneSaveActivity = () =>
 
 export const useSceneIncrementPlayCount = () =>
   GQL.useSceneAddPlayMutation({
-    update(cache, result, { variables }) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.SceneAddPlayMutation },
+      { variables }: { variables: GQL.SceneAddPlayMutationVariables }
+    ) {
       const mutationResult = result.data?.sceneAddPlay;
 
       if (!mutationResult || !variables) return;
@@ -1007,7 +1022,7 @@ export const useSceneIncrementPlayCount = () =>
       cache.modify({
         id: cache.identify({ __typename: "Scene", id }),
         fields: {
-          play_count(value) {
+          play_count(value: number) {
             lastPlayCount = value;
             return history.length;
           },
@@ -1034,7 +1049,11 @@ export const useSceneIncrementPlayCount = () =>
 
 export const useSceneDecrementPlayCount = () =>
   GQL.useSceneDeletePlayMutation({
-    update(cache, result, { variables }) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.SceneDeletePlayMutation },
+      { variables }: { variables: GQL.SceneDeletePlayMutationVariables }
+    ) {
       const mutationResult = result.data?.sceneDeletePlay;
 
       if (!mutationResult || !variables) return;
@@ -1092,14 +1111,18 @@ export const useSceneDecrementPlayCount = () =>
 
 export const useSceneResetPlayCount = () =>
   GQL.useSceneResetPlayCountMutation({
-    update(cache, result, { variables }) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.SceneResetPlayCountMutation },
+      { variables }: { variables: GQL.SceneResetPlayCountMutationVariables }
+    ) {
       if (!variables) return;
 
       let lastPlayCount = 0;
       cache.modify({
         id: cache.identify({ __typename: "Scene", id: variables.id }),
         fields: {
-          play_count(value) {
+          play_count(value: number) {
             lastPlayCount = value;
             return 0;
           },
@@ -1143,7 +1166,7 @@ const imageMutationImpactedQueries = [
 
 export const useImageUpdate = () =>
   GQL.useImageUpdateMutation({
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.ImageUpdateMutation }) {
       if (!result.data?.imageUpdate) return;
 
       evictTypeFields(cache, imageMutationImpactedTypeFields);
@@ -1153,7 +1176,10 @@ export const useImageUpdate = () =>
 
 export const useBulkImageUpdate = () =>
   GQL.useBulkImageUpdateMutation({
-    update(cache, result) {
+    update(
+      cache: ApolloCache,
+      result: { data: { bulkImageUpdate?: unknown } }
+    ) {
       if (!result.data?.bulkImageUpdate) return;
 
       evictTypeFields(cache, imageMutationImpactedTypeFields);
@@ -1164,7 +1190,7 @@ export const useBulkImageUpdate = () =>
 export const useImagesDestroy = (input: GQL.ImagesDestroyInput) =>
   GQL.useImagesDestroyMutation({
     variables: input,
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.ImagesDestroyMutation }) {
       if (!result.data?.imagesDestroy) return;
 
       for (const id of input.ids) {
@@ -1182,8 +1208,8 @@ export const useImagesDestroy = (input: GQL.ImagesDestroyInput) =>
 
 function updateImageIncrementO(id: string) {
   return (
-    cache: ApolloCache<Record<string, StoreObject>>,
-    result: FetchResult<GQL.ImageIncrementOMutation>
+    cache: ApolloCache,
+    result: ApolloLink.Result<GQL.ImageIncrementOMutation>
   ) => {
     const updatedOCount = result.data?.imageIncrementO;
     if (updatedOCount === undefined) return;
@@ -1236,8 +1262,8 @@ export const mutateImageIncrementO = (id: string) =>
 
 function updateImageDecrementO(id: string) {
   return (
-    cache: ApolloCache<Record<string, StoreObject>>,
-    result: FetchResult<GQL.ImageDecrementOMutation>
+    cache: ApolloCache,
+    result: ApolloLink.Result<GQL.ImageDecrementOMutation>
   ) => {
     const updatedOCount = result.data?.imageDecrementO;
     if (updatedOCount === undefined) return;
@@ -1291,8 +1317,8 @@ export const mutateImageDecrementO = (id: string) =>
 
 function updateImageResetO(id: string) {
   return (
-    cache: ApolloCache<Record<string, StoreObject>>,
-    result: FetchResult<GQL.ImageResetOMutation>
+    cache: ApolloCache,
+    result: ApolloLink.Result<GQL.ImageResetOMutation>
   ) => {
     const updatedOCount = result.data?.imageResetO;
     if (updatedOCount === undefined) return;
@@ -1383,7 +1409,7 @@ const groupMutationImpactedQueries = [
 
 export const useGroupCreate = () =>
   GQL.useGroupCreateMutation({
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.GroupCreateMutation }) {
       const group = result.data?.groupCreate;
       if (!group) return;
 
@@ -1397,7 +1423,7 @@ export const useGroupCreate = () =>
 
 export const useGroupUpdate = () =>
   GQL.useGroupUpdateMutation({
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.GroupUpdateMutation }) {
       if (!result.data?.groupUpdate) return;
 
       evictTypeFields(cache, groupMutationImpactedTypeFields);
@@ -1407,7 +1433,7 @@ export const useGroupUpdate = () =>
 
 export const useBulkGroupUpdate = () =>
   GQL.useBulkGroupUpdateMutation({
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.BulkGroupUpdateMutation }) {
       if (!result.data?.bulkGroupUpdate) return;
 
       evictTypeFields(cache, groupMutationImpactedTypeFields);
@@ -1415,10 +1441,10 @@ export const useBulkGroupUpdate = () =>
     },
   });
 
-export const useGroupDestroy = (input: GQL.GroupDestroyInput) =>
+export const useGroupDestroy = (input: GQL.GroupDestroyMutationVariables) =>
   GQL.useGroupDestroyMutation({
     variables: input,
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.GroupDestroyMutation }) {
       if (!result.data?.groupDestroy) return;
 
       const obj = { __typename: "Group", id: input.id };
@@ -1442,7 +1468,7 @@ export const useGroupDestroy = (input: GQL.GroupDestroyInput) =>
 export const useGroupsDestroy = (input: GQL.GroupsDestroyMutationVariables) =>
   GQL.useGroupsDestroyMutation({
     variables: input,
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.GroupsDestroyMutation }) {
       if (!result.data?.groupsDestroy) return;
 
       const { ids } = input;
@@ -1469,7 +1495,7 @@ export const useGroupsDestroy = (input: GQL.GroupsDestroyMutationVariables) =>
 
 export function useReorderSubGroupsMutation() {
   return GQL.useReorderSubGroupsMutation({
-    update(cache) {
+    update(cache: ApolloCache) {
       evictQueries(cache, [
         GQL.FindGroupsDocument, // various filters
       ]);
@@ -1479,7 +1505,10 @@ export function useReorderSubGroupsMutation() {
 
 export const useAddSubGroups = () => {
   const [addSubGroups] = GQL.useAddGroupSubGroupsMutation({
-    update(cache, result) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.AddGroupSubGroupsMutation }
+    ) {
       if (!result.data?.addGroupSubGroups) return;
 
       evictTypeFields(cache, groupMutationImpactedTypeFields);
@@ -1501,7 +1530,10 @@ export const useAddSubGroups = () => {
 
 export const useRemoveSubGroups = () => {
   const [removeSubGroups] = GQL.useRemoveGroupSubGroupsMutation({
-    update(cache, result) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.RemoveGroupSubGroupsMutation }
+    ) {
       if (!result.data?.removeGroupSubGroups) return;
 
       evictTypeFields(cache, groupMutationImpactedTypeFields);
@@ -1535,7 +1567,11 @@ const sceneMarkerMutationImpactedQueries = [
 
 export const useSceneMarkerCreate = () =>
   GQL.useSceneMarkerCreateMutation({
-    update(cache, result, { variables }) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.SceneMarkerCreateMutation },
+      { variables }: { variables: GQL.SceneMarkerCreateMutationVariables }
+    ) {
       if (!result.data?.sceneMarkerCreate || !variables) return;
 
       // refetch linked scene's marker list
@@ -1551,7 +1587,11 @@ export const useSceneMarkerCreate = () =>
 
 export const useSceneMarkerUpdate = () =>
   GQL.useSceneMarkerUpdateMutation({
-    update(cache, result, { variables }) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.SceneMarkerUpdateMutation },
+      { variables }: { variables: GQL.SceneMarkerUpdateMutationVariables }
+    ) {
       if (!result.data?.sceneMarkerUpdate || !variables) return;
 
       // refetch linked scene's marker list
@@ -1567,7 +1607,10 @@ export const useSceneMarkerUpdate = () =>
 
 export const useBulkSceneMarkerUpdate = () =>
   GQL.useBulkSceneMarkerUpdateMutation({
-    update(cache, result) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.BulkSceneMarkerUpdateMutation }
+    ) {
       if (!result.data?.bulkSceneMarkerUpdate) return;
 
       evictTypeFields(cache, sceneMarkerMutationImpactedTypeFields);
@@ -1577,7 +1620,11 @@ export const useBulkSceneMarkerUpdate = () =>
 
 export const useSceneMarkerDestroy = () =>
   GQL.useSceneMarkerDestroyMutation({
-    update(cache, result, { variables }) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.SceneMarkerDestroyMutation },
+      { variables }: { variables: GQL.SceneMarkerDestroyMutationVariables }
+    ) {
       if (!result.data?.sceneMarkerDestroy || !variables) return;
 
       const obj = { __typename: "SceneMarker", id: variables.id };
@@ -1593,7 +1640,10 @@ export const useSceneMarkersDestroy = (
 ) =>
   GQL.useSceneMarkersDestroyMutation({
     variables: input,
-    update(cache, result) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.SceneMarkersDestroyMutation }
+    ) {
       if (!result.data?.sceneMarkersDestroy) return;
 
       for (const id of input.ids) {
@@ -1623,7 +1673,7 @@ const galleryMutationImpactedQueries = [
 
 export const useGalleryCreate = () =>
   GQL.useGalleryCreateMutation({
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.GalleryCreateMutation }) {
       if (!result.data?.galleryCreate) return;
 
       // update stats
@@ -1636,7 +1686,7 @@ export const useGalleryCreate = () =>
 
 export const useGalleryUpdate = () =>
   GQL.useGalleryUpdateMutation({
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.GalleryUpdateMutation }) {
       if (!result.data?.galleryUpdate) return;
 
       evictTypeFields(cache, galleryMutationImpactedTypeFields);
@@ -1646,7 +1696,10 @@ export const useGalleryUpdate = () =>
 
 export const useBulkGalleryUpdate = () =>
   GQL.useBulkGalleryUpdateMutation({
-    update(cache, result) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.BulkGalleryUpdateMutation }
+    ) {
       if (!result.data?.bulkGalleryUpdate) return;
 
       evictTypeFields(cache, galleryMutationImpactedTypeFields);
@@ -1654,10 +1707,10 @@ export const useBulkGalleryUpdate = () =>
     },
   });
 
-export const useGalleryDestroy = (input: GQL.GalleryDestroyInput) =>
+export const useGalleryDestroy = (input: GQL.GalleryDestroyMutationVariables) =>
   GQL.useGalleryDestroyMutation({
     variables: input,
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.GalleryDestroyMutation }) {
       if (!result.data?.galleryDestroy) return;
 
       for (const id of input.ids) {
@@ -1702,7 +1755,7 @@ export const mutateAddGalleryImages = (input: GQL.GalleryAddInput) =>
     },
   });
 
-function evictCover(cache: ApolloCache<GQL.Gallery>, gallery_id: string) {
+function evictCover(cache: ApolloCache, gallery_id: string) {
   const fields: Partial<Pick<Modifiers<GQL.Gallery>, "paths" | "cover">> = {};
   fields.paths = (paths) => {
     if (!("cover" in paths)) {
@@ -1795,7 +1848,10 @@ const galleryChapterMutationImpactedQueries = [
 
 export const useGalleryChapterCreate = () =>
   GQL.useGalleryChapterCreateMutation({
-    update(cache, result) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.GalleryChapterCreateMutation }
+    ) {
       if (!result.data?.galleryChapterCreate) return;
 
       evictTypeFields(cache, galleryChapterMutationImpactedTypeFields);
@@ -1805,7 +1861,10 @@ export const useGalleryChapterCreate = () =>
 
 export const useGalleryChapterUpdate = () =>
   GQL.useGalleryChapterUpdateMutation({
-    update(cache, result) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.GalleryChapterUpdateMutation }
+    ) {
       if (!result.data?.galleryChapterUpdate) return;
 
       evictTypeFields(cache, galleryChapterMutationImpactedTypeFields);
@@ -1815,7 +1874,11 @@ export const useGalleryChapterUpdate = () =>
 
 export const useGalleryChapterDestroy = () =>
   GQL.useGalleryChapterDestroyMutation({
-    update(cache, result, { variables }) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.GalleryChapterDestroyMutation },
+      { variables }: { variables: GQL.GalleryChapterDestroyMutationVariables }
+    ) {
       if (!result.data?.galleryChapterDestroy || !variables) return;
 
       const obj = { __typename: "GalleryChapter", id: variables.id };
@@ -1840,7 +1903,7 @@ export const performerMutationImpactedQueries = [
 
 export const usePerformerCreate = () =>
   GQL.usePerformerCreateMutation({
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.PerformerCreateMutation }) {
       const performer = result.data?.performerCreate;
       if (!performer) return;
 
@@ -1857,7 +1920,7 @@ export const usePerformerCreate = () =>
 
 export const usePerformerUpdate = () =>
   GQL.usePerformerUpdateMutation({
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.PerformerUpdateMutation }) {
       if (!result.data?.performerUpdate) return;
 
       evictTypeFields(cache, performerMutationImpactedTypeFields);
@@ -1865,10 +1928,15 @@ export const usePerformerUpdate = () =>
     },
   });
 
-export const useBulkPerformerUpdate = (input: GQL.BulkPerformerUpdateInput) =>
+export const useBulkPerformerUpdate = (
+  input: GQL.BulkPerformerUpdateMutationVariables
+) =>
   GQL.useBulkPerformerUpdateMutation({
     variables: { input },
-    update(cache, result) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.BulkPerformerUpdateMutation }
+    ) {
       if (!result.data?.bulkPerformerUpdate) return;
 
       evictTypeFields(cache, performerMutationImpactedTypeFields);
@@ -1878,7 +1946,11 @@ export const useBulkPerformerUpdate = (input: GQL.BulkPerformerUpdateInput) =>
 
 export const usePerformerDestroy = () =>
   GQL.usePerformerDestroyMutation({
-    update(cache, result, { variables }) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.PerformerDestroyMutation },
+      { variables }: { variables: GQL.PerformerDestroyMutationVariables }
+    ) {
       if (!result.data?.performerDestroy || !variables) return;
 
       const obj = { __typename: "Performer", id: variables.id };
@@ -1905,7 +1977,10 @@ export const usePerformersDestroy = (
 ) =>
   GQL.usePerformersDestroyMutation({
     variables: input,
-    update(cache, result) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.PerformersDestroyMutation }
+    ) {
       if (!result.data?.performersDestroy) return;
 
       const { ids } = input;
@@ -1990,7 +2065,11 @@ export const studioMutationImpactedQueries = [
 
 export const useStudioCreate = () =>
   GQL.useStudioCreateMutation({
-    update(cache, result, { variables }) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.StudioCreateMutation },
+      { variables }: { variables: GQL.StudioCreateMutationVariables }
+    ) {
       const studio = result.data?.studioCreate;
       if (!studio || !variables) return;
 
@@ -2015,7 +2094,7 @@ export const useStudioCreate = () =>
 
 export const useStudioUpdate = () =>
   GQL.useStudioUpdateMutation({
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.StudioUpdateMutation }) {
       const studio = result.data?.studioUpdate;
       if (!studio) return;
 
@@ -2032,7 +2111,7 @@ export const useStudioUpdate = () =>
 
 export const useBulkStudioUpdate = () =>
   GQL.useBulkStudioUpdateMutation({
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.BulkStudioUpdateMutation }) {
       if (!result.data?.bulkStudioUpdate) return;
 
       evictTypeFields(cache, studioMutationImpactedTypeFields);
@@ -2043,7 +2122,7 @@ export const useBulkStudioUpdate = () =>
 export const useStudioDestroy = (input: GQL.StudioDestroyInput) =>
   GQL.useStudioDestroyMutation({
     variables: input,
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.StudioDestroyMutation }) {
       if (!result.data?.studioDestroy) return;
 
       const obj = { __typename: "Studio", id: input.id };
@@ -2060,7 +2139,7 @@ export const useStudioDestroy = (input: GQL.StudioDestroyInput) =>
 export const useStudiosDestroy = (input: GQL.StudiosDestroyMutationVariables) =>
   GQL.useStudiosDestroyMutation({
     variables: input,
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.StudiosDestroyMutation }) {
       if (!result.data?.studiosDestroy) return;
 
       const { ids } = input;
@@ -2094,7 +2173,7 @@ const tagMutationImpactedQueries = [
 
 export const useTagCreate = () =>
   GQL.useTagCreateMutation({
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.TagCreateMutation }) {
       const tag = result.data?.tagCreate;
       if (!tag) return;
 
@@ -2116,7 +2195,7 @@ export const useTagCreate = () =>
 
 export const useTagUpdate = () =>
   GQL.useTagUpdateMutation({
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.TagUpdateMutation }) {
       const tag = result.data?.tagUpdate;
       if (!tag) return;
 
@@ -2134,7 +2213,7 @@ export const useTagUpdate = () =>
 export const useBulkTagUpdate = (input: GQL.BulkTagUpdateInput) =>
   GQL.useBulkTagUpdateMutation({
     variables: { input },
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.BulkTagUpdateMutation }) {
       if (!result.data?.bulkTagUpdate) return;
 
       evictTypeFields(cache, tagMutationImpactedTypeFields);
@@ -2145,7 +2224,7 @@ export const useBulkTagUpdate = (input: GQL.BulkTagUpdateInput) =>
 export const useTagDestroy = (input: GQL.TagDestroyInput) =>
   GQL.useTagDestroyMutation({
     variables: input,
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.TagDestroyMutation }) {
       if (!result.data?.tagDestroy) return;
 
       const obj = { __typename: "Tag", id: input.id };
@@ -2162,7 +2241,7 @@ export const useTagDestroy = (input: GQL.TagDestroyInput) =>
 export const useTagsDestroy = (input: GQL.TagsDestroyMutationVariables) =>
   GQL.useTagsDestroyMutation({
     variables: input,
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.TagsDestroyMutation }) {
       if (!result.data?.tagsDestroy) return;
 
       const { ids } = input;
@@ -2182,7 +2261,11 @@ export const useTagsDestroy = (input: GQL.TagsDestroyMutationVariables) =>
 
 export const useTagsMerge = () =>
   GQL.useTagsMergeMutation({
-    update(cache, result, { variables }) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.TagsMergeMutation },
+      { variables }: { variables: GQL.TagsMergeMutationVariables }
+    ) {
       if (!result.data?.tagsMerge || !variables) return;
 
       const { source, destination } = variables;
@@ -2205,7 +2288,7 @@ export const useTagsMerge = () =>
 
 export const useSaveFilter = () => {
   const [saveFilterMutation] = GQL.useSaveFilterMutation({
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.SaveFilterMutation }) {
       if (!result.data?.saveFilter) return;
 
       evictQueries(cache, [GQL.FindSavedFiltersDocument]);
@@ -2234,7 +2317,11 @@ export const useSaveFilter = () => {
 
 export const useSavedFilterDestroy = () =>
   GQL.useDestroySavedFilterMutation({
-    update(cache, result, { variables }) {
+    update(
+      cache: ApolloCache,
+      result: { data: GQL.DestroySavedFilterMutation },
+      { variables }: { variables: GQL.DestroySavedFilterMutationVariables }
+    ) {
       if (!result.data?.destroySavedFilter || !variables) return;
 
       const obj = { __typename: "SavedFilter", id: variables.input.id };
@@ -2674,7 +2761,7 @@ export const mutateSetPluginsEnabled = (enabledMap: BoolMap) =>
     },
   });
 
-function updateConfiguration(cache: ApolloCache<unknown>, result: FetchResult) {
+function updateConfiguration(cache: ApolloCache, result: ApolloLink.Result) {
   if (!result.data) return;
 
   evictQueries(cache, [GQL.ConfigurationDocument]);
@@ -2682,7 +2769,7 @@ function updateConfiguration(cache: ApolloCache<unknown>, result: FetchResult) {
 
 export const useConfigureGeneral = () =>
   GQL.useConfigureGeneralMutation({
-    update(cache, result) {
+    update(cache: ApolloCache, result: { data: GQL.ConfigureGeneralMutation }) {
       if (!result.data?.configureGeneral) return;
 
       evictQueries(cache, [
@@ -2708,10 +2795,7 @@ export const useConfigureDefaults = () =>
     update: updateConfiguration,
   });
 
-function updateUIConfig(
-  cache: ApolloCache<Record<string, StoreObject>>,
-  result: GQL.ConfigureUiMutation["configureUI"] | undefined
-) {
+function updateUIConfig(cache: ApolloCache, result: IUIConfig | undefined) {
   if (!result) return;
 
   const existing = cache.readQuery<GQL.ConfigurationQuery>({
@@ -2731,13 +2815,28 @@ function updateUIConfig(
 
 export const useConfigureUI = () =>
   GQL.useConfigureUiMutation({
-    update: (cache, result) => updateUIConfig(cache, result.data?.configureUI),
+    update: (
+      cache: ApolloCache,
+      result: {
+        data: {
+          configureUI: GQL.ConfigureUiMutation["configureUI"] | undefined;
+        };
+      }
+    ) => updateUIConfig(cache, result?.data?.configureUI),
   });
 
 export const useConfigureUISetting = () =>
   GQL.useConfigureUiSettingMutation({
-    update: (cache, result) =>
-      updateUIConfig(cache, result.data?.configureUISetting),
+    update: (
+      cache: ApolloCache,
+      result: {
+        data: {
+          configureUISetting:
+            | GQL.ConfigureUiSettingMutation["configureUISetting"]
+            | undefined;
+        };
+      }
+    ) => updateUIConfig(cache, result.data?.configureUISetting),
   });
 
 export const useConfigureScraping = () =>

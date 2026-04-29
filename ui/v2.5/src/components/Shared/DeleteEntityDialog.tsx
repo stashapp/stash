@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { defineMessages, FormattedMessage, useIntl } from "react-intl";
-import { FetchResult } from "@apollo/client";
+import { ApolloLink } from "@apollo/client";
 
 import { ModalComponent } from "./Modal";
 import { useToast } from "src/hooks/Toast";
@@ -13,7 +13,7 @@ interface IDeletionEntity {
 
 type DestroyMutation = (input: {
   ids: string[];
-}) => [() => Promise<FetchResult>, {}];
+}) => [() => Promise<ApolloLink.Result>, {}];
 
 interface IDeleteEntityDialogProps {
   selected: IDeletionEntity[];

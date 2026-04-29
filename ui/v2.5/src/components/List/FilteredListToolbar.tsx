@@ -1,5 +1,5 @@
 import React from "react";
-import { QueryResult } from "@apollo/client";
+import type { useQuery } from "@apollo/client/react";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { PageSizeSelector, SearchTermInput, SortBySelect } from "./ListFilter";
@@ -50,7 +50,7 @@ const SelectionSection: React.FC<{
   );
 };
 
-export interface IItemListOperation<T extends QueryResult> {
+export interface IItemListOperation<T extends useQuery.Result> {
   text: string;
   onClick: (
     result: T,

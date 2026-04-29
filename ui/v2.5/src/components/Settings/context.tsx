@@ -1,4 +1,4 @@
-import { ApolloError } from "@apollo/client/errors";
+import { CombinedGraphQLErrors } from "@apollo/client";
 import {
   faCheckCircle,
   faTimesCircle,
@@ -26,7 +26,7 @@ type PluginConfigs = Record<string, Record<string, unknown>>;
 
 export interface ISettingsContextState {
   loading: boolean;
-  error: ApolloError | undefined;
+  error: CombinedGraphQLErrors | undefined;
   general: GQL.ConfigGeneralInput;
   interface: GQL.ConfigInterfaceInput;
   defaults: GQL.ConfigDefaultSettingsInput;

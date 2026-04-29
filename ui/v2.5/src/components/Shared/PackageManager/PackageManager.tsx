@@ -16,7 +16,6 @@ import * as yup from "yup";
 import { FormikErrors, yupToFormErrors } from "formik";
 import { AlertModal } from "../Alert";
 import { LoadingIndicator } from "../LoadingIndicator";
-import { ApolloError } from "@apollo/client";
 import { ClearableInput } from "../ClearableInput";
 
 function packageKey(
@@ -742,7 +741,7 @@ const SourcePackagesList: React.FC<{
       const loaded = await loadSource();
       setPackages(loaded);
     } catch (e) {
-      setLoadError((e as ApolloError).message);
+      setLoadError((e as Error).message);
     } finally {
       setLoading(false);
     }
