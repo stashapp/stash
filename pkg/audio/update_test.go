@@ -1,5 +1,3 @@
-// TODO(audio): update this file
-
 package audio
 
 import (
@@ -77,7 +75,6 @@ func TestUpdater_Update(t *testing.T) {
 		badUpdateID
 		badPerformersID
 		badTagsID
-		badCoverID
 		performerID
 		tagID
 	)
@@ -86,7 +83,6 @@ func TestUpdater_Update(t *testing.T) {
 	tagIDs := []int{tagID}
 
 	title := "title"
-	cover := []byte("cover")
 
 	validAudio := &models.Audio{}
 
@@ -98,9 +94,6 @@ func TestUpdater_Update(t *testing.T) {
 		return id != badUpdateID
 	}), mock.Anything).Return(validAudio, nil)
 	db.Audio.On("UpdatePartial", testCtx, badUpdateID, mock.Anything).Return(nil, updateErr)
-
-	db.Audio.On("UpdateCover", testCtx, audioID, cover).Return(nil).Once()
-	db.Audio.On("UpdateCover", testCtx, badCoverID, cover).Return(updateErr).Once()
 
 	tests := []struct {
 		name    string
@@ -179,7 +172,6 @@ func TestUpdateSet_UpdateInput(t *testing.T) {
 		badUpdateID
 		badPerformersID
 		badTagsID
-		badCoverID
 		performerID
 		tagID
 	)

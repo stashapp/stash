@@ -3,10 +3,10 @@
 ## Pre-requisites
 
 * [Go](https://golang.org/dl/)
-  * Version 1.24.* (v1.26.x is unable to run the linter)
+  * Version 1.25.*
 * [GolangCI](https://golangci-lint.run/) - A meta-linter which runs several linters in parallel
   * To install, follow the [local installation instructions](https://golangci-lint.run/welcome/install/#local-installation)
-  * Install v1, NOT v2
+  * Install v2.11.4
 * [nodejs](https://nodejs.org/en/download) - nodejs runtime
   * corepack/[pnpm](https://pnpm.io/installation) - nodejs package manager (included with nodejs)
 

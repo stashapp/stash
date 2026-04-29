@@ -54,19 +54,19 @@ type ScanHandler struct {
 
 func (h *ScanHandler) validate() error {
 	if h.CreatorUpdater == nil {
-		return errors.New("CreatorUpdater is required")
+		return errors.New("internal error:CreatorUpdater is required")
 	}
 	// if h.ScanGenerator == nil {
 	// 	return errors.New("ScanGenerator is required")
 	// }
 	if h.CaptionUpdater == nil {
-		return errors.New("CaptionUpdater is required")
+		return errors.New("internal error:CaptionUpdater is required")
 	}
 	if !h.FileNamingAlgorithm.IsValid() {
-		return errors.New("FileNamingAlgorithm is required")
+		return errors.New("internal error:FileNamingAlgorithm is required")
 	}
 	if h.Paths == nil {
-		return errors.New("Paths is required")
+		return errors.New("internal error:Paths is required")
 	}
 
 	return nil

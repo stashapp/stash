@@ -1,5 +1,3 @@
-// TODO(audio): update this file
-
 package audio
 
 import (
@@ -16,8 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
-
-const invalidImage = "aW1hZ2VCeXRlcw&&"
 
 var (
 	existingStudioID    = 101
@@ -171,22 +167,6 @@ func TestImporterPreImportHistory(t *testing.T) {
 			assert.Equal(t, eoh, oh, "o history mismatch")
 		})
 	}
-}
-
-func TestImporterPreImportCoverImage(t *testing.T) {
-	i := Importer{
-		Input: jsonschema.Audio{
-			Cover: invalidImage,
-		},
-	}
-
-	err := i.PreImport(testCtx)
-	assert.NotNil(t, err)
-
-	i.Input.Cover = imageBase64
-
-	err = i.PreImport(testCtx)
-	assert.Nil(t, err)
 }
 
 func TestImporterPreImportWithStudio(t *testing.T) {

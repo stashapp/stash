@@ -1,4 +1,4 @@
-// TODO(audio): update this file
+// TODO(audio): Can this file be deleted if we utilize audioCaptions?
 package audio
 
 import (
@@ -15,29 +15,29 @@ type testCase struct {
 
 var testCases = []testCase{
 	{
-		captionPath:    "/stash/video.vtt",
+		captionPath:    "/stash/audio.vtt",
 		expectedLang:   LangUnknown,
-		expectedResult: "/stash/video.",
+		expectedResult: "/stash/audio.",
 	},
 	{
-		captionPath:    "/stash/video.en.vtt",
+		captionPath:    "/stash/audio.en.vtt",
 		expectedLang:   "en",
-		expectedResult: "/stash/video.", // lang code valid, remove en part
+		expectedResult: "/stash/audio.", // lang code valid, remove en part
 	},
 	{
-		captionPath:    "/stash/video.test.srt",
+		captionPath:    "/stash/audio.test.srt",
 		expectedLang:   LangUnknown,
-		expectedResult: "/stash/video.test.", // no lang code/lang code invalid test should remain
+		expectedResult: "/stash/audio.test.", // no lang code/lang code invalid test should remain
 	},
 	{
-		captionPath:    "C:\\videos\\video.fr.srt",
+		captionPath:    "C:\\audios\\audio.fr.srt",
 		expectedLang:   "fr",
-		expectedResult: "C:\\videos\\video.",
+		expectedResult: "C:\\audios\\audio.",
 	},
 	{
-		captionPath:    "C:\\videos\\video.xx.srt",
+		captionPath:    "C:\\audios\\audio.xx.srt",
 		expectedLang:   LangUnknown,
-		expectedResult: "C:\\videos\\video.xx.", // no lang code/lang code invalid xx should remain
+		expectedResult: "C:\\audios\\audio.xx.", // no lang code/lang code invalid xx should remain
 	},
 }
 

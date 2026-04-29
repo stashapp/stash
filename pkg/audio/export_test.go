@@ -1,5 +1,3 @@
-// TODO(audio): update this file
-
 package audio
 
 import (
@@ -17,9 +15,7 @@ import (
 )
 
 const (
-	audioID    = 1
-	noImageID  = 2
-	errImageID = 3
+	audioID = 1
 
 	studioID        = 4
 	missingStudioID = 5
@@ -66,8 +62,7 @@ var names = []string{
 }
 
 const (
-	path        = "path"
-	imageBase64 = "aW1hZ2VCeXRlcw=="
+	path = "path"
 )
 
 var (
@@ -119,7 +114,7 @@ func createEmptyAudio(id int) models.Audio {
 	}
 }
 
-func createFullJSONAudio(image string, customFields map[string]interface{}) *jsonschema.Audio {
+func createFullJSONAudio(customFields map[string]interface{}) *jsonschema.Audio {
 	return &jsonschema.Audio{
 		Title:     title,
 		Files:     []string{path},
@@ -134,7 +129,6 @@ func createFullJSONAudio(image string, customFields map[string]interface{}) *jso
 		UpdatedAt: json.JSONTime{
 			Time: updateTime,
 		},
-		Cover:        image,
 		CustomFields: customFields,
 	}
 }
@@ -164,33 +158,26 @@ var scenarios = []basicTestScenario{
 	{
 		createFullAudio(audioID),
 		emptyCustomFields,
-		createFullJSONAudio(imageBase64, emptyCustomFields),
+		createFullJSONAudio(emptyCustomFields),
 		false,
 	},
 	{
 		createFullAudio(customFieldsID),
 		customFields,
-		createFullJSONAudio("", customFields),
-		false,
-	},
-	{
-		createEmptyAudio(noImageID),
-		emptyCustomFields,
-		createEmptyJSONAudio(),
-		false,
-	},
-	{
-		createFullAudio(errImageID),
-		emptyCustomFields,
-		createFullJSONAudio("", emptyCustomFields),
-		// failure to get image should not cause an error
+		createFullJSONAudio(customFields),
 		false,
 	},
 	{
 		createFullAudio(errCustomFieldsID),
 		customFields,
-		createFullJSONAudio("", customFields),
+		createFullJSONAudio(customFields),
 		true,
+	},
+	{
+		createEmptyAudio(audioID),
+		emptyCustomFields,
+		createEmptyJSONAudio(),
+		false,
 	},
 }
 
