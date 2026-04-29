@@ -1,6 +1,6 @@
 module github.com/stashapp/stash
 
-go 1.24.3
+go 1.25.0
 
 require (
 	github.com/99designs/gqlgen v0.17.73
@@ -15,6 +15,7 @@ require (
 	github.com/disintegration/imaging v1.6.2
 	github.com/dop251/goja v0.0.0-20231027120936-b396bb4c349d
 	github.com/doug-martin/goqu/v9 v9.18.0
+	github.com/feederbox826/gosx-notifier v0.2.2
 	github.com/go-chi/chi/v5 v5.2.2
 	github.com/go-chi/cors v1.2.1
 	github.com/go-chi/httplog v0.3.1
@@ -30,7 +31,6 @@ require (
 	github.com/jinzhu/copier v0.4.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/json-iterator/go v1.1.12
-	github.com/kermieisinthehouse/gosx-notifier v0.1.2
 	github.com/kermieisinthehouse/systray v1.2.4
 	github.com/knadh/koanf/parsers/yaml v1.1.0
 	github.com/knadh/koanf/providers/env v1.1.0
@@ -44,6 +44,7 @@ require (
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/remeh/sizedwaitgroup v1.0.0
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
+	github.com/sabhiram/go-gitignore v0.0.0-20210923224102-525f6e181f06
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cast v1.6.0
 	github.com/spf13/pflag v1.0.6
@@ -55,12 +56,12 @@ require (
 	github.com/vektra/mockery/v2 v2.10.0
 	github.com/xWTF/chardet v0.0.0-20230208095535-c780f2ac244e
 	github.com/zencoder/go-dash/v3 v3.0.2
-	golang.org/x/crypto v0.45.0
-	golang.org/x/image v0.18.0
-	golang.org/x/net v0.47.0
-	golang.org/x/sys v0.38.0
-	golang.org/x/term v0.37.0
-	golang.org/x/text v0.31.0
+	golang.org/x/crypto v0.48.0
+	golang.org/x/image v0.38.0
+	golang.org/x/net v0.50.0
+	golang.org/x/sys v0.41.0
+	golang.org/x/term v0.40.0
+	golang.org/x/text v0.35.0
 	golang.org/x/time v0.10.0
 	gopkg.in/guregu/null.v4 v4.0.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
@@ -69,7 +70,7 @@ require (
 
 require (
 	github.com/agnivade/levenshtein v1.2.1 // indirect
-	github.com/antchfx/xpath v1.3.5 // indirect
+	github.com/antchfx/xpath v1.3.6 // indirect
 	github.com/asticode/go-astikit v0.20.0 // indirect
 	github.com/asticode/go-astits v1.8.0 // indirect
 	github.com/chromedp/sysutil v1.1.0 // indirect
@@ -120,9 +121,9 @@ require (
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.3 // indirect
-	golang.org/x/mod v0.29.0 // indirect
-	golang.org/x/sync v0.18.0 // indirect
-	golang.org/x/tools v0.38.0 // indirect
+	golang.org/x/mod v0.33.0 // indirect
+	golang.org/x/sync v0.20.0 // indirect
+	golang.org/x/tools v0.42.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

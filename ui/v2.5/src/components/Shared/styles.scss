@@ -127,10 +127,14 @@
 .folder-list {
   list-style-type: none;
   margin: 0;
-  max-height: 30vw;
+  max-height: 300px;
   overflow-x: auto;
   padding-bottom: 0.5rem;
   padding-top: 1rem;
+
+  &:not(:last-child) {
+    margin-bottom: 1rem;
+  }
 
   &-item {
     white-space: nowrap;
@@ -233,6 +237,19 @@ button.collapse-button {
 .hover-popover-content {
   max-width: 32rem;
   text-align: center;
+
+  .popover-card {
+    padding: 0.5rem;
+  }
+}
+
+.warning-hover-popover {
+  display: inline-flex;
+  margin: 0 0.25rem;
+
+  .fa-icon {
+    color: $warning;
+  }
 }
 
 .ErrorMessage-container {
@@ -433,6 +450,13 @@ button.collapse-button {
   }
 }
 
+.input-group-append {
+  .btn {
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+  }
+}
+
 .ModalComponent .modal-footer {
   justify-content: space-between;
 }
@@ -474,30 +498,10 @@ button.collapse-button {
   }
 }
 
-.bulk-update-text-input {
-  button {
-    background-color: $secondary;
-    color: $text-muted;
-    font-size: $btn-font-size-sm;
-    margin: $btn-padding-y $btn-padding-x;
-    padding: 0;
-    position: absolute;
-    right: 0;
-    z-index: 4;
-
-    &:hover,
-    &:focus,
-    &:active,
-    &:not(:disabled):not(.disabled):active,
-    &:not(:disabled):not(.disabled):active:focus {
-      background-color: $secondary;
-      border-color: transparent;
-      box-shadow: none;
-    }
-  }
-
-  &.unset button {
-    visibility: hidden;
+.bulk-update-date-input {
+  .react-datepicker-wrapper .btn {
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
   }
 }
 
@@ -646,10 +650,11 @@ div.react-datepicker {
 }
 
 .stash-id-pill {
-  display: inline-block;
+  display: inline-flex;
   font-size: 90%;
   font-weight: 700;
   line-height: 1;
+  max-width: 100%;
   padding-bottom: 0.25em;
   padding-top: 0.25em;
   text-align: center;
@@ -665,12 +670,15 @@ div.react-datepicker {
   span {
     background-color: $primary;
     border-radius: 0.25rem 0 0 0.25rem;
+    flex-shrink: 0;
     min-width: 5em;
   }
 
   a {
     background-color: $secondary;
     border-radius: 0 0.25rem 0.25rem 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
@@ -762,15 +770,14 @@ button.btn.favorite-button {
   .scraper-filter-container {
     background-color: $secondary;
     border-bottom: solid 1px $textfield-bg;
+    display: flex;
     padding: 5px;
     position: sticky;
     top: 0;
     z-index: 1;
 
-    .btn-group {
-      border: solid 1px $textfield-bg;
-      border-radius: 5px;
-      width: 100%;
+    .clearable-input-group {
+      flex-grow: 1;
     }
 
     .clearable-text-field {
@@ -795,6 +802,11 @@ button.btn.favorite-button {
   .detail-item {
     max-width: 100%;
   }
+
+  .detail-item-title,
+  .detail-item-value {
+    font-family: "Courier New", Courier, monospace;
+  }
 }
 
 .custom-fields .detail-item .detail-item-title {
@@ -814,6 +826,36 @@ button.btn.favorite-button {
 
 .custom-fields-input > .collapse-button {
   font-weight: 700;
+}
+
+.custom-fields-input {
+  .custom-fields-field {
+    flex: 0 0 100%;
+    max-width: 100%;
+
+    @include media-breakpoint-up(sm) {
+      flex: 0 0 25%;
+      max-width: 25%;
+    }
+    @include media-breakpoint-up(xl) {
+      flex: 0 0 16.667%;
+      max-width: 16.667%;
+    }
+  }
+
+  .custom-fields-value {
+    flex: 0 0 100%;
+    max-width: 100%;
+
+    @include media-breakpoint-up(sm) {
+      flex: 0 0 75%;
+      max-width: 75%;
+    }
+    @include media-breakpoint-up(xl) {
+      flex: 0 0 58.33%;
+      max-width: 58.33%;
+    }
+  }
 }
 
 .custom-fields-row {
@@ -1203,4 +1245,26 @@ input[type="range"].double-range-slider-max {
     max-height: 60vh;
     overflow-y: auto;
   }
+}
+
+.reveal-in-filesystem-button {
+  margin-left: 0.25rem;
+  padding: 0 0.25rem;
+}
+
+// general styling for appended minimal button to input group
+.text-input + .input-group-append .btn.minimal {
+  background-color: $textfield-bg;
+}
+
+.studio-logo a:hover {
+  color: inherit;
+}
+
+.studio-logo .studio-name {
+  color: $text-color;
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+  text-align: center;
 }

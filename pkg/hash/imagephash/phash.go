@@ -3,10 +3,9 @@ package imagephash
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"image"
-	"path/filepath"
-	"strings"
 
 	"github.com/corona10/goimagehash"
 	"github.com/stashapp/stash/pkg/ffmpeg"
@@ -32,17 +31,9 @@ func Generate(encoder *ffmpeg.FFMpeg, imageFile *models.ImageFile) (*uint64, err
 }
 
 // loadImage loads an image from disk and decodes it.
-// For AVIF files, ffmpeg is used to convert to BMP first since Go has no built-in AVIF decoder.
+// Where Go has no built-in decoder for a specific format, ffmpeg is used to convert to BMP first.
 func loadImage(encoder *ffmpeg.FFMpeg, imageFile *models.ImageFile) (image.Image, error) {
-	ext := strings.ToLower(filepath.Ext(imageFile.Path))
-	if ext == ".avif" {
-		// AVIF in zip files is not supported - ffmpeg cannot read files inside zips
-		if imageFile.Base().ZipFileID != nil {
-			return nil, fmt.Errorf("AVIF images in zip files are not supported for phash generation")
-		}
-		return loadImageFFmpeg(encoder, imageFile.Path)
-	}
-
+	// try to load with Go's built-in decoders first for better performance
 	reader, err := imageFile.Open(&file.OsFS{})
 	if err != nil {
 		return nil, err
@@ -55,6 +46,15 @@ func loadImage(encoder *ffmpeg.FFMpeg, imageFile *models.ImageFile) (image.Image
 	}
 
 	img, _, err := image.Decode(buf)
+	if errors.Is(err, image.ErrFormat) {
+		// try ffmpeg as a fallback for unsupported formats
+		// ffmpeg cannot read files inside zips
+		if imageFile.Base().ZipFileID != nil {
+			return nil, fmt.Errorf("ffmpeg fallback unsupported for images in zip files")
+		}
+		return loadImageFFmpeg(encoder, imageFile.Path)
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("decoding image: %w", err)
 	}

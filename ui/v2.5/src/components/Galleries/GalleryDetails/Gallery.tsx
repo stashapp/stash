@@ -1,11 +1,6 @@
 import { Button, Tab, Nav, Dropdown } from "react-bootstrap";
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  useHistory,
-  Link,
-  RouteComponentProps,
-  Redirect,
-} from "react-router-dom";
+import { useHistory, RouteComponentProps, Redirect } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import * as GQL from "src/core/generated-graphql";
@@ -50,6 +45,7 @@ import { useConfigurationContext } from "src/hooks/Config";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { goBackOrReplace } from "src/utils/history";
 import { FormattedDate } from "src/components/Shared/Date";
+import { StudioLogo } from "src/components/Shared/StudioLogo";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
@@ -66,6 +62,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
   const Toast = useToast();
   const intl = useIntl();
   const { configuration } = useConfigurationContext();
+  const { showStudioText } = configuration?.ui ?? {};
   const showLightbox = useGalleryLightbox(gallery.id, gallery.chapters);
 
   const [collapsed, setCollapsed] = useState(false);
@@ -415,17 +412,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
       <div className={`gallery-tabs ${collapsed ? "collapsed" : ""}`}>
         <div>
           <div className="gallery-header-container">
-            {gallery.studio && (
-              <h1 className="text-center gallery-studio-image">
-                <Link to={`/studios/${gallery.studio.id}`}>
-                  <img
-                    src={gallery.studio.image_path ?? ""}
-                    alt={`${gallery.studio.name} logo`}
-                    className="studio-logo"
-                  />
-                </Link>
-              </h1>
-            )}
+            <StudioLogo studio={gallery.studio} showText={showStudioText} />
             <h3
               className={cx("gallery-header", { "no-studio": !gallery.studio })}
             >

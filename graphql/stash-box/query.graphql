@@ -29,6 +29,13 @@ fragment StudioFragment on Studio {
 fragment TagFragment on Tag {
   name
   id
+  description
+  aliases
+  category {
+    id
+    name
+    description
+  }
 }
 
 fragment MeasurementsFragment on Measurements {

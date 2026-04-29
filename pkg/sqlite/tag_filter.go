@@ -161,6 +161,20 @@ func (qb *tagFilterHandler) criterionHandler() criterionHandler {
 				tagRepository.studios.innerJoin(f, "", "tags.id")
 			},
 		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "markers_tags.marker_id",
+			relatedRepo:    sceneMarkerRepository.repository,
+			relatedHandler: &sceneMarkerFilterHandler{tagFilter.MarkersFilter},
+			joinFn: func(f *filterBuilder) {
+				f.addWith(`markers_tags AS (
+				SELECT mt.scene_marker_id AS marker_id, mt.tag_id AS tag_id FROM scene_markers_tags mt
+				UNION
+				SELECT m.id, m.primary_tag_id FROM scene_markers m
+				)`)
+				f.addInnerJoin("markers_tags", "", "markers_tags.tag_id = tags.id")
+			},
+		},
 	}
 }
 
@@ -170,8 +184,8 @@ func (qb *tagFilterHandler) aliasCriterionHandler(alias *models.StringCriterionI
 		primaryFK:    tagIDColumn,
 		joinTable:    tagAliasesTable,
 		stringColumn: tagAliasColumn,
-		addJoinTable: func(f *filterBuilder) {
-			tagRepository.aliases.join(f, "", "tags.id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			tagRepository.aliases.join(f, joinType, "", "tags.id")
 		},
 	}
 
@@ -184,7 +198,19 @@ func (qb *tagFilterHandler) isMissingCriterionHandler(isMissing *string) criteri
 			switch *isMissing {
 			case "image":
 				f.addWhere("tags.image_blob IS NULL")
+			case "aliases":
+				tagRepository.aliases.leftJoin(f, "", "tags.id")
+				f.addWhere("tag_aliases.alias IS NULL")
+			case "stash_id":
+				tagRepository.stashIDs.leftJoin(f, "tag_stash_ids", "tags.id")
+				f.addWhere("tag_stash_ids.tag_id IS NULL")
 			default:
+				if err := validateIsMissing(*isMissing, []string{
+					"description",
+				}); err != nil {
+					f.setError(err)
+					return
+				}
 				f.addWhere("(tags." + *isMissing + " IS NULL OR TRIM(tags." + *isMissing + ") = '')")
 			}
 		}

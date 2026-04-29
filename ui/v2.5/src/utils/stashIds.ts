@@ -13,6 +13,10 @@ export const getStashIDs = (
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[47][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+export function isUUID(input: string): boolean {
+  return UUID_PATTERN.test(input.trim());
+}
+
 /**
  * Separates a list of inputs into names and StashIDs based on UUID pattern matching
  * @param inputs - Array of strings that could be either names or StashIDs
@@ -25,7 +29,7 @@ export const separateNamesAndStashIds = (
   const stashIds: string[] = [];
 
   inputs.forEach((input) => {
-    if (UUID_PATTERN.test(input)) {
+    if (isUUID(input)) {
       stashIds.push(input);
     } else {
       names.push(input);

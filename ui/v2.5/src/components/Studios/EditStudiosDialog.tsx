@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Col, Form, Row } from "react-bootstrap";
-import { FormattedMessage, useIntl } from "react-intl";
+import { Form } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import { useBulkStudioUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { ModalComponent } from "../Shared/Modal";
@@ -13,9 +13,8 @@ import {
   getAggregateStateObject,
 } from "src/utils/bulkUpdate";
 import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
-import { BulkUpdateTextInput } from "../Shared/BulkUpdateTextInput";
+import { BulkUpdateFormGroup, BulkUpdateTextInput } from "../Shared/BulkUpdate";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
-import * as FormUtils from "src/utils/form";
 import { StudioSelect } from "../Shared/Select";
 
 interface IListOperationProps {
@@ -46,6 +45,8 @@ export const EditStudiosDialog: React.FC<IListOperationProps> = (
   const [tagIds, setTagIds] = useState<GQL.BulkUpdateIds>({
     mode: GQL.BulkUpdateIdMode.Add,
   });
+
+  const unsetDisabled = props.selected.length < 2;
 
   const [updateStudios] = useBulkStudioUpdate();
 
@@ -126,27 +127,6 @@ export const EditStudiosDialog: React.FC<IListOperationProps> = (
     setIsUpdating(false);
   }
 
-  function renderTextField(
-    name: string,
-    value: string | undefined | null,
-    setter: (newValue: string | undefined) => void,
-    area: boolean = false
-  ) {
-    return (
-      <Form.Group controlId={name}>
-        <Form.Label>
-          <FormattedMessage id={name} />
-        </Form.Label>
-        <BulkUpdateTextInput
-          value={value === null ? "" : value ?? undefined}
-          valueChanged={(newValue) => setter(newValue)}
-          unsetDisabled={props.selected.length < 2}
-          as={area ? "textarea" : undefined}
-        />
-      </Form.Group>
-    );
-  }
-
   function render() {
     return (
       <ModalComponent
@@ -154,8 +134,12 @@ export const EditStudiosDialog: React.FC<IListOperationProps> = (
         show
         icon={faPencilAlt}
         header={intl.formatMessage(
-          { id: "actions.edit_entity" },
-          { entityType: intl.formatMessage({ id: "studios" }) }
+          { id: "dialogs.edit_entity_count_title" },
+          {
+            count: props?.selected?.length ?? 1,
+            singularEntity: intl.formatMessage({ id: "studio" }),
+            pluralEntity: intl.formatMessage({ id: "studios" }),
+          }
         )}
         accept={{
           onClick: onSave,
@@ -168,11 +152,8 @@ export const EditStudiosDialog: React.FC<IListOperationProps> = (
         }}
         isRunning={isUpdating}
       >
-        <Form.Group controlId="parent-studio" as={Row}>
-          {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "parent_studio" }),
-          })}
-          <Col xs={9}>
+        <Form>
+          <BulkUpdateFormGroup name="parent-studio" messageId="parent_studio">
             <StudioSelect
               onSelect={(items) =>
                 setUpdateField({
@@ -183,13 +164,8 @@ export const EditStudiosDialog: React.FC<IListOperationProps> = (
               isDisabled={isUpdating}
               menuPortalTarget={document.body}
             />
-          </Col>
-        </Form.Group>
-        <Form.Group controlId="rating" as={Row}>
-          {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "rating" }),
-          })}
-          <Col xs={9}>
+          </BulkUpdateFormGroup>
+          <BulkUpdateFormGroup name="rating">
             <RatingSystem
               value={updateInput.rating100}
               onSetRating={(value) =>
@@ -197,9 +173,8 @@ export const EditStudiosDialog: React.FC<IListOperationProps> = (
               }
               disabled={isUpdating}
             />
-          </Col>
-        </Form.Group>
-        <Form>
+          </BulkUpdateFormGroup>
+
           <Form.Group controlId="favorite">
             <IndeterminateCheckbox
               setChecked={(checked) => setUpdateField({ favorite: checked })}
@@ -208,30 +183,31 @@ export const EditStudiosDialog: React.FC<IListOperationProps> = (
             />
           </Form.Group>
 
-          <Form.Group controlId="tags">
-            <Form.Label>
-              <FormattedMessage id="tags" />
-            </Form.Label>
+          <BulkUpdateFormGroup name="tags" inline={false}>
             <MultiSet
-              type="tags"
+              type={"tags"}
               disabled={isUpdating}
-              onUpdate={(itemIDs) => setTagIds((v) => ({ ...v, ids: itemIDs }))}
-              onSetMode={(newMode) =>
-                setTagIds((v) => ({ ...v, mode: newMode }))
-              }
-              existingIds={aggregateState.tagIds ?? []}
+              onUpdate={(itemIDs) => {
+                setTagIds((c) => ({ ...c, ids: itemIDs }));
+              }}
+              onSetMode={(newMode) => {
+                setTagIds((c) => ({ ...c, mode: newMode }));
+              }}
               ids={tagIds.ids ?? []}
+              existingIds={aggregateState.tagIds}
               mode={tagIds.mode}
               menuPortalTarget={document.body}
             />
-          </Form.Group>
+          </BulkUpdateFormGroup>
 
-          {renderTextField(
-            "details",
-            updateInput.details,
-            (newValue) => setUpdateField({ details: newValue }),
-            true
-          )}
+          <BulkUpdateFormGroup name="details" inline={false}>
+            <BulkUpdateTextInput
+              value={updateInput.details}
+              valueChanged={(newValue) => setUpdateField({ details: newValue })}
+              unsetDisabled={unsetDisabled}
+              as="textarea"
+            />
+          </BulkUpdateFormGroup>
 
           <Form.Group controlId="ignore-auto-tags">
             <IndeterminateCheckbox

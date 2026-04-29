@@ -2,16 +2,21 @@ package image
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 )
 
+type ExportReader interface {
+	models.CustomFieldsReader
+}
+
 // ToBasicJSON converts a image object into its JSON object equivalent. It
 // does not convert the relationships to other objects, with the exception
 // of cover image.
-func ToBasicJSON(image *models.Image) *jsonschema.Image {
+func ToBasicJSON(ctx context.Context, reader ExportReader, image *models.Image) (*jsonschema.Image, error) {
 	newImageJSON := jsonschema.Image{
 		Title:        image.Title,
 		Code:         image.Code,
@@ -33,11 +38,17 @@ func ToBasicJSON(image *models.Image) *jsonschema.Image {
 	newImageJSON.Organized = image.Organized
 	newImageJSON.OCounter = image.OCounter
 
+	var err error
+	newImageJSON.CustomFields, err = reader.GetCustomFields(ctx, image.ID)
+	if err != nil {
+		return nil, fmt.Errorf("getting image custom fields: %v", err)
+	}
+
 	for _, f := range image.Files.List() {
 		newImageJSON.Files = append(newImageJSON.Files, f.Base().Path)
 	}
 
-	return &newImageJSON
+	return &newImageJSON, nil
 }
 
 // GetStudioName returns the name of the provided image's studio. It returns an

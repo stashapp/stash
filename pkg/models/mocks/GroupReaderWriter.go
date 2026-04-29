@@ -312,6 +312,52 @@ func (_m *GroupReaderWriter) GetContainingGroupDescriptions(ctx context.Context,
 	return r0, r1
 }
 
+// GetCustomFields provides a mock function with given fields: ctx, id
+func (_m *GroupReaderWriter) GetCustomFields(ctx context.Context, id int) (map[string]interface{}, error) {
+	ret := _m.Called(ctx, id)
+
+	var r0 map[string]interface{}
+	if rf, ok := ret.Get(0).(func(context.Context, int) map[string]interface{}); ok {
+		r0 = rf(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[string]interface{})
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetCustomFieldsBulk provides a mock function with given fields: ctx, ids
+func (_m *GroupReaderWriter) GetCustomFieldsBulk(ctx context.Context, ids []int) ([]models.CustomFieldMap, error) {
+	ret := _m.Called(ctx, ids)
+
+	var r0 []models.CustomFieldMap
+	if rf, ok := ret.Get(0).(func(context.Context, []int) []models.CustomFieldMap); ok {
+		r0 = rf(ctx, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]models.CustomFieldMap)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
+		r1 = rf(ctx, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetFrontImage provides a mock function with given fields: ctx, groupID
 func (_m *GroupReaderWriter) GetFrontImage(ctx context.Context, groupID int) ([]byte, error) {
 	ret := _m.Called(ctx, groupID)
@@ -495,6 +541,20 @@ func (_m *GroupReaderWriter) QueryCount(ctx context.Context, groupFilter *models
 	}
 
 	return r0, r1
+}
+
+// SetCustomFields provides a mock function with given fields: ctx, id, fields
+func (_m *GroupReaderWriter) SetCustomFields(ctx context.Context, id int, fields models.CustomFieldsInput) error {
+	ret := _m.Called(ctx, id, fields)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, models.CustomFieldsInput) error); ok {
+		r0 = rf(ctx, id, fields)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // Update provides a mock function with given fields: ctx, updatedGroup

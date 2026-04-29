@@ -104,10 +104,8 @@ export const scrapedPerformerToCreateInput = (
     height_cm: toCreate.height ? Number(toCreate.height) : undefined,
     measurements: toCreate.measurements,
     fake_tits: toCreate.fake_tits,
-    career_start: toCreate.career_start
-      ? Number(toCreate.career_start)
-      : undefined,
-    career_end: toCreate.career_end ? Number(toCreate.career_end) : undefined,
+    career_start: toCreate.career_start,
+    career_end: toCreate.career_end,
     tattoos: toCreate.tattoos,
     piercings: toCreate.piercings,
     alias_list: aliases,

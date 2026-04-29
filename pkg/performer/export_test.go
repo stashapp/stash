@@ -48,10 +48,10 @@ var (
 	rating          = 5
 	height          = 123
 	weight          = 60
-	careerStart     = 2005
-	careerEnd       = 2015
+	careerStart, _  = models.ParseDate("2005")
+	careerEnd, _    = models.ParseDate("2015")
 	penisLength     = 1.23
-	circumcisedEnum = models.CircumisedEnumCut
+	circumcisedEnum = models.CircumcisedEnumCut
 	circumcised     = circumcisedEnum.String()
 
 	emptyCustomFields = make(map[string]interface{})
@@ -134,8 +134,8 @@ func createFullJSONPerformer(name string, image string, withCustomFields bool) *
 		URLs:           []string{url, twitter, instagram},
 		Aliases:        aliases,
 		Birthdate:      birthDate.String(),
-		CareerStart:    &careerStart,
-		CareerEnd:      &careerEnd,
+		CareerStart:    careerStart.String(),
+		CareerEnd:      careerEnd.String(),
 		Country:        country,
 		Ethnicity:      ethnicity,
 		EyeColor:       eyeColor,

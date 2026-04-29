@@ -65,6 +65,7 @@ func (qb *folderFilterHandler) criterionHandler() criterionHandler {
 	folderFilter := qb.folderFilter
 	return compoundHandler{
 		stringCriterionHandler(folderFilter.Path, qb.table.Col("path")),
+		stringCriterionHandler(folderFilter.Basename, qb.table.Col("basename")),
 		&timestampCriterionHandler{folderFilter.ModTime, qb.table.Col("mod_time"), nil},
 
 		qb.parentFolderCriterionHandler(folderFilter.ParentFolder),

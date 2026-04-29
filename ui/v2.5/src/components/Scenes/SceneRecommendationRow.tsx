@@ -1,14 +1,10 @@
 import React, { useMemo } from "react";
-import { Link } from "react-router-dom";
 import { useFindScenes } from "src/core/StashService";
-import Slider from "@ant-design/react-slick";
 import { SceneCard } from "./SceneCard";
 import { SceneQueue } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { getSlickSliderSettings } from "src/core/recommendations";
-import { RecommendationRow } from "../FrontPage/RecommendationRow";
-import { FormattedMessage } from "react-intl";
 import { PatchComponent } from "src/patch";
+import { FilteredRecommendationRow } from "../FrontPage/FilteredRecommendationRow";
 
 interface IProps {
   isTouch: boolean;
@@ -20,50 +16,36 @@ export const SceneRecommendationRow: React.FC<IProps> = PatchComponent(
   "SceneRecommendationRow",
   (props) => {
     const result = useFindScenes(props.filter);
-    const cardCount = result.data?.findScenes.count;
+    const count = result.data?.findScenes.count ?? 0;
 
     const queue = useMemo(() => {
       return SceneQueue.fromListFilterModel(props.filter);
     }, [props.filter]);
 
-    if (!result.loading && !cardCount) {
-      return null;
-    }
-
     return (
-      <RecommendationRow
+      <FilteredRecommendationRow
         className="scene-recommendations"
-        header={props.header}
-        link={
-          <Link to={`/scenes?${props.filter.makeQueryParameters()}`}>
-            <FormattedMessage id="view_all" />
-          </Link>
-        }
+        heading={props.header}
+        url={`/scenes?${props.filter.makeQueryParameters()}`}
+        count={count}
+        loading={result.loading}
+        isTouch={props.isTouch}
+        filter={props.filter}
       >
-        <Slider
-          {...getSlickSliderSettings(
-            cardCount ? cardCount : props.filter.itemsPerPage,
-            props.isTouch
-          )}
-        >
-          {result.loading
-            ? [...Array(props.filter.itemsPerPage)].map((i) => (
-                <div
-                  key={`_${i}`}
-                  className="scene-skeleton skeleton-card"
-                ></div>
-              ))
-            : result.data?.findScenes.scenes.map((scene, index) => (
-                <SceneCard
-                  key={scene.id}
-                  scene={scene}
-                  queue={queue}
-                  index={index}
-                  zoomIndex={1}
-                />
-              ))}
-        </Slider>
-      </RecommendationRow>
+        {result.loading
+          ? [...Array(props.filter.itemsPerPage)].map((i) => (
+              <div key={`_${i}`} className="scene-skeleton skeleton-card"></div>
+            ))
+          : result.data?.findScenes.scenes.map((scene, index) => (
+              <SceneCard
+                key={scene.id}
+                scene={scene}
+                queue={queue}
+                index={index}
+                zoomIndex={1}
+              />
+            ))}
+      </FilteredRecommendationRow>
     );
   }
 );

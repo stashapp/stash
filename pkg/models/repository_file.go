@@ -14,7 +14,7 @@ type FileGetter interface {
 type FileFinder interface {
 	FileGetter
 	FindAllByPath(ctx context.Context, path string, caseSensitive bool) ([]File, error)
-	FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]File, error)
+	FindAllInPaths(ctx context.Context, p []string, includeZipContents bool, limit, offset int) ([]File, error)
 	FindByPath(ctx context.Context, path string, caseSensitive bool) (File, error)
 	FindByFingerprint(ctx context.Context, fp Fingerprint) ([]File, error)
 	FindByZipFileID(ctx context.Context, zipFileID FileID) ([]File, error)

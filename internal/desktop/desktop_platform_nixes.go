@@ -4,8 +4,10 @@
 package desktop
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -33,8 +35,15 @@ func sendNotification(notificationTitle string, notificationText string) {
 	}
 }
 
-func revealInFileManager(path string) {
-
+func revealInFileManager(path string, info os.FileInfo) error {
+	dir := path
+	if !info.IsDir() {
+		dir = filepath.Dir(path)
+	}
+	if err := exec.Command("xdg-open", dir).Run(); err != nil {
+		return fmt.Errorf("error opening directory in file manager: %w", err)
+	}
+	return nil
 }
 
 func isDoubleClickLaunched() bool {

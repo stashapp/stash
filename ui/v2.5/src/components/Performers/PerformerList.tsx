@@ -138,14 +138,15 @@ export const FormatWeight = (weight?: number | null) => {
 };
 
 export function formatYearRange(
-  start?: number | null,
-  end?: number | null
+  start?: string | null,
+  end?: string | null
 ): string | undefined {
   if (!start && !end) return undefined;
+
   return `${start ?? ""} - ${end ?? ""}`;
 }
 
-export const FormatCircumcised = (circumcised?: GQL.CircumisedEnum | null) => {
+export const FormatCircumcised = (circumcised?: GQL.CircumcisedEnum | null) => {
   const intl = useIntl();
   if (!circumcised) {
     return "";
@@ -207,7 +208,7 @@ const PerformerList: React.FC<{
 }> = PatchComponent(
   "PerformerList",
   ({ performers, filter, selectedIds, onSelectChange, extraCriteria }) => {
-    if (performers.length === 0) {
+    if (performers.length === 0 && filter.displayMode !== DisplayMode.Tagger) {
       return null;
     }
 
@@ -423,7 +424,7 @@ export const FilteredPerformerList = PatchComponent(
       setFilter,
     });
 
-    useAddKeybinds(filter, totalCount);
+    useAddKeybinds(effectiveFilter, totalCount);
     useFilteredSidebarKeybinds({
       showSidebar,
       setShowSidebar,
@@ -454,7 +455,7 @@ export const FilteredPerformerList = PatchComponent(
       result,
     });
 
-    const viewRandom = useViewRandom(filter, totalCount);
+    const viewRandom = useViewRandom(effectiveFilter, totalCount);
 
     function onExport(all: boolean) {
       showModal(

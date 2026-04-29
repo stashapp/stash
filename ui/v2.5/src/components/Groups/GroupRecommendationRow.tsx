@@ -1,13 +1,9 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import { useFindGroups } from "src/core/StashService";
-import Slider from "@ant-design/react-slick";
 import { GroupCard } from "./GroupCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { getSlickSliderSettings } from "src/core/recommendations";
-import { RecommendationRow } from "../FrontPage/RecommendationRow";
-import { FormattedMessage } from "react-intl";
 import { PatchComponent } from "src/patch";
+import { FilteredRecommendationRow } from "../FrontPage/FilteredRecommendationRow";
 
 interface IProps {
   isTouch: boolean;
@@ -19,40 +15,26 @@ export const GroupRecommendationRow: React.FC<IProps> = PatchComponent(
   "GroupRecommendationRow",
   (props: IProps) => {
     const result = useFindGroups(props.filter);
-    const cardCount = result.data?.findGroups.count;
-
-    if (!result.loading && !cardCount) {
-      return null;
-    }
+    const count = result.data?.findGroups.count ?? 0;
 
     return (
-      <RecommendationRow
+      <FilteredRecommendationRow
         className="group-recommendations"
-        header={props.header}
-        link={
-          <Link to={`/groups?${props.filter.makeQueryParameters()}`}>
-            <FormattedMessage id="view_all" />
-          </Link>
-        }
+        heading={props.header}
+        url={`/groups?${props.filter.makeQueryParameters()}`}
+        count={count}
+        loading={result.loading}
+        isTouch={props.isTouch}
+        filter={props.filter}
       >
-        <Slider
-          {...getSlickSliderSettings(
-            cardCount ? cardCount : props.filter.itemsPerPage,
-            props.isTouch
-          )}
-        >
-          {result.loading
-            ? [...Array(props.filter.itemsPerPage)].map((i) => (
-                <div
-                  key={`_${i}`}
-                  className="group-skeleton skeleton-card"
-                ></div>
-              ))
-            : result.data?.findGroups.groups.map((g) => (
-                <GroupCard key={g.id} group={g} />
-              ))}
-        </Slider>
-      </RecommendationRow>
+        {result.loading
+          ? [...Array(props.filter.itemsPerPage)].map((i) => (
+              <div key={`_${i}`} className="group-skeleton skeleton-card"></div>
+            ))
+          : result.data?.findGroups.groups.map((g) => (
+              <GroupCard key={g.id} group={g} />
+            ))}
+      </FilteredRecommendationRow>
     );
   }
 );

@@ -129,7 +129,22 @@ func (t *table) destroy(ctx context.Context, ids []int) error {
 	return nil
 }
 
-func (t *table) join(j joiner, as string, parentIDCol string) {
+func (t *table) join(j joiner, jt joinType, as string, parentIDCol string) {
+	tableName := t.table.GetTable()
+	tt := tableName
+	if as != "" {
+		tt = as
+	}
+
+	fn := j.addInnerJoin
+	if jt == joinTypeLeft {
+		fn = j.addLeftJoin
+	}
+
+	fn(tableName, as, fmt.Sprintf("%s.%s = %s", tt, t.idColumn.GetCol(), parentIDCol))
+}
+
+func (t *table) leftJoin(j joiner, as string, parentIDCol string) {
 	tableName := t.table.GetTable()
 	tt := tableName
 	if as != "" {
@@ -1204,6 +1219,14 @@ func querySimple(ctx context.Context, query *goqu.SelectDataset, out interface{}
 
 	if err := rows.Err(); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func querySelect(ctx context.Context, query string, args []interface{}, dest interface{}) error {
+	if err := dbWrapper.Select(ctx, dest, query, args...); err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return fmt.Errorf("running query: %s [%v]: %w", query, args, err)
 	}
 
 	return nil

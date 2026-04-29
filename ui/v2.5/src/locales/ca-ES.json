@@ -53,8 +53,6 @@
         "logout": "Tanca la sessió",
         "make_primary": "Fes primari",
         "merge": "Fusiona",
-        "merge_from": "Fusiona des de",
-        "merge_into": "Fusiona dins",
         "migrate_blobs": "Migra els Blobs",
         "migrate_scene_screenshots": "Migra les captures de pantalla de l'escena",
         "not_running": "sense executar",
@@ -372,9 +370,7 @@
             "latest_version_build_hash": "Hash de l'última versió:",
             "new_version_notice": "[NOVA]",
             "release_date": "Data de llançament:",
-            "stash_discord": "Uneix-te al nostre canal {url}",
             "stash_home": "Pàgina principal del projecte en {url}",
-            "stash_open_collective": "Donacions al projecte a través de {url}",
             "stash_wiki": "Pàgina web {url}",
             "version": "Versió"
         },
@@ -430,7 +426,6 @@
                 "overwrite_existing": "Sobreescriure blobs existents amb dades de captures de pantalla"
             },
             "migrations": "Migracions",
-            "backup_database": "Realitza una còpia de seguretat de la base de dades en el directori de còpies de seguretat. La còpia s'emmagatzema amb el format {filename_format}",
             "added_job_to_queue": "Afegit/a {operation_name} a la cua de treball",
             "anonymise_and_download": "Realitza una còpia anònima de la base de dades i descàrrega el fitxer resultant.",
             "anonymise_database": "Fa una còpia de la base de dades al directori de còpies de seguretat anonimitzant tota la informació sensible. Aquesta còpia es pot proveir a tercers per a solucionar i depurar problemes. La base de dades original no és modificada. La base de dades anonimitzada s'emmagatzema amb el format {filename_format}.",

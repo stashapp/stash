@@ -56,7 +56,7 @@ const StudioList: React.FC<{
 }> = PatchComponent(
   "StudioList",
   ({ studios, filter, selectedIds, onSelectChange, fromParent }) => {
-    if (studios.length === 0) {
+    if (studios.length === 0 && filter.displayMode !== DisplayMode.Tagger) {
       return null;
     }
 
@@ -251,7 +251,7 @@ export const FilteredStudioList = PatchComponent(
       setFilter,
     });
 
-    useAddKeybinds(filter, totalCount);
+    useAddKeybinds(effectiveFilter, totalCount);
     useFilteredSidebarKeybinds({
       showSidebar,
       setShowSidebar,
@@ -282,7 +282,7 @@ export const FilteredStudioList = PatchComponent(
       result,
     });
 
-    const viewRandom = useViewRandom(filter, totalCount);
+    const viewRandom = useViewRandom(effectiveFilter, totalCount);
 
     function onExport(all: boolean) {
       showModal(

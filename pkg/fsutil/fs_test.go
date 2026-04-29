@@ -41,4 +41,15 @@ func TestIsFsPathCaseSensitive_UnicodeByteLength(t *testing.T) {
 	}
 
 	// assert.True(t, r, "expected fs to be case sensitive")
+
+	// Ensure that subfolders of a folder with multi-byte chars is not causing a panic
+	path3 := filepath.Join(dir, "NoPanic ❤️")
+	makeDir(path3)
+	path4 := filepath.Join(path3, "Test")
+	makeDir(path4)
+
+	_, err = IsFsPathCaseSensitive(path4)
+	if err != nil {
+		t.Fatal(err)
+	}
 }

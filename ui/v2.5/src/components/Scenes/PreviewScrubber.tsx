@@ -13,6 +13,7 @@ import { HoverScrubber } from "../Shared/HoverScrubber";
 interface IScenePreviewProps {
   vttPath: string | undefined;
   onClick?: (timestamp: number) => void;
+  disabled?: boolean;
 }
 
 function scaleToFit(dimensions: { w: number; h: number }, bounds: DOMRect) {
@@ -32,6 +33,7 @@ const defaultSprites = 81; // 9x9 grid by default
 export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
   vttPath,
   onClick,
+  disabled,
 }) => {
   const imageParentRef = useRef<HTMLDivElement>(null);
   const [style, setStyle] = useState({});
@@ -43,6 +45,18 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
   // hold off on loading vtt until first mouse over
   const [hasLoaded, setHasLoaded] = useState(false);
   const spriteInfo = useSpriteInfo(hasLoaded ? vttPath : undefined);
+
+  const spriteSheetSize = useMemo(() => {
+    if (!spriteInfo) {
+      return { x: 0, y: 0 };
+    }
+
+    // calculate total width/height of scrubber image so we can scale it
+    const maxX = Math.max(...spriteInfo.map((sprite) => sprite.x + sprite.w));
+    const maxY = Math.max(...spriteInfo.map((sprite) => sprite.y + sprite.h));
+
+    return { x: maxX, y: maxY };
+  }, [spriteInfo]);
 
   const sprite = useMemo(() => {
     if (!spriteInfo || activeIndex === undefined) {
@@ -67,17 +81,17 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
 
     const clientRect = imageParent.getBoundingClientRect();
     const scale = scaleToFit(sprite, clientRect);
-    const spriteSheet = new Image();
-    spriteSheet.src = sprite.url;
 
     setStyle({
-      backgroundPosition: `${-sprite.x}px ${-sprite.y}px`,
+      backgroundPosition: `${-sprite.x * scale}px ${-sprite.y * scale}px`,
       backgroundImage: `url(${sprite.url})`,
-      width: `${sprite.w}px`,
-      height: `${sprite.h}px`,
-      transform: `scale(${scale})`,
+      backgroundSize: `${spriteSheetSize.x * scale}px ${
+        spriteSheetSize.y * scale
+      }px`,
+      width: `${sprite.w * scale}px`,
+      height: `${sprite.h * scale}px`,
     });
-  }, [sprite]);
+  }, [sprite, spriteSheetSize]);
 
   const currentTime = useMemo(() => {
     if (!sprite) return undefined;
@@ -113,6 +127,7 @@ export const PreviewScrubber: React.FC<IScenePreviewProps> = ({
         activeIndex={activeIndex}
         setActiveIndex={(i) => debounceSetActiveIndex(i)}
         onClick={onScrubberClick}
+        disabled={disabled}
       />
     </div>
   );

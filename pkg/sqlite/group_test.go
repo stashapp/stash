@@ -566,6 +566,79 @@ func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 	}
 }
 
+func Test_GroupStore_UpdatePartialCustomFields(t *testing.T) {
+	tests := []struct {
+		name     string
+		id       int
+		partial  models.GroupPartial
+		expected map[string]interface{} // nil to use the partial
+	}{
+		{
+			"set custom fields",
+			groupIDs[groupIdxWithChild],
+			models.GroupPartial{
+				CustomFields: models.CustomFieldsInput{
+					Full: testCustomFields,
+				},
+			},
+			nil,
+		},
+		{
+			"clear custom fields",
+			groupIDs[groupIdxWithChild],
+			models.GroupPartial{
+				CustomFields: models.CustomFieldsInput{
+					Full: map[string]interface{}{},
+				},
+			},
+			nil,
+		},
+		{
+			"partial custom fields",
+			groupIDs[groupIdxWithTwoTags],
+			models.GroupPartial{
+				CustomFields: models.CustomFieldsInput{
+					Partial: map[string]interface{}{
+						"string":    "bbb",
+						"new_field": "new",
+					},
+				},
+			},
+			map[string]interface{}{
+				"int":       int64(3),
+				"real":      0.3,
+				"string":    "bbb",
+				"new_field": "new",
+			},
+		},
+	}
+	for _, tt := range tests {
+		qb := db.Group
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			_, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+			if err != nil {
+				t.Errorf("GroupStore.UpdatePartial() error = %v", err)
+				return
+			}
+
+			// ensure custom fields are correct
+			cf, err := qb.GetCustomFields(ctx, tt.id)
+			if err != nil {
+				t.Errorf("GroupStore.GetCustomFields() error = %v", err)
+				return
+			}
+			if tt.expected == nil {
+				assert.Equal(tt.partial.CustomFields.Full, cf)
+			} else {
+				assert.Equal(tt.expected, cf)
+			}
+		})
+	}
+}
+
 func TestGroupFindByName(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		mqb := db.Group
@@ -1913,6 +1986,245 @@ func TestGroupFindSubGroupIDs(t *testing.T) {
 			foundIdxs := sliceutil.Map(found, func(id int) int { return slices.Index(groupIDs, id) })
 
 			assert.ElementsMatch(t, tt.expectedIdxs, foundIdxs)
+		})
+	}
+}
+
+func TestGroupQueryCustomFields(t *testing.T) {
+	tests := []struct {
+		name        string
+		filter      *models.GroupFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"equals",
+			&models.GroupFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierEquals,
+						Value:    []any{getGroupStringValue(groupIdxWithChild, "custom")},
+					},
+				},
+			},
+			[]int{groupIdxWithChild},
+			nil,
+			false,
+		},
+		{
+			"not equals",
+			&models.GroupFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getGroupStringValue(groupIdxWithChild, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotEquals,
+						Value:    []any{getGroupStringValue(groupIdxWithChild, "custom")},
+					},
+				},
+			},
+			nil,
+			[]int{groupIdxWithChild},
+			false,
+		},
+		{
+			"includes",
+			&models.GroupFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierIncludes,
+						Value:    []any{getGroupStringValue(groupIdxWithChild, "custom")[9:]},
+					},
+				},
+			},
+			[]int{groupIdxWithChild},
+			nil,
+			false,
+		},
+		{
+			"excludes",
+			&models.GroupFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getGroupStringValue(groupIdxWithChild, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierExcludes,
+						Value:    []any{getGroupStringValue(groupIdxWithChild, "custom")[9:]},
+					},
+				},
+			},
+			nil,
+			[]int{groupIdxWithChild},
+			false,
+		},
+		{
+			"regex",
+			&models.GroupFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierMatchesRegex,
+						Value:    []any{".*11_custom"},
+					},
+				},
+			},
+			[]int{groupIdxWithChildWithScene},
+			nil,
+			false,
+		},
+		{
+			"invalid regex",
+			&models.GroupFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierMatchesRegex,
+						Value:    []any{"["},
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"not matches regex",
+			&models.GroupFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getGroupStringValue(groupIdxWithChildWithScene, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotMatchesRegex,
+						Value:    []any{".*11_custom"},
+					},
+				},
+			},
+			nil,
+			[]int{groupIdxWithChildWithScene},
+			false,
+		},
+		{
+			"invalid not matches regex",
+			&models.GroupFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotMatchesRegex,
+						Value:    []any{"["},
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"null",
+			&models.GroupFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getGroupStringValue(groupIdxWithGrandParent, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "not existing",
+						Modifier: models.CriterionModifierIsNull,
+					},
+				},
+			},
+			[]int{groupIdxWithGrandParent},
+			nil,
+			false,
+		},
+		{
+			"not null",
+			&models.GroupFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getGroupStringValue(groupIdxWithGrandParent, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "string",
+						Modifier: models.CriterionModifierNotNull,
+					},
+				},
+			},
+			[]int{groupIdxWithGrandParent},
+			nil,
+			false,
+		},
+		{
+			"between",
+			&models.GroupFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierBetween,
+						Value:    []any{0.15, 0.25},
+					},
+				},
+			},
+			[]int{groupIdxWithTag},
+			nil,
+			false,
+		},
+		{
+			"not between",
+			&models.GroupFilterType{
+				Name: &models.StringCriterionInput{
+					Value:    getGroupStringValue(groupIdxWithTag, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierNotBetween,
+						Value:    []any{0.15, 0.25},
+					},
+				},
+			},
+			nil,
+			[]int{groupIdxWithTag},
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			groups, _, err := db.Group.Query(ctx, tt.filter, nil)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GroupStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if err != nil {
+				return
+			}
+
+			ids := groupsToIDs(groups)
+			include := indexesToIDs(groupIDs, tt.includeIdxs)
+			exclude := indexesToIDs(groupIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
 		})
 	}
 }

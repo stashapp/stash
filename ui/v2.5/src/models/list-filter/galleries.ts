@@ -21,6 +21,8 @@ import { ListFilterOptions, MediaSortByOptions } from "./filter-options";
 import { DisplayMode } from "./types";
 import { RatingCriterionOption } from "./criteria/rating";
 import { PathCriterionOption } from "./criteria/path";
+import { CustomFieldsCriterionOption } from "./criteria/custom-fields";
+import { ParentFolderCriterionOption } from "./criteria/folder";
 
 const defaultSortBy = "path";
 
@@ -43,13 +45,17 @@ const displayModeOptions = [
   DisplayMode.Wall,
 ];
 
+export const PerformerAgeCriterionOption =
+  createMandatoryNumberCriterionOption("performer_age");
+
 const criterionOptions = [
   createStringCriterionOption("title"),
   createStringCriterionOption("code", "scene_code"),
   createStringCriterionOption("details"),
   createStringCriterionOption("photographer"),
   PathCriterionOption,
-  createStringCriterionOption("checksum", "media_info.checksum"),
+  ParentFolderCriterionOption,
+  createStringCriterionOption("checksum", "media_info.md5"),
   RatingCriterionOption,
   OrganizedCriterionOption,
   AverageResolutionCriterionOption,
@@ -60,7 +66,7 @@ const criterionOptions = [
   PerformerTagsCriterionOption,
   PerformersCriterionOption,
   createMandatoryNumberCriterionOption("performer_count"),
-  createMandatoryNumberCriterionOption("performer_age"),
+  PerformerAgeCriterionOption,
   PerformerFavoriteCriterionOption,
   createMandatoryNumberCriterionOption("image_count"),
   // StudioTagsCriterionOption,
@@ -71,6 +77,7 @@ const criterionOptions = [
   createDateCriterionOption("date"),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),
+  CustomFieldsCriterionOption,
 ];
 
 export const GalleryListFilterOptions = new ListFilterOptions(

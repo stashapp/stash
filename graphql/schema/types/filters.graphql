@@ -152,15 +152,15 @@ input PerformerFilterType {
   fake_tits: StringCriterionInput
   "Filter by penis length value"
   penis_length: FloatCriterionInput
-  "Filter by ciricumcision"
+  "Filter by circumcision"
   circumcised: CircumcisionCriterionInput
   "Deprecated: use career_start and career_end. This filter is non-functional."
   career_length: StringCriterionInput
     @deprecated(reason: "Use career_start and career_end")
-  "Filter by career start year"
-  career_start: IntCriterionInput
-  "Filter by career end year"
-  career_end: IntCriterionInput
+  "Filter by career start"
+  career_start: DateCriterionInput
+  "Filter by career end"
+  career_end: DateCriterionInput
   "Filter by tattoos"
   tattoos: StringCriterionInput
   "Filter by piercings"
@@ -177,6 +177,8 @@ input PerformerFilterType {
   tag_count: IntCriterionInput
   "Filter by scene count"
   scene_count: IntCriterionInput
+  "Filter by marker count (via scene)"
+  marker_count: IntCriterionInput
   "Filter by image count"
   image_count: IntCriterionInput
   "Filter by gallery count"
@@ -220,6 +222,8 @@ input PerformerFilterType {
   galleries_filter: GalleryFilterType
   "Filter by related tags that meet this criteria"
   tags_filter: TagFilterType
+  "Filter by related scene markers (via scene) that meet this criteria"
+  markers_filter: SceneMarkerFilterType
   "Filter by creation time"
   created_at: TimestampCriterionInput
   "Filter by last update time"
@@ -245,9 +249,9 @@ input SceneMarkerFilterType {
   updated_at: TimestampCriterionInput
   "Filter by scene date"
   scene_date: DateCriterionInput
-  "Filter by cscene reation time"
+  "Filter by scene creation time"
   scene_created_at: TimestampCriterionInput
-  "Filter by lscene ast update time"
+  "Filter by scene last update time"
   scene_updated_at: TimestampCriterionInput
   "Filter by related scenes that meet this criteria"
   scene_filter: SceneFilterType
@@ -462,6 +466,9 @@ input GroupFilterType {
   scenes_filter: SceneFilterType
   "Filter by related studios that meet this criteria"
   studios_filter: StudioFilterType
+
+  "Filter by custom fields"
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input StudioFilterType {
@@ -596,6 +603,10 @@ input GalleryFilterType {
   files_filter: FileFilterType
   "Filter by related folders that meet this criteria"
   folders_filter: FolderFilterType
+  "Filter by parent folder of the zip or folder the gallery is in"
+  parent_folder: HierarchicalMultiCriterionInput
+
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input TagFilterType {
@@ -654,7 +665,7 @@ input TagFilterType {
   "Filter by number of parent tags the tag has"
   parent_count: IntCriterionInput
 
-  "Filter by number f child tags the tag has"
+  "Filter by number of child tags the tag has"
   child_count: IntCriterionInput
 
   "Filter by autotag ignore value"
@@ -679,6 +690,8 @@ input TagFilterType {
   performers_filter: PerformerFilterType
   "Filter by related studios that meet this criteria"
   studios_filter: StudioFilterType
+  "Filter by related scene markers that meet this criteria"
+  markers_filter: SceneMarkerFilterType
 
   "Filter by creation time"
   created_at: TimestampCriterionInput
@@ -760,6 +773,8 @@ input ImageFilterType {
   tags_filter: TagFilterType
   "Filter by related files that meet this criteria"
   files_filter: FileFilterType
+  "Filter by custom fields"
+  custom_fields: [CustomFieldCriterionInput!]
 }
 
 input FileFilterType {
@@ -809,6 +824,7 @@ input FolderFilterType {
   NOT: FolderFilterType
 
   path: StringCriterionInput
+  basename: StringCriterionInput
 
   parent_folder: HierarchicalMultiCriterionInput
   zip_file: MultiCriterionInput
@@ -917,7 +933,7 @@ input GenderCriterionInput {
 }
 
 input CircumcisionCriterionInput {
-  value: [CircumisedEnum!]
+  value: [CircumcisedEnum!]
   modifier: CriterionModifier!
 }
 

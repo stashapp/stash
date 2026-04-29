@@ -52,6 +52,11 @@ import { PathCriterion } from "src/models/list-filter/criteria/path";
 import { ModifierSelectorButtons } from "./ModifierSelect";
 import { CustomFieldsCriterion } from "src/models/list-filter/criteria/custom-fields";
 import { CustomFieldsFilter } from "./Filters/CustomFieldsFilter";
+import { FolderFilter } from "./Filters/FolderFilter";
+import {
+  FolderCriterion,
+  ParentFolderCriterion,
+} from "src/models/list-filter/criteria/folder";
 
 interface IGenericCriterionEditor {
   criterion: ModifierCriterion<CriterionValue>;
@@ -68,7 +73,9 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
     if (
       criterion instanceof PerformersCriterion ||
       criterion instanceof StudiosCriterion ||
-      criterion instanceof TagsCriterion
+      criterion instanceof TagsCriterion ||
+      criterion instanceof FolderCriterion ||
+      criterion instanceof ParentFolderCriterion
     ) {
       return false;
     }
@@ -157,6 +164,18 @@ const GenericCriterionEditor: React.FC<IGenericCriterionEditor> = ({
     if (criterion instanceof TagsCriterion) {
       return (
         <TagsFilter
+          criterion={criterion}
+          setCriterion={(c) => setCriterion(c)}
+        />
+      );
+    }
+
+    if (
+      criterion instanceof FolderCriterion ||
+      criterion instanceof ParentFolderCriterion
+    ) {
+      return (
+        <FolderFilter
           criterion={criterion}
           setCriterion={(c) => setCriterion(c)}
         />

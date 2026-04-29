@@ -4,6 +4,7 @@
 package desktop
 
 import (
+	"os"
 	"os/exec"
 	"syscall"
 	"unsafe"
@@ -83,6 +84,10 @@ func sendNotification(notificationTitle string, notificationText string) {
 	}
 }
 
-func revealInFileManager(path string) {
-	exec.Command(`explorer`, `\select`, path)
+func revealInFileManager(path string, _ os.FileInfo) error {
+	c := exec.Command(`explorer`, `/select,`, path)
+	logger.Debugf("Running: %s", c.String())
+	// explorer seems to return an error code even when it works, so ignore the error
+	_ = c.Run()
+	return nil
 }

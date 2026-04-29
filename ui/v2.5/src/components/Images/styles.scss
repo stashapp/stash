@@ -9,7 +9,7 @@
       order: 1;
     }
 
-    .image-studio-image {
+    .studio-logo {
       flex: 0 0 25%;
       order: 2;
     }
@@ -178,6 +178,20 @@ $imageTabWidth: 450px;
 
   .form-group[data-field="urls"] .string-list-input input.form-control {
     font-size: 0.85em;
+  }
+
+  @include media-breakpoint-up(xl) {
+    .custom-fields-input {
+      .custom-fields-field {
+        flex: 0 0 25%;
+        max-width: 25%;
+      }
+
+      .custom-fields-value {
+        flex: 0 0 75%;
+        max-width: 75%;
+      }
+    }
   }
 }
 

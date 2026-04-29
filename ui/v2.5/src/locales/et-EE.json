@@ -1,14 +1,14 @@
 {
     "actions": {
         "add": "Lisa",
-        "add_directory": "Lisa Kaust",
+        "add_directory": "Lisa kaust",
         "add_entity": "Lisa {entityType}",
         "add_to_entity": "Lisa {entityType}-sse",
         "allow": "Luba",
         "allow_temporarily": "Luba ajutiselt",
         "anonymise": "Anonüümseks Muutmine",
         "apply": "Rakenda",
-        "auto_tag": "Märgi Automaatselt",
+        "auto_tag": "Märgi automaatselt",
         "backup": "Varunda",
         "browse_for_image": "Otsi pilti…",
         "cancel": "Tühista",
@@ -43,12 +43,12 @@
         "finish": "Lõpeta",
         "from_file": "Failist…",
         "from_url": "URL-ilt…",
-        "full_export": "Täielik Eksportimine",
-        "full_import": "Täielik Importimine",
+        "full_export": "Täielik eksportimine",
+        "full_import": "Täielik importimine",
         "generate": "Genereeri",
         "generate_thumb_default": "Genereri vaikepisipilt",
         "generate_thumb_from_current": "Genereeri pisipilt praegusest",
-        "hash_migration": "hashi migratsioon",
+        "hash_migration": "räsi migratsioon",
         "hide": "Peida",
         "hide_configuration": "Peida Seadistus",
         "identify": "Tuvasta",
@@ -58,10 +58,8 @@
         "logout": "Logi välja",
         "make_primary": "Määra Peamiseks",
         "merge": "Liida",
-        "merge_from": "Liida teisest",
-        "merge_into": "Liida teise",
-        "migrate_blobs": "Migreeri Blobid",
-        "migrate_scene_screenshots": "Migreeri Stseenide Ekraanipildid",
+        "migrate_blobs": "Migreeri blobid",
+        "migrate_scene_screenshots": "Migreeri stseenide ekraanipildid",
         "next_action": "Järgmine",
         "not_running": "ei jookse",
         "open_in_external_player": "Ava välises mängijas",
@@ -94,9 +92,9 @@
         "select_entity": "Vali {entityType}",
         "select_folders": "Vali kaustad",
         "select_none": "Vali Mitte Midagi",
-        "selective_auto_tag": "Valikuline Automaatne Märkija",
-        "selective_clean": "Valikuline Puhastus",
-        "selective_scan": "Valikuline Skaneerimine",
+        "selective_auto_tag": "Valikuline automaatne märkija",
+        "selective_clean": "Valikuline puhastus",
+        "selective_scan": "Valikuline skaneerimine",
         "set_as_default": "Määra vaikeväärtuseks",
         "set_back_image": "Tagapilt…",
         "set_front_image": "Esipilt…",
@@ -126,7 +124,7 @@
         "assign_stashid_to_parent_studio": "Määra eksisteerivale vanemstuudiole Stash ID ja uuenda metaandmeid",
         "create_parent_studio": "Loo vanemstuudio",
         "encoding_image": "Pildi kodeerimine…",
-        "optimise_database": "Optimiseeri Andmebaasi",
+        "optimise_database": "Optimiseeri andmebaasi",
         "clean_generated": "Puhasta genereeritud faile",
         "choose_date": "Vali kuupäev",
         "copy_to_clipboard": "Kopeeri lõikelauale",
@@ -153,7 +151,15 @@
         "load": "Lae",
         "load_filter": "Lae filter",
         "add_stash_id": "Lisa Stash ID",
-        "create_new": "Loo uus"
+        "create_new": "Loo uus",
+        "save_and_new": "Salvesta & Uus",
+        "invert_selection": "Inverteeri Valik",
+        "reveal_in_file_manager": "Kuva Failihalduris",
+        "select_directory": "Vali kaust",
+        "exclude_lowercase": "välista",
+        "from_clipboard": "Lõikelaualt",
+        "selective_generate": "Valiv genereerimine",
+        "create_parent_tag": "Loo vanemsilt"
     },
     "actions_name": "Tegevused",
     "age": "Vanus",
@@ -227,20 +233,19 @@
         "verb_toggle_unmatched": "{toggle} kokkusobitamata stseenid",
         "verb_add_as_alias": "Lisa nimi alisena",
         "verb_link_existing": "Ühenda eksisteerivaga",
-        "verb_match_tag": "Sobita Silt"
+        "verb_match_tag": "Sobita Silt",
+        "verb_scrape_selected": "Otsi Valitute Metaandmeid"
     },
     "config": {
         "about": {
-            "build_hash": "Ehituse hash:",
+            "build_hash": "Ehituse räsi:",
             "build_time": "Ehituse aeg:",
             "check_for_new_version": "Kontrolli värskendusi",
             "latest_version": "Uusim Versioon",
-            "latest_version_build_hash": "Uusima Versiooni Ehituse Hash:",
+            "latest_version_build_hash": "Uusima Versiooni Ehituse Räsi:",
             "new_version_notice": "[UUS]",
             "release_date": "Väljalaskekuupäev:",
-            "stash_discord": "Liitu meie {url}i kanaliga",
             "stash_home": "Stashi kodu {url}-is",
-            "stash_open_collective": "Toeta meid läbi {url}-i",
             "stash_wiki": "Stashi {url} leht",
             "version": "Versioon"
         },
@@ -265,7 +270,7 @@
             "allow_temp_ip": "Luba {tempIP}",
             "allowed_ip_addresses": "Lubatud IP aadressid",
             "allowed_ip_temporarily": "Lubatud IP ajutiselt",
-            "default_ip_whitelist": "Vaikimisi IP Valge Nimekiri",
+            "default_ip_whitelist": "Vaikimisi IP valge nimekiri",
             "default_ip_whitelist_desc": "Vaikimisi IP aadressid lubavad DLNA ligipääsu. Kasuta {wildcard}, et lubada kõiki IP aadresse.",
             "disabled_dlna_temporarily": "DLNA ajutiselt keelatud",
             "disallowed_ip": "Keelatud IP",
@@ -274,33 +279,33 @@
             "network_interfaces": "Kasutajaliidesed",
             "network_interfaces_desc": "Kasutajaliidesed DLNA serveri paljastamiseks. Tühi nimekiri lubab jooksutamist kõigil kasutajaliidestel. Vajalik DLNA taaskäivitus peale muutmist.",
             "recent_ip_addresses": "Hiljutised IP aadressid",
-            "server_display_name": "Serveri Nimi",
+            "server_display_name": "Serveri kuvanimi",
             "server_display_name_desc": "DLNA server nimi. Vaikimisi {server_name}, kui midagi pole sisestatud.",
             "successfully_cancelled_temporary_behaviour": "Edukalt tühistatud ajutine käitumine",
             "until_restart": "restardini",
-            "video_sort_order": "Videote Sorteerimise Vaikeväärtus",
+            "video_sort_order": "Videote sorteerimise vaikeväärtus",
             "video_sort_order_desc": "Viis, kuidas vaikimisi videoid sorteerida.",
             "server_port": "Serveri port",
             "server_port_desc": "Port DLNA serveri jaoks. Vajab peale muutmist DLNA taaskäivitust."
         },
         "general": {
             "auth": {
-                "api_key": "API Võti",
+                "api_key": "API võti",
                 "api_key_desc": "API võti välistele süsteemidele. Nõutud ainult siis, kui kasutajanimi/parool on sätitud. Kasutajanimi peab olema salvestatud enne API võtme genereerimist.",
                 "authentication": "Autentimine",
                 "clear_api_key": "Puhasta API võti",
                 "credentials": {
-                    "description": "Mandaat Stashile ligipääsu piiramiseks.",
+                    "description": "Mandaat stashile ligipääsu piiramiseks.",
                     "heading": "Mandaat"
                 },
                 "generate_api_key": "Genereeri API võti",
                 "log_file": "Logi fail",
                 "log_file_desc": "Failitee failini, kuhu logid sisestada. Jäta tühjaks, kui soovid logide salvestamise välja lülitada. Vajab taaskäivitust.",
-                "log_http": "Logi http ligipääs",
-                "log_http_desc": "Avaldab http ligipääsu logid terminali. Vajab taaskäivitust.",
+                "log_http": "Logi HTTP ligipääs",
+                "log_http_desc": "Avaldab HTTP ligipääsu logid terminali. Vajab taaskäivitust.",
                 "log_to_terminal": "Logi terminali",
                 "log_to_terminal_desc": "Avaldab logid lisaks failile ka terminalis. Alati sisselülitatud, kui logimine faili on keelatud. Vajab taaskäivitust.",
-                "maximum_session_age": "Maksimaalne Sessiooni Vanus",
+                "maximum_session_age": "Maksimaalne sessiooni vanus",
                 "maximum_session_age_desc": "Maksimaalne paigalseisuaeg enne, kui sessioon aegub, sekundites. Vajab taaskäivitust.",
                 "password": "Parool",
                 "password_desc": "Parool Stashi pääsemiseks. Jäta tühjaks, kui soovid sisselogimise keelata",
@@ -311,34 +316,34 @@
                 "log_file_max_size_desc": "Maksimaalne logifaili suurus megabaitides enne tihendamist. 0MB on väljalülitatud. Nõuab taaskäivitust."
             },
             "backup_directory_path": {
-                "description": "Failitee SQLite andmebaasi varundusfailide jaoks",
-                "heading": "Varunduse Failitee"
+                "description": "Failitee SQLite andmebaasi varundusfailide jaoks.",
+                "heading": "Varunduse failitee"
             },
             "blobs_path": {
                 "description": "Kus kohas hoida binaarseid andmeid failisüsteemis. Kehtib ainult kui kasutad Failisüsteem blob salvestustüüpi. HOIATUS: selle muutmine nõuab olemasolevate andmete manuaalset liigutamist.",
                 "heading": "Binaarseete andmete failisüsteemi tee"
             },
             "blobs_storage": {
-                "description": "Kus hoida binaarseid andmeid nagu stseeni kaanepildid, näitlejate, stuudiote ja siltide pilte. Peale selle väärtuse muutmist tuleb olemasolevad andmed migreerida kasutades Migreeri Blobe ülesannet. Vaata Ülesannete lehele migreerimiseks.",
+                "description": "Kus hoida binaarseid andmeid nagu stseeni kaanepildid, näitlejate, stuudiote ja siltide pilte. Peale selle väärtuse muutmist tuleb olemasolevad andmed migreerida kasutades Migreeri blobe ülesannet. Vaata Ülesannete lehele migreerimiseks.",
                 "heading": "Binaarsete andmete hoiustamistüüp"
             },
             "cache_location": "Failitee vahemäluni. Nõutud kui striimimiseks kasutatakse HLSi (näiteks Apple seadetel) või DASHi.",
-            "cache_path_head": "Vahemälu Failitee",
-            "calculate_md5_and_ohash_desc": "Kalkuleeri MD5 checksum lisaks oshashile. Lubamine põhjustab aeglasemat esmast skaneerimist. Faili nimetuse hash peab olema sätitud oshashiks, et keelata MD5 kalkuleerimine.",
+            "cache_path_head": "Vahemälu failitee",
+            "calculate_md5_and_ohash_desc": "Kalkuleeri MD5 checksum lisaks oshashile. Lubamine põhjustab aeglasemat esmast skaneerimist. Faili nimetuse räsi peab olema sätitud oshashiks, et keelata MD5 kalkuleerimine.",
             "calculate_md5_and_ohash_label": "Kalkuleeri MD5 videote jaoks",
             "check_for_insecure_certificates": "Otsi ebaturvalisi sertifikaate",
-            "check_for_insecure_certificates_desc": "Mõned lehed kasutavad ebaturvalisi ssl sertifikaate. Kui märkimata, kraapija jätab sertifikaadi kontrollimise vahele ning võimaldab nendelt lehtedelt andmeid kraapida. Kui kraapimise ajal esineb sertifikaadivigu, eemalda linnuke.",
+            "check_for_insecure_certificates_desc": "Mõned lehed kasutavad ebaturvalisi SSL sertifikaate. Kui märkimata, kraapija jätab sertifikaadi kontrollimise vahele ning võimaldab nendelt lehtedelt andmeid kraapida. Kui kraapimise ajal esineb sertifikaadivigu, eemalda linnuke.",
             "chrome_cdp_path": "Chrome CDP tee",
             "chrome_cdp_path_desc": "Failitee Chrome käivitajani, või kaugaadress (algab http:// või https:// -iga, näiteks http://localhost:9222/json/version) Chrome'i eksemplarini.",
-            "create_galleries_from_folders_desc": "Kui lubatud, loob vaikeväärtusena galeriisid pilte sisaldavatest kaustadest. Loo kasutas fail nimega .forcegallery või .nogallery, et seda sundida või sellest hoiduda.",
+            "create_galleries_from_folders_desc": "Kui lubatud, loob vaikeväärtusena galeriisid pilte sisaldavatest kaustadest. Loo kasutas fail nimega .forcegallery või .nogallery, et seda seadet üle kirjutada.",
             "create_galleries_from_folders_label": "Loo galeriisid kaustadest, mis sisaldavad pilte",
             "database": "Andmebaas",
-            "db_path_head": "Andmebaasi Failitee",
+            "db_path_head": "Andmebaasi failitee",
             "directory_locations_to_your_content": "Failitee asukohad sisule",
-            "excluded_image_gallery_patterns_desc": "Pildi- ja galeriifailide/teede regexpid, mida skannimisest välja jätta ja Clean'i lisada",
-            "excluded_image_gallery_patterns_head": "Välistatud Pildi/Galerii Mustrid",
-            "excluded_video_patterns_desc": "Videofailide/teede regexpid, mida skannimisest välja jätta ja Clean'i lisada",
-            "excluded_video_patterns_head": "Välistatud Video Mustrid",
+            "excluded_image_gallery_patterns_desc": "Pildi- ja galeriifailide/teede regexpid, mida skannimisest välja jätta ja Clean'i ülesannetesse lisada.",
+            "excluded_image_gallery_patterns_head": "Välistatud pildi/galerii mustrid",
+            "excluded_video_patterns_desc": "Videofailide/teede regexpid, mida skannimisest välja jätta ja Clean'i ülesannetesse lisada.",
+            "excluded_video_patterns_head": "Välistatud video mustrid",
             "ffmpeg": {
                 "hardware_acceleration": {
                     "desc": "Kasutab olemasolevat riistvara reaalajas video transkodeerimiseks.",
@@ -347,30 +352,30 @@
                 "live_transcode": {
                     "input_args": {
                         "desc": "Edasijõudnutele: Lisaargumendid mida edastada ffmpegi sisendväljale live video transkodeerimise ajal.",
-                        "heading": "FFmpeg Live Transkodeerimise Sisendargumendid"
+                        "heading": "FFmpeg live transkodeerimise sisendargumendid"
                     },
                     "output_args": {
                         "desc": "Edasijõudnutele: Lisaargumendid mida edastada ffmpegi väljundväljale live video transkodeerimise ajal.",
-                        "heading": "FFmpeg Live Transkodeerimise Väljundargumendid"
+                        "heading": "FFmpeg live transkodeerimise väljundargumendid"
                     }
                 },
                 "transcode": {
                     "input_args": {
                         "desc": "Edasijõudnutele: Lisaargumendid mida edastada ffmpegi sisendväljale video genereerimisel.",
-                        "heading": "FFmpeg Transkodeerimise Sisendargumendid"
+                        "heading": "FFmpeg transkodeerimise sisendargumendid"
                     },
                     "output_args": {
                         "desc": "Edasijõudnutele: Lisaargumendid mida edastada ffmpegi väljundväljale video genereerimisel.",
-                        "heading": "FFmpeg Transkodeerimise Väljundargumendid"
+                        "heading": "FFmpeg transkodeerimise väljundargumendid"
                     }
                 },
                 "ffprobe_path": {
-                    "heading": "FFprobe Käivitava Faili Tee",
-                    "description": "ffprobe käivitatava faili tee (mitte ainult kaust). Kui see on tühi, lahendatakse ffprobe keskkonnast $PATHi, konfiguratsioonikataloogi või $HOME/.stash kaudu"
+                    "heading": "FFprobe käivitava faili tee",
+                    "description": "ffprobe käivitatava faili tee (mitte ainult kaust). Kui see on tühi, lahendatakse ffprobe keskkonnast $PATHi, konfiguratsioonikataloogi või $HOME/.stash kaudu."
                 },
                 "ffmpeg_path": {
-                    "heading": "FFmpegi Käivitava Faili Tee",
-                    "description": "ffmpegi käivitatava faili tee (mitte ainult kaust). Kui see on tühi, lahendatakse ffmpeg keskkonnast $PATHi, konfiguratsioonikataloogi või $HOME/.stash kaudu"
+                    "heading": "FFmpegi käivitava faili tee",
+                    "description": "ffmpegi käivitatava faili tee (mitte ainult kaust). Kui see on tühi, lahendatakse ffmpeg keskkonnast $PATHi, konfiguratsioonikataloogi või $HOME/.stash kaudu."
                 },
                 "download_ffmpeg": {
                     "description": "Laadib FFmpegi alla konfiguratsioonikataloogi ja tühjendab ffmpegi ja ffprobe'i teed konfiguratsioonikataloogist lahendamiseks.",
@@ -379,42 +384,42 @@
             },
             "funscript_heatmap_draw_range": "Kaasa vahemik genereeritud kuumkaartidel",
             "funscript_heatmap_draw_range_desc": "Joonista liikumisvahemik genereeritud kuumkaardi y-teljel. Olemasolevad kuumkaardid tuleb peale muutmist uuesti genereerida.",
-            "gallery_cover_regex_desc": "Regexp kasutakse, et tuvastada pilti kui galerii kaanepildina",
+            "gallery_cover_regex_desc": "Regexpte kasutakse, et tuvastada pilti kui galerii kaanepildina.",
             "gallery_cover_regex_label": "Galerii kaanepildi muster",
             "gallery_ext_desc": "Komadega eraldatud faililaiendite loend, mis tuvastatakse galerii ZIP-failidena.",
-            "gallery_ext_head": "Galerii zip Laiendused",
+            "gallery_ext_head": "Galerii ZIP laiendused",
             "generated_file_naming_hash_desc": "Kasutage failide nimetamiseks MD5 või oshashi. Selle muutmiseks on vaja, et kõikides stseenides oleks kohaldatav MD5/oshash väärtus täidetud. Pärast selle väärtuse muutmist tuleb olemasolevad loodud failid migreerida või uuesti genereerida. Vaadake üleviimise kohta lehekülge Ülesanded.",
-            "generated_file_naming_hash_head": "Genereeritud faili nimetamise hash",
-            "generated_files_location": "Loodud failide (stseenimarkerid, stseeni eelvaated, spraidid jne) asukoht Failiteel",
-            "generated_path_head": "Genereeritud Failitee",
-            "hashing": "Hashimine",
+            "generated_file_naming_hash_head": "Genereeritud faili nimetamise räsi",
+            "generated_files_location": "Loodud failide (stseenimarkerid, stseeni eelvaated, spraidid jne) asukoht failiteel.",
+            "generated_path_head": "Genereeritud failitee",
+            "hashing": "Räsimine",
             "heatmap_generation": "Funscripti Kuumkaardi Genereerimine",
             "image_ext_desc": "Komadega eraldatud faililaiendite loend, mis tuvastatakse piltidena.",
             "image_ext_head": "Pildilaiendused",
             "include_audio_desc": "Kaasa eelvaadete loomisel helivoog.",
             "include_audio_head": "Kaasa heli",
             "logging": "Logimine",
-            "maximum_streaming_transcode_size_desc": "Transkodeeritud voogude maksimaalne suurus",
+            "maximum_streaming_transcode_size_desc": "Transkodeeritud voogude maksimaalne suurus.",
             "maximum_streaming_transcode_size_head": "Maksimaalne voogesituse ümberkodeerimise suurus",
-            "maximum_transcode_size_desc": "Loodud ümberkoodimiste maksimaalne suurus",
+            "maximum_transcode_size_desc": "Loodud ümberkoodimiste maksimaalne suurus.",
             "maximum_transcode_size_head": "Maksimaalne ümberkodeerimise suurus",
             "metadata_path": {
-                "description": "Kataloogi asukoht, mida kasutatakse täieliku ekspordi või impordi teostamisel",
-                "heading": "Metaandmete Failitee"
+                "description": "Kataloogi asukoht, mida kasutatakse täieliku ekspordi või impordi teostamisel.",
+                "heading": "Metaandmete failitee"
             },
-            "number_of_parallel_task_for_scan_generation_desc": "Automaatse tuvastamise jaoks määra 0. Hoiatus, kui tehakse rohkem toiminguid, kui on vaja 100% protsessori kasutuse saavutamiseks, väheneb jõudlus ja võib esineda muid probleeme.",
+            "number_of_parallel_task_for_scan_generation_desc": "Automaatse tuvastamise jaoks määra 0. Hoiatus: kui tehakse rohkem toiminguid, kui on vaja 100% CPU kasutuse saavutamiseks, väheneb jõudlus ja võib esineda muid probleeme.",
             "number_of_parallel_task_for_scan_generation_head": "Paralleelsete skaneerimise/genereerimise ülesannete arv",
             "parallel_scan_head": "Paralleelne Skaneerimine/Generatsioon",
             "preview_generation": "Eelvaate Genereerimine",
             "python_path": {
-                "description": "Pythoni käivitataja faili tee (mitte ainult kaust). Kasutatakse skriptipõhiste kraapijate ja pluginate jaoks. Kui see on tühi, lahendatakse python keskkonnast",
-                "heading": "Pythoni Käivitaja Tee"
+                "description": "Pythoni käivitataja faili tee (mitte ainult kaust). Kasutatakse skriptipõhiste kraapijate ja pluginate jaoks. Kui see on tühi, lahendatakse Python keskkonnast.",
+                "heading": "Pythoni käivitaja failitee"
             },
-            "scraper_user_agent": "Kraapija Kasutajaagent",
-            "scraper_user_agent_desc": "Kasutajaagendi string, mida kasutatakse kraapimise HTTP-päringute käigus",
+            "scraper_user_agent": "Kraapija Kasutaja-Agent",
+            "scraper_user_agent_desc": "Kasutajaagendi string, mida kasutatakse kraapimise HTTP-päringute käigus.",
             "scrapers_path": {
-                "description": "Failitee kraapijate sättefailide jaoks",
-                "heading": "Kraapijate Failitee"
+                "description": "Failitee kraapijate sättefailide jaoks.",
+                "heading": "Kraapijate failitee"
             },
             "scraping": "Kraapimine",
             "sqlite_location": "Failitee asukoht SQLite andmebaasi jaoks (vajab taaskäivitust). HOIATUS: andmebaasi kasutamine, mis ei jookse samal süsteemil, kui Stash (nt üle võrgu) ei ole toetatud!",
@@ -422,18 +427,29 @@
             "video_ext_head": "Videolaiendused",
             "video_head": "Video",
             "plugins_path": {
-                "description": "Plugina konfiguratsioonifailide asukoht kataloogis",
-                "heading": "Pluginate Tee"
+                "description": "Plugina konfiguratsioonifailide asukoht kataloogis.",
+                "heading": "Pluginate failitee"
             },
             "delete_trash_path": {
                 "description": "Tee, kuhu liigutatakse kustutatud failide lõpliku kustutamise asemel. Jäta tühjaks, et alati faile lõplikult kustutada.",
-                "heading": "Prügi Tee"
-            }
+                "heading": "Prügi failitee"
+            },
+            "sprite_generation_head": "Spraitide Genereerimine",
+            "sprite_interval_desc": "Iga genereeritud spraidi vaheline aeg sekundites.",
+            "sprite_interval_head": "Spraitide intervall",
+            "sprite_maximum_desc": "Stseeni jaoks genereeritavate spraitide maksimaalne arv. Piirangu keelamiseks määrake väärtuseks 0.",
+            "sprite_maximum_head": "Maksimaalne spraitide arv",
+            "sprite_minimum_desc": "Stseeni jaoks genereeritavate spraitide minimaalne arv",
+            "sprite_minimum_head": "Minimaalne spraitide arv",
+            "sprite_screenshot_size_desc": "Iga spraidi soovitud suurus pikslites.",
+            "sprite_screenshot_size_head": "Spraidi suurus",
+            "use_custom_sprite_interval_head": "Kasuta kohandatud spraitide intervalli",
+            "use_custom_sprite_interval_desc": "Luba kohandatud spraitide intervall vastavalt allolevatele sätetele."
         },
         "library": {
             "exclusions": "Välistused",
-            "gallery_and_image_options": "Galerii ja Piltide sätted",
-            "media_content_extensions": "Media sisu laiendused"
+            "gallery_and_image_options": "Galerii ja Piltide Sätted",
+            "media_content_extensions": "Mediasisu Laiendused"
         },
         "logs": {
             "log_level": "Logimise tase"
@@ -447,8 +463,8 @@
         "scraping": {
             "entity_metadata": "{entityType} Metaandmed",
             "entity_scrapers": "{entityType} kraapijad",
-            "excluded_tag_patterns_desc": "Sildinimede regexpid, mida kraapise tulemustest välja jätta",
-            "excluded_tag_patterns_head": "Välistatud Siltide Mustrid",
+            "excluded_tag_patterns_desc": "Sildinimede regexpid, mida kraapise tulemustest välja jätta.",
+            "excluded_tag_patterns_head": "Välistatud siltide mustrid",
             "scraper": "Kraapija",
             "scrapers": "Kraapijad",
             "search_by_name": "Otsi nime järgi",
@@ -477,14 +493,13 @@
             "anonymise_database": "Loob andmebaasist tagavarakoopia tagavara koopiate kausta, muudab tundliku teabe anonüümseks. Seda saab jagada teistega abistamise ja probleemide analüüsimise eesmärgil. Originaalset andmebaasi ei muudeta. Anonüümne andmebaas kasutab failinime formaati {filename_format}.",
             "anonymising_database": "Muudan andmebaasi anonüümseks",
             "auto_tag": {
-                "auto_tagging_all_paths": "Automaatne Märkimine kõikidel failiteedel",
-                "auto_tagging_paths": "Automaatne Märkimine järgnevatel failiteedel"
+                "auto_tagging_all_paths": "Automaatne märkimine kõikidel failiteedel",
+                "auto_tagging_paths": "Automaatne märkimine järgnevatel failiteedel"
             },
-            "auto_tag_based_on_filenames": "Automaatselt märgi sisu vastavalt failinimedele.",
-            "auto_tagging": "Automaatne Märkimine",
+            "auto_tag_based_on_filenames": "Märgi sisu automaatselt vastavalt failinimedele.",
+            "auto_tagging": "Automaatne märkimine",
             "backing_up_database": "Andmebaasi varundamine",
             "backup_and_download": "Teeb andmebaasist varukoopia ja laadib saadud faili alla.",
-            "backup_database": "Varundab andmebaasi varundamise failiteele, failinimega vormingus {filename_format}",
             "cleanup_desc": "Kontrolli puuduvaid faile ja eemalda need andmebaasist. See on hävitav tegevus.",
             "data_management": "Andmehaldus",
             "defaults_set": "Vaikesätted on määratud ja neid kasutatakse, kui klõpsate lehel Ülesanded nupul {action}.",
@@ -496,10 +511,10 @@
                 "generating_scenes": "Genereerimine {num} {scene} jaoks"
             },
             "generate_desc": "Genereeri toetavad pildi-, sprite-, video-, vtt- ja muud failid.",
-            "generate_phashes_during_scan": "Genereeri nähtavaid hashe",
+            "generate_phashes_during_scan": "Videote tajutavate räsi genereerimine",
             "generate_phashes_during_scan_tooltip": "Duplikaatide eemaldamiseks ja stseenide tuvastamiseks.",
             "generate_previews_during_scan": "Genereeri animeeritud eelvaateid",
-            "generate_previews_during_scan_tooltip": "Genereeri ka animeeritud (webp) eelvaateid, nõutav ainult siis, kui Stseenide/Markeri Seinte eelvaate tüüp on seatud väärtusele Animeeritud Pilt. Sirvides kasutavad need vähem CPUd, kui video eelvaated, kuid need genereeritakse lisaks põhifailidele ja on suuremad.",
+            "generate_previews_during_scan_tooltip": "Genereeri ka animeeritud (webp) eelvaateid, nõutav ainult siis, kui Stseenide/Markeri Seinte eelvaate tüüp on seatud väärtusele Animeeritud pilt. Sirvides kasutavad need vähem CPUd, kui video eelvaated, kuid need genereeritakse lisaks põhifailidele ja on suuremad.",
             "generate_sprites_during_scan": "Genereeri puhastusspriite",
             "generate_thumbnails_during_scan": "Genereeri piltide jaoks pisipilte",
             "generate_video_covers_during_scan": "Genereeri stseeni kaanepidid",
@@ -532,7 +547,9 @@
                 "tag_skipped_performer_tooltip": "Loo märgend, nagu „Identifitseeri: Ühe Nimega Esineja”, mille saate stseenisildistaja vaates filtreerida, ja valida, kuidas soovite neid esinejaid käsitleda",
                 "tag_skipped_performers": "Märgista vahelejäetud esinejad",
                 "tag_skipped_matches": "Märgista vahelejäänud vasteid",
-                "tag_skipped_matches_tooltip": "Loo märgend, nagu „Identifitseeri: Mitu Vastet”, mida saate stseenisildistaja vaates filtreerida, ja valige käsitsi õige vaste"
+                "tag_skipped_matches_tooltip": "Loo märgend, nagu „Identifitseeri: Mitu Vastet”, mida saate stseenisildistaja vaates filtreerida, ja valige käsitsi õige vaste",
+                "performer_genders": "Näitlejate sood",
+                "performer_genders_desc": "Identifitseerimise käigus kaasatakse valitud sooga näitlejad."
             },
             "import_from_exported_json": "Impordi eksporditud JSON-ist metaandmete kataloogist. Kustutab olemasoleva andmebaasi.",
             "incremental_import": "Järkjärguline import esitatud eksporditud ZIP-failist.",
@@ -542,7 +559,7 @@
                 "delete_old": "Kustuta vanad andmed",
                 "description": "Migreeri blobid praegusele blobi andmesüsteemile. Seeda migratsiooni tuleb jooksutada peale blobi andmesalvestussüsteemi muutmist. Saab valikuliselt kustutada vanad andmed peale migratsiooni."
             },
-            "migrate_hash_files": "Kasutatakse pärast genereeritud faili nimetamise hashi muutmist olemasolevate loodud failide ümbernimetamiseks uuele hashivormingule.",
+            "migrate_hash_files": "Kasutatakse pärast Genereeritud faili nimetamise räsi muutmist olemasolevate loodud failide ümbernimetamiseks uuele räsi-vormingule.",
             "migrate_scene_screenshots": {
                 "delete_files": "Kustuta ekraanipiltide failid",
                 "description": "Migreeri stseeni ekranipildid uute blobi andmesüsteemi. Seda migratsuiooni peaks jooksutama peale olemasoleva süsteemi migreerimist 0.20le. Saab valikuselt kustutada vanu ekraanipilte peale migratsiooni.",
@@ -563,20 +580,33 @@
             "optimise_database_warning": "Hoiatus: selle ülesande täitmise ajal nurjuvad kõik andmebaasi muutvad toimingud ja sõltuvalt teie andmebaasi suurusest võib selle lõpuleviimiseks kuluda mitu minutit. See nõuab ka minimaalselt nii palju vaba kettaruumi, kui suur on teie andmebaas, kuid soovitatav on 1,5x.",
             "clean_generated": {
                 "blob_files": "Blobi failid",
-                "markers": "Markeri Eelvaated",
-                "image_thumbnails": "Piltide Pisipildid",
+                "markers": "Markeri eelvaated",
+                "image_thumbnails": "Piltide pisipildid",
                 "image_thumbnails_desc": "Piltide pisipildid ning klipid",
-                "previews": "Stseenide Eelvaated",
+                "previews": "Stseenide eelvaated",
                 "previews_desc": "Stseenide eelvaated ja pisipildid",
-                "sprites": "Stseeni Spraidid",
-                "transcodes": "Stseeni Transkodeeringud",
+                "sprites": "Stseeni spraidid",
+                "transcodes": "Stseeni transkodeeringud",
                 "description": "Eemaldab genereeritud failid ilma vastava andmebaasi kirjeta."
             },
             "rescan": "Skaneeri failid uuesti",
-            "rescan_tooltip": "Kontrollige uuesti kõiki teel olevaid faile. Kasutatakse faili metaandmete värskendamiseks ja ZIP-failide uuesti skannimiseks."
+            "rescan_tooltip": "Kontrollige uuesti kõiki teel olevaid faile. Kasutatakse faili metaandmete värskendamiseks ja ZIP-failide uuesti skannimiseks.",
+            "backup_database": {
+                "description": "Varundab andmebaasi ja blob-failid.",
+                "destination": "Sihtkoht",
+                "download": "Laadi alla varukoopia",
+                "include_blobs": "Lisa varukoopiasse blob-id",
+                "include_blobs_desc": "Keela, et varundada ainult SQLite'i andmebaasifaili.",
+                "sqlite": "Varukoopiafail on SQLite'i andmebaasifaili koopia failinimega {filename_format}",
+                "to_directory": "Kausta {directory}",
+                "warning_blobs": "Blob-faile varukoopiasse ei lisata. See tähendab, et varukoopiast edukaks taastamiseks peavad blob-failid olema blob-salvestuskohas.",
+                "zip": "SQLite'i andmebaasifail ja blob-failid pakitakse ühte faili nimega {filename_format}"
+            },
+            "generate_image_phashes_during_scan": "Kujutise tajutavate räsi genereerimine",
+            "generate_image_phashes_during_scan_tooltip": "Deduplikatsiooni ja identifitseerimise jaoks."
         },
         "tools": {
-            "scene_duplicate_checker": "Duplikaatstseenide Kontroll",
+            "scene_duplicate_checker": "Duplikaatstseenide kontroll",
             "scene_filename_parser": {
                 "add_field": "Lisa Väli",
                 "capitalize_title": "Pealkirja kirjutamine suurtähtedega",
@@ -588,7 +618,7 @@
                 "ignored_words": "Ignoreeritud sõnad",
                 "matches_with": "Kattub {i}-ga",
                 "select_parser_recipe": "Valige Parser-i Retsept",
-                "title": "Stseeni Failinimede Parser",
+                "title": "Stseeni failinimede parser",
                 "whitespace_chars": "Tühikumärgid",
                 "whitespace_chars_desc": "Need märgid asendatakse pealkirjas tühikutega"
             },
@@ -608,9 +638,9 @@
                 "option_label": "Kohandatud CSS lubatud"
             },
             "custom_javascript": {
-                "description": "Pead muudatuste nägemiseks lehe uuesti laadima. Pole garantiid, et kohandatud Javascript töötab ka tuleviku Stashi uuendustes.",
-                "heading": "Kohandatud Javascript",
-                "option_label": "Kohandatud Javascript lubatud"
+                "description": "Pead muudatuste nägemiseks lehe uuesti laadima. Pole garantiid, et kohandatud JavaScript töötab ka tuleviku Stashi uuendustes.",
+                "heading": "Kohandatud JavaScript",
+                "option_label": "Kohandatud JavaScript lubatud"
             },
             "custom_locales": {
                 "description": "Muutke üksikuid keele stringe. Põhiloendi leiate aadressilt https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json. Muudatuste jõustumiseks tuleb leht uuesti laadida.",
@@ -627,14 +657,14 @@
             },
             "desktop_integration": {
                 "desktop_integration": "Töölaua Integratsioon",
-                "notifications_enabled": "Luba Teavitused",
-                "send_desktop_notifications_for_events": "Saada töölaua teated sündmuste korral",
-                "skip_opening_browser": "Jäta Brauseri Avamine Vahele",
-                "skip_opening_browser_on_startup": "Jäta käivitamise ajal brauseri automaatne avamine vahele"
+                "notifications_enabled": "Luba teavitused",
+                "send_desktop_notifications_for_events": "Saada töölaua teated sündmuste korral.",
+                "skip_opening_browser": "Jäta brauseri avamine vahele",
+                "skip_opening_browser_on_startup": "Jäta käivitamise ajal brauseri automaatne avamine vahele."
             },
             "editing": {
                 "disable_dropdown_create": {
-                    "description": "Eemaldage rippmenüü valijatest võimalus luua uusi objekte",
+                    "description": "Eemaldage rippmenüü valijatest võimalus luua uusi objekte.",
                     "heading": "Keela rippmenüü loomine"
                 },
                 "heading": "Redigeerimine",
@@ -652,7 +682,7 @@
                         }
                     },
                     "type": {
-                        "label": "Hindamissüsteemi Tüüp",
+                        "label": "Hindamissüsteemi tüüp",
                         "options": {
                             "decimal": "Komakohaga",
                             "stars": "Tähed"
@@ -675,8 +705,8 @@
                 "sync": "Sünkroniseeri"
             },
             "handy_connection_key": {
-                "description": "Handy ühendusvõti interaktiivsete stseenide jaoks. Selle määramine võimaldab Stashil jagada teie praeguse stseeni teavet saidiga handyfeeling.com",
-                "heading": "Handy Ühendusvõti"
+                "description": "Handy ühendusvõti interaktiivsete stseenide jaoks. Selle määramine võimaldab Stashil jagada teie praeguse stseeni teavet saidiga handyfeeling.com.",
+                "heading": "Handy ühendusvõti"
             },
             "image_lightbox": {
                 "heading": "Pildi Valguskast"
@@ -690,12 +720,12 @@
                 "heading": "Pildid",
                 "options": {
                     "write_image_thumbnails": {
-                        "description": "Kirjuta piltide pisipildid kettale, kui need luuakse käigupealt",
+                        "description": "Kirjuta piltide pisipildid kettale, kui need luuakse käigupealt.",
                         "heading": "Kirjutage piltide pisipildid"
                     },
                     "create_image_clips_from_videos": {
-                        "description": "Kui teegis on videod keelatud, skannitakse videofailid (videolaiendiga lõppevad failid) Pildiklipina.",
-                        "heading": "Skanni Videolaiendeid Pildiklipina"
+                        "description": "Kui teegis on videod keelatud, skannitakse videofailid (videolaiendiga lõppevad failid) pildiklipina.",
+                        "heading": "Skanni videolaiendeid pildiklipina"
                     }
                 }
             },
@@ -704,31 +734,31 @@
                 "heading": "Keel"
             },
             "max_loop_duration": {
-                "description": "Stseeni maksimaalne kestus, mille jooksul stseenimängija videot uuesti mängib – sisesta 0 keelamiseks",
+                "description": "Stseeni maksimaalne kestus, mille jooksul stseenimängija videot uuesti mängib. Määra 0 keelamiseks.",
                 "heading": "Silmuse maksimaalne kestus"
             },
             "menu_items": {
-                "description": "Saad navigeerimisribal kuvada või peita erinevat tüüpi sisu",
+                "description": "Saad navigeerimisribal kuvada või peita erinevat tüüpi sisu.",
                 "heading": "Menüüelemendid"
             },
             "minimum_play_percent": {
                 "description": "Aja protsent, kui kaua stseeni tuleb esitada, enne kui selle esitamiste arvu suurendatakse.",
-                "heading": "Minimaalne Esitusprotsent"
+                "heading": "Minimaalne esitusprotsent"
             },
             "performers": {
                 "options": {
                     "image_location": {
-                        "description": "Esitaja vaikekujutiste kohandatud failitee. Sisseehitatud vaikeseadete kasutamiseks jätke tühjaks",
-                        "heading": "Kohandatud Esinejate Pilditee"
+                        "description": "Esitaja vaikekujutiste kohandatud failitee. Sisseehitatud vaikeseadete kasutamiseks jätke tühjaks.",
+                        "heading": "Näitlejate kohandatud pilditee"
                     }
                 }
             },
             "preview_type": {
                 "description": "Vaikimisi on video (mp4) eelvaated. Kui soovite sirvimisel CPUd vähem kasutada, saate kasutada animeeritud piltide (veebi) eelvaateid. Kuid need tuleb genereerida lisaks video eelvaadetele ja need on suuremad failid.",
-                "heading": "Eelvaate Tüüp",
+                "heading": "Eelvaate tüüp",
                 "options": {
-                    "animated": "Animeeritud Pilt",
-                    "static": "Staatiline Pilt",
+                    "animated": "Animeeritud pilt",
+                    "static": "Staatiline pilt",
                     "video": "Video"
                 }
             },
@@ -744,23 +774,23 @@
                     "always_start_from_beginning": "Alusta videot alati algusest",
                     "auto_start_video": "Video automaatne alustamine",
                     "auto_start_video_on_play_selected": {
-                        "description": "Stseenivideote automaatne esitamine järjekorrast esitamisel või stseenide lehelt valitud või juhusliku esitamise korral",
+                        "description": "Stseenivideote automaatne esitamine järjekorrast esitamisel või stseenide lehelt valitud või juhusliku esitamise korral.",
                         "heading": "Video automaatne esitamine valitud esitamisel"
                     },
                     "continue_playlist_default": {
-                        "description": "Kui video lõppeb, esitage järjekorras järgmine stseen",
+                        "description": "Kui video lõppeb, esitage järjekorras järgmine stseen.",
                         "heading": "Esitusloendi jätkamine vaikimisi"
                     },
-                    "show_scrubber": "Näita Detailide Otsijat",
-                    "track_activity": "Jälgi Tegevust",
+                    "show_scrubber": "Näita detailide otsijat",
+                    "track_activity": "Luba stseeni vaatamiste ajalugu",
                     "disable_mobile_media_auto_rotate": "Keela täisekraani meedia automaatne pööramine mobiilis",
                     "enable_chromecast": "Luba Chromecast",
-                    "show_ab_loop_controls": "Näita AB Loopi pistikprogrammi juhtnuppe",
+                    "show_ab_loop_controls": "Näita AB loopi juhtnuppe",
                     "vr_tag": {
                         "description": "VR-nupp kuvatakse ainult selle sildiga stseenide puhul.",
-                        "heading": "VR Silt"
+                        "heading": "VR silt"
                     },
-                    "show_range_markers": "Näita Vahemiku Märke"
+                    "show_range_markers": "Näita vahemiku märke"
                 }
             },
             "scene_wall": {
@@ -775,39 +805,39 @@
                 "heading": "Kerimiskatsed enne üleminekut"
             },
             "show_tag_card_on_hover": {
-                "description": "Kuva märgendi kaarti, kui hõljute sildi märkidel",
+                "description": "Kuva märgendi kaarti, kui hõljute sildi märkidel.",
                 "heading": "Sildikaardi tööriistanäpunäited"
             },
             "slideshow_delay": {
-                "description": "Slaidiseanss on galeriides seinavaaterežiimi korral saadaval",
-                "heading": "Slaidiseansi Viivitus (sekundites)"
+                "description": "Slaidiseanss on galeriides seinavaaterežiimi korral saadaval.",
+                "heading": "Slaidiseansi viivitus (sekundites)"
             },
             "studio_panel": {
-                "heading": "Studiovaade",
+                "heading": "Studio Vaade",
                 "options": {
                     "show_child_studio_content": {
-                        "description": "Stuudiovaates kuvage ka alamstuudiote sisu",
+                        "description": "Stuudiovaates kuvage ka alamstuudiote sisu.",
                         "heading": "Kuvage alamstuudiote sisu"
                     }
                 }
             },
             "tag_panel": {
-                "heading": "Sildivaade",
+                "heading": "Siltide Vaade",
                 "options": {
                     "show_child_tagged_content": {
-                        "description": "Sildivaates kuvage ka alammärgendite sisu",
-                        "heading": "Kuva alamsildi sisu"
+                        "description": "Sildivaates kuvage ka alam-märgendite sisu.",
+                        "heading": "Kuva alam-sildi sisu"
                     }
                 }
             },
             "title": "Kasutajaliides",
             "use_stash_hosted_funscript": {
-                "description": "Kui see on lubatud, edastatakse funscriptid otse Stashist teie Handy seadmesse ilma kolmanda osapoole Handy serverit kasutamata. Nõuab, et Stash oleks teie Handy seadmest juurdepääsetav.",
+                "description": "Kui see on lubatud, edastatakse funscriptid otse Stashist teie Handy seadmesse ilma kolmanda osapoole Handy serverit kasutamata. See nõuab, et Stash oleks teie Handy seadmest juurdepääsetav ja API võti on genereeritud, kui Stashil on ligipääs piiratud.",
                 "heading": "Serveeri funscripte otse"
             },
             "detail": {
                 "show_all_details": {
-                    "description": "Kui see on lubatud, kuvatakse vaikimisi kõik sisu üksikasjad ja iga üksikasjade üksus mahub ühte veergu",
+                    "description": "Kui see on lubatud, kuvatakse vaikimisi kõik sisu üksikasjad ja iga üksikasjade üksus mahub ühte veergu.",
                     "heading": "Näita kõiki detaile"
                 },
                 "enable_background_image": {
@@ -815,13 +845,13 @@
                     "heading": "Luba taustapildid"
                 },
                 "compact_expanded_details": {
-                    "description": "Kui lubatud, kuvab see suvand laiendatud üksikasjad, säilitades samas kompaktse esitluse",
+                    "description": "Kui lubatud, kuvab see suvand laiendatud üksikasjad, säilitades samas kompaktse esitluse.",
                     "heading": "Kompaktselt laiendatud detailid"
                 },
                 "heading": "Detailide Leht"
             },
             "performer_list": {
-                "heading": "Näitlejate nimekiri",
+                "heading": "Näitlejate Nimekiri",
                 "options": {
                     "show_links_on_grid_card": {
                         "heading": "Kuva linke näitlejate ruudustiku kaartidel"
@@ -830,10 +860,31 @@
             },
             "sfw_mode": {
                 "description": "Luba, kui kasutad stashi SFW sisu jaoks. Peidab või muudab kasutajaliidese mõningaid täiskasvanutele mõeldud sisuga seotud aspekte.",
-                "heading": "SFW Sisu Režiim"
+                "heading": "SFW režiim"
+            },
+            "custom_title": {
+                "description": "Kohandatav tekst mis lisatakse lehe tiitlile. Kui tühi, siis on vaikimisi \"Stash\".",
+                "heading": "Kohandatud tiitel"
+            },
+            "troubleshooting_mode": {
+                "button": "Veaotsingu režiim",
+                "dialog_title": "Luba veaotsingu režiim",
+                "dialog_description": "See keelab ajutiselt kõik kohandused, et aidata probleeme diagnoosida:",
+                "dialog_item_plugins": "Kõik pluginad",
+                "dialog_item_css": "Kohandatud CSS",
+                "dialog_item_js": "Kohandatud JavaScript",
+                "dialog_item_locales": "Kohandatud keeled",
+                "dialog_log_level": "Üksikasjaliku diagnostika jaoks määratakse logimise tasemeks Debug.",
+                "dialog_reload_note": "Leht värskendab ennast automaatselt.",
+                "enable": "Luba & Värskenda",
+                "overlay_message": "Veaotsingu režiim on aktiivne – kõik kohandused on keelatud",
+                "exit": "Välju"
             }
         },
-        "advanced_mode": "Täpsem Režiim"
+        "advanced_mode": "Täpsem režiim",
+        "changelog": {
+            "header": "Muudatuste logi"
+        }
     },
     "configuration": "Konfiguratsioon",
     "countables": {
@@ -853,7 +904,8 @@
     "criterion": {
         "greater_than": "Suurem kui",
         "less_than": "Väiksem kui",
-        "value": "Väärtus"
+        "value": "Väärtus",
+        "unsupported": "{type} (ilma toeta)"
     },
     "criterion_modifier": {
         "between": "vahel",
@@ -921,7 +973,7 @@
             "page_header": "Leht {page} / {total}",
             "reset_zoom_on_nav": "Pildi muutumisel lähtesta suumi tase",
             "scale_up": {
-                "description": "Suurendage väiksemaid pilte ekraani täitmiseks",
+                "description": "Suurendage väiksemaid pilte ekraani täitmiseks.",
                 "label": "Suurenda ekraanile mahtumiseks"
             },
             "scroll_mode": {
@@ -937,10 +989,6 @@
             "empty_results": "Sihtkoha välja väärtusi ei muudeta.",
             "source": "Allikas"
         },
-        "merge_tags": {
-            "destination": "Sihtkoht",
-            "source": "Allikas"
-        },
         "reassign_entity_title": "{count, plural, one {Määra Ümber {singularEntity}} other {Määra Ümber {pluralEntity}-d/id}}",
         "reassign_files": {
             "destination": "Määra Ümber"
@@ -949,24 +997,24 @@
             "covers": "Stseeni kaaned",
             "force_transcodes": "Sunni Ümbertöötlemise genereerimine",
             "force_transcodes_tooltip": "Vaikimisi genereeritakse ümbertöötlemisi ainult siis, kui brauser videofaili ei toeta. Kui see on lubatud, genereeritakse ümbertöötlemisi isegi siis, kui videofail näib olevat brauseris toetatud.",
-            "image_previews": "Animeeritud Piltide Eelvaated",
-            "image_previews_tooltip": "Looge ka animeeritud (webp) eelvaateid, mis on nõutavad ainult siis, kui Stseeni/Markeri Seina Eelvaate Tüüp on seatud väärtusele Animeeritud Pilt. Sirvimisel kasutavad nad vähem CPUd kui video eelvaated, kuid genereeritakse neile lisaks ja need on suuremad failid.",
+            "image_previews": "Animeeritud piltide eelvaated",
+            "image_previews_tooltip": "Looge ka animeeritud (webp) eelvaateid, mis on nõutavad ainult siis, kui Stseeni/Markeri Seina Eelvaate tüüp on seatud väärtusele Animeeritud pilt. Sirvimisel kasutavad nad vähem CPUd kui video eelvaated, kuid genereeritakse neile lisaks ja need on suuremad failid.",
             "interactive_heatmap_speed": "Looge interaktiivsete stseenide jaoks soojuskaarte ja kiirusi",
-            "marker_image_previews": "Markeri Animeeritud Piltide Eelvaated",
-            "marker_image_previews_tooltip": "Looge ka animeeritud (webp) eelvaateid, mis on nõutavad ainult siis, kui Stseeni/Markeri Seina Eelvaate Tüüp on seatud väärtusele Animeeritud Pilt. Sirvimisel kasutavad nad vähem CPUd kui video eelvaated, kuid genereeritakse neile lisaks ja need on suuremad failid.",
-            "marker_screenshots": "Markeri Ekraanipildid",
+            "marker_image_previews": "Markeri animeeritud piltide eelvaated",
+            "marker_image_previews_tooltip": "Looge ka animeeritud (webp) eelvaateid, mis on nõutavad ainult siis, kui Stseeni/Markeri Seina Eelvaate tüüp on seatud väärtusele Animeeritud pilt. Sirvimisel kasutavad nad vähem CPUd kui video eelvaated, kuid genereeritakse neile lisaks ja need on suuremad failid.",
+            "marker_screenshots": "Markeri ekraanipildid",
             "marker_screenshots_tooltip": "Markeeri staatilised JPG-kujutised",
-            "markers": "Markeri Eelvaated",
+            "markers": "Markeri eelvaated",
             "markers_tooltip": "20-sekundilised videod, mis algavad etteantud ajakoodiga.",
-            "override_preview_generation_options": "Eelvaate Genereerimise Valikute Ülekirjutamine",
-            "override_preview_generation_options_desc": "Eelvaate Genereerimise Sätete üle kirjutamine selle operatsiooni jaoks. Vaikeseaded määratakse jaotises Süsteem -> Eelvaate Genereerimine.",
+            "override_preview_generation_options": "Eelvaate genereerimise valikute ülekirjutamine",
+            "override_preview_generation_options_desc": "Eelvaate genereerimise sätete üle kirjutamine selle operatsiooni jaoks. Vaikeseaded määratakse jaotises Süsteem -> Eelvaate Genereerimine.",
             "overwrite": "Kirjuta üle olemasolevad failid",
-            "phash": "Tajutavad räsid",
+            "phash": "Videote tajutav räsi",
             "preview_exclude_end_time_desc": "Välista stseeni eelvaadetest viimased x sekundid. See võib olla väärtus sekundites või protsent (nt 2%) stseeni kogukestusest.",
             "preview_exclude_end_time_head": "Välista lõpuaeg",
             "preview_exclude_start_time_desc": "Välista esimesed x sekundid stseeni eelvaadetest. See võib olla väärtus sekundites või protsent (nt 2%) stseeni kogukestusest.",
             "preview_exclude_start_time_head": "Välista algusaeg",
-            "preview_generation_options": "Eelvaate Genereerimise Sätted",
+            "preview_generation_options": "Eelvaate genereerimise sätted",
             "preview_options": "Eelvaate Sätted",
             "preview_preset_desc": "Eelseadistus reguleerib eelvaate genereerimise suurust, kvaliteeti ja kodeerimisaega. Eelseadistused peale „aeglase” on väheneva tootlikkusega ja neid ei soovitata.",
             "preview_preset_head": "Eelvaate kodeeringu eelseadistus",
@@ -974,15 +1022,17 @@
             "preview_seg_count_head": "Eelvaates olevate segmentide arv",
             "preview_seg_duration_desc": "Iga eelvaate lõigu kestus sekundites.",
             "preview_seg_duration_head": "Eelvaate segmendi kestus",
-            "sprites": "Stseenipuhastuse Spraidid",
+            "sprites": "Stseeniotsingu spraidid",
             "sprites_tooltip": "Videopleieri all kuvatav piltide komplekt hõlpsaks navigeerimiseks.",
             "transcodes": "Ümbertöötlemine",
             "transcodes_tooltip": "MP4 ümberkoodeeringud luuakse kogu sisu jaoks; kasulik aeglaste CPUde jaoks, kuid nõuab palju rohkem kettaruumi",
             "video_previews": "Eelvaated",
             "video_previews_tooltip": "Video eelvaated, mis esitatakse kursorit stseeni kohal hoides",
-            "clip_previews": "Pildiklipi Eelvaated",
+            "clip_previews": "Pildiklipi eelvaated",
             "phash_tooltip": "De-dubleerimiseks ja stseeni tuvastamiseks",
-            "image_thumbnails": "Piltide Pisipildid"
+            "image_thumbnails": "Piltide pisipildid",
+            "image_phash": "Kujutiste tajutav räsi",
+            "image_phash_tooltip": "Deduplikatsiooni ja identifitseerimise jaoks"
         },
         "scenes_found": "Leiti {count} stseeni",
         "scrape_entity_query": "{entity_type} Kraapija Päring",
@@ -1039,7 +1089,7 @@
         "select_youngest": "Valige duplikaatrühma noorim fail",
         "select_none": "Valige Puudub"
     },
-    "duplicated_phash": "Duplikeeritud (phash)",
+    "duplicated_phash": "Duplikeeritud (pHash)",
     "duration": "Pikkus",
     "effect_filters": {
         "aspect": "Aspekt",
@@ -1130,7 +1180,7 @@
     "height": "Pikkus",
     "height_cm": "Pikkus (cm)",
     "help": "Abi",
-    "ignore_auto_tag": "Ignoneeri Automaatset Märkimist",
+    "ignore_auto_tag": "Ignoneeri automaatset märkimist",
     "image": "Pilt",
     "image_count": "Pildiarv",
     "image_index": "Pilt #",
@@ -1153,9 +1203,7 @@
     "measurements": "Mõõdud",
     "media_info": {
         "audio_codec": "Heli Koodek",
-        "checksum": "Kontrollsumma",
         "downloaded_from": "Allalaetud Asukohast",
-        "hash": "Hash",
         "interactive_speed": "Interaktiivne kiirus",
         "performer_card": {
             "age": "{age} {years_old}",
@@ -1166,7 +1214,11 @@
         "play_duration": "Esitamisaeg",
         "stream": "Striim",
         "video_codec": "Video Koodek",
-        "o_count": "O Arv"
+        "o_count": "O Arv",
+        "oshash": "oshash",
+        "oshash_meaning": "OpenSubtitles'i Räsi",
+        "phash_meaning": "Tajutav Räsi",
+        "md5": "MD5 Kontrollsumma"
     },
     "megabits_per_second": "{value} mbps",
     "metadata": "Metaandmed",
@@ -1188,7 +1240,7 @@
     "parent_tags": "Vanem-sildid",
     "part_of": "Osa {parent}-st",
     "path": "Failitee",
-    "perceptual_similarity": "Tajutav Sarnasus (phash)",
+    "perceptual_similarity": "Tajutav Sarnasus (pHash)",
     "performer": "Näitleja",
     "performer_age": "Näitleja Vanus",
     "performer_count": "Näitlejate Arv",
@@ -1199,14 +1251,6 @@
         "any_names_entered_will_be_queried": "Kõigi sisestatud nimede kohta päritakse Stash-kastii kaugeksemplari ja lisatakse, kui need leitakse. Vastena loetakse ainult täpseid vasteid.",
         "batch_add_performers": "Lisa Näitlejaid Hunnikus",
         "batch_update_performers": "Uuenda Näitlejaid Hunnikus",
-        "config": {
-            "active_stash-box_instance": "Aktiivne stash-kasti eksemplar:",
-            "edit_excluded_fields": "Muuda Välistatud Välju",
-            "excluded_fields": "Välistatud väljad:",
-            "no_fields_are_excluded": "Ühtegi välja ei ole välistatud",
-            "no_instances_found": "Eksemplare ei leitud",
-            "these_fields_will_not_be_changed_when_updating_performers": "Neid välju näitlejaid uuendades ei muudeta."
-        },
         "current_page": "Käesolev lehekülg",
         "failed_to_save_performer": "Näitleja \"{performer}\" salvestamine ebaõnnestus",
         "name_already_exists": "Nimi juba eksisteerib",
@@ -1364,7 +1408,7 @@
         "welcome_to_stash": "Teretulemast Stashi"
     },
     "stash_id": "Stashi ID",
-    "stash_id_endpoint": "Stash ID Lõpp-punkt",
+    "stash_id_endpoint": "Stash ID Lõpp-punkti URL",
     "stash_ids": "Stashi ID-d",
     "stashbox": {
         "go_review_draft": "Mustandi ülevaatamiseks mine saidile {endpoint_name}.",
@@ -1416,7 +1460,11 @@
         "started_auto_tagging": "Alustasin automaatset märkimist",
         "started_generating": "Alustasin genereerimist",
         "started_importing": "Alustasin importimist",
-        "updated_entity": "Uuendatud {entity}"
+        "updated_entity": "Uuendatud {entity}",
+        "merged_performers": "Näitlejad kokku seotud",
+        "clipboard_access_denied": "Lõikelaua ligipääs on keelatud. Vaata brauseri õigused üle",
+        "clipboard_image_pasted": "Pilt kleebitud lõikelaualt",
+        "clipboard_no_image": "Lõukelaualt ei leitud pilti"
     },
     "total": "Kokku",
     "true": "Tõene",
@@ -1446,9 +1494,9 @@
         "confirm_delete_source": "Kas olete kindel, et soovite allika {name} ({url}) kustutada?",
         "confirm_uninstall": "Kas olete kindel, et soovite desinstallida {number} paketti?",
         "description": "Kirjeldus",
-        "edit_source": "Redigeeri Allikat",
+        "edit_source": "Redigeeri allikat",
         "install": "Installi",
-        "latest_version": "Uusim Versioon",
+        "latest_version": "Uusim versioon",
         "no_packages": "Ühtegi paketti ei leitud",
         "no_sources": "Ühtegi Allikat pole seadistatud",
         "package": "Pakett",
@@ -1458,7 +1506,7 @@
         "source": {
             "local_path": {
                 "description": "Selle allika pakettide salvestamise suhteline tee. Pange tähele, et selle muutmiseks tuleb paketid käsitsi teisaldada.",
-                "heading": "Kohalik Tee"
+                "heading": "Kohalik tee"
             },
             "name": "Nimi",
             "url": "Allika URL"
@@ -1467,10 +1515,10 @@
         "update": "Uuenda",
         "uninstall": "Uninstalli",
         "version": "Versioon",
-        "add_source": "Lisa Allikas",
-        "check_for_updates": "Kontrolli Uuendusi",
+        "add_source": "Lisa allikas",
+        "check_for_updates": "Kontrolli uuendusi",
         "hide_unselected": "Peida valimata",
-        "installed_version": "Installitud Versioon",
+        "installed_version": "Installitud versioon",
         "no_upgradable": "Uuendatavaid pakette ei leitud"
     },
     "penis_length_cm": "Peenise Pikkus (cm)",
@@ -1489,13 +1537,7 @@
         "batch_add_studios": "Mitmete Stuudiote Lisamine",
         "config": {
             "create_parent_label": "Loo vanemstuudioid",
-            "create_parent_desc": "Looge puuduvad vanemstuudiod või märgistage ja värskendage olemasolevate vanemstuudiote andmeid/pilti täpsete nimede vastetega",
-            "no_fields_are_excluded": "Ühtegi välja pole välistatud",
-            "active_stash-box_instance": "Aktiivne stash-boxi eksemplar:",
-            "edit_excluded_fields": "Välistatud Väljade Muutmine",
-            "excluded_fields": "Välistatud väljad:",
-            "no_instances_found": "Eksemplare ei leitud",
-            "these_fields_will_not_be_changed_when_updating_studios": "Neid välju stuudiote värskendamisel ei muudeta."
+            "create_parent_desc": "Looge puuduvad vanemstuudiod või märgistage ja värskendage olemasolevate vanemstuudiote andmeid/pilti täpsete nimede vastetega"
         },
         "current_page": "Praegune leht",
         "failed_to_save_studio": "Stuudio \"{studio}\" salvestamine ebaõnnestus",
@@ -1593,5 +1635,57 @@
         "no_results": "Vasteid ei leitud.",
         "placeholder_name_or_id": "{entityType} nimi või StashID...",
         "select_stashbox": "Vali StashBox..."
-    }
+    },
+    "career_end": "Karjääri Lõpp",
+    "career_start": "Karjääri Algus",
+    "duplicated": "Duplikaat",
+    "duplicated_stash_id": "Duplikaat (Stash ID)",
+    "duplicated_title": "Duplikaat (Tiitel)",
+    "latest_scene": "Viimatine Stseen",
+    "stash_id_count": "Stash ID Arv",
+    "tag_tagger": {
+        "add_new_tags": "Lisa Uusi Silte",
+        "any_names_entered_will_be_queried": "Kõik sisestatud nimed päritakse Stash-Boxi kaug-instantsist ja lisatakse, kui need leitakse. Ainult täpseid vasteid loetakse vasteks.",
+        "batch_add_tags": "Siltide Partii Lisamine",
+        "batch_update_tags": "Partii Siltide Uuendamine",
+        "current_page": "Hetke leht",
+        "failed_to_save_tag": "Sildi \"{tag}\" salvestamine ebaõnnestus",
+        "name_already_exists": "Nimi juba eksisteerib",
+        "network_error": "Võrgu Viga",
+        "no_results_found": "Tulemusi ei leitud.",
+        "number_of_tags_will_be_processed": "töödeldakse {tag_count} silti",
+        "query_all_tags_in_the_database": "Kõik andmebaasis olevad sildid",
+        "refresh_tagged_tags": "Värskenda märgistatud silte",
+        "refreshing_will_update_the_data": "Värskendamine uuendab kõigi stash-boxi eksemplari siltidega siltide andmeid.",
+        "status_tagging_job_queued": "Staatus: Sildistamistöö on järjekorras",
+        "status_tagging_tags": "Staatus: Siltide märgistamine",
+        "tag_already_tagged": "Silt juba märgistatud",
+        "tag_names_or_stashids_separated_by_comma": "Siltide nimed või StashID-d eraldatud komadega",
+        "tag_selection": "Siltide valik",
+        "tag_successfully_tagged": "Silt edukalt märgistatud",
+        "tag_status": "Sildi Staatus",
+        "to_use_the_tag_tagger": "Sildistaja kasutamiseks tuleb seadistada stash-boxi eksemplar.",
+        "untagged_tags": "Märgistamata sildid",
+        "update_tags": "Uuenda Silte",
+        "updating_untagged_tags_description": "Märgendamata siltide uuendamine püüab leida vasteid siltidele, millel puudub stashid, ja uuendab metaandmeid.",
+        "config": {
+            "create_parent_label": "Loo vanemsildid"
+        }
+    },
+    "tagger": {
+        "config": {
+            "active_stash-box_instance": "Aktiivne stash-boxi instants:",
+            "edit_excluded_fields": "Redigeeri Välistatud Välju",
+            "excluded_fields": "Välistatud väljad:",
+            "fields_will_not_be_changed": "Neid välju {entity} värskendamisel ei muudeta.",
+            "no_fields_are_excluded": "Mitte ühtegi välja pole välistatud",
+            "no_instances_found": "Instanse ei leitud"
+        }
+    },
+    "include_sub_folders": "Sisalda alam-kaustu",
+    "parent_folder": "Pea-Kaust",
+    "sub_folder_depth": "Alamkausta sügavus (tühi kõigi jaoks)",
+    "sub_folders": "Alamkaustad",
+    "unsupported_criteria": "Ilma toeata kriteeriumid: {criteria}",
+    "empty_value": "tühi"
 }

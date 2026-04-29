@@ -129,7 +129,7 @@ export const SettingsAboutPanel: React.FC = () => {
                 {
                   url: (
                     <ExternalLink href="https://docs.stashapp.cc">
-                      Documentation
+                      documentation
                     </ExternalLink>
                   ),
                 }
@@ -137,9 +137,14 @@ export const SettingsAboutPanel: React.FC = () => {
             </p>
             <p>
               {intl.formatMessage(
-                { id: "config.about.stash_discord" },
+                { id: "config.about.stash_community" },
                 {
-                  url: (
+                  forumUrl: (
+                    <ExternalLink href="https://discourse.stashapp.cc">
+                      forum
+                    </ExternalLink>
+                  ),
+                  discordUrl: (
                     <ExternalLink href="https://discord.gg/2TsNFKt">
                       Discord
                     </ExternalLink>
@@ -149,11 +154,16 @@ export const SettingsAboutPanel: React.FC = () => {
             </p>
             <p>
               {intl.formatMessage(
-                { id: "config.about.stash_open_collective" },
+                { id: "config.about.support_us" },
                 {
-                  url: (
+                  openCollectiveUrl: (
                     <ExternalLink href="https://opencollective.com/stashapp">
                       Open Collective
+                    </ExternalLink>
+                  ),
+                  githubSponsorsUrl: (
+                    <ExternalLink href="https://github.com/sponsors/stashapp">
+                      GitHub Sponsors
                     </ExternalLink>
                   ),
                 }

@@ -28,8 +28,9 @@ type Importer struct {
 	Input               jsonschema.Gallery
 	MissingRefBehaviour models.ImportMissingRefEnum
 
-	ID      int
-	gallery models.Gallery
+	ID           int
+	gallery      models.Gallery
+	customFields map[string]interface{}
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {
@@ -50,6 +51,8 @@ func (i *Importer) PreImport(ctx context.Context) error {
 	if err := i.populateTags(ctx); err != nil {
 		return err
 	}
+
+	i.customFields = i.Input.CustomFields
 
 	return nil
 }
@@ -356,7 +359,11 @@ func (i *Importer) Create(ctx context.Context) (*int, error) {
 	for _, f := range i.gallery.Files.List() {
 		fileIDs = append(fileIDs, f.Base().ID)
 	}
-	err := i.ReaderWriter.Create(ctx, &i.gallery, fileIDs)
+	err := i.ReaderWriter.Create(ctx, &models.CreateGalleryInput{
+		Gallery:      &i.gallery,
+		FileIDs:      fileIDs,
+		CustomFields: i.customFields,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error creating gallery: %v", err)
 	}
@@ -368,7 +375,12 @@ func (i *Importer) Create(ctx context.Context) (*int, error) {
 func (i *Importer) Update(ctx context.Context, id int) error {
 	gallery := i.gallery
 	gallery.ID = id
-	err := i.ReaderWriter.Update(ctx, &gallery)
+	err := i.ReaderWriter.Update(ctx, &models.UpdateGalleryInput{
+		Gallery: &gallery,
+		CustomFields: models.CustomFieldsInput{
+			Full: i.customFields,
+		},
+	})
 	if err != nil {
 		return fmt.Errorf("error updating existing gallery: %v", err)
 	}

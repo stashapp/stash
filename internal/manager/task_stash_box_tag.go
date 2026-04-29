@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
@@ -12,6 +13,7 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/stashbox"
 	"github.com/stashapp/stash/pkg/studio"
+	"github.com/stashapp/stash/pkg/tag"
 )
 
 // stashBoxBatchPerformerTagTask is used to tag or create performers from stash-box.
@@ -527,5 +529,237 @@ func (t *stashBoxBatchStudioTagTask) processParentStudio(ctx context.Context, pa
 			logger.Infof("Updated studio %s", parent.Name)
 		}
 		return err
+	}
+}
+
+// stashBoxBatchTagTagTask is used to tag or create tags from stash-box.
+//
+// Two modes of operation:
+//   - Update existing tag: set tag to update from stash-box data
+//   - Create new tag: set name or stashID to search stash-box and create locally
+type stashBoxBatchTagTagTask struct {
+	box            *models.StashBox
+	name           *string
+	stashID        *string
+	tag            *models.Tag
+	createParent   bool
+	excludedFields []string
+}
+
+func (t *stashBoxBatchTagTagTask) getName() string {
+	switch {
+	case t.name != nil:
+		return *t.name
+	case t.stashID != nil:
+		return *t.stashID
+	case t.tag != nil:
+		return t.tag.Name
+	default:
+		return ""
+	}
+}
+
+func (t *stashBoxBatchTagTagTask) Start(ctx context.Context) {
+	scrapedTag, err := t.findStashBoxTag(ctx)
+	if err != nil {
+		logger.Errorf("Error fetching tag data from stash-box: %v", err)
+		return
+	}
+
+	excluded := map[string]bool{}
+	for _, field := range t.excludedFields {
+		excluded[field] = true
+	}
+
+	if scrapedTag != nil {
+		t.processMatchedTag(ctx, scrapedTag, excluded)
+	} else {
+		logger.Infof("No match found for %s", t.getName())
+	}
+}
+
+func (t *stashBoxBatchTagTagTask) GetDescription() string {
+	return fmt.Sprintf("Tagging tag %s from stash-box", t.getName())
+}
+
+func (t *stashBoxBatchTagTagTask) findStashBoxTag(ctx context.Context) (*models.ScrapedTag, error) {
+	var results []*models.ScrapedTag
+	var err error
+
+	r := instance.Repository
+
+	client := stashbox.NewClient(*t.box, stashbox.ExcludeTagPatterns(instance.Config.GetScraperExcludeTagPatterns()))
+
+	nameQuery := ""
+
+	switch {
+	case t.name != nil:
+		nameQuery = *t.name
+		results, err = client.QueryTag(ctx, *t.name)
+	case t.stashID != nil:
+		results, err = client.QueryTag(ctx, *t.stashID)
+	case t.tag != nil:
+		var remoteID string
+		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+			if !t.tag.StashIDs.Loaded() {
+				err = t.tag.LoadStashIDs(ctx, r.Tag)
+				if err != nil {
+					return err
+				}
+			}
+			for _, id := range t.tag.StashIDs.List() {
+				if id.Endpoint == t.box.Endpoint {
+					remoteID = id.StashID
+				}
+			}
+			return nil
+		}); err != nil {
+			return nil, err
+		}
+
+		if remoteID != "" {
+			results, err = client.QueryTag(ctx, remoteID)
+		} else {
+			nameQuery = t.tag.Name
+			results, err = client.QueryTag(ctx, t.tag.Name)
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(results) == 0 {
+		return nil, nil
+	}
+
+	var result *models.ScrapedTag
+
+	// QueryTag returns tags that partially match the name, so find the exact match if searching by name
+	if nameQuery != "" {
+		for _, r := range results {
+			if strings.EqualFold(r.Name, nameQuery) {
+				result = r
+				break
+			}
+		}
+	} else {
+		result = results[0]
+	}
+
+	if result == nil {
+		return nil, nil
+	}
+
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+		return match.ScrapedTagHierarchy(ctx, r.Tag, result, t.box.Endpoint)
+	}); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (t *stashBoxBatchTagTagTask) processParentTag(ctx context.Context, parent *models.ScrapedTag, excluded map[string]bool) error {
+	if parent.StoredID == nil {
+		// Create new parent tag
+		newParentTag := parent.ToTag(t.box.Endpoint, excluded)
+
+		r := instance.Repository
+		err := r.WithTxn(ctx, func(ctx context.Context) error {
+			qb := r.Tag
+
+			if err := tag.ValidateCreate(ctx, *newParentTag, qb); err != nil {
+				return err
+			}
+
+			if err := qb.Create(ctx, &models.CreateTagInput{Tag: newParentTag}); err != nil {
+				return err
+			}
+
+			storedID := strconv.Itoa(newParentTag.ID)
+			parent.StoredID = &storedID
+			return nil
+		})
+		if err != nil {
+			logger.Errorf("Failed to create parent tag %s: %v", parent.Name, err)
+		} else {
+			logger.Infof("Created parent tag %s", parent.Name)
+		}
+		return err
+	}
+
+	// Parent already exists — nothing to update for categories
+	return nil
+}
+
+func (t *stashBoxBatchTagTagTask) processMatchedTag(ctx context.Context, s *models.ScrapedTag, excluded map[string]bool) {
+	// Determine the tag ID to update — either from the task's tag or from the
+	// StoredID set by match.ScrapedTag (when batch adding by name and the tag
+	// already exists locally).
+	tagID := 0
+	if t.tag != nil {
+		tagID = t.tag.ID
+	} else if s.StoredID != nil {
+		tagID, _ = strconv.Atoi(*s.StoredID)
+	}
+
+	if s.Parent != nil && t.createParent {
+		if err := t.processParentTag(ctx, s.Parent, excluded); err != nil {
+			return
+		}
+	}
+
+	if tagID > 0 {
+		r := instance.Repository
+		err := r.WithTxn(ctx, func(ctx context.Context) error {
+			qb := r.Tag
+
+			existingStashIDs, err := qb.GetStashIDs(ctx, tagID)
+			if err != nil {
+				return err
+			}
+
+			storedID := strconv.Itoa(tagID)
+			partial := s.ToPartial(storedID, t.box.Endpoint, excluded, existingStashIDs)
+
+			if err := tag.ValidateUpdate(ctx, tagID, partial, qb); err != nil {
+				return err
+			}
+
+			if _, err := qb.UpdatePartial(ctx, tagID, partial); err != nil {
+				return err
+			}
+
+			return nil
+		})
+		if err != nil {
+			logger.Errorf("Failed to update tag %s: %v", s.Name, err)
+		} else {
+			logger.Infof("Updated tag %s", s.Name)
+		}
+	} else if s.Name != "" {
+		// no existing tag, create a new one
+		newTag := s.ToTag(t.box.Endpoint, excluded)
+
+		r := instance.Repository
+		err := r.WithTxn(ctx, func(ctx context.Context) error {
+			qb := r.Tag
+
+			if err := tag.ValidateCreate(ctx, *newTag, qb); err != nil {
+				return err
+			}
+
+			if err := qb.Create(ctx, &models.CreateTagInput{Tag: newTag}); err != nil {
+				return err
+			}
+
+			return nil
+		})
+		if err != nil {
+			logger.Errorf("Failed to create tag %s: %v", s.Name, err)
+		} else {
+			logger.Infof("Created tag %s", s.Name)
+		}
 	}
 }

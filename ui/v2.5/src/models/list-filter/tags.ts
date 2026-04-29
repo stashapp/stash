@@ -15,9 +15,10 @@ import {
 } from "./criteria/tags";
 import { FavoriteTagCriterionOption } from "./criteria/favorite";
 import { StashIDCriterionOption } from "./criteria/stash-ids";
+import { CustomFieldsCriterionOption } from "./criteria/custom-fields";
 
 const defaultSortBy = "name";
-const sortByOptions = ["name", "random", "scenes_duration"]
+const sortByOptions = ["name", "random", "scenes_duration", "scenes_size"]
   .map(ListFilterOptions.createSortBy)
   .concat([
     {
@@ -50,7 +51,11 @@ const sortByOptions = ["name", "random", "scenes_duration"]
     },
   ]);
 
-const displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
+const displayModeOptions = [
+  DisplayMode.Grid,
+  DisplayMode.List,
+  DisplayMode.Tagger,
+];
 const criterionOptions = [
   FavoriteTagCriterionOption,
   createMandatoryStringCriterionOption("name"),
@@ -73,6 +78,7 @@ const criterionOptions = [
   new MandatoryNumberCriterionOption("sub_tag_count", "child_count"),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),
+  CustomFieldsCriterionOption,
 ];
 
 export const TagListFilterOptions = new ListFilterOptions(

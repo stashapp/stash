@@ -215,3 +215,16 @@ func (r *groupResolver) OCounter(ctx context.Context, obj *models.Group) (ret *i
 	}
 	return &count, nil
 }
+
+func (r *groupResolver) CustomFields(ctx context.Context, obj *models.Group) (map[string]interface{}, error) {
+	m, err := loaders.From(ctx).GroupCustomFields.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if m == nil {
+		return make(map[string]interface{}), nil
+	}
+
+	return m, nil
+}

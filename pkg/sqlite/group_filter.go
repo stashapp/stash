@@ -84,6 +84,13 @@ func (qb *groupFilterHandler) criterionHandler() criterionHandler {
 		&timestampCriterionHandler{groupFilter.CreatedAt, "groups.created_at", nil},
 		&timestampCriterionHandler{groupFilter.UpdatedAt, "groups.updated_at", nil},
 
+		&customFieldsFilterHandler{
+			table: groupsCustomFieldsTable.GetTable(),
+			fkCol: groupIDColumn,
+			c:     groupFilter.CustomFields,
+			idCol: "groups.id",
+		},
+
 		&relatedFilterHandler{
 			relatedIDCol:   "groups_scenes.scene_id",
 			relatedRepo:    sceneRepository.repository,
@@ -112,7 +119,25 @@ func (qb *groupFilterHandler) missingCriterionHandler(isMissing *string) criteri
 			case "scenes":
 				f.addLeftJoin("groups_scenes", "", "groups_scenes.group_id = groups.id")
 				f.addWhere("groups_scenes.scene_id IS NULL")
+			case "url":
+				groupsURLsTableMgr.leftJoin(f, "", "groups.id")
+				f.addWhere("group_urls.url IS NULL")
+			case "studio":
+				f.addWhere("groups.studio_id IS NULL")
+			case "performers":
+				f.addLeftJoin("groups_scenes", "gs_perf", "groups.id = gs_perf.group_id")
+				f.addLeftJoin("performers_scenes", "ps_perf", "gs_perf.scene_id = ps_perf.scene_id")
+				f.addWhere("ps_perf.performer_id IS NULL")
+			case "tags":
+				groupRepository.tags.leftJoin(f, "tags_join", "groups.id")
+				f.addWhere("tags_join.group_id IS NULL")
 			default:
+				if err := validateIsMissing(*isMissing, []string{
+					"aliases", "description", "director", "date", "rating",
+				}); err != nil {
+					f.setError(err)
+					return
+				}
 				f.addWhere("(groups." + *isMissing + " IS NULL OR TRIM(groups." + *isMissing + ") = '')")
 			}
 		}
@@ -125,8 +150,8 @@ func (qb *groupFilterHandler) urlsCriterionHandler(url *models.StringCriterionIn
 		primaryFK:    groupIDColumn,
 		joinTable:    groupURLsTable,
 		stringColumn: groupURLColumn,
-		addJoinTable: func(f *filterBuilder) {
-			groupsURLsTableMgr.join(f, "", "groups.id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			groupsURLsTableMgr.join(f, joinType, "", "groups.id")
 		},
 	}
 

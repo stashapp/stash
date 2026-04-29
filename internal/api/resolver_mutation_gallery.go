@@ -42,7 +42,10 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	}
 
 	// Populate a new gallery from the input
-	newGallery := models.NewGallery()
+	newGallery := models.CreateGalleryInput{
+		Gallery: &models.Gallery{},
+	}
+	*newGallery.Gallery = models.NewGallery()
 
 	newGallery.Title = strings.TrimSpace(input.Title)
 	newGallery.Code = translator.string(input.Code)
@@ -81,10 +84,12 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 		newGallery.URLs = models.NewRelatedStrings([]string{strings.TrimSpace(*input.URL)})
 	}
 
+	newGallery.CustomFields = convertMapJSONNumbers(input.CustomFields)
+
 	// Start the transaction and save the gallery
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Gallery
-		if err := qb.Create(ctx, &newGallery, nil); err != nil {
+		if err := qb.Create(ctx, &newGallery); err != nil {
 			return err
 		}
 
@@ -241,6 +246,10 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 		return nil, fmt.Errorf("converting scene ids: %w", err)
 	}
 
+	if input.CustomFields != nil {
+		updatedGallery.CustomFields = handleUpdateCustomFields(*input.CustomFields)
+	}
+
 	// gallery scene is set from the scene only
 
 	gallery, err := qb.UpdatePartial(ctx, galleryID, updatedGallery)
@@ -291,6 +300,10 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 	updatedGallery.SceneIDs, err = translator.updateIdsBulk(input.SceneIds, "scene_ids")
 	if err != nil {
 		return nil, fmt.Errorf("converting scene ids: %w", err)
+	}
+
+	if input.CustomFields != nil {
+		updatedGallery.CustomFields = handleUpdateCustomFields(*input.CustomFields)
 	}
 
 	ret := []*models.Gallery{}

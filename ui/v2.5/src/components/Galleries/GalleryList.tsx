@@ -49,6 +49,10 @@ import {
   IItemListOperation,
 } from "../List/FilteredListToolbar";
 import { FilterTags } from "../List/FilterTags";
+import { SidebarAgeFilter } from "../List/Filters/SidebarAgeFilter";
+import { PerformerAgeCriterionOption } from "src/models/list-filter/galleries";
+import { SidebarFolderFilter } from "../List/Filters/FolderFilter";
+import { ParentFolderCriterionOption } from "src/models/list-filter/criteria/folder";
 
 const GalleryList: React.FC<{
   galleries: GQL.SlimGalleryDataFragment[];
@@ -163,12 +167,27 @@ const SidebarContent: React.FC<{
           filterHook={filterHook}
         />
         <SidebarRatingFilter filter={filter} setFilter={setFilter} />
+        <SidebarFolderFilter
+          text={<FormattedMessage id="parent_folder" />}
+          criterionOption={ParentFolderCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="parent_folder"
+        />
         <SidebarBooleanFilter
           title={<FormattedMessage id="organized" />}
           data-type={OrganizedCriterionOption.type}
           option={OrganizedCriterionOption}
           filter={filter}
           setFilter={setFilter}
+          sectionID="organized"
+        />
+        <SidebarAgeFilter
+          title={<FormattedMessage id="performer_age" />}
+          option={PerformerAgeCriterionOption}
+          filter={filter}
+          setFilter={setFilter}
+          sectionID="performer_age"
         />
       </GalleryFilterSidebarSections>
 
@@ -282,7 +301,7 @@ export const FilteredGalleryList = PatchComponent(
       setFilter,
     });
 
-    useAddKeybinds(filter, totalCount);
+    useAddKeybinds(effectiveFilter, totalCount);
     useFilteredSidebarKeybinds({
       showSidebar,
       setShowSidebar,
@@ -313,7 +332,7 @@ export const FilteredGalleryList = PatchComponent(
       result,
     });
 
-    const viewRandom = useViewRandom(filter, totalCount);
+    const viewRandom = useViewRandom(effectiveFilter, totalCount);
 
     function onExport(all: boolean) {
       showModal(

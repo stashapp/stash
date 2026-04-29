@@ -177,8 +177,8 @@ type ScrapedPerformer struct {
 	PenisLength    *string       `json:"penis_length"`
 	Circumcised    *string       `json:"circumcised"`
 	CareerLength   *string       `json:"career_length"` // deprecated: use CareerStart/CareerEnd
-	CareerStart    *int          `json:"career_start"`
-	CareerEnd      *int          `json:"career_end"`
+	CareerStart    *string       `json:"career_start"`
+	CareerEnd      *string       `json:"career_end"`
 	Tattoos        *string       `json:"tattoos"`
 	Piercings      *string       `json:"piercings"`
 	Aliases        *string       `json:"aliases"`
@@ -225,12 +225,16 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 	// assume that career length is _not_ populated in favour of start/end
 
 	if p.CareerStart != nil && !excluded["career_start"] {
-		cs := *p.CareerStart
-		ret.CareerStart = &cs
+		date, err := ParseDate(*p.CareerStart)
+		if err == nil {
+			ret.CareerStart = &date
+		}
 	}
 	if p.CareerEnd != nil && !excluded["career_end"] {
-		ce := *p.CareerEnd
-		ret.CareerEnd = &ce
+		date, err := ParseDate(*p.CareerEnd)
+		if err == nil {
+			ret.CareerEnd = &date
+		}
 	}
 	if p.Country != nil && !excluded["country"] {
 		ret.Country = *p.Country
@@ -288,7 +292,7 @@ func (p *ScrapedPerformer) ToPerformer(endpoint string, excluded map[string]bool
 		}
 	}
 	if p.Circumcised != nil && !excluded["circumcised"] {
-		v := CircumisedEnum(*p.Circumcised)
+		v := CircumcisedEnum(*p.Circumcised)
 		if v.IsValid() {
 			ret.Circumcised = &v
 		}
@@ -367,13 +371,13 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 	}
 	if p.CareerLength != nil && !excluded["career_length"] {
 		// parse career_length into career_start/career_end
-		start, end, err := utils.ParseYearRangeString(*p.CareerLength)
+		start, end, err := ParseYearRangeString(*p.CareerLength)
 		if err == nil {
 			if start != nil {
-				ret.CareerStart = NewOptionalInt(*start)
+				ret.CareerStart = NewOptionalDate(*start)
 			}
 			if end != nil {
-				ret.CareerEnd = NewOptionalInt(*end)
+				ret.CareerEnd = NewOptionalDate(*end)
 			}
 		}
 	}
@@ -471,9 +475,12 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 
 type ScrapedTag struct {
 	// Set if tag matched
-	StoredID     *string `json:"stored_id"`
-	Name         string  `json:"name"`
-	RemoteSiteID *string `json:"remote_site_id"`
+	StoredID     *string     `json:"stored_id"`
+	Name         string      `json:"name"`
+	Description  *string     `json:"description"`
+	AliasList    []string    `json:"alias_list"`
+	RemoteSiteID *string     `json:"remote_site_id"`
+	Parent       *ScrapedTag `json:"parent"`
 }
 
 func (ScrapedTag) IsScrapedContent() {}
@@ -482,6 +489,24 @@ func (t *ScrapedTag) ToTag(endpoint string, excluded map[string]bool) *Tag {
 	currentTime := time.Now()
 	ret := NewTag()
 	ret.Name = t.Name
+	ret.ParentIDs = NewRelatedIDs([]int{})
+	ret.ChildIDs = NewRelatedIDs([]int{})
+	ret.Aliases = NewRelatedStrings([]string{})
+
+	if t.Description != nil && !excluded["description"] {
+		ret.Description = *t.Description
+	}
+
+	if len(t.AliasList) > 0 && !excluded["aliases"] {
+		ret.Aliases = NewRelatedStrings(t.AliasList)
+	}
+
+	if t.Parent != nil && t.Parent.StoredID != nil {
+		parentID, err := strconv.Atoi(*t.Parent.StoredID)
+		if err == nil && parentID > 0 {
+			ret.ParentIDs = NewRelatedIDs([]int{parentID})
+		}
+	}
 
 	if t.RemoteSiteID != nil && endpoint != "" && *t.RemoteSiteID != "" {
 		ret.StashIDs = NewRelatedStashIDs([]StashID{
@@ -494,6 +519,49 @@ func (t *ScrapedTag) ToTag(endpoint string, excluded map[string]bool) *Tag {
 	}
 
 	return &ret
+}
+
+func (t *ScrapedTag) ToPartial(storedID string, endpoint string, excluded map[string]bool, existingStashIDs []StashID) TagPartial {
+	ret := NewTagPartial()
+
+	if t.Name != "" && !excluded["name"] {
+		ret.Name = NewOptionalString(t.Name)
+	}
+
+	if t.Description != nil && !excluded["description"] {
+		ret.Description = NewOptionalString(*t.Description)
+	}
+
+	if len(t.AliasList) > 0 && !excluded["aliases"] {
+		ret.Aliases = &UpdateStrings{
+			Values: t.AliasList,
+			Mode:   RelationshipUpdateModeSet,
+		}
+	}
+
+	if t.Parent != nil && t.Parent.StoredID != nil {
+		parentID, err := strconv.Atoi(*t.Parent.StoredID)
+		if err == nil && parentID > 0 {
+			ret.ParentIDs = &UpdateIDs{
+				IDs:  []int{parentID},
+				Mode: RelationshipUpdateModeAdd,
+			}
+		}
+	}
+
+	if t.RemoteSiteID != nil && endpoint != "" && *t.RemoteSiteID != "" {
+		ret.StashIDs = &UpdateStashIDs{
+			StashIDs: existingStashIDs,
+			Mode:     RelationshipUpdateModeSet,
+		}
+		ret.StashIDs.Set(StashID{
+			Endpoint:  endpoint,
+			StashID:   *t.RemoteSiteID,
+			UpdatedAt: time.Now(),
+		})
+	}
+
+	return ret
 }
 
 func ScrapedTagSortFunction(a, b *ScrapedTag) int {

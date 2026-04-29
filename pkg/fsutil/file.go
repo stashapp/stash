@@ -148,7 +148,7 @@ func Touch(path string) error {
 
 var (
 	replaceCharsRE = regexp.MustCompile(`[&=\\/:*"?_ ]`)
-	removeCharsRE  = regexp.MustCompile(`[^[:alnum:]-.]`)
+	removeCharsRE  = regexp.MustCompile(`[^\p{L}\p{N}\-.]`)
 	multiHyphenRE  = regexp.MustCompile(`\-+`)
 )
 

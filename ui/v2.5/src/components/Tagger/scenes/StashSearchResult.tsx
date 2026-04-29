@@ -29,9 +29,9 @@ import { SceneTaggerModalsState } from "./sceneTaggerModals";
 import PerformerResult from "./PerformerResult";
 import StudioResult from "./StudioResult";
 import { useInitialState } from "src/hooks/state";
-import { getStashboxBase } from "src/utils/stashbox";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { compareScenesForSort } from "./utils";
+import { StashIDPill } from "src/components/Shared/StashID";
 
 const getDurationIcon = (matchPercentage: number) => {
   if (matchPercentage > 65)
@@ -201,7 +201,7 @@ const getFingerprintStatus = (
             <FormattedMessage
               id="component_tagger.results.hash_matches"
               values={{
-                hash_type: <FormattedMessage id="media_info.checksum" />,
+                hash_type: <FormattedMessage id="media_info.md5" />,
               }}
             />
           </div>
@@ -324,15 +324,6 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       doResolveScene();
     }
   }, [isActive, loading, stashScene, index, resolveScene, scene]);
-
-  const stashBoxBaseURL = currentSource?.sourceInput.stash_box_endpoint
-    ? getStashboxBase(currentSource.sourceInput.stash_box_endpoint)
-    : undefined;
-  const stashBoxURL = useMemo(() => {
-    if (stashBoxBaseURL) {
-      return `${stashBoxBaseURL}scenes/${scene.remote_site_id}`;
-    }
-  }, [scene, stashBoxBaseURL]);
 
   const setExcludedField = (name: string, value: boolean) =>
     setExcludedFields({
@@ -680,16 +671,20 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   };
 
   const maybeRenderStashBoxID = () => {
-    if (scene.remote_site_id && stashBoxURL) {
+    if (scene.remote_site_id && currentSource?.sourceInput.stash_box_endpoint) {
       return (
         <div className="scene-details">
           <OptionalField
             exclude={excludedFields[fields.stash_ids]}
             setExclude={(v) => setExcludedField(fields.stash_ids, v)}
           >
-            <ExternalLink href={stashBoxURL}>
-              {scene.remote_site_id}
-            </ExternalLink>
+            <StashIDPill
+              linkType="scenes"
+              stashID={{
+                endpoint: currentSource?.sourceInput.stash_box_endpoint,
+                stash_id: scene.remote_site_id,
+              }}
+            />
           </OptionalField>
         </div>
       );

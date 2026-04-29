@@ -259,22 +259,37 @@ func TestImporterPostImport(t *testing.T) {
 	db := mocks.NewDatabase()
 
 	i := Importer{
-		ReaderWriter:   db.Group,
-		StudioWriter:   db.Studio,
+		ReaderWriter: db.Group,
+		StudioWriter: db.Studio,
+		Input: jsonschema.Group{
+			CustomFields: customFields,
+		},
 		frontImageData: frontImageBytes,
 		backImageData:  backImageBytes,
 	}
 
 	updateMovieImageErr := errors.New("UpdateImages error")
+	customFieldsErr := errors.New("SetCustomFields error")
+
+	customFieldsInput := models.CustomFieldsInput{
+		Full: customFields,
+	}
 
 	db.Group.On("UpdateFrontImage", testCtx, movieID, frontImageBytes).Return(nil).Once()
-	db.Group.On("UpdateBackImage", testCtx, movieID, backImageBytes).Return(nil).Once()
 	db.Group.On("UpdateFrontImage", testCtx, errImageID, frontImageBytes).Return(updateMovieImageErr).Once()
+	db.Group.On("UpdateBackImage", testCtx, movieID, backImageBytes).Return(nil).Once()
+
+	db.Group.On("SetCustomFields", testCtx, movieID, customFieldsInput).Return(nil).Once()
+	db.Group.On("SetCustomFields", testCtx, errImageID, customFieldsInput).Return(nil).Once()
+	db.Group.On("SetCustomFields", testCtx, errCustomFieldsID, customFieldsInput).Return(customFieldsErr).Once()
 
 	err := i.PostImport(testCtx, movieID)
 	assert.Nil(t, err)
 
 	err = i.PostImport(testCtx, errImageID)
+	assert.NotNil(t, err)
+
+	err = i.PostImport(testCtx, errCustomFieldsID)
 	assert.NotNil(t, err)
 
 	db.AssertExpectations(t)

@@ -19,6 +19,10 @@ import { BooleanSetting, Setting, SettingGroup } from "../Inputs";
 import { ManualLink } from "src/components/Help/context";
 import { Icon } from "src/components/Shared/Icon";
 import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
+import {
+  AutoTagConfirmDialog,
+  AutoTagWarning,
+} from "src/components/Shared/AutoTagConfirmDialog";
 import { useSettings } from "../context";
 
 interface IAutoTagOptions {
@@ -78,7 +82,9 @@ export const LibraryTasks: React.FC = () => {
   const [dialogOpen, setDialogOpenState] = useState({
     scan: false,
     autoTag: false,
+    autoTagAlert: false,
     identify: false,
+    generate: false,
   });
 
   function getDefaultScanOptions(): GQL.ScanMetadataInput {
@@ -223,12 +229,29 @@ export const LibraryTasks: React.FC = () => {
     }
   }
 
+  function renderAutoTagAlert() {
+    return (
+      <AutoTagConfirmDialog
+        show={dialogOpen.autoTagAlert}
+        onConfirm={() => {
+          setDialogOpen({ autoTagAlert: false });
+          runAutoTag();
+        }}
+        onCancel={() => setDialogOpen({ autoTagAlert: false })}
+      />
+    );
+  }
+
   function renderAutoTagDialog() {
     if (!dialogOpen.autoTag) {
       return;
     }
 
-    return <DirectorySelectionDialog onClose={onAutoTagDialogClosed} />;
+    return (
+      <DirectorySelectionDialog onClose={onAutoTagDialogClosed}>
+        <AutoTagWarning />
+      </DirectorySelectionDialog>
+    );
   }
 
   function onAutoTagDialogClosed(paths?: string[]) {
@@ -263,6 +286,41 @@ export const LibraryTasks: React.FC = () => {
     return (
       <IdentifyDialog onClose={() => setDialogOpen({ identify: false })} />
     );
+  }
+
+  function renderGenerateDialog() {
+    if (!dialogOpen.generate) {
+      return;
+    }
+
+    return <DirectorySelectionDialog onClose={onGenerateDialogClosed} />;
+  }
+
+  function onGenerateDialogClosed(paths?: string[]) {
+    if (paths) {
+      runGenerate(paths);
+    }
+
+    setDialogOpen({ generate: false });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async function runGenerate(paths?: string[]) {
+    try {
+      await mutateMetadataGenerate({
+        ...generateOptions,
+        paths,
+      });
+
+      Toast.success(
+        intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          { operation_name: intl.formatMessage({ id: "actions.generate" }) }
+        )
+      );
+    } catch (e) {
+      Toast.error(e);
+    }
   }
 
   async function onGenerateClicked() {
@@ -305,8 +363,10 @@ export const LibraryTasks: React.FC = () => {
   return (
     <Form.Group>
       {renderScanDialog()}
+      {renderAutoTagAlert()}
       {renderAutoTagDialog()}
       {maybeRenderIdentifyDialog()}
+      {renderGenerateDialog()}
 
       <SettingSection headingID="library">
         <SettingGroup
@@ -389,9 +449,9 @@ export const LibraryTasks: React.FC = () => {
                 variant="secondary"
                 type="submit"
                 className="mr-2"
-                onClick={() => runAutoTag()}
+                onClick={() => setDialogOpen({ autoTagAlert: true })}
               >
-                <FormattedMessage id="actions.auto_tag" />
+                <FormattedMessage id="actions.auto_tag" />…
               </Button>
               <Button
                 variant="secondary"
@@ -425,13 +485,23 @@ export const LibraryTasks: React.FC = () => {
             subHeadingID: "config.tasks.generate_desc",
           }}
           topLevel={
-            <Button
-              variant="secondary"
-              type="submit"
-              onClick={() => onGenerateClicked()}
-            >
-              <FormattedMessage id="actions.generate" />
-            </Button>
+            <>
+              <Button
+                variant="secondary"
+                type="submit"
+                onClick={() => onGenerateClicked()}
+              >
+                <FormattedMessage id="actions.generate" />
+              </Button>
+              <Button
+                variant="secondary"
+                type="submit"
+                className="mr-2"
+                onClick={() => setDialogOpen({ generate: true })}
+              >
+                <FormattedMessage id="actions.selective_generate" />…
+              </Button>
+            </>
           }
           collapsible
         >

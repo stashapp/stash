@@ -416,6 +416,18 @@ func (qb *TagStore) find(ctx context.Context, id int) (*models.Tag, error) {
 	return ret, nil
 }
 
+func (qb *TagStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Tag, error) {
+	table := qb.table()
+
+	q := qb.selectDataset().Prepared(true).Where(
+		table.Col(idColumn).Eq(
+			sq,
+		),
+	)
+
+	return qb.getMany(ctx, q)
+}
+
 // returns nil, sql.ErrNoRows if not found
 func (qb *TagStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Tag, error) {
 	ret, err := qb.getMany(ctx, q)
@@ -579,6 +591,27 @@ func (qb *TagStore) FindByNames(ctx context.Context, names []string, nocase bool
 	return ret, nil
 }
 
+func (qb *TagStore) FindByAlias(ctx context.Context, alias string, nocase bool) (*models.Tag, error) {
+	where := fmt.Sprintf("%s = ?", tagAliasColumn)
+	if nocase {
+		where += " COLLATE NOCASE"
+	}
+	sq := dialect.From(tagsAliasesJoinTable).Select(
+		tagsAliasesJoinTable.Col(tagIDColumn),
+	).Prepared(true).Where(goqu.L(where, alias)).Limit(1)
+	ret, err := qb.findBySubquery(ctx, sq)
+
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, err
+	}
+
+	if len(ret) == 0 {
+		return nil, nil
+	}
+
+	return ret[0], nil
+}
+
 func (qb *TagStore) FindByStashID(ctx context.Context, stashID models.StashID) ([]*models.Tag, error) {
 	sq := dialect.From(tagsStashIDsJoinTable).Select(tagsStashIDsJoinTable.Col(tagIDColumn)).Where(
 		tagsStashIDsJoinTable.Col("stash_id").Eq(stashID.StashID),
@@ -592,6 +625,36 @@ func (qb *TagStore) FindByStashID(ctx context.Context, stashID models.StashID) (
 	ret, err := qb.getMany(ctx, idsQuery)
 	if err != nil {
 		return nil, fmt.Errorf("getting tags for stash ID %s: %w", stashID.StashID, err)
+	}
+
+	return ret, nil
+}
+
+func (qb *TagStore) FindByStashIDStatus(ctx context.Context, hasStashID bool, stashboxEndpoint string) ([]*models.Tag, error) {
+	table := qb.table()
+	sq := dialect.From(table).LeftJoin(
+		tagsStashIDsJoinTable,
+		goqu.On(table.Col(idColumn).Eq(tagsStashIDsJoinTable.Col(tagIDColumn))),
+	).Select(table.Col(idColumn))
+
+	if hasStashID {
+		sq = sq.Where(
+			tagsStashIDsJoinTable.Col("stash_id").IsNotNull(),
+			tagsStashIDsJoinTable.Col("endpoint").Eq(stashboxEndpoint),
+		)
+	} else {
+		sq = sq.Where(
+			tagsStashIDsJoinTable.Col("stash_id").IsNull(),
+		)
+	}
+
+	idsQuery := qb.selectDataset().Where(
+		table.Col(idColumn).In(sq),
+	)
+
+	ret, err := qb.getMany(ctx, idsQuery)
+	if err != nil {
+		return nil, fmt.Errorf("getting tags for stash-box endpoint %s: %w", stashboxEndpoint, err)
 	}
 
 	return ret, nil
@@ -740,6 +803,7 @@ var tagSortOptions = sortOptions{
 	"scene_markers_count",
 	"scenes_count",
 	"scenes_duration",
+	"scenes_size",
 	"updated_at",
 }
 
@@ -752,6 +816,17 @@ func (qb *TagStore) sortByScenesDuration(direction string) string {
 		LEFT JOIN video_files ON video_files.file_id = %s.file_id
 		WHERE %s.%s = %s.id
 	) %s`, scenesTagsTable, sceneTable, sceneTable, scenesTagsTable, sceneIDColumn, scenesFilesTable, scenesFilesTable, sceneIDColumn, sceneTable, scenesFilesTable, scenesTagsTable, tagIDColumn, tagTable, getSortDirection(direction))
+}
+
+func (qb *TagStore) sortByScenesSize(direction string) string {
+	return fmt.Sprintf(` ORDER BY (
+		SELECT COALESCE(SUM(%s.size), 0)
+		FROM %s
+		LEFT JOIN %s ON %s.id = %s.%s
+		LEFT JOIN %s ON %s.%s = %s.id
+		LEFT JOIN %s ON %s.id = %s.file_id
+		WHERE %s.%s = %s.id
+	) %s`, fileTable, scenesTagsTable, sceneTable, sceneTable, scenesTagsTable, sceneIDColumn, scenesFilesTable, scenesFilesTable, sceneIDColumn, sceneTable, fileTable, fileTable, scenesFilesTable, scenesTagsTable, tagIDColumn, tagTable, getSortDirection(direction))
 }
 
 func (qb *TagStore) getDefaultTagSort() string {
@@ -782,6 +857,8 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 		sortQuery += getCountSort(tagTable, scenesTagsTable, tagIDColumn, direction)
 	case "scenes_duration":
 		sortQuery += qb.sortByScenesDuration(direction)
+	case "scenes_size":
+		sortQuery += qb.sortByScenesSize(direction)
 	case "scene_markers_count":
 		sortQuery += fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM scene_markers_tags WHERE tags.id = scene_markers_tags.tag_id)+(SELECT COUNT(*) FROM scene_markers WHERE tags.id = scene_markers.primary_tag_id) %s", getSortDirection(direction))
 	case "images_count":

@@ -6,10 +6,17 @@ import React, {
   useRef,
 } from "react";
 import { Badge, BadgeProps, Button, Overlay, Popover } from "react-bootstrap";
-import { Criterion } from "src/models/list-filter/criteria/criterion";
+import {
+  Criterion,
+  UnsupportedCriterion,
+} from "src/models/list-filter/criteria/criterion";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
-import { faMagnifyingGlass, faTimes } from "@fortawesome/free-solid-svg-icons";
+import {
+  faExclamationTriangle,
+  faMagnifyingGlass,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 import { BsPrefixProps, ReplaceProps } from "react-bootstrap/esm/helpers";
 import { CustomFieldsCriterion } from "src/models/list-filter/criteria/custom-fields";
 import { useDebounce } from "src/hooks/debounce";
@@ -38,9 +45,20 @@ export const FilterTag: React.FC<{
   label: React.ReactNode;
   onClick: React.MouseEventHandler<HTMLSpanElement>;
   onRemove: React.MouseEventHandler<HTMLElement>;
-}> = ({ className, label, onClick, onRemove }) => {
+  unsupported?: boolean;
+}> = ({ className, label, onClick, onRemove, unsupported }) => {
+  function handleClick(e: React.MouseEvent<HTMLSpanElement, MouseEvent>) {
+    if (unsupported) {
+      return;
+    }
+    onClick(e);
+  }
+
   return (
-    <TagItem className={className} onClick={onClick}>
+    <TagItem className={cx(className, { unsupported })} onClick={handleClick}>
+      {unsupported && (
+        <Icon icon={faExclamationTriangle} className="unsupported-icon" />
+      )}
       {label}
       <Button
         variant="secondary"
@@ -271,10 +289,13 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
       });
     }
 
+    const unsupported = criterion instanceof UnsupportedCriterion;
+
     return (
       <FilterTag
         key={criterion.getId()}
         label={criterion.getLabel(intl, sfwContentMode)}
+        unsupported={unsupported}
         onClick={() => onClickCriterionTag(criterion)}
         onRemove={($event) => onRemoveCriterionTag(criterion, $event)}
       />

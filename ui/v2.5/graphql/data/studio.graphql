@@ -41,6 +41,7 @@ fragment StudioData on Studio {
     ...SlimTagData
   }
   o_counter
+  custom_fields
 }
 
 fragment SelectStudioData on Studio {

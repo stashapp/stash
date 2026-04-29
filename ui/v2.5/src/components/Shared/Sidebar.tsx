@@ -97,15 +97,17 @@ interface IContext {
 
 export const SidebarStateContext = React.createContext<IContext | null>(null);
 
+export interface ISidebarSectionProps {
+  text: React.ReactNode;
+  className?: string;
+  outsideCollapse?: React.ReactNode;
+  onOpen?: () => void;
+  // used to store open/closed state in SidebarStateContext
+  sectionID?: string;
+}
+
 export const SidebarSection: React.FC<
-  PropsWithChildren<{
-    text: React.ReactNode;
-    className?: string;
-    outsideCollapse?: React.ReactNode;
-    onOpen?: () => void;
-    // used to store open/closed state in SidebarStateContext
-    sectionID?: string;
-  }>
+  PropsWithChildren<ISidebarSectionProps>
 > = ({
   className = "",
   text,

@@ -49,8 +49,6 @@
         "import_from_file": "Uvezi iz datoteke",
         "logout": "Odjava",
         "merge": "Spoji",
-        "merge_from": "Spoji iz",
-        "merge_into": "Spoji u",
         "next_action": "Dalje",
         "not_running": "nije pokrenuto",
         "open_in_external_player": "Otvori u vanjskom playeru",
@@ -224,9 +222,7 @@
             "latest_version_build_hash": "Izrađen Hash Zadnje Verzije:",
             "new_version_notice": "[NOVO]",
             "release_date": "Datum izdanja:",
-            "stash_discord": "Pridruži se našem {url} kanalu",
             "stash_home": "Stash početna stranica na {url}",
-            "stash_open_collective": "Podrži nas kroz {url}",
             "stash_wiki": "Stash {url} stranica",
             "version": "Verzija"
         },

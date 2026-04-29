@@ -3,6 +3,7 @@ package mocks
 
 import (
 	"context"
+	"errors"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
@@ -87,6 +88,16 @@ func (db *Database) AssertExpectations(t mock.TestingT) {
 	db.Studio.AssertExpectations(t)
 	db.Tag.AssertExpectations(t)
 	db.SavedFilter.AssertExpectations(t)
+}
+
+// WithTxnCtx runs fn with a context that has a transaction hook manager registered,
+// so code that calls txn.AddPostCommitHook (e.g. plugin cache) won't nil-panic.
+// Always rolls back to avoid executing the registered hooks.
+func (db *Database) WithTxnCtx(fn func(ctx context.Context)) {
+	_ = txn.WithTxn(context.Background(), db, func(ctx context.Context) error {
+		fn(ctx)
+		return errors.New("rollback")
+	})
 }
 
 func (db *Database) Repository() models.Repository {
