@@ -1,5 +1,6 @@
 import React, { PropsWithChildren, useMemo } from "react";
-import { ApolloError, QueryResult } from "@apollo/client";
+import { ApolloError } from "@apollo/client/v4-migration";
+import type { useQuery } from "@apollo/client/react";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { Pagination, PaginationIndex } from "./Pagination";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
@@ -34,8 +35,8 @@ export const LoadedContent: React.FC<
 
 export const PagedList: React.FC<
   PropsWithChildren<{
-    result: QueryResult;
-    cachedResult: QueryResult;
+    result: useQuery.Result;
+    cachedResult: useQuery.Result;
     filter: ListFilterModel;
     totalCount: number;
     onChangePage: (page: number) => void;

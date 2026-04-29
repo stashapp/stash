@@ -1,4 +1,4 @@
-import { ApolloError } from "@apollo/client";
+import { ApolloError } from "@apollo/client/v4-migration";
 
 export const apolloError = (error: unknown) =>
   error instanceof ApolloError ? error.message : "";
