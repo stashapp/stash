@@ -434,7 +434,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     t: GQL.ScrapedTag,
     createInput?: GQL.TagCreateInput
   ) {
-    const toCreate: GQL.TagCreateInput = createInput ?? { name: t.name };
+    const toCreate: GQL.TagCreateInput = createInput ?? {
+      name: t.name,
+      description: t.description ?? undefined,
+      aliases: t.alias_list?.filter((a) => a) ?? undefined,
+    };
 
     // If the tag has a remote_site_id and we have an endpoint, include the stash_id
     const endpoint = currentSource?.sourceInput.stash_box_endpoint;
