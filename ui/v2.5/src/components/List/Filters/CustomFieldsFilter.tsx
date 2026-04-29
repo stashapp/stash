@@ -5,7 +5,7 @@ import {
   CriterionModifier,
   CustomFieldCriterionInput,
 } from "src/core/generated-graphql";
-import { cloneDeep } from "@apollo/client/utilities";
+import cloneDeep from "lodash-es/cloneDeep";
 import { ModifierSelect } from "../ModifierSelect";
 import { useIntl } from "react-intl";
 import { Icon } from "src/components/Shared/Icon";

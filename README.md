@@ -36,7 +36,8 @@ Step-by-step instructions are available at [docs.stashapp.cc/installation](https
 > **macOS Users**
 >
 > As of version 0.29.0, Stash requires _macOS 11 Big Sur_ or later.  
-> Stash can still be run through docker on older versions of macOS.
+> As of version 0.32.0, Stash requires _macOS 12 Monterey_ or later.  
+> Stash can still be run through Docker on older versions of macOS.
 
 <img src="docs/readme_assets/windows_logo.svg" width="100%" height="75"> Windows | <img src="docs/readme_assets/mac_logo.svg" width="100%" height="75"> macOS | <img src="docs/readme_assets/linux_logo.svg" width="100%" height="75"> Linux | <img src="docs/readme_assets/docker_logo.svg" width="100%" height="75"> Docker
 :---:|:---:|:---:|:---:

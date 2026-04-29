@@ -303,8 +303,6 @@ export const TaggerContext: React.FC = ({ children }) => {
 
       if (results.error) {
         newResult = { error: results.error.message };
-      } else if (results.errors) {
-        newResult = { error: results.errors.toString() };
       } else {
         newResult = {
           results: results.data.scrapeSingleScene.map((r) => ({
@@ -339,8 +337,6 @@ export const TaggerContext: React.FC = ({ children }) => {
 
       if (results.error) {
         newResult = { error: results.error.message };
-      } else if (results.errors) {
-        newResult = { error: results.errors.toString() };
       } else {
         newResult = {
           results: results.data.scrapeSingleScene.map((r) => ({
@@ -401,8 +397,6 @@ export const TaggerContext: React.FC = ({ children }) => {
 
         if (results.error) {
           setMultiError(results.error.message);
-        } else if (results.errors) {
-          setMultiError(results.errors.toString());
         } else {
           const newSearchResults = { ...searchResults };
           sceneIDs.forEach((sceneID, index) => {

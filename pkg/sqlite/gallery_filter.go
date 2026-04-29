@@ -193,15 +193,15 @@ func (qb *galleryFilterHandler) urlsCriterionHandler(url *models.StringCriterion
 		primaryFK:    galleryIDColumn,
 		joinTable:    galleriesURLsTable,
 		stringColumn: galleriesURLColumn,
-		addJoinTable: func(f *filterBuilder) {
-			galleriesURLsTableMgr.join(f, "", "galleries.id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			galleriesURLsTableMgr.join(f, joinType, "", "galleries.id")
 		},
 	}
 
 	return h.handler(url)
 }
 
-func (qb *galleryFilterHandler) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
+func (qb *galleryFilterHandler) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder, joinType joinType)) multiCriterionHandlerBuilder {
 	return multiCriterionHandlerBuilder{
 		primaryTable: galleryTable,
 		foreignTable: foreignTable,
@@ -353,7 +353,7 @@ func (qb *galleryFilterHandler) missingCriterionHandler(isMissing *string) crite
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "url":
-				galleriesURLsTableMgr.join(f, "", "galleries.id")
+				galleriesURLsTableMgr.leftJoin(f, "", "galleries.id")
 				f.addWhere("gallery_urls.url IS NULL")
 			case "scenes":
 				f.addLeftJoin("scenes_galleries", "scenes_join", "scenes_join.gallery_id = galleries.id")
@@ -361,12 +361,12 @@ func (qb *galleryFilterHandler) missingCriterionHandler(isMissing *string) crite
 			case "studio":
 				f.addWhere("galleries.studio_id IS NULL")
 			case "performers":
-				galleryRepository.performers.join(f, "performers_join", "galleries.id")
+				galleryRepository.performers.leftJoin(f, "performers_join", "galleries.id")
 				f.addWhere("performers_join.gallery_id IS NULL")
 			case "date":
 				f.addWhere("galleries.date IS NULL OR galleries.date IS \"\"")
 			case "tags":
-				galleryRepository.tags.join(f, "tags_join", "galleries.id")
+				galleryRepository.tags.leftJoin(f, "tags_join", "galleries.id")
 				f.addWhere("tags_join.gallery_id IS NULL")
 			case "cover":
 				f.addLeftJoin("galleries_images", "cover_join", "cover_join.gallery_id = galleries.id AND cover_join.cover = 1")
@@ -410,9 +410,9 @@ func (qb *galleryFilterHandler) tagCountCriterionHandler(tagCount *models.IntCri
 }
 
 func (qb *galleryFilterHandler) scenesCriterionHandler(scenes *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
-		galleryRepository.scenes.join(f, "", "galleries.id")
-		f.addLeftJoin("scenes", "", "scenes_galleries.scene_id = scenes.id")
+	addJoinsFunc := func(f *filterBuilder, joinType joinType) {
+		galleryRepository.scenes.join(f, joinType, "", "galleries.id")
+		f.addJoin(joinType, "scenes", "", "scenes_galleries.scene_id = scenes.id")
 	}
 	h := qb.getMultiCriterionHandlerBuilder(sceneTable, galleriesScenesTable, "scene_id", addJoinsFunc)
 	return h.handler(scenes)
@@ -426,8 +426,8 @@ func (qb *galleryFilterHandler) performersCriterionHandler(performers *models.Mu
 		primaryFK:    galleryIDColumn,
 		foreignFK:    performerIDColumn,
 
-		addJoinTable: func(f *filterBuilder) {
-			galleryRepository.performers.join(f, "performers_join", "galleries.id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			galleryRepository.performers.join(f, joinType, "performers_join", "galleries.id")
 		},
 	}
 
@@ -515,7 +515,7 @@ func (qb *galleryFilterHandler) performerAgeCriterionHandler(performerAge *model
 func (qb *galleryFilterHandler) averageResolutionCriterionHandler(resolution *models.ResolutionCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if resolution != nil && resolution.Value.IsValid() {
-			galleryRepository.images.join(f, "images_join", "galleries.id")
+			galleryRepository.images.leftJoin(f, "images_join", "galleries.id")
 			f.addLeftJoin("images", "", "images_join.image_id = images.id")
 			f.addLeftJoin("images_files", "", "images.id = images_files.image_id")
 			f.addLeftJoin("image_files", "", "images_files.file_id = image_files.file_id")
