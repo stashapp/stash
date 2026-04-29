@@ -418,7 +418,7 @@
       "include_audio_desc": "Includes audio stream when generating previews.",
       "include_audio_head": "Include audio",
       "logging": "Logging",
-      "max_marker_preview_duration_desc": "Optional ceiling (in seconds) for marker preview videos with explicit end times. Default is 0 (no ceiling, the marker's end time is honored verbatim). Set a positive value to cap preview duration as a safety against imports or data entry mistakes. Markers without an end time use a fixed 20-second default, unaffected by this setting.",
+      "max_marker_preview_duration_desc": "Maximum duration (seconds) for marker previews. 0 disables the limit.",
       "max_marker_preview_duration_head": "Max marker preview duration",
       "maximum_streaming_transcode_size_desc": "Maximum size for transcoded streams.",
       "maximum_streaming_transcode_size_head": "Maximum streaming transcode size",

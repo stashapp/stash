@@ -37,18 +37,16 @@ func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash st
 
 	duration := float64(markerPreviewDefaultDuration)
 
-	// Honor the marker's explicit interval when present and positive, capped
-	// by the configured safety ceiling. maxDuration <= 0 disables the ceiling.
-	// Non-positive intervals are treated as "no video wanted" and skipped —
-	// if the user intentionally set end = start they didn't want a preview,
-	// and if it's a data mistake we'd rather surface it than silently default.
+	// Honor the marker's explicit interval when present, capped by the configured
+	// safety ceiling. maxDuration <= 0 disables the ceiling. The marker form
+	// permits end == start, so a non-positive interval is treated the same as
+	// a missing end (fall back to the default duration) rather than refusing to
+	// render; the warning surfaces unexpected data without breaking generation.
 	if endSeconds != nil {
 		interval := *endSeconds - seconds
 		if interval <= 0 {
-			logger.Warnf("[generator] marker at %.2fs has non-positive interval (end=%.2f); skipping video preview generation", seconds, *endSeconds)
-			return nil
-		}
-		if maxDuration <= 0 || interval <= float64(maxDuration) {
+			logger.Warnf("[generator] marker at %.2fs has non-positive interval (end=%.2f); using default duration", seconds, *endSeconds)
+		} else if maxDuration <= 0 || interval <= float64(maxDuration) {
 			duration = interval
 		} else {
 			duration = float64(maxDuration)
