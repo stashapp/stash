@@ -17,6 +17,7 @@ require (
 	github.com/doug-martin/goqu/v9 v9.18.0
 	github.com/enetx/g v1.0.223
 	github.com/enetx/surf v1.0.198
+	github.com/feederbox826/gosx-notifier v0.2.2
 	github.com/go-chi/chi/v5 v5.2.2
 	github.com/go-chi/cors v1.2.1
 	github.com/go-chi/httplog v0.3.1
