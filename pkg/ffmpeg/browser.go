@@ -18,6 +18,10 @@ var validForVp9 = []Container{Webm}
 var validForHevcMkv = []Container{Mp4, Matroska}
 var validForHevc = []Container{Mp4}
 
+var validAudioForMkv = []ProbeAudioCodec{Aac, Mp3, Vorbis, Opus}
+var validAudioForWebm = []ProbeAudioCodec{Vorbis, Opus}
+var validAudioForMp4 = []ProbeAudioCodec{Aac, Mp3, Opus}
+
 var (
 	// ErrUnsupportedVideoCodecForBrowser is returned when the video codec is not supported for browser streaming.
 	ErrUnsupportedVideoCodecForBrowser = errors.New("unsupported video codec for browser")
@@ -58,28 +62,34 @@ func isValidCodec(codecName string, supportedCodecs []string) bool {
 	return false
 }
 
-// TODO(audio): do we need to check ProbeAudioCodec for audio containers?
-// func isValidAudio(audio ProbeAudioCodec, validCodecs []ProbeAudioCodec) bool {
-// 	// if audio codec is missing or unsupported by ffmpeg we can't do anything about it
-// 	// report it as valid so that the file can at least be streamed directly if the video codec is supported
-// 	if audio == MissingUnsupported {
-// 		return true
-// 	}
+func isValidAudio(audio ProbeAudioCodec, validCodecs []ProbeAudioCodec) bool {
+	// if audio codec is missing or unsupported by ffmpeg we can't do anything about it
+	// report it as valid so that the file can at least be streamed directly if the video codec is supported
+	if audio == MissingUnsupported {
+		return true
+	}
 
-// 	for _, c := range validCodecs {
-// 		if c == audio {
-// 			return true
-// 		}
-// 	}
+	for _, c := range validCodecs {
+		if c == audio {
+			return true
+		}
+	}
 
-// 	return false
-// }
+	return false
+}
 
 // IsValidAudioForContainer returns true if the audio codec is valid for the container.
 func IsValidAudioForContainer(audio ProbeAudioCodec, format Container) bool {
-	if format == Mp3Container {
+	switch format {
+	case Matroska:
+		return isValidAudio(audio, validAudioForMkv)
+	case Webm:
+		return isValidAudio(audio, validAudioForWebm)
+	case Mp4:
+		return isValidAudio(audio, validAudioForMp4)
+	case Mp3Container:
+		// TODO(audio): do we need to check ProbeAudioCodec for audio containers? (i.e. can `.mp3` contain a codec we need to transcode for?
 		return true
-		// TODO(audio): do we need to check ProbeAudioCodec for audio containers?
 		// return isValidAudio(audio, validAudioForMp3)
 	}
 	return false
