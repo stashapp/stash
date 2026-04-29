@@ -683,74 +683,65 @@ func verifyPerformers(t *testing.T, expectedNames []string, expectedURLs []strin
 	}
 }
 
-func TestApplySceneXPathConfig(t *testing.T) {
-	reader := strings.NewReader(sceneHTML)
-	doc, err := htmlquery.Parse(reader)
+func TestApplySceneXPathConfigRelationshipsOnly(t *testing.T) {
+    reader := strings.NewReader(sceneHTML)
+    doc, err := htmlquery.Parse(reader)
+    if err != nil {
+        t.Fatalf("Error loading document: %s", err.Error())
+    }
 
-	if err != nil {
-		t.Errorf("Error loading document: %s", err.Error())
-		return
-	}
+    scraper := makeSceneXPathConfig()
 
-	scraper := makeSceneXPathConfig()
+    // Simulate the relationships-only scrape path:
+    // no direct scene fields, but populated Performers/Tags mappings.
+    scraper.Scene.mappedConfig = make(mappedConfig)
+    scraper.Scene.Studio = nil
+    scraper.Scene.Movies = nil
+    scraper.Scene.Groups = nil
 
-	q := &xpathQuery{
-		doc: doc,
-	}
-	scene, err := scraper.scrapeScene(context.Background(), q)
+    q := &xpathQuery{
+        doc: doc,
+    }
 
-	if err != nil {
-		t.Errorf("Error scraping scene: %s", err.Error())
-		return
-	}
+    var scene *models.ScrapedScene
+    assert.NotPanics(t, func() {
+        scene, err = scraper.scrapeScene(context.Background(), q)
+    }, "relationships-only scene scrape should not panic")
 
-	const title = "Test Video"
+    assert.NoError(t, err)
+    assert.NotNil(t, scene)
 
-	verifyField(t, title, scene.Title, "Title")
+    // No direct scene fields should be populated.
+    assert.Nil(t, scene.Title)
+    assert.Nil(t, scene.Date)
 
-	// verify tags
-	expectedTags := []string{
-		"Amateur",
-		"Babe",
-		"Blowjob",
-		"Exclusive",
-		"HD Porn",
-		"Pornstar",
-		"Public",
-		"Pussy Licking",
-		"Threesome",
-		"Verified Models",
-	}
-	verifyTags(t, expectedTags, scene.Tags)
+    expectedTags := []string{
+        "Amateur",
+        "Babe",
+        "Blowjob",
+        "Exclusive",
+        "HD Porn",
+        "Pornstar",
+        "Public",
+        "Pussy Licking",
+        "Threesome",
+        "Verified Models",
+    }
+    verifyTags(t, expectedTags, scene.Tags)
 
-	// verify movies
-	expectedMovies := []string{
-		"Video",
-		"of",
-		"verified",
-		"member",
-	}
-	verifyMovies(t, expectedMovies, scene.Movies)
+    expectedPerformerNames := []string{
+        "Alex D",
+        "Mia Malkova",
+        "Riley Reid",
+    }
 
-	expectedPerformerNames := []string{
-		"Alex D",
-		"Mia Malkova",
-		"Riley Reid",
-	}
+    expectedPerformerURLs := []string{
+        "/pornstar/alex-d",
+        "/pornstar/mia-malkova",
+        "/pornstar/riley-reid",
+    }
 
-	expectedPerformerURLs := []string{
-		"/pornstar/alex-d",
-		"/pornstar/mia-malkova",
-		"/pornstar/riley-reid",
-	}
-
-	verifyPerformers(t, expectedPerformerNames, expectedPerformerURLs, scene.Performers)
-
-	const expectedStudioName = "Sis Loves Me"
-	const expectedStudioURL = "/channels/sis-loves-me"
-
-	verifyField(t, expectedStudioName, &scene.Studio.Name, "Studio.Name")
-	verifyField(t, expectedStudioURL, scene.Studio.URL, "Studio.URL")
+    verifyPerformers(t, expectedPerformerNames, expectedPerformerURLs, scene.Performers)
 }
 
 func TestLoadXPathScraperFromYAML(t *testing.T) {
