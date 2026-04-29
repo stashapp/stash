@@ -30,11 +30,10 @@ const scrapeDefaultSleep = time.Second * 2
 func loadURL(ctx context.Context, loadURL string, client *http.Client, def Definition, globalConfig GlobalConfig) (io.Reader, error) {
 	driverOptions := def.DriverOptions
 	if driverOptions != nil {
-		if driverOptions.UseCDP {
-			// get the page using chrome dp
+		switch {
+		case driverOptions.UseCDP:
 			return urlFromCDP(ctx, loadURL, *driverOptions, globalConfig)
-		} else if driverOptions.UseSurf {
-			// get the page using surf
+		case driverOptions.UseSurf:
 			return urlFromSurf(ctx, loadURL, def, globalConfig)
 		}
 	}
@@ -78,11 +77,10 @@ func loadURL(ctx context.Context, loadURL string, client *http.Client, def Defin
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode >= 400 {
 		return nil, fmt.Errorf("http error %d:%s", resp.StatusCode, http.StatusText(resp.StatusCode))
 	}
-
-	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -131,12 +129,10 @@ func urlFromSurf(ctx context.Context, loadURL string, def Definition, globalConf
 	if err != nil {
 		return nil, err
 	}
-
+	defer resp.Body.Close()
 	if resp.StatusCode >= 400 {
 		return nil, fmt.Errorf("http error %d:%s", resp.StatusCode, http.StatusText(resp.StatusCode))
 	}
-
-	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
