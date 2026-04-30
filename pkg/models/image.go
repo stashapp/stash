@@ -79,7 +79,6 @@ type ImageUpdateInput struct {
 	Urls             []string           `json:"urls"`
 	Date             *string            `json:"date"`
 	Details          *string            `json:"details"`
-	Path             *string            `json:"path"`
 	Photographer     *string            `json:"photographer"`
 	Rating100        *int               `json:"rating100"`
 	Organized        *bool              `json:"organized"`
