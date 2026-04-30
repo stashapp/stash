@@ -2876,6 +2876,90 @@ func TestGalleryQuerySorting(t *testing.T) {
 	}
 }
 
+func TestGalleryQuerySortingPerformerAgeNullHandling(t *testing.T) {
+	runWithRollbackTxn(t, "performer age null handling", func(t *testing.T, ctx context.Context) {
+		assert := assert.New(t)
+
+		knownBirthdate, err := models.ParseDate("1990-01-01")
+		require.NoError(t, err)
+
+		knownPerformer := models.Performer{
+			Name:      "performer-known-birthdate",
+			Birthdate: &knownBirthdate,
+		}
+		require.NoError(t, db.Performer.Create(ctx, &models.CreatePerformerInput{Performer: &knownPerformer}))
+
+		unknownPerformer := models.Performer{
+			Name: "performer-unknown-birthdate",
+		}
+		require.NoError(t, db.Performer.Create(ctx, &models.CreatePerformerInput{Performer: &unknownPerformer}))
+
+		knownOnlyGallery := models.Gallery{
+			Title: "gallery-known-only",
+			Date:  models.NewString("2020-01-01"),
+			PerformerIDs: models.NewRelatedIDs([]int{
+				knownPerformer.ID,
+			}),
+		}
+		require.NoError(t, db.Gallery.Create(ctx, &models.CreateGalleryInput{Gallery: &knownOnlyGallery}))
+
+		mixedGallery := models.Gallery{
+			Title: "gallery-known-and-unknown",
+			Date:  models.NewString("2020-01-01"),
+			PerformerIDs: models.NewRelatedIDs([]int{
+				knownPerformer.ID,
+				unknownPerformer.ID,
+			}),
+		}
+		require.NoError(t, db.Gallery.Create(ctx, &models.CreateGalleryInput{Gallery: &mixedGallery}))
+
+		unknownOnlyGallery := models.Gallery{
+			Title: "gallery-unknown-only",
+			Date:  models.NewString("2020-01-01"),
+			PerformerIDs: models.NewRelatedIDs([]int{
+				unknownPerformer.ID,
+			}),
+		}
+		require.NoError(t, db.Gallery.Create(ctx, &models.CreateGalleryInput{Gallery: &unknownOnlyGallery}))
+
+		findIndex := func(galleries []*models.Gallery, id int) int {
+			for i, g := range galleries {
+				if g.ID == id {
+					return i
+				}
+			}
+			return -1
+		}
+
+		asc := models.SortDirectionEnumAsc
+		sortBy := "performer_age"
+		ascGot, _, err := db.Gallery.Query(ctx, nil, &models.FindFilterType{Sort: &sortBy, Direction: &asc})
+		require.NoError(t, err)
+
+		ascKnownOnly := findIndex(ascGot, knownOnlyGallery.ID)
+		ascMixed := findIndex(ascGot, mixedGallery.ID)
+		ascUnknownOnly := findIndex(ascGot, unknownOnlyGallery.ID)
+		assert.NotEqual(-1, ascKnownOnly)
+		assert.NotEqual(-1, ascMixed)
+		assert.NotEqual(-1, ascUnknownOnly)
+		assert.Less(ascKnownOnly, ascUnknownOnly)
+		assert.Less(ascMixed, ascUnknownOnly)
+
+		desc := models.SortDirectionEnumDesc
+		descGot, _, err := db.Gallery.Query(ctx, nil, &models.FindFilterType{Sort: &sortBy, Direction: &desc})
+		require.NoError(t, err)
+
+		descKnownOnly := findIndex(descGot, knownOnlyGallery.ID)
+		descMixed := findIndex(descGot, mixedGallery.ID)
+		descUnknownOnly := findIndex(descGot, unknownOnlyGallery.ID)
+		assert.NotEqual(-1, descKnownOnly)
+		assert.NotEqual(-1, descMixed)
+		assert.NotEqual(-1, descUnknownOnly)
+		assert.Less(descKnownOnly, descUnknownOnly)
+		assert.Less(descMixed, descUnknownOnly)
+	})
+}
+
 func TestGalleryStore_AddImages(t *testing.T) {
 	tests := []struct {
 		name      string

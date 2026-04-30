@@ -866,10 +866,13 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 			// When sorting by performer age DESC, consider oldest performer instead.
 			aggregation = "MAX"
 		}
-		fallback := "NULL"
+		fallback := "-9223372036854775808"
 		if direction == "ASC" {
 			// ASC puts NULL first by default, so coalesce to sqlite max int.
 			fallback = "9223372036854775807"
+		} else {
+			// DESC puts larger values first; coalesce NULL to sqlite min int to keep NULLs last.
+			fallback = "-9223372036854775808"
 		}
 		query.sortAndPagination += fmt.Sprintf(
 			" ORDER BY (SELECT COALESCE(%s(JulianDay(galleries.date) - JulianDay(performers.birthdate)), %s) FROM %s as performers INNER JOIN %s AS aggregation WHERE performers.id = aggregation.%s AND aggregation.%s = %s.id) %s",
