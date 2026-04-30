@@ -420,8 +420,9 @@ input ConfigInterfaceInput {
   "When true, disables all customizations (plugins, CSS, JavaScript, locales) for troubleshooting"
   disableCustomizations: Boolean
 
-  "Default gender to apply when creating a performer without explicit gender"
-  defaultPerformerGender: GenderEnum
+  """Default gender to apply when creating a performer without explicit gender.
+  Send an empty string to clear the setting."""
+  defaultPerformerGender: String
 
   "Interface language"
   language: String

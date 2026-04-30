@@ -531,11 +531,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             headingID="config.ui.performer_list.options.default_gender.heading"
             subHeadingID="config.ui.performer_list.options.default_gender.description"
             value={iface.defaultPerformerGender ?? ""}
-            onChange={(v) =>
-              saveInterface({
-                defaultPerformerGender: v === "" ? null : (v as GQL.GenderEnum),
-              })
-            }
+            onChange={(v) => saveInterface({ defaultPerformerGender: v })}
           >
             <option value="">{intl.formatMessage({ id: "none" })}</option>
             {genderList.map((gender) => (
