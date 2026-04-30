@@ -2825,6 +2825,20 @@ func TestGalleryQuerySorting(t *testing.T) {
 			-1,
 			-1,
 		},
+		{
+			"performer age asc",
+			"performer_age",
+			models.SortDirectionEnumAsc,
+			-1,
+			-1,
+		},
+		{
+			"performer age desc",
+			"performer_age",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
 	}
 
 	qb := db.Gallery

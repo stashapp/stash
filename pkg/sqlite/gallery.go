@@ -797,6 +797,7 @@ var gallerySortOptions = sortOptions{
 	"id",
 	"images_count",
 	"path",
+	"performer_age",
 	"performer_count",
 	"random",
 	"rating",
@@ -858,6 +859,29 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 		query.sortAndPagination += getCountSort(galleryTable, galleriesTagsTable, galleryIDColumn, direction)
 	case "performer_count":
 		query.sortAndPagination += getCountSort(galleryTable, performersGalleriesTable, galleryIDColumn, direction)
+	case "performer_age":
+		// Looking at the youngest performer by default.
+		aggregation := "MIN"
+		if direction == "DESC" {
+			// When sorting by performer age DESC, consider oldest performer instead.
+			aggregation = "MAX"
+		}
+		fallback := "NULL"
+		if direction == "ASC" {
+			// ASC puts NULL first by default, so coalesce to sqlite max int.
+			fallback = "9223372036854775807"
+		}
+		query.sortAndPagination += fmt.Sprintf(
+			" ORDER BY (SELECT COALESCE(%s(JulianDay(galleries.date) - JulianDay(performers.birthdate)), %s) FROM %s as performers INNER JOIN %s AS aggregation WHERE performers.id = aggregation.%s AND aggregation.%s = %s.id) %s",
+			aggregation,
+			fallback,
+			performerTable,
+			performersGalleriesTable,
+			performerIDColumn,
+			galleryIDColumn,
+			galleryTable,
+			getSortDirection(direction),
+		)
 	case "path":
 		// special handling for path
 		addFileTable()
