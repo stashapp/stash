@@ -317,7 +317,7 @@ test:
 
 # runs all tests - including integration tests
 .PHONY: it
-it: generate
+it:
 	$(eval GO_BUILD_TAGS += integration)
 	go test -tags "$(GO_BUILD_TAGS)" ./...
 
