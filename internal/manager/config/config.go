@@ -1313,8 +1313,14 @@ func (i *Config) GetShowStudioAsText() bool {
 }
 
 func (i *Config) GetDefaultPerformerGender() *models.GenderEnum {
-	g := models.GenderEnum(i.getString(DefaultPerformerGender))
+	s := i.getString(DefaultPerformerGender)
+	if s == "" {
+		return nil
+	}
+
+	g := models.GenderEnum(s)
 	if !g.IsValid() {
+		logger.Warnf("invalid default performer gender: %q", s)
 		return nil
 	}
 
