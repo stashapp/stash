@@ -58,6 +58,15 @@ const isScraper = (
   scraper: GQL.Scraper | GQL.StashBox
 ): scraper is GQL.Scraper => (scraper as GQL.Scraper).id !== undefined;
 
+function withScrapedPerformerDefaultGender<
+  T extends { gender?: GQL.GenderEnum | null },
+>(scraped: T, defaultGender: GQL.GenderEnum | null | undefined): T {
+  if (scraped.gender || !defaultGender) {
+    return scraped;
+  }
+  return { ...scraped, gender: defaultGender };
+}
+
 interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
   isVisible: boolean;
@@ -426,14 +435,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
       const result = await queryScrapePerformer(selectedScraper.id, ret);
       if (!result?.data?.scrapeSinglePerformer?.length) return;
-      const withDefaultGender = (
-        scrapedPerformerData: GQL.ScrapedPerformerDataFragment
-      ) =>
-        !scrapedPerformerData.gender && defaultPerformerGender
-          ? { ...scrapedPerformerData, gender: defaultPerformerGender }
-          : scrapedPerformerData;
-      const scrapedResult = withDefaultGender(
-        result.data.scrapeSinglePerformer[0]
+      const scrapedResult = withScrapedPerformerDefaultGender(
+        result.data.scrapeSinglePerformer[0],
+        defaultPerformerGender
       );
 
       // assume one result
@@ -460,13 +464,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         return;
       }
 
-      const scrapedResult =
-        !result.data.scrapePerformerURL.gender && defaultPerformerGender
-          ? {
-              ...result.data.scrapePerformerURL,
-              gender: defaultPerformerGender,
-            }
-          : result.data.scrapePerformerURL;
+      const scrapedResult = withScrapedPerformerDefaultGender(
+        result.data.scrapePerformerURL,
+        defaultPerformerGender
+      );
 
       // if this is a new performer, just dump the data
       if (isNew) {
