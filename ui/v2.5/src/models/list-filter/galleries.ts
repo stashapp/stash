@@ -69,6 +69,7 @@ const criterionOptions = [
   PerformerAgeCriterionOption,
   PerformerFavoriteCriterionOption,
   createMandatoryNumberCriterionOption("image_count"),
+  createMandatoryNumberCriterionOption("o_counter", "o_count"),
   // StudioTagsCriterionOption,
   ScenesCriterionOption,
   StudiosCriterionOption,

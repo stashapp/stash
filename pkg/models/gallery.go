@@ -47,6 +47,8 @@ type GalleryFilterType struct {
 	PerformerAge *IntCriterionInput `json:"performer_age"`
 	// Filter by number of images in this gallery
 	ImageCount *IntCriterionInput `json:"image_count"`
+	// Filter by o-counter
+	OCounter *IntCriterionInput `json:"o_counter"`
 	// Filter by url
 	URL *StringCriterionInput `json:"url"`
 	// Filter by date

@@ -100,6 +100,7 @@ func (qb *galleryFilterHandler) criterionHandler() criterionHandler {
 		qb.performerTagsCriterionHandler(filter.PerformerTags),
 		qb.averageResolutionCriterionHandler(filter.AverageResolution),
 		qb.imageCountCriterionHandler(filter.ImageCount),
+		qb.galleryOCounterCriterionHandler(filter.OCounter),
 		qb.performerFavoriteCriterionHandler(filter.PerformerFavorite),
 		qb.performerAgeCriterionHandler(filter.PerformerAge),
 		&dateCriterionHandler{filter.Date, "galleries.date", nil},
@@ -184,6 +185,24 @@ func (qb *galleryFilterHandler) criterionHandler() criterionHandler {
 			// don't use a subquery; join directly
 			directJoin: true,
 		},
+	}
+}
+
+var selectGalleryOCountSQL = `SELECT COALESCE(SUM(images.o_counter), 0)
+FROM galleries_images
+LEFT JOIN images ON images.id = galleries_images.image_id
+WHERE galleries_images.gallery_id = galleries.id`
+
+func (qb *galleryFilterHandler) galleryOCounterCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if count == nil {
+			return
+		}
+
+		lhs := "(" + selectGalleryOCountSQL + ")"
+		clause, args := getIntCriterionWhereClause(lhs, *count)
+
+		f.addWhere(clause, args...)
 	}
 }
 

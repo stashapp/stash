@@ -619,6 +619,34 @@ func (_m *ImageReaderWriter) OCount(ctx context.Context) (int, error) {
 	return r0, r1
 }
 
+// OCountByGalleryID provides a mock function with given fields: ctx, galleryID
+func (_m *ImageReaderWriter) OCountByGalleryID(ctx context.Context, galleryID int) (int, error) {
+	ret := _m.Called(ctx, galleryID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for OCountByGalleryID")
+	}
+
+	var r0 int
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int) (int, error)); ok {
+		return rf(ctx, galleryID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
+		r0 = rf(ctx, galleryID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, galleryID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // OCountByPerformerID provides a mock function with given fields: ctx, performerID
 func (_m *ImageReaderWriter) OCountByPerformerID(ctx context.Context, performerID int) (int, error) {
 	ret := _m.Called(ctx, performerID)

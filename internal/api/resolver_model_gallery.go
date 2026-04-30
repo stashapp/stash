@@ -152,6 +152,18 @@ func (r *galleryResolver) ImageCount(ctx context.Context, obj *models.Gallery) (
 	return ret, nil
 }
 
+func (r *galleryResolver) OCounter(ctx context.Context, obj *models.Gallery) (ret *int, err error) {
+	var count int
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		count, err = r.repository.Image.OCountByGalleryID(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &count, nil
+}
+
 func (r *galleryResolver) Chapters(ctx context.Context, obj *models.Gallery) (ret []*models.GalleryChapter, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.GalleryChapter.FindByGalleryID(ctx, obj.ID)

@@ -687,6 +687,19 @@ func (qb *ImageStore) CountByGalleryID(ctx context.Context, galleryID int) (int,
 	return count(ctx, q)
 }
 
+func (qb *ImageStore) OCountByGalleryID(ctx context.Context, galleryID int) (int, error) {
+	table := qb.table()
+	joinTable := galleriesImagesJoinTable
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table).InnerJoin(joinTable, goqu.On(table.Col(idColumn).Eq(joinTable.Col(imageIDColumn)))).Where(joinTable.Col(galleryIDColumn).Eq(galleryID))
+
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (qb *ImageStore) OCountByPerformerID(ctx context.Context, performerID int) (int, error) {
 	table := qb.table()
 	joinTable := performersImagesJoinTable

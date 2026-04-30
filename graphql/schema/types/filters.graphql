@@ -576,6 +576,8 @@ input GalleryFilterType {
   performer_age: IntCriterionInput
   "Filter by number of images in this gallery"
   image_count: IntCriterionInput
+  "Filter by o-counter"
+  o_counter: IntCriterionInput
   "Filter by url"
   url: StringCriterionInput
   "Filter by date"

@@ -26,6 +26,7 @@ type Gallery {
   scenes: [Scene!]!
   studio: Studio
   image_count: Int!
+  o_counter: Int # Resolver
   tags: [Tag!]!
   performers: [Performer!]!
 

@@ -8,6 +8,7 @@ fragment SlimGalleryData on Gallery {
   photographer
   rating100
   organized
+  o_counter
   files {
     ...GalleryFileData
   }
