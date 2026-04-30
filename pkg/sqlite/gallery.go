@@ -860,10 +860,12 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 	case "performer_count":
 		query.sortAndPagination += getCountSort(galleryTable, performersGalleriesTable, galleryIDColumn, direction)
 	case "performer_age":
-		// Looking at the youngest performer by default.
+		// Multi-performer semantics:
+		// - ASC sorts by the youngest performer in each gallery (MIN age)
+		// - DESC sorts by the oldest performer in each gallery (MAX age)
 		aggregation := "MIN"
 		if direction == "DESC" {
-			// When sorting by performer age DESC, consider oldest performer instead.
+			// DESC uses oldest performer age for each gallery.
 			aggregation = "MAX"
 		}
 		fallback := "-9223372036854775808"

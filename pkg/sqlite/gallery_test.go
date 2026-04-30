@@ -2960,6 +2960,75 @@ func TestGalleryQuerySortingPerformerAgeNullHandling(t *testing.T) {
 	})
 }
 
+func TestGalleryQuerySortingPerformerAgeMultiPerformerAggregation(t *testing.T) {
+	runWithRollbackTxn(t, "performer age multi performer aggregation", func(t *testing.T, ctx context.Context) {
+		assert := assert.New(t)
+
+		youngBirthdate, err := models.ParseDate("2000-01-01")
+		require.NoError(t, err)
+		midBirthdate, err := models.ParseDate("1990-01-01")
+		require.NoError(t, err)
+		oldBirthdate, err := models.ParseDate("1980-01-01")
+		require.NoError(t, err)
+
+		young := models.Performer{Name: "performer-young", Birthdate: &youngBirthdate}
+		mid := models.Performer{Name: "performer-mid", Birthdate: &midBirthdate}
+		old := models.Performer{Name: "performer-old", Birthdate: &oldBirthdate}
+		require.NoError(t, db.Performer.Create(ctx, &models.CreatePerformerInput{Performer: &young}))
+		require.NoError(t, db.Performer.Create(ctx, &models.CreatePerformerInput{Performer: &mid}))
+		require.NoError(t, db.Performer.Create(ctx, &models.CreatePerformerInput{Performer: &old}))
+
+		galleryYoungAndOld := models.Gallery{
+			Title: "gallery-young-and-old",
+			Date:  models.NewString("2020-01-01"),
+			PerformerIDs: models.NewRelatedIDs([]int{
+				young.ID,
+				old.ID,
+			}),
+		}
+		require.NoError(t, db.Gallery.Create(ctx, &models.CreateGalleryInput{Gallery: &galleryYoungAndOld}))
+
+		galleryMidOnly := models.Gallery{
+			Title: "gallery-mid-only",
+			Date:  models.NewString("2020-01-01"),
+			PerformerIDs: models.NewRelatedIDs([]int{
+				mid.ID,
+			}),
+		}
+		require.NoError(t, db.Gallery.Create(ctx, &models.CreateGalleryInput{Gallery: &galleryMidOnly}))
+
+		findIndex := func(galleries []*models.Gallery, id int) int {
+			for i, g := range galleries {
+				if g.ID == id {
+					return i
+				}
+			}
+			return -1
+		}
+
+		sortBy := "performer_age"
+		asc := models.SortDirectionEnumAsc
+		ascGot, _, err := db.Gallery.Query(ctx, nil, &models.FindFilterType{Sort: &sortBy, Direction: &asc})
+		require.NoError(t, err)
+		ascYoungAndOld := findIndex(ascGot, galleryYoungAndOld.ID)
+		ascMidOnly := findIndex(ascGot, galleryMidOnly.ID)
+		assert.NotEqual(-1, ascYoungAndOld)
+		assert.NotEqual(-1, ascMidOnly)
+		// ASC uses MIN(age), so gallery with youngest performer should come first.
+		assert.Less(ascYoungAndOld, ascMidOnly)
+
+		desc := models.SortDirectionEnumDesc
+		descGot, _, err := db.Gallery.Query(ctx, nil, &models.FindFilterType{Sort: &sortBy, Direction: &desc})
+		require.NoError(t, err)
+		descYoungAndOld := findIndex(descGot, galleryYoungAndOld.ID)
+		descMidOnly := findIndex(descGot, galleryMidOnly.ID)
+		assert.NotEqual(-1, descYoungAndOld)
+		assert.NotEqual(-1, descMidOnly)
+		// DESC uses MAX(age), so gallery with oldest performer should come first.
+		assert.Less(descYoungAndOld, descMidOnly)
+	})
+}
+
 func TestGalleryStore_AddImages(t *testing.T) {
 	tests := []struct {
 		name      string
