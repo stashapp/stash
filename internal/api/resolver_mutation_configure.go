@@ -64,8 +64,8 @@ func (r *mutationResolver) setConfigString(key string, value *string) {
 
 // applyDefaultPerformerGenderInput updates or clears DefaultPerformerGender.
 // Omit both fields to leave the stored value unchanged.
-func (r *mutationResolver) applyDefaultPerformerGenderInput(value *models.GenderEnum, clear *bool) error {
-	if clear != nil && *clear {
+func (r *mutationResolver) applyDefaultPerformerGenderInput(value *models.GenderEnum, shouldClear *bool) error {
+	if shouldClear != nil && *shouldClear {
 		if value != nil {
 			return fmt.Errorf("cannot set and clear default performer gender in the same request")
 		}
