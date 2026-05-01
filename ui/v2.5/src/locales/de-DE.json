@@ -158,7 +158,8 @@
         "from_clipboard": "Aus Zwischenablage",
         "reveal_in_file_manager": "Im Dateimanager anzeigen",
         "selective_generate": "Selektives Generieren",
-        "create_parent_tag": "Übergeordneten Tag erstellen"
+        "create_parent_tag": "Übergeordneten Tag erstellen",
+        "exclude_lowercase": "ausschließen"
     },
     "actions_name": "Aktionen",
     "age": "Alter",
