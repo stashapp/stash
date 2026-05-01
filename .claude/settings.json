@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make:*)",
+      "Bash(go build:*)",
+      "Bash(go test:*)",
+      "Bash(go fmt:*)",
+      "Bash(go mod:*)",
+      "Bash(go generate:*)",
+      "Bash(golangci-lint:*)",
+      "Bash(cd ui/v2.5 && pnpm:*)",
+      "Bash(cd ui/v2.5 && npx:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(cat:*)",
+      "Bash(mkdir:*)"
+    ]
+  }
+}
