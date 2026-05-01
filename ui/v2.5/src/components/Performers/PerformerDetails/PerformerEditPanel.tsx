@@ -59,7 +59,7 @@ const isScraper = (
 ): scraper is GQL.Scraper => (scraper as GQL.Scraper).id !== undefined;
 
 function withScrapedPerformerDefaultGender<
-  T extends { gender?: GQL.GenderEnum | null },
+  T extends { gender?: GQL.GenderEnum | null }
 >(scraped: T, defaultGender: GQL.GenderEnum | null | undefined): T {
   if (scraped.gender || !defaultGender) {
     return scraped;
