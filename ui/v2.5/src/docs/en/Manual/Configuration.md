@@ -149,6 +149,12 @@ Some scrapers require a Chrome instance to function correctly. If left empty, st
 
 > **⚠️ Important:** As of Chrome 136 you need to specify `--user-data-dir` alongside `--remote-debugging-port`. Read more on their [official post](https://developer.chrome.com/blog/remote-debugging-port). 
 
+### Default Performer Gender 
+
+**Default performer gender** is edited under `Settings → Interface`
+
+When set, performers will be assumed to be of the identified gender when no gender is supplied by scraper or other means.  Also sets the gender in the create performer dialog to this gender by default.
+
 ## Authentication
 
 By default, stash is not configured with any sort of password protection. To enable password protection, both `Username` and `Password` must be populated. Note that when entering a new username and password where none was set previously, the system will immediately request these credentials to log you in.

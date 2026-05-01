@@ -964,7 +964,7 @@ Weight
 
 > **⚠️ Important:** `Name` field is required. 
 
-> **⚠️ Note:** `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).
+> **⚠️ Note:** `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).  If gender is not set, gender will be observed by **default performer gender** (`Settings → Interface`) if set.
 
 ### Scene
 

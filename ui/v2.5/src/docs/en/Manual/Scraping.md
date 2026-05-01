@@ -89,6 +89,10 @@ Click on the 🔍 button in the `edit` tab of an item. You will be presented wit
 
 Enter the URL in the `edit` tab of an Item. If a scraper is installed that supports that url, then a button will appear to scrape the metadata.
 
+### Performer scraping and default gender
+
+For **performers**, if the scraped result does not supply a **gender** but **default performer gender** (`Settings → Interface`) is configured, Stash fills that gender when applying the scrape in the performer. Any gender returned by the scrape is kept.
+
 ## Tagger view
 
 The Tagger view is accessed from the scenes page. It allows the user to run scrapers on all items on the current page. The Tagger presents the user with potential matches for an item from a selected stash-box instance or metadata source if supported. The user needs to select the correct metadata information to save. 
