@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
@@ -64,22 +63,22 @@ func (r *mutationResolver) setConfigString(key string, value *string) {
 }
 
 // applyDefaultPerformerGenderInput updates or clears DefaultPerformerGender.
-// Omit the field entirely (nil) to leave the stored value unchanged; send "" to clear it.
-func (r *mutationResolver) applyDefaultPerformerGenderInput(value *string) error {
+// Omit both fields to leave the stored value unchanged.
+func (r *mutationResolver) applyDefaultPerformerGenderInput(value *models.GenderEnum, clear *bool) error {
+	if clear != nil && *clear {
+		if value != nil {
+			return fmt.Errorf("cannot set and clear default performer gender in the same request")
+		}
+		config.GetInstance().SetString(config.DefaultPerformerGender, "")
+		return nil
+	}
 	if value == nil {
 		return nil
 	}
-	c := config.GetInstance()
-	s := strings.TrimSpace(*value)
-	if s == "" {
-		c.SetString(config.DefaultPerformerGender, "")
-		return nil
+	if !value.IsValid() {
+		return fmt.Errorf("invalid default performer gender %q", *value)
 	}
-	g := models.GenderEnum(s)
-	if !g.IsValid() {
-		return fmt.Errorf("invalid default performer gender %q", s)
-	}
-	c.SetString(config.DefaultPerformerGender, s)
+	config.GetInstance().SetString(config.DefaultPerformerGender, value.String())
 	return nil
 }
 
@@ -549,7 +548,7 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 	r.setConfigBool(config.CustomLocalesEnabled, input.CustomLocalesEnabled)
 
 	r.setConfigBool(config.DisableCustomizations, input.DisableCustomizations)
-	if err := r.applyDefaultPerformerGenderInput(input.DefaultPerformerGender); err != nil {
+	if err := r.applyDefaultPerformerGenderInput(input.DefaultPerformerGender, input.ClearDefaultPerformerGender); err != nil {
 		return makeConfigInterfaceResult(), err
 	}
 

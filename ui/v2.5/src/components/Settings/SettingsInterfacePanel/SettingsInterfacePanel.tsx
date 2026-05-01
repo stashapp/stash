@@ -152,6 +152,20 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
       });
     }
 
+    function saveDefaultPerformerGender(v: string) {
+      saveInterface(
+        v === ""
+          ? {
+              clearDefaultPerformerGender: true,
+              defaultPerformerGender: null,
+            }
+          : {
+              clearDefaultPerformerGender: false,
+              defaultPerformerGender: v as GQL.GenderEnum,
+            }
+      );
+    }
+
     function validateLocaleString(v: string) {
       if (!v) return;
       try {
@@ -531,7 +545,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             headingID="config.ui.performer_list.options.default_gender.heading"
             subHeadingID="config.ui.performer_list.options.default_gender.description"
             value={iface.defaultPerformerGender ?? ""}
-            onChange={(v) => saveInterface({ defaultPerformerGender: v })}
+            onChange={(v) => saveDefaultPerformerGender(v)}
           >
             <option value="">{intl.formatMessage({ id: "none" })}</option>
             {genderList.map((gender) => (
