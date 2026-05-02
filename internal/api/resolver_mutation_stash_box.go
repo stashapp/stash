@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/stashapp/stash/internal/manager"
@@ -13,6 +14,8 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/stashbox"
 )
+
+var fingerprintSubmissionMu sync.Mutex
 
 func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input StashBoxFingerprintSubmissionInput) (bool, error) {
 	b, err := resolveStashBox(input.StashBoxIndex, input.StashBoxEndpoint) //nolint:staticcheck
@@ -303,7 +306,13 @@ func (r *mutationResolver) SubmitFingerprintSubmissions(ctx context.Context, sta
 
 	if len(submissions) > 40 {
 		// Submit async to avoid timeouts for large batches
-		go r.submitFingerprintBatch(client, submissions, sceneMap)
+		if !fingerprintSubmissionMu.TryLock() {
+			return false, fmt.Errorf("fingerprint submission already in progress")
+		}
+		go func() {
+			defer fingerprintSubmissionMu.Unlock()
+			r.submitFingerprintBatch(client, submissions, sceneMap)
+		}()
 	} else {
 		r.submitFingerprintBatch(client, submissions, sceneMap)
 	}
