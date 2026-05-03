@@ -3,7 +3,7 @@
         "add": "Hinzufügen",
         "add_directory": "Ordner hinzufügen",
         "add_entity": "Füge {entityType} hinzu",
-        "add_to_entity": "Hinzufügen zu {entityType}",
+        "add_to_entity": "Hinzufügen zu {entity}",
         "allow": "Erlauben",
         "allow_temporarily": "Vorübergehend erlauben",
         "anonymise": "Anonymisieren",
@@ -85,7 +85,7 @@
         "scan": "Scannen",
         "scrape": "Scrapen",
         "scrape_query": "Scrape Anfrage",
-        "scrape_scene_fragment": "An Fragment scrapen",
+        "scrape_scene_fragment": "Fragment scrapen",
         "scrape_with": "Scrape mit…",
         "search": "Suchen",
         "select_all": "Alle auswählen",
@@ -147,19 +147,19 @@
             "open": "Seitenleiste öffnen"
         },
         "show_count_results": "Zeige {count} Ergebnisse",
-        "show_results": "Ergebnisse anzeigen",
+        "show_results": "Resultate anzeigen",
         "load_filter": "Filter laden",
         "load": "Laden",
         "create_new": "Neu erstellen",
-        "add_stash_id": "Stash-ID hinzufügen",
+        "add_stash_id": "Stash ID hinzufügen",
         "save_and_new": "Speichern & Neu",
         "invert_selection": "Invertiere Auswahl",
         "select_directory": "Ordner Auswählen",
         "from_clipboard": "Aus Zwischenablage",
         "reveal_in_file_manager": "Im Dateimanager anzeigen",
         "selective_generate": "Selektives Generieren",
-        "create_parent_tag": "Übergeordneten Tag erstellen",
-        "exclude_lowercase": "ausschließen"
+        "create_parent_tag": "Übergeordnetes Tag erstellen",
+        "exclude_lowercase": "Ausschließen"
     },
     "actions_name": "Aktionen",
     "age": "Alter",
@@ -239,7 +239,7 @@
         "verb_add_as_alias": "Füge Spitzname als Alias hinzu",
         "verb_link_existing": "Link zu bereits existierendem",
         "verb_match_tag": "Tag zuordnen",
-        "verb_scrape_selected": "Ausgewählte \"scrapen\""
+        "verb_scrape_selected": "Ausgewählte Scrapen"
     },
     "config": {
         "about": {
@@ -252,7 +252,9 @@
             "release_date": "Veröffentlichungsdatum:",
             "stash_home": "Stash ist beheimatet auf {url}",
             "stash_wiki": "Stash {url} Seite",
-            "version": "Version"
+            "version": "Version",
+            "stash_community": "Trete unserem {forumUrl} oder {discordUrl} Community Server bei.",
+            "support_us": "Unterstütze uns auf {openCollectiveUrl} oder {githubSponsorsUrl}."
         },
         "application_paths": {
             "heading": "Anwendungspfade"
@@ -438,7 +440,8 @@
             "delete_trash_path": {
                 "description": "Pfad in den gelöschte Dateien verschoben, anstatt dauerhaft gelöscht werden. Freilassen, um Dateien permanent zu löschen.",
                 "heading": "Papierkorbverzeichnis"
-            }
+            },
+            "sprite_generation_head": "Sprite Erstellung"
         },
         "library": {
             "exclusions": "Ausnahmen",
@@ -851,7 +854,7 @@
         },
         "advanced_mode": "Fortgeschrittener Modus",
         "changelog": {
-            "header": "Änderungsprotokoll"
+            "header": "Änderungshistorie"
         }
     },
     "configuration": "Konfiguration",
