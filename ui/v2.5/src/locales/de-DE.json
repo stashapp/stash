@@ -250,7 +250,7 @@
             "latest_version_build_hash": "Neuester Build Hash:",
             "new_version_notice": "[NEU]",
             "release_date": "Veröffentlichungsdatum:",
-            "stash_home": "Stash ist beheimatet auf {url}",
+            "stash_home": "Besuche Stash auf {url}",
             "stash_wiki": "Stash {url} Seite",
             "version": "Version",
             "stash_community": "Trete unserem {forumUrl} oder {discordUrl} Community Server bei.",
