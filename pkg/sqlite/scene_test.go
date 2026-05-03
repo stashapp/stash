@@ -4631,7 +4631,7 @@ func TestSceneStore_FindDuplicates(t *testing.T) {
 	withRollbackTxn(func(ctx context.Context) error {
 		distance := 0
 		durationDiff := -1.
-		got, err := qb.FindDuplicates(ctx, distance, durationDiff)
+		got, err := qb.FindDuplicates(ctx, distance, durationDiff, nil)
 		if err != nil {
 			t.Errorf("SceneStore.FindDuplicates() error = %v", err)
 			return nil
@@ -4641,7 +4641,7 @@ func TestSceneStore_FindDuplicates(t *testing.T) {
 
 		distance = 1
 		durationDiff = -1.
-		got, err = qb.FindDuplicates(ctx, distance, durationDiff)
+		got, err = qb.FindDuplicates(ctx, distance, durationDiff, nil)
 		if err != nil {
 			t.Errorf("SceneStore.FindDuplicates() error = %v", err)
 			return nil
