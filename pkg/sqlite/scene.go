@@ -1466,9 +1466,9 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int, duration
 			"files_fingerprints.fingerprint as phash",
 			"abs(max(video_files.duration) OVER (PARTITION by files_fingerprints.fingerprint) - video_files.duration) as durationDiff",
 		}
-		
+
 		sqlStr := query.toSQL(false)
-		
+
 		finalQuery := `
 SELECT GROUP_CONCAT(DISTINCT scene_id) as ids
 FROM (` + sqlStr + `)
