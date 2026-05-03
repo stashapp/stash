@@ -204,11 +204,7 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 	}
 
 	for _, t := range s.Tags {
-		st := &models.ScrapedTag{
-			Name:         t.Name,
-			RemoteSiteID: &t.ID,
-		}
-		ss.Tags = append(ss.Tags, st)
+		ss.Tags = append(ss.Tags, tagFragmentToScrapedTag(*t))
 	}
 
 	return ss, nil
