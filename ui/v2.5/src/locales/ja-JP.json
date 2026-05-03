@@ -57,8 +57,6 @@
         "logout": "ログアウト",
         "make_primary": "メインに設定",
         "merge": "マージ",
-        "merge_from": "次からマージ：",
-        "merge_into": "次へマージ：",
         "next_action": "次へ",
         "not_running": "未実行",
         "open_in_external_player": "外部プレーヤーで開く",
@@ -150,7 +148,11 @@
         "play": "再生",
         "show_results": "結果を表示",
         "show_count_results": "{count}件の結果を表示",
-        "load": "読み込み"
+        "load": "読み込み",
+        "add_stash_id": "Stash IDを追加",
+        "create_new": "新規作成",
+        "load_filter": "フィルタを読み込む",
+        "invert_selection": "選択を反転"
     },
     "actions_name": "操作",
     "age": "年齢",
@@ -190,6 +192,9 @@
             "mark_organized_label": "分類済みにして保存",
             "errors": {
                 "blacklist_duplicate": "ブラックリスト項目が重複しています"
+            },
+            "performer_genders": {
+                "heading": "出演者の性別"
             }
         },
         "noun_query": "クエリ",
@@ -211,7 +216,9 @@
         "verb_scrape_all": "全てスクレイプ",
         "verb_submit_fp": "送信 {fpCount, plural, one{# Fingerprint} other{# Fingerprints}}",
         "verb_toggle_config": "{toggle} {configuration}",
-        "verb_toggle_unmatched": "{toggle} 一致しないシーン"
+        "verb_toggle_unmatched": "{toggle} 一致しないシーン",
+        "verb_add_as_alias": "スクレイピングした名前をエイリアスとして追加",
+        "verb_link_existing": "既存のものにリンク"
     },
     "config": {
         "about": {
@@ -222,9 +229,7 @@
             "latest_version_build_hash": "最新バージョンのビルドハッシュ:",
             "new_version_notice": "[NEW]",
             "release_date": "リリース日:",
-            "stash_discord": "私たちの{url}チャンネルへ参加しませんか",
             "stash_home": "Stashのすべては{url}にあります",
-            "stash_open_collective": "{url}からStashの開発を支援",
             "stash_wiki": "Stashの{url}で疑問を解決",
             "version": "バージョン"
         },
@@ -290,7 +295,9 @@
                 "password_desc": "Stashにアクセスするためのパスワードです。空白にすると、ユーザー認証を無効にします",
                 "stash-box_integration": "Stash-boxの連携",
                 "username": "ユーザー名",
-                "username_desc": "Stashにアクセスするためのユーザー名です。空白にすると、ユーザー認証を無効にします"
+                "username_desc": "Stashにアクセスするためのユーザー名です。空白にすると、ユーザー認証を無効にします",
+                "log_file_max_size": "最大ログサイズ",
+                "log_file_max_size_desc": "ログファイルが圧縮される前の最大サイズ(MB)。0MBの場合は無効。再起動が必要。"
             },
             "backup_directory_path": {
                 "description": "SQLiteデータベースファイルのバックアップ場所",
@@ -406,7 +413,10 @@
                 "description": "プラグイン設定ファイルのディレクトリ",
                 "heading": "プラグインパス"
             },
-            "funscript_heatmap_draw_range": "生成済みのヒートマップに範囲を含める"
+            "funscript_heatmap_draw_range": "生成済みのヒートマップに範囲を含める",
+            "delete_trash_path": {
+                "heading": "ゴミ箱のパス"
+            }
         },
         "library": {
             "exclusions": "除外",
@@ -461,7 +471,6 @@
             "auto_tagging": "自動タグ付け",
             "backing_up_database": "データベースをバックアップ",
             "backup_and_download": "データベースのバックアップを実施し、結果ファイルをダウンロードします。",
-            "backup_database": "{filename_format}形式で、バックアップ先にデータベースをバックアップします",
             "cleanup_desc": "不明なファイルを確認し、データベースから削除します。この操作はもとに戻せません。",
             "data_management": "データ管理",
             "defaults_set": "デフォルトが設定されており、タスクページの{action}ボタンをクリックした際に使用されます。",
@@ -516,7 +525,7 @@
             "maintenance": "メンテナンス",
             "migrate_hash_files": "生成ファイルの命名ハッシュを変更後、既に存在する生成ファイルを新しいハッシュ形式にリネームする際に使用されます。",
             "migrations": "移行",
-            "only_dry_run": "ドライモードで実行します。削除されません",
+            "only_dry_run": "ドライランモードで実行します。何も削除されません",
             "plugin_tasks": "プラグインのタスク",
             "scan": {
                 "scanning_all_paths": "すべてのパスをスキャン中",
@@ -569,7 +578,8 @@
                 "whitespace_chars": "空白文字",
                 "whitespace_chars_desc": "タイトルに含まれるこれらの文字は空白文字で置き換えられます"
             },
-            "scene_tools": "シーンツール"
+            "scene_tools": "シーンツール",
+            "heading": "ツール"
         },
         "ui": {
             "abbreviate_counters": {
@@ -726,7 +736,7 @@
                     "disable_mobile_media_auto_rotate": "モバイル機器でフル画面再生時の画面回転を無効化",
                     "enable_chromecast": "クロームキャスト機能の有効化",
                     "vr_tag": {
-                        "heading": "VRタッグ",
+                        "heading": "VRタグ",
                         "description": "VRボタンはこのタグがついたシーンにのみ表示されます。"
                     },
                     "show_ab_loop_controls": "ABループプラグインのコントロールを表示",
@@ -793,6 +803,28 @@
             },
             "performer_list": {
                 "heading": "AV女優・男優リスト"
+            },
+            "sfw_mode": {
+                "description": "健全なコンテンツの為にstashを使用している場合に有効化しましょう。 アダルトコンテンツに関連したUIは隠されるか健全化されて表示されます。",
+                "heading": "SFWコンテンツモード"
+            },
+            "custom_title": {
+                "heading": "カスタムタイトル",
+                "description": "ページタイトルに追加するカスタムテキスト。空欄の場合は'Stash'がデフォルトになります。"
+            },
+            "troubleshooting_mode": {
+                "button": "トラブルシューティングモード",
+                "dialog_title": "トラブルシューティングモードを有効化",
+                "dialog_description": "問題の診断を行うため、すべてのカスタマイズを一時的に無効化します。",
+                "dialog_item_plugins": "すべてのプラグイン",
+                "dialog_item_css": "カスタムCSS",
+                "dialog_item_js": "カスタムJavaScript",
+                "dialog_item_locales": "カスタムロケール",
+                "dialog_log_level": "詳細な診断のため、ログレベルがDebugに設定されます。",
+                "dialog_reload_note": "このページは自動的にリロードされます。",
+                "enable": "有効化してリロード",
+                "overlay_message": "トラブルシューティングモードが有効 - すべてのカスタマイズが無効化",
+                "exit": "終了"
             }
         },
         "advanced_mode": "高度なモード"
@@ -884,10 +916,6 @@
             "empty_results": "宛先欄の値は変更されません。",
             "source": "ソース"
         },
-        "merge_tags": {
-            "destination": "場所",
-            "source": "ソース"
-        },
         "reassign_entity_title": "{count, plural, one {{singularEntity}を再割り当て} other {{pluralEntity}を再割り当て}}",
         "reassign_files": {
             "destination": "次に再割り当て:"
@@ -961,7 +989,8 @@
             "medium": "中"
         },
         "search_accuracy_label": "検索精度",
-        "title": "重複シーン"
+        "title": "重複シーン",
+        "select_youngest": "重複グループの中で最も新しいファイルを選択"
     },
     "duplicated_phash": "重複 (phash)",
     "duration": "長さ",
@@ -1059,9 +1088,7 @@
     "measurements": "スリーサイズ",
     "media_info": {
         "audio_codec": "音声コーデック",
-        "checksum": "チェックサム",
         "downloaded_from": "ダウンロード元",
-        "hash": "ハッシュ",
         "interactive_speed": "インタラクティブ速度",
         "performer_card": {
             "age": "{age}{years_old}",
@@ -1084,7 +1111,8 @@
         "first": "最初",
         "last": "最後",
         "next": "次へ",
-        "previous": "前へ"
+        "previous": "前へ",
+        "current_total": "{total} 中 {current}"
     },
     "parent_of": "{children}の親",
     "parent_studios": "親スタジオ",
@@ -1103,14 +1131,6 @@
         "any_names_entered_will_be_queried": "入力された全ての名前は外部のStash-Boxインスタンスで検索され、見つかった場合追加されます。完全一致のみ、一致とみなされます。",
         "batch_add_performers": "出演者を一括追加",
         "batch_update_performers": "出演者の一括更新",
-        "config": {
-            "active_stash-box_instance": "アクティブなstash-boxインスタンス:",
-            "edit_excluded_fields": "除外する欄を編集",
-            "excluded_fields": "除外する欄:",
-            "no_fields_are_excluded": "除外する欄なし",
-            "no_instances_found": "インスタンスが見つかりませんでした",
-            "these_fields_will_not_be_changed_when_updating_performers": "これらの欄は、出演者の更新時に変更されません。"
-        },
         "current_page": "現在のページ",
         "failed_to_save_performer": "出演者\"{performer}\"の保存に失敗しました",
         "name_already_exists": "既に使用されている名前です",
@@ -1255,7 +1275,12 @@
     "stats": {
         "image_size": "画像サイズ",
         "scenes_duration": "シーンの再生時間",
-        "scenes_size": "シーンサイズ"
+        "scenes_size": "シーンサイズ",
+        "scenes_played": "再生済みシーン",
+        "total_o_count": "O-Count数",
+        "total_o_count_sfw": "健全O-Count数",
+        "total_play_count": "総再生数",
+        "total_play_duration": "総再生時間"
     },
     "status": "状態: {statusText}",
     "studio": "スタジオ",
@@ -1320,7 +1345,8 @@
         "only": "のみ"
     },
     "connection_monitor": {
-        "websocket_connection_failed": "WebSocket接続ができません：詳細はブラウザのコンソールを確認してください"
+        "websocket_connection_failed": "WebSocket接続ができません：詳細はブラウザのコンソールを確認してください",
+        "websocket_connection_reestablished": "WebSocket接続が再確立されました"
     },
     "custom_fields": {
         "field": "フィールド",
@@ -1337,5 +1363,67 @@
     "include_sub_groups": "サブグループを含める",
     "sub_groups": "サブグループ",
     "history": "履歴",
-    "group_scene_number": "シーン番号"
+    "group_scene_number": "シーン番号",
+    "stashbox_search": {
+        "select_stashbox": "StashBoxを選択",
+        "no_results": "結果が見つかりません。"
+    },
+    "studio_tagger": {
+        "add_new_studios": "スタジオを新規追加",
+        "current_page": "現在のページ",
+        "failed_to_save_studio": "スタジオの保存に失敗",
+        "name_already_exists": "名前が既に存在します",
+        "network_error": "ネットワークエラー",
+        "no_results_found": "結果が見付かりません"
+    },
+    "video_codec": "ビデオコーデック",
+    "errors": {
+        "custom_fields": {
+            "duplicate_field": "フィールド名は一意である必要があります",
+            "field_name_length": "フィールド名は65文字未満である必要があります",
+            "field_name_required": "フィールド名が必要です",
+            "field_name_whitespace": "フィールド名の前後に空白を含めることはできません"
+        },
+        "header": "エラー",
+        "image_index_greater_than_zero": "画像インデックスは0より大きい必要があります",
+        "invalid_javascript_string": "無効なJavaScriptコードです: {error}",
+        "invalid_json_string": "無効なJSON文字列です: {error}",
+        "lazy_component_error_help": "最近Stashをアップグレードした場合は、ページを再読み込みするか、ブラウザのキャッシュをクリアしてください。",
+        "loading_type": "{type} の読み込みでエラーが発生しました",
+        "something_went_wrong": "問題が発生しました。"
+    },
+    "group": "グループ",
+    "group_count": "グループ数",
+    "hasChapters": "チャプター",
+    "image_index": "画像番号",
+    "include_sub_group_content": "サブグループの内容を含める",
+    "include_sub_studio_content": "サブスタジオの内容を含める",
+    "include_sub_tag_content": "サブタグの内容を含める",
+    "index_of_total": "{total} 中 {index}",
+    "package_manager": {
+        "confirm_delete_source": "ソース {name} ({url}) を削除してもよろしいですか？",
+        "description": "説明",
+        "edit_source": "ソースを編集",
+        "hide_unselected": "未選択を隠す",
+        "install": "インストール",
+        "installed_version": "インストールバージョン",
+        "latest_version": "最新バージョン",
+        "no_packages": "パッケージが見つかりません",
+        "no_upgradable": "更新可能なパッケージが見つかりません",
+        "package": "パッケージ",
+        "show_all": "すべて表示",
+        "source": {
+            "local_path": {
+                "heading": "ローカルパス"
+            },
+            "name": "名前",
+            "url": "ソースURL"
+        },
+        "uninstall": "アンインストール",
+        "update": "アップデート",
+        "version": "バージョン"
+    },
+    "penis": "ペニス",
+    "penis_length_cm": "ペニスの長さ (cm)",
+    "photographer": "写真家"
 }

@@ -71,10 +71,10 @@ func ToJSON(ctx context.Context, reader ImageAliasStashIDGetter, performer *mode
 	}
 
 	if performer.CareerStart != nil {
-		newPerformerJSON.CareerStart = performer.CareerStart
+		newPerformerJSON.CareerStart = performer.CareerStart.String()
 	}
 	if performer.CareerEnd != nil {
-		newPerformerJSON.CareerEnd = performer.CareerEnd
+		newPerformerJSON.CareerEnd = performer.CareerEnd.String()
 	}
 
 	if err := performer.LoadAliases(ctx, reader); err != nil {

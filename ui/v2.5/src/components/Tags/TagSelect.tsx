@@ -23,12 +23,15 @@ import {
   IFilterProps,
   IFilterValueProps,
   Option as SelectOption,
+  toOption,
 } from "../Shared/FilterSelect";
 import { useCompare } from "src/hooks/state";
 import { TagPopover } from "./TagPopover";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { sortByRelevance } from "src/utils/query";
 import { PatchComponent, PatchFunction } from "src/patch";
+import { isUUID } from "src/utils/stashIds";
+import { filterByStashID } from "src/models/list-filter/utils";
 
 export type SelectObject = {
   id: string;
@@ -75,24 +78,40 @@ const _TagSelect: React.FC<TagSelectProps> = (props) => {
 
   const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
 
+  function filterExcluded(tag: Tag) {
+    // HACK - we should probably exclude these in the backend query, but
+    // this will do in the short-term
+    return !exclude.includes(tag.id.toString());
+  }
+
   async function loadTags(input: string): Promise<Option[]> {
     const filter = new ListFilterModel(GQL.FilterMode.Tags);
-    filter.searchTerm = input;
     filter.currentPage = 1;
     filter.itemsPerPage = maxOptionsShown;
     filter.sortBy = "name";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
-    const query = await queryFindTagsForSelect(filter);
-    let ret = query.data.findTags.tags.filter((tag) => {
-      // HACK - we should probably exclude these in the backend query, but
-      // this will do in the short-term
-      return !exclude.includes(tag.id.toString());
-    });
 
-    return tagSelectSort(input, ret).map((tag) => ({
-      value: tag.id,
-      object: tag,
-    }));
+    if (isUUID(input)) {
+      filterByStashID(filter, input);
+
+      const query = await queryFindTagsForSelect(filter);
+      const matches = query.data.findTags.tags.filter(filterExcluded);
+
+      if (matches.length > 0) {
+        // Matches found, return them immediately.
+        return matches.map(toOption);
+      }
+
+      // If no stash_id matches found, continue with standard name/alias search.
+      filter.criteria = []; // Clear stash_id criterion to search by name/alias below.
+    }
+
+    filter.searchTerm = input;
+
+    const query = await queryFindTagsForSelect(filter);
+    const ret = query.data.findTags.tags.filter(filterExcluded);
+
+    return tagSelectSort(input, ret).map(toOption);
   }
 
   const TagOption: React.FC<OptionProps<Option, boolean>> = (optionProps) => {

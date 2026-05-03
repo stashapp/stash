@@ -92,6 +92,37 @@ export function yupUniqueStringList(intl: IntlShape) {
     });
 }
 
+export function validateDateString(value?: string) {
+  if (!value) return true;
+  // Allow YYYY, YYYY-MM, or YYYY-MM-DD formats
+  if (!value.match(/^\d{4}(-\d{2}(-\d{2})?)?$/)) return false;
+  // Validate the date components
+  const parts = value.split("-");
+  const year = parseInt(parts[0], 10);
+  if (year < 1 || year > 9999) return false;
+  if (parts.length >= 2) {
+    const month = parseInt(parts[1], 10);
+    if (month < 1 || month > 12) return false;
+  }
+  if (parts.length === 3) {
+    const day = parseInt(parts[2], 10);
+    if (day < 1 || day > 31) return false;
+    // Full date - validate it parses correctly
+    if (Number.isNaN(Date.parse(value))) return false;
+  }
+  return true;
+}
+
+export function getDateError(
+  value: string | undefined | null,
+  intl: IntlShape
+) {
+  if (validateDateString(value ?? "")) return undefined;
+  return intl
+    .formatMessage({ id: "validation.date_invalid_form" })
+    .replace("${path}", intl.formatMessage({ id: "date" }));
+}
+
 export function yupDateString(intl: IntlShape) {
   return yup
     .string()
@@ -99,24 +130,7 @@ export function yupDateString(intl: IntlShape) {
     .test({
       name: "date",
       test(value) {
-        if (!value) return true;
-        // Allow YYYY, YYYY-MM, or YYYY-MM-DD formats
-        if (!value.match(/^\d{4}(-\d{2}(-\d{2})?)?$/)) return false;
-        // Validate the date components
-        const parts = value.split("-");
-        const year = parseInt(parts[0], 10);
-        if (year < 1 || year > 9999) return false;
-        if (parts.length >= 2) {
-          const month = parseInt(parts[1], 10);
-          if (month < 1 || month > 12) return false;
-        }
-        if (parts.length === 3) {
-          const day = parseInt(parts[2], 10);
-          if (day < 1 || day > 31) return false;
-          // Full date - validate it parses correctly
-          if (Number.isNaN(Date.parse(value))) return false;
-        }
-        return true;
+        return validateDateString(value);
       },
       message: intl.formatMessage({ id: "validation.date_invalid_form" }),
     });

@@ -19,6 +19,10 @@ import { BooleanSetting, Setting, SettingGroup } from "../Inputs";
 import { ManualLink } from "src/components/Help/context";
 import { Icon } from "src/components/Shared/Icon";
 import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
+import {
+  AutoTagConfirmDialog,
+  AutoTagWarning,
+} from "src/components/Shared/AutoTagConfirmDialog";
 import { useSettings } from "../context";
 
 interface IAutoTagOptions {
@@ -78,6 +82,7 @@ export const LibraryTasks: React.FC = () => {
   const [dialogOpen, setDialogOpenState] = useState({
     scan: false,
     autoTag: false,
+    autoTagAlert: false,
     identify: false,
     generate: false,
   });
@@ -224,12 +229,29 @@ export const LibraryTasks: React.FC = () => {
     }
   }
 
+  function renderAutoTagAlert() {
+    return (
+      <AutoTagConfirmDialog
+        show={dialogOpen.autoTagAlert}
+        onConfirm={() => {
+          setDialogOpen({ autoTagAlert: false });
+          runAutoTag();
+        }}
+        onCancel={() => setDialogOpen({ autoTagAlert: false })}
+      />
+    );
+  }
+
   function renderAutoTagDialog() {
     if (!dialogOpen.autoTag) {
       return;
     }
 
-    return <DirectorySelectionDialog onClose={onAutoTagDialogClosed} />;
+    return (
+      <DirectorySelectionDialog onClose={onAutoTagDialogClosed}>
+        <AutoTagWarning />
+      </DirectorySelectionDialog>
+    );
   }
 
   function onAutoTagDialogClosed(paths?: string[]) {
@@ -341,6 +363,7 @@ export const LibraryTasks: React.FC = () => {
   return (
     <Form.Group>
       {renderScanDialog()}
+      {renderAutoTagAlert()}
       {renderAutoTagDialog()}
       {maybeRenderIdentifyDialog()}
       {renderGenerateDialog()}
@@ -426,9 +449,9 @@ export const LibraryTasks: React.FC = () => {
                 variant="secondary"
                 type="submit"
                 className="mr-2"
-                onClick={() => runAutoTag()}
+                onClick={() => setDialogOpen({ autoTagAlert: true })}
               >
-                <FormattedMessage id="actions.auto_tag" />
+                <FormattedMessage id="actions.auto_tag" />…
               </Button>
               <Button
                 variant="secondary"

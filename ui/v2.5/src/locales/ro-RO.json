@@ -124,8 +124,6 @@
         "delete_generated_supporting_files": "Șterge fișierele suport generate",
         "hash_migration": "migrare hash",
         "make_primary": "Definește ca primar",
-        "merge_from": "Îmbină din",
-        "merge_into": "Îmbină în",
         "migrate_blobs": "Migrează obiect binar (blob)",
         "migrate_scene_screenshots": "Migrează Capturi Scene",
         "remove_date": "Șterge data",
@@ -199,8 +197,6 @@
             "check_for_new_version": "Verifică pentru o versiune nouă",
             "latest_version": "Ultima Versiune",
             "new_version_notice": "[NOU]",
-            "stash_discord": "Alăturați-vă {url} canalului nostru",
-            "stash_open_collective": "Susține-ne prin {url}",
             "version": "Versiune"
         },
         "application_paths": {
@@ -377,8 +373,6 @@
     "measurements": "Măsurători",
     "media_info": {
         "audio_codec": "Codec Audio",
-        "checksum": "Sumă de control",
-        "hash": "Hash",
         "interactive_speed": "Viteză Interactivă",
         "performer_card": {
             "age": "{age} {years_old}",
@@ -407,13 +401,6 @@
     "performer_image": "Imagine Interpret",
     "performer_tagger": {
         "add_new_performers": "Adaugă Interpreți Noi",
-        "config": {
-            "active_stash-box_instance": "Instață stash-box activă:",
-            "edit_excluded_fields": "Editați câmpurile excluse",
-            "no_fields_are_excluded": "Nu se exclude niciun câmp",
-            "no_instances_found": "Nicio instanță găsită",
-            "these_fields_will_not_be_changed_when_updating_performers": "Aceste câmpuri nu vor fi modificate la actualizarea artiștilor interpreți sau executanți."
-        },
         "current_page": "Pagina curentă",
         "failed_to_save_performer": "Nu s-a reușit salvarea interpretului \"{performer}\"",
         "name_already_exists": "Numele există deja",

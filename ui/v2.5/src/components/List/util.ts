@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Mousetrap from "mousetrap";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { useHistory, useLocation } from "react-router-dom";
@@ -489,20 +489,20 @@ export function useCachedQueryResult<T extends QueryResult>(
   result: T
 ) {
   const [cachedResult, setCachedResult] = useState(result);
-  const [lastFilter, setLastFilter] = useState(filter);
+  const lastFilterRef = useRef(filter);
 
   // if we are only changing the page or sort, don't update the result count
   useEffect(() => {
     if (!result.loading) {
       setCachedResult(result);
     } else {
-      if (totalCountImpacted(lastFilter, filter)) {
+      if (totalCountImpacted(lastFilterRef.current, filter)) {
         setCachedResult(result);
       }
     }
 
-    setLastFilter(filter);
-  }, [filter, result, lastFilter]);
+    lastFilterRef.current = filter;
+  }, [filter, result]);
 
   return cachedResult;
 }

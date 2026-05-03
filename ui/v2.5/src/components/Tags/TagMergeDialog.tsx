@@ -28,16 +28,8 @@ import {
   ScrapedTextAreaRow,
 } from "../Shared/ScrapeDialog/ScrapeDialogRow";
 import { ScrapedTagsRow } from "../Shared/ScrapeDialog/ScrapedObjectsRow";
-import { StringListSelect } from "../Shared/Select";
 import { ScrapeDialog } from "../Shared/ScrapeDialog/ScrapeDialog";
-
-interface IStashIDsField {
-  values: GQL.StashId[];
-}
-
-const StashIDsField: React.FC<IStashIDsField> = ({ values }) => {
-  return <StringListSelect value={values.map((v) => v.stash_id)} />;
-};
+import { StashIDsField } from "../Shared/StashID";
 
 interface ITagMergeDetailsProps {
   sources: GQL.TagDataFragment[];
@@ -329,10 +321,18 @@ const TagMergeDetails: React.FC<ITagMergeDetailsProps> = ({
           title={intl.formatMessage({ id: "stash_id" })}
           result={stashIDs}
           originalField={
-            <StashIDsField values={stashIDs?.originalValue ?? []} />
+            <StashIDsField
+              values={stashIDs?.originalValue ?? []}
+              linkType="tags"
+            />
           }
-          newField={<StashIDsField values={stashIDs?.newValue ?? []} />}
+          newField={
+            <StashIDsField values={stashIDs?.newValue ?? []} linkType="tags" />
+          }
           onChange={(value) => setStashIDs(value)}
+          alwaysShow={
+            !!stashIDs.originalValue?.length || !!stashIDs.newValue?.length
+          }
         />
         <ScrapedImageRow
           field="image"
@@ -387,7 +387,7 @@ const TagMergeDetails: React.FC<ITagMergeDetailsProps> = ({
     : intl.formatMessage({ id: "dialogs.merge.destination" });
   const sourceLabel = !hasValues
     ? ""
-    : intl.formatMessage({ id: "dialogs.merge.source" });
+    : intl.formatMessage({ id: "dialogs.merge.combined" });
 
   return (
     <ScrapeDialog
@@ -437,6 +437,9 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
   const title = intl.formatMessage({
     id: "actions.merge",
   });
+
+  const srcIDs = useMemo(() => src.map((s) => s.id), [src]);
+  const destID = useMemo(() => (dest ? [dest.id] : []), [dest]);
 
   useEffect(() => {
     if (tags.length > 0) {
@@ -549,6 +552,7 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
                 creatable={false}
                 onSelect={(items) => setSrc(items)}
                 values={src}
+                excludeIds={destID}
                 menuPortalTarget={document.body}
               />
             </Col>
@@ -584,6 +588,7 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
                 creatable={false}
                 onSelect={(items) => setDest(items[0])}
                 values={dest ? [dest] : undefined}
+                excludeIds={srcIDs}
                 menuPortalTarget={document.body}
               />
             </Col>

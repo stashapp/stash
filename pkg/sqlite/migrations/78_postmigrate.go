@@ -7,8 +7,8 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sqlite"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type schema78Migrator struct {
@@ -76,7 +76,7 @@ func (m *schema78Migrator) migrateCareerLength(ctx context.Context) error {
 				lastID = id
 				gotSome = true
 
-				start, end, err := utils.ParseYearRangeString(careerLength)
+				start, end, err := models.ParseYearRangeString(careerLength)
 				if err != nil {
 					logger.Warnf("Could not parse career_length %q for performer %d: %v — preserving as custom field", careerLength, id, err)
 
@@ -107,10 +107,23 @@ func (m *schema78Migrator) migrateCareerLength(ctx context.Context) error {
 	return nil
 }
 
-func (m *schema78Migrator) updateCareerFields(tx *sqlx.Tx, id int, start *int, end *int) error {
+func (m *schema78Migrator) updateCareerFields(tx *sqlx.Tx, id int, start *models.Date, end *models.Date) error {
+	var (
+		startYear, endYear *int
+	)
+
+	if start != nil {
+		year := start.Year()
+		startYear = &year
+	}
+	if end != nil {
+		year := end.Year()
+		endYear = &year
+	}
+
 	_, err := tx.Exec(
 		"UPDATE performers SET career_start = ?, career_end = ? WHERE id = ?",
-		start, end, id,
+		startYear, endYear, id,
 	)
 	return err
 }

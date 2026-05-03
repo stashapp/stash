@@ -751,7 +751,7 @@ export const FilteredImageList = PatchComponent(
             currentPage={filter.currentPage}
             itemsPerPage={filter.itemsPerPage}
             totalItems={totalCount}
-            onChangePage={(page) => setFilter(filter.changePage(page))}
+            onChangePage={setPage}
           />
           <PaginationIndex
             loading={cachedResult.loading}
@@ -766,7 +766,7 @@ export const FilteredImageList = PatchComponent(
           <ImageList
             filter={filter}
             images={items}
-            onChangePage={(page) => setFilter(filter.changePage(page))}
+            onChangePage={setPage}
             onSelectChange={onSelectChange}
             pageCount={pageCount}
             selectedIds={selectedIds}

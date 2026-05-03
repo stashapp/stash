@@ -152,15 +152,15 @@ input PerformerFilterType {
   fake_tits: StringCriterionInput
   "Filter by penis length value"
   penis_length: FloatCriterionInput
-  "Filter by ciricumcision"
+  "Filter by circumcision"
   circumcised: CircumcisionCriterionInput
   "Deprecated: use career_start and career_end. This filter is non-functional."
   career_length: StringCriterionInput
     @deprecated(reason: "Use career_start and career_end")
-  "Filter by career start year"
-  career_start: IntCriterionInput
-  "Filter by career end year"
-  career_end: IntCriterionInput
+  "Filter by career start"
+  career_start: DateCriterionInput
+  "Filter by career end"
+  career_end: DateCriterionInput
   "Filter by tattoos"
   tattoos: StringCriterionInput
   "Filter by piercings"
@@ -249,9 +249,9 @@ input SceneMarkerFilterType {
   updated_at: TimestampCriterionInput
   "Filter by scene date"
   scene_date: DateCriterionInput
-  "Filter by cscene reation time"
+  "Filter by scene creation time"
   scene_created_at: TimestampCriterionInput
-  "Filter by lscene ast update time"
+  "Filter by scene last update time"
   scene_updated_at: TimestampCriterionInput
   "Filter by related scenes that meet this criteria"
   scene_filter: SceneFilterType
@@ -665,7 +665,7 @@ input TagFilterType {
   "Filter by number of parent tags the tag has"
   parent_count: IntCriterionInput
 
-  "Filter by number f child tags the tag has"
+  "Filter by number of child tags the tag has"
   child_count: IntCriterionInput
 
   "Filter by autotag ignore value"
@@ -933,7 +933,7 @@ input GenderCriterionInput {
 }
 
 input CircumcisionCriterionInput {
-  value: [CircumisedEnum!]
+  value: [CircumcisedEnum!]
   modifier: CriterionModifier!
 }
 

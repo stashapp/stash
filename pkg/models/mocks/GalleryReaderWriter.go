@@ -49,6 +49,20 @@ func (_m *GalleryReaderWriter) AddImages(ctx context.Context, galleryID int, ima
 	return r0
 }
 
+// AddSceneIDs provides a mock function with given fields: ctx, galleryID, sceneIDs
+func (_m *GalleryReaderWriter) AddSceneIDs(ctx context.Context, galleryID int, sceneIDs []int) error {
+	ret := _m.Called(ctx, galleryID, sceneIDs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, []int) error); ok {
+		r0 = rf(ctx, galleryID, sceneIDs)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // All provides a mock function with given fields: ctx
 func (_m *GalleryReaderWriter) All(ctx context.Context) ([]*models.Gallery, error) {
 	ret := _m.Called(ctx)

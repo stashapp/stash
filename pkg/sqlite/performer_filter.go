@@ -52,7 +52,7 @@ func (qb *performerFilterHandler) validate() error {
 		careerLength := filter.CareerLength
 		switch careerLength.Modifier {
 		case models.CriterionModifierEquals:
-			start, end, err := utils.ParseYearRangeString(careerLength.Value)
+			start, end, err := models.ParseYearRangeString(careerLength.Value)
 			if err != nil {
 				return fmt.Errorf("invalid career length value: %s", careerLength.Value)
 			}
@@ -67,6 +67,28 @@ func (qb *performerFilterHandler) validate() error {
 			// valid modifiers, no value parsing needed
 		default:
 			return fmt.Errorf("invalid career length modifier: %s", careerLength.Modifier)
+		}
+	}
+
+	// validate date formats
+	if filter.Birthdate != nil && filter.Birthdate.Value != "" {
+		if _, err := models.ParseDate(filter.Birthdate.Value); err != nil {
+			return fmt.Errorf("invalid birthdate value: %s", filter.Birthdate.Value)
+		}
+	}
+	if filter.DeathDate != nil && filter.DeathDate.Value != "" {
+		if _, err := models.ParseDate(filter.DeathDate.Value); err != nil {
+			return fmt.Errorf("invalid death date value: %s", filter.DeathDate.Value)
+		}
+	}
+	if filter.CareerStart != nil && filter.CareerStart.Value != "" {
+		if _, err := models.ParseDate(filter.CareerStart.Value); err != nil {
+			return fmt.Errorf("invalid career start value: %s", filter.CareerStart.Value)
+		}
+	}
+	if filter.CareerEnd != nil && filter.CareerEnd.Value != "" {
+		if _, err := models.ParseDate(filter.CareerEnd.Value); err != nil {
+			return fmt.Errorf("invalid career end value: %s", filter.CareerEnd.Value)
 		}
 	}
 
@@ -156,8 +178,8 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 		}),
 
 		// CareerLength filter is deprecated and non-functional (column removed in schema 78)
-		intCriterionHandler(filter.CareerStart, tableName+".career_start", nil),
-		intCriterionHandler(filter.CareerEnd, tableName+".career_end", nil),
+		&dateCriterionHandler{filter.CareerStart, tableName + ".career_start", nil},
+		&dateCriterionHandler{filter.CareerEnd, tableName + ".career_end", nil},
 		stringCriterionHandler(filter.Tattoos, tableName+".tattoos"),
 		stringCriterionHandler(filter.Piercings, tableName+".piercings"),
 		intCriterionHandler(filter.Rating100, tableName+".rating", nil),
@@ -166,7 +188,7 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 		intCriterionHandler(filter.Weight, tableName+".weight", nil),
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if filter.StashID != nil {
-				performerRepository.stashIDs.join(f, "performer_stash_ids", "performers.id")
+				performerRepository.stashIDs.leftJoin(f, "performer_stash_ids", "performers.id")
 				stringCriterionHandler(filter.StashID, "performer_stash_ids.stash_id")(ctx, f)
 			}
 		}),
@@ -266,31 +288,39 @@ func convertLegacyCareerLengthFilter(filter *models.PerformerFilterType) {
 		careerLength := filter.CareerLength
 		switch careerLength.Modifier {
 		case models.CriterionModifierEquals:
-			start, end, _ := utils.ParseYearRangeString(careerLength.Value)
+			start, end, _ := models.ParseYearRangeString(careerLength.Value)
 			if start != nil {
-				filter.CareerStart = &models.IntCriterionInput{
-					Value:    (*start) - 1, // minus one to make it exclusive
+				start = &models.Date{
+					Time:      start.AddDate(0, 0, -1), // make exclusive
+					Precision: models.DatePrecisionDay,
+				}
+				filter.CareerStart = &models.DateCriterionInput{
+					Value:    start.String(),
 					Modifier: models.CriterionModifierGreaterThan,
 				}
 			}
 			if end != nil {
-				filter.CareerEnd = &models.IntCriterionInput{
-					Value:    (*end) + 1, // plus one to make it exclusive
+				end = &models.Date{
+					Time:      end.AddDate(1, 0, 0), // make exclusive
+					Precision: models.DatePrecisionDay,
+				}
+				filter.CareerEnd = &models.DateCriterionInput{
+					Value:    end.String(), // plus one to make it exclusive
 					Modifier: models.CriterionModifierLessThan,
 				}
 			}
 		case models.CriterionModifierIsNull:
-			filter.CareerStart = &models.IntCriterionInput{
+			filter.CareerStart = &models.DateCriterionInput{
 				Modifier: models.CriterionModifierIsNull,
 			}
-			filter.CareerEnd = &models.IntCriterionInput{
+			filter.CareerEnd = &models.DateCriterionInput{
 				Modifier: models.CriterionModifierIsNull,
 			}
 		case models.CriterionModifierNotNull:
-			filter.CareerStart = &models.IntCriterionInput{
+			filter.CareerStart = &models.DateCriterionInput{
 				Modifier: models.CriterionModifierNotNull,
 			}
-			filter.CareerEnd = &models.IntCriterionInput{
+			filter.CareerEnd = &models.DateCriterionInput{
 				Modifier: models.CriterionModifierNotNull,
 			}
 		}
@@ -303,7 +333,7 @@ func (qb *performerFilterHandler) performerIsMissingCriterionHandler(isMissing *
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "url":
-				performersURLsTableMgr.join(f, "", "performers.id")
+				performersURLsTableMgr.leftJoin(f, "", "performers.id")
 				f.addWhere("performer_urls.url IS NULL")
 			case "scenes": // Deprecated: use `scene_count == 0` filter instead
 				f.addLeftJoin(performersScenesTable, "scenes_join", "scenes_join.performer_id = performers.id")
@@ -311,10 +341,10 @@ func (qb *performerFilterHandler) performerIsMissingCriterionHandler(isMissing *
 			case "image":
 				f.addWhere("performers.image_blob IS NULL")
 			case "stash_id":
-				performersStashIDsTableMgr.join(f, "performer_stash_ids", "performers.id")
+				performersStashIDsTableMgr.leftJoin(f, "performer_stash_ids", "performers.id")
 				f.addWhere("performer_stash_ids.performer_id IS NULL")
 			case "aliases":
-				performersAliasesTableMgr.join(f, "", "performers.id")
+				performersAliasesTableMgr.leftJoin(f, "", "performers.id")
 				f.addWhere("performer_aliases.alias IS NULL")
 			case "tags":
 				f.addLeftJoin(performersTagsTable, "tags_join", "tags_join.performer_id = performers.id")
@@ -353,8 +383,8 @@ func (qb *performerFilterHandler) urlsCriterionHandler(url *models.StringCriteri
 		primaryFK:    performerIDColumn,
 		joinTable:    performerURLsTable,
 		stringColumn: performerURLColumn,
-		addJoinTable: func(f *filterBuilder) {
-			performersURLsTableMgr.join(f, "", "performers.id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			performersURLsTableMgr.join(f, joinType, "", "performers.id")
 		},
 	}
 
@@ -367,8 +397,8 @@ func (qb *performerFilterHandler) aliasCriterionHandler(alias *models.StringCrit
 		primaryFK:    performerIDColumn,
 		joinTable:    performersAliasesTable,
 		stringColumn: performerAliasColumn,
-		addJoinTable: func(f *filterBuilder) {
-			performersAliasesTableMgr.join(f, "", "performers.id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			performersAliasesTableMgr.join(f, joinType, "", "performers.id")
 		},
 	}
 

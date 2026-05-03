@@ -55,8 +55,6 @@
         "logout": "লগ ছাড়ুন",
         "make_primary": "প্রাথমিক বানান",
         "merge": "ছাটুন",
-        "merge_from": "এর থেকে ছাটুন",
-        "merge_into": "এর মধ্যে ছাটুন",
         "next_action": "পরবর্তী",
         "not_running": "চলছে না",
         "open_in_external_player": "বাইরের প্লেয়ার এ খুলুন",
@@ -194,9 +192,7 @@
             "latest_version": "সর্বশেষ সংস্করণ",
             "latest_version_build_hash": "সর্বশেষ সংস্করণের হ্যাশ নির্মাণ:",
             "new_version_notice": "{ নতুন }",
-            "stash_discord": "আমাদের {url} চ্যানেলে যুক্ত থাকুন",
             "stash_home": "স্টাস এর হোম {url} তে",
-            "stash_open_collective": "{url} এর মাধ্যমে আমাদের সাহায্য করুন",
             "stash_wiki": "স্টাস {url} এর পাতা",
             "version": "সংস্করণ",
             "release_date": "মুক্তির তারিখ:"

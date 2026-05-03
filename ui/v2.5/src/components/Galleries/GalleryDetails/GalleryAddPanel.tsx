@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { GalleriesCriterion } from "src/models/list-filter/criteria/galleries";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -24,40 +24,43 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = PatchComponent(
     const Toast = useToast();
     const intl = useIntl();
 
-    function filterHook(filter: ListFilterModel) {
-      const galleryValue = {
-        id: gallery.id,
-        label: galleryTitle(gallery),
-      };
-      // if galleries is already present, then we modify it, otherwise add
-      let galleryCriterion = filter.criteria.find((c) => {
-        return c.criterionOption.type === "galleries";
-      }) as GalleriesCriterion | undefined;
+    const filterHook = useCallback(
+      (filter: ListFilterModel) => {
+        const galleryValue = {
+          id: gallery.id,
+          label: galleryTitle(gallery),
+        };
+        // if galleries is already present, then we modify it, otherwise add
+        let galleryCriterion = filter.criteria.find((c) => {
+          return c.criterionOption.type === "galleries";
+        }) as GalleriesCriterion | undefined;
 
-      if (
-        galleryCriterion &&
-        galleryCriterion.modifier === GQL.CriterionModifier.Excludes
-      ) {
-        // add the gallery if not present
         if (
-          !galleryCriterion.value.find((p) => {
-            return p.id === gallery.id;
-          })
+          galleryCriterion &&
+          galleryCriterion.modifier === GQL.CriterionModifier.Excludes
         ) {
-          galleryCriterion.value.push(galleryValue);
+          // add the gallery if not present
+          if (
+            !galleryCriterion.value.find((p) => {
+              return p.id === gallery.id;
+            })
+          ) {
+            galleryCriterion.value.push(galleryValue);
+          }
+
+          galleryCriterion.modifier = GQL.CriterionModifier.Excludes;
+        } else {
+          // overwrite
+          galleryCriterion = new GalleriesCriterion();
+          galleryCriterion.modifier = GQL.CriterionModifier.Excludes;
+          galleryCriterion.value = [galleryValue];
+          filter.criteria.push(galleryCriterion);
         }
 
-        galleryCriterion.modifier = GQL.CriterionModifier.Excludes;
-      } else {
-        // overwrite
-        galleryCriterion = new GalleriesCriterion();
-        galleryCriterion.modifier = GQL.CriterionModifier.Excludes;
-        galleryCriterion.value = [galleryValue];
-        filter.criteria.push(galleryCriterion);
-      }
-
-      return filter;
-    }
+        return filter;
+      },
+      [gallery]
+    );
 
     async function addImages(
       result: GQL.FindImagesQueryResult,

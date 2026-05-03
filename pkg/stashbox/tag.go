@@ -72,5 +72,12 @@ func tagFragmentToScrapedTag(t graphql.TagFragment) *models.ScrapedTag {
 		ret.AliasList = t.Aliases
 	}
 
+	if t.Category != nil {
+		ret.Parent = &models.ScrapedTag{
+			Name:        t.Category.Name,
+			Description: t.Category.Description,
+		}
+	}
+
 	return ret
 }

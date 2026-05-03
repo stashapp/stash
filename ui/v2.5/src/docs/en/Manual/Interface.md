@@ -1,4 +1,4 @@
-# Interface Options
+# Interface options
 
 ## Language
 
@@ -13,17 +13,17 @@ When SFW content mode is enabled, the following changes are made to the UI:
 - certain adult-specific metadata fields are hidden (e.g. performer genital fields)
 - `O`-Counter is replaced with `Like`-counter
 
-## Scene/Marker Wall Preview type
+## Scene/marker wall preview type
 
 The Scene Wall and Marker pages display scene preview videos (mp4) by default. This can be changed to animated image (webp) or static image. 
 
 > **⚠️ Note:** scene/marker preview videos must be generated to see them in the applicable wall page if Video preview type is selected. Likewise, if Animated image is selected, then Image Previews must be generated.
 
-## Show Studios as text
+## Show studio overlay as text
 
-By default, a scene's studio will be shown as an image overlay. Checking this option changes this to display studios as a text name instead.
+By default, in the grid card view the studio will be shown as an image overlay of the studio logo. Checking this option changes this to display studios as a text name instead.
 
-## Scene Player options
+## Scene player options
 
 By default, scene videos do not automatically start when navigating to the scenes page. Checking the "Auto-start video" option changes this to auto play scene videos.
 
@@ -47,7 +47,7 @@ There is also a [collection of community-created themes](https://discourse.stash
 
 Stash supports the injection of custom JavaScript to assist with theming or adding additional functionality. Be aware that bad JavaScript could break the UI or worse.
 
-## Custom Locales
+## Custom locales
 
 The localisation strings can be customised. The master list of default (en-GB) locale strings can be found [here](https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json). The custom locale format is the same as this json file.
 

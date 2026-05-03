@@ -24,7 +24,6 @@ type ScanCreatorUpdater interface {
 
 type ScanSceneFinderUpdater interface {
 	FindByPath(ctx context.Context, p string) ([]*models.Scene, error)
-	Update(ctx context.Context, updatedScene *models.Scene) error
 	AddGalleryIDs(ctx context.Context, sceneID int, galleryIDs []int) error
 }
 

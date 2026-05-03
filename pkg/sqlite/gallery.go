@@ -926,3 +926,7 @@ func (qb *GalleryStore) ResetCover(ctx context.Context, galleryID int) error {
 func (qb *GalleryStore) GetSceneIDs(ctx context.Context, id int) ([]int, error) {
 	return galleryRepository.scenes.getIDs(ctx, id)
 }
+
+func (qb *GalleryStore) AddSceneIDs(ctx context.Context, galleryID int, sceneIDs []int) error {
+	return galleriesScenesTableMgr.insertJoins(ctx, galleryID, sceneIDs)
+}

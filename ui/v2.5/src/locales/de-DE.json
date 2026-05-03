@@ -23,7 +23,7 @@
         "create": "Erstellen",
         "create_chapters": "Kapitel erstellen",
         "create_entity": "Erstelle {entityType}",
-        "create_marker": "Erstelle Markierung",
+        "create_marker": "Markierung erstellen",
         "created_entity": "{entity_type} erstellt: {entity_name}",
         "customise": "Anpassen",
         "delete": "Löschen",
@@ -34,7 +34,7 @@
         "disallow": "Nicht erlauben",
         "download": "Herunterladen",
         "download_anonymised": "Anonymisiert herunterladen",
-        "download_backup": "Lade Backup herunter",
+        "download_backup": "Backup herunterladen",
         "edit": "Bearbeiten",
         "edit_entity": "Bearbeiten {entityType}",
         "export": "Exportieren",
@@ -58,8 +58,6 @@
         "logout": "Ausloggen",
         "make_primary": "Als Primärquelle festlegen",
         "merge": "Zusammenführen",
-        "merge_from": "Zusammenführen aus",
-        "merge_into": "Zusammenführen in",
         "migrate_blobs": "Blobs migrieren",
         "migrate_scene_screenshots": "Szenen-Screenshots migrieren",
         "next_action": "Nächste",
@@ -87,7 +85,7 @@
         "scan": "Scannen",
         "scrape": "Scrapen",
         "scrape_query": "Scrape Anfrage",
-        "scrape_scene_fragment": "An Bruchstück scrapen",
+        "scrape_scene_fragment": "An Fragment scrapen",
         "scrape_with": "Scrape mit…",
         "search": "Suchen",
         "select_all": "Alle auswählen",
@@ -95,7 +93,7 @@
         "select_folders": "Ordner auswählen",
         "select_none": "Nichts auswählen",
         "selective_auto_tag": "Automatisch selektiv taggen",
-        "selective_clean": "Selektive Reinigung",
+        "selective_clean": "Selektives Aufräumen",
         "selective_scan": "Selektiv scannen",
         "set_as_default": "Als Voreinstellung festlegen",
         "set_back_image": "Rückseite…",
@@ -135,7 +133,7 @@
         "add_o": "O hinzufügen",
         "add_play": "Abspielen hinzufügen",
         "clear_date_data": "Datum-Eintrag löschen",
-        "assign_stashid_to_parent_studio": "Stash ID existierendem Elternstudio hinzufügen und Metadaten aktualisieren",
+        "assign_stashid_to_parent_studio": "Stash ID zu existierendem Übergeordnetem Studio hinzufügen und Metadaten aktualisieren",
         "set_cover": "Als Titelbild setzen",
         "reset_cover": "Titelbild zurücksetzen",
         "remove_from_containing_group": "Von Gruppe entfernen",
@@ -151,7 +149,15 @@
         "show_count_results": "Zeige {count} Ergebnisse",
         "show_results": "Ergebnisse anzeigen",
         "load_filter": "Filter laden",
-        "load": "Laden"
+        "load": "Laden",
+        "create_new": "Neu erstellen",
+        "add_stash_id": "Stash-ID hinzufügen",
+        "save_and_new": "Speichern & Neu",
+        "invert_selection": "Invertiere Auswahl",
+        "select_directory": "Ordner Auswählen",
+        "from_clipboard": "Aus Zwischenablage",
+        "reveal_in_file_manager": "Im Dateimanager anzeigen",
+        "selective_generate": "Selektives Generieren"
     },
     "actions_name": "Aktionen",
     "age": "Alter",
@@ -202,6 +208,10 @@
             "mark_organized_desc": "Markiere die Szene nach dem klicken auf Speichern als organisiert.",
             "errors": {
                 "blacklist_duplicate": "Blacklist item duplizieren"
+            },
+            "performer_genders": {
+                "heading": "Darsteller-Geschlechter",
+                "description": "Darsteller mit diesem Geschlecht werden angezeigt, wenn Szenen getaggt werden."
             }
         },
         "noun_query": "Anfrage",
@@ -223,7 +233,11 @@
         "verb_scrape_all": "Alles Scrapen",
         "verb_submit_fp": "Übermittele {fpCount, plural, one{# Fingerabdruck} other{# Fingerabdrücke}}",
         "verb_toggle_config": "{toggle} {configuration}",
-        "verb_toggle_unmatched": "{toggle} nicht zugeordnete Szenen"
+        "verb_toggle_unmatched": "{toggle} nicht zugeordnete Szenen",
+        "verb_add_as_alias": "Füge Spitzname als Alias hinzu",
+        "verb_link_existing": "Link zu bereits existierendem",
+        "verb_match_tag": "Tag zuordnen",
+        "verb_scrape_selected": "Ausgewählte \"scrapen\""
     },
     "config": {
         "about": {
@@ -234,9 +248,7 @@
             "latest_version_build_hash": "Neuester Build Hash:",
             "new_version_notice": "[NEU]",
             "release_date": "Veröffentlichungsdatum:",
-            "stash_discord": "Komm in unseren {url} Kanal",
             "stash_home": "Stash ist beheimatet auf {url}",
-            "stash_open_collective": "Unterstütze uns über {url}",
             "stash_wiki": "Stash {url} Seite",
             "version": "Version"
         },
@@ -276,7 +288,7 @@
             "until_restart": "bis Neustart",
             "video_sort_order": "Standard-Videosortierreihenfolge",
             "video_sort_order_desc": "Reihenfolge, in der Videos standardmäßig sortiert werden.",
-            "server_port": "Server Port",
+            "server_port": "Serverport",
             "server_port_desc": "Port, auf dem der DLNA Server laufen soll. Benötigt nach einer Änderung einen DLNA Neustart."
         },
         "general": {
@@ -286,7 +298,7 @@
                 "authentication": "Authentifizierung",
                 "clear_api_key": "API-Schlüssel löschen",
                 "credentials": {
-                    "description": "Anmeldedaten, um den Zugriff auf den Stash einzuschränken.",
+                    "description": "Anmeldedaten, um den Zugriff auf Stash einzuschränken.",
                     "heading": "Anmeldedaten"
                 },
                 "generate_api_key": "API-Schlüssel erzeugen",
@@ -315,11 +327,11 @@
                 "heading": "Binärdaten Dateisystem-Pfad"
             },
             "blobs_storage": {
-                "description": "Der Ort an dem Binärdaten wie Szenencover, Darsteller-, Studio- und Tag-Bilder bespeichert werden. Nach einer Änderung müssen die bereits existierenden Daten mit der Blobs migrieren Aufgabe migriert werden. Siehe Aufgaben-Seite für Migrierungen.",
+                "description": "Der Ort an dem Binärdaten wie Szenencover, Darsteller-, Studio- und Tag-Bilder bespeichert werden. Nach einer Änderung müssen die bereits existierenden Daten mit der \"Blobs migrieren\"-Aufgabe migriert werden. Siehe Aufgaben-Seite für Migrierungen.",
                 "heading": "Binärdaten Speichertyp"
             },
             "cache_location": "Verzeichnis für den Cache. Notwendig falls Streaming mit HLS (wie auf Apple Geräten üblich) oder DASH erfolgt.",
-            "cache_path_head": "Cache Pfad",
+            "cache_path_head": "Cachepfad",
             "calculate_md5_and_ohash_desc": "Berechne MD5 Prüfsumme zusätzlich zu oshash. Aktivierung führt dazu, dass erstmalige Scans mehr Zeit benötigen. Dateibenennungshash muss auf oshash gesetzt sein, um Berechnung des MD5 zu unterbinden.",
             "calculate_md5_and_ohash_label": "Berechne MD5 für Videodateien",
             "check_for_insecure_certificates": "Überprüfe auf unsichere Zertifikate",
@@ -329,11 +341,11 @@
             "create_galleries_from_folders_desc": "Wenn ausgewählt, erzeuge standardmäßig Galerien aus Verzeichnissen, welche Bilder enthalten. Erstellen Sie eine Datei .forcegallery oder .nogallery in dem Ordner, um das Verhalten für diesen zu erzwingen/unterdrücken.",
             "create_galleries_from_folders_label": "Erzeuge Galerien aus Verzeichnissen mit Bilder darin",
             "database": "Datenbank",
-            "db_path_head": "Datenbank Pfad",
+            "db_path_head": "Datenbankpfad",
             "directory_locations_to_your_content": "Verzeichnis zu Ihren Inhalten",
-            "excluded_image_gallery_patterns_desc": "Reguläre Ausdrücke für Dateinamen/Pfade von Bildern/Galerien, welche von Scans ausgeschlossen werden und beim Aufräumen der Datenbank berücksichtigt werden sollen",
+            "excluded_image_gallery_patterns_desc": "Reguläre Ausdrücke für Dateinamen/Pfade von Bildern/Galerien, welche von Scans ausgeschlossen werden und beim Aufräumen der Datenbank berücksichtigt werden sollen.",
             "excluded_image_gallery_patterns_head": "Schema für ausgeschlossene Bilder/Galerien",
-            "excluded_video_patterns_desc": "Reguläre Ausdrücke für Dateinamen/Pfade von Videos, welche von Scans ausgeschlossen werden und beim Aufräumen der Datenbank berücksichtigt werden sollen",
+            "excluded_video_patterns_desc": "Reguläre Ausdrücke für Dateinamen/Pfade von Videos, welche von Scans ausgeschlossen werden und beim Aufräumen der Datenbank berücksichtigt werden sollen.",
             "excluded_video_patterns_head": "Schema für ausgeschlossene Videos",
             "ffmpeg": {
                 "hardware_acceleration": {
@@ -369,16 +381,16 @@
                     "description": "Pfad zu ffmpeg.exe (nicht nur der Ordner). Wenn nicht angegeben wird ffmpeg.exe aus der Umgebungsvariable $PATH, dem Konfigurationsverzeichnis oder aus $HOME/.stash aufgelöst"
                 },
                 "ffprobe_path": {
-                    "description": "Pfad zu ffprobe.exe (nicht nur der Ordner). Wenn nicht angegeben wird ffprobe.exe aus der Umgebungsvariable $PATH, dem Konfigurationsverzeichnis oder aus $HOME/.stash aufgelöst",
+                    "description": "Pfad zu ffprobe.exe (nicht nur der Ordner). Wenn nicht angegeben wird ffprobe.exe aus der Umgebungsvariable $PATH, dem Konfigurationsverzeichnis oder aus $HOME/.stash aufgelöst.",
                     "heading": "FFprobe.exe Pfad"
                 }
             },
             "funscript_heatmap_draw_range": "Reichweite in generierte Heatmaps einbeziehen",
             "funscript_heatmap_draw_range_desc": "Zeichnet den Bewegungsbereich auf der y-Achse der erzeugten Heatmap. Vorhandene Heatmaps müssen nach der Änderung neu generiert werden.",
-            "gallery_cover_regex_desc": "Regulärer Ausdruck, verwendet um ein Bild als Galerietitelbild zu identifiziert",
+            "gallery_cover_regex_desc": "Regulärer Ausdruck, der verwendet wird um ein Bild als Galerietitelbild zu identifizieren.",
             "gallery_cover_regex_label": "Schema für Galerietitelbilder",
             "gallery_ext_desc": "Durch Kommas getrennte Liste von Dateiformaten, welche als Galeriecontainer gelesen werden sollen.",
-            "gallery_ext_head": "Galeriecontainer Dateiformate",
+            "gallery_ext_head": "Galerie-ZIP Dateiendung",
             "generated_file_naming_hash_desc": "Verwende MD5 oder oshash für die Benennung der generierten Dateien. Um dies zu ändern, müssen für alle Szenen der entsprechende MD5/oshash berechnet werden. Nachdem dieser Wert geändert wurde, müssen vorhandene generierte Dateien migriert oder neu generiert werden. Siehe Aufgabenseite für die Migration.",
             "generated_file_naming_hash_head": "Dateinamen-Hash für generierte Dateien",
             "generated_files_location": "Verzeichnisspeicherort für die generierten Dateien (Markierungen, Vorschauen, Sprites usw.)",
@@ -420,6 +432,10 @@
             "plugins_path": {
                 "heading": "Dateipfad für Plugins",
                 "description": "Speicherort der Plugin-Konfigurationsdateien"
+            },
+            "delete_trash_path": {
+                "description": "Pfad in den gelöschte Dateien verschoben, anstatt dauerhaft gelöscht werden. Freilassen, um Dateien permanent zu löschen.",
+                "heading": "Papierkorbverzeichnis"
             }
         },
         "library": {
@@ -458,7 +474,7 @@
             "name": "Name",
             "title": "Stash-Box-Endpunkte",
             "max_requests_per_minute": "Max requests pro Minute",
-            "max_requests_per_minute_description": "Verwendet default Wert  {defaultValue} wenn auf 0 gesetzt"
+            "max_requests_per_minute_description": "Verwendet Standardwert {defaultValue}, wenn auf 0 gesetzt"
         },
         "system": {
             "transcoding": "Transcodierung"
@@ -476,7 +492,6 @@
             "auto_tagging": "Automatisches Tagging",
             "backing_up_database": "Datenbank sichern",
             "backup_and_download": "Führt eine Sicherung der Datenbank durch und lädt die resultierende Datei herunter.",
-            "backup_database": "Führt eine Sicherung der Datenbank in den Backup-Verzeichnispfad mit dem Dateiformat {filename_format} aus",
             "cleanup_desc": "Suche nach fehlenden Dateien und entfernen Sie diese aus der Datenbank. Dies ist eine destruktive Aktion.",
             "data_management": "Datenmanagement",
             "defaults_set": "Standardeinstellungen wurden eingestellt und werden genutzt, wenn {action} Button auf der Aufgabenseite geklickt wurde.",
@@ -823,9 +838,19 @@
             "sfw_mode": {
                 "description": "Aktivieren wenn man Stash für das speichern von SFW content benutzt. Versteckt oder Ändernt ein paar NFSW eigenschaften des UI.",
                 "heading": "SFW Content Modus"
+            },
+            "custom_title": {
+                "description": "Benutzerdefinierter Text, der an den Seitentitel angehängt werden soll. Falls leer, wird Standard \"Stash\" verwendet.",
+                "heading": "Benutzerdefinierter Titel"
+            },
+            "troubleshooting_mode": {
+                "exit": "Abbrechen"
             }
         },
-        "advanced_mode": "Fortgeschrittener Modus"
+        "advanced_mode": "Fortgeschrittener Modus",
+        "changelog": {
+            "header": "Änderungsprotokoll"
+        }
     },
     "configuration": "Konfiguration",
     "countables": {
@@ -921,15 +946,12 @@
                 "label": "Scroll-Modus",
                 "pan_y": "Schwenkung Y",
                 "zoom": "Zoomen"
-            }
+            },
+            "disable_animation": "Deaktivieren Übergangsanimation zwischen Bildern"
         },
         "merge": {
             "destination": "Ziel",
             "empty_results": "Die Werte der Zielfelder bleiben unverändert.",
-            "source": "Quelle"
-        },
-        "merge_tags": {
-            "destination": "Ziel",
             "source": "Quelle"
         },
         "reassign_entity_title": "{count, plural, one {Weise {singularEntity} neu zu} other {Weise {pluralEntity} neu zu}}}",
@@ -988,7 +1010,11 @@
         "overwrite_filter_warning": "Der gespeicherte Filter \"{entityName}\" wird überschrieben.",
         "set_default_filter_confirm": "Sind Sie sicher, dass Sie diesen Filter als Standard festlegen möchten?",
         "clear_o_history_confirm_sfw": "Bist du dir sicher das du den Verlauf löschen willst?",
-        "tags_found": "{count} Tags gefunden"
+        "tags_found": "{count} Tags gefunden",
+        "stashid_exists_warning": "Die existierende Stash ID für diese Stash-Box wird ersetzt.",
+        "studios_found": "{count} Studios gefunden",
+        "scrape_results_missing": "fehlend",
+        "delete_alert_to_trash": "Folgendes {count, plural, one {{singularEntity}} other {{pluralEntity}}} wird in den Papierkorb verschoben:"
     },
     "dimensions": "Maße",
     "director": "Regisseur",
@@ -1112,8 +1138,8 @@
         "syncing": "Synchronisiert mit Server",
         "uploading": "Skript wird hochgeladen"
     },
-    "hasChapters": "Hat Kapitel",
-    "hasMarkers": "Hat Markierungen",
+    "hasChapters": "Kapitel",
+    "hasMarkers": "Markierungen",
     "height": "Größe",
     "height_cm": "Höhe (cm)",
     "help": "Hilfe",
@@ -1140,9 +1166,7 @@
     "measurements": "Maße",
     "media_info": {
         "audio_codec": "Audio-Codec",
-        "checksum": "Prüfsumme",
         "downloaded_from": "Heruntergeladen von",
-        "hash": "Hash",
         "interactive_speed": "Interaktive Geschwindigkeit",
         "performer_card": {
             "age": "{age} {years_old}",
@@ -1189,14 +1213,6 @@
         "any_names_entered_will_be_queried": "Alle eingetragenen Namen werden bei der stash-box Instanz nachgeschlagen und hinzugefügt, wenn gefunden. Nur exakte Übereinstimmungen werden als Treffer gewertet.",
         "batch_add_performers": "Stapelverarbeitung für Darsteller",
         "batch_update_performers": "Stapelverarbeitungsaktualisierung für Darsteller",
-        "config": {
-            "active_stash-box_instance": "Ausgewählte stash-box Instanz:",
-            "edit_excluded_fields": "Ausgeschlossene Felder bearbeiten",
-            "excluded_fields": "Ausgeschlossene Felder:",
-            "no_fields_are_excluded": "Keine Felder werden ausgeschlossen",
-            "no_instances_found": "Keine Instanzen gefunden",
-            "these_fields_will_not_be_changed_when_updating_performers": "Diese Felder werden durch die Aktualisierung nicht verändert."
-        },
         "current_page": "Aktuelle Seite",
         "failed_to_save_performer": "Fehler beim Speichern der Darsteller \"{performer}\"",
         "name_already_exists": "Name bereits vergeben",
@@ -1216,7 +1232,8 @@
         "untagged_performers": "Nicht getaggte Darsteller",
         "update_performer": "Darsteller aktualisieren",
         "update_performers": "Darsteller aktualisieren",
-        "updating_untagged_performers_description": "Bei der Aktualisierung von nicht getaggten Darstellern wird versucht die Metadaten alle Darsteller, welche keine StashID haben, zu aktualisieren."
+        "updating_untagged_performers_description": "Bei der Aktualisierung von nicht getaggten Darstellern wird versucht die Metadaten alle Darsteller, welche keine StashID haben, zu aktualisieren.",
+        "performer_names_or_stashids_separated_by_comma": "Darstellernamen oder StashIDs, durch Komma getrennt"
     },
     "performer_tags": "Darsteller-Tags",
     "performers": "Darsteller",
@@ -1296,7 +1313,7 @@
         },
         "paths": {
             "database_filename_empty_for_default": "Datenbank-Dateiname (Leer für Standardwert)",
-            "description": "Als nächstes müssen wir festhalten wo für deine Porno-Kollektion finden können und wo wir unsere Datenbank, generierten Hilfsdateien und Cache speichern dürfen. Diese Einstellungen lassen sich später auch noch ändern.",
+            "description": "Als nächstes müssen wir festhalten, wo wir deine Sammlung finden können und wo wir unsere Datenbank, generierten Hilfsdateien und Cache speichern dürfen. Diese Einstellungen lassen sich später auch noch ändern.",
             "path_to_cache_directory_empty_for_default": "Pfad zum Cache-Verzeichnis (leer für Voreinstellung)",
             "path_to_generated_directory_empty_for_default": "Pfad zum Ordner der Hilfsdateien (Leer für Standardwert)",
             "set_up_your_paths": "Setze die Dateipfade",
@@ -1307,15 +1324,17 @@
             "where_can_stash_store_cache_files": "Wo darf Stash Cache-Dateien zwischenspeichern?",
             "where_can_stash_store_cache_files_description": "Um einige Funktionen wie HLS/DASH Live-Transkodierung zu nutzen, muss Stash über ein Cache-Verzeichnis als temporären Zwischenspeicher verfügen. Als Voreinstellung wird Stash ein Verzeichnis <code>cache</code> im Ordner erstellen in dem auch die Konfigurationsdatei gespeichert ist. Wenn Sie dies ändern möchten, geben Sie bitte einen absoluten oder relativen Pfad an. Stash wird dieses Verzeichnis für Sie erstellen, sollte es nicht bereits existieren.",
             "where_can_stash_store_its_database": "Wo darf Stash seine Datenbank abspeichern?",
-            "where_can_stash_store_its_database_description": "Stash nutzt eine SQLite-Datenbank, um Metadaten über deine Pornosammlung zu speichern. Standardmäßig wird diese als <code>stash-go.sqlite</code> in dem Ordner gespeichert, in dem auf deine Konfigurationsdatei liegt. Wenn du das ändern möchtest, gebe bitte einen absoluten oder relativen (gegenüber der aktuellen working directory) Pfad mit Dateinamen an.",
+            "where_can_stash_store_its_database_description": "Stash nutzt eine SQLite-Datenbank, um Metadaten über deine Sammlung zu speichern. Standardmäßig wird diese als <code>stash-go.sqlite</code> in dem Ordner gespeichert, in dem auf deine Konfigurationsdatei liegt. Wenn du das ändern möchtest, gebe bitte einen absoluten oder relativen (gegenüber der aktuellen working directory) Pfad mit Dateinamen an.",
             "where_can_stash_store_its_database_warning": "ACHTUNG: Ein Speicherort abseits des Systems auf dem Stash ausgeführt wird (z.B. speichern der Datenbank auf einem Netzwerkspeicher während Stash auf einem anderen Computer ausgeführt wird) ist <strong>nicht unterstützt</strong>! SQLite ist nicht für Nutzung über das Netzwerk ausgelegt und der Versuch, dies zu tun, kann sehr leicht dazu führen, dass Ihre gesamte Datenbank beschädigt wird.",
             "where_can_stash_store_its_generated_content": "Wo darf Stash seine generierten Hilfsdateien abspeichern?",
             "where_can_stash_store_its_generated_content_description": "Um Thumbnails, Previews und Sprites zur Verfügung zu stellen, generiert Stash diese aus deinen Videos und Bildern. Das schließt auch Transkodierungen von nicht unterstützten Dateiformaten mit ein. Standardmäßig wird Stash diese im Ordner <code>generated</code> abspeichern, der sich am Ort der Konfigurationsdatei befindet. Wenn du das ändern möchtest, gebe bitte einen absoluten oder relativen (gegenüber der aktuellen working directory) Pfad an. Stash wird den Ordner erstellen, sollte er noch nicht existieren.",
-            "where_is_your_porn_located": "Wo finden wir deine Porno-Kollektion?",
-            "where_is_your_porn_located_description": "Füge Ordner hinzu in denen sich deine Porno-Videos und -Bilder befinden. Stash wird diese Ordner nutzen, um Videos und Bilder in das System einzupflegen.",
+            "where_is_your_porn_located": "Wo finden wir deine Sammlung?",
+            "where_is_your_porn_located_description": "Füge Ordner hinzu, in denen sich deine Videos und Bilder befinden. Stash wird diese Ordner nutzen, um Videos und Bilder in das System einzupflegen.",
             "path_to_blobs_directory_empty_for_default": "Pfad zum Verzeichnis der blobs (standardmäßig leer)",
             "store_blobs_in_database": "blobs in der Datenbank speichern",
-            "sfw_content_settings": "Benutzt du stash auch für SFW Inhalte?"
+            "sfw_content_settings": "Benutzt du stash auch für SFW Inhalte?",
+            "sfw_content_settings_description": "Stash kann verwendet werden, um SFW Inhalte wie Fotografie, Kunst, Comics und mehr zu verwalten. Wenn du diese Option aktivierst, wird die Oberfläche für SFW Inhalte angepasst.",
+            "use_sfw_content_mode": "Benutze den Modus für SFW Inhalte"
         },
         "stash_setup_wizard": "Einrichtungshelfer für Stash",
         "success": {
@@ -1351,7 +1370,7 @@
         "welcome_to_stash": "Willkommen zu Stash"
     },
     "stash_id": "Stash-ID",
-    "stash_id_endpoint": "Stash ID Endpunkt",
+    "stash_id_endpoint": "Stash ID Endpunkt URL",
     "stash_ids": "Stash IDs",
     "stashbox": {
         "go_review_draft": "Gehe zu {endpoint_name}, um Entwurf zu begutachten.",
@@ -1369,7 +1388,8 @@
         "scenes_played": "Szenen Abgespielt",
         "total_o_count": "Insgesamt Anzahl der Os",
         "total_play_count": "Gesamtanzahl der Wiedergaben",
-        "total_play_duration": "Spieldauer insgesamt"
+        "total_play_duration": "Spieldauer insgesamt",
+        "total_o_count_sfw": "Gefällt-Mir gesamt"
     },
     "status": "Status: {statusText}",
     "studio": "Studio",
@@ -1402,7 +1422,8 @@
         "started_auto_tagging": "Automatisches Tagging gestartet",
         "started_generating": "Generierung gestartet",
         "started_importing": "Import gestartet",
-        "updated_entity": "{entity} aktualisiert"
+        "updated_entity": "{entity} aktualisiert",
+        "merged_performers": "Zusammengefügte Künstler"
     },
     "total": "Gesamt",
     "true": "Wahr",
@@ -1411,7 +1432,7 @@
     "updated_at": "Aktualisiert am",
     "url": "URL",
     "validation": {
-        "date_invalid_form": "${path} muss die Form YYYY-MM-DD haben",
+        "date_invalid_form": "${path} muss die Form YYY,YYY-MM, oder YYYY-MM-DD haben",
         "required": "${path} ist ein notwendiges Feld",
         "end_time_before_start_time": "Der Endzeitpunkt muss nach oder am Startzeitpunkt sein",
         "unique": "${path} muss einzigartig sein",
@@ -1432,12 +1453,6 @@
         "update_studio": "Studio Updaten",
         "any_names_entered_will_be_queried": "Alle eingetragenen Namen werden bei der stash-box Instanz nachgeschlagen und hinzugefügt, wenn gefunden. Nur exakte Übereinstimmungen werden als Treffer gewertet.",
         "config": {
-            "these_fields_will_not_be_changed_when_updating_studios": "Diese Felder werden nicht geändert, wenn Studios aktualisiert werden.",
-            "no_instances_found": "Keine Instanz gefunden",
-            "edit_excluded_fields": "Abgewählte Felder bearbeiten",
-            "excluded_fields": "Abgewähltes Feld:",
-            "no_fields_are_excluded": "Keine Felder sind abgewählt",
-            "active_stash-box_instance": "Aktive stash-box Instanz:",
             "create_parent_desc": "Erstelle fehlende übergeordnete Studios oder tagge und aktualisiere Daten/Bilder für bestehende übergeordnete Studios mit genau passenden Namen",
             "create_parent_label": "Übergeordnete Studios erstellen"
         },
@@ -1462,7 +1477,8 @@
         "studio_successfully_tagged": "Studios erfolgreich getaggt",
         "tag_status": "Tag Status",
         "name_already_exists": "Name existiert bereits",
-        "no_results_found": "Keine Ergebnisse gefunden."
+        "no_results_found": "Keine Ergebnisse gefunden.",
+        "studio_names_or_stashids_separated_by_comma": "Studionamen oder StashID, getrennt durch Komma"
     },
     "parent_studio": "Übergeordnetes Studio",
     "package_manager": {
@@ -1564,5 +1580,15 @@
     "last_o_at_sfw": "Letztes mal ein Gefällt mir gegeben am",
     "o_count_sfw": "Gefällt mir",
     "o_history_sfw": "Gefällt mir Verlauf",
-    "odate_recorded_no_sfw": "Kein Gefällt mir Datum vermerkt"
+    "odate_recorded_no_sfw": "Kein Gefällt mir Datum vermerkt",
+    "stashbox_search": {
+        "header": "Suche {entityType} von StashBox",
+        "no_results": "Keine Ergebnisse gfunden.",
+        "placeholder_name_or_id": "{entityType} Name oder StashID...",
+        "select_stashbox": "StashBox auswählen..."
+    },
+    "duplicated": "Dupliziert",
+    "unsupported_criteria": "ungültige Kriterien",
+    "career_end": "Ende der Karriere",
+    "career_start": "Beginn der Karriere"
 }

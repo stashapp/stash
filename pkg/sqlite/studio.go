@@ -629,6 +629,16 @@ func (qb *StudioStore) sortByScenesDuration(direction string) string {
 	) %s`, sceneTable, scenesFilesTable, scenesFilesTable, sceneIDColumn, sceneTable, scenesFilesTable, sceneTable, studioIDColumn, studioTable, getSortDirection(direction))
 }
 
+func (qb *StudioStore) sortByScenesSize(direction string) string {
+	return fmt.Sprintf(` ORDER BY (
+		SELECT COALESCE(SUM(%s.size), 0)
+		FROM %s
+		LEFT JOIN %s ON %s.%s = %s.id
+		LEFT JOIN %s ON %s.id = %s.file_id
+		WHERE %s.%s = %s.id
+	) %s`, fileTable, sceneTable, scenesFilesTable, scenesFilesTable, sceneIDColumn, sceneTable, fileTable, fileTable, scenesFilesTable, sceneTable, studioIDColumn, studioTable, getSortDirection(direction))
+}
+
 // used for sorting on performer latest scene
 var selectStudioLatestSceneSQL = utils.StrFormat(
 	"SELECT MAX(date) FROM ("+
@@ -658,6 +668,7 @@ var studioSortOptions = sortOptions{
 	"name",
 	"scenes_count",
 	"scenes_duration",
+	"scenes_size",
 	"random",
 	"rating",
 	"tag_count",
@@ -688,6 +699,8 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 		sortQuery += getCountSort(studioTable, sceneTable, studioIDColumn, direction)
 	case "scenes_duration":
 		sortQuery += qb.sortByScenesDuration(direction)
+	case "scenes_size":
+		sortQuery += qb.sortByScenesSize(direction)
 	case "images_count":
 		sortQuery += getCountSort(studioTable, imageTable, studioIDColumn, direction)
 	case "galleries_count":

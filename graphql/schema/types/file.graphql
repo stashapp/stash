@@ -16,6 +16,9 @@ type Folder {
   parent_folders: [Folder!]!
   zip_file: BasicFile
 
+  "Returns direct sub-folders"
+  sub_folders: [Folder!]!
+
   mod_time: Time!
 
   created_at: Time!
@@ -156,7 +159,7 @@ input MoveFilesInput {
 
 input SetFingerprintsInput {
   type: String!
-  "an null value will remove the fingerprint"
+  "a null value will remove the fingerprint"
   value: String
 }
 

@@ -50,7 +50,7 @@ export CGO_ENABLED := 1
 
 # define COMPILER_IMAGE for cross-compilation docker container
 ifndef COMPILER_IMAGE
-  COMPILER_IMAGE := stashapp/compiler:latest
+  COMPILER_IMAGE := ghcr.io/stashapp/compiler:latest
 endif
 
 .PHONY: release
@@ -129,7 +129,7 @@ phasher: build-flags
 
 # builds dynamically-linked debug binaries
 .PHONY: build
-build: stash phasher
+build: stash
 
 # builds dynamically-linked PIE release binaries
 .PHONY: build-release
@@ -187,8 +187,6 @@ build-cc-macos:
 	# Combine into universal binaries
 	lipo -create -output dist/stash-macos dist/stash-macos-intel dist/stash-macos-arm
 	rm dist/stash-macos-intel dist/stash-macos-arm
-	lipo -create -output dist/phasher-macos dist/phasher-macos-intel dist/phasher-macos-arm
-	rm dist/phasher-macos-intel dist/phasher-macos-arm
 
 	# Place into bundle and zip up
 	rm -rf dist/Stash.app
@@ -197,6 +195,16 @@ build-cc-macos:
 	cp dist/stash-macos dist/Stash.app/Contents/MacOS/stash
 	cd dist && rm -f Stash.app.zip && zip -r Stash.app.zip Stash.app
 	rm -rf dist/Stash.app
+
+.PHONY: build-cc-macos-phasher
+build-cc-macos-phasher:
+	make build-cc-macos-arm
+	make build-cc-macos-intel
+
+	# Combine into universal binaries
+	lipo -create -output dist/phasher-macos dist/phasher-macos-intel dist/phasher-macos-arm
+	rm dist/phasher-macos-intel dist/phasher-macos-arm
+	# do not bundle phasher
 
 .PHONY: build-cc-freebsd
 build-cc-freebsd: export GOOS := freebsd

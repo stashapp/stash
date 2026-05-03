@@ -1,4 +1,4 @@
-# Auto Tag
+# Auto tag
 
 Auto tag automatically assigns Performers, Studios, and Tags to your media based on their names found in file paths or filenames. This task works for scenes, images, and galleries.
 
@@ -39,7 +39,7 @@ Scenes, images, and galleries that have the Organized flag added to them will no
 
 Studios also support the Organized flag, however it is purely informational. It serves as a front-end indicator for the user to mark that a studio's collection is complete and does not affect Auto tag behavior. The Ignore Auto tag flag should be used to exclude a studio from Auto tag.
 
-### Ignore Auto tag flag
+### Ignore auto tag flag
 
 Performers or Tags that have Ignore Auto tag flag added to them will be skipped by the Auto tag task.
 
