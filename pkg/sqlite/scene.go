@@ -1437,13 +1437,15 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int, duration
 		finalQuery := `
 SELECT GROUP_CONCAT(DISTINCT scene_id) as ids
 FROM (` + sqlStr + `)
-WHERE durationDiff <= ?
-    OR ? < 0
+WHERE phash IS NOT NULL
+    AND (durationDiff <= ?
+    OR ? < 0)
 GROUP BY phash
 HAVING COUNT(phash) > 1
 	AND COUNT(DISTINCT scene_id) > 1
 ORDER BY SUM(file_size) DESC;
 `
+
 		var ids []string
 		args := append(query.allArgs(), durationDiff, durationDiff)
 		if err := dbWrapper.Select(ctx, &ids, finalQuery, args...); err != nil {
