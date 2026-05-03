@@ -41,41 +41,6 @@ const (
 	sceneCoverBlobColumn = "cover_blob"
 )
 
-var findExactDuplicateQuery = `
-SELECT GROUP_CONCAT(DISTINCT scene_id) as ids
-FROM (
-	SELECT scenes.id as scene_id
-		, video_files.duration as file_duration
-		, files.size as file_size
-		, files_fingerprints.fingerprint as phash
-		, abs(max(video_files.duration) OVER (PARTITION by files_fingerprints.fingerprint) - video_files.duration) as durationDiff
-	FROM scenes
-	INNER JOIN scenes_files ON (scenes.id = scenes_files.scene_id)
-	INNER JOIN files ON (scenes_files.file_id = files.id)
-	INNER JOIN files_fingerprints ON (scenes_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'phash')
-	INNER JOIN video_files ON (files.id == video_files.file_id)
-)
-WHERE durationDiff <= ?1
-    OR ?1 < 0   --  Always TRUE if the parameter is negative.
-                --  That will disable the durationDiff checking.
-GROUP BY phash
-HAVING COUNT(phash) > 1
-	AND COUNT(DISTINCT scene_id) > 1
-ORDER BY SUM(file_size) DESC;
-`
-
-var findAllPhashesQuery = `
-SELECT scenes.id as id
-    , files_fingerprints.fingerprint as phash
-    , video_files.duration as duration
-FROM scenes
-INNER JOIN scenes_files ON (scenes.id = scenes_files.scene_id)
-INNER JOIN files ON (scenes_files.file_id = files.id)
-INNER JOIN files_fingerprints ON (scenes_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'phash')
-INNER JOIN video_files ON (files.id == video_files.file_id)
-ORDER BY files.size DESC;
-`
-
 type sceneRow struct {
 	ID            int         `db:"id" goqu:"skipinsert"`
 	Title         zero.String `db:"title"`
