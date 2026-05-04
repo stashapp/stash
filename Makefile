@@ -10,12 +10,12 @@ ifdef IS_WIN_SHELL
   RM := del /s /q
   RMDIR := rmdir /s /q
   NOOP := @@
-	PREFIX := $(USERPROFILE)\\bin
+  PREFIX := $(USERPROFILE)\\bin
 else
   RM := rm -f
   RMDIR := rm -rf
   NOOP := @:
-	PREFIX := $(HOME)/.local
+  PREFIX := $(HOME)/.local
 endif
 
 # set LDFLAGS environment variable to any extra ldflags required
