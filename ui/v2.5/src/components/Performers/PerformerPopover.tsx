@@ -7,6 +7,7 @@ import { PerformerCard } from "./PerformerCard";
 import { useConfigurationContext } from "../../hooks/Config";
 import { Placement } from "react-bootstrap/esm/Overlay";
 
+
 interface IPeromerPopoverCardProps {
   id?: string;
   cardContent?: React.ReactNode;
