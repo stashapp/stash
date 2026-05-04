@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Badge, Button, Card, Col, Collapse, Form, InputGroup, ProgressBar, Row } from "react-bootstrap";
+import { Button, Card, Col, Collapse, Form, InputGroup, ProgressBar, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
