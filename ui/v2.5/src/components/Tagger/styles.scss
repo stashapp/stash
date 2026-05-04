@@ -132,6 +132,9 @@
       font-size: 1rem;
     }
 
+    // Target BEM class from shared PerformerCard markup; cannot
+    // be renamed here without changing reusable performer card components.
+    // stylelint-disable-next-line selector-class-pattern
     .performer-card__age {
       font-size: 0.9rem;
     }
