@@ -13,7 +13,7 @@ import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { Link } from "react-router-dom";
 import { LinkButton } from "../LinkButton";
 import { MatchedPerformerPreview } from "./MatchedPerformerPreview";
-import { ScrapedPerformerPreview } from "./ScrapedPerformerPreview";
+import { TaggerPerformerPopover } from "./TaggerPerformerPopover";
 
 const PerformerLink: React.FC<{
   performer: GQL.ScrapedPerformer | Performer;
@@ -116,12 +116,15 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         <div className="entity-name">
           <FormattedMessage id="countables.performers" values={{ count: 1 }} />:
           <b className="ml-2">
-            <ScrapedPerformerPreview performer={performer}>
+            <TaggerPerformerPopover
+              scrapedPerformer={performer}
+              endpoint={endpoint}
+            >
               <PerformerLink
                 performer={performer}
                 url={`${stashboxPerformerPrefix}${performer.remote_site_id}`}
               />
-            </ScrapedPerformerPreview>
+            </TaggerPerformerPopover>
           </b>
         </div>
         <span className="ml-auto">
@@ -162,12 +165,15 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       <div className="entity-name">
         <FormattedMessage id="countables.performers" values={{ count: 1 }} />:
         <b className="ml-2">
-          <ScrapedPerformerPreview performer={performer}>
+          <TaggerPerformerPopover
+            scrapedPerformer={performer}
+            endpoint={endpoint}
+          >
             <PerformerLink
               performer={performer}
               url={safeBuildPerformerScraperLink(performer.remote_site_id)}
             />
-          </ScrapedPerformerPreview>
+          </TaggerPerformerPopover>
         </b>
       </div>
       <ButtonGroup>

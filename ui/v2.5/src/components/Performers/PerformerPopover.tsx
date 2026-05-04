@@ -13,6 +13,7 @@ import {
 
 interface IPeromerPopoverCardProps {
   id?: string;
+  cardContent?: React.ReactNode;
   previewData?: IPerformerPreviewData;
   loading?: boolean;
   loadingText?: string;
@@ -49,11 +50,21 @@ const PerformerPopoverCardByID: React.FC<{
 
 export const PerformerPopoverCard: React.FC<IPeromerPopoverCardProps> = ({
   id,
+  cardContent,
   previewData,
   loading,
   loadingText = "",
   cardExtras,
 }) => {
+  if (cardContent) {
+    return (
+      <>
+        {cardContent}
+        {cardExtras}
+      </>
+    );
+  }
+
   if (previewData || loading) {
     return (
       <>
@@ -75,12 +86,15 @@ export const PerformerPopoverCard: React.FC<IPeromerPopoverCardProps> = ({
 
 interface IPeroformerPopoverProps {
   id?: string;
+  cardContent?: React.ReactNode;
   previewData?: IPerformerPreviewData;
   loading?: boolean;
   loadingText?: string;
   cardExtras?: React.ReactNode;
   hide?: boolean;
   placement?: Placement;
+  enterDelay?: number;
+  leaveDelay?: number;
   target?: React.RefObject<HTMLElement>;
   triggerClassName?: string;
   onOpen?: () => void;
@@ -89,6 +103,7 @@ interface IPeroformerPopoverProps {
 
 export const PerformerPopover: React.FC<IPeroformerPopoverProps> = ({
   id,
+  cardContent,
   previewData,
   loading,
   loadingText,
@@ -96,6 +111,8 @@ export const PerformerPopover: React.FC<IPeroformerPopoverProps> = ({
   hide,
   children,
   placement = "top",
+  enterDelay = 500,
+  leaveDelay = 100,
   target,
   triggerClassName,
   onOpen,
@@ -114,13 +131,14 @@ export const PerformerPopover: React.FC<IPeroformerPopoverProps> = ({
       className={triggerClassName}
       target={target}
       placement={placement}
-      enterDelay={500}
-      leaveDelay={100}
+      enterDelay={enterDelay}
+      leaveDelay={leaveDelay}
       onOpen={onOpen}
       onClose={onClose}
       content={
         <PerformerPopoverCard
           id={id}
+          cardContent={cardContent}
           previewData={previewData}
           loading={loading}
           loadingText={loadingText}

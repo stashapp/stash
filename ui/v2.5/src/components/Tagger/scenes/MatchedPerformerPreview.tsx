@@ -2,8 +2,8 @@ import { ReactNode, useState } from "react";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { IntlShape, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
-import { PerformerPopover } from "src/components/Performers/PerformerPopover";
 import { useConfigurationContext } from "src/hooks/Config";
+import { TaggerPerformerPopover } from "./TaggerPerformerPopover";
 
 interface IPerformerDeltaRow {
   label: string;
@@ -215,8 +215,9 @@ export const MatchedPerformerPreview = ({
   }
 
   return (
-    <PerformerPopover
-      id={performerID ?? undefined}
+    <TaggerPerformerPopover
+      performer={performer ?? undefined}
+      performerID={performerID ?? undefined}
       cardExtras={
         warningStashID || deltaRows.length > 0 ? (
           <div className="tagger-matched-performer-popover-extra">
@@ -250,6 +251,6 @@ export const MatchedPerformerPreview = ({
       onClose={() => setIsOpened(false)}
     >
       {children}
-    </PerformerPopover>
+    </TaggerPerformerPopover>
   );
 };
