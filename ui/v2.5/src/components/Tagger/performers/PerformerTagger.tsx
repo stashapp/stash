@@ -1,5 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Button, Card, Col, Collapse, Form, InputGroup, ProgressBar, Row } from "react-bootstrap";
+import {
+  Button,
+  Card,
+  Col,
+  Collapse,
+  Form,
+  InputGroup,
+  ProgressBar,
+  Row,
+} from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
@@ -19,10 +28,20 @@ import { useConfigurationContext } from "src/hooks/Config";
 
 import StashSearchResult from "./StashSearchResult";
 import TaggerConfig, { ConfigButton } from "../TaggerConfig";
-import { ITaggerConfig, PERFORMER_FIELDS, PERFORMER_MERGEABLE_FIELDS } from "../constants";
+import {
+  ITaggerConfig,
+  PERFORMER_FIELDS,
+  PERFORMER_MERGEABLE_FIELDS,
+} from "../constants";
 import PerformerModal from "../PerformerModal";
 import { useUpdatePerformer } from "../queries";
-import { faCheck, faPlus, faStar, faTags, faTimes, } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCheck,
+  faPlus,
+  faStar,
+  faTags,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "src/components/Shared/Icon";
 import { mergeStashIDs } from "src/utils/stashbox";
 import { separateNamesAndStashIds } from "src/utils/stashIds";
@@ -78,14 +97,12 @@ const PerformerBatchUpdateModal: React.FC<IPerformerBatchUpdateModal> = ({
   );
 
   const excludedFieldsList = useMemo(
-    () =>
-      PERFORMER_FIELDS.filter((f) => fieldModes[f] === "skip"),
+    () => PERFORMER_FIELDS.filter((f) => fieldModes[f] === "skip"),
     [fieldModes]
   );
 
   const mergeFieldsList = useMemo(
-    () =>
-      PERFORMER_FIELDS.filter((f) => fieldModes[f] === "merge"),
+    () => PERFORMER_FIELDS.filter((f) => fieldModes[f] === "merge"),
     [fieldModes]
   );
 
@@ -114,10 +131,10 @@ const PerformerBatchUpdateModal: React.FC<IPerformerBatchUpdateModal> = ({
     return queryAll
       ? allPerformers?.findPerformers.count
       : filteredStashIDs.filter((s) =>
-        // if refresh, then we filter out the performers without a stash id
-        // otherwise, we want untagged performers, filtering out those with a stash id
-        refresh ? s.length > 0 : s.length === 0
-      ).length;
+          // if refresh, then we filter out the performers without a stash id
+          // otherwise, we want untagged performers, filtering out those with a stash id
+          refresh ? s.length > 0 : s.length === 0
+        ).length;
   }, [queryAll, refresh, performers, allPerformers, selectedEndpoint.endpoint]);
 
   const cycleFieldMode = (field: string) => {
@@ -515,8 +532,8 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
         details:
           message === "UNIQUE constraint failed: performers.name"
             ? intl.formatMessage({
-              id: "performer_tagger.name_already_exists",
-            })
+                id: "performer_tagger.name_already_exists",
+              })
             : message,
       },
     });
