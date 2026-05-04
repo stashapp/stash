@@ -594,6 +594,25 @@ driver:
 
 > **⚠️ Note:** each `click` adds an extra delay of `clicks sleep` seconds, so the above adds `2+4+1+2+2=11` seconds to the loading time of the page.
 
+### TLS emulation (surf) support
+
+Some websites use TLS fingerprinting to identify automated traffic. These cannot be set in headers. Compared to the previous method of python libraries, [surf](https://github.com/enetx/surf) TLS emulation is faster and more reliable in most cases.
+
+One might consider TLS emulation if the site works well in browser but is inexplicably blocked when accessing through curl/ python/ stash.
+
+TLS emulation can be enabled for a specific configuration by adding the following to the root of the yml configuration:
+
+```yaml
+driver:
+  useSurf: true
+```
+
+This is only supported on stash v0.32+
+
+The `User-Agent` [header](#headers) is automatically removed, since overriding it would create a mismatch between TLS fingerprint and User-Agent, defeating the entire purpose of emulation.
+
+> **⚠️ Note:** Proxies that do not support SOCKS5 will not be able to take full advantage of TLS emulation and might fail in rare cases.
+
 ### Cookie support
 
 In some websites the use of cookies is needed to bypass a welcoming message or some other kind of protection. Stash supports the setting of cookies for the direct xpath scraper and the CDP based one. Due to implementation issues the usage varies a bit.

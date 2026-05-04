@@ -15,8 +15,8 @@ require (
 	github.com/disintegration/imaging v1.6.2
 	github.com/dop251/goja v0.0.0-20231027120936-b396bb4c349d
 	github.com/doug-martin/goqu/v9 v9.18.0
-	github.com/enetx/g v1.0.223
-	github.com/enetx/surf v1.0.198
+	github.com/enetx/g v1.0.224
+	github.com/enetx/surf v1.0.199
 	github.com/feederbox826/gosx-notifier v0.2.2
 	github.com/go-chi/chi/v5 v5.2.2
 	github.com/go-chi/cors v1.2.1
@@ -72,7 +72,7 @@ require (
 
 require (
 	github.com/agnivade/levenshtein v1.2.1 // indirect
-	github.com/andybalholm/brotli v1.2.0 // indirect
+	github.com/andybalholm/brotli v1.2.1 // indirect
 	github.com/antchfx/xpath v1.3.6 // indirect
 	github.com/asticode/go-astikit v0.20.0 // indirect
 	github.com/asticode/go-astits v1.8.0 // indirect
