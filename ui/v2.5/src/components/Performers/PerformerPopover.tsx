@@ -3,9 +3,10 @@ import { ErrorMessage } from "../Shared/ErrorMessage";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { useFindPerformer } from "../../core/StashService";
+import { PerformerCard } from "./PerformerCard";
 import { useConfigurationContext } from "../../hooks/Config";
 import { Placement } from "react-bootstrap/esm/Overlay";
-import { PerformerCard } from "./PerformerCard";
+
 
 interface IPeromerPopoverCardProps {
   id?: string;
