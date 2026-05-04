@@ -6,15 +6,10 @@ import { useFindPerformer } from "../../core/StashService";
 import { useConfigurationContext } from "../../hooks/Config";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { PerformerCard } from "./PerformerCard";
-import {
-  IPerformerPreviewData,
-  PerformerPreviewCard,
-} from "./PerformerPreviewCard";
 
 interface IPeromerPopoverCardProps {
   id?: string;
   cardContent?: React.ReactNode;
-  previewData?: IPerformerPreviewData;
   loading?: boolean;
   loadingText?: string;
   cardExtras?: React.ReactNode;
@@ -51,7 +46,6 @@ const PerformerPopoverCardByID: React.FC<{
 export const PerformerPopoverCard: React.FC<IPeromerPopoverCardProps> = ({
   id,
   cardContent,
-  previewData,
   loading,
   loadingText = "",
   cardExtras,
@@ -65,16 +59,12 @@ export const PerformerPopoverCard: React.FC<IPeromerPopoverCardProps> = ({
     );
   }
 
-  if (previewData || loading) {
+  if (loading) {
     return (
       <>
-        {previewData ? (
-          <PerformerPreviewCard {...previewData} />
-        ) : (
-          <div className="tag-popover-card performer-preview-popover p-3">
-            {loading ? loadingText : null}
-          </div>
-        )}
+        <div className="tag-popover-card performer-preview-popover p-3">
+          {loadingText}
+        </div>
         {cardExtras}
       </>
     );
@@ -87,7 +77,6 @@ export const PerformerPopoverCard: React.FC<IPeromerPopoverCardProps> = ({
 interface IPeroformerPopoverProps {
   id?: string;
   cardContent?: React.ReactNode;
-  previewData?: IPerformerPreviewData;
   loading?: boolean;
   loadingText?: string;
   cardExtras?: React.ReactNode;
@@ -104,7 +93,6 @@ interface IPeroformerPopoverProps {
 export const PerformerPopover: React.FC<IPeroformerPopoverProps> = ({
   id,
   cardContent,
-  previewData,
   loading,
   loadingText,
   cardExtras,
@@ -139,7 +127,6 @@ export const PerformerPopover: React.FC<IPeroformerPopoverProps> = ({
         <PerformerPopoverCard
           id={id}
           cardContent={cardContent}
-          previewData={previewData}
           loading={loading}
           loadingText={loadingText}
           cardExtras={cardExtras}
