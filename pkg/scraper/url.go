@@ -34,7 +34,7 @@ func loadURL(ctx context.Context, loadURL string, client *http.Client, def Defin
 		case driverOptions.UseCDP:
 			return urlFromCDP(ctx, loadURL, *driverOptions, globalConfig)
 		case driverOptions.UseSurf:
-			return urlFromSurf(ctx, loadURL, def, globalConfig)
+			return urlFromSurf(ctx, loadURL, *driverOptions, def, globalConfig)
 		}
 	}
 
@@ -94,7 +94,7 @@ func loadURL(ctx context.Context, loadURL string, client *http.Client, def Defin
 
 // func urlFromSurf uses enetx/surf with TLS browser emulation to bypass fingerprint-based blocking.
 // this is a step down from CDP but faster and more lightweight and can succeed where CDP might fail
-func urlFromSurf(ctx context.Context, loadURL string, def Definition, globalConfig GlobalConfig) (io.Reader, error) {
+func urlFromSurf(ctx context.Context, loadURL string, driverOptions scraperDriverOptions, def Definition, globalConfig GlobalConfig) (io.Reader, error) {
 	// get cookies
 	jar, err := def.jar()
 	if err != nil {
@@ -125,6 +125,19 @@ func urlFromSurf(ctx context.Context, loadURL string, def Definition, globalConf
 	if err != nil {
 		return nil, err
 	}
+	// remove User-Agent header. This undermines TLS fingerprinting
+	// because of GREASE (RFC 8701)
+	// older fingerprints + UAs are still sustainable.
+	for _, h := range driverOptions.Headers {
+		if h.Key != "" {
+			if strings.ToLower(h.Key) == "user-agent" {
+				continue
+			}
+			req.Header.Set(h.Key, h.Value)
+			logger.Debugf("[scraper] adding header <%s:%s>", h.Key, h.Value)
+		}
+	}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
