@@ -32,11 +32,11 @@ export const TaggerPerformerPopover: React.FC<
   children,
 }) => {
   const cardContent = performer ? (
-    <div className="tag-popover-card">
+    <div className="tag-popover-card tagger-performer-popover-card">
       <PerformerCard performer={performer} zoomIndex={0} />
     </div>
   ) : scrapedPerformer ? (
-    <div className="tag-popover-card">
+    <div className="tag-popover-card tagger-performer-popover-card">
       <ScrapedPerformerCard
         scrapedPerformer={scrapedPerformer}
         endpoint={endpoint ?? ""}

@@ -121,6 +121,23 @@
   }
 }
 
+@media (max-height: 1049px) {
+  .tagger-performer-popover-card {
+    .card {
+      max-width: 160px;
+      width: 160px;
+    }
+
+    .card-section-title {
+      font-size: 1rem;
+    }
+
+    .performer-card__age {
+      font-size: 0.9rem;
+    }
+  }
+}
+
 .selected-result {
   background-color: hsl(204, 20%, 30%);
   border-radius: 3px;
