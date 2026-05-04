@@ -12,7 +12,6 @@ import { getStashboxBase } from "src/utils/stashbox";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { Link } from "react-router-dom";
 import { LinkButton } from "../LinkButton";
-import { MatchedPerformerPreview } from "./MatchedPerformerPreview";
 import { TaggerPerformerPopover } from "./TaggerPerformerPopover";
 
 const PerformerLink: React.FC<{
@@ -186,10 +185,11 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         >
           <FormattedMessage id="actions.skip" />
         </Button>
-        <MatchedPerformerPreview
+        <TaggerPerformerPopover
           performerID={selectedPerformer?.id}
           scrapedPerformer={performer}
           endpoint={endpoint}
+          includeMatchExtras
         >
           <PerformerSelect
             values={selectedPerformer ? [selectedPerformer] : []}
@@ -198,7 +198,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
             isClearable={false}
             ageFromDate={ageFromDate}
           />
-        </MatchedPerformerPreview>
+        </TaggerPerformerPopover>
         {endpoint && onLink && (
           <LinkButton disabled={selectedID === undefined} onLink={onLink} />
         )}
