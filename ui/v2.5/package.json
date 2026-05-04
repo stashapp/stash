@@ -15,8 +15,6 @@
     "lint:css": "stylelint --cache \"src/**/*.scss\"",
     "lint:js": "biome check src/",
     "check": "tsc --noEmit",
-    "eslint": "eslint",
-    "prettier": "prettier",
     "stylelint": "stylelint",
     "format": "biome format --write . ../../graphql",
     "format-check": "biome format --check . ../../graphql",
