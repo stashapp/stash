@@ -1,8 +1,8 @@
 # This dockerfile should be built with `make docker-cuda-build` from the stash root.
-ARG CUDA_VERSION=12.8.0
+ARG CUDA_VERSION=13.2.1
 
 # Build Frontend
-FROM node:20-alpine AS frontend
+FROM node:24-alpine AS frontend
 RUN apk add --no-cache make git
 ## cache node_modules separately
 COPY ./ui/v2.5/package.json ./ui/v2.5/pnpm-lock.yaml /stash/ui/v2.5/
