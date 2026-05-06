@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -85,6 +86,8 @@ func (r *mutationResolver) setConfigFloat(key string, value *float64) {
 func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGeneralInput) (*ConfigGeneralResult, error) {
 	c := config.GetInstance()
 
+	// #4709 - allow stash paths even if they do not exist, so that users may configure stash
+	// for disconnected drives or network storage.
 	existingPaths := c.GetStashPaths()
 	if input.Stashes != nil {
 		for _, s := range input.Stashes {
@@ -97,8 +100,12 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 				}
 			}
 			if isNew {
+				s.Path = filepath.Clean(s.Path)
+
+				// if it exists, it must be directory
 				exists, err := fsutil.DirExists(s.Path)
-				if !exists {
+				// allow it to not exist but if it does exist it must be a directory
+				if !exists && !errors.Is(err, fs.ErrNotExist) {
 					return makeConfigGeneralResult(), err
 				}
 			}
@@ -148,6 +155,15 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		}
 
 		c.SetString(config.BackupDirectoryPath, *input.BackupDirectoryPath)
+	}
+
+	existingDeleteTrashPath := c.GetDeleteTrashPath()
+	if input.DeleteTrashPath != nil && existingDeleteTrashPath != *input.DeleteTrashPath {
+		if err := validateDir(config.DeleteTrashPath, *input.DeleteTrashPath, true); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
+		c.SetString(config.DeleteTrashPath, *input.DeleteTrashPath)
 	}
 
 	existingGeneratedPath := c.GetGeneratedPath()
@@ -278,6 +294,11 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	if input.PreviewPreset != nil {
 		c.SetString(config.PreviewPreset, input.PreviewPreset.String())
 	}
+	r.setConfigBool(config.UseCustomSpriteInterval, input.UseCustomSpriteInterval)
+	r.setConfigFloat(config.SpriteInterval, input.SpriteInterval)
+	r.setConfigInt(config.MinimumSprites, input.MinimumSprites)
+	r.setConfigInt(config.MaximumSprites, input.MaximumSprites)
+	r.setConfigInt(config.SpriteScreenshotSize, input.SpriteScreenshotSize)
 
 	r.setConfigBool(config.TranscodeHardwareAcceleration, input.TranscodeHardwareAcceleration)
 	if input.MaxTranscodeSize != nil {
@@ -332,6 +353,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.SetString(config.LogLevel, *input.LogLevel)
 		logger := manager.GetInstance().Logger
 		logger.SetLogLevel(*input.LogLevel)
+	}
+
+	if input.LogFileMaxSize != nil && *input.LogFileMaxSize != c.GetLogFileMaxSize() {
+		c.SetInt(config.LogFileMaxSize, *input.LogFileMaxSize)
 	}
 
 	if input.Excludes != nil {
@@ -445,6 +470,8 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigInterfaceInput) (*ConfigInterfaceResult, error) {
 	c := config.GetInstance()
 
+	r.setConfigBool(config.SFWContentMode, input.SfwContentMode)
+
 	if input.MenuItems != nil {
 		c.SetInterface(config.MenuItems, input.MenuItems)
 	}
@@ -478,6 +505,8 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 		r.setConfigString(config.ImageLightboxScrollModeKey, (*string)(options.ScrollMode))
 
 		r.setConfigInt(config.ImageLightboxScrollAttemptsBeforeChange, options.ScrollAttemptsBeforeChange)
+
+		r.setConfigBool(config.ImageLightboxDisableAnimation, options.DisableAnimation)
 	}
 
 	if input.CSS != nil {
@@ -498,12 +527,15 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 
 	r.setConfigBool(config.CustomLocalesEnabled, input.CustomLocalesEnabled)
 
+	r.setConfigBool(config.DisableCustomizations, input.DisableCustomizations)
+
 	if input.DisableDropdownCreate != nil {
 		ddc := input.DisableDropdownCreate
 		r.setConfigBool(config.DisableDropdownCreatePerformer, ddc.Performer)
 		r.setConfigBool(config.DisableDropdownCreateStudio, ddc.Studio)
 		r.setConfigBool(config.DisableDropdownCreateTag, ddc.Tag)
 		r.setConfigBool(config.DisableDropdownCreateMovie, ddc.Movie)
+		r.setConfigBool(config.DisableDropdownCreateGallery, ddc.Gallery)
 	}
 
 	r.setConfigString(config.HandyKey, input.HandyKey)

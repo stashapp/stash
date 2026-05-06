@@ -3,11 +3,11 @@ import { Route, Switch } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { useTitleProps } from "src/hooks/title";
 import Image from "./ImageDetails/Image";
-import { ImageList } from "./ImageList";
+import { FilteredImageList } from "./ImageList";
 import { View } from "../List/views";
 
 const Images: React.FC = () => {
-  return <ImageList view={View.Images} />;
+  return <FilteredImageList view={View.Images} />;
 };
 
 const ImageRoutes: React.FC = () => {

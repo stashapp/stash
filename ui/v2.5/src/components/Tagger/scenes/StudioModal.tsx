@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import cx from "classnames";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
@@ -7,19 +7,16 @@ import * as GQL from "src/core/generated-graphql";
 import { useFindStudio } from "src/core/StashService";
 import { Icon } from "src/components/Shared/Icon";
 import { ModalComponent } from "src/components/Shared/Modal";
-import {
-  faCheck,
-  faExternalLinkAlt,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { Button, Form } from "react-bootstrap";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { excludeFields } from "src/utils/data";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { StashIDPill } from "src/components/Shared/StashID";
 
 interface IStudioDetailsProps {
   studio: GQL.ScrapedSceneStudioDataFragment;
-  link?: string;
+  endpoint?: string;
   excluded: Record<string, boolean>;
   toggleField: (field: string) => void;
   isNew?: boolean;
@@ -27,7 +24,7 @@ interface IStudioDetailsProps {
 
 const StudioDetails: React.FC<IStudioDetailsProps> = ({
   studio,
-  link,
+  endpoint,
   excluded,
   toggleField,
   isNew = false,
@@ -59,13 +56,15 @@ const StudioDetails: React.FC<IStudioDetailsProps> = ({
   function maybeRenderField(
     id: string,
     text: string | null | undefined,
-    isSelectable: boolean = true
+    isSelectable: boolean = true,
+    messageId?: string
   ) {
     if (!text) return;
+    if (!messageId) messageId = id;
 
     return (
       <div className="row no-gutters">
-        <div className="col-5 studio-create-modal-field" key={id}>
+        <div className="col-5 create-modal-field" key={id}>
           {isSelectable && (
             <Button
               onClick={() => toggleField(id)}
@@ -76,7 +75,7 @@ const StudioDetails: React.FC<IStudioDetailsProps> = ({
             </Button>
           )}
           <strong>
-            <FormattedMessage id={id} />:
+            <FormattedMessage id={messageId} />:
           </strong>
         </div>
         <TruncatedText className="col-7" text={text} />
@@ -84,16 +83,53 @@ const StudioDetails: React.FC<IStudioDetailsProps> = ({
     );
   }
 
-  function maybeRenderStashBoxLink() {
-    if (!link) return;
+  function maybeRenderURLListField(
+    name: string,
+    text: string[] | null | undefined,
+    truncate: boolean = true
+  ) {
+    if (!text) return;
 
     return (
-      <h6 className="mt-2">
-        <ExternalLink href={link}>
-          <FormattedMessage id="stashbox.source" />
-          <Icon icon={faExternalLinkAlt} className="ml-2" />
-        </ExternalLink>
-      </h6>
+      <div className="row no-gutters">
+        <div className="col-5 create-modal-field" key={name}>
+          {!isNew && (
+            <Button
+              onClick={() => toggleField(name)}
+              variant="secondary"
+              className={excluded[name] ? "text-muted" : "text-success"}
+            >
+              <Icon icon={excluded[name] ? faTimes : faCheck} />
+            </Button>
+          )}
+          <strong>
+            <FormattedMessage id={name} />:
+          </strong>
+        </div>
+        <div className="col-7 create-modal-value">
+          <ul>
+            {text.map((t, i) => (
+              <li key={i}>
+                <ExternalLink href={t}>
+                  {truncate ? <TruncatedText text={t} /> : t}
+                </ExternalLink>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    );
+  }
+
+  function maybeRenderStashBoxLink() {
+    const base = endpoint?.match(/https?:\/\/.*?\//)?.[0];
+    if (!base || !studio.remote_site_id) return;
+
+    return (
+      <StashIDPill
+        linkType="studios"
+        stashID={{ endpoint: endpoint, stash_id: studio.remote_site_id }}
+      />
     );
   }
 
@@ -103,8 +139,16 @@ const StudioDetails: React.FC<IStudioDetailsProps> = ({
       <div className="row">
         <div className="col-12">
           {maybeRenderField("name", studio.name, !isNew)}
-          {maybeRenderField("url", studio.url)}
-          {maybeRenderField("parent_studio", studio.parent?.name, false)}
+          {maybeRenderURLListField("urls", studio.urls)}
+          {maybeRenderField("details", studio.details)}
+          {maybeRenderField("aliases", studio.aliases)}
+          {maybeRenderField("tags", studio.tags?.map((t) => t.name).join(", "))}
+          {maybeRenderField(
+            "parent_id",
+            studio.parent?.name,
+            true,
+            "parent_studio"
+          )}
           {maybeRenderStashBoxLink()}
         </div>
       </div>
@@ -166,6 +210,10 @@ const StudioModal: React.FC<IStudioModalProps> = ({
     !!studio.parent
   );
 
+  useEffect(() => {
+    setCreateParentStudio(!excluded.parent_id && !!studio.parent);
+  }, [excluded.parent_id, studio.parent]);
+
   let sendParentStudio = true;
   // The parent studio exists, need to check if it has a Stash ID.
   const queryResult = useFindStudio(studio.parent?.stored_id ?? "");
@@ -191,9 +239,17 @@ const StudioModal: React.FC<IStudioModalProps> = ({
 
     const studioData: GQL.StudioCreateInput = {
       name: studio.name,
-      url: studio.url,
+      urls: studio.urls,
       image: studio.image,
       parent_id: studio.parent?.stored_id,
+      details: studio.details,
+      aliases: studio.aliases
+        ?.split(",")
+        .map((a) => a.trim())
+        .filter((a) => a),
+      tag_ids: studio.tags?.map((t) => t.stored_id).filter((id) => id) as
+        | string[]
+        | undefined,
     };
 
     // stashid handling code
@@ -221,8 +277,16 @@ const StudioModal: React.FC<IStudioModalProps> = ({
 
       parentData = {
         name: studio.parent?.name,
-        url: studio.parent?.url,
+        urls: studio.parent?.urls,
         image: studio.parent?.image,
+        details: studio.parent?.details,
+        aliases: studio.parent?.aliases
+          ?.split(",")
+          .map((a) => a.trim())
+          .filter((a) => a),
+        tag_ids: studio.parent?.tags
+          ?.map((t) => t.stored_id)
+          .filter((id) => id) as string[] | undefined,
       };
 
       // stashid handling code
@@ -246,30 +310,28 @@ const StudioModal: React.FC<IStudioModalProps> = ({
     handleStudioCreate(studioData, parentData);
   }
 
-  const base = endpoint?.match(/https?:\/\/.*?\//)?.[0];
-  const link = base ? `${base}studios/${studio.remote_site_id}` : undefined;
-  const parentLink = base
-    ? `${base}studios/${studio.parent?.remote_site_id}`
-    : undefined;
-
   function maybeRenderParentStudio() {
     // There is no parent studio or it already has a Stash ID
-    if (!studio.parent || !sendParentStudio) {
+    if (!studio.parent || !sendParentStudio || excluded.parent_id) {
       return;
     }
 
+    // force create if there is no current parent studio and parent studio is not excluded
+    const mustCreateParent = !studio.parent.stored_id;
+
     return (
       <div>
-        <div className="mb-4 mt-4">
+        <Form.Group className="mb-4 mt-4">
           <Form.Check
             id="create-parent"
             checked={createParentStudio}
             label={intl.formatMessage({
               id: parentStudioCreateText(),
             })}
+            disabled={mustCreateParent}
             onChange={() => setCreateParentStudio(!createParentStudio)}
           />
-        </div>
+        </Form.Group>
         {maybeRenderParentStudioDetails()}
       </div>
     );
@@ -285,7 +347,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
         studio={studio.parent}
         excluded={parentExcluded}
         toggleField={(field) => toggleParentField(field)}
-        link={parentLink}
+        endpoint={endpoint}
         isNew
       />
     );
@@ -308,7 +370,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
         studio={studio}
         excluded={excluded}
         toggleField={(field) => toggleField(field)}
-        link={link}
+        endpoint={endpoint}
       />
 
       {maybeRenderParentStudio()}

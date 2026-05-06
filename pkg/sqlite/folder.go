@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"slices"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -15,9 +16,11 @@ import (
 )
 
 const folderTable = "folders"
+const folderIDColumn = "folder_id"
 
 type folderRow struct {
 	ID             models.FolderID `db:"id" goqu:"skipinsert"`
+	Basename       string          `db:"basename"`
 	Path           string          `db:"path"`
 	ZipFileID      null.Int        `db:"zip_file_id"`
 	ParentFolderID null.Int        `db:"parent_folder_id"`
@@ -28,6 +31,8 @@ type folderRow struct {
 
 func (r *folderRow) fromFolder(o models.Folder) {
 	r.ID = o.ID
+	// derive basename from path
+	r.Basename = filepath.Base(o.Path)
 	r.Path = o.Path
 	r.ZipFileID = nullIntFromFileIDPtr(o.ZipFileID)
 	r.ParentFolderID = nullIntFromFolderIDPtr(o.ParentFolderID)
@@ -82,6 +87,25 @@ func (r folderQueryRows) resolve() []*models.Folder {
 	return ret
 }
 
+type folderRepositoryType struct {
+	repository
+
+	galleries repository
+}
+
+var (
+	folderRepository = folderRepositoryType{
+		repository: repository{
+			tableName: folderTable,
+			idColumn:  idColumn,
+		},
+		galleries: repository{
+			tableName: galleryTable,
+			idColumn:  folderIDColumn,
+		},
+	}
+)
+
 type FolderStore struct {
 	repository
 
@@ -91,7 +115,7 @@ type FolderStore struct {
 func NewFolderStore() *FolderStore {
 	return &FolderStore{
 		repository: repository{
-			tableName: sceneTable,
+			tableName: folderTable,
 			idColumn:  idColumn,
 		},
 
@@ -225,8 +249,62 @@ func (qb *FolderStore) Find(ctx context.Context, id models.FolderID) (*models.Fo
 	return ret, nil
 }
 
-func (qb *FolderStore) FindByPath(ctx context.Context, p string) (*models.Folder, error) {
-	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("path").Eq(p))
+// FindByIDs finds multiple folders by their IDs.
+// No check is made to see if the folders exist, and the order of the returned folders
+// is not guaranteed to be the same as the order of the input IDs.
+func (qb *FolderStore) FindByIDs(ctx context.Context, ids []models.FolderID) ([]*models.Folder, error) {
+	folders := make([]*models.Folder, 0, len(ids))
+
+	table := qb.table()
+	if err := batchExec(ids, defaultBatchSize, func(batch []models.FolderID) error {
+		q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(batch))
+		unsorted, err := qb.getMany(ctx, q)
+		if err != nil {
+			return err
+		}
+
+		folders = append(folders, unsorted...)
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return folders, nil
+}
+
+func (qb *FolderStore) FindMany(ctx context.Context, ids []models.FolderID) ([]*models.Folder, error) {
+	folders := make([]*models.Folder, len(ids))
+
+	unsorted, err := qb.FindByIDs(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, s := range unsorted {
+		i := slices.Index(ids, s.ID)
+		folders[i] = s
+	}
+
+	for i := range folders {
+		if folders[i] == nil {
+			return nil, fmt.Errorf("folder with id %d not found", ids[i])
+		}
+	}
+
+	return folders, nil
+}
+
+func (qb *FolderStore) FindByPath(ctx context.Context, p string, caseSensitive bool) (*models.Folder, error) {
+	// use like for case insensitive search
+	var criterion exp.BooleanExpression
+	if caseSensitive {
+		criterion = qb.table().Col("path").Eq(p)
+	} else {
+		criterion = qb.table().Col("path").ILike(p)
+	}
+
+	q := qb.selectDataset().Prepared(true).Where(criterion)
 
 	ret, err := qb.get(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -242,6 +320,126 @@ func (qb *FolderStore) FindByParentFolderID(ctx context.Context, parentFolderID 
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
 		return nil, fmt.Errorf("getting folders by parent folder id %d: %w", parentFolderID, err)
+	}
+
+	return ret, nil
+}
+
+func (qb *FolderStore) GetManyParentFolderIDs(ctx context.Context, folderIDs []models.FolderID) ([][]models.FolderID, error) {
+	table := qb.table()
+
+	// SQL recursive query to get all parent folder IDs for each folder ID
+	/*
+		WITH RECURSIVE parent_folders AS (
+		    SELECT id, parent_folder_id
+		    FROM folders
+		    WHERE id IN (folderIDs)
+
+		    UNION ALL
+
+		    SELECT f.id, f.parent_folder_id
+		    FROM folders f
+		    INNER JOIN parent_folders pf ON f.id = pf.parent_folder_id
+		)
+		SELECT id, parent_folder_id FROM parent_folders;
+	*/
+	const parentFolders = "parent_folders"
+	const parentFolderID = "parent_folder_id"
+	const parentID = "parent_id"
+	const foldersAlias = "f"
+
+	const parentFoldersAlias = "pf"
+	foldersAliasedI := table.As(foldersAlias)
+	parentFoldersI := goqu.T(parentFolders).As(parentFoldersAlias)
+
+	q := dialect.From(parentFolders).Prepared(true).
+		WithRecursive(parentFolders,
+			dialect.From(table).Select(table.Col(idColumn), table.Col(parentFolderID).As(parentID)).
+				Where(table.Col(idColumn).In(folderIDs)).
+				Union(
+					dialect.From(foldersAliasedI).InnerJoin(
+						parentFoldersI,
+						goqu.On(foldersAliasedI.Col(idColumn).Eq(parentFoldersI.Col(parentID))),
+					).Select(foldersAliasedI.Col(idColumn), foldersAliasedI.Col(parentFolderID).As(parentID)),
+				),
+		).Select(idColumn, parentID)
+
+	type resultRow struct {
+		FolderID       models.FolderID `db:"id"`
+		ParentFolderID null.Int        `db:"parent_id"`
+	}
+
+	folderMap := make(map[models.FolderID]models.FolderID)
+
+	if err := queryFunc(ctx, q, false, func(r *sqlx.Rows) error {
+		var row resultRow
+		if err := r.StructScan(&row); err != nil {
+			return err
+		}
+
+		if row.ParentFolderID.Valid {
+			folderMap[row.FolderID] = models.FolderID(row.ParentFolderID.Int64)
+		} else {
+			folderMap[row.FolderID] = 0
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	ret := make([][]models.FolderID, len(folderIDs))
+
+	for i, folderID := range folderIDs {
+		var parents []models.FolderID
+		currentID := folderID
+
+		for {
+			parentID, exists := folderMap[currentID]
+			if !exists || parentID == 0 {
+				break
+			}
+			parents = append(parents, parentID)
+			currentID = parentID
+		}
+
+		ret[i] = parents
+	}
+
+	return ret, nil
+}
+
+func (qb *FolderStore) GetManySubFolderIDs(ctx context.Context, parentFolderIDs []models.FolderID) ([][]models.FolderID, error) {
+	table := qb.table()
+	q := dialect.From(table).Select(
+		table.Col(idColumn),
+		table.Col("parent_folder_id"),
+	).Where(qb.table().Col("parent_folder_id").In(parentFolderIDs))
+
+	sql, args, err := q.ToSQL()
+	if err != nil {
+		return nil, fmt.Errorf("building query: %w", err)
+	}
+
+	var results []struct {
+		FolderID       int             `db:"id"`
+		ParentFolderID models.FolderID `db:"parent_folder_id"`
+	}
+
+	if err := querySelect(ctx, sql, args, &results); err != nil {
+		return nil, fmt.Errorf("getting folders by parent folder ids %v: %w", parentFolderIDs, err)
+	}
+
+	retMap := make(map[models.FolderID][]models.FolderID)
+
+	for _, v := range results {
+		retMap[v.ParentFolderID] = append(retMap[v.ParentFolderID], models.FolderID(v.FolderID))
+	}
+
+	ret := make([][]models.FolderID, len(parentFolderIDs))
+
+	for i, parentID := range parentFolderIDs {
+		ret[i] = retMap[parentID]
 	}
 
 	return ret, nil
@@ -265,9 +463,13 @@ func (qb *FolderStore) allInPaths(q *goqu.SelectDataset, p []string) *goqu.Selec
 // FindAllInPaths returns the all folders that are or are within any of the given paths.
 // Returns all if limit is < 0.
 // Returns all folders if p is empty.
-func (qb *FolderStore) FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]*models.Folder, error) {
+func (qb *FolderStore) FindAllInPaths(ctx context.Context, p []string, includeZipContents bool, limit, offset int) ([]*models.Folder, error) {
 	q := qb.selectDataset().Prepared(true)
 	q = qb.allInPaths(q, p)
+
+	if !includeZipContents {
+		q = q.Where(qb.table().Col("zip_file_id").IsNull())
+	}
 
 	if limit > -1 {
 		q = q.Limit(uint(limit))
@@ -312,4 +514,164 @@ func (qb *FolderStore) FindByZipFileID(ctx context.Context, zipFileID models.Fil
 	)
 
 	return qb.getMany(ctx, q)
+}
+
+func (qb *FolderStore) validateFilter(fileFilter *models.FolderFilterType) error {
+	const and = "AND"
+	const or = "OR"
+	const not = "NOT"
+
+	if fileFilter.And != nil {
+		if fileFilter.Or != nil {
+			return illegalFilterCombination(and, or)
+		}
+		if fileFilter.Not != nil {
+			return illegalFilterCombination(and, not)
+		}
+
+		return qb.validateFilter(fileFilter.And)
+	}
+
+	if fileFilter.Or != nil {
+		if fileFilter.Not != nil {
+			return illegalFilterCombination(or, not)
+		}
+
+		return qb.validateFilter(fileFilter.Or)
+	}
+
+	if fileFilter.Not != nil {
+		return qb.validateFilter(fileFilter.Not)
+	}
+
+	return nil
+}
+
+func (qb *FolderStore) makeFilter(ctx context.Context, folderFilter *models.FolderFilterType) *filterBuilder {
+	query := &filterBuilder{}
+
+	if folderFilter.And != nil {
+		query.and(qb.makeFilter(ctx, folderFilter.And))
+	}
+	if folderFilter.Or != nil {
+		query.or(qb.makeFilter(ctx, folderFilter.Or))
+	}
+	if folderFilter.Not != nil {
+		query.not(qb.makeFilter(ctx, folderFilter.Not))
+	}
+
+	filter := filterBuilderFromHandler(ctx, &folderFilterHandler{
+		folderFilter: folderFilter,
+	})
+
+	return filter
+}
+
+func (qb *FolderStore) Query(ctx context.Context, options models.FolderQueryOptions) (*models.FolderQueryResult, error) {
+	folderFilter := options.FolderFilter
+	findFilter := options.FindFilter
+
+	if folderFilter == nil {
+		folderFilter = &models.FolderFilterType{}
+	}
+	if findFilter == nil {
+		findFilter = &models.FindFilterType{}
+	}
+
+	query := qb.newQuery()
+
+	distinctIDs(&query, folderTable)
+
+	if q := findFilter.Q; q != nil && *q != "" {
+		searchColumns := []string{"folders.path"}
+		query.parseQueryString(searchColumns, *q)
+	}
+
+	if err := qb.validateFilter(folderFilter); err != nil {
+		return nil, err
+	}
+	filter := qb.makeFilter(ctx, folderFilter)
+
+	if err := query.addFilter(filter); err != nil {
+		return nil, err
+	}
+
+	if err := qb.setQuerySort(&query, findFilter); err != nil {
+		return nil, err
+	}
+	query.sortAndPagination += getPagination(findFilter)
+
+	result, err := qb.queryGroupedFields(ctx, options, query)
+	if err != nil {
+		return nil, fmt.Errorf("error querying aggregate fields: %w", err)
+	}
+
+	idsResult, err := query.findIDs(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error finding IDs: %w", err)
+	}
+
+	result.IDs = make([]models.FolderID, len(idsResult))
+	for i, id := range idsResult {
+		result.IDs[i] = models.FolderID(id)
+	}
+
+	return result, nil
+}
+
+func (qb *FolderStore) queryGroupedFields(ctx context.Context, options models.FolderQueryOptions, query queryBuilder) (*models.FolderQueryResult, error) {
+	if !options.Count {
+		// nothing to do - return empty result
+		return models.NewFolderQueryResult(qb), nil
+	}
+
+	aggregateQuery := qb.newQuery()
+
+	if options.Count {
+		aggregateQuery.addColumn("COUNT(DISTINCT temp.id) as total")
+	}
+
+	const includeSortPagination = false
+	aggregateQuery.from = fmt.Sprintf("(%s) as temp", query.toSQL(includeSortPagination))
+
+	out := struct {
+		Total      int
+		Duration   float64
+		Megapixels float64
+		Size       int64
+	}{}
+	if err := qb.repository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.allArgs(), &out); err != nil {
+		return nil, err
+	}
+
+	ret := models.NewFolderQueryResult(qb)
+	ret.Count = out.Total
+
+	return ret, nil
+}
+
+var folderSortOptions = sortOptions{
+	"created_at",
+	"id",
+	"path",
+	"basename",
+	"random",
+	"updated_at",
+}
+
+func (qb *FolderStore) setQuerySort(query *queryBuilder, findFilter *models.FindFilterType) error {
+	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
+		return nil
+	}
+	sort := findFilter.GetSort("path")
+
+	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
+	if err := folderSortOptions.validateSort(sort); err != nil {
+		return err
+	}
+
+	direction := findFilter.GetDirection()
+	query.sortAndPagination += getSort(sort, direction, "folders")
+
+	return nil
 }

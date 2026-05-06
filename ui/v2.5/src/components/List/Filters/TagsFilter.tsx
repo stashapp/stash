@@ -10,12 +10,17 @@ import { sortByRelevance } from "src/utils/query";
 import { CriterionOption } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import {
+  IUseQueryHookProps,
   makeQueryVariables,
   setObjectFilter,
   useLabeledIdFilterState,
 } from "./LabeledIdFilter";
 import { SidebarListFilter } from "./SidebarListFilter";
-import { TagsCriterion } from "src/models/list-filter/criteria/tags";
+import {
+  TagsCriterion,
+  TagsCriterionOption,
+} from "src/models/list-filter/criteria/tags";
+import { FormattedMessage } from "react-intl";
 
 interface ITagsFilter {
   criterion: TagsCriterion;
@@ -65,13 +70,12 @@ function sortResults(
   });
 }
 
-function useTagQueryFilter(
-  query: string,
-  filter?: ListFilterModel,
-  skip?: boolean
-) {
+function useTagQueryFilter(props: IUseQueryHookProps) {
+  const { q: query, filter: f, skip, filterHook } = props;
+  const appliedFilter = filterHook && f ? filterHook(f.clone()) : f;
+
   const { data, loading } = useFindTagsForSelectQuery({
-    variables: queryVariables(query, filter),
+    variables: queryVariables(query, appliedFilter),
     skip,
   });
 
@@ -84,7 +88,7 @@ function useTagQueryFilter(
 }
 
 function useTagQuery(query: string, skip?: boolean) {
-  return useTagQueryFilter(query, undefined, skip);
+  return useTagQueryFilter({ q: query, skip: !!skip });
 }
 
 const TagsFilter: React.FC<ITagsFilter> = ({ criterion, setCriterion }) => {
@@ -99,20 +103,37 @@ const TagsFilter: React.FC<ITagsFilter> = ({ criterion, setCriterion }) => {
 
 export const SidebarTagsFilter: React.FC<{
   title?: ReactNode;
-  option: CriterionOption;
+  option?: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
-}> = ({ title, option, filter, setFilter }) => {
+  filterHook?: (f: ListFilterModel) => ListFilterModel;
+  sectionID?: string;
+}> = ({
+  title = <FormattedMessage id="tags" />,
+  option = TagsCriterionOption,
+  filter,
+  setFilter,
+  filterHook,
+  sectionID = "tags",
+}) => {
   const state = useLabeledIdFilterState({
     filter,
     setFilter,
+    filterHook,
     option,
     useQuery: useTagQueryFilter,
     hierarchical: true,
     includeSubMessageID: "sub_tags",
   });
 
-  return <SidebarListFilter {...state} title={title} />;
+  return (
+    <SidebarListFilter
+      {...state}
+      data-type={option.type}
+      title={title}
+      sectionID={sectionID}
+    />
+  );
 };
 
 export default TagsFilter;

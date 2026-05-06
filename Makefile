@@ -50,7 +50,7 @@ export CGO_ENABLED := 1
 
 # define COMPILER_IMAGE for cross-compilation docker container
 ifndef COMPILER_IMAGE
-  COMPILER_IMAGE := stashapp/compiler:latest
+  COMPILER_IMAGE := ghcr.io/stashapp/compiler:latest
 endif
 
 .PHONY: release
@@ -129,7 +129,7 @@ phasher: build-flags
 
 # builds dynamically-linked debug binaries
 .PHONY: build
-build: stash phasher
+build: stash
 
 # builds dynamically-linked PIE release binaries
 .PHONY: build-release
@@ -187,8 +187,6 @@ build-cc-macos:
 	# Combine into universal binaries
 	lipo -create -output dist/stash-macos dist/stash-macos-intel dist/stash-macos-arm
 	rm dist/stash-macos-intel dist/stash-macos-arm
-	lipo -create -output dist/phasher-macos dist/phasher-macos-intel dist/phasher-macos-arm
-	rm dist/phasher-macos-intel dist/phasher-macos-arm
 
 	# Place into bundle and zip up
 	rm -rf dist/Stash.app
@@ -197,6 +195,16 @@ build-cc-macos:
 	cp dist/stash-macos dist/Stash.app/Contents/MacOS/stash
 	cd dist && rm -f Stash.app.zip && zip -r Stash.app.zip Stash.app
 	rm -rf dist/Stash.app
+
+.PHONY: build-cc-macos-phasher
+build-cc-macos-phasher:
+	make build-cc-macos-arm
+	make build-cc-macos-intel
+
+	# Combine into universal binaries
+	lipo -create -output dist/phasher-macos dist/phasher-macos-intel dist/phasher-macos-arm
+	rm dist/phasher-macos-intel dist/phasher-macos-arm
+	# do not bundle phasher
 
 .PHONY: build-cc-freebsd
 build-cc-freebsd: export GOOS := freebsd
@@ -275,7 +283,7 @@ generate: generate-backend generate-ui
 
 .PHONY: generate-ui
 generate-ui:
-	cd ui/v2.5 && yarn run gqlgen
+	cd ui/v2.5 && npm run gqlgen
 
 .PHONY: generate-backend
 generate-backend: touch-ui
@@ -338,9 +346,19 @@ server-clean:
 
 # installs UI dependencies. Run when first cloning repository, or if UI
 # dependencies have changed
+# If CI is set, configures pnpm to use a local store to avoid
+# putting .pnpm-store in /stash
+# NOTE: to run in the docker build container, using the existing
+# node_modules folder, rename the .modules.yaml to .modules.yaml.bak
+# and a new one will be generated. This will need to be reversed after
+# building.
 .PHONY: pre-ui
 pre-ui:
-	cd ui/v2.5 && yarn install --frozen-lockfile
+ifdef CI
+	cd ui/v2.5 && pnpm config set store-dir ~/.pnpm-store && pnpm install --frozen-lockfile
+else
+	cd ui/v2.5 && pnpm install --frozen-lockfile
+endif
 
 .PHONY: ui-env
 ui-env: build-info
@@ -359,7 +377,7 @@ ui: ui-only generate-login-locale
 
 .PHONY: ui-only
 ui-only: ui-env
-	cd ui/v2.5 && yarn build
+	cd ui/v2.5 && npm run build
 
 .PHONY: zip-ui
 zip-ui:
@@ -368,20 +386,24 @@ zip-ui:
 
 .PHONY: ui-start
 ui-start: ui-env
-	cd ui/v2.5 && yarn start --host
+	cd ui/v2.5 && npm run start -- --host
 
 .PHONY: fmt-ui
 fmt-ui:
-	cd ui/v2.5 && yarn format
+	cd ui/v2.5 && npm run format
 
 # runs all of the frontend PR-acceptance steps
 .PHONY: validate-ui
 validate-ui:
-	cd ui/v2.5 && yarn run validate
+	cd ui/v2.5 && npm run validate
 
 # these targets run the same steps as fmt-ui and validate-ui, but only on files that have changed
 fmt-ui-quick:
-	cd ui/v2.5 && yarn run prettier --write $$(git diff --name-only --relative --diff-filter d . ../../graphql)
+	cd ui/v2.5 && \
+	files=$$(git diff --name-only --relative --diff-filter d . ../../graphql); \
+	if [ -n "$$files" ]; then \
+	  npm run prettier -- --write $$files; \
+	fi
 
 # does not run tsc checks, as they are slow
 validate-ui-quick:
@@ -389,9 +411,9 @@ validate-ui-quick:
 	tsfiles=$$(git diff --name-only --relative --diff-filter d src | grep -e "\.tsx\?\$$"); \
 	scssfiles=$$(git diff --name-only --relative --diff-filter d src | grep "\.scss"); \
 	prettyfiles=$$(git diff --name-only --relative --diff-filter d . ../../graphql); \
-	if [ -n "$$tsfiles" ]; then yarn run eslint $$tsfiles; fi && \
-	if [ -n "$$scssfiles" ]; then yarn run stylelint $$scssfiles; fi && \
-	if [ -n "$$prettyfiles" ]; then yarn run prettier --check $$prettyfiles; fi
+	if [ -n "$$tsfiles" ]; then npm run eslint -- $$tsfiles; fi && \
+	if [ -n "$$scssfiles" ]; then npm run stylelint -- $$scssfiles; fi && \
+	if [ -n "$$prettyfiles" ]; then npm run prettier -- --check $$prettyfiles; fi
 
 # runs all of the backend PR-acceptance steps
 .PHONY: validate-backend

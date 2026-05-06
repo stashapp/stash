@@ -2,8 +2,8 @@
 
 # dependencies
 /node_modules
-/.pnp
-.pnp.js
+pnpm-lock.yaml
+pnpm-workspace.yaml
 
 # locales
 src/locales/**/*.json

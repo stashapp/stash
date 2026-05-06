@@ -47,6 +47,51 @@ func (qb *performerFilterHandler) validate() error {
 		}
 	}
 
+	// if legacy career length filter used, ensure only supported modifiers are used and value is valid
+	if filter.CareerLength != nil {
+		careerLength := filter.CareerLength
+		switch careerLength.Modifier {
+		case models.CriterionModifierEquals:
+			start, end, err := models.ParseYearRangeString(careerLength.Value)
+			if err != nil {
+				return fmt.Errorf("invalid career length value: %s", careerLength.Value)
+			}
+			// ensure career start/end is not set
+			if start != nil && filter.CareerStart != nil {
+				return fmt.Errorf("cannot use legacy CareerLength filter with CareerStart filter")
+			}
+			if end != nil && filter.CareerEnd != nil {
+				return fmt.Errorf("cannot use legacy CareerLength filter with CareerEnd filter")
+			}
+		case models.CriterionModifierIsNull, models.CriterionModifierNotNull:
+			// valid modifiers, no value parsing needed
+		default:
+			return fmt.Errorf("invalid career length modifier: %s", careerLength.Modifier)
+		}
+	}
+
+	// validate date formats
+	if filter.Birthdate != nil && filter.Birthdate.Value != "" {
+		if _, err := models.ParseDate(filter.Birthdate.Value); err != nil {
+			return fmt.Errorf("invalid birthdate value: %s", filter.Birthdate.Value)
+		}
+	}
+	if filter.DeathDate != nil && filter.DeathDate.Value != "" {
+		if _, err := models.ParseDate(filter.DeathDate.Value); err != nil {
+			return fmt.Errorf("invalid death date value: %s", filter.DeathDate.Value)
+		}
+	}
+	if filter.CareerStart != nil && filter.CareerStart.Value != "" {
+		if _, err := models.ParseDate(filter.CareerStart.Value); err != nil {
+			return fmt.Errorf("invalid career start value: %s", filter.CareerStart.Value)
+		}
+	}
+	if filter.CareerEnd != nil && filter.CareerEnd.Value != "" {
+		if _, err := models.ParseDate(filter.CareerEnd.Value); err != nil {
+			return fmt.Errorf("invalid career end value: %s", filter.CareerEnd.Value)
+		}
+	}
+
 	return nil
 }
 
@@ -71,9 +116,12 @@ func (qb *performerFilterHandler) handle(ctx context.Context, f *filterBuilder) 
 }
 
 func (qb *performerFilterHandler) criterionHandler() criterionHandler {
-	filter := qb.performerFilter
+	// make a copy of the filter to modify with legacy conversions without affecting original filter used for subfilters
+	filter := *qb.performerFilter
 	const tableName = performerTable
 	heightCmCrit := filter.HeightCm
+
+	convertLegacyCareerLengthFilter(&filter)
 
 	return compoundHandler{
 		stringCriterionHandler(filter.Name, tableName+".name"),
@@ -129,7 +177,9 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 			}
 		}),
 
-		stringCriterionHandler(filter.CareerLength, tableName+".career_length"),
+		// CareerLength filter is deprecated and non-functional (column removed in schema 78)
+		&dateCriterionHandler{filter.CareerStart, tableName + ".career_start", nil},
+		&dateCriterionHandler{filter.CareerEnd, tableName + ".career_end", nil},
 		stringCriterionHandler(filter.Tattoos, tableName+".tattoos"),
 		stringCriterionHandler(filter.Piercings, tableName+".piercings"),
 		intCriterionHandler(filter.Rating100, tableName+".rating", nil),
@@ -148,6 +198,12 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 			stashIDTableAs:    "performer_stash_ids",
 			parentIDCol:       "performers.id",
 		},
+		&stashIDsCriterionHandler{
+			c:                 filter.StashIDsEndpoint,
+			stashIDRepository: &performerRepository.stashIDs,
+			stashIDTableAs:    "performer_stash_ids",
+			parentIDCol:       "performers.id",
+		},
 
 		qb.aliasCriterionHandler(filter.Aliases),
 
@@ -161,6 +217,7 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 
 		qb.tagCountCriterionHandler(filter.TagCount),
 		qb.sceneCountCriterionHandler(filter.SceneCount),
+		qb.markerCountCriterionHandler(filter.MarkerCount),
 		qb.imageCountCriterionHandler(filter.ImageCount),
 		qb.galleryCountCriterionHandler(filter.GalleryCount),
 		qb.playCounterCriterionHandler(filter.PlayCount),
@@ -169,6 +226,16 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 		&dateCriterionHandler{filter.DeathDate, tableName + ".death_date", nil},
 		&timestampCriterionHandler{filter.CreatedAt, tableName + ".created_at", nil},
 		&timestampCriterionHandler{filter.UpdatedAt, tableName + ".updated_at", nil},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "scene_markers.id",
+			relatedRepo:    sceneMarkerRepository.repository,
+			relatedHandler: &sceneMarkerFilterHandler{filter.MarkersFilter},
+			joinFn: func(f *filterBuilder) {
+				performerRepository.scenes.innerJoin(f, "", "performers.id")
+				f.addInnerJoin(sceneMarkerTable, "", "scene_markers.scene_id = performers_scenes.scene_id")
+			},
+		},
 
 		&relatedFilterHandler{
 			relatedIDCol:   "performers_scenes.scene_id",
@@ -215,6 +282,51 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 	}
 }
 
+func convertLegacyCareerLengthFilter(filter *models.PerformerFilterType) {
+	// convert legacy career length filter to career start/end filters
+	if filter.CareerLength != nil {
+		careerLength := filter.CareerLength
+		switch careerLength.Modifier {
+		case models.CriterionModifierEquals:
+			start, end, _ := models.ParseYearRangeString(careerLength.Value)
+			if start != nil {
+				start = &models.Date{
+					Time:      start.AddDate(0, 0, -1), // make exclusive
+					Precision: models.DatePrecisionDay,
+				}
+				filter.CareerStart = &models.DateCriterionInput{
+					Value:    start.String(),
+					Modifier: models.CriterionModifierGreaterThan,
+				}
+			}
+			if end != nil {
+				end = &models.Date{
+					Time:      end.AddDate(1, 0, 0), // make exclusive
+					Precision: models.DatePrecisionDay,
+				}
+				filter.CareerEnd = &models.DateCriterionInput{
+					Value:    end.String(), // plus one to make it exclusive
+					Modifier: models.CriterionModifierLessThan,
+				}
+			}
+		case models.CriterionModifierIsNull:
+			filter.CareerStart = &models.DateCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			}
+			filter.CareerEnd = &models.DateCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			}
+		case models.CriterionModifierNotNull:
+			filter.CareerStart = &models.DateCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			}
+			filter.CareerEnd = &models.DateCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			}
+		}
+	}
+}
+
 // TODO - we need to provide a whitelist of possible values
 func (qb *performerFilterHandler) performerIsMissingCriterionHandler(isMissing *string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
@@ -234,7 +346,19 @@ func (qb *performerFilterHandler) performerIsMissingCriterionHandler(isMissing *
 			case "aliases":
 				performersAliasesTableMgr.join(f, "", "performers.id")
 				f.addWhere("performer_aliases.alias IS NULL")
+			case "tags":
+				f.addLeftJoin(performersTagsTable, "tags_join", "tags_join.performer_id = performers.id")
+				f.addWhere("tags_join.performer_id IS NULL")
 			default:
+				if err := validateIsMissing(*isMissing, []string{
+					"disambiguation", "gender", "birthdate", "death_date",
+					"ethnicity", "country", "hair_color", "eye_color", "height", "weight",
+					"measurements", "fake_tits", "penis_length", "circumcised",
+					"career_start", "career_end", "tattoos", "piercings", "details", "rating",
+				}); err != nil {
+					f.setError(err)
+					return
+				}
 				f.addWhere("(performers." + *isMissing + " IS NULL OR TRIM(performers." + *isMissing + ") = '')")
 			}
 		}
@@ -314,6 +438,22 @@ func (qb *performerFilterHandler) sceneCountCriterionHandler(count *models.IntCr
 	}
 
 	return h.handler(count)
+}
+
+func (qb *performerFilterHandler) markerCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if count != nil {
+			performerRepository.scenes.innerJoin(f, "", "performers.id")
+
+			const query = `(SELECT COUNT(*) FROM scene_markers 
+  INNER JOIN scenes ON scene_markers.scene_id = scenes.id
+  INNER JOIN performers_scenes ON performers_scenes.scene_id = scenes.id
+  WHERE performers_scenes.performer_id = performers.id)`
+
+			clause, args := getIntCriterionWhereClause(query, *count)
+			f.addWhere(clause, args...)
+		}
+	}
 }
 
 func (qb *performerFilterHandler) imageCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
@@ -447,7 +587,7 @@ func (qb *performerFilterHandler) studiosCriterionHandler(studios *models.Hierar
 				return
 			}
 
-			if len(studios.Value) == 0 {
+			if len(studios.Value) == 0 && len(studios.Excludes) == 0 {
 				return
 			}
 
@@ -464,27 +604,54 @@ func (qb *performerFilterHandler) studiosCriterionHandler(studios *models.Hierar
 				return
 			}
 
-			const derivedPerformerStudioTable = "performer_studio"
-			valuesClause, err := getHierarchicalValues(ctx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth)
-			if err != nil {
-				f.setError(err)
-				return
-			}
-			f.addWith("studio(root_id, item_id) AS (" + valuesClause + ")")
+			if len(studios.Value) > 0 {
+				const derivedPerformerStudioTable = "performer_studio"
+				valuesClause, err := getHierarchicalValues(ctx, studios.Value, studioTable, "", "parent_id", "child_id", studios.Depth)
+				if err != nil {
+					f.setError(err)
+					return
+				}
+				f.addWith("studio(root_id, item_id) AS (" + valuesClause + ")")
 
-			templStr := `SELECT performer_id FROM {primaryTable}
+				templStr := `SELECT performer_id FROM {primaryTable}
+		INNER JOIN {joinTable} ON {primaryTable}.id = {joinTable}.{primaryFK}
+		INNER JOIN studio ON {primaryTable}.studio_id = studio.item_id`
+
+				var unions []string
+				for _, c := range formatMaps {
+					unions = append(unions, utils.StrFormat(templStr, c))
+				}
+
+				f.addWith(fmt.Sprintf("%s AS (%s)", derivedPerformerStudioTable, strings.Join(unions, " UNION ")))
+
+				f.addLeftJoin(derivedPerformerStudioTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerStudioTable))
+				f.addWhere(fmt.Sprintf("%s.performer_id IS %s NULL", derivedPerformerStudioTable, clauseCondition))
+			}
+
+			// #6412 - handle excludes as well
+			if len(studios.Excludes) > 0 {
+				excludeValuesClause, err := getHierarchicalValues(ctx, studios.Excludes, studioTable, "", "parent_id", "child_id", studios.Depth)
+				if err != nil {
+					f.setError(err)
+					return
+				}
+				f.addWith("exclude_studio(root_id, item_id) AS (" + excludeValuesClause + ")")
+
+				excludeTemplStr := `SELECT performer_id FROM {primaryTable}
 	INNER JOIN {joinTable} ON {primaryTable}.id = {joinTable}.{primaryFK}
-	INNER JOIN studio ON {primaryTable}.studio_id = studio.item_id`
+	INNER JOIN exclude_studio ON {primaryTable}.studio_id = exclude_studio.item_id`
 
-			var unions []string
-			for _, c := range formatMaps {
-				unions = append(unions, utils.StrFormat(templStr, c))
+				var unions []string
+				for _, c := range formatMaps {
+					unions = append(unions, utils.StrFormat(excludeTemplStr, c))
+				}
+
+				const excludePerformerStudioTable = "performer_studio_exclude"
+				f.addWith(fmt.Sprintf("%s AS (%s)", excludePerformerStudioTable, strings.Join(unions, " UNION ")))
+
+				f.addLeftJoin(excludePerformerStudioTable, "", fmt.Sprintf("performers.id = %s.performer_id", excludePerformerStudioTable))
+				f.addWhere(fmt.Sprintf("%s.performer_id IS NULL", excludePerformerStudioTable))
 			}
-
-			f.addWith(fmt.Sprintf("%s AS (%s)", derivedPerformerStudioTable, strings.Join(unions, " UNION ")))
-
-			f.addLeftJoin(derivedPerformerStudioTable, "", fmt.Sprintf("performers.id = %s.performer_id", derivedPerformerStudioTable))
-			f.addWhere(fmt.Sprintf("%s.performer_id IS %s NULL", derivedPerformerStudioTable, clauseCondition))
 		}
 	}
 }

@@ -50,6 +50,7 @@ export function useTagsEdit(
             id: result.data.tagCreate.id,
             name: toCreate.name ?? "",
             aliases: [],
+            stash_ids: result.data.tagCreate.stash_ids,
           },
         ])
       );
@@ -93,6 +94,7 @@ export function useTagsEdit(
           id: p.stored_id!,
           name: p.name ?? "",
           aliases: [],
+          stash_ids: [],
         };
       })
     );

@@ -138,6 +138,7 @@ export const useGalleryLightbox = (id: string, chapters: IChapter[] = []) => {
       });
     else {
       setLightboxState({
+        images: [],
         isLoading: true,
         isVisible: true,
         initialIndex: index,

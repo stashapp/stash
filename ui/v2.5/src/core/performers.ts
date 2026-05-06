@@ -84,9 +84,14 @@ export function sortPerformers<T extends IPerformerFragment>(performers: T[]) {
 }
 
 export const scrapedPerformerToCreateInput = (
-  toCreate: GQL.ScrapedPerformer
+  toCreate: GQL.ScrapedPerformer,
+  endpoint?: string
 ) => {
-  const aliases = toCreate.aliases?.split(",").map((a) => a.trim());
+  const aliases =
+    toCreate.aliases
+      ?.split(",")
+      .map((a) => a.trim())
+      .filter((a) => a) || [];
 
   const input: GQL.PerformerCreateInput = {
     name: toCreate.name ?? "",
@@ -99,7 +104,8 @@ export const scrapedPerformerToCreateInput = (
     height_cm: toCreate.height ? Number(toCreate.height) : undefined,
     measurements: toCreate.measurements,
     fake_tits: toCreate.fake_tits,
-    career_length: toCreate.career_length,
+    career_start: toCreate.career_start,
+    career_end: toCreate.career_end,
     tattoos: toCreate.tattoos,
     piercings: toCreate.piercings,
     alias_list: aliases,
@@ -118,5 +124,15 @@ export const scrapedPerformerToCreateInput = (
       : undefined,
     circumcised: stringToCircumcised(toCreate.circumcised),
   };
+
+  if (endpoint && toCreate.remote_site_id) {
+    input.stash_ids = [
+      {
+        endpoint,
+        stash_id: toCreate.remote_site_id,
+      },
+    ];
+  }
+
   return input;
 };

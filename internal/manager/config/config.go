@@ -16,9 +16,9 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/file"
+	"github.com/knadh/koanf/v2"
 
 	"github.com/stashapp/stash/internal/identify"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -42,6 +42,9 @@ const (
 	Username            = "username"
 	Password            = "password"
 	MaxSessionAge       = "max_session_age"
+
+	// SFWContentMode mode config key
+	SFWContentMode = "sfw_content_mode"
 
 	FFMpegPath  = "ffmpeg_path"
 	FFProbePath = "ffprobe_path"
@@ -79,6 +82,21 @@ const (
 
 	ParallelTasks        = "parallel_tasks"
 	parallelTasksDefault = 1
+
+	UseCustomSpriteInterval        = "use_custom_sprite_interval"
+	UseCustomSpriteIntervalDefault = false
+
+	SpriteInterval        = "sprite_interval"
+	SpriteIntervalDefault = 30
+
+	MinimumSprites        = "minimum_sprites"
+	MinimumSpritesDefault = 10
+
+	MaximumSprites        = "maximum_sprites"
+	MaximumSpritesDefault = 500
+
+	SpriteScreenshotSize        = "sprite_screenshot_width"
+	spriteScreenshotSizeDefault = 160
 
 	PreviewPreset                 = "preview_preset"
 	TranscodeHardwareAcceleration = "ffmpeg.hardware_acceleration"
@@ -191,6 +209,7 @@ const (
 	CSSEnabled                          = "cssenabled"
 	JavascriptEnabled                   = "javascriptenabled"
 	CustomLocalesEnabled                = "customlocalesenabled"
+	DisableCustomizations               = "disable_customizations"
 
 	ShowScrubber        = "show_scrubber"
 	showScrubberDefault = true
@@ -206,6 +225,7 @@ const (
 	ImageLightboxResetZoomOnNav             = "image_lightbox.reset_zoom_on_nav"
 	ImageLightboxScrollModeKey              = "image_lightbox.scroll_mode"
 	ImageLightboxScrollAttemptsBeforeChange = "image_lightbox.scroll_attempts_before_change"
+	ImageLightboxDisableAnimation           = "image_lightbox.disable_animation"
 
 	UI = "ui"
 
@@ -215,6 +235,7 @@ const (
 	DisableDropdownCreateStudio    = "disable_dropdown_create.studio"
 	DisableDropdownCreateTag       = "disable_dropdown_create.tag"
 	DisableDropdownCreateMovie     = "disable_dropdown_create.movie"
+	DisableDropdownCreateGallery   = "disable_dropdown_create.gallery"
 
 	HandyKey                       = "handy_key"
 	FunscriptOffset                = "funscript_offset"
@@ -249,13 +270,15 @@ const (
 	DLNAPortDefault = 1338
 
 	// Logging options
-	LogFile          = "logfile"
-	LogOut           = "logout"
-	defaultLogOut    = true
-	LogLevel         = "loglevel"
-	defaultLogLevel  = "Info"
-	LogAccess        = "logaccess"
-	defaultLogAccess = true
+	LogFile               = "logfile"
+	LogOut                = "logout"
+	defaultLogOut         = true
+	LogLevel              = "loglevel"
+	defaultLogLevel       = "Info"
+	LogAccess             = "logaccess"
+	defaultLogAccess      = true
+	LogFileMaxSize        = "logfile_max_size"
+	defaultLogFileMaxSize = 0 // megabytes, default disabled
 
 	// Default settings
 	DefaultScanSettings     = "defaults.scan_task"
@@ -266,6 +289,9 @@ const (
 	DeleteFileDefault             = "defaults.delete_file"
 	DeleteGeneratedDefault        = "defaults.delete_generated"
 	deleteGeneratedDefaultDefault = true
+
+	// Trash/Recycle Bin options
+	DeleteTrashPath = "delete_trash_path"
 
 	// Desktop Integration Options
 	NoBrowser                           = "nobrowser"
@@ -285,9 +311,9 @@ const (
 // slice default values
 var (
 	defaultVideoExtensions   = []string{"m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm", "f4v"}
-	defaultImageExtensions   = []string{"png", "jpg", "jpeg", "gif", "webp"}
+	defaultImageExtensions   = []string{"png", "jpg", "jpeg", "gif", "webp", "avif"}
 	defaultGalleryExtensions = []string{"zip", "cbz"}
-	defaultMenuItems         = []string{"scenes", "images", "movies", "markers", "galleries", "performers", "studios", "tags"}
+	defaultMenuItems         = []string{"scenes", "images", "groups", "markers", "galleries", "performers", "studios", "tags"}
 )
 
 type MissingConfigError struct {
@@ -628,7 +654,15 @@ func (i *Config) getStringMapString(key string) map[string]string {
 	return ret
 }
 
-// GetStathPaths returns the configured stash library paths.
+// GetSFW returns true if SFW mode is enabled.
+// Default performer images are changed to more agnostic images when enabled.
+func (i *Config) GetSFWContentMode() bool {
+	i.RLock()
+	defer i.RUnlock()
+	return i.getBool(SFWContentMode)
+}
+
+// GetStashPaths returns the configured stash library paths.
 // Works opposite to the usual case - it will return the override
 // value only if the main value is not set.
 func (i *Config) GetStashPaths() StashConfigs {
@@ -956,6 +990,50 @@ func (i *Config) GetParallelTasksWithAutoDetection() int {
 	return parallelTasks
 }
 
+// GetUseCustomSpriteInterval returns true if the sprite minimum, maximum, and interval settings
+// should be used instead of the default
+func (i *Config) GetUseCustomSpriteInterval() bool {
+	value := i.getBool(UseCustomSpriteInterval)
+	return value
+}
+
+// GetSpriteInterval returns the time (in seconds) to be between each scrubber sprite
+// A value of 0 indicates that the sprite interval should be automatically determined
+// based on the minimum sprite setting.
+func (i *Config) GetSpriteInterval() float64 {
+	value := i.getFloat64(SpriteInterval)
+	return value
+}
+
+// GetMinimumSprites returns the minimum number of sprites that have to be generated
+// A value of 0 will be overridden with the default of 10.
+func (i *Config) GetMinimumSprites() int {
+	value := i.getInt(MinimumSprites)
+	if value <= 0 {
+		return MinimumSpritesDefault
+	}
+	return value
+}
+
+// GetMaximumSprites returns the maximum number of sprites that can be generated
+// A value of 0 indicates no maximum.
+func (i *Config) GetMaximumSprites() int {
+	value := i.getInt(MaximumSprites)
+	return value
+}
+
+// GetSpriteScreenshotSize returns the required size of the screenshots to be taken
+// during sprite generation in pixels. This will be the width for landscape scenes
+// and the height for portrait scenes, with the other dimension being scaled to maintain
+// the aspect ratio. If the value is less than or equal to 0, the default will be used.
+func (i *Config) GetSpriteScreenshotSize() int {
+	value := i.getInt(SpriteScreenshotSize)
+	if value <= 0 {
+		return spriteScreenshotSizeDefault
+	}
+	return value
+}
+
 func (i *Config) GetPreviewAudio() bool {
 	return i.getBool(PreviewAudio)
 }
@@ -1280,6 +1358,10 @@ func (i *Config) GetImageLightboxOptions() ConfigImageLightboxResult {
 	if v := i.with(ImageLightboxScrollAttemptsBeforeChange); v != nil {
 		ret.ScrollAttemptsBeforeChange = v.Int(ImageLightboxScrollAttemptsBeforeChange)
 	}
+	if v := i.with(ImageLightboxDisableAnimation); v != nil {
+		value := v.Bool(ImageLightboxDisableAnimation)
+		ret.DisableAnimation = &value
+	}
 
 	return ret
 }
@@ -1290,6 +1372,7 @@ func (i *Config) GetDisableDropdownCreate() *ConfigDisableDropdownCreate {
 		Studio:    i.getBool(DisableDropdownCreateStudio),
 		Tag:       i.getBool(DisableDropdownCreateTag),
 		Movie:     i.getBool(DisableDropdownCreateMovie),
+		Gallery:   i.getBool(DisableDropdownCreateGallery),
 	}
 }
 
@@ -1298,6 +1381,26 @@ func (i *Config) GetUIConfiguration() map[string]interface{} {
 	defer i.RUnlock()
 
 	return i.forKey(UI).Cut(UI).Raw()
+}
+
+// GetMinimumPlayPercent returns the minimum percentage of a video that must be
+// watched before incrementing the play count. Returns 0 if not configured.
+func (i *Config) GetMinimumPlayPercent() int {
+	uiConfig := i.GetUIConfiguration()
+	if uiConfig == nil {
+		return 0
+	}
+	if val, ok := uiConfig["minimumPlayPercent"]; ok {
+		switch v := val.(type) {
+		case int:
+			return v
+		case float64:
+			return int(v)
+		case int64:
+			return int(v)
+		}
+	}
+	return 0
 }
 
 func (i *Config) SetUIConfiguration(v map[string]interface{}) {
@@ -1436,6 +1539,13 @@ func (i *Config) GetCustomLocalesEnabled() bool {
 	return i.getBool(CustomLocalesEnabled)
 }
 
+// GetDisableCustomizations returns true if all customizations (plugins, custom CSS,
+// custom JavaScript, and custom locales) should be disabled. This is useful for
+// troubleshooting issues without permanently disabling individual customizations.
+func (i *Config) GetDisableCustomizations() bool {
+	return i.getBool(DisableCustomizations)
+}
+
 func (i *Config) GetHandyKey() string {
 	return i.getString(HandyKey)
 }
@@ -1454,6 +1564,14 @@ func (i *Config) GetDeleteFileDefault() bool {
 
 func (i *Config) GetDeleteGeneratedDefault() bool {
 	return i.getBoolDefault(DeleteGeneratedDefault, deleteGeneratedDefaultDefault)
+}
+
+func (i *Config) GetDeleteTrashPath() string {
+	return i.getString(DeleteTrashPath)
+}
+
+func (i *Config) SetDeleteTrashPath(value string) {
+	i.SetString(DeleteTrashPath, value)
 }
 
 // GetDefaultIdentifySettings returns the default Identify task settings.
@@ -1584,6 +1702,22 @@ func (i *Config) GetDLNAPortAsString() string {
 	return ":" + strconv.Itoa(i.GetDLNAPort())
 }
 
+// GetDLNAActivityTrackingEnabled returns true if DLNA activity tracking is enabled.
+// This uses the same "trackActivity" UI setting that controls frontend play history tracking.
+// When enabled, scenes played via DLNA will have their play count and duration tracked.
+func (i *Config) GetDLNAActivityTrackingEnabled() bool {
+	uiConfig := i.GetUIConfiguration()
+	if uiConfig == nil {
+		return true // Default to enabled
+	}
+	if val, ok := uiConfig["trackActivity"]; ok {
+		if v, ok := val.(bool); ok {
+			return v
+		}
+	}
+	return true // Default to enabled
+}
+
 // GetVideoSortOrder returns the sort order to display videos. If
 // empty, videos will be sorted by titles.
 func (i *Config) GetVideoSortOrder() string {
@@ -1623,6 +1757,16 @@ func (i *Config) GetLogLevel() string {
 // HTTP requests are not logged to the log file. Defaults to true.
 func (i *Config) GetLogAccess() bool {
 	return i.getBoolDefault(LogAccess, defaultLogAccess)
+}
+
+// GetLogFileMaxSize returns the maximum size of the log file in megabytes for lumberjack to rotate
+func (i *Config) GetLogFileMaxSize() int {
+	value := i.getInt(LogFileMaxSize)
+	if value < 0 {
+		value = defaultLogFileMaxSize
+	}
+
+	return value
 }
 
 // Max allowed graphql upload size in megabytes
@@ -1775,6 +1919,12 @@ func (i *Config) setDefaultValues() {
 	i.setDefault(PreviewExcludeEnd, previewExcludeEndDefault)
 	i.setDefault(PreviewAudio, previewAudioDefault)
 	i.setDefault(SoundOnPreview, false)
+
+	i.setDefault(UseCustomSpriteInterval, UseCustomSpriteIntervalDefault)
+	i.setDefault(SpriteInterval, SpriteIntervalDefault)
+	i.setDefault(MinimumSprites, MinimumSpritesDefault)
+	i.setDefault(MaximumSprites, MaximumSpritesDefault)
+	i.setDefault(SpriteScreenshotSize, spriteScreenshotSizeDefault)
 
 	i.setDefault(ThemeColor, DefaultThemeColor)
 

@@ -19,7 +19,7 @@ import usePageVisibility from "../PageVisibility";
 import { useToast } from "../Toast";
 import { FormattedMessage, useIntl } from "react-intl";
 import { LightboxImage } from "./LightboxImage";
-import { ConfigurationContext } from "../Config";
+import { useConfigurationContext } from "../Config";
 import { Link } from "react-router-dom";
 import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
 import {
@@ -44,11 +44,13 @@ import {
   faSearchMinus,
   faTimes,
   faBars,
+  faImages,
 } from "@fortawesome/free-solid-svg-icons";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { useDebounce } from "../debounce";
 import { isVideo } from "src/utils/visualFile";
 import { imageTitle } from "src/core/files";
+import { galleryTitle } from "src/core/galleries";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
@@ -62,6 +64,8 @@ const CLASSNAME_OPTIONS_INLINE = `${CLASSNAME_OPTIONS}-inline`;
 const CLASSNAME_RIGHT = `${CLASSNAME_HEADER}-right`;
 const CLASSNAME_FOOTER = `${CLASSNAME}-footer`;
 const CLASSNAME_FOOTER_LEFT = `${CLASSNAME_FOOTER}-left`;
+const CLASSNAME_FOOTER_CENTER = `${CLASSNAME_FOOTER}-center`;
+const CLASSNAME_FOOTER_RIGHT = `${CLASSNAME_FOOTER}-right`;
 const CLASSNAME_DISPLAY = `${CLASSNAME}-display`;
 const CLASSNAME_CAROUSEL = `${CLASSNAME}-carousel`;
 const CLASSNAME_INSTANT = `${CLASSNAME_CAROUSEL}-instant`;
@@ -150,7 +154,7 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const Toast = useToast();
   const intl = useIntl();
-  const { configuration: config } = React.useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
   const [interfaceLocalForage, setInterfaceLocalForage] =
     useInterfaceLocalForage();
 
@@ -196,12 +200,31 @@ export const LightboxComponent: React.FC<IProps> = ({
     config?.interface.imageLightbox.scrollAttemptsBeforeChange ?? 0
   );
 
+  const disableAnimation = config?.interface.imageLightbox.disableAnimation;
+
   function setSlideshowDelay(v: number) {
     setLightboxSettings({ slideshowDelay: v });
   }
 
+  const scaleUp =
+    lightboxSettings?.scaleUp ??
+    config?.interface.imageLightbox.scaleUp ??
+    false;
+
+  const resetZoomOnNav =
+    lightboxSettings?.resetZoomOnNav ??
+    config?.interface.imageLightbox.resetZoomOnNav ??
+    false;
+
+  const scrollMode =
+    lightboxSettings?.scrollMode ??
+    config?.interface.imageLightbox.scrollMode ??
+    GQL.ImageLightboxScrollMode.Zoom;
+
   const displayMode =
-    lightboxSettings?.displayMode ?? GQL.ImageLightboxDisplayMode.FitXy;
+    lightboxSettings?.displayMode ??
+    config?.interface.imageLightbox.displayMode ??
+    GQL.ImageLightboxDisplayMode.FitXy;
   const oldDisplayMode = useRef(displayMode);
 
   function setDisplayMode(v: GQL.ImageLightboxDisplayMode) {
@@ -244,13 +267,13 @@ export const LightboxComponent: React.FC<IProps> = ({
     // reset zoom status
     // setResetZoom((r) => !r);
     // setZoomed(false);
-    if (lightboxSettings?.resetZoomOnNav) {
+    if (resetZoomOnNav) {
       setZoom(1);
     }
     setResetPosition((r) => !r);
 
     oldIndex.current = index;
-  }, [index, images.length, lightboxSettings?.resetZoomOnNav]);
+  }, [index, images.length, resetZoomOnNav]);
 
   const getNavOffset = useCallback(() => {
     if (images.length < 2) return;
@@ -282,13 +305,13 @@ export const LightboxComponent: React.FC<IProps> = ({
       // reset zoom status
       // setResetZoom((r) => !r);
       // setZoomed(false);
-      if (lightboxSettings?.resetZoomOnNav) {
+      if (resetZoomOnNav) {
         setZoom(1);
       }
       setResetPosition((r) => !r);
     }
     oldDisplayMode.current = displayMode;
-  }, [displayMode, lightboxSettings?.resetZoomOnNav]);
+  }, [displayMode, resetZoomOnNav]);
 
   const selectIndex = (e: React.MouseEvent, i: number) => {
     setIndex(i);
@@ -336,6 +359,10 @@ export const LightboxComponent: React.FC<IProps> = ({
     (isUserAction = true) => {
       if (isSwitchingPage || index === -1) return;
 
+      if (disableAnimation) {
+        setInstant();
+      }
+
       setShowChapters(false);
       setMovingLeft(true);
 
@@ -353,12 +380,24 @@ export const LightboxComponent: React.FC<IProps> = ({
         resetIntervalCallback.current();
       }
     },
-    [images, pageCallback, isSwitchingPage, resetIntervalCallback, index]
+    [
+      images,
+      pageCallback,
+      isSwitchingPage,
+      resetIntervalCallback,
+      index,
+      disableAnimation,
+      setInstant,
+    ]
   );
 
   const handleRight = useCallback(
     (isUserAction = true) => {
       if (isSwitchingPage) return;
+
+      if (disableAnimation) {
+        setInstant();
+      }
 
       setMovingLeft(false);
       setShowChapters(false);
@@ -384,6 +423,8 @@ export const LightboxComponent: React.FC<IProps> = ({
       isSwitchingPage,
       resetIntervalCallback,
       index,
+      disableAnimation,
+      setInstant,
     ]
   );
 
@@ -451,6 +492,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     React.createElement(image.paths.preview != "" ? "video" : "img", {
       loop: image.paths.preview != "",
       autoPlay: image.paths.preview != "",
+      playsInline: image.paths.preview != "",
       src:
         image.paths.preview != ""
           ? image.paths.preview ?? ""
@@ -610,7 +652,7 @@ export const LightboxComponent: React.FC<IProps> = ({
                 label={intl.formatMessage({
                   id: "dialogs.lightbox.scale_up.label",
                 })}
-                checked={lightboxSettings?.scaleUp ?? false}
+                checked={scaleUp}
                 disabled={displayMode === GQL.ImageLightboxDisplayMode.Original}
                 onChange={(v) => setScaleUp(v.currentTarget.checked)}
               />
@@ -630,7 +672,7 @@ export const LightboxComponent: React.FC<IProps> = ({
                 label={intl.formatMessage({
                   id: "dialogs.lightbox.reset_zoom_on_nav",
                 })}
-                checked={lightboxSettings?.resetZoomOnNav ?? false}
+                checked={resetZoomOnNav}
                 onChange={(v) => setResetZoomOnNav(v.currentTarget.checked)}
               />
             </Col>
@@ -649,10 +691,7 @@ export const LightboxComponent: React.FC<IProps> = ({
                 onChange={(e) =>
                   setScrollMode(e.target.value as GQL.ImageLightboxScrollMode)
                 }
-                value={
-                  lightboxSettings?.scrollMode ??
-                  GQL.ImageLightboxScrollMode.Zoom
-                }
+                value={scrollMode}
                 className="btn-secondary mx-1 mb-1"
               >
                 <option
@@ -860,11 +899,8 @@ export const LightboxComponent: React.FC<IProps> = ({
                     width={image.visual_files?.[0]?.width ?? 0}
                     height={image.visual_files?.[0]?.height ?? 0}
                     displayMode={displayMode}
-                    scaleUp={lightboxSettings?.scaleUp ?? false}
-                    scrollMode={
-                      lightboxSettings?.scrollMode ??
-                      GQL.ImageLightboxScrollMode.Zoom
-                    }
+                    scaleUp={scaleUp}
+                    scrollMode={scrollMode}
                     resetPosition={resetPosition}
                     zoom={i === currentIndex ? zoom : 1}
                     scrollAttemptsBeforeChange={scrollAttemptsBeforeChange}
@@ -933,14 +969,30 @@ export const LightboxComponent: React.FC<IProps> = ({
               </>
             )}
           </div>
-          <div>
+          <div className={CLASSNAME_FOOTER_CENTER}>
             {currentImage && (
-              <Link to={`/images/${currentImage.id}`} onClick={() => close()}>
-                {title ?? ""}
-              </Link>
+              <>
+                <Link
+                  className="image-link"
+                  to={`/images/${currentImage.id}`}
+                  onClick={() => close()}
+                >
+                  {title ?? ""}
+                </Link>
+                {currentImage.galleries?.length ? (
+                  <Link
+                    className="image-gallery-link"
+                    to={`/galleries/${currentImage.galleries[0].id}`}
+                    onClick={() => close()}
+                  >
+                    <Icon icon={faImages} />
+                    {galleryTitle(currentImage.galleries[0])}
+                  </Link>
+                ) : null}
+              </>
             )}
           </div>
-          <div></div>
+          <div className={CLASSNAME_FOOTER_RIGHT}></div>
         </div>
       </>
     );

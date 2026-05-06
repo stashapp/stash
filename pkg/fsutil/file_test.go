@@ -15,6 +15,9 @@ func TestSanitiseBasename(t *testing.T) {
 		{"multi-hyphen", `hyphened--name`, "hyphened-name-2da2a58f"},
 		{"replaced characters", `a&b=c\d/:e*"f?_ g`, "a-b-c-d-e-f-g-ffca6fb0"},
 		{"removed characters", `foo!!bar@@and, more`, "foobarand-more-7cee02ab"},
+		{"unicode cjk", `テスト`, "テスト-63b560db"},
+		{"unicode korean", `시험`, "시험-3fcc7beb"},
+		{"mixed unicode", `Test テスト`, "Test-テスト-366aff1e"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

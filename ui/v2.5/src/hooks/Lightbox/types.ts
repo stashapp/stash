@@ -14,6 +14,17 @@ interface IFiles {
   video_codec?: GQL.Maybe<string>;
 }
 
+interface IWithPath {
+  path: string;
+}
+
+export interface IGallery {
+  id: string;
+  title?: GQL.Maybe<string>;
+  files?: GQL.Maybe<IWithPath[]>;
+  folder?: GQL.Maybe<IWithPath>;
+}
+
 export interface ILightboxImage {
   id?: string;
   title?: GQL.Maybe<string>;
@@ -21,6 +32,7 @@ export interface ILightboxImage {
   o_counter?: GQL.Maybe<number>;
   paths: IImagePaths;
   visual_files?: IFiles[];
+  galleries?: GQL.Maybe<IGallery[]>;
 }
 
 export interface IChapter {

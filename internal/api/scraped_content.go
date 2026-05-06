@@ -135,6 +135,13 @@ func marshalScrapedGroups(content []scraper.ScrapedContent) ([]*models.ScrapedGr
 			ret = append(ret, m)
 		case models.ScrapedGroup:
 			ret = append(ret, &m)
+		// it's possible that a scraper returns models.ScrapedMovie
+		case *models.ScrapedMovie:
+			g := m.ScrapedGroup()
+			ret = append(ret, &g)
+		case models.ScrapedMovie:
+			g := m.ScrapedGroup()
+			ret = append(ret, &g)
 		default:
 			return nil, fmt.Errorf("%w: cannot turn ScrapedContent into ScrapedGroup", models.ErrConversion)
 		}

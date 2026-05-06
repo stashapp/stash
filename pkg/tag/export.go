@@ -16,6 +16,8 @@ type FinderAliasImageGetter interface {
 	GetAliases(ctx context.Context, studioID int) ([]string, error)
 	GetImage(ctx context.Context, tagID int) ([]byte, error)
 	FindByChildTagID(ctx context.Context, childID int) ([]*models.Tag, error)
+	GetCustomFields(ctx context.Context, id int) (map[string]interface{}, error)
+	models.StashIDLoader
 }
 
 // ToJSON converts a Tag object into its JSON equivalent.
@@ -37,6 +39,15 @@ func ToJSON(ctx context.Context, reader FinderAliasImageGetter, tag *models.Tag)
 
 	newTagJSON.Aliases = aliases
 
+	if err := tag.LoadStashIDs(ctx, reader); err != nil {
+		return nil, fmt.Errorf("loading tag stash ids: %w", err)
+	}
+
+	stashIDs := tag.StashIDs.List()
+	if len(stashIDs) > 0 {
+		newTagJSON.StashIDs = stashIDs
+	}
+
 	image, err := reader.GetImage(ctx, tag.ID)
 	if err != nil {
 		logger.Errorf("Error getting tag image: %v", err)
@@ -52,6 +63,11 @@ func ToJSON(ctx context.Context, reader FinderAliasImageGetter, tag *models.Tag)
 	}
 
 	newTagJSON.Parents = GetNames(parents)
+
+	newTagJSON.CustomFields, err = reader.GetCustomFields(ctx, tag.ID)
+	if err != nil {
+		return nil, fmt.Errorf("getting tag custom fields: %v", err)
+	}
 
 	return &newTagJSON, nil
 }

@@ -122,9 +122,10 @@ func (r *mutationResolver) MigrateHashNaming(ctx context.Context) (string, error
 func (r *mutationResolver) BackupDatabase(ctx context.Context, input BackupDatabaseInput) (*string, error) {
 	// if download is true, then backup to temporary file and return a link
 	download := input.Download != nil && *input.Download
+	includeBlobs := input.IncludeBlobs != nil && *input.IncludeBlobs
 	mgr := manager.GetInstance()
 
-	backupPath, backupName, err := mgr.BackupDatabase(download)
+	backupPath, backupName, err := mgr.BackupDatabase(download, includeBlobs)
 	if err != nil {
 		logger.Errorf("Error backing up database: %v", err)
 		return nil, err

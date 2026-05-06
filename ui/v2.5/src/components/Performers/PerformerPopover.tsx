@@ -4,7 +4,7 @@ import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { HoverPopover } from "../Shared/HoverPopover";
 import { useFindPerformer } from "../../core/StashService";
 import { PerformerCard } from "./PerformerCard";
-import { ConfigurationContext } from "../../hooks/Config";
+import { useConfigurationContext } from "../../hooks/Config";
 import { Placement } from "react-bootstrap/esm/Overlay";
 
 interface IPeromerPopoverCardProps {
@@ -49,7 +49,7 @@ export const PerformerPopover: React.FC<IPeroformerPopoverProps> = ({
   placement = "top",
   target,
 }) => {
-  const { configuration: config } = React.useContext(ConfigurationContext);
+  const { configuration: config } = useConfigurationContext();
 
   const showPerformerCardOnHover = config?.ui.showTagCardOnHover ?? true;
 

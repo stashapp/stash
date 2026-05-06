@@ -8,6 +8,11 @@
 
   .scene-card {
     position: relative;
+
+    .scene-specs-overlay {
+      bottom: 5px;
+      right: 5px;
+    }
   }
 
   .scene-card-preview {
@@ -54,6 +59,10 @@
     flex-direction: column;
     width: 100%;
   }
+}
+
+.search-item-check {
+  cursor: pointer;
 }
 
 .search-result {
@@ -122,6 +131,24 @@
   font-weight: 500;
 }
 
+.create-modal-field {
+  margin-bottom: 5px;
+
+  .btn {
+    margin-right: 5px;
+  }
+
+  .fa-icon {
+    width: 12px;
+  }
+}
+
+.create-modal-value ul {
+  font-size: 0.8em;
+  list-style-type: none;
+  padding-inline-start: 0;
+}
+
 .performer-create-modal {
   font-size: 1.2rem;
   max-width: 800px;
@@ -149,24 +176,6 @@
 
   .LoadingIndicator {
     height: 100%;
-  }
-
-  &-field {
-    margin-bottom: 5px;
-
-    .btn {
-      margin-right: 5px;
-    }
-
-    .fa-icon {
-      width: 12px;
-    }
-  }
-
-  &-value ul {
-    font-size: 0.8em;
-    list-style-type: none;
-    padding-inline-start: 0;
   }
 }
 
@@ -237,7 +246,8 @@
   }
 }
 
-.studio-create-modal {
+.studio-create-modal,
+.tag-create-modal {
   font-size: 1.2rem;
   max-width: 800px;
 
@@ -265,20 +275,13 @@
     height: 100%;
   }
 
-  &-field {
-    margin-bottom: 5px;
-
-    .btn {
-      margin-right: 5px;
-    }
-
-    .fa-icon {
-      width: 12px;
-    }
+  .form-check {
+    font-size: 1rem;
   }
 }
 
-.StudioTagger {
+.StudioTagger,
+.TagTagger {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -292,7 +295,8 @@
     }
   }
 
-  &-studio {
+  &-studio,
+  &-tag {
     background-color: #495b68;
     border-radius: 3px;
     display: flex;
@@ -300,7 +304,8 @@
     max-width: 100%;
     padding: 1rem;
 
-    .studio-card {
+    .studio-card,
+    .tag-card {
       box-shadow: none;
       flex-shrink: 0;
       margin: 0;
@@ -333,7 +338,8 @@
     vertical-align: bottom;
   }
 
-  &-studio-search {
+  &-studio-search,
+  &-tag-search {
     display: flex;
     flex-wrap: wrap;
 

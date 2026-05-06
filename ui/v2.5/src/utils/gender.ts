@@ -1,13 +1,22 @@
 import * as GQL from "../core/generated-graphql";
 
 export const stringGenderMap = new Map<string, GQL.GenderEnum>([
-  ["Male", GQL.GenderEnum.Male],
   ["Female", GQL.GenderEnum.Female],
+  ["Male", GQL.GenderEnum.Male],
   ["Transgender Male", GQL.GenderEnum.TransgenderMale],
   ["Transgender Female", GQL.GenderEnum.TransgenderFemale],
   ["Intersex", GQL.GenderEnum.Intersex],
   ["Non-Binary", GQL.GenderEnum.NonBinary],
 ]);
+
+export const genderList = [
+  GQL.GenderEnum.Female,
+  GQL.GenderEnum.Male,
+  GQL.GenderEnum.TransgenderFemale,
+  GQL.GenderEnum.TransgenderMale,
+  GQL.GenderEnum.Intersex,
+  GQL.GenderEnum.NonBinary,
+];
 
 export const genderToString = (value?: GQL.GenderEnum | string | null) => {
   if (!value) {

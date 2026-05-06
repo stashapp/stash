@@ -10,6 +10,12 @@ mutation StudioUpdate($input: StudioUpdateInput!) {
   }
 }
 
+mutation BulkStudioUpdate($input: BulkStudioUpdateInput!) {
+  bulkStudioUpdate(input: $input) {
+    ...StudioData
+  }
+}
+
 mutation StudioDestroy($id: ID!) {
   studioDestroy(input: { id: $id })
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   OptionProps,
   components as reactSelectComponents,
@@ -13,7 +13,7 @@ import {
   queryFindPerformersByIDForSelect,
   queryFindPerformersForSelect,
 } from "src/core/StashService";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
 import { defaultMaxOptionsShown } from "src/core/config";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -23,6 +23,7 @@ import {
   IFilterProps,
   IFilterValueProps,
   Option as SelectOption,
+  toOption,
 } from "../Shared/FilterSelect";
 import { useCompare } from "src/hooks/state";
 import { Link } from "react-router-dom";
@@ -32,6 +33,8 @@ import { TruncatedText } from "../Shared/TruncatedText";
 import TextUtils from "src/utils/text";
 import { PerformerPopover } from "./PerformerPopover";
 import { Placement } from "react-bootstrap/esm/Overlay";
+import { isUUID } from "src/utils/stashIds";
+import { filterByStashID } from "src/models/list-filter/utils";
 
 export type SelectObject = {
   id: string;
@@ -78,32 +81,55 @@ const _PerformerSelect: React.FC<
       ageFromDate?: string | null;
       hoverPlacementLabel?: Placement;
       hoverPlacementOptions?: Placement;
+      excludeIds?: string[];
     }
 > = (props) => {
   const [createPerformer] = usePerformerCreate();
 
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const intl = useIntl();
   const maxOptionsShown =
     configuration?.ui.maxOptionsShown ?? defaultMaxOptionsShown;
   const defaultCreatable =
-    !configuration?.interface.disableDropdownCreate.performer ?? true;
+    !configuration?.interface.disableDropdownCreate.performer;
+
+  const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
+
+  function filterExcluded(performer: Performer) {
+    // HACK - we should probably exclude these in the backend query, but
+    // this will do in the short-term
+    return !exclude.includes(performer.id.toString());
+  }
 
   async function loadPerformers(input: string): Promise<Option[]> {
     const filter = new ListFilterModel(GQL.FilterMode.Performers);
-    filter.searchTerm = input;
     filter.currentPage = 1;
     filter.itemsPerPage = maxOptionsShown;
     filter.sortBy = "name";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
+
+    // If the input looks like a GUID, search for stash_id first and return match immediately
+    if (isUUID(input)) {
+      filterByStashID(filter, input);
+
+      const query = await queryFindPerformersForSelect(filter);
+      const matches =
+        query.data.findPerformers.performers.filter(filterExcluded);
+      if (matches.length > 0) {
+        // Matches found, return them immediately.
+        return matches.map(toOption);
+      }
+      // If no stash_id matches found, continue with standard name/alias search.
+      filter.criteria = []; // Clear stash_id criterion to search by name/alias below.
+    }
+
+    filter.searchTerm = input;
+
     const query = await queryFindPerformersForSelect(filter);
     return performerSelectSort(
       input,
-      query.data.findPerformers.performers.slice()
-    ).map((performer) => ({
-      value: performer.id,
-      object: performer,
-    }));
+      query.data.findPerformers.performers.filter(filterExcluded)
+    ).map(toOption);
   }
 
   const PerformerOption: React.FC<OptionProps<Option, boolean>> = (

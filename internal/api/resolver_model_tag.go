@@ -54,6 +54,16 @@ func (r *tagResolver) Aliases(ctx context.Context, obj *models.Tag) (ret []strin
 	return obj.Aliases.List(), nil
 }
 
+func (r *tagResolver) StashIds(ctx context.Context, obj *models.Tag) ([]*models.StashID, error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		return obj.LoadStashIDs(ctx, r.repository.Tag)
+	}); err != nil {
+		return nil, err
+	}
+
+	return stashIDsSliceToPtrSlice(obj.StashIDs.List()), nil
+}
+
 func (r *tagResolver) SceneCount(ctx context.Context, obj *models.Tag, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = scene.CountByTagID(ctx, r.repository.Scene, obj.ID, depth)
@@ -170,4 +180,17 @@ func (r *tagResolver) ChildCount(ctx context.Context, obj *models.Tag) (ret int,
 	}
 
 	return ret, nil
+}
+
+func (r *tagResolver) CustomFields(ctx context.Context, obj *models.Tag) (map[string]interface{}, error) {
+	m, err := loaders.From(ctx).TagCustomFields.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if m == nil {
+		return make(map[string]interface{}), nil
+	}
+
+	return m, nil
 }

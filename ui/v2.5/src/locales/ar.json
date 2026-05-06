@@ -1,0 +1,1070 @@
+{
+    "actions": {
+        "add": "إضافة",
+        "add_directory": "إضافة مسار",
+        "add_entity": "إضافة {entityType}",
+        "add_manual_date": "إضافة تاريخ يدوي",
+        "add_sub_groups": "إضافة مجموعة فرعية",
+        "add_o": "إضافة فتح",
+        "add_play": "إضافة تشغيل",
+        "add_stash_id": "إضافة معرف ستاش",
+        "add_to_entity": "إضافة إلى {entityType}",
+        "allow": "سماح",
+        "allow_temporarily": "سماح مؤقت",
+        "anonymise": "إخفاء الهوية",
+        "apply": "تطبيق",
+        "assign_stashid_to_parent_studio": "إضافة معرف ستاش إلى ستوديو رئيسي موجود و تحديث البيانات",
+        "auto_tag": "وسم تلقاني",
+        "backup": "نسخة احتياطية",
+        "browse_for_image": "استعرض صورة…",
+        "cancel": "إلغاء",
+        "choose_date": "اختر تاريخ",
+        "clean": "تنظيف",
+        "clean_generated": "تنظيف الملفات التي تم انشاؤها",
+        "clear": "مسح",
+        "clear_back_image": "مسح الصورة الخلفية",
+        "clear_date_data": "مسح بيانات التاريخ",
+        "clear_front_image": "مسح الصورة الامامية",
+        "clear_image": "مسح الصورة",
+        "close": "إغلاق",
+        "confirm": "تأكيد",
+        "continue": "متابعة",
+        "copy_to_clipboard": "نسخ إلى الحافظة",
+        "create": "إنشاء",
+        "create_chapters": "إنشاء فصل",
+        "create_entity": "إنشاء {entityType}",
+        "create_marker": "إنشاء علامة",
+        "create_new": "إنشاء جديد",
+        "create_parent_studio": "إنشاء ستوديو رئيسي",
+        "created_entity": "إنشاء {entity_type}: {entity_name}",
+        "customise": "تخصيص",
+        "delete": "حذف",
+        "delete_entity": "حذف {entityType}",
+        "delete_file": "حذف الملف",
+        "delete_file_and_funscript": "حذف الملف (و funscript)",
+        "delete_generated_supporting_files": "حذف الملفات الداعمة المنشأة",
+        "disable": "تعطيل",
+        "disallow": "إلغاء السماح",
+        "download": "تحميل",
+        "download_anonymised": "تحميل خفي",
+        "download_backup": "تحميل نسخة احتياطية",
+        "edit": "تعديل",
+        "edit_entity": "تعديل {entityType}",
+        "enable": "تفعيل",
+        "encoding_image": "جارِ ترميز صورة…",
+        "exclude_lowercase": "استبعاد",
+        "export": "تصدير",
+        "export_all": "تصدير الكل…",
+        "find": "عثور",
+        "finish": "انتهاء",
+        "from_clipboard": "من الحافظة",
+        "from_file": "من ملف…",
+        "from_url": "من رابط…",
+        "full_export": "تصدير كامل",
+        "full_import": "استيراد كامل",
+        "generate": "توليد",
+        "generate_thumb_default": "توليد صورة مصغرة افتراضية",
+        "generate_thumb_from_current": "توليد صورة مصغرة افتراضية من اللقطة الحالية",
+        "hash_migration": "دمج الترميز",
+        "hide": "إخفاء",
+        "hide_configuration": "إخفاء الإعدادات",
+        "identify": "تعرف",
+        "ignore": "تجاهل",
+        "import": "استيراد…",
+        "import_from_file": "استيراد من ملف",
+        "load": "حمل",
+        "load_filter": "تحميل فلتر",
+        "logout": "تسجيل الخروج",
+        "make_primary": "اجعلها أساسية",
+        "merge": "دمج",
+        "migrate_blobs": "نقل الكتل",
+        "migrate_scene_screenshots": "نقل لقطات الشاشة من المشهد",
+        "next_action": "التالي",
+        "not_running": "لا يعمل",
+        "open_in_external_player": "فتح في مشغل خارجي",
+        "open_random": "فتح عشوائي",
+        "optimise_database": "تحسين قاعدة البيانات",
+        "overwrite": "استبدال",
+        "play": "تشغيل",
+        "play_random": "تشغيل عشوائي",
+        "play_selected": "تشغيل المحدد",
+        "preview": "معاينة",
+        "previous_action": "رجوع",
+        "reassign": "إعادة تعيين",
+        "refresh": "تحديث",
+        "reload": "اعادة تحميل",
+        "reload_plugins": "إعادة تحميل الإضافات",
+        "reload_scrapers": "إعادة تحميل مستخرجات بيانات المشهد",
+        "remove": "إزالة",
+        "remove_date": "إزالة التاريخ",
+        "remove_from_containing_group": "إزالة من المجموعة",
+        "remove_from_gallery": "إزالة من المعرض",
+        "rename_gen_files": "إعادة تسمية الملفات التي تم إنشاؤها",
+        "reveal_in_file_manager": "إظهار في مدير الملفات",
+        "rescan": "إعادة المسح",
+        "reset_play_duration": "إعادة ضبط مدة التشغيل",
+        "reset_resume_time": "إعادة ضبط وقت الاستئناف",
+        "reset_cover": "استعادة الغطاء الافتراضي",
+        "reshuffle": "إعادة ترتيب",
+        "running": "جارِ",
+        "save": "حفظ",
+        "save_and_new": "حفظ وجديد",
+        "save_delete_settings": "استخدام هذه الخيارات افتراضيًا عند الحذف",
+        "save_filter": "حفظ الفلتر",
+        "scan": "تفحص",
+        "scrape": "استخرج البيانات",
+        "scrape_query": "استعلام استخراج البيانات",
+        "scrape_scene_fragment": "استراج بيانات بشكل جزئي",
+        "scrape_with": "استخراج البيانات باستخدام…",
+        "search": "بحث",
+        "select_all": "تحديد الكل",
+        "select_directory": "تحديد الدليل",
+        "select_entity": "حدد {entityType}",
+        "select_folders": "تحديد المجلدات",
+        "select_none": "اختيار لا شيء",
+        "invert_selection": "عكس التحديد",
+        "selective_auto_tag": "علامة تلقائية انتقائية",
+        "selective_clean": "التنظيف الانتقائي",
+        "selective_generate": "توليد انتقائي",
+        "selective_scan": "المسح الانتقائي",
+        "set_as_default": "تعيين كافتراضي",
+        "set_back_image": "صورة خلفية…",
+        "set_cover": "تعيين كغلاف",
+        "set_front_image": "صورة أمامية…",
+        "set_image": "تعيين الصورة…",
+        "show": "إظهار",
+        "show_configuration": "إظهار الاعدادات",
+        "show_results": "عرض النتائج",
+        "show_count_results": "إظهار {count} النتائج",
+        "sidebar": {
+            "close": "إغلاق الشريط الجانبي",
+            "open": "فتح الشريط الجانبي",
+            "toggle": "تبديل الشريط الجانبي"
+        },
+        "skip": "تخطى",
+        "split": "انقسم",
+        "stop": "إيقاف",
+        "submit": "إرسال",
+        "submit_stash_box": "ارسال إلى Stash-Box",
+        "submit_update": "إرسال التحديث",
+        "swap": "تبديل",
+        "tasks": {
+            "clean_confirm_message": "هل أنت متأكد من رغبتك في التنظيف؟ سيؤدي هذا إلى حذف معلومات قاعدة البيانات والمحتوى المُنشأ لجميع المشاهد والمعارض التي لم تعد موجودة في نظام الملفات.",
+            "dry_mode_selected": "تم اختيار الوضع الجاف. لن يتم حذف أي بيانات فعلياً، بل سيتم تسجيلها فقط.",
+            "import_warning": "هل أنت متأكد من رغبتك في الاستيراد؟ سيؤدي هذا إلى حذف قاعدة البيانات وإعادة الاستيراد من بياناتك الوصفية المصدرة."
+        },
+        "temp_disable": "تعطيل مؤقت…",
+        "temp_enable": "تفعيل مؤقتًا…",
+        "unset": "غير محدد",
+        "use_default": "استخدم الإعدادات الافتراضية",
+        "view_history": "عرض السجل",
+        "view_random": "عرض عشوائي",
+        "create_parent_tag": "إنشاء علامة رئيسية"
+    },
+    "actions_name": "الإجراءات",
+    "age": "العمر",
+    "age_on_date": "{age} في مرحلة الإنتاج",
+    "aliases": "الأسماء المستعارة",
+    "all": "الكل",
+    "also_known_as": "يُعرف أيضًا باسم",
+    "appears_with": "يظهر مع",
+    "ascending": "تصاعدي",
+    "audio_codec": "ترميز الصوت",
+    "average_resolution": "متوسط الدقة",
+    "between_and": "أيضا",
+    "birth_year": "سنة الميلاد",
+    "birthdate": "تاريخ الميلاد",
+    "bitrate": "معدل البت",
+    "blobs_storage_type": {
+        "database": "قاعدة البيانات",
+        "filesystem": "نظام الملفات"
+    },
+    "captions": "التعليقات التوضيحية",
+    "career_end": "نهاية المسيرة المهنية",
+    "career_length": "طول المسيرة المهنية",
+    "career_start": "بداية المسيرة المهنية",
+    "chapters": "الفصول",
+    "circumcised": "مختون",
+    "circumcised_types": {
+        "CUT": "قص مختون",
+        "UNCUT": "غير مختون"
+    },
+    "component_tagger": {
+        "config": {
+            "active_instance": "مثال stash-box فعال:",
+            "blacklist_desc": "تُستثنى عناصر القائمة السوداء من الاستعلامات. لاحظ أنها تعبيرات نمطية غير حساسة لحالة الأحرف. يجب وضع علامة (\\) قبل بعض الأحرف: {chars_require_escape}",
+            "blacklist_label": "القائمة السوداء",
+            "errors": {
+                "blacklist_duplicate": "عنصر مكرر في القائمة السوداء"
+            },
+            "mark_organized_desc": "تحديد المشهد على أنه منظم فور النقر على زر الحفظ.",
+            "mark_organized_label": "وضع علامة \"منظم\" عند الحفظ",
+            "performer_genders": {
+                "heading": "جنس الفنان",
+                "description": "سيتم عرض الفنانين من هذه الأجناس عند تصنيف المشاهد."
+            },
+            "query_mode_auto": "تلقائي",
+            "query_mode_auto_desc": "يستخدم البيانات الوصفية إن وجدت، أو اسم الملف",
+            "query_mode_dir": "الدليل",
+            "query_mode_dir_desc": "يستخدم فقط الدليل الرئيسي لملف الفيديو",
+            "query_mode_filename": "اسم الملف",
+            "query_mode_filename_desc": "يستخدم اسم الملف فقط",
+            "query_mode_label": "وضع الاستعلام",
+            "query_mode_metadata": "البيانات الوصفية",
+            "query_mode_metadata_desc": "يستخدم البيانات الوصفية فقط",
+            "query_mode_path": "مسار",
+            "query_mode_path_desc": "يستخدم مسار الملف بالكامل",
+            "set_cover_desc": "استبدل غلاف المشهد إذا تم العثور على واحد.",
+            "set_cover_label": "صورة غلاف المشهد المحدد",
+            "set_tag_desc": "إرفاق العلامات بالمشهد، إما عن طريق الكتابة فوق العلامات الموجودة في المشهد أو دمجها معها.",
+            "set_tag_label": "تعيين العلامات",
+            "source": "المصدر"
+        },
+        "noun_query": "استفسار",
+        "results": {
+            "duration_off": "مدة الخطأ لا تقل عن {number} ث",
+            "duration_unknown": "المدة غير معروفة",
+            "fp_found": "{fpCount, plural, =0 {No new fingerprint matches found} other {# new fingerprint matches found}}",
+            "fp_matches": "المدة متطابقة",
+            "fp_matches_multi": "مدة مطابقة {matchCount}/{durationsLength} بصمات",
+            "hash_matches": "{hash_type} متطابق",
+            "match_failed_already_tagged": "تم وضع علامة على المشهد بالفعل",
+            "match_failed_no_result": "لم يتم العثور على نتائج",
+            "match_success": "تم وضع علامة على المشهد بنجاح",
+            "phash_matches": "{count} تطابق التجزئات",
+            "unnamed": "غير مسمى"
+        },
+        "verb_add_as_alias": "أضف الاسم المستخرج كاسم مستعار",
+        "verb_link_existing": "ربط إلى الموجود",
+        "verb_match_fp": "مطابقة بصمات",
+        "verb_match_tag": "علامة المطابقة",
+        "verb_matched": "متطابق",
+        "verb_scrape_all": "استخرج بيانات الكل",
+        "verb_scrape_selected": "استخرج بيانات المحدد",
+        "verb_submit_fp": "ارسال {fpCount, plural, one{# Fingerprint} other{# Fingerprints}}",
+        "verb_toggle_unmatched": "{toggle} مشاهد لا مثيل لها",
+        "verb_toggle_config": "{toggle} {configuration}"
+    },
+    "config": {
+        "about": {
+            "build_hash": "بناء التجزئة:",
+            "build_time": "وقت البناء:",
+            "check_for_new_version": "تحقق من وجود إصدار جديد",
+            "latest_version": "أحدث إصدار",
+            "latest_version_build_hash": "أحدث إصدار من رقم البناء:",
+            "release_date": "تاريخ الاصدار:",
+            "stash_home": "صفحة ستاش {url}",
+            "stash_wiki": "موقع ستاش {url}",
+            "version": "إصدار",
+            "new_version_notice": "[NEW]",
+            "stash_community": "انضم إلى سيرفر مجتمعنا {forumUrl} أو {discordUrl}.",
+            "support_us": "ادعمونا من خلال {openCollectiveUrl} أو {githubSponsorsUrl}."
+        },
+        "advanced_mode": "الوضع المتقدم",
+        "application_paths": {
+            "heading": "مسارات التطبيق"
+        },
+        "categories": {
+            "about": "حول",
+            "changelog": "سجل التغييرات",
+            "interface": "الواجهة",
+            "logs": "سجلات",
+            "metadata_providers": "موفرو البيانات الوصفية",
+            "plugins": "الإضافات",
+            "scraping": "استخراج البيانات",
+            "security": "حماية",
+            "services": "خدمات",
+            "system": "نظام",
+            "tasks": "المهام",
+            "tools": "أدوات"
+        },
+        "changelog": {
+            "header": "سجل التغييرات"
+        },
+        "dlna": {
+            "allow_temp_ip": "سماح {tempIP}",
+            "allowed_ip_addresses": "عناوين IP المسموح بها",
+            "allowed_ip_temporarily": "عنوان IP مسموح به مؤقتًا",
+            "default_ip_whitelist": "قائمة عناوين IP المسموح بها الافتراضية",
+            "default_ip_whitelist_desc": "تسمح عناوين IP الافتراضية بالوصول إلى DLNA. استخدم {wildcard} للسماح بجميع عناوين IP.",
+            "disabled_dlna_temporarily": "تعطيل DLNA مؤقتًا",
+            "disallowed_ip": "عنوان IP غير مسموح به",
+            "enabled_by_default": "مُفعّل افتراضياً",
+            "enabled_dlna_temporarily": "تفعيل DLNA مؤقتًا",
+            "network_interfaces": "واجهات",
+            "network_interfaces_desc": "واجهات لعرض خادم DLNA عليها. القائمة الفارغة تؤدي إلى تشغيله على جميع الواجهات. يتطلب الأمر إعادة تشغيل DLNA بعد التغيير.",
+            "recent_ip_addresses": "عناوين IP الحديثة",
+            "server_display_name": "اسم عرض الخادم",
+            "server_display_name_desc": "اسم العرض لخادم DLNA. الوضع الافتراضي هو {server_name} إذا كان فارغًا.",
+            "server_port": "منفذ الخادم",
+            "server_port_desc": "المنفذ الذي سيتم تشغيل خادم DLNA عليه. يتطلب إعادة تشغيل DLNA بعد التغيير.",
+            "successfully_cancelled_temporary_behaviour": "تم إلغاء السلوك المؤقت بنجاح",
+            "until_restart": "حتى إعادة التشغيل",
+            "video_sort_order": "ترتيب فرز الفيديو الافتراضي",
+            "video_sort_order_desc": "ترتيب الفيديوهات افتراضياً."
+        },
+        "general": {
+            "auth": {
+                "api_key": "مفتاح API",
+                "api_key_desc": "مفتاح API للأنظمة الخارجية. مطلوب فقط عند إعداد اسم المستخدم/كلمة المرور. يجب حفظ اسم المستخدم قبل إنشاء مفتاح API.",
+                "authentication": "المصادقة",
+                "clear_api_key": "ازالة مفتاح API",
+                "credentials": {
+                    "description": "بيانات اعتماد لتقييد الوصول إلى ستاش.",
+                    "heading": "الاعتمادات"
+                },
+                "generate_api_key": "توليد مفتاح API",
+                "log_file": "ملف السجل",
+                "log_file_desc": "مسار الملف المراد إخراج سجلات النظام إليه. اتركه فارغًا لتعطيل تسجيل الملفات. يتطلب إعادة التشغيل.",
+                "log_http": "تسجيل الوصول إلى HTTP",
+                "log_http_desc": "تسجيل الوصول إلى الطرفية عبر بروتوكول HTTP. يتطلب إعادة التشغيل.",
+                "log_to_terminal": "سجل الدخول إلى الطرفية",
+                "log_to_terminal_desc": "يُسجّل في الطرفية بالإضافة إلى ملف. هذا صحيح دائمًا إذا كان تسجيل الملفات مُعطّلاً. يتطلب إعادة التشغيل.",
+                "log_file_max_size": "أقصى حجم للسجل",
+                "log_file_max_size_desc": "الحد الأقصى لحجم ملف السجل بالميغابايت قبل ضغطه. 0 ميغابايت معطل. يتطلب إعادة التشغيل.",
+                "maximum_session_age": "الحد الأقصى لمدة الجلسة",
+                "maximum_session_age_desc": "أقصى مدة خمول قبل انتهاء صلاحية جلسة تسجيل الدخول، بالثواني. يتطلب إعادة التشغيل.",
+                "password": "كلمة المرور",
+                "password_desc": "كلمة المرور للوصول إلى ستاش. اترك هذا الحقل فارغًا لتعطيل مصادقة المستخدم",
+                "stash-box_integration": "تكامل Stash-box",
+                "username": "اسم المستخدم",
+                "username_desc": "اسم المستخدم للوصول إلى Stash. اتركه فارغًا لتعطيل مصادقة المستخدم"
+            },
+            "backup_directory_path": {
+                "description": "موقع المجلد لنسخ ملفات قاعدة بيانات SQLite الاحتياطية.",
+                "heading": "مسار دليل النسخ الاحتياطي"
+            },
+            "delete_trash_path": {
+                "description": "المسار الذي ستُنقل إليه الملفات المحذوفة بدلاً من حذفها نهائياً. اتركه فارغاً لحذف الملفات نهائياً.",
+                "heading": "مسار المهملات"
+            },
+            "blobs_path": {
+                "description": "مكان تخزين البيانات الثنائية في نظام الملفات. ينطبق هذا فقط عند استخدام نوع تخزين الكائنات الثنائية الكبيرة (blob) في نظام الملفات. تحذير: يتطلب تغيير هذا نقل البيانات الموجودة يدويًا.",
+                "heading": "مسار نظام ملفات البيانات الثنائية"
+            },
+            "blobs_storage": {
+                "description": "أين يتم تخزين البيانات الثنائية مثل صور أغلفة المشاهد، وصور الفنانين، وصور الاستوديو، وصور الوسوم؟ بعد تغيير هذه القيمة، يجب نقل البيانات الموجودة باستخدام مهام نقل البيانات الثنائية. راجع صفحة المهام للاطلاع على تفاصيل النقل.",
+                "heading": "نوع تخزين البيانات الثنائية"
+            },
+            "cache_location": "موقع مجلد ذاكرة التخزين المؤقت. مطلوب في حالة البث باستخدام HLS (كما هو الحال على أجهزة Apple) أو DASH.",
+            "cache_path_head": "مسار التخزين المؤقت",
+            "calculate_md5_and_ohash_desc": "احسب مجموع التحقق MD5 بالإضافة إلى oshash. سيؤدي التفعيل إلى إبطاء عمليات المسح الأولية. يجب ضبط تجزئة اسم الملف على oshash لتعطيل حساب MD5.",
+            "calculate_md5_and_ohash_label": "احسب قيمة MD5 للفيديوهات",
+            "check_for_insecure_certificates": "تحقق من وجود شهادات غير آمنة",
+            "check_for_insecure_certificates_desc": "تستخدم بعض المواقع شهادات SSL غير آمنة. عند إلغاء تحديد هذا الخيار، يتجاوز برنامج استخراج البيانات فحص الشهادات غير الآمنة ويسمح باستخراج البيانات من تلك المواقع. إذا واجهت خطأً متعلقًا بالشهادة أثناء استخراج البيانات، فقم بإلغاء تحديد هذا الخيار.",
+            "chrome_cdp_path": "مسار CDP لمتصفح Chrome",
+            "chrome_cdp_path_desc": "مسار الملف إلى ملف Chrome القابل للتنفيذ، أو عنوان بعيد (يبدأ بـ http:// أو https://، على سبيل المثال http://localhost:9222/json/version) إلى مثيل Chrome.",
+            "create_galleries_from_folders_desc": "إذا كان هذا الخيار صحيحًا، فسيتم إنشاء معارض الصور من المجلدات التي تحتوي على الصور افتراضيًا. أنشئ ملفًا باسم .forcegallery أو .nogallery في مجلد لتجاوز هذا الإعداد.",
+            "create_galleries_from_folders_label": "أنشئ معارض من مجلدات تحتوي على صور",
+            "database": "قاعدة البيانات",
+            "db_path_head": "مسار قاعدة البيانات",
+            "directory_locations_to_your_content": "مواقع الدليل لمحتواك",
+            "excluded_image_gallery_patterns_desc": "التعبيرات النمطية لملفات/مسارات الصور والمعرض المراد استبعادها من الفحص وإضافتها إلى مهام التنظيف.",
+            "excluded_image_gallery_patterns_head": "أنماط الصور/المعارض المستبعدة",
+            "excluded_video_patterns_desc": "التعبيرات النمطية لملفات/مسارات الفيديو المراد استبعادها من الفحص وإضافتها إلى مهام التنظيف.",
+            "excluded_video_patterns_head": "أنماط الفيديو المستبعدة",
+            "ffmpeg": {
+                "download_ffmpeg": {
+                    "description": "تنزيل FFmpeg إلى دليل التكوين ومسح مسارات ffmpeg و ffprobe التي يجب حلها من دليل التكوين.",
+                    "heading": "تنزيل FFmpeg"
+                },
+                "ffmpeg_path": {
+                    "description": "مسار ملف ffmpeg التنفيذي (وليس المجلد فقط). إذا كان فارغًا، فسيتم تحديد مسار ffmpeg من بيئة النظام عبر متغير البيئة $PATH، أو من دليل الإعدادات، أو من $HOME/.stash.",
+                    "heading": "مسار ملف FFmpeg القابل للتنفيذ"
+                },
+                "ffprobe_path": {
+                    "description": "مسار ملف ffprobe القابل للتنفيذ (وليس المجلد فقط). إذا كان فارغًا، فسيتم تحديد مسار ffprobe من بيئة النظام عبر متغير البيئة $PATH، أو من دليل الإعدادات، أو من $HOME/.stash.",
+                    "heading": "مسار الملف التنفيذي FFprobe"
+                },
+                "hardware_acceleration": {
+                    "desc": "يستخدم الأجهزة المتاحة لترميز الفيديو من أجل التحويل المباشر.",
+                    "heading": "ترميز الأجهزة FFmpeg"
+                },
+                "live_transcode": {
+                    "input_args": {
+                        "desc": "متقدم: وسائط إضافية لتمريرها إلى ffmpeg قبل حقل الإدخال عند تحويل ترميز الفيديو المباشر.",
+                        "heading": "وسائط إدخال التحويل المباشر لـ FFmpeg"
+                    },
+                    "output_args": {
+                        "desc": "متقدم: وسائط إضافية لتمريرها إلى ffmpeg قبل حقل الإخراج عند تحويل ترميز الفيديو المباشر.",
+                        "heading": "وسائط إخراج التحويل المباشر لـ FFmpeg"
+                    }
+                },
+                "transcode": {
+                    "input_args": {
+                        "desc": "متقدم: وسائط إضافية لتمريرها إلى ffmpeg قبل حقل الإدخال عند إنشاء الفيديو.",
+                        "heading": "وسائط إدخال تحويل ترميز FFmpeg"
+                    },
+                    "output_args": {
+                        "desc": "متقدم: وسائط إضافية لتمريرها إلى ffmpeg قبل حقل الإخراج عند إنشاء الفيديو.",
+                        "heading": "وسائط إخراج تحويل ترميز FFmpeg"
+                    }
+                }
+            },
+            "funscript_heatmap_draw_range": "قم بتضمين النطاق في الخرائط الحرارية المُنشأة",
+            "funscript_heatmap_draw_range_desc": "ارسم نطاق الحركة على المحور الصادي للخريطة الحرارية المُنشأة. ستحتاج الخرائط الحرارية الموجودة إلى إعادة إنشائها بعد التغيير.",
+            "gallery_cover_regex_desc": "تُستخدم التعابير النمطية لتحديد صورة كغلاف لمعرض الصور.",
+            "gallery_cover_regex_label": "نمط غلاف المعرض",
+            "gallery_ext_desc": "قائمة مفصولة بفواصل لامتدادات الملفات التي سيتم التعرف عليها كملفات ZIP خاصة بالمعرض.",
+            "gallery_ext_head": "امتداد ملفات ZIP للمعرض",
+            "generated_file_naming_hash_desc": "استخدم MD5 أو oshash لتسمية الملفات المُنشأة. يتطلب تغيير هذا أن تحتوي جميع المشاهد على MD5 المناسب.",
+            "generated_file_naming_hash_head": "تم إنشاء تجزئة تسمية الملف",
+            "generated_files_location": "موقع الدليل للملفات التي تم إنشاؤها (علامات المشهد، معاينات المشهد، الصور المتحركة، إلخ).",
+            "generated_path_head": "المسار المُنشأ",
+            "hashing": "التجزئة",
+            "heatmap_generation": "إنشاء خريطة حرارية باستخدام Funscript",
+            "image_ext_desc": "قائمة مفصولة بفواصل لامتدادات الملفات التي سيتم التعرف عليها كصور.",
+            "image_ext_head": "امتدادات الصور",
+            "include_audio_desc": "يتضمن ذلك بث الصوت عند إنشاء المعاينات.",
+            "include_audio_head": "تضمين الصوت",
+            "logging": "تسجيل الأحداث",
+            "maximum_streaming_transcode_size_desc": "الحد الأقصى لحجم التدفقات المُعاد ترميزها.",
+            "maximum_streaming_transcode_size_head": "الحد الأقصى لحجم عملية ترميز البث",
+            "maximum_transcode_size_desc": "الحد الأقصى لحجم عمليات التحويل البرمجي المُنشأة.",
+            "maximum_transcode_size_head": "الحد الأقصى لحجم عملية الترميز",
+            "metadata_path": {
+                "description": "موقع الدليل المستخدم عند إجراء عملية تصدير أو استيراد كاملة.",
+                "heading": "مسار البيانات الوصفية"
+            },
+            "number_of_parallel_task_for_scan_generation_desc": "اضبط القيمة على 0 للكشف التلقائي. تحذير: تشغيل مهام أكثر من اللازم لتحقيق استخدام كامل لوحدة المعالجة المركزية سيؤدي إلى انخفاض الأداء وقد يتسبب في مشاكل أخرى.",
+            "number_of_parallel_task_for_scan_generation_head": "عدد المهام المتوازية للمسح/التوليد",
+            "parallel_scan_head": "المسح/التوليد المتوازي",
+            "plugins_path": {
+                "description": "موقع مجلد ملفات تكوين الملحق.",
+                "heading": "مسار الإضافات"
+            },
+            "preview_generation": "توليد معاينة",
+            "python_path": {
+                "description": "مسار ملف بايثون التنفيذي (وليس المجلد فقط). يُستخدم هذا المسار لبرامج استخراج البيانات والإضافات. في حال تركه فارغًا، سيتم تحديد مسار بايثون من بيئة النظام.",
+                "heading": "مسار ملف بايثون القابل للتنفيذ"
+            },
+            "scraper_user_agent": "وكيل مستخدم برنامج استخراج البيانات",
+            "scraper_user_agent_desc": "سلسلة User-Agent المستخدمة أثناء طلبات HTTP الخاصة بالاستخراج.",
+            "scrapers_path": {
+                "description": "موقع مجلد ملفات تهيئة برنامج استخراج البيانات.",
+                "heading": "مسار البيانات المستخرجة"
+            },
+            "scraping": "جار استخراج البيانات",
+            "sprite_generation_head": "توليد الصور المتحركة",
+            "sprite_interval_desc": "الوقت بين كل صورة متحركة يتم إنشاؤها بالثواني.",
+            "sprite_interval_head": "فاصل زمني للصورة متحركة",
+            "sprite_maximum_desc": "الحد الأقصى لعدد الصور المتحركة التي سيتم إنشاؤها لمشهد واحد. اضبطه على 0 لإلغاء الحد.",
+            "sprite_maximum_head": "أقصى عدد من الصور المتحركة",
+            "sprite_minimum_desc": "الحد الأدنى لعدد الصور المتحركة التي يجب إنشاؤها لمشهد واحد",
+            "sprite_minimum_head": "الحد الأدنى من الصور المتحركة",
+            "sprite_screenshot_size_desc": "الحجم المطلوب لكل صورة متحركة بالبكسل.",
+            "sprite_screenshot_size_head": "حجم الصورة المتحركة",
+            "sqlite_location": "موقع ملف قاعدة بيانات SQLite (يتطلب إعادة التشغيل). تحذير: تخزين قاعدة البيانات على نظام مختلف عن النظام الذي يُشغّل منه خادم Stash (أي عبر الشبكة) غير مدعوم!",
+            "use_custom_sprite_interval_head": "استخدم فاصل زمني مخصص للصور المتحركة",
+            "use_custom_sprite_interval_desc": "قم بتمكين فاصل الصور المتحركة المخصص وفقًا للإعدادات أدناه.",
+            "video_ext_desc": "قائمة مفصولة بفواصل لامتدادات الملفات التي سيتم التعرف عليها كملفات فيديو.",
+            "video_ext_head": "امتدادات الفيديو",
+            "video_head": "فيديو"
+        },
+        "library": {
+            "exclusions": "الاستثناءات",
+            "gallery_and_image_options": "خيارات المعرض والصور",
+            "media_content_extensions": "امتدادات محتوى الوسائط"
+        },
+        "logs": {
+            "log_level": "مستوى السجل"
+        },
+        "plugins": {
+            "available_plugins": "الإضافات المتاحة",
+            "hooks": "خطافات",
+            "installed_plugins": "الإضافات المثبتة",
+            "triggers_on": "تشغيل المحفزات"
+        },
+        "scraping": {
+            "available_scrapers": "مستخرجات البيانات المتاحة",
+            "entity_metadata": "{entityType} البيانات الوصفية",
+            "entity_scrapers": "{entityType} مستخرجات البيانات",
+            "excluded_tag_patterns_desc": "التعبيرات النمطية لأسماء العلامات المراد استبعادها من نتائج استخراج البيانات.",
+            "excluded_tag_patterns_head": "أنماط العلامات المستبعدة",
+            "installed_scrapers": "مستخرجات البيانات المثبته",
+            "scraper": "مستخرج البيانات",
+            "scrapers": "مستخرجات البيانات",
+            "search_by_name": "البحث بالاسم",
+            "supported_types": "الأنواع المدعومة",
+            "supported_urls": "عناوين URL"
+        },
+        "stashbox": {
+            "add_instance": "أضف مثيل stash-box",
+            "api_key": "مفتاح API",
+            "description": "يُسهّل هذا البرنامج عملية الوسم الآلي للمشاهد والمؤدين بناءً على بصمات وأسماء الملفات من Stash-box.\nيمكنك العثور على نقطة النهاية ومفتاح واجهة برمجة التطبيقات (API) في صفحة حسابك على منصة stash-box. يُشترط إدخال الأسماء عند إضافة أكثر من منصة.",
+            "endpoint": "نقطة النهاية",
+            "graphql_endpoint": "نقطة نهاية GraphQL",
+            "max_requests_per_minute": "الحد الأقصى للطلبات في الدقيقة",
+            "max_requests_per_minute_description": "يستخدم القيمة الافتراضية لـ {defaultValue} إذا تم ضبطه على 0",
+            "name": "اسم",
+            "title": "نقاط نهاية Stash-box"
+        },
+        "system": {
+            "transcoding": "تحويل الترميز"
+        },
+        "tasks": {
+            "added_job_to_queue": "تمت إضافة {operation_name} إلى قائمة انتظار المهام",
+            "anonymise_and_download": "يقوم بإنشاء نسخة مجهولة المصدر من قاعدة البيانات وتنزيل الملف الناتج.",
+            "anonymise_database": "ينشئ نسخة من قاعدة البيانات في دليل النسخ الاحتياطية، مع إخفاء هوية جميع البيانات الحساسة. ويمكن بعد ذلك تقديم هذه النسخة للآخرين لأغراض استكشاف الأخطاء وإصلاحها وتصحيحها. ولا يتم إجراء أي تعديل على قاعدة البيانات الأصلية. وتستخدم قاعدة البيانات التي تم إخفاء هويتها تنسيق اسم الملف التالي: {filename_format}.",
+            "anonymising_database": "قاعدة بيانات إخفاء الهوية",
+            "auto_tag": {
+                "auto_tagging_all_paths": "وضع علامات تلقائية على جميع المسارات",
+                "auto_tagging_paths": "وضع علامات تلقائية على المسارات التالية"
+            },
+            "auto_tag_based_on_filenames": "يتم وضع علامات تلقائية على المحتوى بناءً على مسارات الملفات.",
+            "auto_tagging": "الوسم التلقائي",
+            "backing_up_database": "نسخ قاعدة البيانات احتياطياً",
+            "backup_and_download": "يقوم بنسخ قاعدة البيانات احتياطياً وتنزيل الملف الناتج.",
+            "backup_database": {
+                "description": "يقوم بإجراء نسخ احتياطي لقاعدة البيانات وملفات الكائنات الثنائية الكبيرة (blob).",
+                "destination": "وجهة",
+                "download": "تنزيل النسخة الاحتياطية",
+                "include_blobs": "تضمين الكائنات الثنائية الكبيرة في النسخ الاحتياطي",
+                "include_blobs_desc": "قم بتعطيل النسخ الاحتياطي لملف قاعدة بيانات SQLite فقط.",
+                "sqlite": "سيكون ملف النسخ الاحتياطي نسخة من ملف قاعدة بيانات SQLite، باسم الملف {filename_format}",
+                "to_directory": "إلى {directory}",
+                "warning_blobs": "لن يتم تضمين ملفات الكائنات الثنائية الكبيرة (Blob) في النسخة الاحتياطية. هذا يعني أنه لكي تتم عملية الاستعادة بنجاح من النسخة الاحتياطية، يجب أن تكون ملفات الكائنات الثنائية الكبيرة موجودة في موقع تخزين الكائنات الثنائية الكبيرة.",
+                "zip": "سيتم ضغط ملفات قاعدة بيانات SQLite وملفات الكائنات الثنائية الكبيرة في ملف واحد، باسم الملف {filename_format}"
+            },
+            "cleanup_desc": "تحقق من وجود ملفات مفقودة وقم بإزالتها من قاعدة البيانات. هذا إجراء ضار.",
+            "clean_generated": {
+                "blob_files": "ملفات Blob",
+                "description": "يزيل الملفات التي تم إنشاؤها بدون وجود مدخل مطابق لها في قاعدة البيانات.",
+                "image_thumbnails": "صور مصغرة",
+                "image_thumbnails_desc": "صور مصغرة ومقاطع فيديو",
+                "markers": "معاينات العلامات",
+                "previews": "معاينات المشاهد",
+                "previews_desc": "معاينات المشاهد والصور المصغرة",
+                "sprites": "صور المشهد",
+                "transcodes": "تحويل المشهد"
+            },
+            "data_management": "إدارة البيانات",
+            "defaults_set": "تم تعيين الإعدادات الافتراضية وسيتم استخدامها عند النقر على زر {action} في صفحة المهام.",
+            "dont_include_file_extension_as_part_of_the_title": "لا تقم بتضمين امتداد الملف كجزء من العنوان",
+            "empty_queue": "لا توجد مهام قيد التشغيل حاليًا.",
+            "export_to_json": "يقوم بتصدير محتوى قاعدة البيانات إلى تنسيق JSON في دليل البيانات الوصفية.",
+            "generate": {
+                "generating_from_paths": "إنشاء مشاهد من المسارات التالية",
+                "generating_scenes": "جارٍ إنشاء {num} {scene}"
+            },
+            "generate_clip_previews_during_scan": "إنشاء معاينات لمقاطع الصور",
+            "generate_desc": "إنشاء ملفات الصور والرسوم المتحركة والفيديوهات وملفات الفيديو الافتراضية وغيرها من الملفات الداعمة.",
+            "generate_image_phashes_during_scan": "توليد تجزئات إدراكية للصور",
+            "generate_image_phashes_during_scan_tooltip": "لإزالة التكرارات والتعرف على البيانات.",
+            "generate_phashes_during_scan": "توليد تجزئات إدراكية للفيديو",
+            "generate_phashes_during_scan_tooltip": "لإزالة التكرارات وتحديد المشهد.",
+            "generate_previews_during_scan": "إنشاء معاينات صور متحركة",
+            "generate_previews_during_scan_tooltip": "كما يُمكن إنشاء معاينات متحركة (webp)، وهي مطلوبة فقط عند ضبط نوع معاينة المشهد/جدار العلامات على صورة متحركة. تستهلك هذه المعاينات موارد أقل من وحدة المعالجة المركزية مقارنةً بمعاينات الفيديو أثناء التصفح، ولكنها تُنشأ بالإضافة إليها وتكون ملفاتها أكبر حجمًا.",
+            "generate_sprites_during_scan": "إنشاء صور متحركة",
+            "generate_sprites_during_scan_tooltip": "مجموعة الصور المعروضة أسفل مشغل الفيديو لتسهيل التصفح.",
+            "generate_thumbnails_during_scan": "إنشاء صور مصغرة للصور",
+            "generate_video_covers_during_scan": "إنشاء أغلفة المشاهد",
+            "generate_video_previews_during_scan": "إنشاء معاينات",
+            "generate_video_previews_during_scan_tooltip": "إنشاء معاينات فيديو يتم تشغيلها عند تمرير المؤشر فوق مشهد ما",
+            "generated_content": "المحتوى المُنشأ",
+            "identify": {
+                "and_create_missing": "وخلق حالات مفقودة",
+                "create_missing": "إنشاء مفقود",
+                "default_options": "الخيارات الافتراضية",
+                "description": "قم بتعيين بيانات المشهد الوصفية تلقائيًا باستخدام مصادر stash-box و scraper.",
+                "explicit_set_description": "سيتم استخدام الخيارات التالية في حال عدم تجاوزها في الخيارات الخاصة بالمصدر.",
+                "field": "حقل",
+                "field_options": "خيارات الحقل",
+                "heading": "تعرف",
+                "identifying_from_paths": "تحديد المشاهد من المسارات التالية",
+                "identifying_scenes": "تعرف على {num} {scene}",
+                "include_male_performers": "يشمل ذلك فنانين ذكور",
+                "performer_genders": "جنس الفنانين",
+                "performer_genders_desc": "سيتم إدراج الفنانين من أجناس محددة أثناء عملية تحديد الهوية.",
+                "set_cover_images": "ضبط صوة غلاف",
+                "set_organized": "تعيين علامة منظمة",
+                "skip_multiple_matches": "تخطّي المتطابقات التي لها أكثر من نتيجة واحدة",
+                "skip_multiple_matches_tooltip": "إذا لم يتم تفعيل هذا الخيار وتم إرجاع أكثر من نتيجة، فسيتم اختيار واحدة منها عشوائيًا للمطابقة",
+                "skip_single_name_performers": "تخطّي الفنانين الذين يحملون اسماً واحداً دون أي لبس",
+                "skip_single_name_performers_tooltip": "إذا لم يتم تفعيل هذا الخيار، فسيتم اختيار فنانين ذوي نمطية عالية مثل سامانثا أو أولغا",
+                "source": "مصدر",
+                "source_options": "{source} خيارات",
+                "sources": "مصادر",
+                "strategy": "استراتيجية",
+                "tag_skipped_matches": "تم تخطي علامة المتطابقة مع",
+                "tag_skipped_matches_tooltip": "أنشئ علامة مثل \"تحديد: تطابقات متعددة\" يمكنك استخدامها للتصفية في عرض مُصنِّف المشهد، ثم اختر التطابق الصحيح يدويًا",
+                "tag_skipped_performer_tooltip": "أنشئ علامة مثل \"تحديد: اسم فنان واحد\" يمكنك استخدامها للتصفية في عرض مُصنِّف المشهد، ثم اختر الطريقة التي تريد التعامل بها مع هؤلاء الفنانين",
+                "tag_skipped_performers": "تخطت علامة الأداء بعض الفنانين الذين",
+                "field_behaviour": "{strategy} {field}"
+            },
+            "import_from_exported_json": "يستورد من ملف JSON مُصدّر في دليل البيانات الوصفية. يؤدي ذلك إلى مسح قاعدة البيانات الموجودة.",
+            "incremental_import": "استيراد تدريجي من ملف مضغوط للتصدير.",
+            "job_queue": "قائمة المهام",
+            "maintenance": "صيانة",
+            "migrate_blobs": {
+                "delete_old": "حذف البيانات القديمة",
+                "description": "قم بنقل البيانات الثنائية الكبيرة (blobs) إلى نظام تخزين البيانات الثنائية الكبيرة الحالي. يجب تنفيذ عملية النقل هذه بعد تغيير نظام تخزين البيانات الثنائية الكبيرة. يمكنك حذف البيانات القديمة بعد النقل."
+            },
+            "migrate_hash_files": "يُستخدم بعد تغيير تجزئة تسمية الملفات المُنشأة لإعادة تسمية الملفات المُنشأة الموجودة إلى تنسيق التجزئة الجديد.",
+            "migrate_scene_screenshots": {
+                "delete_files": "حذف ملفات لقطات الشاشة",
+                "description": "انقل لقطات الشاشة الخاصة بالمشاهد إلى نظام تخزين الكائنات الثنائية الكبيرة الجديد. يجب تنفيذ عملية النقل هذه بعد ترقية النظام الحالي إلى الإصدار 0.20. يمكنك حذف لقطات الشاشة القديمة بعد النقل.",
+                "overwrite_existing": "استبدل البيانات الموجودة ببيانات لقطات الشاشة"
+            },
+            "migrations": "اندماجات",
+            "only_dry_run": "قم بإجراء تجربة جافة فقط. لا تقم بإزالة أي شيء",
+            "optimise_database": "حاول تحسين الأداء من خلال تحليل ملف قاعدة البيانات بالكامل ثم إعادة بنائه.",
+            "optimise_database_warning": "تحذير: أثناء تشغيل هذه المهمة، ستفشل أي عمليات لتعديل قاعدة البيانات، وقد يستغرق إكمالها عدة دقائق، اعتمادًا على حجم قاعدة البيانات الخاصة بك. كما يتطلب أيضًا على الأقل مساحة خالية على القرص بقدر ما تكون قاعدة بياناتك كبيرة، ولكن يوصى بـ 1.5x.",
+            "plugin_tasks": "مهام الملحقات",
+            "rescan": "إعادة فحص الملفات",
+            "rescan_tooltip": "أعد فحص جميع الملفات في المسار. يُستخدم هذا الخيار لفرض تحديث بيانات تعريف الملفات وإعادة فحص ملفات zip.",
+            "scan": {
+                "scanning_all_paths": "مسح جميع المسارات",
+                "scanning_paths": "مسح المسارات التالية"
+            },
+            "scan_for_content_desc": "قم بمسح المحتوى الجديد وإضافته إلى قاعدة البيانات.",
+            "set_name_date_details_from_metadata_if_present": "قم بتعيين الاسم والتاريخ والتفاصيل من بيانات تعريف الملف المضمنة",
+            "auto_tag_confirm": "سيحاول هذا مطابقة المحتوى الخاص بك مع البيانات الوصفية الموجودة.",
+            "auto_tag_warning": "لا يمكن التراجع عن هذه العملية وقد ينتج عنها تطابقات غير صحيحة.",
+            "clean_ignore_zip_contents": "تجاهل محتويات ملف zip",
+            "clean_ignore_zip_contents_desc": "أسرع، لكنه قد لا يتعرف على الملفات المحذوفة داخل ملفات zip. يُنصح بتفعيله إذا لم تقم بحذف الملفات داخل ملفات zip."
+        },
+        "tools": {
+            "graphql_playground": "بيئة اختبار GraphQL",
+            "heading": "أدوات",
+            "scene_duplicate_checker": "مدقق تكرار المشاهد",
+            "scene_filename_parser": {
+                "add_field": "إضافة حقل",
+                "capitalize_title": "العنوان بحروف كبيرة",
+                "display_fields": "حقول العرض",
+                "escape_chars": "استخدم \\ للهروب من الأحرف الحرفية",
+                "filename": "اسم الملف",
+                "filename_pattern": "نمط اسم الملف",
+                "ignore_organized": "تجاهل المشاهد المنظمة",
+                "ignored_words": "الكلمات المتجاهلة",
+                "matches_with": "يتطابق مع {i}",
+                "select_parser_recipe": "حدد وصفة المحلل اللغوي",
+                "title": "محلل أسماء ملفات المشاهد",
+                "whitespace_chars": "أحرف المسافة البيضاء",
+                "whitespace_chars_desc": "سيتم استبدال هذه الأحرف بمسافات بيضاء في العنوان"
+            },
+            "scene_tools": "أدوات المشهد"
+        },
+        "ui": {
+            "abbreviate_counters": {
+                "description": "قم بتقصير العدادات في صفحات عرض البطاقات والتفاصيل، على سبيل المثال سيتم تنسيق \"1831\" إلى \"1.8K\".",
+                "heading": "عدادات مختصرة"
+            },
+            "basic_settings": "الإعدادات الأساسية",
+            "custom_css": {
+                "description": "يجب إعادة تحميل الصفحة لتطبيق التغييرات. لا يوجد ضمان للتوافق بين ملفات CSS المخصصة والإصدارات المستقبلية من ستاش.",
+                "heading": "CSS مخصص",
+                "option_label": "تم تفعيل CSS المخصص"
+            },
+            "troubleshooting_mode": {
+                "button": "وضع استكشاف الأخطاء وإصلاحها",
+                "dialog_title": "تفعيل وضع استكشاف الأخطاء وإصلاحها",
+                "dialog_description": "سيؤدي هذا إلى تعطيل جميع التخصيصات مؤقتًا للمساعدة في تشخيص المشكلات:",
+                "dialog_item_plugins": "جميع الإضافات",
+                "dialog_item_css": "CSS مخصص",
+                "dialog_item_js": "جافا سكريبت مخصصة",
+                "dialog_item_locales": "لغات مخصصة",
+                "dialog_log_level": "سيتم ضبط مستوى التسجيل على وضع التصحيح لإجراء تشخيصات مفصلة.",
+                "dialog_reload_note": "ستتم إعادة تحميل الصفحة تلقائيًا.",
+                "enable": "تفعيل وإعادة تحميل",
+                "overlay_message": "وضع استكشاف الأخطاء وإصلاحها مُفعّل - جميع التخصيصات مُعطّلة",
+                "exit": "خروج"
+            },
+            "custom_javascript": {
+                "description": "يجب إعادة تحميل الصفحة لتطبيق التغييرات. لا يوجد ضمان للتوافق بين جافا سكريبت المخصصة والإصدارات المستقبلية من Stash.",
+                "heading": "جافا سكريبت مخصصة",
+                "option_label": "تم تفعيل جافا سكريبت المخصصة"
+            },
+            "custom_locales": {
+                "description": "يمكنك تجاوز سلاسل اللغة الفردية. راجع https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json للاطلاع على القائمة الرئيسية. يجب إعادة تحميل الصفحة لتطبيق التغييرات.",
+                "heading": "توطين مخصص",
+                "option_label": "تم تفعيل التوطين المخصص"
+            },
+            "custom_title": {
+                "description": "نص مخصص يُضاف إلى عنوان الصفحة. إذا كان فارغًا، فسيتم استخدام كلمة 'Stash' افتراضيًا.",
+                "heading": "عنوان مخصص"
+            },
+            "delete_options": {
+                "description": "الإعدادات الافتراضية عند حذف الصور والمعارض والمشاهد.",
+                "heading": "حذف الخيارات",
+                "options": {
+                    "delete_file": "حذف الملف افتراضيًا",
+                    "delete_generated_supporting_files": "حذف الملفات الداعمة التي تم إنشاؤها افتراضيًا"
+                }
+            },
+            "desktop_integration": {
+                "desktop_integration": "تكامل سطح المكتب",
+                "notifications_enabled": "تفعيل الإشعارات",
+                "send_desktop_notifications_for_events": "إرسال إشعارات سطح المكتب للأحداث.",
+                "skip_opening_browser": "تخطَّ فتح المتصفح",
+                "skip_opening_browser_on_startup": "تخطّي فتح المتصفح تلقائيًا أثناء بدء التشغيل."
+            },
+            "detail": {
+                "compact_expanded_details": {
+                    "description": "عند تفعيل هذا الخيار، سيتم عرض تفاصيل موسعة مع الحفاظ على عرض موجز.",
+                    "heading": "تفاصيل موسعة مختصرة"
+                },
+                "enable_background_image": {
+                    "description": "عرض صورة الخلفية في صفحة التفاصيل.",
+                    "heading": "تفعيل صورة الخلفية"
+                },
+                "heading": "صفحة التفاصيل",
+                "show_all_details": {
+                    "description": "عند التفعيل، ستظهر جميع تفاصيل المحتوى بشكل افتراضي، وسيتم وضع كل عنصر من عناصر التفاصيل تحت عمود واحد.",
+                    "heading": "عرض جميع التفاصيل"
+                },
+                "show_studio_text": {
+                    "description": "اعرض اسم الاستوديو دائمًا كنص في صفحات التفاصيل بدلاً من رمز.",
+                    "heading": "عرض الاستوديو كنص"
+                }
+            },
+            "editing": {
+                "disable_dropdown_create": {
+                    "description": "قم بإزالة إمكانية إنشاء كائنات جديدة من محددات القائمة المنسدلة.",
+                    "heading": "تعطيل إنشاء القائمة المنسدلة"
+                },
+                "heading": "تحرير",
+                "max_options_shown": {
+                    "label": "الحد الأقصى لعدد العناصر التي ستظهر في القوائم المنسدلة المختارة"
+                },
+                "rating_system": {
+                    "star_precision": {
+                        "label": "دقة تصنيف النجوم",
+                        "options": {
+                            "full": "كامل",
+                            "half": "نصف",
+                            "quarter": "ربع",
+                            "tenth": "عشر"
+                        }
+                    },
+                    "type": {
+                        "label": "نوع نظام التصنيف",
+                        "options": {
+                            "decimal": "عشري",
+                            "stars": "النجوم"
+                        }
+                    }
+                }
+            },
+            "funscript_offset": {
+                "description": "إزاحة زمنية بالمللي ثانية لتشغيل النصوص التفاعلية.",
+                "heading": "إزاحة Funscript (مللي ثانية)"
+            },
+            "handy_connection": {
+                "connect": "اتصل",
+                "server_offset": {
+                    "heading": "إزاحة الخادم"
+                },
+                "status": {
+                    "heading": "حالة اتصال سهلة الاستخدام"
+                },
+                "sync": "مزامنة"
+            },
+            "handy_connection_key": {
+                "description": "مفتاح اتصال عملي يُستخدم للمشاهد التفاعلية. سيسمح ضبط هذا المفتاح لبرنامج Stash بمشاركة معلومات المشهد الحالي مع موقع handyfeeling.com.",
+                "heading": "مفتاح توصيل عملي"
+            },
+            "image_lightbox": {
+                "heading": "معرض الصور"
+            },
+            "image_wall": {
+                "direction": "اتجاه",
+                "heading": "جدار الصور",
+                "margin": "الهامش (بالبكسل)"
+            },
+            "images": {
+                "heading": "صور",
+                "options": {
+                    "create_image_clips_from_videos": {
+                        "description": "عندما تكون مقاطع الفيديو معطلة في مكتبة ما، سيتم فحص ملفات الفيديو (انظر ملحقات الفيديو) كمقاطع صور.",
+                        "heading": "قم بمسح امتدادات الفيديو كمقاطع صور"
+                    },
+                    "write_image_thumbnails": {
+                        "description": "كتابة الصور المصغرة على القرص عند إنشائها أثناء التشغيل.",
+                        "heading": "اكتب صورًا مصغرة"
+                    }
+                }
+            },
+            "interactive_options": "خيارات تفاعلية",
+            "language": {
+                "heading": "الغة"
+            },
+            "max_loop_duration": {
+                "description": "أقصى مدة عرض للمشهد حيث يقوم مشغل المشهد بتكرار الفيديو. اضبط القيمة على 0 لتعطيل هذه الخاصية.",
+                "heading": "أقصى مدة للتكرار"
+            },
+            "menu_items": {
+                "description": "إظهار أو إخفاء أنواع مختلفة من المحتوى على شريط التنقل.",
+                "heading": "أصناف القائمة"
+            },
+            "minimum_play_percent": {
+                "description": "النسبة المئوية للوقت الذي يجب فيه تشغيل مشهد ما قبل زيادة عدد مرات تشغيله.",
+                "heading": "الحد الأدنى لنسبة التشغيل"
+            },
+            "performers": {
+                "options": {
+                    "image_location": {
+                        "description": "مسار مخصص لصور المؤدي الافتراضية. اتركه فارغًا لاستخدام الإعدادات الافتراضية المدمجة.",
+                        "heading": "مسار صورة المؤدي المخصص"
+                    }
+                }
+            },
+            "preview_type": {
+                "description": "الخيار الافتراضي هو معاينات الفيديو (mp4). لتقليل استهلاك وحدة المعالجة المركزية أثناء التصفح، يمكنك استخدام معاينات الصور المتحركة (webp). مع ذلك، يجب إنشاء هذه المعاينات بشكل منفصل عن معاينات الفيديو، وهي ملفات أكبر حجمًا.",
+                "heading": "نوع المعاينة",
+                "options": {
+                    "animated": "صورة متحركة",
+                    "static": "صورة ثابتة",
+                    "video": "فيديو"
+                }
+            },
+            "scene_list": {
+                "heading": "عرض شبكي",
+                "options": {
+                    "show_studio_as_text": "عرض طبقة الاستوديو كنص",
+                    "show_studio_as_text_desc": "يظهر شعار الاستوديو افتراضيًا على البطاقات في العرض الشبكي. فعّل هذا الخيار لعرض اسم الاستوديو كنص دائمًا."
+                }
+            },
+            "scene_player": {
+                "heading": "مشغل المشهد",
+                "options": {
+                    "always_start_from_beginning": "ابدأ تشغيل الفيديو دائمًا من البداية",
+                    "auto_start_video": "تشغيل الفيديو تلقائيًا",
+                    "auto_start_video_on_play_selected": {
+                        "description": "تشغيل مقاطع الفيديو تلقائيًا عند التشغيل من قائمة الانتظار، أو عند تشغيل مقاطع فيديو محددة أو عشوائية من صفحة المشاهد.",
+                        "heading": "بدء تشغيل الفيديو تلقائيًا عند تشغيل الفيديو المحدد"
+                    },
+                    "continue_playlist_default": {
+                        "description": "قم بتشغيل المشهد التالي في قائمة الانتظار عند انتهاء الفيديو.",
+                        "heading": "متابعة قائمة التشغيل افتراضيًا"
+                    },
+                    "disable_mobile_media_auto_rotate": "تعطيل خاصية التدوير التلقائي للوسائط بملء الشاشة على الهاتف المحمول",
+                    "enable_chromecast": "تفعيل Chromecast",
+                    "show_ab_loop_controls": "عرض عناصر التحكم في حلقة AB",
+                    "show_scrubber": "اظهر مستخرج البيانات",
+                    "show_range_markers": "إظهار علامات المدى",
+                    "track_activity": "تفعيل سجل تشغيل المشهد",
+                    "vr_tag": {
+                        "description": "لن يظهر زر الواقع الافتراضي إلا للمشاهد التي تحمل هذه العلامة.",
+                        "heading": "علامة الواقع الافتراضي"
+                    }
+                }
+            },
+            "scene_view": {
+                "heading": "عرض المشهد",
+                "options": {
+                    "preview_volume": {
+                        "description": "مستوى صوت المعاينة عند تمرير المؤشر فوق المشهد. اضبطه على 0 لكتم الصوت.",
+                        "heading": "مستوى صوت المعاينة"
+                    }
+                }
+            },
+            "scene_wall": {
+                "heading": "جدار مشهد / العلامات",
+                "options": {
+                    "display_title": "عرض العنوان والوسوم",
+                    "toggle_sound": "تفعيل الصوت عند تمرير المؤشر فوق المعاينة"
+                }
+            },
+            "scroll_attempts_before_change": {
+                "description": "عدد مرات محاولة التمرير قبل الانتقال إلى العنصر التالي/السابق. ينطبق هذا فقط على وضع التمرير Pan Y.",
+                "heading": "محاولات التمرير قبل الانتقال"
+            },
+            "sfw_mode": {
+                "description": "فعّل هذا الخيار إذا كنت تستخدم خاصية التخزين المؤقت لحفظ المحتوى المناسب لجميع الأعمار. يُخفي هذا الخيار أو يُغيّر بعض جوانب واجهة المستخدم المتعلقة بالمحتوى المخصص للبالغين.",
+                "heading": "وضع المحتوى الآمن للعمل"
+            },
+            "show_tag_card_on_hover": {
+                "description": "أظهر بطاقة التعريف عند تمرير مؤشر الماوس فوق شارات التعريف.",
+                "heading": "تلميحات أدوات بطاقة العلامة"
+            },
+            "slideshow_delay": {
+                "description": "تتوفر خاصية عرض الشرائح في المعارض عند استخدام وضع عرض الحائط.",
+                "heading": "تأخير عرض الشرائح (بالثواني)"
+            },
+            "studio_panel": {
+                "heading": "عرض الاستوديو",
+                "options": {
+                    "show_child_studio_content": {
+                        "description": "في عرض الاستوديو، اعرض المحتوى من الاستوديوهات الفرعية أيضًا.",
+                        "heading": "عرض محتوى الاستوديوهات الفرعية"
+                    }
+                }
+            },
+            "performer_list": {
+                "heading": "قائمة المؤدين",
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "عرض الروابط على بطاقات شبكة المؤدي"
+                    }
+                }
+            },
+            "tag_panel": {
+                "heading": "عرض الوسوم",
+                "options": {
+                    "show_child_tagged_content": {
+                        "description": "في عرض الوسوم، اعرض المحتوى من الوسوم الفرعية أيضًا.",
+                        "heading": "عرض محتوى العلامات الفرعية"
+                    }
+                }
+            },
+            "title": "واجهة المستخدم",
+            "use_stash_hosted_funscript": {
+                "description": "عند تفعيل هذه الميزة، سيتم تقديم البرامج النصية مباشرةً من Stash إلى جهاز Handy الخاص بك دون استخدام خادم Handy تابع لجهة خارجية. يتطلب ذلك إمكانية الوصول إلى Stash من جهاز Handy الخاص بك، وإنشاء مفتاح API إذا كانت بيانات اعتماد Stash مُهيأة.",
+                "heading": "قم بتشغيل البرامج النصية الوظيفية مباشرة"
+            }
+        }
+    },
+    "configuration": "إعدادات",
+    "connection_monitor": {
+        "websocket_connection_failed": "تعذر إنشاء اتصال WebSocket: راجع وحدة تحكم المتصفح لمزيد من التفاصيل",
+        "websocket_connection_reestablished": "تمت إعادة إنشاء اتصال Websocket"
+    },
+    "containing_group": "مجموعة احتواء",
+    "containing_group_count": "عدد المجموعات المحتوية",
+    "containing_groups": "مجموعات تحتوي",
+    "country": "دولة",
+    "cover_image": "صورة الغلاف",
+    "created_at": "تم الإنشاء في",
+    "criterion": {
+        "greater_than": "أكبر من",
+        "less_than": "أقل من",
+        "value": "قيمة"
+    },
+    "criterion_modifier": {
+        "between": "بين",
+        "equals": "يكون",
+        "excludes": "استبعد",
+        "greater_than": "يكون أكبر من",
+        "includes": "يشمل",
+        "includes_all": "يشمل كل شيء",
+        "is_null": "يكون فارغ",
+        "less_than": "يكون أقل من",
+        "matches_regex": "يطابق التعبير النمطي",
+        "not_between": "ليس بين",
+        "not_equals": "ليس",
+        "not_matches_regex": "لا يتطابق مع التعبير النمطي",
+        "not_null": "ليس فارغًا"
+    },
+    "criterion_modifier_values": {
+        "any": "أي",
+        "any_of": "أي من",
+        "none": "لا شيء",
+        "only": "فقط"
+    },
+    "custom": "مخصص",
+    "custom_fields": {
+        "field": "حقل",
+        "title": "الحقول المخصصة",
+        "value": "قيمة"
+    },
+    "date": "تاريخ",
+    "date_format": "سنة-شهر-يوم",
+    "datetime_format": "سنة-شهر-يوم ساعة:دقيقة",
+    "death_date": "تاريخ الوفاة",
+    "death_year": "سنة الوفاة",
+    "descending": "تنازلي",
+    "description": "وصف",
+    "detail": "التفاصيل",
+    "details": "تفاصيل",
+    "developmentVersion": "نسخة التطوير",
+    "dialogs": {
+        "clear_o_history_confirm": "هل أنت متأكد من رغبتك في مسح سجل الاستمناء؟",
+        "clear_o_history_confirm_sfw": "هل أنت متأكد من رغبتك في مسح سجل الإعجابات؟",
+        "clear_play_history_confirm": "هل أنت متأكد من رغبتك في مسح سجل التشغيل؟",
+        "create_new_entity": "إنشاء كيان جديد {entity}",
+        "delete_alert": "سيتم حذف {count, plural, one {{singularEntity}} other {{pluralEntity}}} نهائياً:",
+        "delete_alert_to_trash": "سيتم نقل {count, plural, one {{singularEntity}} other {{pluralEntity}}} إلى سلة المهملات:",
+        "delete_confirm": "هل أنت متأكد من رغبتك في حذف {entityName}؟",
+        "delete_galleries_extra": "...بالإضافة إلى أي ملفات صور غير مرفقة بأي معرض آخر.",
+        "delete_gallery_files": "احذف مجلد المعرض/ملف zip وأي صور غير مرفقة بأي معرض آخر.",
+        "delete_object_desc": "هل أنت متأكد من رغبتك في حذف {count, plural, one {this {singularEntity}} other {these {pluralEntity}}}؟",
+        "delete_object_overflow": "…و {count} غير {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
+        "delete_object_title": "حذف {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "dont_show_until_updated": "لا يظهر حتى التحديث التالي",
+        "edit_entity_title": "تعديل {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "edit_entity_count_title": "تعديل {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "export_include_related_objects": "قم بتضمين الكائنات ذات الصلة في عملية التصدير",
+        "export_title": "تصدير",
+        "imagewall": {
+            "direction": {
+                "column": "عمود",
+                "description": "تخطيط قائم على الأعمدة أو الصفوف.",
+                "row": "صف"
+            },
+            "margin_desc": "عدد وحدات البكسل الهامشية حول كل صورة بالكامل."
+        },
+        "lightbox": {
+            "delay": "التأخير (ثانية)",
+            "disable_animation": "تعطيل حركة الانتقال بين الصور",
+            "display_mode": {
+                "fit_horizontally": "مناسب أفقيا",
+                "fit_to_screen": "مناسب للشاشة",
+                "label": "وضع العرض",
+                "original": "أصلي"
+            },
+            "options": "خيارات",
+            "page_header": "الصفحة {page} / {total}",
+            "reset_zoom_on_nav": "أعد ضبط مستوى التكبير عند تغيير الصورة",
+            "scale_up": {
+                "description": "قم بتكبير الصور الصغيرة لملء الشاشة.",
+                "label": "قم بتكبيره ليناسب"
+            },
+            "scroll_mode": {
+                "description": "اضغط باستمرار على مفتاح Shift لاستخدام وضع آخر مؤقتًا.",
+                "label": "وضع التمرير",
+                "zoom": "تكبير"
+            }
+        },
+        "merge": {
+            "combined": "مركب",
+            "destination": "وجهة",
+            "empty_results": "ستبقى قيم حقل الوجهة دون تغيير.",
+            "source": "مصدر"
+        },
+        "overwrite_filter_warning": "سيتم استبدال عامل التصفية المحفوظ \"{entityName}\".",
+        "performers_found": "تم العثور على {count} مؤدي",
+        "stashid_exists_warning": "سيتم استبدال معرف لهذا stash-box.",
+        "reassign_files": {
+            "destination": "إعادة التعيين إلى"
+        },
+        "scene_gen": {
+            "clip_previews": "معاينات مقاطع الصور",
+            "covers": "مشاهد الغلاف",
+            "force_transcodes": "توليد رمز التحويل القسري",
+            "force_transcodes_tooltip": "افتراضياً، لا يتم إنشاء عمليات إعادة الترميز إلا عندما يكون ملف الفيديو غير مدعوم في المتصفح. عند التفعيل، سيتم إنشاء عمليات إعادة الترميز حتى عندما يبدو أن ملف الفيديو مدعوم في المتصفح.",
+            "image_phash": "تجزئات الإدراك البصري للصور",
+            "image_phash_tooltip": "لأغراض إزالة التكرار والتعرف على البيانات",
+            "image_previews": "معاينات الصور المتحركة",
+            "image_previews_tooltip": "كما يُمكن إنشاء معاينات متحركة (webp)، وهي مطلوبة فقط عند ضبط نوع معاينة المشهد/جدار العلامة على صورة متحركة. تستهلك هذه المعاينات موارد أقل من وحدة المعالجة المركزية مقارنةً بمعاينات الفيديو أثناء التصفح، ولكنها تُنشأ بالإضافة إليها وتكون ملفاتها أكبر حجمًا.",
+            "image_thumbnails": "صور مصغرة",
+            "interactive_heatmap_speed": "إنشاء خرائط حرارية وسرعات للمشاهد التفاعلية",
+            "marker_image_previews": "معاينات الصور المتحركة باستخدام العلامات",
+            "marker_image_previews_tooltip": "كما يُمكن إنشاء معاينات متحركة (webp)، وهي مطلوبة فقط عند ضبط نوع معاينة المشهد/جدار العلامة على صورة متحركة. تستهلك هذه المعاينات موارد أقل من وحدة المعالجة المركزية مقارنةً بمعاينات الفيديو أثناء التصفح، ولكنها تُنشأ بالإضافة إليها وتكون ملفاتها أكبر حجمًا.",
+            "marker_screenshots": "لقطات شاشة العلامات",
+            "marker_screenshots_tooltip": "صور JPG ثابتة للعلامات",
+            "markers": "معاينات العلامات",
+            "markers_tooltip": "مقاطع فيديو مدتها 20 ثانية تبدأ عند رمز الوقت المحدد.",
+            "override_preview_generation_options": "تجاوز خيارات إنشاء المعاينة",
+            "override_preview_generation_options_desc": "يمكنك تجاوز خيارات إنشاء المعاينة لهذه العملية. يتم تعيين الإعدادات الافتراضية في النظام -> إنشاء المعاينة.",
+            "overwrite": "استبدال الملفات الموجودة",
+            "phash": "التجزئة الإدراكية للفيديو",
+            "phash_tooltip": "لإزالة التكرارات وتحديد المشهد",
+            "preview_exclude_end_time_desc": "استبعد آخر x ثانية من معاينات المشاهد. يمكن أن تكون هذه القيمة بالثواني، أو نسبة مئوية (مثلاً 2%) من إجمالي مدة المشهد.",
+            "preview_exclude_end_time_head": "استبعاد وقت الانتهاء",
+            "preview_exclude_start_time_desc": "استبعد أول x ثانية من معاينات المشاهد. يمكن أن تكون هذه القيمة بالثواني، أو نسبة مئوية (مثلاً 2%) من إجمالي مدة المشهد.",
+            "preview_exclude_start_time_head": "استبعاد وقت البدء",
+            "preview_generation_options": "خيارات إنشاء المعاينة",
+            "preview_options": "خيارات المعاينة",
+            "preview_preset_desc": "يتحكم الإعداد المسبق في حجم وجودة ووقت ترميز معاينة الصور. أما الإعدادات المسبقة التي تتجاوز \"البطيء\" فتؤدي إلى نتائج متناقصة، لذا لا يُنصح باستخدامها.",
+            "preview_preset_head": "معاينة إعدادات الترميز المسبقة",
+            "preview_seg_count_desc": "عدد المقاطع في ملفات المعاينة.",
+            "preview_seg_count_head": "عدد المقاطع في المعاينة",
+            "preview_seg_duration_desc": "مدة كل مقطع معاينة، بالثواني.",
+            "preview_seg_duration_head": "مدة مقطع المعاينة",
+            "sprites": "رسومات مستخرج البيانات المشهد",
+            "sprites_tooltip": "مجموعة الصور المعروضة أسفل مشغل الفيديو لتسهيل التصفح.",
+            "transcodes": "محولات الترميز"
+        }
+    }
+}

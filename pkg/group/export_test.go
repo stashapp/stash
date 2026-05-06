@@ -8,24 +8,26 @@ import (
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"testing"
 	"time"
 )
 
 const (
-	movieID              = 1
-	emptyID              = 2
-	errFrontImageID      = 3
-	errBackImageID       = 4
-	errStudioMovieID     = 5
-	missingStudioMovieID = 6
+	movieID = iota + 1
+	emptyID
+	errFrontImageID
+	errBackImageID
+	errStudioMovieID
+	missingStudioMovieID
+	errCustomFieldsID
 )
 
 const (
-	studioID        = 1
-	missingStudioID = 2
-	errStudioID     = 3
+	studioID = iota + 1
+	missingStudioID
+	errStudioID
 )
 
 const movieName = "testMovie"
@@ -51,6 +53,11 @@ const (
 var (
 	frontImageBytes = []byte("frontImageBytes")
 	backImageBytes  = []byte("backImageBytes")
+
+	emptyCustomFields = make(map[string]interface{})
+	customFields      = map[string]interface{}{
+		"customField1": "customValue1",
+	}
 )
 
 var movieStudio models.Studio = models.Studio{
@@ -88,7 +95,7 @@ func createEmptyMovie(id int) models.Group {
 	}
 }
 
-func createFullJSONMovie(studio, frontImage, backImage string) *jsonschema.Group {
+func createFullJSONMovie(studio, frontImage, backImage string, customFields map[string]interface{}) *jsonschema.Group {
 	return &jsonschema.Group{
 		Name:       movieName,
 		Aliases:    movieAliases,
@@ -107,6 +114,7 @@ func createFullJSONMovie(studio, frontImage, backImage string) *jsonschema.Group
 		UpdatedAt: json.JSONTime{
 			Time: updateTime,
 		},
+		CustomFields: customFields,
 	}
 }
 
@@ -119,13 +127,15 @@ func createEmptyJSONMovie() *jsonschema.Group {
 		UpdatedAt: json.JSONTime{
 			Time: updateTime,
 		},
+		CustomFields: emptyCustomFields,
 	}
 }
 
 type testScenario struct {
-	movie    models.Group
-	expected *jsonschema.Group
-	err      bool
+	movie        models.Group
+	customFields map[string]interface{}
+	expected     *jsonschema.Group
+	err          bool
 }
 
 var scenarios []testScenario
@@ -134,35 +144,47 @@ func initTestTable() {
 	scenarios = []testScenario{
 		{
 			createFullMovie(movieID, studioID),
-			createFullJSONMovie(studioName, frontImage, backImage),
+			customFields,
+			createFullJSONMovie(studioName, frontImage, backImage, customFields),
 			false,
 		},
 		{
 			createEmptyMovie(emptyID),
+			emptyCustomFields,
 			createEmptyJSONMovie(),
 			false,
 		},
 		{
 			createFullMovie(errFrontImageID, studioID),
-			createFullJSONMovie(studioName, "", backImage),
+			emptyCustomFields,
+			createFullJSONMovie(studioName, "", backImage, emptyCustomFields),
 			// failure to get front image should not cause error
 			false,
 		},
 		{
 			createFullMovie(errBackImageID, studioID),
-			createFullJSONMovie(studioName, frontImage, ""),
+			emptyCustomFields,
+			createFullJSONMovie(studioName, frontImage, "", emptyCustomFields),
 			// failure to get back image should not cause error
 			false,
 		},
 		{
 			createFullMovie(errStudioMovieID, errStudioID),
+			emptyCustomFields,
 			nil,
 			true,
 		},
 		{
 			createFullMovie(missingStudioMovieID, missingStudioID),
-			createFullJSONMovie("", frontImage, backImage),
+			emptyCustomFields,
+			createFullJSONMovie("", frontImage, backImage, emptyCustomFields),
 			false,
+		},
+		{
+			createFullMovie(errCustomFieldsID, studioID),
+			customFields,
+			nil,
+			true,
 		},
 	}
 }
@@ -179,6 +201,7 @@ func TestToJSON(t *testing.T) {
 	db.Group.On("GetFrontImage", testCtx, emptyID).Return(nil, nil).Once().Maybe()
 	db.Group.On("GetFrontImage", testCtx, errFrontImageID).Return(nil, imageErr).Once()
 	db.Group.On("GetFrontImage", testCtx, errBackImageID).Return(frontImageBytes, nil).Once()
+	db.Group.On("GetFrontImage", testCtx, errCustomFieldsID).Return(nil, nil).Once()
 
 	db.Group.On("GetBackImage", testCtx, movieID).Return(backImageBytes, nil).Once()
 	db.Group.On("GetBackImage", testCtx, missingStudioMovieID).Return(backImageBytes, nil).Once()
@@ -186,6 +209,11 @@ func TestToJSON(t *testing.T) {
 	db.Group.On("GetBackImage", testCtx, errBackImageID).Return(nil, imageErr).Once()
 	db.Group.On("GetBackImage", testCtx, errFrontImageID).Return(backImageBytes, nil).Maybe()
 	db.Group.On("GetBackImage", testCtx, errStudioMovieID).Return(backImageBytes, nil).Maybe()
+	db.Group.On("GetBackImage", testCtx, errCustomFieldsID).Return(nil, nil).Once()
+
+	db.Group.On("GetCustomFields", testCtx, movieID).Return(customFields, nil).Once()
+	db.Group.On("GetCustomFields", testCtx, errCustomFieldsID).Return(nil, errors.New("error getting custom fields")).Once()
+	db.Group.On("GetCustomFields", testCtx, mock.Anything).Return(emptyCustomFields, nil).Times(4)
 
 	studioErr := errors.New("error getting studio")
 

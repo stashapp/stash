@@ -11,6 +11,8 @@ type GalleryFilterType struct {
 	Checksum *StringCriterionInput `json:"checksum"`
 	// Filter by path
 	Path *StringCriterionInput `json:"path"`
+	// Filter by parent folder
+	ParentFolder *HierarchicalMultiCriterionInput `json:"parent_folder,omitempty"`
 	// Filter by zip file count
 	FileCount *IntCriterionInput `json:"file_count"`
 	// Filter to only include galleries missing this property
@@ -59,10 +61,17 @@ type GalleryFilterType struct {
 	StudiosFilter *StudioFilterType `json:"studios_filter"`
 	// Filter by related tags that meet this criteria
 	TagsFilter *TagFilterType `json:"tags_filter"`
+	// Filter by related files that meet this criteria
+	FilesFilter *FileFilterType `json:"files_filter"`
+	// Filter by related folders that meet this criteria
+	FoldersFilter *FolderFilterType `json:"folders_filter"`
 	// Filter by created at
 	CreatedAt *TimestampCriterionInput `json:"created_at"`
 	// Filter by updated at
 	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
+
+	// Filter by custom fields
+	CustomFields []CustomFieldCriterionInput `json:"custom_fields"`
 }
 
 type GalleryUpdateInput struct {
@@ -82,6 +91,8 @@ type GalleryUpdateInput struct {
 	PerformerIds     []string `json:"performer_ids"`
 	PrimaryFileID    *string  `json:"primary_file_id"`
 
+	CustomFields *CustomFieldsInput `json:"custom_fields"`
+
 	// deprecated
 	URL *string `json:"url"`
 }
@@ -91,6 +102,7 @@ type GalleryDestroyInput struct {
 	// If true, then the zip file will be deleted if the gallery is zip-file-based.
 	// If gallery is folder-based, then any files not associated with other
 	// galleries will be deleted, along with the folder, if it is not empty.
-	DeleteFile      *bool `json:"delete_file"`
-	DeleteGenerated *bool `json:"delete_generated"`
+	DeleteFile       *bool `json:"delete_file"`
+	DeleteGenerated  *bool `json:"delete_generated"`
+	DestroyFileEntry *bool `json:"destroy_file_entry"`
 }

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useIntl } from "react-intl";
+import React, { useCallback, useEffect } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
@@ -9,7 +9,7 @@ import {
   useFindStudios,
   useStudiosDestroy,
 } from "src/core/StashService";
-import { ItemList, ItemListContext, showWhenSelected } from "../List/ItemList";
+import { useFilteredItemList } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { ExportDialog } from "../Shared/ExportDialog";
@@ -17,184 +17,446 @@ import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { StudioTagger } from "../Tagger/studios/StudioTagger";
 import { StudioCardGrid } from "./StudioCardGrid";
 import { View } from "../List/views";
+import { EditStudiosDialog } from "./EditStudiosDialog";
+import {
+  FilteredListToolbar,
+  IItemListOperation,
+} from "../List/FilteredListToolbar";
+import { PatchComponent, PatchContainerComponent } from "src/patch";
+import { useCloseEditDelete, useFilterOperations } from "../List/util";
+import { ListOperations } from "../List/ListOperationButtons";
+import {
+  Sidebar,
+  SidebarPane,
+  SidebarPaneContent,
+  SidebarStateContext,
+  useSidebarState,
+} from "../Shared/Sidebar";
+import useFocus from "src/utils/focus";
+import {
+  FilteredSidebarHeader,
+  useFilteredSidebarKeybinds,
+} from "../List/Filters/FilterSidebar";
+import { FilterTags } from "../List/FilterTags";
+import { Pagination, PaginationIndex } from "../List/Pagination";
+import { LoadedContent } from "../List/PagedList";
+import { SidebarTagsFilter } from "../List/Filters/TagsFilter";
+import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
+import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
+import { FavoriteStudioCriterionOption } from "src/models/list-filter/criteria/favorite";
+import { Button } from "react-bootstrap";
+import cx from "classnames";
 
-function getItems(result: GQL.FindStudiosQueryResult) {
-  return result?.data?.findStudios?.studios ?? [];
-}
+const StudioList: React.FC<{
+  studios: GQL.StudioDataFragment[];
+  filter: ListFilterModel;
+  selectedIds: Set<string>;
+  onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
+  fromParent?: boolean;
+}> = PatchComponent(
+  "StudioList",
+  ({ studios, filter, selectedIds, onSelectChange, fromParent }) => {
+    if (studios.length === 0 && filter.displayMode !== DisplayMode.Tagger) {
+      return null;
+    }
 
-function getCount(result: GQL.FindStudiosQueryResult) {
-  return result?.data?.findStudios?.count ?? 0;
-}
+    if (filter.displayMode === DisplayMode.Grid) {
+      return (
+        <StudioCardGrid
+          studios={studios}
+          zoomIndex={filter.zoomIndex}
+          fromParent={fromParent}
+          selectedIds={selectedIds}
+          onSelectChange={onSelectChange}
+        />
+      );
+    }
+    if (filter.displayMode === DisplayMode.List) {
+      return <h1>TODO</h1>;
+    }
+    if (filter.displayMode === DisplayMode.Wall) {
+      return <h1>TODO</h1>;
+    }
+    if (filter.displayMode === DisplayMode.Tagger) {
+      return <StudioTagger studios={studios} />;
+    }
+
+    return null;
+  }
+);
+
+const StudioFilterSidebarSections = PatchContainerComponent(
+  "FilteredStudioList.SidebarSections"
+);
+
+const SidebarContent: React.FC<{
+  filter: ListFilterModel;
+  setFilter: (filter: ListFilterModel) => void;
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  view?: View;
+  sidebarOpen: boolean;
+  onClose?: () => void;
+  showEditFilter: (editingCriterion?: string) => void;
+  count?: number;
+  focus?: ReturnType<typeof useFocus>;
+}> = ({
+  filter,
+  setFilter,
+  filterHook,
+  view,
+  showEditFilter,
+  sidebarOpen,
+  onClose,
+  count,
+  focus,
+}) => {
+  const showResultsId =
+    count !== undefined ? "actions.show_count_results" : "actions.show_results";
+
+  return (
+    <>
+      <FilteredSidebarHeader
+        sidebarOpen={sidebarOpen}
+        showEditFilter={showEditFilter}
+        filter={filter}
+        setFilter={setFilter}
+        view={view}
+        focus={focus}
+      />
+
+      <StudioFilterSidebarSections>
+        <SidebarTagsFilter
+          filter={filter}
+          setFilter={setFilter}
+          filterHook={filterHook}
+        />
+        <SidebarRatingFilter filter={filter} setFilter={setFilter} />
+        <SidebarBooleanFilter
+          title={<FormattedMessage id="favourite" />}
+          filter={filter}
+          setFilter={setFilter}
+          option={FavoriteStudioCriterionOption}
+          sectionID="favourite"
+        />
+      </StudioFilterSidebarSections>
+
+      <div className="sidebar-footer">
+        <Button className="sidebar-close-button" onClick={onClose}>
+          <FormattedMessage id={showResultsId} values={{ count }} />
+        </Button>
+      </div>
+    </>
+  );
+};
 
 interface IStudioList {
   fromParent?: boolean;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   view?: View;
   alterQuery?: boolean;
+  extraOperations?: IItemListOperation<GQL.FindStudiosQueryResult>[];
 }
 
-export const StudioList: React.FC<IStudioList> = ({
-  fromParent,
-  filterHook,
-  view,
-  alterQuery,
-}) => {
-  const intl = useIntl();
+function useViewRandom(filter: ListFilterModel, count: number) {
   const history = useHistory();
-  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
-  const [isExportAll, setIsExportAll] = useState(false);
 
-  const filterMode = GQL.FilterMode.Studios;
+  const viewRandom = useCallback(async () => {
+    // query for a random studio
+    if (count === 0) {
+      return;
+    }
 
-  const otherOperations = [
-    {
-      text: intl.formatMessage({ id: "actions.view_random" }),
-      onClick: viewRandom,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.export" }),
-      onClick: onExport,
-      isDisplayed: showWhenSelected,
-    },
-    {
-      text: intl.formatMessage({ id: "actions.export_all" }),
-      onClick: onExportAll,
-    },
-  ];
+    const index = Math.floor(Math.random() * count);
+    const filterCopy = cloneDeep(filter);
+    filterCopy.itemsPerPage = 1;
+    filterCopy.currentPage = index + 1;
+    const singleResult = await queryFindStudios(filterCopy);
+    if (singleResult.data.findStudios.studios.length === 1) {
+      const { id } = singleResult.data.findStudios.studios[0];
+      // navigate to the studio page
+      history.push(`/studios/${id}`);
+    }
+  }, [history, filter, count]);
 
-  function addKeybinds(
-    result: GQL.FindStudiosQueryResult,
-    filter: ListFilterModel
-  ) {
+  return viewRandom;
+}
+
+function useAddKeybinds(filter: ListFilterModel, count: number) {
+  const viewRandom = useViewRandom(filter, count);
+
+  useEffect(() => {
     Mousetrap.bind("p r", () => {
-      viewRandom(result, filter);
+      viewRandom();
     });
 
     return () => {
       Mousetrap.unbind("p r");
     };
-  }
+  }, [viewRandom]);
+}
 
-  async function viewRandom(
-    result: GQL.FindStudiosQueryResult,
-    filter: ListFilterModel
-  ) {
-    // query for a random studio
-    if (result.data?.findStudios) {
-      const { count } = result.data.findStudios;
+export const FilteredStudioList = PatchComponent(
+  "FilteredStudioList",
+  (props: IStudioList) => {
+    const intl = useIntl();
 
-      const index = Math.floor(Math.random() * count);
-      const filterCopy = cloneDeep(filter);
-      filterCopy.itemsPerPage = 1;
-      filterCopy.currentPage = index + 1;
-      const singleResult = await queryFindStudios(filterCopy);
-      if (singleResult.data.findStudios.studios.length === 1) {
-        const { id } = singleResult.data.findStudios.studios[0];
-        // navigate to the studio page
-        history.push(`/studios/${id}`);
-      }
+    const searchFocus = useFocus();
+
+    const { filterHook, view, alterQuery, extraOperations = [] } = props;
+
+    // States
+    const {
+      showSidebar,
+      setShowSidebar,
+      sectionOpen,
+      setSectionOpen,
+      loading: sidebarStateLoading,
+    } = useSidebarState(view);
+
+    const { filterState, queryResult, modalState, listSelect, showEditFilter } =
+      useFilteredItemList({
+        filterStateProps: {
+          filterMode: GQL.FilterMode.Studios,
+          view,
+          useURL: alterQuery,
+        },
+        queryResultProps: {
+          useResult: useFindStudios,
+          getCount: (r) => r.data?.findStudios.count ?? 0,
+          getItems: (r) => r.data?.findStudios.studios ?? [],
+          filterHook,
+        },
+      });
+
+    const { filter, setFilter } = filterState;
+
+    const { effectiveFilter, result, cachedResult, items, totalCount } =
+      queryResult;
+
+    const {
+      selectedIds,
+      selectedItems,
+      onSelectChange,
+      onSelectAll,
+      onSelectNone,
+      onInvertSelection,
+      hasSelection,
+    } = listSelect;
+
+    const { modal, showModal, closeModal } = modalState;
+
+    // Utility hooks
+    const { setPage, removeCriterion, clearAllCriteria } = useFilterOperations({
+      filter,
+      setFilter,
+    });
+
+    useAddKeybinds(effectiveFilter, totalCount);
+    useFilteredSidebarKeybinds({
+      showSidebar,
+      setShowSidebar,
+    });
+
+    useEffect(() => {
+      Mousetrap.bind("e", () => {
+        if (hasSelection) {
+          onEdit?.();
+        }
+      });
+
+      Mousetrap.bind("d d", () => {
+        if (hasSelection) {
+          onDelete?.();
+        }
+      });
+
+      return () => {
+        Mousetrap.unbind("e");
+        Mousetrap.unbind("d d");
+      };
+    });
+
+    const onCloseEditDelete = useCloseEditDelete({
+      closeModal,
+      onSelectNone,
+      result,
+    });
+
+    const viewRandom = useViewRandom(effectiveFilter, totalCount);
+
+    function onExport(all: boolean) {
+      showModal(
+        <ExportDialog
+          exportInput={{
+            studios: {
+              ids: Array.from(selectedIds.values()),
+              all: all,
+            },
+          }}
+          onClose={() => closeModal()}
+        />
+      );
     }
-  }
 
-  async function onExport() {
-    setIsExportAll(false);
-    setIsExportDialogOpen(true);
-  }
-
-  async function onExportAll() {
-    setIsExportAll(true);
-    setIsExportDialogOpen(true);
-  }
-
-  function renderContent(
-    result: GQL.FindStudiosQueryResult,
-    filter: ListFilterModel,
-    selectedIds: Set<string>,
-    onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void
-  ) {
-    function maybeRenderExportDialog() {
-      if (isExportDialogOpen) {
-        return (
-          <ExportDialog
-            exportInput={{
-              studios: {
-                ids: Array.from(selectedIds.values()),
-                all: isExportAll,
-              },
-            }}
-            onClose={() => setIsExportDialogOpen(false)}
-          />
-        );
-      }
+    function onEdit() {
+      showModal(
+        <EditStudiosDialog
+          selected={selectedItems}
+          onClose={onCloseEditDelete}
+        />
+      );
     }
 
-    function renderStudios() {
-      if (!result.data?.findStudios) return;
-
-      if (filter.displayMode === DisplayMode.Grid) {
-        return (
-          <StudioCardGrid
-            studios={result.data.findStudios.studios}
-            zoomIndex={filter.zoomIndex}
-            fromParent={fromParent}
-            selectedIds={selectedIds}
-            onSelectChange={onSelectChange}
-          />
-        );
-      }
-      if (filter.displayMode === DisplayMode.List) {
-        return <h1>TODO</h1>;
-      }
-      if (filter.displayMode === DisplayMode.Wall) {
-        return <h1>TODO</h1>;
-      }
-      if (filter.displayMode === DisplayMode.Tagger) {
-        return <StudioTagger studios={result.data.findStudios.studios} />;
-      }
+    function onDelete() {
+      showModal(
+        <DeleteEntityDialog
+          selected={selectedItems}
+          onClose={onCloseEditDelete}
+          singularEntity={intl.formatMessage({ id: "studio" })}
+          pluralEntity={intl.formatMessage({ id: "studios" })}
+          destroyMutation={useStudiosDestroy}
+        />
+      );
     }
 
-    return (
-      <>
-        {maybeRenderExportDialog()}
-        {renderStudios()}
-      </>
-    );
-  }
+    const convertedExtraOperations = extraOperations.map((op) => ({
+      text: op.text,
+      onClick: () => op.onClick(result, filter, selectedIds),
+      isDisplayed: () => op.isDisplayed?.(result, filter, selectedIds) ?? true,
+    }));
 
-  function renderDeleteDialog(
-    selectedStudios: GQL.SlimStudioDataFragment[],
-    onClose: (confirmed: boolean) => void
-  ) {
-    return (
-      <DeleteEntityDialog
-        selected={selectedStudios}
-        onClose={onClose}
-        singularEntity={intl.formatMessage({ id: "studio" })}
-        pluralEntity={intl.formatMessage({ id: "studios" })}
-        destroyMutation={useStudiosDestroy}
+    const otherOperations = [
+      ...convertedExtraOperations,
+      {
+        text: intl.formatMessage({ id: "actions.select_all" }),
+        onClick: () => onSelectAll(),
+        isDisplayed: () => totalCount > 0,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.select_none" }),
+        onClick: () => onSelectNone(),
+        isDisplayed: () => hasSelection,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.invert_selection" }),
+        onClick: () => onInvertSelection(),
+        isDisplayed: () => totalCount > 0,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.view_random" }),
+        onClick: viewRandom,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.export" }),
+        onClick: () => onExport(false),
+        isDisplayed: () => hasSelection,
+      },
+      {
+        text: intl.formatMessage({ id: "actions.export_all" }),
+        onClick: () => onExport(true),
+      },
+    ];
+
+    // render
+    if (sidebarStateLoading) return null;
+
+    const operations = (
+      <ListOperations
+        items={items.length}
+        hasSelection={hasSelection}
+        operations={otherOperations}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        operationsMenuClassName="studio-list-operations-dropdown"
       />
     );
-  }
 
-  return (
-    <ItemListContext
-      filterMode={filterMode}
-      useResult={useFindStudios}
-      getItems={getItems}
-      getCount={getCount}
-      alterQuery={alterQuery}
-      filterHook={filterHook}
-      view={view}
-      selectable
-    >
-      <ItemList
-        zoomable
-        view={view}
-        otherOperations={otherOperations}
-        addKeybinds={addKeybinds}
-        renderContent={renderContent}
-        renderDeleteDialog={renderDeleteDialog}
-      />
-    </ItemListContext>
-  );
-};
+    return (
+      <div
+        className={cx("item-list-container studio-list", {
+          "hide-sidebar": !showSidebar,
+        })}
+      >
+        {modal}
+
+        <SidebarStateContext.Provider value={{ sectionOpen, setSectionOpen }}>
+          <SidebarPane hideSidebar={!showSidebar}>
+            <Sidebar hide={!showSidebar} onHide={() => setShowSidebar(false)}>
+              <SidebarContent
+                filter={filter}
+                setFilter={setFilter}
+                filterHook={filterHook}
+                showEditFilter={showEditFilter}
+                view={view}
+                sidebarOpen={showSidebar}
+                onClose={() => setShowSidebar(false)}
+                count={cachedResult.loading ? undefined : totalCount}
+                focus={searchFocus}
+              />
+            </Sidebar>
+            <SidebarPaneContent
+              onSidebarToggle={() => setShowSidebar(!showSidebar)}
+            >
+              <FilteredListToolbar
+                filter={filter}
+                listSelect={listSelect}
+                setFilter={setFilter}
+                showEditFilter={showEditFilter}
+                onDelete={onDelete}
+                onEdit={onEdit}
+                operationComponent={operations}
+                view={view}
+                zoomable
+              />
+
+              <FilterTags
+                criteria={filter.criteria}
+                onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
+                onRemoveCriterion={removeCriterion}
+                onRemoveAll={clearAllCriteria}
+              />
+
+              <div className="pagination-index-container">
+                <Pagination
+                  currentPage={filter.currentPage}
+                  itemsPerPage={filter.itemsPerPage}
+                  totalItems={totalCount}
+                  onChangePage={(page) => setFilter(filter.changePage(page))}
+                />
+                <PaginationIndex
+                  loading={cachedResult.loading}
+                  itemsPerPage={filter.itemsPerPage}
+                  currentPage={filter.currentPage}
+                  totalItems={totalCount}
+                />
+              </div>
+
+              <LoadedContent loading={result.loading} error={result.error}>
+                <StudioList
+                  filter={effectiveFilter}
+                  studios={items}
+                  selectedIds={selectedIds}
+                  onSelectChange={onSelectChange}
+                />
+              </LoadedContent>
+
+              {totalCount > filter.itemsPerPage && (
+                <div className="pagination-footer-container">
+                  <div className="pagination-footer">
+                    <Pagination
+                      itemsPerPage={filter.itemsPerPage}
+                      currentPage={filter.currentPage}
+                      totalItems={totalCount}
+                      onChangePage={setPage}
+                      pagePopupPlacement="top"
+                    />
+                  </div>
+                </div>
+              )}
+            </SidebarPaneContent>
+          </SidebarPane>
+        </SidebarStateContext.Provider>
+      </div>
+    );
+  }
+);

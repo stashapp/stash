@@ -214,6 +214,7 @@ For `sceneByFragment` and `sceneByQueryFragment`, the `queryURL` field must also
 
 * `{checksum}` - the MD5 checksum of the scene
 * `{oshash}` - the oshash of the scene
+* `{phash}` - the phash of the scene
 * `{filename}` - the base filename of the scene
 * `{title}` - the title of the scene
 * `{url}` - the url of the scene
@@ -325,9 +326,57 @@ Alternatively, an attribute value may be set to a fixed value, rather than scrap
 
 ```yaml
 performer:
-  Gender: 
+  Gender:
     fixed: Female
 ```
+
+### Input URL placeholders
+
+The `{inputURL}` and `{inputHostname}` placeholders can be used in both `fixed` values and `selector` expressions to access information about the original URL that was used to scrape the content.
+
+#### {inputURL}
+
+The `{inputURL}` placeholder provides access to the full URL. This is useful when you want to return or reference the source URL as part of the scraped data.
+
+For example:
+
+```yaml
+scene:
+  URL:
+    fixed: "{inputURL}"
+  Title:
+    selector: //h1[@class="title"]
+```
+
+When scraping from `https://example.com/scene/12345`, the `{inputURL}` placeholder will be replaced with `https://example.com/scene/12345`.
+
+#### {inputHostname}
+
+The `{inputHostname}` placeholder extracts just the hostname from the URL. This is useful when you need to reference the domain without manually parsing the URL.
+
+For example:
+
+```yaml
+scene:
+  Studio:
+    fixed: "{inputHostname}"
+  Details:
+    selector: //div[@data-domain="{inputHostname}"]//p[@class="description"]
+```
+
+When scraping from `https://example.com/scene/12345`, the `{inputHostname}` placeholder will be replaced with `example.com`.
+
+These placeholders can also be used within selectors for more advanced use cases:
+
+```yaml
+scene:
+  Details:
+    selector: //div[@data-url="{inputURL}"]//p[@class="description"]
+  Site:
+    selector: //div[@data-host="{inputHostname}"]//span[@class="site-name"]
+```
+
+> **⚠️ Note:** These placeholders represent the actual URL used to fetch the content, after any URL replacements have been applied.
 
 ### Common fragments
 
@@ -343,6 +392,7 @@ performer:
 The `Measurements` xpath string will replace `$infoPiece` with `//div[@class="infoPiece"]/span`, resulting in: `//div[@class="infoPiece"]/span[text() = 'Measurements:']/../span[@class="smallInfo"]`.
 
 > **⚠️ Note:** Recursive common fragments are **not** supported.  
+
 Referencing a common fragment within another common fragment will cause an error. For example:
 ```yaml
 common:
@@ -691,7 +741,11 @@ xPathScrapers:
         URL: $performer/@href
       Studio:
         Name: $studio
-        URL: $studio/@href    
+        URL: $studio/@href
+        Details: //div[@class="studioDescription"]
+        Aliases: //div[@class="studioAliases"]/span
+        Tags:
+          Name: //div[@class="studioTags"]/a    
 ```
 
 See also [#333](https://github.com/stashapp/stash/pull/333) for more examples.
@@ -774,6 +828,11 @@ jsonScrapers:
         Name: data.performers.#.name
       Studio:
         Name: data.site.name
+        URL: data.site.url
+        Details: data.site.description
+        Aliases: data.site.aliases
+        Tags:
+          Name: data.site.tags.#.name
       Tags:
         Name: data.tags.#.tag
 
@@ -791,6 +850,11 @@ jsonScrapers:
         Name: $data.performers.#.name
       Studio:
         Name: $data.site.name
+        URL: $data.site.url
+        Details: $data.site.description
+        Aliases: $data.site.aliases
+        Tags:
+          Name: $data.site.tags.#.name
       Tags:
         Name: $data.tags.#.tag
 driver:
@@ -819,7 +883,7 @@ Title
 URLs
 ```
 
-> **Important**: `Title` field is required. 
+> **⚠️ Important:** `Title` field is required. 
 
 ### Group
 
@@ -838,7 +902,7 @@ Tags (see Tag fields)
 URLs
 ```
 
-> **Important**: `Name` field is required. 
+> **⚠️ Important:** `Name` field is required. 
 
 ### Image
 
@@ -882,9 +946,9 @@ URLs
 Weight
 ```
 
-> **Important**: `Name` field is required. 
+> **⚠️ Important:** `Name` field is required. 
 
-> **Note:**  - `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).
+> **⚠️ Note:** `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).
 
 ### Scene
 
@@ -902,16 +966,19 @@ Title
 URLs
 ```
 
-> **Important**: `Title` field is required only if fileless.
+> **⚠️ Important:** `Title` field is required only if fileless.
 
 ### Studio
 
 ```
+Aliases
+Details
 Name
+Tags (see Tag fields)
 URL
 ```
 
-> **Important**: `Name` field is required. 
+> **⚠️ Important:** `Name` field is required. 
 
 ### Tag
 
@@ -919,4 +986,4 @@ URL
 Name
 ```
 
-> **Important**: `Name` field is required. 
+> **⚠️ Important:** `Name` field is required. 

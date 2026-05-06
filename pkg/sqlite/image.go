@@ -34,15 +34,16 @@ type imageRow struct {
 	Title zero.String `db:"title"`
 	Code  zero.String `db:"code"`
 	// expressed as 1-100
-	Rating       null.Int    `db:"rating"`
-	Date         NullDate    `db:"date"`
-	Details      zero.String `db:"details"`
-	Photographer zero.String `db:"photographer"`
-	Organized    bool        `db:"organized"`
-	OCounter     int         `db:"o_counter"`
-	StudioID     null.Int    `db:"studio_id,omitempty"`
-	CreatedAt    Timestamp   `db:"created_at"`
-	UpdatedAt    Timestamp   `db:"updated_at"`
+	Rating        null.Int    `db:"rating"`
+	Date          NullDate    `db:"date"`
+	DatePrecision null.Int    `db:"date_precision"`
+	Details       zero.String `db:"details"`
+	Photographer  zero.String `db:"photographer"`
+	Organized     bool        `db:"organized"`
+	OCounter      int         `db:"o_counter"`
+	StudioID      null.Int    `db:"studio_id,omitempty"`
+	CreatedAt     Timestamp   `db:"created_at"`
+	UpdatedAt     Timestamp   `db:"updated_at"`
 }
 
 func (r *imageRow) fromImage(i models.Image) {
@@ -51,6 +52,7 @@ func (r *imageRow) fromImage(i models.Image) {
 	r.Code = zero.StringFrom(i.Code)
 	r.Rating = intFromPtr(i.Rating)
 	r.Date = NullDateFromDatePtr(i.Date)
+	r.DatePrecision = datePrecisionFromDatePtr(i.Date)
 	r.Details = zero.StringFrom(i.Details)
 	r.Photographer = zero.StringFrom(i.Photographer)
 	r.Organized = i.Organized
@@ -74,7 +76,7 @@ func (r *imageQueryRow) resolve() *models.Image {
 		Title:        r.Title.String,
 		Code:         r.Code.String,
 		Rating:       nullIntPtr(r.Rating),
-		Date:         r.Date.DatePtr(),
+		Date:         r.Date.DatePtr(r.DatePrecision),
 		Details:      r.Details.String,
 		Photographer: r.Photographer.String,
 		Organized:    r.Organized,
@@ -103,7 +105,7 @@ func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 	r.setNullString("title", i.Title)
 	r.setNullString("code", i.Code)
 	r.setNullInt("rating", i.Rating)
-	r.setNullDate("date", i.Date)
+	r.setNullDate("date", "date_precision", i.Date)
 	r.setNullString("details", i.Details)
 	r.setNullString("photographer", i.Photographer)
 	r.setBool("organized", i.Organized)
@@ -177,12 +179,14 @@ var (
 			},
 			fkColumn:     tagIDColumn,
 			foreignTable: tagTable,
-			orderBy:      "COALESCE(tags.sort_name, tags.name) ASC",
+			orderBy:      tagTableSortSQL,
 		},
 	}
 )
 
 type ImageStore struct {
+	customFieldsStore
+
 	tableMgr *table
 	oCounterManager
 
@@ -191,6 +195,10 @@ type ImageStore struct {
 
 func NewImageStore(r *storeRepository) *ImageStore {
 	return &ImageStore{
+		customFieldsStore: customFieldsStore{
+			table: imagesCustomFieldsTable,
+			fk:    imagesCustomFieldsTable.Col(imageIDColumn),
+		},
 		tableMgr:        imageTableMgr,
 		oCounterManager: oCounterManager{imageTableMgr},
 		repo:            r,
@@ -234,18 +242,18 @@ func (qb *ImageStore) selectDataset() *goqu.SelectDataset {
 	)
 }
 
-func (qb *ImageStore) Create(ctx context.Context, newObject *models.Image, fileIDs []models.FileID) error {
+func (qb *ImageStore) Create(ctx context.Context, newObject *models.CreateImageInput) error {
 	var r imageRow
-	r.fromImage(*newObject)
+	r.fromImage(*newObject.Image)
 
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {
 		return err
 	}
 
-	if len(fileIDs) > 0 {
+	if len(newObject.FileIDs) > 0 {
 		const firstPrimary = true
-		if err := imagesFilesTableMgr.insertJoins(ctx, id, firstPrimary, fileIDs); err != nil {
+		if err := imagesFilesTableMgr.insertJoins(ctx, id, firstPrimary, newObject.FileIDs); err != nil {
 			return err
 		}
 	}
@@ -274,12 +282,18 @@ func (qb *ImageStore) Create(ctx context.Context, newObject *models.Image, fileI
 		}
 	}
 
+	if err := qb.SetCustomFields(ctx, id, models.CustomFieldsInput{
+		Full: newObject.CustomFields,
+	}); err != nil {
+		return err
+	}
+
 	updated, err := qb.find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
 	}
 
-	*newObject = *updated
+	*newObject.Image = *updated
 
 	return nil
 }
@@ -325,6 +339,10 @@ func (qb *ImageStore) UpdatePartial(ctx context.Context, id int, partial models.
 		if err := imagesFilesTableMgr.setPrimary(ctx, id, *partial.PrimaryFileID); err != nil {
 			return nil, err
 		}
+	}
+
+	if err := qb.SetCustomFields(ctx, id, partial.CustomFields); err != nil {
+		return nil, err
 	}
 
 	return qb.find(ctx, id)
@@ -682,6 +700,20 @@ func (qb *ImageStore) OCountByPerformerID(ctx context.Context, performerID int) 
 	return ret, nil
 }
 
+func (qb *ImageStore) OCountByStudioID(ctx context.Context, studioID int) (int, error) {
+	table := qb.table()
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table).Where(
+		table.Col(studioIDColumn).Eq(studioID),
+	)
+
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (qb *ImageStore) OCount(ctx context.Context) (int, error) {
 	table := qb.table()
 
@@ -805,7 +837,7 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 		)
 
 		filepathColumn := "folders.path || '" + string(filepath.Separator) + "' || files.basename"
-		searchColumns := []string{"images.title", filepathColumn, "files_fingerprints.fingerprint"}
+		searchColumns := []string{"images.title", "images.details", filepathColumn, "files_fingerprints.fingerprint"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
@@ -894,7 +926,7 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 		Megapixels null.Float
 		Size       null.Float
 	}{}
-	if err := imageRepository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
+	if err := imageRepository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.allArgs(), &out); err != nil {
 		return nil, err
 	}
 
@@ -926,6 +958,7 @@ var imageSortOptions = sortOptions{
 	"performer_count",
 	"random",
 	"rating",
+	"resolution",
 	"tag_count",
 	"title",
 	"updated_at",
@@ -951,10 +984,12 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 		addFilesJoin := func() {
 			q.addJoins(
 				join{
+					sort:     true,
 					table:    imagesFilesTable,
 					onClause: "images_files.image_id = images.id",
 				},
 				join{
+					sort:     true,
 					table:    fileTable,
 					onClause: "images_files.file_id = files.id",
 				},
@@ -963,6 +998,7 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 
 		addFolderJoin := func() {
 			q.addJoins(join{
+				sort:     true,
 				table:    folderTable,
 				onClause: "files.parent_folder_id = folders.id",
 			})
@@ -982,6 +1018,14 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 		case "mod_time", "filesize":
 			addFilesJoin()
 			sortClause = getSort(sort, direction, "files")
+		case "resolution":
+			addFilesJoin()
+			q.addJoins(join{
+				sort:     true,
+				table:    imageFileTable,
+				onClause: "images_files.file_id = image_files.file_id",
+			})
+			sortClause = " ORDER BY MIN(image_files.width, image_files.height) " + direction
 		case "title":
 			addFilesJoin()
 			addFolderJoin()

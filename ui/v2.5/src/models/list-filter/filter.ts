@@ -5,7 +5,7 @@ import {
   SavedFilterDataFragment,
   SortDirectionEnum,
 } from "src/core/generated-graphql";
-import { Criterion } from "./criteria/criterion";
+import { Criterion, UnsupportedCriterionOption } from "./criteria/criterion";
 import { getFilterOptions } from "./factory";
 import { CriterionType, DisplayMode, SavedUIOptions } from "./types";
 import { ListFilterOptions } from "./filter-options";
@@ -103,6 +103,20 @@ export class ListFilterModel {
     });
   }
 
+  // returns a clone of the filter for metadata fetching
+  // this removes the sort, page size and page number and zoom index
+  public metadataInfo() {
+    const clone = this.clone();
+    clone.sortBy = undefined;
+    clone.randomSeed = -1;
+    clone.currentPage = 1;
+    clone.sortDirection = DEFAULT_PARAMS.sortDirection;
+    clone.itemsPerPage = 0;
+    clone.zoomIndex = 1;
+    clone.displayMode = DEFAULT_PARAMS.displayMode;
+    return clone;
+  }
+
   // returns the number of filters applied
   public count() {
     // don't include search term
@@ -183,7 +197,7 @@ export class ListFilterModel {
       ret.disp = Number.parseInt(params.disp, 10);
     }
     if (params.q) {
-      ret.q = params.q.trim();
+      ret.q = params.q;
     }
     if (params.p) {
       ret.p = Number.parseInt(params.p, 10);
@@ -423,7 +437,7 @@ export class ListFilterModel {
     const option = criterionOptions.find((o) => o.type === type);
 
     if (!option) {
-      throw new Error(`Unknown criterion parameter name: ${type}`);
+      return new UnsupportedCriterionOption(type).makeCriterion(this.config);
     }
 
     return option.makeCriterion(this.config);
@@ -476,10 +490,20 @@ export class ListFilterModel {
     return this.setCriteria(criteria);
   }
 
-  public clearCriteria() {
+  public clearCriteria(clearSearchTerm = false) {
     const ret = this.clone();
+    if (clearSearchTerm) {
+      ret.searchTerm = "";
+    }
     ret.criteria = [];
     ret.currentPage = 1;
+    return ret;
+  }
+
+  public clearSearchTerm() {
+    const ret = this.clone();
+    ret.searchTerm = "";
+    ret.currentPage = 1; // reset to first page
     return ret;
   }
 
@@ -521,6 +545,34 @@ export class ListFilterModel {
   public setPageSize(pageSize: number) {
     const ret = this.clone();
     ret.itemsPerPage = pageSize;
+    ret.currentPage = 1; // reset to first page
+    return ret;
+  }
+
+  public setSortBy(sortBy: string | undefined) {
+    const ret = this.clone();
+    ret.sortBy = sortBy;
+    ret.currentPage = 1; // reset to first page
+    return ret;
+  }
+
+  public toggleSortDirection() {
+    const ret = this.clone();
+
+    if (ret.sortDirection === SortDirectionEnum.Asc) {
+      ret.sortDirection = SortDirectionEnum.Desc;
+    } else {
+      ret.sortDirection = SortDirectionEnum.Asc;
+    }
+
+    ret.currentPage = 1; // reset to first page
+    return ret;
+  }
+
+  public reshuffleRandomSort() {
+    const ret = this.clone();
+    ret.currentPage = 1;
+    ret.randomSeed = -1;
     return ret;
   }
 

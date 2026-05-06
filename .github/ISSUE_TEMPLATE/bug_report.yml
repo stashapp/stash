@@ -1,0 +1,64 @@
+name: Bug Report
+description: Create a report to help us fix the bug
+labels: ["bug report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: Provide a clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Detail the steps that would replicate this issue.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: Provide clear and concise description of what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Screenshots or additional context
+      description: Provide any additional context and SFW screenshots here to help us solve this issue.
+    validations:
+      required: false
+  - type: input
+    id: stashversion
+    attributes:
+      label: Stash version
+      description: This can be found in Settings > About.
+      placeholder: (e.g. v0.28.1)
+    validations:
+      required: true
+  - type: input
+    id: devicedetails
+    attributes:
+      label: Device details
+      description: |
+        If this is an issue that occurs when using the Stash interface, please provide details of the device/browser used which presents the reported issue.
+      placeholder: (e.g. Firefox 97 (64-bit) on Windows 11)
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output from Settings > Logs. This will be automatically formatted into code, so no need for backticks.
+      render: shell

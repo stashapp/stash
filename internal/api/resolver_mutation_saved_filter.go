@@ -32,7 +32,7 @@ func (r *mutationResolver) SaveFilter(ctx context.Context, input SaveFilterInput
 
 		f := models.SavedFilter{
 			Mode:         input.Mode,
-			Name:         input.Name,
+			Name:         strings.TrimSpace(input.Name),
 			FindFilter:   input.FindFilter,
 			ObjectFilter: input.ObjectFilter,
 			UIOptions:    input.UIOptions,

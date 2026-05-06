@@ -5,16 +5,21 @@ import {
   useFindStudiosForSelectQuery,
 } from "src/core/generated-graphql";
 import { HierarchicalObjectsFilter } from "./SelectableFilter";
-import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
+import {
+  StudiosCriterion,
+  StudiosCriterionOption,
+} from "src/models/list-filter/criteria/studios";
 import { sortByRelevance } from "src/utils/query";
 import { CriterionOption } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import {
+  IUseQueryHookProps,
   makeQueryVariables,
   setObjectFilter,
   useLabeledIdFilterState,
 } from "./LabeledIdFilter";
 import { SidebarListFilter } from "./SidebarListFilter";
+import { FormattedMessage } from "react-intl";
 
 interface IStudiosFilter {
   criterion: StudiosCriterion;
@@ -56,13 +61,12 @@ function sortResults(
   });
 }
 
-function useStudioQueryFilter(
-  query: string,
-  filter?: ListFilterModel,
-  skip?: boolean
-) {
+function useStudioQueryFilter(props: IUseQueryHookProps) {
+  const { q: query, filter: f, skip, filterHook } = props;
+  const appliedFilter = filterHook && f ? filterHook(f.clone()) : f;
+
   const { data, loading } = useFindStudiosForSelectQuery({
-    variables: queryVariables(query, filter),
+    variables: queryVariables(query, appliedFilter),
     skip,
   });
 
@@ -75,7 +79,7 @@ function useStudioQueryFilter(
 }
 
 function useStudioQuery(query: string, skip?: boolean) {
-  return useStudioQueryFilter(query, undefined, skip);
+  return useStudioQueryFilter({ q: query, skip: !!skip });
 }
 
 const StudiosFilter: React.FC<IStudiosFilter> = ({
@@ -94,13 +98,23 @@ const StudiosFilter: React.FC<IStudiosFilter> = ({
 
 export const SidebarStudiosFilter: React.FC<{
   title?: ReactNode;
-  option: CriterionOption;
+  option?: CriterionOption;
   filter: ListFilterModel;
   setFilter: (f: ListFilterModel) => void;
-}> = ({ title, option, filter, setFilter }) => {
+  filterHook?: (f: ListFilterModel) => ListFilterModel;
+  sectionID?: string;
+}> = ({
+  title = <FormattedMessage id="studios" />,
+  option = StudiosCriterionOption,
+  filter,
+  setFilter,
+  filterHook,
+  sectionID = "studios",
+}) => {
   const state = useLabeledIdFilterState({
     filter,
     setFilter,
+    filterHook,
     option,
     useQuery: useStudioQueryFilter,
     singleValue: true,
@@ -108,7 +122,14 @@ export const SidebarStudiosFilter: React.FC<{
     includeSubMessageID: "subsidiary_studios",
   });
 
-  return <SidebarListFilter {...state} title={title} />;
+  return (
+    <SidebarListFilter
+      {...state}
+      data-type={option.type}
+      title={title}
+      sectionID={sectionID}
+    />
+  );
 };
 
 export default StudiosFilter;

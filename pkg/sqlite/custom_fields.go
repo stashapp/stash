@@ -41,23 +41,43 @@ func (s *customFieldsStore) SetCustomFields(ctx context.Context, id int, values 
 	case values.Partial != nil:
 		partial = true
 		valMap = values.Partial
-	default:
-		return nil
 	}
 
-	if err := s.validateCustomFields(valMap); err != nil {
+	if valMap != nil {
+		if err := s.validateCustomFields(valMap, values.Remove); err != nil {
+			return err
+		}
+
+		if err := s.setCustomFields(ctx, id, valMap, partial); err != nil {
+			return err
+		}
+	}
+
+	if err := s.deleteCustomFields(ctx, id, values.Remove); err != nil {
 		return err
 	}
 
-	return s.setCustomFields(ctx, id, valMap, partial)
+	return nil
 }
 
-func (s *customFieldsStore) validateCustomFields(values map[string]interface{}) error {
+func (s *customFieldsStore) validateCustomFields(values map[string]interface{}, deleteKeys []string) error {
+	// if values is nil, nothing to validate
+	if values == nil {
+		return nil
+	}
+
 	// ensure that custom field names are valid
 	// no leading or trailing whitespace, no empty strings
 	for k := range values {
 		if err := s.validateCustomFieldName(k); err != nil {
 			return fmt.Errorf("custom field name %q: %w", k, err)
+		}
+	}
+
+	// ensure delete keys are not also in values
+	for _, k := range deleteKeys {
+		if _, ok := values[k]; ok {
+			return fmt.Errorf("custom field name %q cannot be in both values and delete keys", k)
 		}
 	}
 
@@ -130,6 +150,22 @@ func (s *customFieldsStore) setCustomFields(ctx context.Context, id int, values 
 	return nil
 }
 
+func (s *customFieldsStore) deleteCustomFields(ctx context.Context, id int, keys []string) error {
+	if len(keys) == 0 {
+		return nil
+	}
+
+	q := dialect.Delete(s.table).
+		Where(s.fk.Eq(id)).
+		Where(goqu.I("field").In(keys))
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("deleting custom fields: %w", err)
+	}
+
+	return nil
+}
+
 func (s *customFieldsStore) GetCustomFields(ctx context.Context, id int) (map[string]interface{}, error) {
 	q := dialect.Select("field", "value").From(s.table).Where(s.fk.Eq(id))
 
@@ -156,6 +192,10 @@ func (s *customFieldsStore) GetCustomFieldsBulk(ctx context.Context, ids []int) 
 
 	const single = false
 	ret := make([]models.CustomFieldMap, len(ids))
+	// initialise ret with empty maps for each id
+	for i := range ret {
+		ret[i] = make(map[string]interface{})
+	}
 
 	idi := make(map[int]int, len(ids))
 	for i, id := range ids {
@@ -221,8 +261,8 @@ func (h *customFieldsFilterHandler) handleCriterion(f *filterBuilder, joinAs str
 		h.innerJoin(f, joinAs, cc.Field)
 		f.addWhere(fmt.Sprintf("%[1]s.value IN %s", joinAs, getInBinding(len(cv))), cv...)
 	case models.CriterionModifierNotEquals:
-		h.innerJoin(f, joinAs, cc.Field)
-		f.addWhere(fmt.Sprintf("%[1]s.value NOT IN %s", joinAs, getInBinding(len(cv))), cv...)
+		h.leftJoin(f, joinAs, cc.Field)
+		f.addWhere(fmt.Sprintf("(%[1]s.value NOT IN %s OR %[1]s.value IS NULL)", joinAs, getInBinding(len(cv))), cv...)
 	case models.CriterionModifierIncludes:
 		clauses := make([]sqlClause, len(cv))
 		for i, v := range cv {
@@ -232,7 +272,7 @@ func (h *customFieldsFilterHandler) handleCriterion(f *filterBuilder, joinAs str
 		f.whereClauses = append(f.whereClauses, clauses...)
 	case models.CriterionModifierExcludes:
 		for _, v := range cv {
-			f.addWhere(fmt.Sprintf("%[1]s.value NOT LIKE ?", joinAs), fmt.Sprintf("%%%v%%", v))
+			f.addWhere(fmt.Sprintf("(%[1]s.value NOT LIKE ? OR %[1]s.value IS NULL)", joinAs), fmt.Sprintf("%%%v%%", v))
 		}
 		h.leftJoin(f, joinAs, cc.Field)
 	case models.CriterionModifierMatchesRegex:
@@ -275,8 +315,8 @@ func (h *customFieldsFilterHandler) handleCriterion(f *filterBuilder, joinAs str
 		h.innerJoin(f, joinAs, cc.Field)
 		f.addWhere(fmt.Sprintf("%s.value BETWEEN ? AND ?", joinAs), cv[0], cv[1])
 	case models.CriterionModifierNotBetween:
-		h.innerJoin(f, joinAs, cc.Field)
-		f.addWhere(fmt.Sprintf("%s.value NOT BETWEEN ? AND ?", joinAs), cv[0], cv[1])
+		h.leftJoin(f, joinAs, cc.Field)
+		f.addWhere(fmt.Sprintf("(%s.value NOT BETWEEN ? AND ? OR %[1]s.value IS NULL)", joinAs), cv[0], cv[1])
 	case models.CriterionModifierLessThan:
 		if len(cv) != 1 {
 			f.setError(fmt.Errorf("expected 1 value for custom field criterion modifier LESS_THAN, got %d", len(cv)))

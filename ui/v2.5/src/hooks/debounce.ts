@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { debounce, DebouncedFunc, DebounceSettings } from "lodash-es";
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 
 export function useDebounce<T extends (...args: any) => any>(
   fn: T,
@@ -20,4 +20,31 @@ export function useDebounce<T extends (...args: any) => any>(
     ),
     [wait, options?.leading, options?.trailing, options?.maxWait]
   );
+}
+
+export function useDebouncedState<T>(
+  initialValue: T,
+  setValue: (v: T) => void,
+  wait?: number
+): [T, (v: T) => void, (v: T) => void] {
+  const [displayedState, setDisplayedState] = useState(initialValue);
+
+  const debouncedSetValue = useDebounce(setValue, wait);
+  const onChange = useCallback(
+    (input: T) => {
+      setDisplayedState(input);
+      debouncedSetValue(input);
+    },
+    [debouncedSetValue, setDisplayedState]
+  );
+
+  const setInstant = useCallback(
+    (v: T) => {
+      setDisplayedState(v);
+      setValue(v);
+    },
+    [setValue]
+  );
+
+  return [displayedState, onChange, setInstant];
 }

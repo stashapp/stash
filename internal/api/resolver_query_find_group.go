@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 func (r *queryResolver) FindGroup(ctx context.Context, id string) (ret *models.Group, err error) {
@@ -25,7 +24,7 @@ func (r *queryResolver) FindGroup(ctx context.Context, id string) (ret *models.G
 }
 
 func (r *queryResolver) FindGroups(ctx context.Context, groupFilter *models.GroupFilterType, filter *models.FindFilterType, ids []string) (ret *FindGroupsResultType, err error) {
-	idInts, err := stringslice.StringSliceToIntSlice(ids)
+	idInts, err := handleIDList(ids, "ids")
 	if err != nil {
 		return nil, err
 	}

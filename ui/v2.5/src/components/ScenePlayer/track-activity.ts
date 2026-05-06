@@ -44,6 +44,10 @@ class TrackActivityPlugin extends videojs.getPlugin("plugin") {
     player.on("dispose", () => {
       this.stop();
     });
+
+    player.on("ended", () => {
+      this.stop();
+    });
   }
 
   private start() {

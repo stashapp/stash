@@ -44,6 +44,8 @@ type SceneCounter interface {
 	CountMissingChecksum(ctx context.Context) (int, error)
 	CountMissingOSHash(ctx context.Context) (int, error)
 	OCountByPerformerID(ctx context.Context, performerID int) (int, error)
+	OCountByGroupID(ctx context.Context, groupID int) (int, error)
+	OCountByStudioID(ctx context.Context, studioID int) (int, error)
 }
 
 // SceneCreator provides methods to create scenes.
@@ -102,6 +104,7 @@ type SceneReader interface {
 	SceneGroupLoader
 	StashIDLoader
 	VideoFileLoader
+	CustomFieldsReader
 
 	All(ctx context.Context) ([]*Scene, error)
 	Wall(ctx context.Context, q *string) ([]*Scene, error)
@@ -138,6 +141,7 @@ type SceneWriter interface {
 	ViewHistoryWriter
 	SaveActivity(ctx context.Context, sceneID int, resumeTime *float64, playDuration *float64) (bool, error)
 	ResetActivity(ctx context.Context, sceneID int, resetResume bool, resetDuration bool) (bool, error)
+	CustomFieldsWriter
 }
 
 // SceneReaderWriter provides all scene methods.

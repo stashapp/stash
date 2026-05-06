@@ -23,6 +23,7 @@ import Interactive from "src/docs/en/Manual/Interactive.md";
 import Captions from "src/docs/en/Manual/Captions.md";
 import Identify from "src/docs/en/Manual/Identify.md";
 import Browsing from "src/docs/en/Manual/Browsing.md";
+import TroubleshootingMode from "src/docs/en/Manual/TroubleshootingMode.md";
 import { MarkdownPage } from "../Shared/MarkdownPage";
 
 interface IManualProps {
@@ -151,6 +152,11 @@ export const Manual: React.FC<IManualProps> = ({
       key: "KeyboardShortcuts.md",
       title: "Keyboard Shortcuts",
       content: KeyboardShortcuts,
+    },
+    {
+      key: "TroubleshootingMode.md",
+      title: "Troubleshooting Mode",
+      content: TroubleshootingMode,
     },
     {
       key: "Contributing.md",

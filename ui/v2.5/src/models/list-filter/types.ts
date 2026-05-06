@@ -47,9 +47,15 @@ export interface IRangeValue<V> {
 export type INumberValue = IRangeValue<number>;
 export type IDateValue = IRangeValue<string>;
 export type ITimestampValue = IRangeValue<string>;
-export interface IPHashDuplicationValue {
-  duplicated: boolean;
-  distance?: number; // currently not implemented
+export interface IDuplicationValue {
+  // Deprecated: Use phash field instead. Kept for backwards compatibility.
+  duplicated?: boolean;
+  // Currently not implemented. Intended for phash distance matching.
+  distance?: number;
+  phash?: boolean;
+  url?: boolean;
+  stash_id?: boolean;
+  title?: boolean;
 }
 
 export interface IStashIDValue {
@@ -160,6 +166,8 @@ export type CriterionType =
   | "penis_length"
   | "circumcised"
   | "career_length"
+  | "career_start"
+  | "career_end"
   | "tattoos"
   | "piercings"
   | "aliases"
@@ -200,6 +208,7 @@ export type CriterionType =
   | "ignore_auto_tag"
   | "file_count"
   | "stash_id_endpoint"
+  | "stash_id_count"
   | "date"
   | "created_at"
   | "updated_at"
@@ -214,4 +223,6 @@ export type CriterionType =
   | "disambiguation"
   | "has_chapters"
   | "sort_name"
-  | "custom_fields";
+  | "custom_fields"
+  | "folder"
+  | "parent_folder";

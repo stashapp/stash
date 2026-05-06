@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/hook"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
@@ -30,14 +30,25 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 	}
 
 	// Populate a new tag from the input
-	newTag := models.NewTag()
+	newTag := models.CreateTagInput{
+		Tag: &models.Tag{},
+	}
+	*newTag.Tag = models.NewTag()
 
-	newTag.Name = input.Name
+	newTag.Name = strings.TrimSpace(input.Name)
 	newTag.SortName = translator.string(input.SortName)
-	newTag.Aliases = models.NewRelatedStrings(input.Aliases)
+	newTag.Aliases = models.NewRelatedStrings(stringslice.UniqueExcludeFold(stringslice.TrimSpace(input.Aliases), newTag.Name))
 	newTag.Favorite = translator.bool(input.Favorite)
 	newTag.Description = translator.string(input.Description)
 	newTag.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
+
+	var stashIDInputs models.StashIDInputs
+	for _, sid := range input.StashIds {
+		if sid != nil {
+			stashIDInputs = append(stashIDInputs, *sid)
+		}
+	}
+	newTag.StashIDs = models.NewRelatedStashIDs(stashIDInputs.ToStashIDs())
 
 	var err error
 
@@ -50,6 +61,8 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 	if err != nil {
 		return nil, fmt.Errorf("converting child tag ids: %w", err)
 	}
+
+	newTag.CustomFields = convertMapJSONNumbers(input.CustomFields)
 
 	// Process the base 64 encoded image string
 	var imageData []byte
@@ -64,7 +77,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Tag
 
-		if err := tag.ValidateCreate(ctx, newTag, qb); err != nil {
+		if err := tag.ValidateCreate(ctx, *newTag.Tag, qb); err != nil {
 			return err
 		}
 
@@ -89,6 +102,46 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 	return r.getTag(ctx, newTag.ID)
 }
 
+func tagPartialFromInput(input TagUpdateInput, translator changesetTranslator) (*models.TagPartial, error) {
+	updatedTag := models.NewTagPartial()
+
+	updatedTag.Name = translator.optionalString(input.Name, "name")
+	updatedTag.SortName = translator.optionalString(input.SortName, "sort_name")
+	updatedTag.Favorite = translator.optionalBool(input.Favorite, "favorite")
+	updatedTag.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
+	updatedTag.Description = translator.optionalString(input.Description, "description")
+
+	updatedTag.Aliases = translator.updateStrings(input.Aliases, "aliases")
+
+	var updateStashIDInputs models.StashIDInputs
+	for _, sid := range input.StashIds {
+		if sid != nil {
+			updateStashIDInputs = append(updateStashIDInputs, *sid)
+		}
+	}
+	updatedTag.StashIDs = translator.updateStashIDs(updateStashIDInputs, "stash_ids")
+
+	var err error
+	updatedTag.ParentIDs, err = translator.updateIds(input.ParentIds, "parent_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting parent tag ids: %w", err)
+	}
+
+	updatedTag.ChildIDs, err = translator.updateIds(input.ChildIds, "child_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting child tag ids: %w", err)
+	}
+
+	if input.CustomFields != nil {
+		updatedTag.CustomFields = *input.CustomFields
+		// convert json.Numbers to int/float
+		updatedTag.CustomFields.Full = convertMapJSONNumbers(updatedTag.CustomFields.Full)
+		updatedTag.CustomFields.Partial = convertMapJSONNumbers(updatedTag.CustomFields.Partial)
+	}
+
+	return &updatedTag, nil
+}
+
 func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) (*models.Tag, error) {
 	tagID, err := strconv.Atoi(input.ID)
 	if err != nil {
@@ -100,24 +153,9 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 	}
 
 	// Populate tag from the input
-	updatedTag := models.NewTagPartial()
-
-	updatedTag.Name = translator.optionalString(input.Name, "name")
-	updatedTag.SortName = translator.optionalString(input.SortName, "sort_name")
-	updatedTag.Favorite = translator.optionalBool(input.Favorite, "favorite")
-	updatedTag.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
-	updatedTag.Description = translator.optionalString(input.Description, "description")
-
-	updatedTag.Aliases = translator.updateStrings(input.Aliases, "aliases")
-
-	updatedTag.ParentIDs, err = translator.updateIds(input.ParentIds, "parent_ids")
+	updatedTag, err := tagPartialFromInput(input, translator)
 	if err != nil {
-		return nil, fmt.Errorf("converting parent tag ids: %w", err)
-	}
-
-	updatedTag.ChildIDs, err = translator.updateIds(input.ChildIds, "child_ids")
-	if err != nil {
-		return nil, fmt.Errorf("converting child tag ids: %w", err)
+		return nil, err
 	}
 
 	var imageData []byte
@@ -134,11 +172,33 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Tag
 
-		if err := tag.ValidateUpdate(ctx, tagID, updatedTag, qb); err != nil {
+		if updatedTag.Aliases != nil {
+			t, err := qb.Find(ctx, tagID)
+			if err != nil {
+				return err
+			}
+			if t != nil {
+				if err := t.LoadAliases(ctx, qb); err != nil {
+					return err
+				}
+
+				newAliases := updatedTag.Aliases.Apply(t.Aliases.List())
+				name := t.Name
+				if updatedTag.Name.Set {
+					name = updatedTag.Name.Value
+				}
+
+				sanitized := stringslice.UniqueExcludeFold(newAliases, name)
+				updatedTag.Aliases.Values = sanitized
+				updatedTag.Aliases.Mode = models.RelationshipUpdateModeSet
+			}
+		}
+
+		if err := tag.ValidateUpdate(ctx, tagID, *updatedTag, qb); err != nil {
 			return err
 		}
 
-		t, err = qb.UpdatePartial(ctx, tagID, updatedTag)
+		t, err = qb.UpdatePartial(ctx, tagID, *updatedTag)
 		if err != nil {
 			return err
 		}
@@ -286,6 +346,31 @@ func (r *mutationResolver) TagsMerge(ctx context.Context, input TagsMergeInput) 
 		return nil, nil
 	}
 
+	var values *models.TagPartial
+	var imageData []byte
+
+	if input.Values != nil {
+		translator := changesetTranslator{
+			inputMap: getNamedUpdateInputMap(ctx, "input.values"),
+		}
+
+		values, err = tagPartialFromInput(*input.Values, translator)
+		if err != nil {
+			return nil, err
+		}
+
+		if input.Values.Image != nil {
+			var err error
+			imageData, err = utils.ProcessImageInput(ctx, *input.Values.Image)
+			if err != nil {
+				return nil, fmt.Errorf("processing cover image: %w", err)
+			}
+		}
+	} else {
+		v := models.NewTagPartial()
+		values = &v
+	}
+
 	var t *models.Tag
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Tag
@@ -300,28 +385,22 @@ func (r *mutationResolver) TagsMerge(ctx context.Context, input TagsMergeInput) 
 			return fmt.Errorf("tag with id %d not found", destination)
 		}
 
-		parents, children, err := tag.MergeHierarchy(ctx, destination, source, qb)
-		if err != nil {
-			return err
-		}
-
 		if err = qb.Merge(ctx, source, destination); err != nil {
 			return err
 		}
 
-		err = qb.UpdateParentTags(ctx, destination, parents)
-		if err != nil {
-			return err
-		}
-		err = qb.UpdateChildTags(ctx, destination, children)
-		if err != nil {
+		if err := tag.ValidateUpdate(ctx, destination, *values, qb); err != nil {
 			return err
 		}
 
-		err = tag.ValidateHierarchyExisting(ctx, t, parents, children, qb)
-		if err != nil {
-			logger.Errorf("Error merging tag: %s", err)
-			return err
+		if _, err := qb.UpdatePartial(ctx, destination, *values); err != nil {
+			return fmt.Errorf("updating tag: %w", err)
+		}
+
+		if len(imageData) > 0 {
+			if err := qb.UpdateImage(ctx, destination, imageData); err != nil {
+				return err
+			}
 		}
 
 		return nil

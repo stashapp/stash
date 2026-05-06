@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"sync"
 	"time"
 )
 
@@ -10,14 +11,9 @@ type cacheEntry struct {
 }
 
 type repositoryCache struct {
+	mu sync.RWMutex
 	// cache maps the URL to the last modified time and the data
 	cache map[string]cacheEntry
-}
-
-func (c *repositoryCache) ensureCache() {
-	if c.cache == nil {
-		c.cache = make(map[string]cacheEntry)
-	}
 }
 
 func (c *repositoryCache) lastModified(url string) *time.Time {
@@ -25,7 +21,13 @@ func (c *repositoryCache) lastModified(url string) *time.Time {
 		return nil
 	}
 
-	c.ensureCache()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	if c.cache == nil {
+		return nil
+	}
+
 	e, found := c.cache[url]
 
 	if !found {
@@ -36,7 +38,13 @@ func (c *repositoryCache) lastModified(url string) *time.Time {
 }
 
 func (c *repositoryCache) getPackageList(url string) []RemotePackage {
-	c.ensureCache()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	if c.cache == nil {
+		return nil
+	}
+
 	e, found := c.cache[url]
 
 	if !found {
@@ -51,7 +59,13 @@ func (c *repositoryCache) cacheList(url string, lastModified time.Time, data []R
 		return
 	}
 
-	c.ensureCache()
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if c.cache == nil {
+		c.cache = make(map[string]cacheEntry)
+	}
+
 	c.cache[url] = cacheEntry{
 		lastModified: lastModified,
 		data:         data,

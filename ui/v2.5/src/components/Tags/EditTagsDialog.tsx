@@ -11,7 +11,7 @@ import {
   getAggregateStateObject,
 } from "src/utils/bulkUpdate";
 import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
-import { BulkUpdateTextInput } from "../Shared/BulkUpdateTextInput";
+import { BulkUpdateFormGroup, BulkUpdateTextInput } from "../Shared/BulkUpdate";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 
 function Tags(props: {
@@ -55,7 +55,7 @@ function Tags(props: {
 }
 
 interface IListOperationProps {
-  selected: GQL.TagDataFragment[];
+  selected: (GQL.TagDataFragment | GQL.TagListDataFragment)[];
   onClose: (applied: boolean) => void;
 }
 
@@ -84,6 +84,8 @@ export const EditTagsDialog: React.FC<IListOperationProps> = (
   const [existingChildTagIds, setExistingChildTagIds] = useState<string[]>();
 
   const [updateInput, setUpdateInput] = useState<GQL.BulkTagUpdateInput>({});
+
+  const unsetDisabled = props.selected.length < 2;
 
   const [updateTags] = useBulkTagUpdate(getTagInput());
 
@@ -134,7 +136,7 @@ export const EditTagsDialog: React.FC<IListOperationProps> = (
     let updateChildTagIds: string[] = [];
     let first = true;
 
-    state.forEach((tag: GQL.TagDataFragment) => {
+    state.forEach((tag: GQL.TagDataFragment | GQL.TagListDataFragment) => {
       getAggregateStateObject(updateState, tag, tagFields, first);
 
       const thisParents = (tag.parents ?? []).map((t) => t.id).sort();
@@ -153,33 +155,18 @@ export const EditTagsDialog: React.FC<IListOperationProps> = (
     setUpdateInput(updateState);
   }, [props.selected]);
 
-  function renderTextField(
-    name: string,
-    value: string | undefined | null,
-    setter: (newValue: string | undefined) => void
-  ) {
-    return (
-      <Form.Group controlId={name}>
-        <Form.Label>
-          <FormattedMessage id={name} />
-        </Form.Label>
-        <BulkUpdateTextInput
-          value={value === null ? "" : value ?? undefined}
-          valueChanged={(newValue) => setter(newValue)}
-          unsetDisabled={props.selected.length < 2}
-        />
-      </Form.Group>
-    );
-  }
-
   return (
     <ModalComponent
       dialogClassName="edit-tags-dialog"
       show
       icon={faPencilAlt}
       header={intl.formatMessage(
-        { id: "actions.edit_entity" },
-        { entityType: intl.formatMessage({ id: "tags" }) }
+        { id: "dialogs.edit_entity_count_title" },
+        {
+          count: props?.selected?.length ?? 1,
+          singularEntity: intl.formatMessage({ id: "tag" }),
+          pluralEntity: intl.formatMessage({ id: "tags" }),
+        }
       )}
       accept={{
         onClick: onSave,
@@ -201,9 +188,16 @@ export const EditTagsDialog: React.FC<IListOperationProps> = (
           />
         </Form.Group>
 
-        {renderTextField("description", updateInput.description, (v) =>
-          setUpdateField({ description: v })
-        )}
+        <BulkUpdateFormGroup name="description" inline={false}>
+          <BulkUpdateTextInput
+            value={updateInput.description}
+            valueChanged={(newValue) =>
+              setUpdateField({ description: newValue })
+            }
+            unsetDisabled={unsetDisabled}
+            as="textarea"
+          />
+        </BulkUpdateFormGroup>
 
         <Tags
           isUpdating={isUpdating}

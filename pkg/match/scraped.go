@@ -45,7 +45,7 @@ func (r SceneRelationships) MatchRelationships(ctx context.Context, s *models.Sc
 	}
 
 	for _, t := range s.Tags {
-		err := ScrapedTag(ctx, r.TagFinder, t)
+		err := ScrapedTag(ctx, r.TagFinder, t, endpoint)
 		if err != nil {
 			return err
 		}
@@ -188,11 +188,43 @@ func ScrapedGroup(ctx context.Context, qb GroupNamesFinder, storedID *string, na
 	return
 }
 
+// ScrapedTagHierarchy executes ScrapedTag for the provided tag and its parent.
+func ScrapedTagHierarchy(ctx context.Context, qb models.TagQueryer, s *models.ScrapedTag, stashBoxEndpoint string) error {
+	if err := ScrapedTag(ctx, qb, s, stashBoxEndpoint); err != nil {
+		return err
+	}
+
+	if s.Parent == nil {
+		return nil
+	}
+
+	// Match parent by name only (categories don't have StashDB tag IDs)
+	return ScrapedTag(ctx, qb, s.Parent, "")
+}
+
 // ScrapedTag matches the provided tag with the tags
 // in the database and sets the ID field if one is found.
-func ScrapedTag(ctx context.Context, qb models.TagQueryer, s *models.ScrapedTag) error {
+func ScrapedTag(ctx context.Context, qb models.TagQueryer, s *models.ScrapedTag, stashBoxEndpoint string) error {
 	if s.StoredID != nil {
 		return nil
+	}
+
+	// Check if a tag with the StashID already exists
+	if stashBoxEndpoint != "" && s.RemoteSiteID != nil {
+		if finder, ok := qb.(models.TagFinder); ok {
+			tags, err := finder.FindByStashID(ctx, models.StashID{
+				StashID:  *s.RemoteSiteID,
+				Endpoint: stashBoxEndpoint,
+			})
+			if err != nil {
+				return err
+			}
+			if len(tags) > 0 {
+				id := strconv.Itoa(tags[0].ID)
+				s.StoredID = &id
+				return nil
+			}
+		}
 	}
 
 	t, err := tag.ByName(ctx, qb, s.Name)

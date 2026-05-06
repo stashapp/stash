@@ -24,6 +24,38 @@ func (e *vipsEncoder) ImageThumbnail(image *bytes.Buffer, maxSize int) ([]byte, 
 	return []byte(data), err
 }
 
+// ImageThumbnailPath generates a thumbnail from a file path instead of stdin.
+// This is required for formats like AVIF that need random file access (seeking)
+// which stdin cannot provide.
+func (e *vipsEncoder) ImageThumbnailPath(path string, maxSize int) ([]byte, error) {
+	// vips thumbnail syntax: thumbnail input output width [options]
+	// Using .jpg[Q=70,strip] as output writes to stdout
+	args := []string{
+		"thumbnail",
+		path,
+		".jpg[Q=70,strip]",
+		fmt.Sprint(maxSize),
+		"--size", "down",
+	}
+
+	cmd := exec.Command(string(*e), args...)
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	if err := cmd.Wait(); err != nil {
+		logger.Errorf("image encoder error when running command <%s>: %s", strings.Join(cmd.Args, " "), stderr.String())
+		return nil, err
+	}
+
+	return stdout.Bytes(), nil
+}
+
 func (e *vipsEncoder) run(args []string, stdin *bytes.Buffer) (string, error) {
 	cmd := exec.Command(string(*e), args...)
 

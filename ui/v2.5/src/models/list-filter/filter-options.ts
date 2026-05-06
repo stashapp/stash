@@ -1,9 +1,10 @@
 import { CriterionOption } from "./criteria/criterion";
 import { DisplayMode } from "./types";
 
-interface ISortByOption {
+export interface ISortByOption {
   messageID: string;
   value: string;
+  sfwMessageID?: string;
 }
 
 export const MediaSortByOptions = [
@@ -22,7 +23,7 @@ export class ListFilterOptions {
   public readonly displayModeOptions: DisplayMode[] = [];
   public readonly criterionOptions: CriterionOption[] = [];
 
-  public static createSortBy(value: string) {
+  public static createSortBy(value: string): ISortByOption {
     return {
       messageID: value,
       value,

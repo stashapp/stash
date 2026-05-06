@@ -38,6 +38,7 @@ export type DefaultFilters = {
 export type FrontPageContent = ISavedFilterRow | ICustomFilter;
 
 export const defaultMaxOptionsShown = 200;
+export const defaultPreviewVolume = 25;
 
 export interface IUIConfig {
   // unknown to prevent direct access - use getFrontPageContent
@@ -45,7 +46,12 @@ export interface IUIConfig {
 
   showChildTagContent?: boolean;
   showChildStudioContent?: boolean;
+  showLinksOnPerformerCard?: boolean;
   showTagCardOnHover?: boolean;
+
+  showStudioText?: boolean;
+
+  previewVolume?: number;
 
   abbreviateCounters?: boolean;
 
@@ -102,6 +108,8 @@ export interface IUIConfig {
   defaultFilters?: DefaultFilters;
 
   taggerConfig?: ITaggerConfig;
+
+  title?: string;
 }
 
 export function getFrontPageContent(
@@ -165,5 +173,6 @@ export function generatePremadeFrontPageContent(intl: IntlShape) {
     recentlyAdded(intl, FilterMode.Groups, "groups"),
     recentlyAdded(intl, FilterMode.Studios, "studios"),
     recentlyAdded(intl, FilterMode.Performers, "performers"),
+    recentlyAdded(intl, FilterMode.SceneMarkers, "markers"),
   ];
 }

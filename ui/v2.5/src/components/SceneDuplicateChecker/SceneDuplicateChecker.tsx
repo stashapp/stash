@@ -79,7 +79,24 @@ export const SceneDuplicateChecker: React.FC = () => {
     },
   });
 
-  const scenes = data?.findDuplicateScenes ?? [];
+  const getGroupTotalSize = (group: GQL.SlimSceneDataFragment[]) => {
+    // Sum all file sizes across all scenes in the group
+    return group.reduce((groupTotal, scene) => {
+      const sceneTotal = scene.files.reduce(
+        (fileTotal, file) => fileTotal + file.size,
+        0
+      );
+      return groupTotal + sceneTotal;
+    }, 0);
+  };
+
+  const scenes = useMemo(() => {
+    const groups = data?.findDuplicateScenes ?? [];
+    // Sort by total file size descending (largest groups first)
+    return [...groups].sort((a, b) => {
+      return getGroupTotalSize(b) - getGroupTotalSize(a);
+    });
+  }, [data?.findDuplicateScenes]);
 
   const { data: missingPhash } = GQL.useFindScenesQuery({
     variables: {

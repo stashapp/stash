@@ -9,7 +9,7 @@ import { useIntl } from "react-intl";
 import { Icon } from "src/components/Shared/Icon";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 
 interface IDirectorySelectionDialogProps {
   animation?: boolean;
@@ -20,9 +20,15 @@ interface IDirectorySelectionDialogProps {
 
 export const DirectorySelectionDialog: React.FC<
   IDirectorySelectionDialogProps
-> = ({ animation, allowEmpty = false, initialPaths = [], onClose }) => {
+> = ({
+  animation,
+  allowEmpty = false,
+  initialPaths = [],
+  onClose,
+  children,
+}) => {
   const intl = useIntl();
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
 
   const libraryPaths = configuration?.general.stashes.map((s) => s.path);
 
@@ -91,6 +97,8 @@ export const DirectorySelectionDialog: React.FC<
             </Button>
           }
         />
+
+        {children}
       </div>
     </ModalComponent>
   );

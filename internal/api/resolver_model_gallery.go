@@ -216,3 +216,16 @@ func (r *galleryResolver) Image(ctx context.Context, obj *models.Gallery, index 
 
 	return
 }
+
+func (r *galleryResolver) CustomFields(ctx context.Context, obj *models.Gallery) (map[string]interface{}, error) {
+	m, err := loaders.From(ctx).GalleryCustomFields.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if m == nil {
+		return make(map[string]interface{}), nil
+	}
+
+	return m, nil
+}

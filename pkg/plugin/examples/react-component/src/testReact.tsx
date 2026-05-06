@@ -192,7 +192,7 @@ interface IPluginApi {
     );
   };
 
-  PluginApi.register.route("/plugin/test-react", TestPage);
+  PluginApi.register.route("/plugins/test-react", TestPage);
 
   PluginApi.patch.before("SettingsToolsSection", function (props: any) {
     const {
@@ -206,7 +206,7 @@ interface IPluginApi {
             {props.children}
             <Setting
               heading={
-                <Link to="/plugin/test-react">
+                <Link to="/plugins/test-react">
                   <Button>
                     Test page
                   </Button>
@@ -232,7 +232,7 @@ interface IPluginApi {
             <NavLink
               className="nav-utility"
               exact
-              to="/plugin/test-react"
+              to="/plugins/test-react"
             >
               <Button
                 className="minimal d-flex align-items-center h-100"

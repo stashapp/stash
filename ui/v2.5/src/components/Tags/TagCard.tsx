@@ -14,7 +14,7 @@ import cx from "classnames";
 import { useTagUpdate } from "src/core/StashService";
 
 interface IProps {
-  tag: GQL.TagDataFragment;
+  tag: GQL.TagDataFragment | GQL.TagListDataFragment;
   cardWidth?: number;
   zoomIndex: number;
   selecting?: boolean;

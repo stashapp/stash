@@ -1,0 +1,706 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { Button, Card, Form, InputGroup, ProgressBar } from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
+import { Link } from "react-router-dom";
+import { HashLink } from "react-router-hash-link";
+
+import * as GQL from "src/core/generated-graphql";
+import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
+import {
+  stashBoxTagQuery,
+  useJobsSubscribe,
+  mutateStashBoxBatchTagTag,
+  getClient,
+  useTagCreate,
+} from "src/core/StashService";
+import { useConfigurationContext } from "src/hooks/Config";
+
+import StashSearchResult from "./StashSearchResult";
+import TaggerConfig, { ConfigButton } from "../TaggerConfig";
+import { ITaggerConfig, TAG_FIELDS } from "../constants";
+import { useUpdateTag } from "../queries";
+import { ExternalLink } from "src/components/Shared/ExternalLink";
+import { mergeTagStashIDs } from "../utils";
+import { separateNamesAndStashIds } from "src/utils/stashIds";
+import { useTaggerConfig } from "../config";
+import {
+  BatchUpdateModal,
+  BatchAddModal,
+} from "src/components/Shared/BatchModals";
+import { StashBoxSelectorField } from "../StashBoxSelector";
+import { apolloError } from "src/utils";
+import TagModal from "./TagModal";
+import { faTags } from "@fortawesome/free-solid-svg-icons";
+import { uniq } from "lodash-es";
+
+type JobFragment = Pick<
+  GQL.Job,
+  "id" | "status" | "subTasks" | "description" | "progress"
+>;
+
+const CLASSNAME = "TagTagger";
+
+interface ITagTaggerListProps {
+  tags: GQL.TagListDataFragment[];
+  selectedEndpoint: { endpoint: string; index: number };
+  isIdle: boolean;
+  config: ITaggerConfig;
+  onBatchAdd: (tagInput: string, createParent: boolean) => void;
+  onBatchUpdate: (
+    ids: string[] | undefined,
+    refresh: boolean,
+    createParent: boolean
+  ) => void;
+}
+
+const TagTaggerList: React.FC<ITagTaggerListProps> = ({
+  tags,
+  selectedEndpoint,
+  isIdle,
+  config,
+  onBatchAdd,
+  onBatchUpdate,
+}) => {
+  const intl = useIntl();
+
+  const [loading, setLoading] = useState(false);
+
+  const [searchResults, setSearchResults] = useState<
+    Record<string, GQL.ScrapedSceneTagDataFragment[]>
+  >({});
+  const [searchErrors, setSearchErrors] = useState<
+    Record<string, string | undefined>
+  >({});
+  const [taggedTags, setTaggedTags] = useState<
+    Record<string, Partial<GQL.TagListDataFragment>>
+  >({});
+  const [queries, setQueries] = useState<Record<string, string>>({});
+
+  const [showBatchAdd, setShowBatchAdd] = useState(false);
+  const [showBatchUpdate, setShowBatchUpdate] = useState(false);
+  const [batchAddParents, setBatchAddParents] = useState(
+    config.createParentTags || false
+  );
+
+  const [batchUpdateRefresh, setBatchUpdateRefresh] = useState(false);
+  const { data: allTags } = GQL.useFindTagsQuery({
+    skip: !showBatchUpdate,
+    variables: {
+      tag_filter: {
+        stash_id_endpoint: {
+          endpoint: selectedEndpoint.endpoint,
+          modifier: batchUpdateRefresh
+            ? GQL.CriterionModifier.NotNull
+            : GQL.CriterionModifier.IsNull,
+        },
+      },
+      filter: {
+        per_page: 0,
+      },
+    },
+  });
+
+  const [modalTag, setModalTag] = useState<
+    | {
+        existingTag: GQL.TagListDataFragment;
+        scrapedTag: GQL.ScrapedSceneTagDataFragment;
+      }
+    | undefined
+  >();
+  const [error, setError] = useState<
+    Record<string, { message?: string; details?: string } | undefined>
+  >({});
+  const [loadingUpdate, setLoadingUpdate] = useState<string | undefined>();
+
+  const doBoxSearch = (tagID: string, searchVal: string) => {
+    stashBoxTagQuery(searchVal, selectedEndpoint.endpoint)
+      .then((queryData) => {
+        const s = queryData.data?.scrapeSingleTag ?? [];
+        setSearchResults({
+          ...searchResults,
+          [tagID]: s,
+        });
+        setSearchErrors({
+          ...searchErrors,
+          [tagID]: undefined,
+        });
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+        const { [tagID]: unassign, ...results } = searchResults;
+        setSearchResults(results);
+        setSearchErrors({
+          ...searchErrors,
+          [tagID]: intl.formatMessage({
+            id: "tag_tagger.network_error",
+          }),
+        });
+      });
+
+    setLoading(true);
+  };
+
+  const [createTag] = useTagCreate();
+  const updateTag = useUpdateTag();
+
+  const doBoxUpdate = (
+    tag: GQL.TagListDataFragment,
+    stashID: string,
+    endpoint: string
+  ) => {
+    setLoadingUpdate(stashID);
+    setError({
+      ...error,
+      [tag.id]: undefined,
+    });
+    stashBoxTagQuery(stashID, endpoint)
+      .then(async (queryData) => {
+        const data = queryData.data?.scrapeSingleTag ?? [];
+        if (data.length > 0) {
+          setModalTag({
+            scrapedTag: {
+              ...data[0],
+              stored_id: tag.id,
+            },
+            existingTag: tag,
+          });
+        }
+      })
+      .finally(() => setLoadingUpdate(undefined));
+  };
+
+  async function handleBatchAdd(input: string) {
+    onBatchAdd(input, batchAddParents);
+    setShowBatchAdd(false);
+  }
+
+  const handleBatchUpdate = (queryAll: boolean, refresh: boolean) => {
+    onBatchUpdate(
+      !queryAll ? tags.map((t) => t.id) : undefined,
+      refresh,
+      batchAddParents
+    );
+    setShowBatchUpdate(false);
+  };
+
+  function handleSaveError(tagID: string, name: string, message: string) {
+    setError({
+      ...error,
+      [tagID]: {
+        message: intl.formatMessage(
+          { id: "tag_tagger.failed_to_save_tag" },
+          { tag: name }
+        ),
+        details:
+          message === "UNIQUE constraint failed: tags.name"
+            ? intl.formatMessage({
+                id: "tag_tagger.name_already_exists",
+              })
+            : message,
+      },
+    });
+  }
+
+  const handleTagUpdate = async (
+    input: GQL.TagCreateInput,
+    parentInput?: GQL.TagCreateInput
+  ) => {
+    const { existingTag, scrapedTag: tag } = modalTag!;
+    const tagID = existingTag.id;
+    setModalTag(undefined);
+
+    if (tagID) {
+      if (parentInput) {
+        try {
+          // cannot update parent tags, since there may be many
+          if (!!input.parent_ids?.length) {
+            // ignore
+          } else {
+            const parentRes = await createTag({
+              variables: { input: parentInput },
+            });
+            const parentID = parentRes.data?.tagCreate?.id;
+            if (parentID) {
+              // merge parent ids below
+              input.parent_ids = [parentID];
+            }
+          }
+        } catch (e) {
+          handleSaveError(tagID, parentInput.name, apolloError(e));
+        }
+      }
+
+      // always merge parent ids if included
+      if (input.parent_ids) {
+        input.parent_ids = uniq(
+          existingTag.parents.map((p) => p.id).concat(input.parent_ids)
+        );
+      }
+
+      const updateData: GQL.TagUpdateInput = {
+        ...input,
+        id: tagID,
+      };
+      updateData.stash_ids = await mergeTagStashIDs(
+        tagID,
+        input.stash_ids ?? []
+      );
+
+      const res = await updateTag(updateData);
+      if (!res?.data?.tagUpdate)
+        handleSaveError(tagID, tag.name ?? "", res?.errors?.[0]?.message ?? "");
+    }
+  };
+
+  const handleTaggedTag = (
+    tag: Pick<GQL.TagListDataFragment, "id"> &
+      Partial<Omit<GQL.TagListDataFragment, "id">>
+  ) => {
+    setTaggedTags({
+      ...taggedTags,
+      [tag.id]: tag,
+    });
+  };
+
+  // clear tagged tags when source is changed
+  useEffect(() => {
+    setTaggedTags({});
+    setSearchResults({});
+    setSearchErrors({});
+  }, [selectedEndpoint]);
+
+  const renderTags = () =>
+    tags.map((tag) => {
+      const isTagged = taggedTags[tag.id];
+
+      const stashID = tag.stash_ids.find((s) => {
+        return s.endpoint === selectedEndpoint.endpoint;
+      });
+
+      let mainContent;
+      if (!isTagged && stashID !== undefined) {
+        mainContent = (
+          <div className="text-left">
+            <h5 className="text-bold">
+              <FormattedMessage id="tag_tagger.tag_already_tagged" />
+            </h5>
+          </div>
+        );
+      } else if (!isTagged && !stashID) {
+        mainContent = (
+          <InputGroup>
+            <Form.Control
+              className="text-input"
+              defaultValue={tag.name ?? ""}
+              onChange={(e) =>
+                setQueries({
+                  ...queries,
+                  [tag.id]: e.currentTarget.value,
+                })
+              }
+              onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+                e.key === "Enter" &&
+                doBoxSearch(tag.id, queries[tag.id] ?? tag.name ?? "")
+              }
+            />
+            <InputGroup.Append>
+              <Button
+                disabled={loading}
+                onClick={() =>
+                  doBoxSearch(tag.id, queries[tag.id] ?? tag.name ?? "")
+                }
+              >
+                <FormattedMessage id="actions.search" />
+              </Button>
+            </InputGroup.Append>
+          </InputGroup>
+        );
+      } else if (isTagged) {
+        mainContent = (
+          <div className="d-flex flex-column text-left">
+            <h5>
+              <FormattedMessage id="tag_tagger.tag_successfully_tagged" />
+            </h5>
+          </div>
+        );
+      }
+
+      let subContent;
+      if (stashID !== undefined) {
+        const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
+        const link = base ? (
+          <ExternalLink
+            className="small d-block"
+            href={`${base}tags/${stashID.stash_id}`}
+          >
+            {stashID.stash_id}
+          </ExternalLink>
+        ) : (
+          <div className="small">{stashID.stash_id}</div>
+        );
+
+        subContent = (
+          <div key={tag.id}>
+            <InputGroup className="TagTagger-box-link">
+              <InputGroup.Text>{link}</InputGroup.Text>
+              <InputGroup.Append>
+                <Button
+                  onClick={() =>
+                    doBoxUpdate(tag, stashID.stash_id, stashID.endpoint)
+                  }
+                  disabled={!!loadingUpdate}
+                >
+                  {loadingUpdate === stashID.stash_id ? (
+                    <LoadingIndicator inline small message="" />
+                  ) : (
+                    <FormattedMessage id="actions.refresh" />
+                  )}
+                </Button>
+              </InputGroup.Append>
+            </InputGroup>
+            {error[tag.id] && (
+              <div className="text-danger mt-1">
+                <strong>
+                  <span className="mr-2">Error:</span>
+                  {error[tag.id]?.message}
+                </strong>
+                <div>{error[tag.id]?.details}</div>
+              </div>
+            )}
+          </div>
+        );
+      } else if (searchErrors[tag.id]) {
+        subContent = (
+          <div className="text-danger font-weight-bold">
+            {searchErrors[tag.id]}
+          </div>
+        );
+      } else if (searchResults[tag.id]?.length === 0) {
+        subContent = (
+          <div className="text-danger font-weight-bold">
+            <FormattedMessage id="tag_tagger.no_results_found" />
+          </div>
+        );
+      }
+
+      let searchResult;
+      if (searchResults[tag.id]?.length > 0 && !isTagged) {
+        searchResult = (
+          <StashSearchResult
+            key={tag.id}
+            stashboxTags={searchResults[tag.id]}
+            tag={tag}
+            endpoint={selectedEndpoint.endpoint}
+            onTagTagged={handleTaggedTag}
+            excludedTagFields={config.excludedTagFields ?? []}
+          />
+        );
+      }
+
+      return (
+        <div key={tag.id} className={`${CLASSNAME}-tag`}>
+          <div className={`${CLASSNAME}-details`}>
+            <div></div>
+            <div>
+              <Card className="tag-card">
+                <img loading="lazy" src={tag.image_path ?? ""} alt="" />
+              </Card>
+            </div>
+            <div className={`${CLASSNAME}-details-text`}>
+              <Link to={`/tags/${tag.id}`} className={`${CLASSNAME}-header`}>
+                <h2>{tag.name}</h2>
+              </Link>
+              {mainContent}
+              <div className="sub-content text-left">{subContent}</div>
+              {searchResult}
+            </div>
+          </div>
+        </div>
+      );
+    });
+
+  return (
+    <Card>
+      {showBatchUpdate && (
+        <BatchUpdateModal
+          close={() => setShowBatchUpdate(false)}
+          isIdle={isIdle}
+          selectedEndpoint={selectedEndpoint}
+          entities={tags}
+          allCount={allTags?.findTags.count}
+          onBatchUpdate={handleBatchUpdate}
+          onRefreshChange={setBatchUpdateRefresh}
+          batchAddParents={batchAddParents}
+          setBatchAddParents={setBatchAddParents}
+          localePrefix="tag_tagger"
+          entityName="tag"
+          countVariableName="tag_count"
+        />
+      )}
+
+      {showBatchAdd && (
+        <BatchAddModal
+          close={() => setShowBatchAdd(false)}
+          isIdle={isIdle}
+          onBatchAdd={handleBatchAdd}
+          batchAddParents={batchAddParents}
+          setBatchAddParents={setBatchAddParents}
+          localePrefix="tag_tagger"
+          entityName="tag"
+        />
+      )}
+
+      {modalTag && (
+        <TagModal
+          closeModal={() => setModalTag(undefined)}
+          modalVisible={modalTag !== undefined}
+          tag={modalTag.scrapedTag}
+          onSave={handleTagUpdate}
+          icon={faTags}
+          header="Update Tag"
+          excludedTagFields={config.excludedTagFields}
+          endpoint={selectedEndpoint.endpoint}
+        />
+      )}
+      <div className="ml-auto mb-3">
+        <Button onClick={() => setShowBatchAdd(true)}>
+          <FormattedMessage id="tag_tagger.batch_add_tags" />
+        </Button>
+        <Button className="ml-3" onClick={() => setShowBatchUpdate(true)}>
+          <FormattedMessage id="tag_tagger.batch_update_tags" />
+        </Button>
+      </div>
+      <div className={CLASSNAME}>{renderTags()}</div>
+    </Card>
+  );
+};
+
+interface ITaggerProps {
+  tags: GQL.TagListDataFragment[];
+}
+
+export const TagTagger: React.FC<ITaggerProps> = ({ tags }) => {
+  const jobsSubscribe = useJobsSubscribe();
+  const { configuration: stashConfig } = useConfigurationContext();
+  const { config, setConfig } = useTaggerConfig();
+  const [showConfig, setShowConfig] = useState(false);
+
+  const [batchJobID, setBatchJobID] = useState<string | undefined | null>();
+  const [batchJob, setBatchJob] = useState<JobFragment | undefined>();
+
+  useEffect(() => {
+    if (!jobsSubscribe.data) {
+      return;
+    }
+
+    const event = jobsSubscribe.data.jobsSubscribe;
+    if (event.job.id !== batchJobID) {
+      return;
+    }
+
+    if (event.type !== GQL.JobStatusUpdateType.Remove) {
+      setBatchJob(event.job);
+    } else {
+      setBatchJob(undefined);
+      setBatchJobID(undefined);
+
+      const ac = getClient();
+      ac.cache.evict({ fieldName: "findTags" });
+      ac.cache.gc();
+    }
+  }, [jobsSubscribe, batchJobID]);
+
+  const savedEndpointIndex =
+    stashConfig?.general.stashBoxes.findIndex(
+      (s) => s.endpoint === config.selectedEndpoint
+    ) ?? -1;
+  const selectedEndpointIndex =
+    savedEndpointIndex === -1 && stashConfig?.general.stashBoxes.length
+      ? 0
+      : savedEndpointIndex;
+  const selectedEndpoint =
+    stashConfig?.general.stashBoxes[selectedEndpointIndex];
+
+  const selectedEndpointInput = useMemo(
+    () => ({
+      endpoint: selectedEndpoint.endpoint,
+      index: selectedEndpointIndex,
+    }),
+    [selectedEndpoint, selectedEndpointIndex]
+  );
+
+  if (!config) return <LoadingIndicator />;
+
+  async function batchAdd(tagInput: string, createParent: boolean) {
+    if (tagInput && selectedEndpoint) {
+      const inputs = tagInput
+        .split(",")
+        .map((n) => n.trim())
+        .filter((n) => n.length > 0);
+
+      const { names, stashIds } = separateNamesAndStashIds(inputs);
+
+      if (names.length > 0 || stashIds.length > 0) {
+        const ret = await mutateStashBoxBatchTagTag({
+          names: names.length > 0 ? names : undefined,
+          stash_ids: stashIds.length > 0 ? stashIds : undefined,
+          endpoint: selectedEndpointIndex,
+          refresh: false,
+          createParent: createParent,
+          exclude_fields: config?.excludedTagFields ?? [],
+        });
+
+        setBatchJobID(ret.data?.stashBoxBatchTagTag);
+      }
+    }
+  }
+
+  async function batchUpdate(
+    ids: string[] | undefined,
+    refresh: boolean,
+    createParent: boolean
+  ) {
+    if (selectedEndpoint) {
+      const ret = await mutateStashBoxBatchTagTag({
+        ids: ids,
+        endpoint: selectedEndpointIndex,
+        refresh,
+        createParent: createParent,
+        exclude_fields: config?.excludedTagFields ?? [],
+      });
+
+      setBatchJobID(ret.data?.stashBoxBatchTagTag);
+    }
+  }
+
+  function renderStatus() {
+    if (batchJob) {
+      const progress =
+        batchJob.progress !== undefined && batchJob.progress !== null
+          ? batchJob.progress * 100
+          : undefined;
+      return (
+        <Form.Group className="px-4">
+          <h5>
+            <FormattedMessage id="tag_tagger.status_tagging_tags" />
+          </h5>
+          {progress !== undefined && (
+            <ProgressBar
+              animated
+              now={progress}
+              label={`${progress.toFixed(0)}%`}
+            />
+          )}
+        </Form.Group>
+      );
+    }
+
+    if (batchJobID !== undefined) {
+      return (
+        <Form.Group className="px-4">
+          <h5>
+            <FormattedMessage id="tag_tagger.status_tagging_job_queued" />
+          </h5>
+        </Form.Group>
+      );
+    }
+  }
+
+  if (selectedEndpointIndex === -1 || !selectedEndpoint) {
+    return (
+      <div className="my-4">
+        <h3 className="text-center mt-4">
+          <FormattedMessage id="tag_tagger.to_use_the_tag_tagger" />
+        </h3>
+        <h5 className="text-center">
+          <FormattedMessage
+            id="refer_to"
+            values={{
+              link: (
+                <HashLink
+                  to="/settings?tab=metadata-providers#stash-boxes"
+                  scroll={(el) =>
+                    el.scrollIntoView({ behavior: "smooth", block: "center" })
+                  }
+                >
+                  <FormattedMessage id="config.stashbox.title" />
+                </HashLink>
+              ),
+            }}
+          />
+        </h5>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {renderStatus()}
+      <div className="tagger-container mx-md-auto">
+        <div className="tagger-container-header">
+          <div className="d-flex justify-content-between align-items-center flex-wrap">
+            <div className="w-auto">
+              <StashBoxSelectorField
+                stashBoxes={stashConfig?.general.stashBoxes ?? []}
+                selectedEndpoint={selectedEndpoint.endpoint}
+                onEndpointChange={(endpoint) =>
+                  setConfig({ ...config, selectedEndpoint: endpoint })
+                }
+              />
+            </div>
+            <div className="d-flex">
+              <div className="ml-2">
+                <ConfigButton
+                  showConfig={showConfig}
+                  onClick={() => setShowConfig(!showConfig)}
+                />
+              </div>
+            </div>
+          </div>
+
+          <TaggerConfig
+            show={showConfig}
+            excludedFields={config.excludedTagFields ?? []}
+            onFieldsChange={(fields) =>
+              setConfig({ ...config, excludedTagFields: fields })
+            }
+            fields={TAG_FIELDS}
+            entityName="tags"
+            extraConfig={
+              <Form.Group
+                controlId="config-create-parent"
+                className="align-items-center"
+              >
+                <Form.Check
+                  label={
+                    <FormattedMessage id="tag_tagger.config.create_parent_label" />
+                  }
+                  checked={config.createParentTags}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setConfig({
+                      ...config,
+                      createParentTags: e.currentTarget.checked,
+                    })
+                  }
+                />
+                <Form.Text>
+                  <FormattedMessage id="tag_tagger.config.create_parent_desc" />
+                </Form.Text>
+              </Form.Group>
+            }
+          />
+        </div>
+
+        <TagTaggerList
+          tags={tags}
+          selectedEndpoint={selectedEndpointInput}
+          isIdle={batchJobID === undefined}
+          config={config}
+          onBatchAdd={batchAdd}
+          onBatchUpdate={batchUpdate}
+        />
+      </div>
+    </>
+  );
+};

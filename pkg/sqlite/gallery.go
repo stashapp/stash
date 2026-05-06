@@ -30,12 +30,13 @@ const (
 )
 
 type galleryRow struct {
-	ID           int         `db:"id" goqu:"skipinsert"`
-	Title        zero.String `db:"title"`
-	Code         zero.String `db:"code"`
-	Date         NullDate    `db:"date"`
-	Details      zero.String `db:"details"`
-	Photographer zero.String `db:"photographer"`
+	ID            int         `db:"id" goqu:"skipinsert"`
+	Title         zero.String `db:"title"`
+	Code          zero.String `db:"code"`
+	Date          NullDate    `db:"date"`
+	DatePrecision null.Int    `db:"date_precision"`
+	Details       zero.String `db:"details"`
+	Photographer  zero.String `db:"photographer"`
 	// expressed as 1-100
 	Rating    null.Int  `db:"rating"`
 	Organized bool      `db:"organized"`
@@ -50,6 +51,7 @@ func (r *galleryRow) fromGallery(o models.Gallery) {
 	r.Title = zero.StringFrom(o.Title)
 	r.Code = zero.StringFrom(o.Code)
 	r.Date = NullDateFromDatePtr(o.Date)
+	r.DatePrecision = datePrecisionFromDatePtr(o.Date)
 	r.Details = zero.StringFrom(o.Details)
 	r.Photographer = zero.StringFrom(o.Photographer)
 	r.Rating = intFromPtr(o.Rating)
@@ -74,7 +76,7 @@ func (r *galleryQueryRow) resolve() *models.Gallery {
 		ID:            r.ID,
 		Title:         r.Title.String,
 		Code:          r.Code.String,
-		Date:          r.Date.DatePtr(),
+		Date:          r.Date.DatePtr(r.DatePrecision),
 		Details:       r.Details.String,
 		Photographer:  r.Photographer.String,
 		Rating:        nullIntPtr(r.Rating),
@@ -102,7 +104,7 @@ type galleryRowRecord struct {
 func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
 	r.setNullString("title", o.Title)
 	r.setNullString("code", o.Code)
-	r.setNullDate("date", o.Date)
+	r.setNullDate("date", "date_precision", o.Date)
 	r.setNullString("details", o.Details)
 	r.setNullString("photographer", o.Photographer)
 	r.setNullInt("rating", o.Rating)
@@ -155,7 +157,7 @@ var (
 			},
 			fkColumn:     "tag_id",
 			foreignTable: tagTable,
-			orderBy:      "COALESCE(tags.sort_name, tags.name) ASC",
+			orderBy:      tagTableSortSQL,
 		},
 		images: joinRepository{
 			repository: repository{
@@ -181,6 +183,8 @@ var (
 )
 
 type GalleryStore struct {
+	customFieldsStore
+
 	tableMgr *table
 
 	fileStore   *FileStore
@@ -189,6 +193,10 @@ type GalleryStore struct {
 
 func NewGalleryStore(fileStore *FileStore, folderStore *FolderStore) *GalleryStore {
 	return &GalleryStore{
+		customFieldsStore: customFieldsStore{
+			table: galleriesCustomFieldsTable,
+			fk:    galleriesCustomFieldsTable.Col(galleryIDColumn),
+		},
 		tableMgr:    galleryTableMgr,
 		fileStore:   fileStore,
 		folderStore: folderStore,
@@ -229,18 +237,18 @@ func (qb *GalleryStore) selectDataset() *goqu.SelectDataset {
 	)
 }
 
-func (qb *GalleryStore) Create(ctx context.Context, newObject *models.Gallery, fileIDs []models.FileID) error {
+func (qb *GalleryStore) Create(ctx context.Context, newObject *models.CreateGalleryInput) error {
 	var r galleryRow
-	r.fromGallery(*newObject)
+	r.fromGallery(*newObject.Gallery)
 
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {
 		return err
 	}
 
-	if len(fileIDs) > 0 {
+	if len(newObject.FileIDs) > 0 {
 		const firstPrimary = true
-		if err := galleriesFilesTableMgr.insertJoins(ctx, id, firstPrimary, fileIDs); err != nil {
+		if err := galleriesFilesTableMgr.insertJoins(ctx, id, firstPrimary, newObject.FileIDs); err != nil {
 			return err
 		}
 	}
@@ -267,19 +275,24 @@ func (qb *GalleryStore) Create(ctx context.Context, newObject *models.Gallery, f
 		}
 	}
 
+	const partial = false
+	if err := qb.setCustomFields(ctx, id, newObject.CustomFields, partial); err != nil {
+		return err
+	}
+
 	updated, err := qb.find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
 	}
 
-	*newObject = *updated
+	*newObject.Gallery = *updated
 
 	return nil
 }
 
-func (qb *GalleryStore) Update(ctx context.Context, updatedObject *models.Gallery) error {
+func (qb *GalleryStore) Update(ctx context.Context, updatedObject *models.UpdateGalleryInput) error {
 	var r galleryRow
-	r.fromGallery(*updatedObject)
+	r.fromGallery(*updatedObject.Gallery)
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
@@ -315,6 +328,10 @@ func (qb *GalleryStore) Update(ctx context.Context, updatedObject *models.Galler
 		if err := galleriesFilesTableMgr.replaceJoins(ctx, updatedObject.ID, fileIDs); err != nil {
 			return err
 		}
+	}
+
+	if err := qb.SetCustomFields(ctx, updatedObject.ID, updatedObject.CustomFields); err != nil {
+		return err
 	}
 
 	return nil
@@ -360,6 +377,10 @@ func (qb *GalleryStore) UpdatePartial(ctx context.Context, id int, partial model
 		if err := galleriesFilesTableMgr.setPrimary(ctx, id, *partial.PrimaryFileID); err != nil {
 			return nil, err
 		}
+	}
+
+	if err := qb.SetCustomFields(ctx, id, partial.CustomFields); err != nil {
+		return nil, err
 	}
 
 	return qb.find(ctx, id)
@@ -800,10 +821,12 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 	addFileTable := func() {
 		query.addJoins(
 			join{
+				sort:     true,
 				table:    galleriesFilesTable,
 				onClause: "galleries_files.gallery_id = galleries.id",
 			},
 			join{
+				sort:     true,
 				table:    fileTable,
 				onClause: "galleries_files.file_id = files.id",
 			},
@@ -813,10 +836,12 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 	addFolderTable := func() {
 		query.addJoins(
 			join{
+				sort:     true,
 				table:    folderTable,
 				onClause: "folders.id = galleries.folder_id",
 			},
 			join{
+				sort:     true,
 				table:    folderTable,
 				as:       "file_folder",
 				onClause: "files.parent_folder_id = file_folder.id",
@@ -900,4 +925,8 @@ func (qb *GalleryStore) ResetCover(ctx context.Context, galleryID int) error {
 
 func (qb *GalleryStore) GetSceneIDs(ctx context.Context, id int) ([]int, error) {
 	return galleryRepository.scenes.getIDs(ctx, id)
+}
+
+func (qb *GalleryStore) AddSceneIDs(ctx context.Context, galleryID int, sceneIDs []int) error {
+	return galleriesScenesTableMgr.insertJoins(ctx, galleryID, sceneIDs)
 }

@@ -1,12 +1,9 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import { useFindGroups } from "src/core/StashService";
-import Slider from "@ant-design/react-slick";
 import { GroupCard } from "./GroupCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { getSlickSliderSettings } from "src/core/recommendations";
-import { RecommendationRow } from "../FrontPage/RecommendationRow";
-import { FormattedMessage } from "react-intl";
+import { PatchComponent } from "src/patch";
+import { FilteredRecommendationRow } from "../FrontPage/FilteredRecommendationRow";
 
 interface IProps {
   isTouch: boolean;
@@ -14,29 +11,21 @@ interface IProps {
   header: string;
 }
 
-export const GroupRecommendationRow: React.FC<IProps> = (props: IProps) => {
-  const result = useFindGroups(props.filter);
-  const cardCount = result.data?.findGroups.count;
+export const GroupRecommendationRow: React.FC<IProps> = PatchComponent(
+  "GroupRecommendationRow",
+  (props: IProps) => {
+    const result = useFindGroups(props.filter);
+    const count = result.data?.findGroups.count ?? 0;
 
-  if (!result.loading && !cardCount) {
-    return null;
-  }
-
-  return (
-    <RecommendationRow
-      className="group-recommendations"
-      header={props.header}
-      link={
-        <Link to={`/groups?${props.filter.makeQueryParameters()}`}>
-          <FormattedMessage id="view_all" />
-        </Link>
-      }
-    >
-      <Slider
-        {...getSlickSliderSettings(
-          cardCount ? cardCount : props.filter.itemsPerPage,
-          props.isTouch
-        )}
+    return (
+      <FilteredRecommendationRow
+        className="group-recommendations"
+        heading={props.header}
+        url={`/groups?${props.filter.makeQueryParameters()}`}
+        count={count}
+        loading={result.loading}
+        isTouch={props.isTouch}
+        filter={props.filter}
       >
         {result.loading
           ? [...Array(props.filter.itemsPerPage)].map((i) => (
@@ -45,7 +34,7 @@ export const GroupRecommendationRow: React.FC<IProps> = (props: IProps) => {
           : result.data?.findGroups.groups.map((g) => (
               <GroupCard key={g.id} group={g} />
             ))}
-      </Slider>
-    </RecommendationRow>
-  );
-};
+      </FilteredRecommendationRow>
+    );
+  }
+);

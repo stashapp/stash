@@ -77,13 +77,29 @@ type Config interface {
 	GetDLNADefaultIPWhitelist() []string
 	GetVideoSortOrder() string
 	GetDLNAPortAsString() string
+	GetDLNAActivityTrackingEnabled() bool
+}
+
+// activityConfig wraps Config to implement ActivityConfig.
+type activityConfig struct {
+	config         Config
+	minPlayPercent int // cached from UI config
+}
+
+func (c *activityConfig) GetDLNAActivityTrackingEnabled() bool {
+	return c.config.GetDLNAActivityTrackingEnabled()
+}
+
+func (c *activityConfig) GetMinimumPlayPercent() int {
+	return c.minPlayPercent
 }
 
 type Service struct {
-	repository     Repository
-	config         Config
-	sceneServer    sceneServer
-	ipWhitelistMgr *ipWhitelistManager
+	repository      Repository
+	config          Config
+	sceneServer     sceneServer
+	ipWhitelistMgr  *ipWhitelistManager
+	activityTracker *ActivityTracker
 
 	server  *Server
 	running bool
@@ -155,6 +171,7 @@ func (s *Service) init() error {
 		repository:         s.repository,
 		sceneServer:        s.sceneServer,
 		ipWhitelistManager: s.ipWhitelistMgr,
+		activityTracker:    s.activityTracker,
 		Interfaces:         interfaces,
 		HTTPConn: func() net.Listener {
 			conn, err := net.Listen("tcp", dmsConfig.Http)
@@ -215,7 +232,14 @@ func (s *Service) init() error {
 // }
 
 // NewService initialises and returns a new DLNA service.
-func NewService(repo Repository, cfg Config, sceneServer sceneServer) *Service {
+// The sceneWriter parameter should implement SceneActivityWriter (typically models.SceneReaderWriter).
+// The minPlayPercent parameter is the minimum percentage of video that must be played to increment play count.
+func NewService(repo Repository, cfg Config, sceneServer sceneServer, sceneWriter SceneActivityWriter, minPlayPercent int) *Service {
+	activityCfg := &activityConfig{
+		config:         cfg,
+		minPlayPercent: minPlayPercent,
+	}
+
 	ret := &Service{
 		repository:  repo,
 		sceneServer: sceneServer,
@@ -223,7 +247,8 @@ func NewService(repo Repository, cfg Config, sceneServer sceneServer) *Service {
 		ipWhitelistMgr: &ipWhitelistManager{
 			config: cfg,
 		},
-		mutex: sync.Mutex{},
+		activityTracker: NewActivityTracker(repo.TxnManager, sceneWriter, activityCfg),
+		mutex:           sync.Mutex{},
 	}
 
 	return ret
@@ -283,6 +308,12 @@ func (s *Service) Stop(duration *time.Duration) {
 
 	if s.running {
 		logger.Info("Stopping DLNA")
+
+		// Stop activity tracker first to process any pending sessions
+		if s.activityTracker != nil {
+			s.activityTracker.Stop()
+		}
+
 		err := s.server.Close()
 		if err != nil {
 			logger.Error(err)

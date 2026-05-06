@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 func (r *queryResolver) FindMovie(ctx context.Context, id string) (ret *models.Group, err error) {
@@ -25,7 +24,7 @@ func (r *queryResolver) FindMovie(ctx context.Context, id string) (ret *models.G
 }
 
 func (r *queryResolver) FindMovies(ctx context.Context, movieFilter *models.GroupFilterType, filter *models.FindFilterType, ids []string) (ret *FindMoviesResultType, err error) {
-	idInts, err := stringslice.StringSliceToIntSlice(ids)
+	idInts, err := handleIDList(ids, "ids")
 	if err != nil {
 		return nil, err
 	}

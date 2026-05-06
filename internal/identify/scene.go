@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -69,7 +70,7 @@ func (g sceneRelationships) studio(ctx context.Context) (*int, error) {
 	return nil, nil
 }
 
-func (g sceneRelationships) performers(ctx context.Context, ignoreMale bool) ([]int, error) {
+func (g sceneRelationships) performers(ctx context.Context, allowedGenders []models.GenderEnum) ([]int, error) {
 	fieldStrategy := g.fieldOptions["performers"]
 	scraped := g.result.result.Performers
 
@@ -97,8 +98,11 @@ func (g sceneRelationships) performers(ctx context.Context, ignoreMale bool) ([]
 	singleNamePerformerSkipped := false
 
 	for _, p := range scraped {
-		if ignoreMale && p.Gender != nil && strings.EqualFold(*p.Gender, models.GenderEnumMale.String()) {
-			continue
+		if allowedGenders != nil && p.Gender != nil {
+			gender := models.GenderEnum(strings.ToUpper(*p.Gender))
+			if !slices.Contains(allowedGenders, gender) {
+				continue
+			}
 		}
 
 		performerID, err := getPerformerID(ctx, endpoint, g.performerCreator, p, createMissing, g.skipSingleNamePerformers)
@@ -153,6 +157,8 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 		tagIDs = originalTagIDs
 	}
 
+	endpoint := g.result.source.RemoteSite
+
 	for _, t := range scraped {
 		if t.StoredID != nil {
 			// existing tag, just add it
@@ -163,10 +169,11 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 
 			tagIDs = sliceutil.AppendUnique(tagIDs, int(tagID))
 		} else if createMissing {
-			newTag := models.NewTag()
-			newTag.Name = t.Name
+			newTag := t.ToTag(endpoint, nil)
 
-			err := g.tagCreator.Create(ctx, &newTag)
+			err := g.tagCreator.Create(ctx, &models.CreateTagInput{
+				Tag: newTag,
+			})
 			if err != nil {
 				return nil, fmt.Errorf("error creating tag: %w", err)
 			}

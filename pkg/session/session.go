@@ -15,6 +15,7 @@ type key int
 const (
 	contextUser key = iota
 	contextVisitedPlugins
+	contextLocalRequest
 )
 
 const (

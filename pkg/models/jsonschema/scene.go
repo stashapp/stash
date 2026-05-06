@@ -80,6 +80,8 @@ type Scene struct {
 
 	PlayDuration float64          `json:"play_duration,omitempty"`
 	StashIDs     []models.StashID `json:"stash_ids,omitempty"`
+
+	CustomFields map[string]interface{} `json:"custom_fields,omitempty"`
 }
 
 func (s Scene) Filename(id int, basename string, hash string) string {

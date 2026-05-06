@@ -6,12 +6,11 @@ import * as GQL from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
 import { GalleryLink, TagLink, SceneMarkerLink } from "../Shared/TagLink";
 import { HoverPopover } from "../Shared/HoverPopover";
-import { SweatDrops } from "../Shared/SweatDrops";
 import { TruncatedText } from "../Shared/TruncatedText";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
 import { SceneQueue } from "src/models/sceneQueue";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { GridCard } from "../Shared/GridCard/GridCard";
 import { RatingBanner } from "../Shared/RatingBanner";
@@ -30,14 +29,18 @@ import { PatchComponent } from "src/patch";
 import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
 import { GroupTag } from "../Groups/GroupTag";
 import { FileSize } from "../Shared/FileSize";
+import { OCounterButton } from "../Shared/CountButton";
+import { defaultPreviewVolume } from "src/core/config";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
   image?: string;
   video?: string;
   soundActive: boolean;
+  volume?: number;
   vttPath?: string;
   onScrubberClick?: (timestamp: number) => void;
+  disabled?: boolean;
 }
 
 export const ScenePreview: React.FC<IScenePreviewProps> = ({
@@ -47,6 +50,8 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
   soundActive,
   vttPath,
   onScrubberClick,
+  disabled,
+  volume,
 }) => {
   const videoEl = useRef<HTMLVideoElement>(null);
 
@@ -65,8 +70,8 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
 
   useEffect(() => {
     if (videoEl?.current?.volume)
-      videoEl.current.volume = soundActive ? 0.05 : 0;
-  }, [soundActive]);
+      videoEl.current.volume = soundActive ? (volume ?? 0) / 100 : 0;
+  }, [volume, soundActive]);
 
   return (
     <div className={cx("scene-card-preview", { portrait: isPortrait })}>
@@ -86,7 +91,11 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
         ref={videoEl}
         src={video}
       />
-      <PreviewScrubber vttPath={vttPath} onClick={onScrubberClick} />
+      <PreviewScrubber
+        vttPath={vttPath}
+        onClick={onScrubberClick}
+        disabled={disabled}
+      />
     </div>
   );
 };
@@ -218,16 +227,7 @@ const SceneCardPopovers = PatchComponent(
 
     function maybeRenderOCounter() {
       if (props.scene.o_counter) {
-        return (
-          <div className="o-count">
-            <Button className="minimal">
-              <span className="fa-icon">
-                <SweatDrops />
-              </span>
-              <span>{props.scene.o_counter}</span>
-            </Button>
-          </div>
-        );
+        return <OCounterButton value={props.scene.o_counter} />;
       }
     }
 
@@ -345,7 +345,46 @@ const SceneCardDetails = PatchComponent(
 const SceneCardOverlays = PatchComponent(
   "SceneCard.Overlays",
   (props: ISceneCardProps) => {
-    return <StudioOverlay studio={props.scene.studio} />;
+    const ret = useMemo(() => {
+      return (
+        <StudioOverlay studio={props.scene.studio} disabled={props.selecting} />
+      );
+    }, [props.scene.studio, props.selecting]);
+
+    return ret;
+  }
+);
+
+interface ISceneSpecsOverlay {
+  scene: GQL.SlimSceneDataFragment;
+}
+
+export const SceneSpecsOverlay: React.FC<ISceneSpecsOverlay> = PatchComponent(
+  "SceneCard.SceneSpecs",
+  ({ scene }) => {
+    const file = scene.files?.[0];
+    if (!file) return null;
+    return (
+      <div className="scene-specs-overlay">
+        <span className="overlay-filesize extra-scene-info">
+          <FileSize size={file.size} />
+        </span>
+        {file.width && file.height ? (
+          <span className="overlay-resolution">
+            {TextUtils.resolution(file.width, file.height)}
+          </span>
+        ) : (
+          ""
+        )}
+        {file.duration > 0 ? (
+          <span className="overlay-duration">
+            {TextUtils.secondsToTimestamp(file.duration)}
+          </span>
+        ) : (
+          ""
+        )}
+      </div>
+    );
   }
 );
 
@@ -353,42 +392,13 @@ const SceneCardImage = PatchComponent(
   "SceneCard.Image",
   (props: ISceneCardProps) => {
     const history = useHistory();
-    const { configuration } = React.useContext(ConfigurationContext);
+    const { configuration } = useConfigurationContext();
     const cont = configuration?.interface.continuePlaylistDefault ?? false;
 
     const file = useMemo(
       () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),
       [props.scene]
     );
-
-    function maybeRenderSceneSpecsOverlay() {
-      return (
-        <div className="scene-specs-overlay">
-          {file?.size !== undefined ? (
-            <span className="overlay-filesize extra-scene-info">
-              <FileSize size={file.size} />
-            </span>
-          ) : (
-            ""
-          )}
-          {file?.width && file?.height ? (
-            <span className="overlay-resolution">
-              {" "}
-              {TextUtils.resolution(file?.width, file?.height)}
-            </span>
-          ) : (
-            ""
-          )}
-          {(file?.duration ?? 0) >= 1 ? (
-            <span className="overlay-duration">
-              {TextUtils.secondsToTimestamp(file?.duration ?? 0)}
-            </span>
-          ) : (
-            ""
-          )}
-        </div>
-      );
-    }
 
     function maybeRenderInteractiveSpeedOverlay() {
       return (
@@ -399,6 +409,7 @@ const SceneCardImage = PatchComponent(
     }
 
     function onScrubberClick(timestamp: number) {
+      if (props.selecting) return;
       const link = props.queue
         ? props.queue.makeLink(props.scene.id, {
             sceneIndex: props.index,
@@ -423,11 +434,13 @@ const SceneCardImage = PatchComponent(
           video={props.scene.paths.preview ?? undefined}
           isPortrait={isPortrait()}
           soundActive={configuration?.interface?.soundOnPreview ?? false}
+          volume={configuration?.ui.previewVolume ?? defaultPreviewVolume}
           vttPath={props.scene.paths.vtt ?? undefined}
           onScrubberClick={onScrubberClick}
+          disabled={props.selecting}
         />
         <RatingBanner rating={props.scene.rating100} />
-        {maybeRenderSceneSpecsOverlay()}
+        <SceneSpecsOverlay scene={props.scene} />
         {maybeRenderInteractiveSpeedOverlay()}
       </>
     );
@@ -437,7 +450,7 @@ const SceneCardImage = PatchComponent(
 export const SceneCard = PatchComponent(
   "SceneCard",
   (props: ISceneCardProps) => {
-    const { configuration } = React.useContext(ConfigurationContext);
+    const { configuration } = useConfigurationContext();
 
     const file = useMemo(
       () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),

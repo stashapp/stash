@@ -30,32 +30,37 @@ const (
 )
 
 type performerRow struct {
-	ID            int         `db:"id" goqu:"skipinsert"`
-	Name          null.String `db:"name"` // TODO: make schema non-nullable
-	Disambigation zero.String `db:"disambiguation"`
-	Gender        zero.String `db:"gender"`
-	Birthdate     NullDate    `db:"birthdate"`
-	Ethnicity     zero.String `db:"ethnicity"`
-	Country       zero.String `db:"country"`
-	EyeColor      zero.String `db:"eye_color"`
-	Height        null.Int    `db:"height"`
-	Measurements  zero.String `db:"measurements"`
-	FakeTits      zero.String `db:"fake_tits"`
-	PenisLength   null.Float  `db:"penis_length"`
-	Circumcised   zero.String `db:"circumcised"`
-	CareerLength  zero.String `db:"career_length"`
-	Tattoos       zero.String `db:"tattoos"`
-	Piercings     zero.String `db:"piercings"`
-	Favorite      bool        `db:"favorite"`
-	CreatedAt     Timestamp   `db:"created_at"`
-	UpdatedAt     Timestamp   `db:"updated_at"`
+	ID                   int         `db:"id" goqu:"skipinsert"`
+	Name                 null.String `db:"name"` // TODO: make schema non-nullable
+	Disambigation        zero.String `db:"disambiguation"`
+	Gender               zero.String `db:"gender"`
+	Birthdate            NullDate    `db:"birthdate"`
+	BirthdatePrecision   null.Int    `db:"birthdate_precision"`
+	Ethnicity            zero.String `db:"ethnicity"`
+	Country              zero.String `db:"country"`
+	EyeColor             zero.String `db:"eye_color"`
+	Height               null.Int    `db:"height"`
+	Measurements         zero.String `db:"measurements"`
+	FakeTits             zero.String `db:"fake_tits"`
+	PenisLength          null.Float  `db:"penis_length"`
+	Circumcised          zero.String `db:"circumcised"`
+	CareerStart          NullDate    `db:"career_start"`
+	CareerStartPrecision null.Int    `db:"career_start_precision"`
+	CareerEnd            NullDate    `db:"career_end"`
+	CareerEndPrecision   null.Int    `db:"career_end_precision"`
+	Tattoos              zero.String `db:"tattoos"`
+	Piercings            zero.String `db:"piercings"`
+	Favorite             bool        `db:"favorite"`
+	CreatedAt            Timestamp   `db:"created_at"`
+	UpdatedAt            Timestamp   `db:"updated_at"`
 	// expressed as 1-100
-	Rating        null.Int    `db:"rating"`
-	Details       zero.String `db:"details"`
-	DeathDate     NullDate    `db:"death_date"`
-	HairColor     zero.String `db:"hair_color"`
-	Weight        null.Int    `db:"weight"`
-	IgnoreAutoTag bool        `db:"ignore_auto_tag"`
+	Rating             null.Int    `db:"rating"`
+	Details            zero.String `db:"details"`
+	DeathDate          NullDate    `db:"death_date"`
+	DeathDatePrecision null.Int    `db:"death_date_precision"`
+	HairColor          zero.String `db:"hair_color"`
+	Weight             null.Int    `db:"weight"`
+	IgnoreAutoTag      bool        `db:"ignore_auto_tag"`
 
 	// not used in resolution or updates
 	ImageBlob zero.String `db:"image_blob"`
@@ -69,6 +74,7 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 		r.Gender = zero.StringFrom(o.Gender.String())
 	}
 	r.Birthdate = NullDateFromDatePtr(o.Birthdate)
+	r.BirthdatePrecision = datePrecisionFromDatePtr(o.Birthdate)
 	r.Ethnicity = zero.StringFrom(o.Ethnicity)
 	r.Country = zero.StringFrom(o.Country)
 	r.EyeColor = zero.StringFrom(o.EyeColor)
@@ -79,7 +85,10 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	if o.Circumcised != nil && o.Circumcised.IsValid() {
 		r.Circumcised = zero.StringFrom(o.Circumcised.String())
 	}
-	r.CareerLength = zero.StringFrom(o.CareerLength)
+	r.CareerStart = NullDateFromDatePtr(o.CareerStart)
+	r.CareerStartPrecision = datePrecisionFromDatePtr(o.CareerStart)
+	r.CareerEnd = NullDateFromDatePtr(o.CareerEnd)
+	r.CareerEndPrecision = datePrecisionFromDatePtr(o.CareerEnd)
 	r.Tattoos = zero.StringFrom(o.Tattoos)
 	r.Piercings = zero.StringFrom(o.Piercings)
 	r.Favorite = o.Favorite
@@ -88,6 +97,7 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.Rating = intFromPtr(o.Rating)
 	r.Details = zero.StringFrom(o.Details)
 	r.DeathDate = NullDateFromDatePtr(o.DeathDate)
+	r.DeathDatePrecision = datePrecisionFromDatePtr(o.DeathDate)
 	r.HairColor = zero.StringFrom(o.HairColor)
 	r.Weight = intFromPtr(o.Weight)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
@@ -98,7 +108,7 @@ func (r *performerRow) resolve() *models.Performer {
 		ID:             r.ID,
 		Name:           r.Name.String,
 		Disambiguation: r.Disambigation.String,
-		Birthdate:      r.Birthdate.DatePtr(),
+		Birthdate:      r.Birthdate.DatePtr(r.BirthdatePrecision),
 		Ethnicity:      r.Ethnicity.String,
 		Country:        r.Country.String,
 		EyeColor:       r.EyeColor.String,
@@ -106,7 +116,8 @@ func (r *performerRow) resolve() *models.Performer {
 		Measurements:   r.Measurements.String,
 		FakeTits:       r.FakeTits.String,
 		PenisLength:    nullFloatPtr(r.PenisLength),
-		CareerLength:   r.CareerLength.String,
+		CareerStart:    r.CareerStart.DatePtr(r.CareerStartPrecision),
+		CareerEnd:      r.CareerEnd.DatePtr(r.CareerEndPrecision),
 		Tattoos:        r.Tattoos.String,
 		Piercings:      r.Piercings.String,
 		Favorite:       r.Favorite,
@@ -115,7 +126,7 @@ func (r *performerRow) resolve() *models.Performer {
 		// expressed as 1-100
 		Rating:        nullIntPtr(r.Rating),
 		Details:       r.Details.String,
-		DeathDate:     r.DeathDate.DatePtr(),
+		DeathDate:     r.DeathDate.DatePtr(r.DeathDatePrecision),
 		HairColor:     r.HairColor.String,
 		Weight:        nullIntPtr(r.Weight),
 		IgnoreAutoTag: r.IgnoreAutoTag,
@@ -127,7 +138,7 @@ func (r *performerRow) resolve() *models.Performer {
 	}
 
 	if r.Circumcised.ValueOrZero() != "" {
-		v := models.CircumisedEnum(r.Circumcised.String)
+		v := models.CircumcisedEnum(r.Circumcised.String)
 		ret.Circumcised = &v
 	}
 
@@ -142,7 +153,7 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setString("name", o.Name)
 	r.setNullString("disambiguation", o.Disambiguation)
 	r.setNullString("gender", o.Gender)
-	r.setNullDate("birthdate", o.Birthdate)
+	r.setNullDate("birthdate", "birthdate_precision", o.Birthdate)
 	r.setNullString("ethnicity", o.Ethnicity)
 	r.setNullString("country", o.Country)
 	r.setNullString("eye_color", o.EyeColor)
@@ -151,7 +162,8 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setNullString("fake_tits", o.FakeTits)
 	r.setNullFloat64("penis_length", o.PenisLength)
 	r.setNullString("circumcised", o.Circumcised)
-	r.setNullString("career_length", o.CareerLength)
+	r.setNullDate("career_start", "career_start_precision", o.CareerStart)
+	r.setNullDate("career_end", "career_end_precision", o.CareerEnd)
 	r.setNullString("tattoos", o.Tattoos)
 	r.setNullString("piercings", o.Piercings)
 	r.setBool("favorite", o.Favorite)
@@ -159,7 +171,7 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setTimestamp("updated_at", o.UpdatedAt)
 	r.setNullInt("rating", o.Rating)
 	r.setNullString("details", o.Details)
-	r.setNullDate("death_date", o.DeathDate)
+	r.setNullDate("death_date", "death_date_precision", o.DeathDate)
 	r.setNullString("hair_color", o.HairColor)
 	r.setNullInt("weight", o.Weight)
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
@@ -189,7 +201,7 @@ var (
 			},
 			fkColumn:     tagIDColumn,
 			foreignTable: tagTable,
-			orderBy:      "COALESCE(tags.sort_name, tags.name) ASC",
+			orderBy:      tagTableSortSQL,
 		},
 		stashIDs: stashIDRepository{
 			repository{
@@ -702,6 +714,28 @@ func (qb *PerformerStore) sortByLastOAt(direction string) string {
 	return " ORDER BY (" + selectPerformerLastOAtSQL + ") " + direction
 }
 
+// used for sorting on performer latest scene
+var selectPerformerLatestSceneSQL = utils.StrFormat(
+	"SELECT MAX(date) FROM ("+
+		"SELECT {date} FROM {performers_scenes} s "+
+		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
+		"WHERE s.{performer_id} = {performers}.id"+
+		")",
+	map[string]interface{}{
+		"performer_id":      performerIDColumn,
+		"performers":        performerTable,
+		"performers_scenes": performersScenesTable,
+		"scenes":            sceneTable,
+		"scene_id":          sceneIDColumn,
+		"date":              sceneDateColumn,
+	},
+)
+
+func (qb *PerformerStore) sortByLatestScene(direction string) string {
+	// need to get the latest date from scenes
+	return " ORDER BY (" + selectPerformerLatestSceneSQL + ") " + direction
+}
+
 // used for sorting on performer last view_date
 var selectPerformerLastPlayedAtSQL = utils.StrFormat(
 	"SELECT MAX(view_date) FROM ("+
@@ -726,9 +760,54 @@ func (qb *PerformerStore) sortByLastPlayedAt(direction string) string {
 	return " ORDER BY (" + selectPerformerLastPlayedAtSQL + ") " + direction
 }
 
+// used for sorting by total scene duration
+var selectPerformerScenesDurationSQL = utils.StrFormat(
+	"SELECT COALESCE(SUM(video_files.duration), 0) FROM {performers_scenes} s "+
+		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
+		"LEFT JOIN {scenes_files} ON {scenes_files}.{scene_id} = {scenes}.id "+
+		"LEFT JOIN video_files ON video_files.file_id = {scenes_files}.file_id "+
+		"WHERE s.{performer_id} = {performers}.id",
+	map[string]interface{}{
+		"performer_id":      performerIDColumn,
+		"performers":        performerTable,
+		"performers_scenes": performersScenesTable,
+		"scenes":            sceneTable,
+		"scene_id":          sceneIDColumn,
+		"scenes_files":      scenesFilesTable,
+	},
+)
+
+func (qb *PerformerStore) sortByScenesDuration(direction string) string {
+	// need to sum duration from all scenes for this performer
+	return " ORDER BY (" + selectPerformerScenesDurationSQL + ") " + direction
+}
+
+// used for sorting by total scene file size
+var selectPerformerScenesSizeSQL = utils.StrFormat(
+	"SELECT COALESCE(SUM({files}.size), 0) FROM {performers_scenes} s "+
+		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
+		"LEFT JOIN {scenes_files} ON {scenes_files}.{scene_id} = {scenes}.id "+
+		"LEFT JOIN {files} ON {files}.id = {scenes_files}.file_id "+
+		"WHERE s.{performer_id} = {performers}.id",
+	map[string]interface{}{
+		"performer_id":      performerIDColumn,
+		"performers":        performerTable,
+		"performers_scenes": performersScenesTable,
+		"scenes":            sceneTable,
+		"scene_id":          sceneIDColumn,
+		"scenes_files":      scenesFilesTable,
+		"files":             fileTable,
+	},
+)
+
+func (qb *PerformerStore) sortByScenesSize(direction string) string {
+	return " ORDER BY (" + selectPerformerScenesSizeSQL + ") " + direction
+}
+
 var performerSortOptions = sortOptions{
 	"birthdate",
-	"career_length",
+	"career_start",
+	"career_end",
 	"created_at",
 	"galleries_count",
 	"height",
@@ -736,6 +815,7 @@ var performerSortOptions = sortOptions{
 	"images_count",
 	"last_o_at",
 	"last_played_at",
+	"latest_scene",
 	"measurements",
 	"name",
 	"o_counter",
@@ -744,6 +824,8 @@ var performerSortOptions = sortOptions{
 	"random",
 	"rating",
 	"scenes_count",
+	"scenes_duration",
+	"scenes_size",
 	"tag_count",
 	"updated_at",
 	"weight",
@@ -771,6 +853,10 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 		sortQuery += getCountSort(performerTable, performersTagsTable, performerIDColumn, direction)
 	case "scenes_count":
 		sortQuery += getCountSort(performerTable, performersScenesTable, performerIDColumn, direction)
+	case "scenes_duration":
+		sortQuery += qb.sortByScenesDuration(direction)
+	case "scenes_size":
+		sortQuery += qb.sortByScenesSize(direction)
 	case "images_count":
 		sortQuery += getCountSort(performerTable, performersImagesTable, performerIDColumn, direction)
 	case "galleries_count":
@@ -783,6 +869,8 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 		sortQuery += qb.sortByLastPlayedAt(direction)
 	case "last_o_at":
 		sortQuery += qb.sortByLastOAt(direction)
+	case "latest_scene":
+		sortQuery += qb.sortByLatestScene(direction)
 	default:
 		sortQuery += getSort(sort, direction, "performers")
 	}
@@ -863,4 +951,59 @@ func (qb *PerformerStore) FindByStashIDStatus(ctx context.Context, hasStashID bo
 	}
 
 	return ret, nil
+}
+
+func (qb *PerformerStore) Merge(ctx context.Context, source []int, destination int) error {
+	if len(source) == 0 {
+		return nil
+	}
+
+	inBinding := getInBinding(len(source))
+
+	args := []interface{}{destination}
+	srcArgs := make([]interface{}, len(source))
+	for i, id := range source {
+		if id == destination {
+			return errors.New("cannot merge where source == destination")
+		}
+		srcArgs[i] = id
+	}
+
+	args = append(args, srcArgs...)
+
+	performerTables := map[string]string{
+		performersScenesTable:    sceneIDColumn,
+		performersGalleriesTable: galleryIDColumn,
+		performersImagesTable:    imageIDColumn,
+		performersTagsTable:      tagIDColumn,
+	}
+
+	args = append(args, destination)
+
+	// for each table, update source performer ids to destination performer id, ignoring duplicates
+	for table, idColumn := range performerTables {
+		_, err := dbWrapper.Exec(ctx, `UPDATE OR IGNORE `+table+`
+SET performer_id = ?
+WHERE performer_id IN `+inBinding+`
+AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idColumn+` AND o.performer_id = ?)`,
+			args...,
+		)
+		if err != nil {
+			return err
+		}
+
+		// delete source performer ids from the table where they couldn't be set
+		if _, err := dbWrapper.Exec(ctx, `DELETE FROM `+table+` WHERE performer_id IN `+inBinding, srcArgs...); err != nil {
+			return err
+		}
+	}
+
+	for _, id := range source {
+		err := qb.Destroy(ctx, id)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

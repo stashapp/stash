@@ -2,10 +2,12 @@ fragment StudioData on Studio {
   id
   name
   url
+  urls
   parent_studio {
     id
     name
     url
+    urls
     image_path
   }
   child_studios {
@@ -14,6 +16,7 @@ fragment StudioData on Studio {
     image_path
   }
   ignore_auto_tag
+  organized
   image_path
   scene_count
   scene_count_all: scene_count(depth: -1)
@@ -37,6 +40,8 @@ fragment StudioData on Studio {
   tags {
     ...SlimTagData
   }
+  o_counter
+  custom_fields
 }
 
 fragment SelectStudioData on Studio {

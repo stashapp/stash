@@ -46,6 +46,7 @@ interface IUseCreateNewStudioProps {
     scrapeResult: ObjectScrapeResult<GQL.ScrapedStudio>
   ) => void;
   setNewObject: (newObject: GQL.ScrapedStudio | undefined) => void;
+  endpoint?: string;
 }
 
 export function useCreateScrapedStudio(props: IUseCreateNewStudioProps) {
@@ -54,12 +55,33 @@ export function useCreateScrapedStudio(props: IUseCreateNewStudioProps) {
   const { scrapeResult, setScrapeResult, setNewObject } = props;
 
   async function createNewStudio(toCreate: GQL.ScrapedStudio) {
+    const input: GQL.StudioCreateInput = {
+      name: toCreate.name,
+      urls: toCreate.urls,
+      aliases:
+        toCreate.aliases
+          ?.split(",")
+          .map((a) => a.trim())
+          .filter((a) => a) || [],
+      details: toCreate.details,
+      image: toCreate.image,
+      tag_ids: (toCreate.tags ?? [])
+        .filter((t) => t.stored_id)
+        .map((t) => t.stored_id!),
+    };
+
+    if (props.endpoint && toCreate.remote_site_id) {
+      input.stash_ids = [
+        {
+          endpoint: props.endpoint,
+          stash_id: toCreate.remote_site_id,
+        },
+      ];
+    }
+
     const result = await createStudio({
       variables: {
-        input: {
-          name: toCreate.name,
-          url: toCreate.url,
-        },
+        input,
       },
     });
 
@@ -81,6 +103,7 @@ interface IUseCreateNewObjectProps<T> {
   setScrapeResult: (scrapeResult: ScrapeResult<T[]>) => void;
   newObjects: T[];
   setNewObjects: (newObject: T[]) => void;
+  endpoint?: string;
 }
 
 export function useCreateScrapedPerformer(
@@ -91,7 +114,7 @@ export function useCreateScrapedPerformer(
   const { scrapeResult, setScrapeResult, newObjects, setNewObjects } = props;
 
   async function createNewPerformer(toCreate: GQL.ScrapedPerformer) {
-    const input = scrapedPerformerToCreateInput(toCreate);
+    const input = scrapedPerformerToCreateInput(toCreate, props.endpoint);
 
     const result = await createPerformer({
       variables: { input },
@@ -160,26 +183,17 @@ export function useCreateScrapedGroup(
   return useCreateObject("group", createNewGroup);
 }
 
-export function useCreateScrapedTag(
+export function useLinkScrapedTag(
   props: IUseCreateNewObjectProps<GQL.ScrapedTag>
 ) {
-  const [createTag] = useTagCreate();
-
   const { scrapeResult, setScrapeResult, newObjects, setNewObjects } = props;
 
-  async function createNewTag(toCreate: GQL.ScrapedTag) {
-    const input: GQL.TagCreateInput = { name: toCreate.name ?? "" };
-
-    const result = await createTag({
-      variables: { input },
-    });
-
+  function linkTag(id: string, matchedName: string, scrapedName: string) {
     const newValue = [...(scrapeResult.newValue ?? [])];
-    if (result.data?.tagCreate)
-      newValue.push({
-        stored_id: result.data.tagCreate.id,
-        name: result.data.tagCreate.name,
-      });
+    newValue.push({
+      stored_id: id,
+      name: matchedName,
+    });
 
     // add the new tag to the new tags value
     const tagClone = scrapeResult.cloneWithValue(newValue);
@@ -187,12 +201,47 @@ export function useCreateScrapedTag(
 
     // remove the tag from the list
     const newTagsClone = newObjects.concat();
-    const pIndex = newTagsClone.findIndex((p) => p.name === toCreate.name);
+    const pIndex = newTagsClone.findIndex((p) => p.name === scrapedName);
     if (pIndex === -1) throw new Error("Could not find tag to remove");
 
     newTagsClone.splice(pIndex, 1);
 
     setNewObjects(newTagsClone);
+  }
+
+  return linkTag;
+}
+
+export function useCreateScrapedTag(
+  props: IUseCreateNewObjectProps<GQL.ScrapedTag>
+) {
+  const [createTag] = useTagCreate();
+  const linkTag = useLinkScrapedTag(props);
+
+  async function createNewTag(toCreate: GQL.ScrapedTag) {
+    const input: GQL.TagCreateInput = {
+      name: toCreate.name ?? "",
+    };
+
+    if (props.endpoint && toCreate.remote_site_id) {
+      input.stash_ids = [
+        {
+          endpoint: props.endpoint,
+          stash_id: toCreate.remote_site_id,
+        },
+      ];
+    }
+
+    const result = await createTag({
+      variables: { input },
+    });
+
+    if (result.data?.tagCreate)
+      linkTag(
+        result.data.tagCreate.id,
+        result.data.tagCreate.name,
+        toCreate.name ?? ""
+      );
   }
 
   return useCreateObject("tag", createNewTag);

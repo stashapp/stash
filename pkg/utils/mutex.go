@@ -1,5 +1,7 @@
 package utils
 
+import "sync"
+
 // MutexManager manages access to mutexes using a mutex type and key.
 type MutexManager struct {
 	mapChan chan map[string]<-chan struct{}
@@ -61,4 +63,27 @@ func (csm *MutexManager) Claim(mutexType string, key string, done <-chan struct{
 
 		csm.mapChan <- m
 	}()
+}
+
+type MutexField[T any] struct {
+	mutex sync.RWMutex
+	value T
+}
+
+func (mf *MutexField[T]) Get() T {
+	mf.mutex.RLock()
+	defer mf.mutex.RUnlock()
+	return mf.value
+}
+
+func (mf *MutexField[T]) Set(value T) {
+	mf.mutex.Lock()
+	defer mf.mutex.Unlock()
+	mf.value = value
+}
+
+func (mf *MutexField[T]) SetFunc(f func(T) T) {
+	mf.mutex.Lock()
+	defer mf.mutex.Unlock()
+	mf.value = f(mf.value)
 }

@@ -69,7 +69,9 @@ func ValidateUpdate(ctx context.Context, id int, partial models.TagPartial, qb m
 			return err
 		}
 
-		if err := EnsureAliasesUnique(ctx, id, partial.Aliases.Apply(existing.Aliases.List()), qb); err != nil {
+		newAliases := partial.Aliases.Apply(existing.Aliases.List())
+
+		if err := EnsureAliasesUnique(ctx, id, newAliases, qb); err != nil {
 			return err
 		}
 	}

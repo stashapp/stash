@@ -2,13 +2,17 @@ package manager
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/fs"
 	"path/filepath"
 	"regexp"
+	"runtime/debug"
+	"sync"
 	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler/lru"
+	"github.com/remeh/sizedwaitgroup"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/file/video"
@@ -22,16 +26,18 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scene/generate"
 	"github.com/stashapp/stash/pkg/txn"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
-type scanner interface {
-	Scan(ctx context.Context, handlers []file.Handler, options file.ScanOptions, progressReporter file.ProgressReporter)
-}
-
 type ScanJob struct {
-	scanner       scanner
+	scanner       *file.Scanner
 	input         ScanMetadataInput
 	subscriptions *subscriptionManager
+
+	fileQueue chan file.ScannedFile
+	count     int
+
+	unmatchedCaptionFiles utils.MutexField[[]string]
 }
 
 func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
@@ -55,22 +61,24 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
 
 	start := time.Now()
 
+	nTasks := cfg.GetParallelTasksWithAutoDetection()
+
 	const taskQueueSize = 200000
-	taskQueue := job.NewTaskQueue(ctx, progress, taskQueueSize, cfg.GetParallelTasksWithAutoDetection())
+	taskQueue := job.NewTaskQueue(ctx, progress, taskQueueSize, nTasks)
 
 	var minModTime time.Time
 	if j.input.Filter != nil && j.input.Filter.MinModTime != nil {
 		minModTime = *j.input.Filter.MinModTime
 	}
 
-	j.scanner.Scan(ctx, getScanHandlers(j.input, taskQueue, progress), file.ScanOptions{
-		Paths:                  paths,
-		ScanFilters:            []file.PathFilter{newScanFilter(c, repo, minModTime)},
-		ZipFileExtensions:      cfg.GetGalleryExtensions(),
-		ParallelTasks:          cfg.GetParallelTasksWithAutoDetection(),
-		HandlerRequiredFilters: []file.Filter{newHandlerRequiredFilter(cfg, repo)},
-		Rescan:                 j.input.Rescan,
-	}, progress)
+	// HACK - these should really be set in the scanner initialization
+	j.scanner.FileHandlers = getScanHandlers(j.input, taskQueue, progress)
+	j.scanner.ScanFilters = []file.PathFilter{newScanFilter(c, repo, minModTime)}
+	j.scanner.HandlerRequiredFilters = []file.Filter{newHandlerRequiredFilter(cfg, repo)}
+
+	logger.Infof("Starting scan of %d paths with %d parallel tasks", len(paths), nTasks)
+
+	j.runJob(ctx, paths, nTasks, progress)
 
 	taskQueue.Close()
 
@@ -80,10 +88,334 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
 	}
 
 	elapsed := time.Since(start)
-	logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
+	logger.Infof("Scan finished (%s)", elapsed)
 
 	j.subscriptions.notify()
 	return nil
+}
+
+func (j *ScanJob) runJob(ctx context.Context, paths []string, nTasks int, progress *job.Progress) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	j.fileQueue = make(chan file.ScannedFile, scanQueueSize)
+
+	go func() {
+		defer func() {
+			wg.Done()
+
+			// handle panics in goroutine
+			if p := recover(); p != nil {
+				logger.Errorf("panic while queuing files for scan: %v", p)
+				logger.Errorf(string(debug.Stack()))
+			}
+		}()
+
+		if err := j.queueFiles(ctx, paths, progress); err != nil {
+			if errors.Is(err, context.Canceled) {
+				return
+			}
+
+			logger.Errorf("error queuing files for scan: %v", err)
+			return
+		}
+
+		logger.Infof("Finished adding files to queue. %d files queued", j.count)
+	}()
+
+	defer wg.Wait()
+
+	j.processQueue(ctx, nTasks, progress)
+}
+
+const scanQueueSize = 200000
+
+func (j *ScanJob) queueFiles(ctx context.Context, paths []string, progress *job.Progress) error {
+	fs := &file.OsFS{}
+
+	defer func() {
+		close(j.fileQueue)
+
+		progress.AddTotal(j.count)
+		progress.Definite()
+	}()
+
+	var err error
+	progress.ExecuteTask("Walking directory tree", func() {
+		for _, p := range paths {
+			err = file.SymWalk(fs, p, j.queueFileFunc(ctx, fs, nil, progress))
+			if err != nil {
+				return
+			}
+		}
+	})
+
+	return err
+}
+
+func (j *ScanJob) queueFileFunc(ctx context.Context, f models.FS, zipFile *file.ScannedFile, progress *job.Progress) fs.WalkDirFunc {
+	return func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			// don't let errors prevent scanning
+			logger.Errorf("error scanning %s: %v", path, err)
+			return nil
+		}
+
+		if err = ctx.Err(); err != nil {
+			return err
+		}
+
+		info, err := d.Info()
+		if err != nil {
+			logger.Errorf("reading info for %q: %v", path, err)
+			return nil
+		}
+
+		zipFilePath := ""
+		if zipFile != nil {
+			zipFilePath = zipFile.Path
+		}
+
+		if !j.scanner.AcceptEntry(ctx, path, info, zipFilePath) {
+			if info.IsDir() {
+				logger.Debugf("Skipping directory %s", path)
+				return fs.SkipDir
+			}
+
+			// we don't include caption files in the file scan, but we do need
+			// to handle them
+			if fsutil.MatchExtension(path, video.CaptionExts) {
+				fileRepo := j.scanner.Repository.File
+				matched := video.AssociateCaptions(ctx, path, j.scanner.Repository.TxnManager, fileRepo, fileRepo)
+
+				if !matched {
+					logger.Debugf("No matching video file found for caption file %s", path)
+					j.unmatchedCaptionFiles.SetFunc(func(files []string) []string {
+						return append(files, path)
+					})
+				}
+
+				return nil
+			}
+
+			logger.Debugf("Skipping file %s", path)
+			return nil
+		}
+
+		size, err := file.GetFileSize(f, path, info)
+		if err != nil {
+			return err
+		}
+
+		ff := file.ScannedFile{
+			BaseFile: &models.BaseFile{
+				DirEntry: models.DirEntry{
+					ModTime: file.ModTime(info),
+				},
+				Path:     path,
+				Basename: filepath.Base(path),
+				Size:     size,
+			},
+			FS:   f,
+			Info: info,
+		}
+
+		if zipFile != nil {
+			ff.ZipFileID = &zipFile.ID
+			ff.ZipFile = zipFile
+		}
+
+		if info.IsDir() {
+			// handle folders immediately
+			if err := j.handleFolder(ctx, ff, progress); err != nil {
+				if !errors.Is(err, context.Canceled) {
+					logger.Errorf("error processing %q: %v", path, err)
+				}
+
+				// skip the directory since we won't be able to process the files anyway
+				return fs.SkipDir
+			}
+
+			return nil
+		}
+
+		// if zip file is present, we handle immediately
+		if zipFile != nil {
+			progress.ExecuteTask("Scanning "+path, func() {
+				// don't increment progress in zip files
+				if err := j.handleFile(ctx, ff, nil); err != nil {
+					if !errors.Is(err, context.Canceled) {
+						logger.Errorf("error processing %q: %v", path, err)
+					}
+					// don't return an error, just skip the file
+				}
+			})
+
+			return nil
+		}
+
+		logger.Tracef("Queueing file %s for scanning", path)
+		j.fileQueue <- ff
+
+		j.count++
+
+		return nil
+	}
+}
+
+func (j *ScanJob) processQueue(ctx context.Context, parallelTasks int, progress *job.Progress) {
+	if parallelTasks < 1 {
+		parallelTasks = 1
+	}
+
+	wg := sizedwaitgroup.New(parallelTasks)
+
+	func() {
+		defer func() {
+			wg.Wait()
+
+			// handle panics in goroutine
+			if p := recover(); p != nil {
+				logger.Errorf("panic while scanning files: %v", p)
+				logger.Errorf(string(debug.Stack()))
+			}
+		}()
+
+		for f := range j.fileQueue {
+			logger.Tracef("Processing queued file %s", f.Path)
+			if err := ctx.Err(); err != nil {
+				return
+			}
+
+			wg.Add()
+			ff := f
+			go func() {
+				defer wg.Done()
+				j.processQueueItem(ctx, ff, progress)
+			}()
+		}
+	}()
+}
+
+func (j *ScanJob) processQueueItem(ctx context.Context, f file.ScannedFile, progress *job.Progress) {
+	progress.ExecuteTask("Scanning "+f.Path, func() {
+		var err error
+		if f.Info.IsDir() {
+			err = j.handleFolder(ctx, f, progress)
+		} else {
+			err = j.handleFile(ctx, f, progress)
+		}
+
+		if err != nil && !errors.Is(err, context.Canceled) {
+			logger.Errorf("error processing %q: %v", f.Path, err)
+		}
+	})
+}
+
+func (j *ScanJob) handleFolder(ctx context.Context, f file.ScannedFile, progress *job.Progress) error {
+	if progress != nil {
+		defer progress.Increment()
+	}
+
+	_, err := j.scanner.ScanFolder(ctx, f)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (j *ScanJob) handleFile(ctx context.Context, f file.ScannedFile, progress *job.Progress) error {
+	if progress != nil {
+		defer progress.Increment()
+	}
+
+	r, err := j.scanner.ScanFile(ctx, f)
+	if err != nil {
+		return err
+	}
+
+	// if this is a new video file, match it with any unmatched caption files
+	if r.New && len(j.unmatchedCaptionFiles.Get()) > 0 {
+		videoFile, _ := r.File.(*models.VideoFile)
+
+		if videoFile != nil {
+			// try to match any unmatched caption files to this video file
+			for _, captionPath := range j.unmatchedCaptionFiles.Get() {
+				if video.MatchesCaption(videoFile.Path, captionPath) {
+					video.AssociateCaptions(ctx, captionPath, j.scanner.Repository.TxnManager, j.scanner.Repository.File, j.scanner.Repository.File)
+
+					// remove from the unmatched list
+					j.unmatchedCaptionFiles.SetFunc(func(files []string) []string {
+						newFiles := make([]string, 0, len(files)-1)
+						for _, f := range files {
+							if f != captionPath {
+								newFiles = append(newFiles, f)
+							}
+						}
+						return newFiles
+					})
+				}
+			}
+		}
+	}
+
+	// clean captions - scene handler handles this as well, but
+	// unchanged files aren't processed by the scene handler
+	if r.IsUnchanged() {
+		videoFile, _ := r.File.(*models.VideoFile)
+
+		if videoFile != nil {
+			txnMgr := j.scanner.Repository.TxnManager
+			fileRepo := j.scanner.Repository.File
+			if err := txn.WithDatabase(ctx, txnMgr, func(ctx context.Context) error {
+				return video.CleanCaptions(ctx, videoFile, txnMgr, fileRepo)
+			}); err != nil {
+				logger.Errorf("Error cleaning captions: %v", err)
+			}
+		}
+	}
+
+	// handle rename should have already handled the contents of the zip file
+	// so shouldn't need to scan it again.
+	// Only scan zip contents if the file is new, the fingerprint changed,
+	// or if a force rescan was requested.
+
+	if j.scanner.IsZipFile(f.Info.Name()) && (r.New || r.FingerprintChanged || j.scanner.Rescan) {
+		ff := r.File
+		f.BaseFile = ff.Base()
+
+		// scan zip files with a different context that is not cancellable
+		// cancelling while scanning zip file contents results in the scan
+		// contents being partially completed
+		zipCtx := context.WithoutCancel(ctx)
+
+		if err := j.scanZipFile(zipCtx, f, progress); err != nil {
+			logger.Errorf("Error scanning zip file %q: %v", f.Path, err)
+		}
+	} else if r.Updated && j.scanner.IsZipFile(f.Info.Name()) {
+		logger.Debugf("Skipping zip file scan for %q: fingerprint unchanged", f.Path)
+	}
+
+	return nil
+}
+
+func (j *ScanJob) scanZipFile(ctx context.Context, f file.ScannedFile, progress *job.Progress) error {
+	zipFS, err := f.FS.OpenZip(f.Path, f.Size)
+	if err != nil {
+		if errors.Is(err, file.ErrNotReaderAt) {
+			// can't walk the zip file
+			// just return
+			logger.Debugf("Skipping zip file %q as it cannot be opened for walking", f.Path)
+			return nil
+		}
+
+		return err
+	}
+
+	defer zipFS.Close()
+
+	return file.SymWalk(zipFS, f.Path, j.queueFileFunc(ctx, zipFS, &f, progress))
 }
 
 type extensionConfig struct {
@@ -117,11 +449,10 @@ type sceneFinder interface {
 // handlerRequiredFilter returns true if a File's handler needs to be executed despite the file not being updated.
 type handlerRequiredFilter struct {
 	extensionConfig
-	txnManager     txn.Manager
-	SceneFinder    sceneFinder
-	ImageFinder    fileCounter
-	GalleryFinder  galleryFinder
-	CaptionUpdater video.CaptionUpdater
+	txnManager    txn.Manager
+	SceneFinder   sceneFinder
+	ImageFinder   fileCounter
+	GalleryFinder galleryFinder
 
 	FolderCache *lru.LRU[bool]
 
@@ -137,7 +468,6 @@ func newHandlerRequiredFilter(c *config.Config, repo models.Repository) *handler
 		SceneFinder:              repo.Scene,
 		ImageFinder:              repo.Image,
 		GalleryFinder:            repo.Gallery,
-		CaptionUpdater:           repo.File,
 		FolderCache:              lru.New[bool](processes * 2),
 		videoFileNamingAlgorithm: c.GetVideoFileNamingAlgorithm(),
 	}
@@ -212,65 +542,35 @@ func (f *handlerRequiredFilter) Accept(ctx context.Context, ff models.File) bool
 		}
 	}
 
-	if isVideoFile {
-		// TODO - check if the cover exists
-		// hash := scene.GetHash(ff, f.videoFileNamingAlgorithm)
-		// ssPath := instance.Paths.Scene.GetScreenshotPath(hash)
-		// if exists, _ := fsutil.FileExists(ssPath); !exists {
-		// 	// if not, check if the file is a primary file for a scene
-		// 	scenes, err := f.SceneFinder.FindByPrimaryFileID(ctx, ff.Base().ID)
-		// 	if err != nil {
-		// 		// just ignore
-		// 		return false
-		// 	}
-
-		// 	if len(scenes) > 0 {
-		// 		// if it is, then it needs to be re-generated
-		// 		return true
-		// 	}
-		// }
-
-		// clean captions - scene handler handles this as well, but
-		// unchanged files aren't processed by the scene handler
-		videoFile, _ := ff.(*models.VideoFile)
-		if videoFile != nil {
-			if err := video.CleanCaptions(ctx, videoFile, f.txnManager, f.CaptionUpdater); err != nil {
-				logger.Errorf("Error cleaning captions: %v", err)
-			}
-		}
-	}
-
 	return false
 }
 
 type scanFilter struct {
 	extensionConfig
-	txnManager     txn.Manager
-	FileFinder     models.FileFinder
-	CaptionUpdater video.CaptionUpdater
+	txnManager txn.Manager
 
 	stashPaths        config.StashConfigs
 	generatedPath     string
 	videoExcludeRegex []*regexp.Regexp
 	imageExcludeRegex []*regexp.Regexp
 	minModTime        time.Time
+	stashIgnoreFilter *file.StashIgnoreFilter
 }
 
 func newScanFilter(c *config.Config, repo models.Repository, minModTime time.Time) *scanFilter {
 	return &scanFilter{
 		extensionConfig:   newExtensionConfig(c),
 		txnManager:        repo.TxnManager,
-		FileFinder:        repo.File,
-		CaptionUpdater:    repo.File,
 		stashPaths:        c.GetStashPaths(),
 		generatedPath:     c.GetGeneratedPath(),
 		videoExcludeRegex: generateRegexps(c.GetExcludes()),
 		imageExcludeRegex: generateRegexps(c.GetImageExcludes()),
 		minModTime:        minModTime,
+		stashIgnoreFilter: file.NewStashIgnoreFilter(),
 	}
 }
 
-func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) bool {
+func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo, zipFilePath string) bool {
 	if fsutil.IsPathInDir(f.generatedPath, path) {
 		logger.Warnf("Skipping %q as it overlaps with the generated folder", path)
 		return false
@@ -287,18 +587,15 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 		return false
 	}
 
+	// Check .stashignore files, bounded to the library root.
+	if !f.stashIgnoreFilter.Accept(ctx, path, info, s.Path, zipFilePath) {
+		logger.Debugf("Skipping %s due to .stashignore", path)
+		return false
+	}
+
 	isVideoFile := useAsVideo(path)
 	isImageFile := useAsImage(path)
 	isZipFile := fsutil.MatchExtension(path, f.zipExt)
-
-	// handle caption files
-	if fsutil.MatchExtension(path, video.CaptionExts) {
-		// we don't include caption files in the file scan, but we do need
-		// to handle them
-		video.AssociateCaptions(ctx, path, f.txnManager, f.FileFinder, f.CaptionUpdater)
-
-		return false
-	}
 
 	if !info.IsDir() && !isVideoFile && !isImageFile && !isZipFile {
 		logger.Debugf("Skipping %s as it does not match any known file extensions", path)
@@ -363,8 +660,9 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 		&file.FilteredHandler{
 			Filter: file.FilterFunc(imageFileFilter),
 			Handler: &image.ScanHandler{
-				CreatorUpdater: r.Image,
-				GalleryFinder:  r.Gallery,
+				CreatorUpdater:     r.Image,
+				GalleryFinder:      r.Gallery,
+				SceneFinderUpdater: r.Scene,
 				ScanGenerator: &imageGenerators{
 					input:              options,
 					taskQueue:          taskQueue,
@@ -393,9 +691,10 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 		&file.FilteredHandler{
 			Filter: file.FilterFunc(videoFileFilter),
 			Handler: &scene.ScanHandler{
-				CreatorUpdater: r.Scene,
-				CaptionUpdater: r.File,
-				PluginCache:    pluginCache,
+				CreatorUpdater:       r.Scene,
+				GalleryFinderUpdater: r.Gallery,
+				CaptionUpdater:       r.File,
+				PluginCache:          pluginCache,
 				ScanGenerator: &sceneGenerators{
 					input:               options,
 					taskQueue:           taskQueue,
@@ -460,6 +759,29 @@ func (g *imageGenerators) Generate(ctx context.Context, i *models.Image, f model
 			previewsFn(ctx)
 		} else {
 			g.taskQueue.Add(fmt.Sprintf("Generating preview for %s", path), previewsFn)
+		}
+	}
+
+	if t.ScanGenerateImagePhashes {
+		progress.AddTotal(1)
+		phashFn := func(ctx context.Context) {
+			mgr := GetInstance()
+			// Only generate phash for image files, not video files
+			if imageFile, ok := f.(*models.ImageFile); ok {
+				taskPhash := GenerateImagePhashTask{
+					repository: mgr.Repository,
+					File:       imageFile,
+					Overwrite:  overwrite,
+				}
+				taskPhash.Start(ctx)
+			}
+			progress.Increment()
+		}
+
+		if g.sequentialScanning {
+			phashFn(ctx)
+		} else {
+			g.taskQueue.Add(fmt.Sprintf("Generating phash for %s", path), phashFn)
 		}
 	}
 

@@ -4,11 +4,10 @@ import (
 	"context"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 func (r *queryResolver) FindSceneMarkers(ctx context.Context, sceneMarkerFilter *models.SceneMarkerFilterType, filter *models.FindFilterType, ids []string) (ret *FindSceneMarkersResultType, err error) {
-	idInts, err := stringslice.StringSliceToIntSlice(ids)
+	idInts, err := handleIDList(ids, "ids")
 	if err != nil {
 		return nil, err
 	}

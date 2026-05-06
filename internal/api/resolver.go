@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strconv"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/stashapp/stash/internal/build"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/logger"
@@ -95,6 +96,12 @@ func (r *Resolver) VideoFile() VideoFileResolver {
 func (r *Resolver) ImageFile() ImageFileResolver {
 	return &imageFileResolver{r}
 }
+func (r *Resolver) BasicFile() BasicFileResolver {
+	return &basicFileResolver{r}
+}
+func (r *Resolver) Folder() FolderResolver {
+	return &folderResolver{r}
+}
 func (r *Resolver) SavedFilter() SavedFilterResolver {
 	return &savedFilterResolver{r}
 }
@@ -125,6 +132,8 @@ type tagResolver struct{ *Resolver }
 type galleryFileResolver struct{ *Resolver }
 type videoFileResolver struct{ *Resolver }
 type imageFileResolver struct{ *Resolver }
+type basicFileResolver struct{ *Resolver }
+type folderResolver struct{ *Resolver }
 type savedFilterResolver struct{ *Resolver }
 type pluginResolver struct{ *Resolver }
 type configResultResolver struct{ *Resolver }
@@ -135,6 +144,13 @@ func (r *Resolver) withTxn(ctx context.Context, fn func(ctx context.Context) err
 
 func (r *Resolver) withReadTxn(ctx context.Context, fn func(ctx context.Context) error) error {
 	return r.repository.WithReadTxn(ctx, fn)
+}
+
+// idOnly returns true if the query is only asking for the id field.
+// This can be used to optimize certain queries where we don't need to load the full object if we're only getting the id.
+func (r *Resolver) idOnly(ctx context.Context) bool {
+	fields := graphql.CollectAllFields(ctx)
+	return len(fields) == 1 && fields[0] == "id"
 }
 
 func (r *queryResolver) MarkerWall(ctx context.Context, q *string) (ret []*models.SceneMarker, err error) {

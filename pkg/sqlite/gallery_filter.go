@@ -84,6 +84,7 @@ func (qb *galleryFilterHandler) criterionHandler() criterionHandler {
 		}),
 
 		qb.pathCriterionHandler(filter.Path),
+		qb.parentFolderCriterionHandler(filter.ParentFolder),
 		qb.fileCountCriterionHandler(filter.FileCount),
 		intCriterionHandler(filter.Rating100, "galleries.rating", nil),
 		qb.urlsCriterionHandler(filter.URL),
@@ -104,6 +105,13 @@ func (qb *galleryFilterHandler) criterionHandler() criterionHandler {
 		&dateCriterionHandler{filter.Date, "galleries.date", nil},
 		&timestampCriterionHandler{filter.CreatedAt, "galleries.created_at", nil},
 		&timestampCriterionHandler{filter.UpdatedAt, "galleries.updated_at", nil},
+
+		&customFieldsFilterHandler{
+			table: galleriesCustomFieldsTable.GetTable(),
+			fkCol: galleryIDColumn,
+			c:     filter.CustomFields,
+			idCol: "galleries.id",
+		},
 
 		&relatedFilterHandler{
 			relatedIDCol:   "scenes_galleries.scene_id",
@@ -145,6 +153,36 @@ func (qb *galleryFilterHandler) criterionHandler() criterionHandler {
 			joinFn: func(f *filterBuilder) {
 				galleryRepository.tags.innerJoin(f, "gallery_tag", "galleries.id")
 			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol: "files.id",
+			relatedRepo:  fileRepository.repository,
+			relatedHandler: &fileFilterHandler{
+				fileFilter: filter.FilesFilter,
+				isRelated:  true,
+			},
+			joinFn: func(f *filterBuilder) {
+				galleryRepository.addFilesTable(f)
+				galleryRepository.addFoldersTable(f)
+			},
+			// don't use a subquery; join directly
+			directJoin: true,
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol: "gallery_folder.id",
+			relatedRepo:  folderRepository.repository,
+			relatedHandler: &folderFilterHandler{
+				folderFilter: filter.FoldersFilter,
+				table:        "gallery_folder",
+				isRelated:    true,
+			},
+			joinFn: func(f *filterBuilder) {
+				f.addLeftJoin(folderTable, "gallery_folder", "galleries.folder_id = gallery_folder.id")
+			},
+			// don't use a subquery; join directly
+			directJoin: true,
 		},
 	}
 }
@@ -241,6 +279,65 @@ func (qb *galleryFilterHandler) pathCriterionHandler(c *models.StringCriterionIn
 	}
 }
 
+func (qb *galleryFilterHandler) parentFolderCriterionHandler(folder *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if folder == nil {
+			return
+		}
+
+		galleryRepository.addFilesTable(f)
+		f.addLeftJoin(folderTable, "gallery_folder", "galleries.folder_id = gallery_folder.id")
+
+		criterion := *folder
+		switch criterion.Modifier {
+		case models.CriterionModifierEquals:
+			criterion.Modifier = models.CriterionModifierIncludes
+		case models.CriterionModifierNotEquals:
+			criterion.Modifier = models.CriterionModifierExcludes
+		}
+
+		// only allow includes or excludes filters
+		if criterion.Modifier != models.CriterionModifierIncludes && criterion.Modifier != models.CriterionModifierExcludes {
+			f.setError(fmt.Errorf("invalid modifier for parent folder criterion: %s", criterion.Modifier))
+		}
+
+		if len(criterion.Value) == 0 && len(criterion.Excludes) == 0 {
+			return
+		}
+
+		// combine excludes if excludes modifier is selected
+		if criterion.Modifier == models.CriterionModifierExcludes {
+			criterion.Modifier = models.CriterionModifierIncludes
+			criterion.Excludes = append(criterion.Excludes, criterion.Value...)
+			criterion.Value = nil
+		}
+
+		if len(criterion.Value) > 0 {
+			valuesClause, err := getHierarchicalValues(ctx, criterion.Value, "folders", "", "parent_folder_id", "parent_folder_id", criterion.Depth)
+			if err != nil {
+				f.setError(err)
+				return
+			}
+
+			// combine clauses with OR to handle zip file or folder
+			c1 := makeClause(fmt.Sprintf("files.parent_folder_id IN (SELECT column2 FROM (%s))", valuesClause))
+			c2 := makeClause(fmt.Sprintf("gallery_folder.parent_folder_id IN (SELECT column2 FROM (%s))", valuesClause))
+			f.whereClauses = append(f.whereClauses, orClauses(c1, c2))
+		}
+
+		if len(criterion.Excludes) > 0 {
+			valuesClause, err := getHierarchicalValues(ctx, criterion.Excludes, "folders", "", "parent_folder_id", "parent_folder_id", criterion.Depth)
+			if err != nil {
+				f.setError(err)
+				return
+			}
+
+			f.addWhere(fmt.Sprintf("files.parent_folder_id NOT IN (SELECT column2 FROM (%s)) OR folders.parent_folder_id IS NULL", valuesClause))
+			f.addWhere(fmt.Sprintf("gallery_folder.parent_folder_id NOT IN (SELECT column2 FROM (%s)) OR gallery_folder.parent_folder_id IS NULL", valuesClause))
+		}
+	}
+}
+
 func (qb *galleryFilterHandler) fileCountCriterionHandler(fileCount *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
 		primaryTable: galleryTable,
@@ -271,7 +368,16 @@ func (qb *galleryFilterHandler) missingCriterionHandler(isMissing *string) crite
 			case "tags":
 				galleryRepository.tags.join(f, "tags_join", "galleries.id")
 				f.addWhere("tags_join.gallery_id IS NULL")
+			case "cover":
+				f.addLeftJoin("galleries_images", "cover_join", "cover_join.gallery_id = galleries.id AND cover_join.cover = 1")
+				f.addWhere("cover_join.image_id IS NULL")
 			default:
+				if err := validateIsMissing(*isMissing, []string{
+					"title", "code", "rating", "details", "photographer",
+				}); err != nil {
+					f.setError(err)
+					return
+				}
 				f.addWhere("(galleries." + *isMissing + " IS NULL OR TRIM(galleries." + *isMissing + ") = '')")
 			}
 		}

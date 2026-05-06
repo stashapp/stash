@@ -4,10 +4,10 @@ import { Helmet } from "react-helmet";
 import { useTitleProps } from "src/hooks/title";
 import Tag from "./TagDetails/Tag";
 import TagCreate from "./TagDetails/TagCreate";
-import { TagList } from "./TagList";
+import { FilteredTagList } from "./TagList";
 
 const Tags: React.FC = () => {
-  return <TagList />;
+  return <FilteredTagList />;
 };
 
 const TagRoutes: React.FC = () => {

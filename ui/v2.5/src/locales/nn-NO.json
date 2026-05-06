@@ -81,11 +81,9 @@
         "logout": "Logg ut",
         "make_primary": "Set som føretrekt",
         "merge": "Flett",
-        "merge_into": "Flett inn i",
         "migrate_scene_screenshots": "Migrer skjermbilete av scener",
         "download_anonymised": "Last ned anonymisert",
-        "disallow": "Ikkje tillat",
-        "merge_from": "Flett frå"
+        "disallow": "Ikkje tillat"
     },
     "countables": {
         "groups": "{count, plural, one {Gruppe} other {Grupper}}",
@@ -102,7 +100,13 @@
         "performers_found": "Fann {count} utøvarar",
         "delete_entity_title": "{count, plural, one {Slett {singularEntity}} other {Slett {pluralEntity}}}",
         "scenes_found": "Fann {count} scener",
-        "dont_show_until_updated": "Ikkje vis før neste oppdatering"
+        "dont_show_until_updated": "Ikkje vis før neste oppdatering",
+        "imagewall": {
+            "direction": {
+                "column": "Kolonne",
+                "row": "Rad"
+            }
+        }
     },
     "date": "Dato",
     "bitrate": "Bitrate",
@@ -143,6 +147,9 @@
                         }
                     }
                 }
+            },
+            "images": {
+                "heading": "Bilete"
             }
         },
         "about": {
@@ -199,7 +206,6 @@
         "last": "Siste"
     },
     "o_count": "Tal på O",
-    "o_counter": "O-teljar",
     "organized": "Organisert",
     "playdate_recorded_no": "Ingen avspelingsdato er registrert",
     "play_duration": "Avspelingslengd",
@@ -229,5 +235,16 @@
     "sub_group": "Undergruppe",
     "sub_group_count": "Tal på undergrupper",
     "sub_group_of": "Undergruppe av {parent}",
-    "sub_group_order": "Undergruppesortert"
+    "sub_group_order": "Undergruppesortert",
+    "groups": "Grupper",
+    "performers": "Utøvarar",
+    "studios": "Studio",
+    "image": "Bilete",
+    "images": "Bilete",
+    "scene": "Scene",
+    "group": "Gruppe",
+    "galleries": "Galleri",
+    "scenes": "Scener",
+    "studio": "Studio",
+    "performer": "Utøvar"
 }

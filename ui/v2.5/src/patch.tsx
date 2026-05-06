@@ -39,7 +39,13 @@ export function RegisterComponent<T extends Function>(
 ) {
   // register with the plugin api
   if (components[component]) {
-    throw new Error("Component " + component + " has already been registered");
+    // only throw an error in production, in development we allow
+    // multiple registrations to allow for hot reloading of components
+    if (!import.meta.env.DEV) {
+      throw new Error(
+        "Component " + component + " has already been registered"
+      );
+    }
   }
 
   components[component] = fn;

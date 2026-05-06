@@ -13,7 +13,7 @@ import {
   queryFindTagsByIDForSelect,
   queryFindTagsForSelect,
 } from "src/core/StashService";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
 import { defaultMaxOptionsShown } from "src/core/config";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -23,12 +23,15 @@ import {
   IFilterProps,
   IFilterValueProps,
   Option as SelectOption,
+  toOption,
 } from "../Shared/FilterSelect";
 import { useCompare } from "src/hooks/state";
 import { TagPopover } from "./TagPopover";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { sortByRelevance } from "src/utils/query";
 import { PatchComponent, PatchFunction } from "src/patch";
+import { isUUID } from "src/utils/stashIds";
+import { filterByStashID } from "src/models/list-filter/utils";
 
 export type SelectObject = {
   id: string;
@@ -38,7 +41,7 @@ export type SelectObject = {
 
 export type Tag = Pick<
   GQL.Tag,
-  "id" | "name" | "sort_name" | "aliases" | "image_path"
+  "id" | "name" | "sort_name" | "aliases" | "image_path" | "stash_ids"
 >;
 type Option = SelectOption<Tag>;
 
@@ -67,33 +70,48 @@ export type TagSelectProps = IFilterProps &
 const _TagSelect: React.FC<TagSelectProps> = (props) => {
   const [createTag] = useTagCreate();
 
-  const { configuration } = React.useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
   const intl = useIntl();
   const maxOptionsShown =
     configuration?.ui.maxOptionsShown ?? defaultMaxOptionsShown;
-  const defaultCreatable =
-    !configuration?.interface.disableDropdownCreate.tag ?? true;
+  const defaultCreatable = !configuration?.interface.disableDropdownCreate.tag;
 
   const exclude = useMemo(() => props.excludeIds ?? [], [props.excludeIds]);
 
+  function filterExcluded(tag: Tag) {
+    // HACK - we should probably exclude these in the backend query, but
+    // this will do in the short-term
+    return !exclude.includes(tag.id.toString());
+  }
+
   async function loadTags(input: string): Promise<Option[]> {
     const filter = new ListFilterModel(GQL.FilterMode.Tags);
-    filter.searchTerm = input;
     filter.currentPage = 1;
     filter.itemsPerPage = maxOptionsShown;
     filter.sortBy = "name";
     filter.sortDirection = GQL.SortDirectionEnum.Asc;
-    const query = await queryFindTagsForSelect(filter);
-    let ret = query.data.findTags.tags.filter((tag) => {
-      // HACK - we should probably exclude these in the backend query, but
-      // this will do in the short-term
-      return !exclude.includes(tag.id.toString());
-    });
 
-    return tagSelectSort(input, ret).map((tag) => ({
-      value: tag.id,
-      object: tag,
-    }));
+    if (isUUID(input)) {
+      filterByStashID(filter, input);
+
+      const query = await queryFindTagsForSelect(filter);
+      const matches = query.data.findTags.tags.filter(filterExcluded);
+
+      if (matches.length > 0) {
+        // Matches found, return them immediately.
+        return matches.map(toOption);
+      }
+
+      // If no stash_id matches found, continue with standard name/alias search.
+      filter.criteria = []; // Clear stash_id criterion to search by name/alias below.
+    }
+
+    filter.searchTerm = input;
+
+    const query = await queryFindTagsForSelect(filter);
+    const ret = query.data.findTags.tags.filter(filterExcluded);
+
+    return tagSelectSort(input, ret).map(toOption);
   }
 
   const TagOption: React.FC<OptionProps<Option, boolean>> = (optionProps) => {
@@ -199,6 +217,7 @@ const _TagSelect: React.FC<TagSelectProps> = (props) => {
       id,
       name,
       aliases: [],
+      stash_ids: [],
     };
   };
 

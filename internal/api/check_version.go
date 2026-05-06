@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"regexp"
 	"runtime"
+	"strings"
 	"time"
 
 	"golang.org/x/sys/cpu"
@@ -34,6 +36,24 @@ var stashReleases = func() map[string]string {
 		"linux/arm64":   "stash-linux-arm64v8",
 		"linux/armv7":   "stash-linux-arm32v7",
 	}
+}
+
+// isMacOSBundle checks if the application is running from within a macOS .app bundle
+func isMacOSBundle() bool {
+	exec, err := os.Executable()
+	return err == nil && strings.Contains(exec, "Stash.app/")
+}
+
+// getWantedRelease determines which release variant to download based on platform and bundle type
+func getWantedRelease(platform string) string {
+	release := stashReleases()[platform]
+
+	// On macOS, check if running from .app bundle
+	if runtime.GOOS == "darwin" && isMacOSBundle() {
+		return "Stash.app.zip"
+	}
+
+	return release
 }
 
 type githubReleasesResponse struct {
@@ -168,7 +188,7 @@ func GetLatestRelease(ctx context.Context) (*LatestRelease, error) {
 	}
 
 	platform := fmt.Sprintf("%s/%s", runtime.GOOS, arch)
-	wantedRelease := stashReleases()[platform]
+	wantedRelease := getWantedRelease(platform)
 
 	url := apiReleases
 	if build.IsDevelop() {

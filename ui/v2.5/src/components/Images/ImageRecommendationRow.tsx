@@ -1,12 +1,9 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import { useFindImages } from "src/core/StashService";
-import Slider from "@ant-design/react-slick";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { getSlickSliderSettings } from "src/core/recommendations";
-import { RecommendationRow } from "../FrontPage/RecommendationRow";
-import { FormattedMessage } from "react-intl";
 import { ImageCard } from "./ImageCard";
+import { PatchComponent } from "src/patch";
+import { FilteredRecommendationRow } from "../FrontPage/FilteredRecommendationRow";
 
 interface IProps {
   isTouch: boolean;
@@ -14,29 +11,21 @@ interface IProps {
   header: string;
 }
 
-export const ImageRecommendationRow: React.FC<IProps> = (props: IProps) => {
-  const result = useFindImages(props.filter);
-  const cardCount = result.data?.findImages.count;
+export const ImageRecommendationRow: React.FC<IProps> = PatchComponent(
+  "ImageRecommendationRow",
+  (props: IProps) => {
+    const result = useFindImages(props.filter);
+    const count = result.data?.findImages.count ?? 0;
 
-  if (!result.loading && !cardCount) {
-    return null;
-  }
-
-  return (
-    <RecommendationRow
-      className="images-recommendations"
-      header={props.header}
-      link={
-        <Link to={`/images?${props.filter.makeQueryParameters()}`}>
-          <FormattedMessage id="view_all" />
-        </Link>
-      }
-    >
-      <Slider
-        {...getSlickSliderSettings(
-          cardCount ? cardCount : props.filter.itemsPerPage,
-          props.isTouch
-        )}
+    return (
+      <FilteredRecommendationRow
+        className="images-recommendations"
+        heading={props.header}
+        url={`/images?${props.filter.makeQueryParameters()}`}
+        count={count}
+        loading={result.loading}
+        isTouch={props.isTouch}
+        filter={props.filter}
       >
         {result.loading
           ? [...Array(props.filter.itemsPerPage)].map((i) => (
@@ -45,7 +34,7 @@ export const ImageRecommendationRow: React.FC<IProps> = (props: IProps) => {
           : result.data?.findImages.images.map((i) => (
               <ImageCard key={i.id} image={i} zoomIndex={1} />
             ))}
-      </Slider>
-    </RecommendationRow>
-  );
-};
+      </FilteredRecommendationRow>
+    );
+  }
+);

@@ -30,6 +30,7 @@ type SceneMarkerPartial struct {
 	Seconds      OptionalFloat64
 	EndSeconds   OptionalFloat64
 	PrimaryTagID OptionalInt
+	TagIDs       *UpdateIDs
 	SceneID      OptionalInt
 	CreatedAt    OptionalTime
 	UpdatedAt    OptionalTime

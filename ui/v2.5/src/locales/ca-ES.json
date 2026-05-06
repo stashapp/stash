@@ -53,8 +53,6 @@
         "logout": "Tanca la sessió",
         "make_primary": "Fes primari",
         "merge": "Fusiona",
-        "merge_from": "Fusiona des de",
-        "merge_into": "Fusiona dins",
         "migrate_blobs": "Migra els Blobs",
         "migrate_scene_screenshots": "Migra les captures de pantalla de l'escena",
         "not_running": "sense executar",
@@ -136,7 +134,8 @@
         "add_play": "Agregar reproduir",
         "add_to_entity": "Afegir a {entityType}",
         "create_entity": "Crear {entityType}",
-        "add_sub_groups": "Afegeix subgrups"
+        "add_sub_groups": "Afegeix subgrups",
+        "remove_from_containing_group": "Suprimeix del grup"
     },
     "appears_with": "Apareix amb",
     "career_length": "Durada de la carrera",
@@ -145,7 +144,6 @@
             "blacklist_desc": "Els elements de la llista negra estan exclosos de les consultes. Tingueu en compte que són expressions regulars i també insensibles a majúscules i minúscules. Alguns caràcters s'han d'escapar amb una barra inversa: {chars_require_escape}",
             "set_cover_desc": "Reemplaça la portada de l'escena si se'n troba una.",
             "set_tag_label": "Estableix les etiquetes",
-            "show_male_desc": "Estableix si els intèrprets masculins estaran disponibles per etiquetar.",
             "active_instance": "Instància activa de Stash-Box:",
             "blacklist_label": "Llista negra",
             "mark_organized_desc": "Marqueu immediatament l'escena com a Organitzada després de fer clic al botó Desa.",
@@ -163,7 +161,6 @@
             "query_mode_path_desc": "Utilitza el camí complet del fitxer",
             "set_cover_label": "Estableix la imatge de la portada de l'escena",
             "set_tag_desc": "Adjunta etiquetes a l'escena, ja sigui sobreescrivint o fusionant amb etiquetes existents a l'escena.",
-            "show_male_label": "Mostra els intèrprets masculins",
             "source": "Font"
         },
         "results": {
@@ -373,9 +370,7 @@
             "latest_version_build_hash": "Hash de l'última versió:",
             "new_version_notice": "[NOVA]",
             "release_date": "Data de llançament:",
-            "stash_discord": "Uneix-te al nostre canal {url}",
             "stash_home": "Pàgina principal del projecte en {url}",
-            "stash_open_collective": "Donacions al projecte a través de {url}",
             "stash_wiki": "Pàgina web {url}",
             "version": "Versió"
         },
@@ -431,7 +426,6 @@
                 "overwrite_existing": "Sobreescriure blobs existents amb dades de captures de pantalla"
             },
             "migrations": "Migracions",
-            "backup_database": "Realitza una còpia de seguretat de la base de dades en el directori de còpies de seguretat. La còpia s'emmagatzema amb el format {filename_format}",
             "added_job_to_queue": "Afegit/a {operation_name} a la cua de treball",
             "anonymise_and_download": "Realitza una còpia anònima de la base de dades i descàrrega el fitxer resultant.",
             "anonymise_database": "Fa una còpia de la base de dades al directori de còpies de seguretat anonimitzant tota la informació sensible. Aquesta còpia es pot proveir a tercers per a solucionar i depurar problemes. La base de dades original no és modificada. La base de dades anonimitzada s'emmagatzema amb el format {filename_format}.",

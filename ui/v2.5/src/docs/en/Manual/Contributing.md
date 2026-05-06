@@ -26,4 +26,4 @@ We welcome ideas for future improvements and features, and bug reports help ever
 
 ## Providing support
 
-Offering support for new users on [Discord](https://discord.gg/2TsNFKt) is also welcomed.
+Offering support for new users on our [Community forum](https://discourse.stashapp.cc/) and [Discord](https://discord.gg/2TsNFKt) is also welcomed.

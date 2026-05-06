@@ -3,7 +3,6 @@ package scraper
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -19,49 +18,36 @@ import (
 )
 
 type xpathScraper struct {
-	scraper      scraperTypeConfig
-	config       config
+	definition   Definition
 	globalConfig GlobalConfig
 	client       *http.Client
 }
 
-func newXpathScraper(scraper scraperTypeConfig, client *http.Client, config config, globalConfig GlobalConfig) *xpathScraper {
-	return &xpathScraper{
-		scraper:      scraper,
-		config:       config,
-		globalConfig: globalConfig,
-		client:       client,
+func (s *xpathScraper) getXpathScraper(name string) (*mappedScraper, error) {
+	ret, ok := s.definition.XPathScrapers[name]
+	if !ok {
+		return nil, fmt.Errorf("xpath scraper with name %s not found in config", name)
 	}
+	return &ret, nil
 }
 
-func (s *xpathScraper) getXpathScraper() *mappedScraper {
-	return s.config.XPathScrapers[s.scraper.Scraper]
+type xpathURLScraper struct {
+	xpathScraper
+	definition ByURLDefinition
 }
 
-func (s *xpathScraper) scrapeURL(ctx context.Context, url string) (*html.Node, *mappedScraper, error) {
-	scraper := s.getXpathScraper()
-
-	if scraper == nil {
-		return nil, nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
-	}
-
-	doc, err := s.loadURL(ctx, url)
-
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return doc, scraper, nil
-}
-
-func (s *xpathScraper) scrapeByURL(ctx context.Context, url string, ty ScrapeContentType) (ScrapedContent, error) {
-	u := replaceURL(url, s.scraper) // allow a URL Replace for performer by URL queries
-	doc, scraper, err := s.scrapeURL(ctx, u)
+func (s *xpathURLScraper) scrapeByURL(ctx context.Context, url string, ty ScrapeContentType) (ScrapedContent, error) {
+	scraper, err := s.getXpathScraper(s.definition.Scraper)
 	if err != nil {
 		return nil, err
 	}
 
-	q := s.getXPathQuery(doc)
+	doc, err := s.loadURL(ctx, url)
+	if err != nil {
+		return nil, err
+	}
+
+	q := s.getXPathQuery(doc, url)
 	// if these just return the return values from scraper.scrape* functions then
 	// it ends up returning ScrapedContent(nil) rather than nil
 	switch ty {
@@ -100,11 +86,15 @@ func (s *xpathScraper) scrapeByURL(ctx context.Context, url string, ty ScrapeCon
 	return nil, ErrNotSupported
 }
 
-func (s *xpathScraper) scrapeByName(ctx context.Context, name string, ty ScrapeContentType) ([]ScrapedContent, error) {
-	scraper := s.getXpathScraper()
+type xpathNameScraper struct {
+	xpathScraper
+	definition ByNameDefinition
+}
 
-	if scraper == nil {
-		return nil, fmt.Errorf("%w: name %v", ErrNotFound, s.scraper.Scraper)
+func (s *xpathNameScraper) scrapeByName(ctx context.Context, name string, ty ScrapeContentType) ([]ScrapedContent, error) {
+	scraper, err := s.getXpathScraper(s.definition.Scraper)
+	if err != nil {
+		return nil, err
 	}
 
 	const placeholder = "{}"
@@ -112,7 +102,7 @@ func (s *xpathScraper) scrapeByName(ctx context.Context, name string, ty ScrapeC
 	// replace the placeholder string with the URL-escaped name
 	escapedName := url.QueryEscape(name)
 
-	url := s.scraper.QueryURL
+	url := s.definition.QueryURL
 	url = strings.ReplaceAll(url, placeholder, escapedName)
 
 	doc, err := s.loadURL(ctx, url)
@@ -121,7 +111,7 @@ func (s *xpathScraper) scrapeByName(ctx context.Context, name string, ty ScrapeC
 		return nil, err
 	}
 
-	q := s.getXPathQuery(doc)
+	q := s.getXPathQuery(doc, url)
 	q.setType(SearchQuery)
 
 	var content []ScrapedContent
@@ -151,18 +141,22 @@ func (s *xpathScraper) scrapeByName(ctx context.Context, name string, ty ScrapeC
 	return nil, ErrNotSupported
 }
 
-func (s *xpathScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
+type xpathFragmentScraper struct {
+	xpathScraper
+	definition ByFragmentDefinition
+}
+
+func (s *xpathFragmentScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromScene(scene)
-	if s.scraper.QueryURLReplacements != nil {
-		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
+	if s.definition.QueryURLReplacements != nil {
+		queryURL.applyReplacements(s.definition.QueryURLReplacements)
 	}
-	url := queryURL.constructURL(s.scraper.QueryURL)
+	url := queryURL.constructURL(s.definition.QueryURL)
 
-	scraper := s.getXpathScraper()
-
-	if scraper == nil {
-		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
+	scraper, err := s.getXpathScraper(s.definition.Scraper)
+	if err != nil {
+		return nil, err
 	}
 
 	doc, err := s.loadURL(ctx, url)
@@ -171,11 +165,11 @@ func (s *xpathScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sce
 		return nil, err
 	}
 
-	q := s.getXPathQuery(doc)
+	q := s.getXPathQuery(doc, url)
 	return scraper.scrapeScene(ctx, q)
 }
 
-func (s *xpathScraper) scrapeByFragment(ctx context.Context, input Input) (ScrapedContent, error) {
+func (s *xpathFragmentScraper) scrapeByFragment(ctx context.Context, input Input) (ScrapedContent, error) {
 	switch {
 	case input.Gallery != nil:
 		return nil, fmt.Errorf("%w: cannot use an xpath scraper as a gallery fragment scraper", ErrNotSupported)
@@ -189,15 +183,14 @@ func (s *xpathScraper) scrapeByFragment(ctx context.Context, input Input) (Scrap
 
 	// construct the URL
 	queryURL := queryURLParametersFromScrapedScene(scene)
-	if s.scraper.QueryURLReplacements != nil {
-		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
+	if s.definition.QueryURLReplacements != nil {
+		queryURL.applyReplacements(s.definition.QueryURLReplacements)
 	}
-	url := queryURL.constructURL(s.scraper.QueryURL)
+	url := queryURL.constructURL(s.definition.QueryURL)
 
-	scraper := s.getXpathScraper()
-
-	if scraper == nil {
-		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
+	scraper, err := s.getXpathScraper(s.definition.Scraper)
+	if err != nil {
+		return nil, err
 	}
 
 	doc, err := s.loadURL(ctx, url)
@@ -206,22 +199,21 @@ func (s *xpathScraper) scrapeByFragment(ctx context.Context, input Input) (Scrap
 		return nil, err
 	}
 
-	q := s.getXPathQuery(doc)
+	q := s.getXPathQuery(doc, url)
 	return scraper.scrapeScene(ctx, q)
 }
 
-func (s *xpathScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
+func (s *xpathFragmentScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromGallery(gallery)
-	if s.scraper.QueryURLReplacements != nil {
-		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
+	if s.definition.QueryURLReplacements != nil {
+		queryURL.applyReplacements(s.definition.QueryURLReplacements)
 	}
-	url := queryURL.constructURL(s.scraper.QueryURL)
+	url := queryURL.constructURL(s.definition.QueryURL)
 
-	scraper := s.getXpathScraper()
-
-	if scraper == nil {
-		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
+	scraper, err := s.getXpathScraper(s.definition.Scraper)
+	if err != nil {
+		return nil, err
 	}
 
 	doc, err := s.loadURL(ctx, url)
@@ -230,22 +222,21 @@ func (s *xpathScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 		return nil, err
 	}
 
-	q := s.getXPathQuery(doc)
+	q := s.getXPathQuery(doc, url)
 	return scraper.scrapeGallery(ctx, q)
 }
 
-func (s *xpathScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*models.ScrapedImage, error) {
+func (s *xpathFragmentScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*models.ScrapedImage, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromImage(image)
-	if s.scraper.QueryURLReplacements != nil {
-		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
+	if s.definition.QueryURLReplacements != nil {
+		queryURL.applyReplacements(s.definition.QueryURLReplacements)
 	}
-	url := queryURL.constructURL(s.scraper.QueryURL)
+	url := queryURL.constructURL(s.definition.QueryURL)
 
-	scraper := s.getXpathScraper()
-
-	if scraper == nil {
-		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
+	scraper, err := s.getXpathScraper(s.definition.Scraper)
+	if err != nil {
+		return nil, err
 	}
 
 	doc, err := s.loadURL(ctx, url)
@@ -254,19 +245,19 @@ func (s *xpathScraper) scrapeImageByImage(ctx context.Context, image *models.Ima
 		return nil, err
 	}
 
-	q := s.getXPathQuery(doc)
+	q := s.getXPathQuery(doc, url)
 	return scraper.scrapeImage(ctx, q)
 }
 
 func (s *xpathScraper) loadURL(ctx context.Context, url string) (*html.Node, error) {
-	r, err := loadURL(ctx, url, s.client, s.config, s.globalConfig)
+	r, err := loadURL(ctx, url, s.client, s.definition, s.globalConfig)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to load URL %q: %w", url, err)
 	}
 
 	ret, err := html.Parse(r)
 
-	if err == nil && s.config.DebugOptions != nil && s.config.DebugOptions.PrintHTML {
+	if err == nil && s.definition.DebugOptions != nil && s.definition.DebugOptions.PrintHTML {
 		var b bytes.Buffer
 		if err := html.Render(&b, ret); err != nil {
 			logger.Warnf("could not render HTML: %v", err)
@@ -277,10 +268,11 @@ func (s *xpathScraper) loadURL(ctx context.Context, url string) (*html.Node, err
 	return ret, err
 }
 
-func (s *xpathScraper) getXPathQuery(doc *html.Node) *xpathQuery {
+func (s *xpathScraper) getXPathQuery(doc *html.Node, url string) *xpathQuery {
 	return &xpathQuery{
 		doc:     doc,
 		scraper: s,
+		url:     url,
 	}
 }
 
@@ -288,6 +280,7 @@ type xpathQuery struct {
 	doc       *html.Node
 	scraper   *xpathScraper
 	queryType QueryType
+	url       string
 }
 
 func (q *xpathQuery) getType() QueryType {
@@ -296,6 +289,10 @@ func (q *xpathQuery) getType() QueryType {
 
 func (q *xpathQuery) setType(t QueryType) {
 	q.queryType = t
+}
+
+func (q *xpathQuery) getURL() string {
+	return q.url
 }
 
 func (q *xpathQuery) runQuery(selector string) ([]string, error) {
@@ -346,5 +343,5 @@ func (q *xpathQuery) subScrape(ctx context.Context, value string) mappedQuery {
 		return nil
 	}
 
-	return q.scraper.getXPathQuery(doc)
+	return q.scraper.getXPathQuery(doc, value)
 }

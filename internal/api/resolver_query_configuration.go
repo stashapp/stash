@@ -82,6 +82,7 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		Stashes:                       config.GetStashPaths(),
 		DatabasePath:                  config.GetDatabasePath(),
 		BackupDirectoryPath:           config.GetBackupDirectoryPath(),
+		DeleteTrashPath:               config.GetDeleteTrashPath(),
 		GeneratedPath:                 config.GetGeneratedPath(),
 		MetadataPath:                  config.GetMetadataPath(),
 		ConfigFilePath:                config.GetConfigFile(),
@@ -95,6 +96,11 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		CalculateMd5:                  config.IsCalculateMD5(),
 		VideoFileNamingAlgorithm:      config.GetVideoFileNamingAlgorithm(),
 		ParallelTasks:                 config.GetParallelTasks(),
+		UseCustomSpriteInterval:       config.GetUseCustomSpriteInterval(),
+		SpriteInterval:                config.GetSpriteInterval(),
+		SpriteScreenshotSize:          config.GetSpriteScreenshotSize(),
+		MinimumSprites:                config.GetMinimumSprites(),
+		MaximumSprites:                config.GetMaximumSprites(),
 		PreviewAudio:                  config.GetPreviewAudio(),
 		PreviewSegments:               config.GetPreviewSegments(),
 		PreviewSegmentDuration:        config.GetPreviewSegmentDuration(),
@@ -115,6 +121,7 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		LogOut:                        config.GetLogOut(),
 		LogLevel:                      config.GetLogLevel(),
 		LogAccess:                     config.GetLogAccess(),
+		LogFileMaxSize:                config.GetLogFileMaxSize(),
 		VideoExtensions:               config.GetVideoExtensions(),
 		ImageExtensions:               config.GetImageExtensions(),
 		GalleryExtensions:             config.GetGalleryExtensions(),
@@ -154,6 +161,7 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 	javascriptEnabled := config.GetJavascriptEnabled()
 	customLocales := config.GetCustomLocales()
 	customLocalesEnabled := config.GetCustomLocalesEnabled()
+	disableCustomizations := config.GetDisableCustomizations()
 	language := config.GetLanguage()
 	handyKey := config.GetHandyKey()
 	scriptOffset := config.GetFunscriptOffset()
@@ -162,6 +170,7 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 	disableDropdownCreate := config.GetDisableDropdownCreate()
 
 	return &ConfigInterfaceResult{
+		SfwContentMode:               config.GetSFWContentMode(),
 		MenuItems:                    menuItems,
 		SoundOnPreview:               &soundOnPreview,
 		WallShowTitle:                &wallShowTitle,
@@ -180,6 +189,7 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 		JavascriptEnabled:            &javascriptEnabled,
 		CustomLocales:                &customLocales,
 		CustomLocalesEnabled:         &customLocalesEnabled,
+		DisableCustomizations:        &disableCustomizations,
 		Language:                     &language,
 
 		ImageLightbox: &imageLightboxOptions,

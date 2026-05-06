@@ -31,10 +31,13 @@ const sortByOptions = [
   "penis_length",
   "play_count",
   "last_played_at",
-  "last_o_at",
-  "career_length",
+  "latest_scene",
+  "career_start",
+  "career_end",
   "weight",
   "measurements",
+  "scenes_duration",
+  "scenes_size",
 ]
   .map(ListFilterOptions.createSortBy)
   .concat([
@@ -53,6 +56,12 @@ const sortByOptions = [
     {
       messageID: "o_count",
       value: "o_counter",
+      sfwMessageID: "o_count_sfw",
+    },
+    {
+      messageID: "last_o_at",
+      value: "last_o_at",
+      sfwMessageID: "last_o_at_sfw",
     },
   ]);
 
@@ -79,7 +88,6 @@ const stringCriteria: CriterionType[] = [
   "eye_color",
   "measurements",
   "fake_tits",
-  "career_length",
   "tattoos",
   "piercings",
   "aliases",
@@ -101,7 +109,9 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("image_count"),
   createMandatoryNumberCriterionOption("gallery_count"),
   createMandatoryNumberCriterionOption("play_count"),
-  createMandatoryNumberCriterionOption("o_counter", "o_count"),
+  createMandatoryNumberCriterionOption("o_counter", "o_count", {
+    sfwMessageID: "o_count_sfw",
+  }),
   createBooleanCriterionOption("ignore_auto_tag"),
   CountryCriterionOption,
   createNumberCriterionOption("height_cm", "height"),
@@ -109,6 +119,8 @@ const criterionOptions = [
   ...stringCriteria.map((c) => createStringCriterionOption(c)),
   createDateCriterionOption("birthdate"),
   createDateCriterionOption("death_date"),
+  createDateCriterionOption("career_start"),
+  createDateCriterionOption("career_end"),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),
   CustomFieldsCriterionOption,

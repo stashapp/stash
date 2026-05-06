@@ -1,7 +1,7 @@
 import { Tab, Nav, Dropdown } from "react-bootstrap";
-import React, { useContext, useEffect, useMemo, useState } from "react";
-import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
-import { useHistory, Link, RouteComponentProps } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
+import { useHistory, RouteComponentProps } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import {
   useFindImage,
@@ -29,11 +29,15 @@ import { imagePath, imageTitle } from "src/core/files";
 import { isVideo } from "src/utils/visualFile";
 import { useScrollToTopOnMount } from "src/hooks/scrollToTop";
 import { useRatingKeybinds } from "src/hooks/keybinds";
-import { ConfigurationContext } from "src/hooks/Config";
+import { useConfigurationContext } from "src/hooks/Config";
 import TextUtils from "src/utils/text";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
+import { goBackOrReplace } from "src/utils/history";
+import { FormattedDate } from "src/components/Shared/Date";
+import { GenerateDialog } from "src/components/Dialogs/GenerateDialog";
+import { StudioLogo } from "src/components/Shared/StudioLogo";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -47,7 +51,8 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
   const history = useHistory();
   const Toast = useToast();
   const intl = useIntl();
-  const { configuration } = useContext(ConfigurationContext);
+  const { configuration } = useConfigurationContext();
+  const { showStudioText } = configuration?.ui ?? {};
 
   const [incrementO] = useImageIncrementO(image.id);
   const [decrementO] = useImageDecrementO(image.id);
@@ -60,6 +65,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
   const [activeTabKey, setActiveTabKey] = useState("image-details-panel");
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
   async function onSave(input: GQL.ImageUpdateInput) {
     await updateImage({
@@ -156,7 +162,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
   function onDeleteDialogClosed(deleted: boolean) {
     setIsDeleteAlertOpen(false);
     if (deleted) {
-      history.goBack();
+      goBackOrReplace(history, "/images");
     }
   }
 
@@ -164,6 +170,20 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
     if (isDeleteAlertOpen && image) {
       return (
         <DeleteImagesDialog selected={[image]} onClose={onDeleteDialogClosed} />
+      );
+    }
+  }
+
+  function maybeRenderSceneGenerateDialog() {
+    if (isGenerateDialogOpen) {
+      return (
+        <GenerateDialog
+          selectedIds={[image.id]}
+          onClose={() => {
+            setIsGenerateDialogOpen(false);
+          }}
+          type="image"
+        />
       );
     }
   }
@@ -186,6 +206,13 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
             onClick={() => onRescan()}
           >
             <FormattedMessage id="actions.rescan" />
+          </Dropdown.Item>
+          <Dropdown.Item
+            key="generate"
+            className="bg-secondary text-white"
+            onClick={() => setIsGenerateDialogOpen(true)}
+          >
+            <FormattedMessage id="actions.generate" />…
           </Dropdown.Item>
           <Dropdown.Item
             key="delete-image"
@@ -297,20 +324,11 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
       </Helmet>
 
       {maybeRenderDeleteDialog()}
+      {maybeRenderSceneGenerateDialog()}
       <div className="image-tabs order-xl-first order-last">
         <div>
           <div className="image-header-container">
-            {image.studio && (
-              <h1 className="text-center image-studio-image">
-                <Link to={`/studios/${image.studio.id}`}>
-                  <img
-                    src={image.studio.image_path ?? ""}
-                    alt={`${image.studio.name} logo`}
-                    className="studio-logo"
-                  />
-                </Link>
-              </h1>
-            )}
+            <StudioLogo studio={image.studio} showText={showStudioText} />
             <h3 className={cx("image-header", { "no-studio": !image.studio })}>
               <TruncatedText lineCount={2} text={title} />
             </h3>
@@ -318,13 +336,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
 
           <div className="image-subheader">
             <span className="date" data-value={image.date}>
-              {!!image.date && (
-                <FormattedDate
-                  value={image.date}
-                  format="long"
-                  timeZone="utc"
-                />
-              )}
+              {!!image.date && <FormattedDate value={image.date} />}
             </span>
             {resolution ? (
               <span className="resolution" data-value={resolution}>
@@ -369,6 +381,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
           <ImageView
             loop={image.visual_files[0].__typename == "VideoFile"}
             autoPlay={image.visual_files[0].__typename == "VideoFile"}
+            playsInline={image.visual_files[0].__typename == "VideoFile"}
             controls={image.visual_files[0].__typename == "VideoFile"}
             className="m-sm-auto no-gutter image-image"
             style={

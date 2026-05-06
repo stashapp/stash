@@ -565,6 +565,7 @@ func (j *CleanGeneratedJob) cleanMarkerFiles(ctx context.Context, progress *job.
 			j.setProgressFromFilename(sceneHash[0:2], progress)
 
 			// check if the scene exists
+			var walkErr error
 			if err := j.Repository.WithReadTxn(ctx, func(ctx context.Context) error {
 				var err error
 				scenes, err = j.getScenesWithHash(ctx, sceneHash)
@@ -575,15 +576,18 @@ func (j *CleanGeneratedJob) cleanMarkerFiles(ctx context.Context, progress *job.
 				if len(scenes) == 0 {
 					j.logDelete("deleting unused marker directory: %s", sceneHash)
 					j.deleteDir(path)
-				} else {
-					// get the markers now
-					for _, scene := range scenes {
-						thisMarkers, err := j.Repository.SceneMarker.FindBySceneID(ctx, scene.ID)
-						if err != nil {
-							return fmt.Errorf("error getting markers for scene: %v", err)
-						}
-						markers = append(markers, thisMarkers...)
+					// #5911 - we've just deleted the directory, so skip it in the walk to avoid errors
+					walkErr = fs.SkipDir
+					return nil
+				}
+
+				// get the markers now
+				for _, scene := range scenes {
+					thisMarkers, err := j.Repository.SceneMarker.FindBySceneID(ctx, scene.ID)
+					if err != nil {
+						return fmt.Errorf("error getting markers for scene: %v", err)
 					}
+					markers = append(markers, thisMarkers...)
 				}
 
 				return nil
@@ -591,7 +595,7 @@ func (j *CleanGeneratedJob) cleanMarkerFiles(ctx context.Context, progress *job.
 				logger.Error(err.Error())
 			}
 
-			return nil
+			return walkErr
 		}
 
 		filename := info.Name()
