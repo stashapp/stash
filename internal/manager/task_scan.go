@@ -283,8 +283,10 @@ func (j *ScanJob) processQueue(ctx context.Context, parallelTasks int, progress 
 
 		for f := range j.fileQueue {
 			logger.Tracef("Processing queued file %s", f.Path)
-			if err := ctx.Err(); err != nil {
-				return
+			if ctx.Err() != nil {
+				// Keep receiving until queueFiles closes the channel; otherwise
+				// the walker can block on send (full buffer) and never finish.
+				continue
 			}
 
 			wg.Add()

@@ -3,7 +3,7 @@ import { CollapseButton } from "./CollapseButton";
 import { DetailItem } from "./DetailItem";
 import { Button, Col, Form, FormGroup, InputGroup, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
-import { cloneDeep } from "@apollo/client/utilities";
+import cloneDeep from "lodash-es/cloneDeep";
 import { Icon } from "./Icon";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";

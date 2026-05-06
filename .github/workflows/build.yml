@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COMPILER_IMAGE: ghcr.io/stashapp/compiler:13
+  COMPILER_IMAGE: ghcr.io/stashapp/compiler:14
 
 jobs:
   # Job 1: Generate code and build UI
@@ -30,6 +30,8 @@ jobs:
         fetch-tags: true
     - name: Setup Go
       uses: actions/setup-go@v6
+      with:
+        go-version-file: 'go.mod'
 
     # pnpm version is read from the packageManager field in package.json
     # very broken (4.3, 4.4)
@@ -46,7 +48,7 @@ jobs:
         cache-dependency-path: ui/v2.5/pnpm-lock.yaml
 
     - name: Install UI dependencies
-      run: cd ui/v2.5 && pnpm install --frozen-lockfile
+      run: make pre-ui
 
     - name: Generate
       run: make generate

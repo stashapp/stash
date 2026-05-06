@@ -51,6 +51,10 @@
     flex-direction: column;
     overflow-wrap: anywhere;
     width: 100%;
+
+    .optional-field-content {
+      min-width: 0;
+    }
   }
 
   .original-scene-details {
@@ -277,6 +281,10 @@
 
   .form-check {
     font-size: 1rem;
+  }
+
+  p.lead {
+    margin-top: 1rem;
   }
 }
 

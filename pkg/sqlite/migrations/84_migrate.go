@@ -16,8 +16,8 @@ import (
 	"gopkg.in/guregu/null.v4"
 )
 
-func post84(ctx context.Context, db *sqlx.DB) error {
-	logger.Info("Running post-migration for schema version 84")
+func pre84(ctx context.Context, db *sqlx.DB) error {
+	logger.Info("Running pre-migration for schema version 84")
 
 	m := schema84Migrator{
 		migrator: migrator{
@@ -34,6 +34,23 @@ func post84(ctx context.Context, db *sqlx.DB) error {
 
 	if err := m.fixIncorrectParents(ctx, rootPaths); err != nil {
 		return fmt.Errorf("fixing incorrect parent folders: %w", err)
+	}
+
+	if err := m.deduplicateFolders(ctx); err != nil {
+		return fmt.Errorf("deduplicating folders: %w", err)
+	}
+
+	return nil
+}
+
+func post84(ctx context.Context, db *sqlx.DB) error {
+	logger.Info("Running post-migration for schema version 84")
+
+	m := schema84Migrator{
+		migrator: migrator{
+			db: db,
+		},
+		folderCache: make(map[string]folderInfo),
 	}
 
 	if err := m.migrateFolders(ctx); err != nil {
@@ -188,7 +205,7 @@ func (m *schema84Migrator) getOrCreateFolderHierarchy(tx *sqlx.Tx, path string, 
 		logger.Debugf("%s doesn't exist. Creating new folder entry...", path)
 
 		// we need to set basename to path, which will be addressed in the next step
-		const insertSQL = "INSERT INTO `folders` (`path`,`basename`,`parent_folder_id`,`mod_time`,`created_at`,`updated_at`) VALUES (?,?,?,?,?,?)"
+		const insertSQL = "INSERT INTO `folders` (`path`,`parent_folder_id`,`mod_time`,`created_at`,`updated_at`) VALUES (?,?,?,?,?)"
 
 		var parentFolderID null.Int
 		if parentID != nil {
@@ -196,7 +213,7 @@ func (m *schema84Migrator) getOrCreateFolderHierarchy(tx *sqlx.Tx, path string, 
 		}
 
 		now := time.Now()
-		result, err := tx.Exec(insertSQL, path, path, parentFolderID, time.Time{}, now, now)
+		result, err := tx.Exec(insertSQL, path, parentFolderID, time.Time{}, now, now)
 		if err != nil {
 			return nil, fmt.Errorf("creating folder %s: %w", path, err)
 		}
@@ -264,11 +281,6 @@ func (m *schema84Migrator) fixIncorrectParents(ctx context.Context, rootPaths []
 					continue
 				}
 
-				if !logged {
-					logger.Info("Fixing folders with incorrect parent folder assignments...")
-					logged = true
-				}
-
 				correctParentID, err := m.getOrCreateFolderHierarchy(tx, expectedParent, rootPaths)
 				if err != nil {
 					return fmt.Errorf("error getting/creating correct parent for folder %d %q: %w", id, p, err)
@@ -276,6 +288,11 @@ func (m *schema84Migrator) fixIncorrectParents(ctx context.Context, rootPaths []
 
 				if correctParentID == nil {
 					continue
+				}
+
+				if !logged {
+					logger.Info("Fixing folders with incorrect parent folder assignments...")
+					logged = true
 				}
 
 				logger.Debugf("Fixing folder %d %q: changing parent_folder_id from %d to %d", id, p, parentFolderID, *correctParentID)
@@ -304,6 +321,136 @@ func (m *schema84Migrator) fixIncorrectParents(ctx context.Context, rootPaths []
 
 	if fixed > 0 {
 		logger.Infof("Fixed %d folders with incorrect parent assignments", fixed)
+	}
+
+	return nil
+}
+
+// deduplicateFolders finds folders that would have the same (parent_folder_id, basename) after
+// migrateFolders sets basename = filepath.Base(path), and merges the duplicates.
+// This can happen when the database contains entries for the same physical folder with different
+// path representations (e.g., mixed separators like "\data/movies" vs "\data\movies" on Windows).
+func (m *schema84Migrator) deduplicateFolders(ctx context.Context) error {
+	for {
+		n, err := m.deduplicateFoldersPass(ctx)
+		if err != nil {
+			return err
+		}
+		// repeat until no more duplicates are found, since merging child folders
+		// from a duplicate parent into the canonical parent may create new conflicts
+		if n == 0 {
+			break
+		}
+	}
+	return nil
+}
+
+func (m *schema84Migrator) deduplicateFoldersPass(ctx context.Context) (int, error) {
+	type folderRow struct {
+		ID             int    `db:"id"`
+		Path           string `db:"path"`
+		ParentFolderID int    `db:"parent_folder_id"`
+	}
+
+	var folders []folderRow
+	if err := m.db.SelectContext(ctx, &folders,
+		"SELECT id, path, parent_folder_id FROM folders WHERE parent_folder_id IS NOT NULL ORDER BY id"); err != nil {
+		return 0, fmt.Errorf("loading folders: %w", err)
+	}
+
+	// group by (parent_folder_id, computed basename)
+	type groupKey struct {
+		parentID int
+		basename string
+	}
+	groups := make(map[groupKey][]folderRow)
+	for _, f := range folders {
+		key := groupKey{
+			parentID: f.ParentFolderID,
+			basename: filepath.Base(f.Path),
+		}
+		groups[key] = append(groups[key], f)
+	}
+
+	deduped := 0
+	for _, group := range groups {
+		if len(group) <= 1 {
+			continue
+		}
+
+		if deduped == 0 {
+			logger.Info("Deduplicating folders with conflicting basenames...")
+		}
+
+		// prefer the folder whose path is already normalized for the current OS,
+		// falling back to the newest entry (highest ID) since it's most likely
+		// from the current filesystem
+		keep := group[len(group)-1]
+		for _, f := range group {
+			if f.Path == filepath.Clean(f.Path) {
+				keep = f
+				break
+			}
+		}
+
+		for _, dup := range group {
+			if dup.ID == keep.ID {
+				continue
+			}
+
+			logger.Infof("Merging duplicate folder %d %q into folder %d %q", dup.ID, dup.Path, keep.ID, keep.Path)
+
+			if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
+				return m.mergeFolder(tx, keep.ID, dup.ID)
+			}); err != nil {
+				return 0, fmt.Errorf("merging folder %d into %d: %w", dup.ID, keep.ID, err)
+			}
+
+			deduped++
+		}
+	}
+
+	if deduped > 0 {
+		logger.Infof("Deduplicated %d folder entries", deduped)
+	}
+
+	return deduped, nil
+}
+
+func (m *schema84Migrator) mergeFolder(tx *sqlx.Tx, keepID, dupID int) error {
+	// Re-parent child folders from the duplicate to the canonical folder.
+	// At this point basenames are still full paths (unique), so this won't cause
+	// UNIQUE constraint violations on (parent_folder_id, basename).
+	if _, err := tx.Exec("UPDATE folders SET parent_folder_id = ? WHERE parent_folder_id = ?", keepID, dupID); err != nil {
+		return fmt.Errorf("re-parenting child folders: %w", err)
+	}
+
+	// re-parent any files under the duplicate folder to the canonical folder.
+	if _, err := tx.Exec("UPDATE files SET parent_folder_id = ? WHERE parent_folder_id = ?", keepID, dupID); err != nil {
+		return fmt.Errorf("re-parenting files: %w", err)
+	}
+
+	// delete the duplicate folder entry only if it is not referenced by any galleries
+	var count int
+	if err := tx.Get(&count, "SELECT COUNT(*) FROM galleries WHERE folder_id = ?", dupID); err != nil {
+		return fmt.Errorf("checking for gallery references: %w", err)
+	}
+
+	if count > 0 {
+		logger.Warnf("Duplicate folder %d is still referenced by %d galleries. Orphaning instead of deleting.", dupID, count)
+
+		// Orphan the stale duplicate folder by clearing its parent so the UNIQUE
+		// constraint on (parent_folder_id, basename) won't be violated when
+		// migrateFolders sets basenames. Any stale file entries under it are left
+		// untouched — the clean task will handle them on the next scan.
+		if _, err := tx.Exec("UPDATE folders SET parent_folder_id = NULL WHERE id = ?", dupID); err != nil {
+			return fmt.Errorf("orphaning duplicate folder: %w", err)
+		}
+	} else {
+		// delete the duplicate folder entry
+		if _, err := tx.Exec("DELETE FROM folders WHERE id = ?", dupID); err != nil {
+			return fmt.Errorf("deleting duplicate folder: %w", err)
+		}
 	}
 
 	return nil
@@ -381,5 +528,6 @@ func (m *schema84Migrator) migrateFolders(ctx context.Context) error {
 }
 
 func init() {
+	sqlite.RegisterPreMigration(84, pre84)
 	sqlite.RegisterPostMigration(84, post84)
 }

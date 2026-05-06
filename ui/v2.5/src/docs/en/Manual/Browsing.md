@@ -1,6 +1,6 @@
 # Browsing
 
-## Querying and Filtering
+## Querying and filtering
 
 ### Keyword searching
 
@@ -9,7 +9,7 @@ The text field allows you to search using keywords. Keyword searching matches on
 | Type | Fields searched |
 |------|-----------------|
 | Scene | Title, Details, Path, OSHash, Checksum, Marker titles |
-| Image | Title, Path, Checksum |
+| Image | Title, Details, Path, Checksum |
 | Group | Title |
 | Marker | Title, Scene title |
 | Gallery | Title, Path, Checksum |
@@ -17,15 +17,34 @@ The text field allows you to search using keywords. Keyword searching matches on
 | Studio | Name, Aliases |
 | Tag | Name, Aliases |
 
+### Rules
+
 Keyword matching uses the following rules:
 
-* all words are required in the matching field. For example, `foo bar` matches scenes with both `foo` and `bar` in the title.
-* the `or` keyword or symbol (`|`) is used to match either fields. For example, `foo or bar` (or `foo | bar`) matches scenes with `foo` or `bar` in the title. Or sets can be combined. For example, `foo or bar or baz xyz or zyx` matches scenes with one of `foo`, `bar` and `baz`, *and* `xyz` or `zyx`.
-* the not symbol (`-`) is used to exclude terms. For example, `foo -bar` matches scenes with `foo` and excludes those with `bar`. The not symbol cannot be combined with an or operand. That is, `-foo or bar` will be interpreted to match `-foo` or `bar`. On the other hand, `foo or bar -baz` will match `foo` or `bar` and exclude `baz`.
-* surrounding a phrase in quotes (`"`) matches on that exact phrase. For example, `"foo bar"` matches scenes with `foo bar` in the title. Quotes may also be used to escape the keywords and symbols. For example, `foo "-bar"` will match scenes with `foo` and `-bar`.
-* quoted phrases may be used with the or and not operators. For example, `"foo bar" or baz -"xyz zyx"` will match scenes with `foo bar` *or* `baz`, and exclude those with `xyz zyx`.
-* `or` keywords or symbols at the start or end of a line will be treated literally. That is, `or foo` will match scenes with `or` and `foo`.
-* all keyword matching is case-insensitive
+- By default, all terms are required in the same matching field.
+- Use the `or` keyword or `|` symbol to match either term.
+- You can combine `or` sets in one query.
+- Use the `-` symbol to exclude terms.
+- The `-` symbol cannot be combined with an `or` operand.
+- Use quotes (`"`) to match an exact phrase.
+- Quotes can also escape keywords and symbols.
+- `or` at the start or end of a query is treated literally.
+- Keyword matching is case-insensitive.
+
+#### Examples
+
+| Query | Behavior | Explanation |
+|---|---|---|
+| `foo bar` | Requires both `foo` and `bar`. | Both terms must match in the same field. |
+| `foo or bar` or `foo | bar` | Matches either `foo` or `bar`. | `or` and `|` are equivalent. |
+| `foo or bar or baz xyz or zyx` | Matches one of `foo`, `bar`, or `baz`, and either `xyz` or `zyx`. | Multiple `or` sets can be combined. |
+| `foo -bar` | Matches `foo`, excludes `bar`. | `-` excludes terms. |
+| `-foo or bar` | Interpreted as `-foo` or `bar`. | `-` cannot be combined with an `or` operand. |
+| `foo or bar -baz` | Matches `foo` or `bar`, excludes `baz`. | Exclusion is applied alongside the `or` set. |
+| `"foo bar"` | Matches the exact phrase `foo bar`. | Quotes perform exact phrase matching. |
+| `foo "-bar"` | Matches `foo` and the literal text `-bar`. | Quotes escape keyword/operator parsing. |
+| `"foo bar" or baz -"xyz zyx"` | Matches `foo bar` or `baz`, excludes `xyz zyx`. | Quoted phrases can be used with `or` and `-`. |
+| `or foo` | Matches literal `or` and `foo`. | `or` is literal at the start or end of a query. |
 
 ### Filters
 

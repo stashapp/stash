@@ -2264,6 +2264,9 @@ export const mutateDeleteFiles = (ids: string[]) =>
       }
 
       evictQueries(cache, [
+        GQL.FindSceneDocument, // files list on scene detail
+        GQL.FindImageDocument, // files list on image detail
+        GQL.FindGalleryDocument, // files list on gallery detail
         GQL.FindScenesDocument, // filter by file count
         GQL.FindImagesDocument, // filter by file count
         GQL.FindGalleriesDocument, // filter by file count
