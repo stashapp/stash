@@ -22,7 +22,7 @@ jobs:
 
       # generate-backend runs natively (just go generate + touch-ui) — no Docker needed
       - name: Generate Backend
-        run: make generate-backend
+        run: make touch-ui generate-backend
 
       ## WARN
       ## using v1, update in a later PR
