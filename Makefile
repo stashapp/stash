@@ -140,7 +140,7 @@ build: stash
 
 # builds dynamically-linked PIE release binaries
 .PHONY: build-release
-build-release: generate-backend flags-release flags-pie build
+build-release: generate-backend-release flags-release flags-pie build
 
 # compile and bundle into Stash.app
 # for when on macOS itself
@@ -295,8 +295,11 @@ generate-ui: pre-ui
 .PHONY: generate-backend
 generate-backend: $(BACKEND_GENERATE_SENTINEL)
 
-$(BACKEND_GENERATE_SENTINEL) &: $(UI_SENTINEL)
+$(BACKEND_GENERATE_SENTINEL) &:
 	go generate ./cmd/stash
+
+.PHONY: generate-backend-release
+generate-backend-release: $(UI_SENTINEL) generate-backend
 
 .PHONY: generate-login-locale
 generate-login-locale:
