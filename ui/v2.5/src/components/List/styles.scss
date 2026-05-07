@@ -1065,6 +1065,8 @@ ul.selectable-list {
 }
 
 .pagination-footer-container {
+  width: fit-content;
+  margin: auto;
   background-color: transparent;
   bottom: $navbar-height;
   position: sticky;
