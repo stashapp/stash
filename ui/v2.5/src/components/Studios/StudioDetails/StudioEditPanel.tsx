@@ -140,7 +140,14 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
   }, [studio.parent_studio]);
 
   useEffect(() => {
-    setChildStudios(studio.child_studios ?? []);
+    setChildStudios(
+      (studio.child_studios ?? []).map((childStudio) => ({
+        id: childStudio.id,
+        name: childStudio.name,
+        aliases: [],
+        image_path: childStudio.image_path,
+      }))
+    );
   }, [studio.child_studios]);
 
   useEffect(() => {
