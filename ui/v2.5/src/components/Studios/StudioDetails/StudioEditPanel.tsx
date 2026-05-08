@@ -234,7 +234,10 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         isMulti
         onSelect={onSetChildStudios}
         values={childStudios}
-        excludeIds={[...(studio?.id ? [studio.id] : []), ...(formik.values.parent_id ? [formik.values.parent_id] : [])]}
+        excludeIds={[
+          ...(studio?.id ? [studio.id] : []),
+          ...(formik.values.parent_id ? [formik.values.parent_id] : []),
+        ]}
       />
     );
 
