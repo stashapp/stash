@@ -48,7 +48,7 @@ jobs:
         cache-dependency-path: ui/v2.5/pnpm-lock.yaml
 
     - name: Install UI dependencies
-      run: cd ui/v2.5 && pnpm install --frozen-lockfile
+      run: make pre-ui
 
     - name: Generate
       run: make generate
