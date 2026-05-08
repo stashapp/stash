@@ -596,20 +596,20 @@ driver:
 
 ### TLS emulation (surf) support
 
-Some websites use TLS fingerprinting to identify automated traffic. These cannot be set in headers. Compared to the previous method of python libraries, [surf](https://github.com/enetx/surf) TLS emulation is faster and more reliable in most cases.
+Some websites use Transport Layer Security (TLS) fingerprinting to identify and block automated traffic. These fingerprints can't be passed through headers so we use the [surf](https://github.com/enetx/surf) library for TLS emulation. TLS emulation is a technique that allows scrapers to mimic the TLS fingerprint of a real browser, making it more difficult for websites to detect and block the scraper.
 
-One might consider TLS emulation if the site works well in browser but is inexplicably blocked when accessing through curl/ python/ stash.
+It should be faster and more reliable than Chrome DevTools Protocol (CDP) or Python based script scrapers in most cases, but it does not execute JavaScript, so it is not suitable for websites that require JavaScript to load content.
 
-TLS emulation can be enabled for a specific configuration by adding the following to the root of the yml configuration:
+If website works well in the browser but is inexplicably blocked when accessing through curl/Python/Stash, then TLS emulation may be worth trying.
+
+TLS emulation can be enabled for a specific configuration by adding the following to the root of the YAML configuration:
 
 ```yaml
 driver:
   useSurf: true
 ```
 
-This is only supported on stash v0.32+
-
-The `User-Agent` [header](#headers) is automatically removed, since overriding it would create a mismatch between TLS fingerprint and User-Agent, defeating the entire purpose of emulation.
+Enabling `useSurf` driver will automatically remove the `User-Agent` [header](#headers), since overriding it would create a mismatch between TLS fingerprint and User-Agent, defeating the entire purpose of emulation.
 
 > **⚠️ Note:** Proxies that do not support SOCKS5 will not be able to take full advantage of TLS emulation and might fail in rare cases.
 
