@@ -15,9 +15,36 @@ import (
 
 // used to refetch studio after hooks run
 
-func setChildStudios(ctx context.Context, qb models.StudioReaderWriter, parentStudioID int, childStudioIDs []int) error {
+func clearRemovedChildStudios(ctx context.Context, qb models.StudioReaderWriter, parentStudioID int, childStudioIDs []int) error {
 	currentChildren, err := qb.FindChildren(ctx, parentStudioID)
 	if err != nil {
+		return err
+	}
+
+	newChildStudioIDs := make(map[int]struct{}, len(childStudioIDs))
+	for _, childStudioID := range childStudioIDs {
+		newChildStudioIDs[childStudioID] = struct{}{}
+	}
+
+	for _, currentChild := range currentChildren {
+		if _, keep := newChildStudioIDs[currentChild.ID]; keep {
+			continue
+		}
+
+		clearParentPartial := models.NewStudioPartial()
+		clearParentPartial.ID = currentChild.ID
+		clearParentPartial.ParentID = models.NewOptionalIntPtr(nil)
+
+		if _, err := qb.UpdatePartial(ctx, clearParentPartial); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func setChildStudios(ctx context.Context, qb models.StudioReaderWriter, parentStudioID int, childStudioIDs []int) error {
+	if err := clearRemovedChildStudios(ctx, qb, parentStudioID, childStudioIDs); err != nil {
 		return err
 	}
 
@@ -37,20 +64,6 @@ func setChildStudios(ctx context.Context, qb models.StudioReaderWriter, parentSt
 		}
 
 		if _, err := qb.UpdatePartial(ctx, childPartial); err != nil {
-			return err
-		}
-	}
-
-	for _, currentChild := range currentChildren {
-		if _, keep := newChildStudioIDs[currentChild.ID]; keep {
-			continue
-		}
-
-		clearParentPartial := models.NewStudioPartial()
-		clearParentPartial.ID = currentChild.ID
-		clearParentPartial.ParentID = models.NewOptionalIntPtr(nil)
-
-		if _, err := qb.UpdatePartial(ctx, clearParentPartial); err != nil {
 			return err
 		}
 	}
@@ -254,6 +267,12 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 				sanitized := stringslice.UniqueExcludeFold(effectiveAliases, name)
 				updatedStudio.Aliases.Values = sanitized
 				updatedStudio.Aliases.Mode = models.RelationshipUpdateModeSet
+			}
+		}
+
+		if translator.hasField("child_ids") {
+			if err := clearRemovedChildStudios(ctx, qb, studioID, childStudioIDs); err != nil {
+				return err
 			}
 		}
 
