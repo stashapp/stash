@@ -215,7 +215,7 @@ export const FilteredGroupList = PatchComponent(
 
     const withSidebar = view !== View.GroupSubGroups;
     const filterable = view !== View.GroupSubGroups;
-    const sortable = view !== View.GroupSubGroups;
+    const sortable = true;
 
     // States
     const {

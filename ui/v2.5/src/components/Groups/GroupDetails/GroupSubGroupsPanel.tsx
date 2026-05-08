@@ -54,9 +54,6 @@ const useContainingGroupFilterHook = (
       filter.criteria.push(groupCriterion);
     }
 
-    filter.sortBy = "sub_group_order";
-    filter.sortDirection = GQL.SortDirectionEnum.Asc;
-
     return filter;
   };
 };
@@ -68,15 +65,10 @@ interface IGroupSubGroupsPanel {
 }
 
 const defaultFilter = (() => {
-  const sortBy = "sub_group_order";
-  const ret = new ListFilterModel(GQL.FilterMode.Groups, undefined, {
-    defaultSortBy: sortBy,
+  return new ListFilterModel(GQL.FilterMode.Groups, undefined, {
+    defaultSortBy: "sub_group_description",
+    defaultSortDir: GQL.SortDirectionEnum.Asc,
   });
-
-  // unset the sort by so that its not included in the URL
-  ret.sortBy = undefined;
-
-  return ret;
 })();
 
 export const GroupSubGroupsPanel: React.FC<IGroupSubGroupsPanel> =
