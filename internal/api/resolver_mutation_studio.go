@@ -14,6 +14,50 @@ import (
 )
 
 // used to refetch studio after hooks run
+
+func setChildStudios(ctx context.Context, qb models.StudioReaderWriter, parentStudioID int, childStudioIDs []int) error {
+	currentChildren, err := qb.FindChildren(ctx, parentStudioID)
+	if err != nil {
+		return err
+	}
+
+	newChildStudioIDs := make(map[int]struct{}, len(childStudioIDs))
+	for _, childStudioID := range childStudioIDs {
+		if _, found := newChildStudioIDs[childStudioID]; found {
+			continue
+		}
+		newChildStudioIDs[childStudioID] = struct{}{}
+
+		childPartial := models.NewStudioPartial()
+		childPartial.ID = childStudioID
+		childPartial.ParentID = models.NewOptionalInt(parentStudioID)
+
+		if err := studio.ValidateModify(ctx, childPartial, qb); err != nil {
+			return err
+		}
+
+		if _, err := qb.UpdatePartial(ctx, childPartial); err != nil {
+			return err
+		}
+	}
+
+	for _, currentChild := range currentChildren {
+		if _, keep := newChildStudioIDs[currentChild.ID]; keep {
+			continue
+		}
+
+		clearParentPartial := models.NewStudioPartial()
+		clearParentPartial.ID = currentChild.ID
+		clearParentPartial.ParentID = models.NewOptionalIntPtr(nil)
+
+		if _, err := qb.UpdatePartial(ctx, clearParentPartial); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (r *mutationResolver) getStudio(ctx context.Context, id int) (ret *models.Studio, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Studio.Find(ctx, id)
@@ -62,6 +106,11 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
+
+	childStudioIDs, err := stringslice.StringSliceToIntSlice(input.ChildIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting child ids: %w", err)
+	}
 	newStudio.CustomFields = convertMapJSONNumbers(input.CustomFields)
 
 	// Process the base 64 encoded image string
@@ -89,6 +138,12 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 
 		if len(imageData) > 0 {
 			if err := qb.UpdateImage(ctx, newStudio.ID, imageData); err != nil {
+				return err
+			}
+		}
+
+		if input.ChildIds != nil {
+			if err := setChildStudios(ctx, qb, newStudio.ID, childStudioIDs); err != nil {
 				return err
 			}
 		}
@@ -133,6 +188,11 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	updatedStudio.TagIDs, err = translator.updateIds(input.TagIds, "tag_ids")
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
+	}
+
+	childStudioIDs, err := stringslice.StringSliceToIntSlice(input.ChildIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting child ids: %w", err)
 	}
 
 	if translator.hasField("urls") {
@@ -208,6 +268,12 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 
 		if imageIncluded {
 			if err := qb.UpdateImage(ctx, studioID, imageData); err != nil {
+				return err
+			}
+		}
+
+		if translator.hasField("child_ids") {
+			if err := setChildStudios(ctx, qb, studioID, childStudioIDs); err != nil {
 				return err
 			}
 		}

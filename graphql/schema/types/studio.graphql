@@ -36,6 +36,7 @@ input StudioCreateInput {
   url: String @deprecated(reason: "Use urls")
   urls: [String!]
   parent_id: ID
+  child_ids: [ID!]
   "This should be a URL or a base64 encoded data URL"
   image: String
   stash_ids: [StashIDInput!]
@@ -58,6 +59,7 @@ input StudioUpdateInput {
   url: String @deprecated(reason: "Use urls")
   urls: [String!]
   parent_id: ID
+  child_ids: [ID!]
   "This should be a URL or a base64 encoded data URL"
   image: String
   stash_ids: [StashIDInput!]
