@@ -147,7 +147,6 @@ const SidebarContent: React.FC<{
 
 interface IGroupListContext {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
-  defaultFilter?: ListFilterModel;
   view?: View;
   alterQuery?: boolean;
 }
@@ -210,12 +209,8 @@ export const FilteredGroupList = PatchComponent(
       onMove,
       fromGroupId,
       otherOperations: providedOperations = [],
-      defaultFilter,
     } = props;
 
-    const withSidebar = view !== View.GroupSubGroups;
-    const filterable = view !== View.GroupSubGroups;
-    const sortable = true;
 
     // States
     const {
@@ -230,7 +225,6 @@ export const FilteredGroupList = PatchComponent(
       useFilteredItemList({
         filterStateProps: {
           filterMode: GQL.FilterMode.Groups,
-          defaultFilter,
           view,
           useURL: alterQuery,
         },
@@ -402,8 +396,6 @@ export const FilteredGroupList = PatchComponent(
           operationComponent={operations}
           view={view}
           zoomable
-          filterable={filterable}
-          sortable={sortable}
         />
 
         <FilterTags
@@ -454,10 +446,6 @@ export const FilteredGroupList = PatchComponent(
         )}
       </>
     );
-
-    if (!withSidebar) {
-      return content;
-    }
 
     return (
       <div

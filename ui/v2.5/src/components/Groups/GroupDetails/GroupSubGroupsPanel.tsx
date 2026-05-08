@@ -64,13 +64,6 @@ interface IGroupSubGroupsPanel {
   extraOperations?: IItemListOperation<GQL.FindGroupsQueryResult>[];
 }
 
-const defaultFilter = (() => {
-  return new ListFilterModel(GQL.FilterMode.Groups, undefined, {
-    defaultSortBy: "sub_group_description",
-    defaultSortDir: GQL.SortDirectionEnum.Asc,
-  });
-})();
-
 export const GroupSubGroupsPanel: React.FC<IGroupSubGroupsPanel> =
   PatchComponent(
     "GroupSubGroupsPanel",
@@ -155,7 +148,6 @@ export const GroupSubGroupsPanel: React.FC<IGroupSubGroupsPanel> =
         <>
           {modal}
           <FilteredGroupList
-            defaultFilter={defaultFilter}
             filterHook={filterHook}
             alterQuery={active}
             fromGroupId={group.id}
