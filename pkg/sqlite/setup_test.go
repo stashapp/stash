@@ -1528,7 +1528,8 @@ func createGroups(ctx context.Context, mqb models.GroupReaderWriter, n int, o in
 
 		name = getGroupStringValue(index, name)
 		group := models.Group{
-			Name: name,
+			Name:    name,
+			Aliases: getGroupStringValue(i, "Aliases"),
 			URLs: models.NewRelatedStrings([]string{
 				getGroupEmptyString(i, urlField),
 			}),
