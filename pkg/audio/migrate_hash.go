@@ -1,5 +1,3 @@
-// TODO(audio): should this file be deleted since there are no transcodes?
-
 package audio
 
 import (

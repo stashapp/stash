@@ -57,7 +57,7 @@ The `Audio` datatype is similar to `Scene` but stores audio-only media (i.e. Aud
     - [x] FFProbe for Audio Files
 - [x] Graphql to return Audios (queries)
 - [x] Graphql to update Audios (mutations)
-- [ ] Update test files
+- [x] Update test files
 
 
 ## Notes

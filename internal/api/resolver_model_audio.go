@@ -219,23 +219,6 @@ func (r *audioResolver) AudioStreams(ctx context.Context, obj *models.Audio) ([]
 	return manager.GetAudioStreamPaths(obj, builder.GetStreamURL(apiKey), config.GetMaxStreamingTranscodeSize())
 }
 
-func (r *audioResolver) URL(ctx context.Context, obj *models.Audio) (*string, error) {
-	if !obj.URLs.Loaded() {
-		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-			return obj.LoadURLs(ctx, r.repository.Audio)
-		}); err != nil {
-			return nil, err
-		}
-	}
-
-	urls := obj.URLs.List()
-	if len(urls) == 0 {
-		return nil, nil
-	}
-
-	return &urls[0], nil
-}
-
 func (r *audioResolver) Urls(ctx context.Context, obj *models.Audio) ([]string, error) {
 	if !obj.URLs.Loaded() {
 		if err := r.withReadTxn(ctx, func(ctx context.Context) error {

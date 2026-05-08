@@ -321,7 +321,7 @@ func (r *mutationResolver) BulkAudioUpdate(ctx context.Context, input BulkAudioU
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
-	updatedAudio.URLs = translator.optionalURLsBulk(input.Urls, input.URL)
+	updatedAudio.URLs = translator.optionalURLsBulk(input.Urls, nil)
 
 	updatedAudio.PerformerIDs, err = translator.updateIdsBulk(input.PerformerIds, "performer_ids")
 	if err != nil {

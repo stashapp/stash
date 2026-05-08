@@ -19,7 +19,6 @@ type Audio {
   title: String
   code: String
   details: String
-  url: String @deprecated(reason: "Use urls")
   urls: [String!]!
   date: String
   # rating expressed as 1-100
@@ -67,7 +66,6 @@ input AudioCreateInput {
   title: String
   code: String
   details: String
-  url: String @deprecated(reason: "Use urls")
   urls: [String!]
   date: String
   # rating expressed as 1-100
@@ -94,13 +92,10 @@ input AudioUpdateInput {
   title: String
   code: String
   details: String
-  url: String @deprecated(reason: "Use urls")
   urls: [String!]
   date: String
   # rating expressed as 1-100
   rating100: Int
-  o_counter: Int
-    @deprecated(reason: "Unsupported - Use audioIncrementO/audioDecrementO")
   organized: Boolean
   studio_id: ID
   performer_ids: [ID!]
@@ -111,11 +106,6 @@ input AudioUpdateInput {
   resume_time: Float
   "The total time a audio has spent playing"
   play_duration: Float
-  "The number ot times a audio has been played"
-  play_count: Int
-    @deprecated(
-      reason: "Unsupported - Use audioIncrementPlayCount/audioDecrementPlayCount"
-    )
 
   primary_file_id: ID
 
@@ -128,7 +118,6 @@ input BulkAudioUpdateInput {
   title: String
   code: String
   details: String
-  url: String @deprecated(reason: "Use urls")
   urls: BulkUpdateStrings
   date: String
   # rating expressed as 1-100
