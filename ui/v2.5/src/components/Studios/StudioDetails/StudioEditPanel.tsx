@@ -237,7 +237,9 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
       <StudioSelect
         isMulti
         onSelect={onSetChildStudios}
-        values={childStudios}
+        values={childStudios.filter((childStudio) =>
+          formik.values.child_ids.includes(childStudio.id)
+        )}
         excludeIds={[
           ...(studio?.id ? [studio.id] : []),
           ...(formik.values.parent_id ? [formik.values.parent_id] : []),
