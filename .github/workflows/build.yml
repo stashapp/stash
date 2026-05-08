@@ -97,15 +97,7 @@ jobs:
         go-version-file: 'go.mod'
 
     # Places generated Go files + UI build into the working tree so the build compiles
-    - name: Download generated artifacts (attempt 1)
-      uses: actions/download-artifact@v8
-      id: download-generated-test-1
-      continue-on-error: true
-      with:
-        name: generated
-
-    - name: Download generated artifacts (attempt 2)
-      if: steps.download-generated-test-1.outcome == 'failure'
+    - name: Download generated artifacts
       uses: actions/download-artifact@v8
       with:
         name: generated
@@ -168,15 +160,7 @@ jobs:
         fetch-depth: 0
         fetch-tags: true
 
-    - name: Download generated artifacts (attempt 1)
-      uses: actions/download-artifact@v8
-      id: download-generated-build-1
-      continue-on-error: true
-      with:
-        name: generated
-
-    - name: Download generated artifacts (attempt 2)
-      if: steps.download-generated-build-1.outcome == 'failure'
+    - name: Download generated artifacts
       uses: actions/download-artifact@v8
       with:
         name: generated
@@ -224,15 +208,7 @@ jobs:
         fetch-tags: true
 
     # Downloads all artifacts (generated + 7 platform builds) into artifacts/ subdirectories
-    - name: Download all build artifacts (attempt 1)
-      uses: actions/download-artifact@v8
-      id: download-all-release-1
-      continue-on-error: true
-      with:
-        path: artifacts
-
-    - name: Download all build artifacts (attempt 2)
-      if: steps.download-all-release-1.outcome == 'failure'
+    - name: Download all build artifacts
       uses: actions/download-artifact@v8
       with:
         path: artifacts
