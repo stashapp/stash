@@ -328,6 +328,7 @@ func emptyGroup(idx int) models.Group {
 	return models.Group{
 		ID:               groupIDs[idx],
 		Name:             groupNames[idx],
+		Aliases:          "",
 		TagIDs:           models.NewRelatedIDs([]int{}),
 		ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{}),
 		SubGroups:        models.NewRelatedGroupDescriptions([]models.GroupIDDescription{}),
@@ -452,8 +453,9 @@ func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 				},
 			},
 			models.Group{
-				ID:   groupIDs[groupIdxWithParent],
-				Name: groupNames[groupIdxWithParent],
+				ID:      groupIDs[groupIdxWithParent],
+				Name:    groupNames[groupIdxWithParent],
+				Aliases: getGroupEmptyString(groupIdxWithParent, "Aliases"),
 				ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
 					{GroupID: groupIDs[groupIdxWithChild]},
 					{GroupID: groupIDs[groupIdxWithScene], Description: containingGroupDescription},
@@ -473,8 +475,9 @@ func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 				},
 			},
 			models.Group{
-				ID:   groupIDs[groupIdxWithChild],
-				Name: groupNames[groupIdxWithChild],
+				ID:      groupIDs[groupIdxWithChild],
+				Name:    groupNames[groupIdxWithChild],
+				Aliases: getGroupEmptyString(groupIdxWithChild, "Aliases"),
 				SubGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
 					{GroupID: groupIDs[groupIdxWithParent]},
 					{GroupID: groupIDs[groupIdxWithScene], Description: subGroupDescription},
@@ -496,6 +499,7 @@ func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 			models.Group{
 				ID:               groupIDs[groupIdxWithParent],
 				Name:             groupNames[groupIdxWithParent],
+				Aliases:          getGroupEmptyString(groupIdxWithParent, "Aliases"),
 				ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{}),
 			},
 			false,
@@ -514,6 +518,7 @@ func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 			models.Group{
 				ID:        groupIDs[groupIdxWithChild],
 				Name:      groupNames[groupIdxWithChild],
+				Aliases:   getGroupEmptyString(groupIdxWithChild, "Aliases"),
 				SubGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{}),
 			},
 			false,
