@@ -915,7 +915,7 @@ func TestGroupQueryAliases(t *testing.T) {
 	verifyGroupQuery(t, filter, verifyFn)
 
 	aliasesCriterion.Modifier = models.CriterionModifierIncludes
-	aliasesCriterion.Value = "oup_1_alia"
+	aliasesCriterion.Value = "oup_0001_A"
 	verifyGroupQuery(t, filter, verifyFn)
 
 	aliasesCriterion.Modifier = models.CriterionModifierExcludes
@@ -923,7 +923,7 @@ func TestGroupQueryAliases(t *testing.T) {
 	verifyGroupQuery(t, filter, verifyFn)
 
 	aliasesCriterion.Modifier = models.CriterionModifierMatchesRegex
-	aliasesCriterion.Value = "group_.*1_aliases"
+	aliasesCriterion.Value = "group_.*1_Aliases"
 	verifyGroupQuery(t, filter, verifyFn)
 
 	aliasesCriterion.Modifier = models.CriterionModifierNotMatchesRegex
