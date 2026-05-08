@@ -211,7 +211,6 @@ export const FilteredGroupList = PatchComponent(
       otherOperations: providedOperations = [],
     } = props;
 
-
     // States
     const {
       showSidebar,
