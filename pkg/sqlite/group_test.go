@@ -885,6 +885,52 @@ func TestGroupQueryURL(t *testing.T) {
 	verifyGroupQuery(t, filter, verifyFn)
 }
 
+func TestGroupQueryAliases(t *testing.T) {
+	const groupIdx = 1
+	groupAliases := getGroupStringValue(groupIdx, aliasesField)
+
+	aliasesCriterion := models.StringCriterionInput{
+		Value:    groupAliases,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	filter := models.GroupFilterType{
+		Aliases: &aliasesCriterion,
+	}
+
+	verifyFn := func(n *models.Group) {
+		t.Helper()
+		verifyString(t, n.Aliases, aliasesCriterion)
+	}
+
+	verifyGroupQuery(t, filter, verifyFn)
+
+	aliasesCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyGroupQuery(t, filter, verifyFn)
+
+	aliasesCriterion.Modifier = models.CriterionModifierIncludes
+	aliasesCriterion.Value = "oup_1_alia"
+	verifyGroupQuery(t, filter, verifyFn)
+
+	aliasesCriterion.Modifier = models.CriterionModifierExcludes
+	aliasesCriterion.Value = "not-present-alias-substring"
+	verifyGroupQuery(t, filter, verifyFn)
+
+	aliasesCriterion.Modifier = models.CriterionModifierMatchesRegex
+	aliasesCriterion.Value = "group_.*1_aliases"
+	verifyGroupQuery(t, filter, verifyFn)
+
+	aliasesCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyGroupQuery(t, filter, verifyFn)
+
+	aliasesCriterion.Modifier = models.CriterionModifierIsNull
+	aliasesCriterion.Value = ""
+	verifyGroupQuery(t, filter, verifyFn)
+
+	aliasesCriterion.Modifier = models.CriterionModifierNotNull
+	verifyGroupQuery(t, filter, verifyFn)
+}
+
 func TestGroupQueryURLExcludes(t *testing.T) {
 	withRollbackTxn(func(ctx context.Context) error {
 		mqb := db.Group
