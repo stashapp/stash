@@ -887,6 +887,7 @@ func TestGroupQueryURL(t *testing.T) {
 
 func TestGroupQueryAliases(t *testing.T) {
 	const groupIdx = 1
+	const aliasesField = "Aliases"
 	groupAliases := getGroupStringValue(groupIdx, aliasesField)
 
 	aliasesCriterion := models.StringCriterionInput{
