@@ -29,6 +29,7 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ExportTask struct {
@@ -423,9 +424,16 @@ func fileToJSON(f models.File) jsonschema.DirEntry {
 	}
 
 	for _, fp := range bf.Fingerprints {
+		fingerprintValue := fp.Fingerprint
+		// Convert phash to hex string to avoid float64 precision loss
+		if fp.Type == models.FingerprintTypePhash {
+			if v, ok := fp.Fingerprint.(int64); ok {
+				fingerprintValue = utils.PhashToString(v)
+			}
+		}
 		base.Fingerprints = append(base.Fingerprints, jsonschema.Fingerprint{
 			Type:        fp.Type,
-			Fingerprint: fp.Fingerprint,
+			Fingerprint: fingerprintValue,
 		})
 	}
 

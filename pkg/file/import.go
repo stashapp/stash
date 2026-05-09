@@ -4,11 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"path/filepath"
 	"time"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 var ErrZipFileNotExist = errors.New("zip file does not exist")
@@ -104,9 +107,34 @@ func (i *Importer) baseFileJSONToBaseFile(ctx context.Context, baseJSON *jsonsch
 	}
 
 	for _, fp := range baseJSON.Fingerprints {
+		fingerprintValue := fp.Fingerprint
+		// Handle phash: convert hex string to int64, or warn on numeric values
+		if fp.Type == models.FingerprintTypePhash {
+			switch v := fp.Fingerprint.(type) {
+			case string:
+				// New format: hex string
+				phash, err := utils.StringToPhash(v)
+				if err != nil {
+					logger.Warnf("Error parsing phash hex string %q: %v", v, err)
+				} else {
+					fingerprintValue = phash
+				}
+			case float64:
+				// Old format: float64 number - may have precision loss
+				// float64 can only represent integers exactly up to 2^53 (~9e15)
+				// phashes are uint64 values up to 2^64-1 (~1.8e19)
+				if v > math.MaxInt64 || v < math.MinInt64 {
+					logger.Warnf("Phash value %v is out of int64 range, skipping", v)
+					continue
+				}
+				intVal := int64(v)
+				logger.Warnf("Importing phash as float64 %v - may have precision loss. Consider re-exporting from a newer version.", v)
+				fingerprintValue = intVal
+			}
+		}
 		baseFile.Fingerprints = append(baseFile.Fingerprints, models.Fingerprint{
 			Type:        fp.Type,
-			Fingerprint: fp.Fingerprint,
+			Fingerprint: fingerprintValue,
 		})
 	}
 
