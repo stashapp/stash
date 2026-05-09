@@ -171,7 +171,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       return;
     }
 
-    const updates: Partial<GQL.ConfigImageLightboxInput> = {};
+    const updates: { scrollAttemptsBeforeChange?: number; disableAnimation?: boolean } = {};
 
     if (lightboxSettings?.scrollAttemptsBeforeChange === undefined) {
       updates.scrollAttemptsBeforeChange =
