@@ -2,7 +2,10 @@ import localForage from "localforage";
 import isEqual from "lodash-es/isEqual";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
 import { View } from "src/components/List/views";
-import { ImageLightboxDisplayMode, ImageLightboxScrollMode } from "src/core/generated-graphql";
+import {
+  ImageLightboxDisplayMode,
+  ImageLightboxScrollMode,
+} from "src/core/generated-graphql";
 
 interface IInterfaceQueryConfig {
   filter: string;
