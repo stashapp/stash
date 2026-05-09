@@ -1471,6 +1471,7 @@ ORDER BY SUM(file_size) DESC;
 			"files_fingerprints.fingerprint as phash",
 			"video_files.duration as duration",
 		}
+		query.addWhere("files_fingerprints.fingerprint IS NOT NULL")
 		query.sortAndPagination = " ORDER BY files.size DESC"
 
 		sqlStr := query.toSQL(true)
