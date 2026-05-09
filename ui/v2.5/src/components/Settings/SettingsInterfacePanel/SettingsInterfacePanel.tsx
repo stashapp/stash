@@ -95,7 +95,8 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
       sync: interactiveSync,
     } = React.useContext(InteractiveContext);
 
-    const [, setInterfaceLocalForage] = useInterfaceLocalForage();
+    const [interfaceLocalForage, setInterfaceLocalForage] =
+      useInterfaceLocalForage();
 
     function saveLightboxSettings(v: Partial<GQL.ConfigImageLightboxInput>) {
       // save in local forage as well for consistency
@@ -623,17 +624,37 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
           <NumberSetting
             headingID="config.ui.scroll_attempts_before_change.heading"
             subHeadingID="config.ui.scroll_attempts_before_change.description"
-            value={iface.imageLightbox?.scrollAttemptsBeforeChange ?? 0}
+            value={
+              interfaceLocalForage.data?.imageLightbox
+                ?.scrollAttemptsBeforeChange ?? 0
+            }
             onChange={(v) =>
-              saveLightboxSettings({ scrollAttemptsBeforeChange: v })
+              setInterfaceLocalForage((prev) => ({
+                ...prev,
+                imageLightbox: {
+                  ...prev.imageLightbox,
+                  scrollAttemptsBeforeChange: v,
+                },
+              }))
             }
           />
 
           <BooleanSetting
             id="lightbox_disable_animation"
             headingID="dialogs.lightbox.disable_animation"
-            checked={iface.imageLightbox?.disableAnimation ?? false}
-            onChange={(v) => saveLightboxSettings({ disableAnimation: v })}
+            checked={
+              interfaceLocalForage.data?.imageLightbox?.disableAnimation ??
+              false
+            }
+            onChange={(v) =>
+              setInterfaceLocalForage((prev) => ({
+                ...prev,
+                imageLightbox: {
+                  ...prev.imageLightbox,
+                  disableAnimation: v,
+                },
+              }))
+            }
           />
         </SettingSection>
 
