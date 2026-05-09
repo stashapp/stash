@@ -18,12 +18,12 @@ type IQueryConfig = Record<string, IInterfaceQueryConfig>;
 
 interface ILightboxConfig {
   disableAnimation?: boolean;
-  displayMode?: ImageLightboxDisplayMode;
-  resetZoomOnNav?: boolean;
-  scaleUp?: boolean;
+  displayMode?: ImageLightboxDisplayMode | null;
+  resetZoomOnNav?: boolean | null;
+  scaleUp?: boolean | null;
   scrollAttemptsBeforeChange?: number;
-  scrollMode?: ImageLightboxScrollMode;
-  slideshowDelay?: number;
+  scrollMode?: ImageLightboxScrollMode | null;
+  slideshowDelay?: number | null;
 }
 
 interface IInterfaceConfig {
