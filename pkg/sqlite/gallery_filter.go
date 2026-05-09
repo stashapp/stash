@@ -3,8 +3,6 @@ package sqlite
 import (
 	"context"
 	"fmt"
-	"path/filepath"
-	"regexp"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -216,66 +214,8 @@ func (qb *galleryFilterHandler) pathCriterionHandler(c *models.StringCriterionIn
 	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
 			galleryRepository.addFoldersTable(f)
-			f.addLeftJoin(folderTable, "gallery_folder", "galleries.folder_id = gallery_folder.id")
-
-			const pathColumn = "folders.path"
-			const basenameColumn = "files.basename"
-			const folderPathColumn = "gallery_folder.path"
-
-			addWildcards := true
-			not := false
-
-			if modifier := c.Modifier; c.Modifier.IsValid() {
-				switch modifier {
-				case models.CriterionModifierIncludes:
-					clause := getPathSearchClauseMany(pathColumn, basenameColumn, c.Value, addWildcards, not)
-					clause2 := getStringSearchClause([]string{folderPathColumn}, c.Value, false)
-					f.whereClauses = append(f.whereClauses, orClauses(clause, clause2))
-				case models.CriterionModifierExcludes:
-					not = true
-					clause := getPathSearchClauseMany(pathColumn, basenameColumn, c.Value, addWildcards, not)
-					clause2 := getStringSearchClause([]string{folderPathColumn}, c.Value, true)
-					f.whereClauses = append(f.whereClauses, orClauses(clause, clause2))
-				case models.CriterionModifierEquals:
-					addWildcards = false
-					clause := getPathSearchClause(pathColumn, basenameColumn, c.Value, addWildcards, not)
-					clause2 := makeClause(folderPathColumn+" LIKE ?", c.Value)
-					f.whereClauses = append(f.whereClauses, orClauses(clause, clause2))
-				case models.CriterionModifierNotEquals:
-					addWildcards = false
-					not = true
-					clause := getPathSearchClause(pathColumn, basenameColumn, c.Value, addWildcards, not)
-					clause2 := makeClause(folderPathColumn+" NOT LIKE ?", c.Value)
-					f.whereClauses = append(f.whereClauses, orClauses(clause, clause2))
-				case models.CriterionModifierMatchesRegex:
-					if _, err := regexp.Compile(c.Value); err != nil {
-						f.setError(err)
-						return
-					}
-					filepathColumn := fmt.Sprintf("%s || '%s' || %s", pathColumn, string(filepath.Separator), basenameColumn)
-					clause := makeClause(fmt.Sprintf("%s IS NOT NULL AND %s IS NOT NULL AND %s regexp ?", pathColumn, basenameColumn, filepathColumn), c.Value)
-					clause2 := makeClause(fmt.Sprintf("%s IS NOT NULL AND %[1]s regexp ?", folderPathColumn), c.Value)
-					f.whereClauses = append(f.whereClauses, orClauses(clause, clause2))
-				case models.CriterionModifierNotMatchesRegex:
-					if _, err := regexp.Compile(c.Value); err != nil {
-						f.setError(err)
-						return
-					}
-					filepathColumn := fmt.Sprintf("%s || '%s' || %s", pathColumn, string(filepath.Separator), basenameColumn)
-					f.addWhere(fmt.Sprintf("%s IS NULL OR %s IS NULL OR %s NOT regexp ?", pathColumn, basenameColumn, filepathColumn), c.Value)
-					f.addWhere(fmt.Sprintf("%s IS NULL OR %[1]s NOT regexp ?", folderPathColumn), c.Value)
-				case models.CriterionModifierIsNull:
-					f.addWhere(fmt.Sprintf("%s IS NULL OR TRIM(%[1]s) = '' OR %s IS NULL OR TRIM(%[2]s) = ''", pathColumn, basenameColumn))
-					f.addWhere(fmt.Sprintf("%s IS NULL OR TRIM(%[1]s) = ''", folderPathColumn))
-				case models.CriterionModifierNotNull:
-					clause := makeClause(fmt.Sprintf("%s IS NOT NULL AND TRIM(%[1]s) != '' AND %s IS NOT NULL AND TRIM(%[2]s) != ''", pathColumn, basenameColumn))
-					clause2 := makeClause(fmt.Sprintf("%s IS NOT NULL AND TRIM(%[1]s) != ''", folderPathColumn))
-					f.whereClauses = append(f.whereClauses, orClauses(clause, clause2))
-				default:
-					panic("unsupported string filter modifier")
-				}
-			}
 		}
+		stringCriterionHandler(c, "folders.path || '/' || files.basename")(ctx, f)
 	}
 }
 

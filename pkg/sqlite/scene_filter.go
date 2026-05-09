@@ -55,7 +55,12 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 	sceneFilter := qb.sceneFilter
 	return compoundHandler{
 		intCriterionHandler(sceneFilter.ID, "scenes.id", nil),
-		pathCriterionHandler(sceneFilter.Path, "folders.path", "files.basename", qb.addFoldersTable),
+		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
+			if sceneFilter.Path != nil {
+				qb.addFoldersTable(f, joinTypeInner)
+			}
+			stringCriterionHandler(sceneFilter.Path, "folders.path || '/' || files.basename")(ctx, f)
+		}),
 		qb.fileCountCriterionHandler(sceneFilter.FileCount),
 		stringCriterionHandler(sceneFilter.Title, "scenes.title"),
 		stringCriterionHandler(sceneFilter.Code, "scenes.code"),

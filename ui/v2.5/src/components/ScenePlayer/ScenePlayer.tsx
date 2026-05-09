@@ -26,6 +26,8 @@ import "./vrmode";
 import "./media-session";
 import "./wake-sentinel";
 import cx from "classnames";
+import { faRepeat } from "@fortawesome/free-solid-svg-icons";
+import { Icon } from "src/components/Shared/Icon";
 import {
   useSceneSaveActivity,
   useSceneIncrementPlayCount,
@@ -266,6 +268,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
     const [fullscreen, setFullscreen] = useState(false);
     const [showScrubber, setShowScrubber] = useState(false);
+    const [loopEnabled, setLoopEnabled] = useState(false);
 
     const started = useRef(false);
     const auto = useRef(false);
@@ -714,6 +717,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       player.ready(() => {
         player.vttThumbnails().src(scene.paths.vtt ?? null);
 
+        player.loop(looping);
+        setLoopEnabled(looping);
+
         if (startPosition) {
           player.currentTime(startPosition);
         }
@@ -726,6 +732,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       scene,
       interactiveClient,
       autoplay,
+      looping,
       interfaceConfig?.autostartVideo,
       uiConfig?.alwaysStartFromBeginning,
       uiConfig?.disableMobileMediaAutoRotateEnabled,
@@ -997,6 +1004,19 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
             onScroll={onScrubberScroll}
           />
         )}
+        <button
+          className={cx("loop-toggle", { active: loopEnabled })}
+          title="Toggle loop"
+          onClick={() => {
+            const player = getPlayer();
+            if (!player) return;
+            const next = !loopEnabled;
+            player.loop(next);
+            setLoopEnabled(next);
+          }}
+        >
+          <Icon icon={faRepeat} />
+        </button>
       </div>
     );
   }
