@@ -197,10 +197,10 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const scrollAttemptsBeforeChange = Math.max(
     0,
-    config?.interface.imageLightbox.scrollAttemptsBeforeChange ?? 0
+    lightboxSettings?.scrollAttemptsBeforeChange ?? 0
   );
 
-  const disableAnimation = config?.interface.imageLightbox.disableAnimation;
+  const disableAnimation = lightboxSettings?.disableAnimation;
 
   function setSlideshowDelay(v: number) {
     setLightboxSettings({ slideshowDelay: v });

@@ -7,13 +7,11 @@ import (
 )
 
 type ConfigImageLightboxResult struct {
-	SlideshowDelay             *int                      `json:"slideshowDelay"`
-	DisplayMode                *ImageLightboxDisplayMode `json:"displayMode"`
-	ScaleUp                    *bool                     `json:"scaleUp"`
-	ResetZoomOnNav             *bool                     `json:"resetZoomOnNav"`
-	ScrollMode                 *ImageLightboxScrollMode  `json:"scrollMode"`
-	ScrollAttemptsBeforeChange int                       `json:"scrollAttemptsBeforeChange"`
-	DisableAnimation           *bool                     `json:"disableAnimation"`
+	SlideshowDelay *int                      `json:"slideshowDelay"`
+	DisplayMode    *ImageLightboxDisplayMode `json:"displayMode"`
+	ScaleUp        *bool                     `json:"scaleUp"`
+	ResetZoomOnNav *bool                     `json:"resetZoomOnNav"`
+	ScrollMode     *ImageLightboxScrollMode  `json:"scrollMode"`
 }
 
 type ImageLightboxDisplayMode string

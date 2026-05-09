@@ -361,8 +361,6 @@ input ConfigImageLightboxInput {
   scaleUp: Boolean
   resetZoomOnNav: Boolean
   scrollMode: ImageLightboxScrollMode
-  scrollAttemptsBeforeChange: Int
-  disableAnimation: Boolean
 }
 
 type ConfigImageLightboxResult {
@@ -371,8 +369,6 @@ type ConfigImageLightboxResult {
   scaleUp: Boolean
   resetZoomOnNav: Boolean
   scrollMode: ImageLightboxScrollMode
-  scrollAttemptsBeforeChange: Int!
-  disableAnimation: Boolean
 }
 
 input ConfigInterfaceInput {
