@@ -195,10 +195,11 @@ export const LightboxComponent: React.FC<IProps> = ({
   const slideshowDelay =
     savedDelay ?? configuredDelay ?? DEFAULT_SLIDESHOW_DELAY;
 
-  const scrollAttemptsBeforeChange = Math.max(
-    0,
-    lightboxSettings?.scrollAttemptsBeforeChange ?? 0
-  );
+  const rawScrollAttempts = lightboxSettings?.scrollAttemptsBeforeChange;
+  const scrollAttemptsBeforeChange =
+    typeof rawScrollAttempts === "number" && Number.isFinite(rawScrollAttempts)
+      ? Math.max(0, rawScrollAttempts)
+      : 0;
 
   const disableAnimation = lightboxSettings?.disableAnimation;
 
