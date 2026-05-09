@@ -105,8 +105,6 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
     scaleUp
     resetZoomOnNav
     scrollMode
-    scrollAttemptsBeforeChange
-    disableAnimation
   }
   disableDropdownCreate {
     performer
