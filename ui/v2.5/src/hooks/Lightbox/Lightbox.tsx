@@ -160,6 +160,47 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const lightboxSettings = interfaceLocalForage.data?.imageLightbox;
 
+  const migrationDone = useRef(false);
+
+  useEffect(() => {
+    if (
+      migrationDone.current ||
+      interfaceLocalForage.data === undefined ||
+      !config
+    ) {
+      return;
+    }
+
+    const updates: Partial<GQL.ConfigImageLightboxInput> = {};
+
+    if (lightboxSettings?.scrollAttemptsBeforeChange === undefined) {
+      updates.scrollAttemptsBeforeChange =
+        config.interface.imageLightbox.scrollAttemptsBeforeChange;
+    }
+    if (lightboxSettings?.disableAnimation === undefined) {
+      updates.disableAnimation =
+        config.interface.imageLightbox.disableAnimation;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      setInterfaceLocalForage((prev) => ({
+        ...prev,
+        imageLightbox: {
+          ...prev.imageLightbox,
+          ...updates,
+        },
+      }));
+    }
+
+    migrationDone.current = true;
+  }, [
+    interfaceLocalForage.data,
+    config,
+    lightboxSettings?.scrollAttemptsBeforeChange,
+    lightboxSettings?.disableAnimation,
+    setInterfaceLocalForage,
+  ]);
+
   function setLightboxSettings(v: Partial<GQL.ConfigImageLightboxInput>) {
     setInterfaceLocalForage((prev) => {
       return {
