@@ -868,7 +868,7 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 			// DESC uses oldest performer age for each gallery.
 			aggregation = "MAX"
 		}
-		fallback := "-9223372036854775808"
+		var fallback string
 		if direction == "ASC" {
 			// ASC puts NULL first by default, so coalesce to sqlite max int.
 			fallback = "9223372036854775807"
