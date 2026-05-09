@@ -7,6 +7,12 @@ import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
 import { PhotographerLink } from "src/components/Shared/Link";
 import { CustomFields } from "src/components/Shared/CustomFields";
+import { TextField, URLField } from "src/utils/field";
+import {
+  getStoryMetadata,
+  isStoryGallery,
+  withoutStoryCustomFields,
+} from "./storyMetadata";
 
 interface IGalleryDetailProps {
   gallery: GQL.GalleryDataFragment;
@@ -16,6 +22,9 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
   gallery,
 }) => {
   const intl = useIntl();
+  const storyMetadata = getStoryMetadata(gallery);
+  const storyGallery = isStoryGallery(gallery);
+  const remainingCustomFields = withoutStoryCustomFields(gallery.custom_fields);
 
   function renderDetails() {
     if (!gallery.details) return;
@@ -73,6 +82,50 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
     );
   }
 
+  function renderStoryMetadata() {
+    if (!storyGallery) return;
+
+    return (
+      <>
+        <h6>
+          <FormattedMessage id="story_metadata" />
+        </h6>
+        <dl className="container details-list story-metadata-list">
+          <TextField id="author" value={storyMetadata.author} />
+          <TextField id="language" value={storyMetadata.language} />
+          <TextField id="tag_line" value={storyMetadata.tagLine} />
+          <URLField
+            id="source_url"
+            value={storyMetadata.sourceUrl}
+            url={storyMetadata.sourceUrl}
+            truncate
+          />
+          <TextField
+            id="source_website"
+            value={storyMetadata.sourceWebsite}
+          />
+          <URLField
+            id="audio_link"
+            value={storyMetadata.audioUrl}
+            url={storyMetadata.audioUrl}
+            truncate
+          />
+        </dl>
+        {storyMetadata.backCoverUrl ? (
+          <div className="story-back-cover">
+            <h6>
+              <FormattedMessage id="back_cover" />
+            </h6>
+            <img
+              src={storyMetadata.backCoverUrl}
+              alt={intl.formatMessage({ id: "back_cover" })}
+            />
+          </div>
+        ) : undefined}
+      </>
+    );
+  }
+
   // filename should use entire row if there is no studio
   const galleryDetailsWidth = gallery.studio ? "col-9" : "col-12";
 
@@ -107,9 +160,10 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
       <div className="row">
         <div className="col-12">
           {renderDetails()}
+          {renderStoryMetadata()}
           {renderTags()}
           {renderPerformers()}
-          <CustomFields values={gallery.custom_fields} fullWidth />
+          <CustomFields values={remainingCustomFields} fullWidth />
         </div>
       </div>
     </>

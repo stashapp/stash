@@ -106,3 +106,29 @@ func TestAssociateExisting_UpdatePartialOnNewFile(t *testing.T) {
 	db.Gallery.AssertCalled(t, "AddFileID", mock.Anything, testGalleryID, models.FileID(newFileID))
 	db.Gallery.AssertCalled(t, "UpdatePartial", mock.Anything, testGalleryID, mock.Anything)
 }
+
+func TestHandleCreatesSingleFileGalleryWhenEnabled(t *testing.T) {
+	const testFileID = 200
+
+	textFile := &models.BaseFile{ID: models.FileID(testFileID), Path: "story.txt"}
+
+	db := mocks.NewDatabase()
+	db.Gallery.On("FindByFileID", mock.Anything, models.FileID(testFileID)).Return([]*models.Gallery{}, nil)
+	db.Gallery.On("FindByFingerprints", mock.Anything, mock.Anything).Return([]*models.Gallery{}, nil)
+	db.Image.On("FindByZipFileID", mock.Anything, models.FileID(testFileID)).Return([]*models.Image{}, nil)
+	db.Gallery.On("Create", mock.Anything, mock.AnythingOfType("*models.CreateGalleryInput")).Return(nil)
+
+	h := &ScanHandler{
+		CreatorUpdater:   db.Gallery,
+		ImageFinderUpdater: db.Image,
+		PluginCache:      &plugin.Cache{},
+		CreateIfNoImages: true,
+	}
+
+	db.WithTxnCtx(func(ctx context.Context) {
+		err := h.Handle(ctx, textFile, nil)
+		assert.NoError(t, err)
+	})
+
+	db.Gallery.AssertCalled(t, "Create", mock.Anything, mock.AnythingOfType("*models.CreateGalleryInput"))
+}

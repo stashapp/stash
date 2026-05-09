@@ -10,6 +10,8 @@ import (
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/internal/static"
+	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -43,6 +45,7 @@ func (rs galleryRoutes) Routes() chi.Router {
 
 		r.Get("/cover", rs.Cover)
 		r.Get("/preview/{imageIndex}", rs.Preview)
+		r.Get("/text", rs.Text)
 	})
 
 	return r
@@ -117,6 +120,25 @@ func (rs galleryRoutes) Preview(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rs.imageRoutes.serveThumbnail(w, r, i, nil)
+}
+
+func (rs galleryRoutes) Text(w http.ResponseWriter, r *http.Request) {
+	g := r.Context().Value(galleryKey).(*models.Gallery)
+
+	if g.Files.Primary() == nil {
+		http.Error(w, http.StatusText(404), 404)
+		return
+	}
+
+	if !fsutil.MatchExtension(g.Files.Primary().Base().Basename, config.GetInstance().GetTextExtensions()) {
+		http.Error(w, http.StatusText(404), 404)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	if err := g.Files.Primary().Base().Serve(&file.OsFS{}, w, r); err != nil {
+		http.Error(w, http.StatusText(404), 404)
+	}
 }
 
 func (rs galleryRoutes) GalleryCtx(next http.Handler) http.Handler {

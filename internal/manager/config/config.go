@@ -61,6 +61,7 @@ const (
 	VideoExtensions            = "video_extensions"
 	ImageExtensions            = "image_extensions"
 	GalleryExtensions          = "gallery_extensions"
+	TextExtensions             = "text_extensions"
 	CreateGalleriesFromFolders = "create_galleries_from_folders"
 
 	// CalculateMD5 is the config key used to determine if MD5 should be calculated
@@ -313,6 +314,7 @@ var (
 	defaultVideoExtensions   = []string{"m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm", "f4v"}
 	defaultImageExtensions   = []string{"png", "jpg", "jpeg", "gif", "webp", "avif"}
 	defaultGalleryExtensions = []string{"zip", "cbz"}
+	defaultTextExtensions    = []string{"txt", "text", "md", "markdown", "nfo", "rst", "log"}
 	defaultMenuItems         = []string{"scenes", "images", "groups", "markers", "galleries", "performers", "studios", "tags"}
 )
 
@@ -798,6 +800,14 @@ func (i *Config) GetGalleryExtensions() []string {
 	ret := i.getStringSlice(GalleryExtensions)
 	if len(ret) == 0 {
 		ret = defaultGalleryExtensions
+	}
+	return ret
+}
+
+func (i *Config) GetTextExtensions() []string {
+	ret := i.getStringSlice(TextExtensions)
+	if len(ret) == 0 {
+		ret = defaultTextExtensions
 	}
 	return ret
 }

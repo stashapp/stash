@@ -37,6 +37,8 @@ type ScanHandler struct {
 	SceneFinderUpdater ScanSceneFinderUpdater
 	ImageFinderUpdater ScanImageFinderUpdater
 	PluginCache        *plugin.Cache
+	CreateIfNoImages   bool
+	AssociateScenes    bool
 }
 
 func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.File) error {
@@ -62,15 +64,13 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 			return err
 		}
 	} else {
-		// only create galleries if there is something to put in them
-		// otherwise, they will be created on the fly when an image is created
 		images, err := h.ImageFinderUpdater.FindByZipFileID(ctx, f.Base().ID)
 		if err != nil {
 			return err
 		}
 
-		if len(images) == 0 {
-			// don't create an empty gallery
+		if len(images) == 0 && !h.CreateIfNoImages {
+			// don't create an empty gallery for zip-like files
 			return nil
 		}
 
@@ -88,27 +88,31 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 
 		h.PluginCache.RegisterPostHooks(ctx, newGallery.ID, hook.GalleryCreatePost, nil, nil)
 
-		// associate all the images in the zip file with the gallery
-		for _, i := range images {
-			imagePartial := models.ImagePartial{
-				GalleryIDs: &models.UpdateIDs{
-					IDs:  []int{newGallery.ID},
-					Mode: models.RelationshipUpdateModeAdd,
-				},
-				// set UpdatedAt directly instead of using NewImagePartial, to ensure
-				// that the images have the same UpdatedAt time as the gallery
-				UpdatedAt: models.NewOptionalTime(newGallery.UpdatedAt),
-			}
-			if _, err := h.ImageFinderUpdater.UpdatePartial(ctx, i.ID, imagePartial); err != nil {
-				return fmt.Errorf("adding image %s to gallery: %w", i.Path, err)
+		if len(images) > 0 {
+			// associate all the images in the zip file with the gallery
+			for _, i := range images {
+				imagePartial := models.ImagePartial{
+					GalleryIDs: &models.UpdateIDs{
+						IDs:  []int{newGallery.ID},
+						Mode: models.RelationshipUpdateModeAdd,
+					},
+					// set UpdatedAt directly instead of using NewImagePartial, to ensure
+					// that the images have the same UpdatedAt time as the gallery
+					UpdatedAt: models.NewOptionalTime(newGallery.UpdatedAt),
+				}
+				if _, err := h.ImageFinderUpdater.UpdatePartial(ctx, i.ID, imagePartial); err != nil {
+					return fmt.Errorf("adding image %s to gallery: %w", i.Path, err)
+				}
 			}
 		}
 
 		existing = []*models.Gallery{&newGallery}
 	}
 
-	if err := h.associateScene(ctx, existing, f); err != nil {
-		return err
+	if h.AssociateScenes {
+		if err := h.associateScene(ctx, existing, f); err != nil {
+			return err
+		}
 	}
 
 	return nil

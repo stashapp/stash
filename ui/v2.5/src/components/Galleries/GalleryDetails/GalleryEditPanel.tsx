@@ -36,6 +36,12 @@ import {
   formatCustomFieldInput,
 } from "src/components/Shared/CustomFields";
 import cloneDeep from "lodash-es/cloneDeep";
+import {
+  applyStoryMetadata,
+  getStoryMetadata,
+  isStoryGallery,
+  withoutStoryCustomFields,
+} from "./storyMetadata";
 
 interface IProps {
   gallery: Partial<GQL.GalleryDataFragment>;
@@ -69,6 +75,8 @@ export const GalleryEditPanel: React.FC<IProps> = ({
 
   const titleRequired =
     isNew || (gallery?.files?.length === 0 && !gallery?.folder);
+  const storyMetadata = getStoryMetadata(gallery);
+  const shouldRenderStoryMetadata = isStoryGallery(gallery);
 
   const schema = yup.object({
     title: titleRequired ? yup.string().required() : yup.string().ensure(),
@@ -82,6 +90,12 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     scene_ids: yup.array(yup.string().required()).defined(),
     details: yup.string().ensure(),
     custom_fields: yup.object().required().defined(),
+    story_author: yup.string().ensure(),
+    story_language: yup.string().ensure(),
+    story_source_website: yup.string().ensure(),
+    story_tag_line: yup.string().ensure(),
+    story_audio_url: yup.string().ensure(),
+    story_back_cover_url: yup.string().ensure(),
   });
 
   const initialValues = {
@@ -95,7 +109,15 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     tag_ids: (gallery?.tags ?? []).map((t) => t.id),
     scene_ids: (gallery?.scenes ?? []).map((s) => s.id),
     details: gallery?.details ?? "",
-    custom_fields: cloneDeep(gallery?.custom_fields ?? {}),
+    custom_fields: withoutStoryCustomFields(
+      cloneDeep(gallery?.custom_fields ?? {})
+    ),
+    story_author: storyMetadata.author,
+    story_language: storyMetadata.language,
+    story_source_website: storyMetadata.sourceWebsite,
+    story_tag_line: storyMetadata.tagLine,
+    story_audio_url: storyMetadata.audioUrl,
+    story_back_cover_url: storyMetadata.backCoverUrl,
   };
 
   type InputValues = yup.InferType<typeof schema>;
@@ -103,9 +125,28 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   const [customFieldsError, setCustomFieldsError] = useState<string>();
 
   function submit(values: InputValues) {
+    const customFields = applyStoryMetadata(values.custom_fields, {
+      author: values.story_author,
+      language: values.story_language,
+      sourceWebsite: values.story_source_website,
+      tagLine: values.story_tag_line,
+      audioUrl: values.story_audio_url,
+      backCoverUrl: values.story_back_cover_url,
+    });
+    const inputValues = schema.cast(values);
+
     const input = {
-      ...schema.cast(values),
-      custom_fields: formatCustomFieldInput(isNew, values.custom_fields),
+      title: inputValues.title,
+      code: inputValues.code,
+      urls: inputValues.urls,
+      date: inputValues.date,
+      photographer: inputValues.photographer,
+      studio_id: inputValues.studio_id,
+      performer_ids: inputValues.performer_ids,
+      tag_ids: inputValues.tag_ids,
+      scene_ids: inputValues.scene_ids,
+      details: inputValues.details,
+      custom_fields: formatCustomFieldInput(isNew, customFields),
     };
     onSave(input);
   }
@@ -194,7 +235,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     return <div></div>;
   }, [gallery?.paths?.cover, intl]);
 
-  async function onSave(input: InputValues, andNew?: boolean) {
+  async function onSave(input: GQL.GalleryCreateInput, andNew?: boolean) {
     setIsLoading(true);
     try {
       await onSubmit(input, andNew);
@@ -206,9 +247,28 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   }
 
   async function onSaveAndNewClick() {
+    const customFields = applyStoryMetadata(formik.values.custom_fields, {
+      author: formik.values.story_author,
+      language: formik.values.story_language,
+      sourceWebsite: formik.values.story_source_website,
+      tagLine: formik.values.story_tag_line,
+      audioUrl: formik.values.story_audio_url,
+      backCoverUrl: formik.values.story_back_cover_url,
+    });
+    const inputValues = schema.cast(formik.values);
+
     const input = {
-      ...schema.cast(formik.values),
-      custom_fields: formatCustomFieldInput(isNew, formik.values.custom_fields),
+      title: inputValues.title,
+      code: inputValues.code,
+      urls: inputValues.urls,
+      date: inputValues.date,
+      photographer: inputValues.photographer,
+      studio_id: inputValues.studio_id,
+      performer_ids: inputValues.performer_ids,
+      tag_ids: inputValues.tag_ids,
+      scene_ids: inputValues.scene_ids,
+      details: inputValues.details,
+      custom_fields: formatCustomFieldInput(isNew, customFields),
     };
     onSave(input, true);
   }
@@ -459,6 +519,46 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     return renderInputField("details", "textarea", "details", props);
   }
 
+  function renderStoryMetadataFields() {
+    if (!shouldRenderStoryMetadata) {
+      return;
+    }
+
+    return (
+      <>
+        <h6 className="story-metadata-heading">
+          <FormattedMessage id="story_metadata" />
+        </h6>
+        {renderInputField("story_author", "text", "author", fullWidthProps)}
+        {renderInputField("story_language", "text", "language", fullWidthProps)}
+        {renderInputField(
+          "story_source_website",
+          "text",
+          "source_website",
+          fullWidthProps
+        )}
+        {renderInputField(
+          "story_tag_line",
+          "text",
+          "tag_line",
+          fullWidthProps
+        )}
+        {renderInputField(
+          "story_audio_url",
+          "text",
+          "audio_link",
+          fullWidthProps
+        )}
+        {renderInputField(
+          "story_back_cover_url",
+          "text",
+          "back_cover",
+          fullWidthProps
+        )}
+      </>
+    );
+  }
+
   return (
     <div id="gallery-edit-details">
       <Prompt
@@ -541,6 +641,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
           </Col>
           <Col lg={5} xl={12}>
             {renderDetailsField()}
+            {renderStoryMetadataFields()}
             <Form.Group controlId="cover_image">
               <Form.Label>
                 <FormattedMessage id="cover_image" />

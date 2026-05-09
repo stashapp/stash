@@ -424,6 +424,7 @@ type extensionConfig struct {
 	vidExt []string
 	imgExt []string
 	zipExt []string
+	textExt []string
 }
 
 func newExtensionConfig(c *config.Config) extensionConfig {
@@ -431,6 +432,7 @@ func newExtensionConfig(c *config.Config) extensionConfig {
 		vidExt: c.GetVideoExtensions(),
 		imgExt: c.GetImageExtensions(),
 		zipExt: c.GetGalleryExtensions(),
+		textExt: c.GetTextExtensions(),
 	}
 }
 
@@ -480,6 +482,7 @@ func (f *handlerRequiredFilter) Accept(ctx context.Context, ff models.File) bool
 	isVideoFile := useAsVideo(path)
 	isImageFile := useAsImage(path)
 	isZipFile := fsutil.MatchExtension(path, f.zipExt)
+	isTextFile := fsutil.MatchExtension(path, f.textExt)
 
 	var counter fileCounter
 
@@ -490,6 +493,8 @@ func (f *handlerRequiredFilter) Accept(ctx context.Context, ff models.File) bool
 	case isImageFile:
 		counter = f.ImageFinder
 	case isZipFile:
+		counter = f.GalleryFinder
+	case isTextFile:
 		counter = f.GalleryFinder
 	}
 
@@ -598,8 +603,9 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo, 
 	isVideoFile := useAsVideo(path)
 	isImageFile := useAsImage(path)
 	isZipFile := fsutil.MatchExtension(path, f.zipExt)
+	isTextFile := fsutil.MatchExtension(path, f.textExt)
 
-	if !info.IsDir() && !isVideoFile && !isImageFile && !isZipFile {
+	if !info.IsDir() && !isVideoFile && !isImageFile && !isZipFile && !isTextFile {
 		logger.Debugf("Skipping %s as it does not match any known file extensions", path)
 		return false
 	}
@@ -621,7 +627,7 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo, 
 	if isVideoFile && (s.ExcludeVideo || matchFileRegex(path, f.videoExcludeRegex)) {
 		logger.Debugf("Skipping %s as it matches video exclusion patterns", path)
 		return false
-	} else if (isImageFile || isZipFile) && (s.ExcludeImage || matchFileRegex(path, f.imageExcludeRegex)) {
+	} else if (isImageFile || isZipFile || isTextFile) && (s.ExcludeImage || matchFileRegex(path, f.imageExcludeRegex)) {
 		logger.Debugf("Skipping %s as it matches image exclusion patterns", path)
 		return false
 	}
@@ -650,6 +656,10 @@ func imageFileFilter(ctx context.Context, f models.File) bool {
 
 func galleryFileFilter(ctx context.Context, f models.File) bool {
 	return isZip(f.Base().Basename)
+}
+
+func storyFileFilter(ctx context.Context, f models.File) bool {
+	return isText(f.Base().Path)
 }
 
 func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progress *job.Progress) []file.Handler {
@@ -688,6 +698,17 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 				SceneFinderUpdater: r.Scene,
 				ImageFinderUpdater: r.Image,
 				PluginCache:        pluginCache,
+				AssociateScenes:    true,
+			},
+		},
+		&file.FilteredHandler{
+			Filter: file.FilterFunc(storyFileFilter),
+			Handler: &gallery.ScanHandler{
+				CreatorUpdater:     r.Gallery,
+				SceneFinderUpdater: r.Scene,
+				ImageFinderUpdater: r.Image,
+				PluginCache:        pluginCache,
+				CreateIfNoImages:   true,
 			},
 		},
 		&file.FilteredHandler{

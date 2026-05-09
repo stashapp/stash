@@ -27,3 +27,7 @@ func (b GalleryURLBuilder) GetPreviewURL() string {
 func (b GalleryURLBuilder) GetCoverURL() string {
 	return b.BaseURL + "/gallery/" + b.GalleryID + "/cover?t=" + b.UpdatedAt
 }
+
+func (b GalleryURLBuilder) GetTextURL() string {
+	return b.BaseURL + "/gallery/" + b.GalleryID + "/text?t=" + b.UpdatedAt
+}

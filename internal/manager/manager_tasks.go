@@ -50,6 +50,11 @@ func isImage(pathname string) bool {
 	return fsutil.MatchExtension(pathname, imgExt)
 }
 
+func isText(pathname string) bool {
+	textExt := config.GetInstance().GetTextExtensions()
+	return fsutil.MatchExtension(pathname, textExt)
+}
+
 func getScanPaths(inputPaths []string) []*config.StashConfig {
 	stashPaths := config.GetInstance().GetStashPaths()
 

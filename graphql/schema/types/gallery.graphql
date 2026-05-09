@@ -1,6 +1,7 @@
 type GalleryPathsType {
   cover: String!
   preview: String! # Resolver
+  text: String # Resolver
 }
 
 "Gallery type"

@@ -29,6 +29,7 @@ import { DeleteGalleriesDialog } from "../DeleteGalleriesDialog";
 import { GalleryImagesPanel } from "./GalleryImagesPanel";
 import { GalleryAddPanel } from "./GalleryAddPanel";
 import { GalleryFileInfoPanel } from "./GalleryFileInfoPanel";
+import { GalleryTextPanel } from "./GalleryTextPanel";
 import { GalleryScenesPanel } from "./GalleryScenesPanel";
 import {
   faEllipsisV,
@@ -46,6 +47,7 @@ import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { goBackOrReplace } from "src/utils/history";
 import { FormattedDate } from "src/components/Shared/Date";
 import { StudioLogo } from "src/components/Shared/StudioLogo";
+import { isStoryGallery } from "./storyMetadata";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
@@ -68,6 +70,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
   const [collapsed, setCollapsed] = useState(false);
 
   const [activeTabKey, setActiveTabKey] = useState("gallery-details-panel");
+  const hasStoryText = isStoryGallery(gallery);
 
   const setMainTabKey = (newTabKey: string | null) => {
     if (newTabKey === "add") {
@@ -280,6 +283,13 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
                 </Nav.Link>
               </Nav.Item>
             ) : undefined}
+            {hasStoryText ? (
+              <Nav.Item>
+                <Nav.Link eventKey="gallery-text-panel">
+                  <FormattedMessage id="reader" />
+                </Nav.Link>
+              </Nav.Item>
+            ) : undefined}
             <Nav.Item>
               <Nav.Link eventKey="gallery-chapter-panel">
                 <FormattedMessage id="chapters" />
@@ -303,6 +313,11 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
           >
             <GalleryFileInfoPanel gallery={gallery} />
           </Tab.Pane>
+          {hasStoryText ? (
+            <Tab.Pane eventKey="gallery-text-panel">
+              <GalleryTextPanel gallery={gallery} />
+            </Tab.Pane>
+          ) : undefined}
           <Tab.Pane eventKey="gallery-chapter-panel">
             <GalleryChapterPanel
               gallery={gallery}
@@ -389,6 +404,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
     Mousetrap.bind("c", () => setActiveTabKey("gallery-chapter-panel"));
     Mousetrap.bind("e", () => setActiveTabKey("gallery-edit-panel"));
     Mousetrap.bind("f", () => setActiveTabKey("gallery-file-info-panel"));
+    Mousetrap.bind("r", () => hasStoryText && setActiveTabKey("gallery-text-panel"));
     Mousetrap.bind(",", () => setCollapsed(!collapsed));
 
     return () => {
@@ -396,9 +412,10 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
       Mousetrap.unbind("c");
       Mousetrap.unbind("e");
       Mousetrap.unbind("f");
+      Mousetrap.unbind("r");
       Mousetrap.unbind(",");
     };
-  });
+  }, [collapsed, hasStoryText]);
 
   const title = galleryTitle(gallery);
 
