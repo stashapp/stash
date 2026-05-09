@@ -218,12 +218,12 @@ const (
 	defaultWallPlayback = "video"
 
 	// Image lightbox options
-	legacyImageLightboxSlideshowDelay       = "slideshow_delay"
-	ImageLightboxSlideshowDelay             = "image_lightbox.slideshow_delay"
-	ImageLightboxDisplayModeKey             = "image_lightbox.display_mode"
-	ImageLightboxScaleUp                    = "image_lightbox.scale_up"
-	ImageLightboxResetZoomOnNav             = "image_lightbox.reset_zoom_on_nav"
-	ImageLightboxScrollModeKey              = "image_lightbox.scroll_mode"
+	legacyImageLightboxSlideshowDelay = "slideshow_delay"
+	ImageLightboxSlideshowDelay       = "image_lightbox.slideshow_delay"
+	ImageLightboxDisplayModeKey       = "image_lightbox.display_mode"
+	ImageLightboxScaleUp              = "image_lightbox.scale_up"
+	ImageLightboxResetZoomOnNav       = "image_lightbox.reset_zoom_on_nav"
+	ImageLightboxScrollModeKey        = "image_lightbox.scroll_mode"
 
 	UI = "ui"
 
