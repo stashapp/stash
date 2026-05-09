@@ -16,6 +16,8 @@ type TagFilterType struct {
 	IsMissing *string `json:"is_missing"`
 	// Filter by number of scenes with this tag
 	SceneCount *IntCriterionInput `json:"scene_count"`
+	// Depth for scene count filter (0/nil = direct only, -1 = all descendants, N = N levels)
+	SceneCountDepth *int `json:"scene_count_depth"`
 	// Filter by number of images with this tag
 	ImageCount *IntCriterionInput `json:"image_count"`
 	// Filter by number of galleries with this tag

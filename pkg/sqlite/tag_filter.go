@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -220,12 +221,62 @@ func (qb *tagFilterHandler) isMissingCriterionHandler(isMissing *string) criteri
 func (qb *tagFilterHandler) sceneCountCriterionHandler(sceneCount *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if sceneCount != nil {
-			f.addLeftJoin("scenes_tags", "", "scenes_tags.tag_id = tags.id")
-			clause, args := getIntCriterionWhereClause("count(distinct scenes_tags.scene_id)", *sceneCount)
+			depth := 0
+			if qb.tagFilter.SceneCountDepth != nil {
+				depth = *qb.tagFilter.SceneCountDepth
+			}
 
-			f.addHaving(clause, args...)
+			if depth == 0 {
+				// Direct scene count only - existing logic
+				f.addLeftJoin("scenes_tags", "", "scenes_tags.tag_id = tags.id")
+				clause, args := getIntCriterionWhereClause("count(distinct scenes_tags.scene_id)", *sceneCount)
+				f.addHaving(clause, args...)
+			} else {
+				// Hierarchical scene count using recursive CTE
+				qb.sceneCountWithDepth(ctx, f, sceneCount, depth)
+			}
 		}
 	}
+}
+
+func (qb *tagFilterHandler) sceneCountWithDepth(ctx context.Context, f *filterBuilder, sceneCount *models.IntCriterionInput, depth int) {
+	// Build recursive CTE to get all descendant tags up to specified depth
+	// depth = -1 means all descendants (no limit)
+	// depth = N means up to N levels down
+
+	depthCondition := ""
+	if depth > 0 {
+		depthCondition = fmt.Sprintf("AND depth < %d", depth)
+	}
+
+	// Create a CTE that combines:
+	// 1. The tag itself (depth 0) with its own ID as both root and descendant
+	// 2. All descendants from tags_relations
+	// This gives us a complete mapping of (root_tag, descendant_tag, depth)
+	withClause := fmt.Sprintf(`tag_hierarchy AS (
+		-- Root tags (depth 0): each tag is its own root
+		SELECT id AS root_id, id AS descendant_id, 0 AS depth FROM tags
+		UNION ALL
+		-- Descendants from tags_relations
+		SELECT parent_id AS root_id, child_id AS descendant_id, 1 AS depth FROM tags_relations
+		UNION ALL
+		-- Recursive step for deeper descendants
+		SELECT th.root_id, tr.child_id, th.depth + 1
+		FROM tag_hierarchy th
+		INNER JOIN tags_relations tr ON tr.parent_id = th.descendant_id
+		WHERE th.depth > 0 %s
+	)`, depthCondition)
+
+	f.addRecursiveWith(withClause)
+
+	// Join scenes through the hierarchy CTE
+	// For each tag (as root), join to its descendants in the CTE, then to their scenes
+	f.addLeftJoin("tag_hierarchy", "th", "th.root_id = tags.id")
+	f.addLeftJoin("scenes_tags", "hierarchy_scenes_tags", "hierarchy_scenes_tags.tag_id = th.descendant_id")
+
+	// Count distinct scenes across the entire hierarchy for each tag
+	clause, args := getIntCriterionWhereClause("count(distinct hierarchy_scenes_tags.scene_id)", *sceneCount)
+	f.addHaving(clause, args...)
 }
 
 func (qb *tagFilterHandler) imageCountCriterionHandler(imageCount *models.IntCriterionInput) criterionHandlerFunc {

@@ -635,6 +635,9 @@ input TagFilterType {
   "Filter by number of scenes with this tag"
   scene_count: IntCriterionInput
 
+  "Depth for scene count filter (0/nil = direct only, -1 = all descendants, N = N levels)"
+  scene_count_depth: Int
+
   "Filter by number of images with this tag"
   image_count: IntCriterionInput
 

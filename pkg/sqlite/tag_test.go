@@ -594,6 +594,89 @@ func verifyTagSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionIn
 	})
 }
 
+func TestTagQuerySceneCountWithDepth(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		qb := db.Tag
+
+		// Test hierarchy:
+		// tagIdxWithGrandParent (grandparent)
+		//   -> tagIdxWithParentAndChild (parent)
+		//        -> tagIdxWithGrandChild (child with scene)
+		//
+		// tagIdxWithParentTag (parent)
+		//   -> tagIdxWithChildTag (child with scene)
+		//
+		// Note: The test data sceneTags has scenes tagged with specific tags,
+		// but the hierarchy tags (parent/child/grandparent) may not have direct scenes.
+		// We need to verify the depth parameter works correctly.
+
+		// Test 1: Without depth (depth=0 or nil), only direct scene counts
+		sceneCountCriterion := models.IntCriterionInput{
+			Modifier: models.CriterionModifierGreaterThan,
+			Value:    0,
+		}
+		tagFilter := models.TagFilterType{
+			SceneCount:      &sceneCountCriterion,
+			SceneCountDepth: nil, // Explicitly nil = direct only
+		}
+
+		tags, _, err := qb.Query(ctx, &tagFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying tags: %s", err.Error())
+		}
+
+		// Without depth, parent tags without direct scenes should not appear
+		// Only tags with directly associated scenes should be returned
+		assert.NotNil(t, tags)
+
+		// Test 2: With depth=-1 (all descendants), parent tags with scenes on children should appear
+		depthAll := -1
+		tagFilter.SceneCountDepth = &depthAll
+
+		tagsWithDepth, _, err := qb.Query(ctx, &tagFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying tags with depth: %s", err.Error())
+		}
+
+		// With depth=-1, more tags should be returned (parents with child scenes)
+		// The exact count depends on the test data setup
+		assert.NotNil(t, tagsWithDepth)
+		assert.GreaterOrEqual(t, len(tagsWithDepth), len(tags), "depth=-1 should return at least as many tags as depth=0")
+
+		// Test 3: Verify specific hierarchy tags are included with depth
+		// Check that grandparent tag is in the results if any descendant has scenes
+		grandparentID := tagIDs[tagIdxWithGrandParent]
+		foundGrandparent := false
+		for _, tag := range tagsWithDepth {
+			if tag.ID == grandparentID {
+				foundGrandparent = true
+				break
+			}
+		}
+
+		// If grandchild has a scene, grandparent should appear with depth=-1
+		// This depends on the test data setup
+		if getTagSceneCount(tagIDs[tagIdxWithGrandChild]) > 0 {
+			assert.True(t, foundGrandparent, "Grandparent tag should appear when grandchild has scenes and depth=-1")
+		}
+
+		// Test 4: depth=1 (immediate children only)
+		depth1 := 1
+		tagFilter.SceneCountDepth = &depth1
+
+		tagsDepth1, _, err := qb.Query(ctx, &tagFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying tags with depth=1: %s", err.Error())
+		}
+
+		assert.NotNil(t, tagsDepth1)
+		// depth=1 should return more than depth=0 but possibly less than depth=-1
+		assert.GreaterOrEqual(t, len(tagsDepth1), len(tags), "depth=1 should return at least as many tags as depth=0")
+
+		return nil
+	})
+}
+
 func TestTagQueryMarkerCount(t *testing.T) {
 	countCriterion := models.IntCriterionInput{
 		Value:    1,

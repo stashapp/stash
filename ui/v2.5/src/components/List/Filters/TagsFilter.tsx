@@ -48,6 +48,10 @@ function queryVariables(query: string, f?: ListFilterModel) {
     }
 
     setObjectFilter(tagFilter, f.mode, filterOutput);
+
+    // Enable hierarchical scene counting to show parent tags with scenes on children
+    // This fixes the issue where empty parent tags don't appear in the sidebar
+    tagFilter.scene_count_depth = -1; // All depths
   }
 
   return makeQueryVariables(query, { tag_filter: tagFilter });
