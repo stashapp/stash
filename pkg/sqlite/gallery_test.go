@@ -12,6 +12,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var invalidID = -1
@@ -2882,6 +2883,8 @@ func TestGalleryQuerySortingPerformerAgeNullHandling(t *testing.T) {
 
 		knownBirthdate, err := models.ParseDate("1990-01-01")
 		require.NoError(t, err)
+		galleryDate, err := models.ParseDate("2020-01-01")
+		require.NoError(t, err)
 
 		knownPerformer := models.Performer{
 			Name:      "performer-known-birthdate",
@@ -2896,7 +2899,7 @@ func TestGalleryQuerySortingPerformerAgeNullHandling(t *testing.T) {
 
 		knownOnlyGallery := models.Gallery{
 			Title: "gallery-known-only",
-			Date:  models.NewString("2020-01-01"),
+			Date:  &galleryDate,
 			PerformerIDs: models.NewRelatedIDs([]int{
 				knownPerformer.ID,
 			}),
@@ -2905,7 +2908,7 @@ func TestGalleryQuerySortingPerformerAgeNullHandling(t *testing.T) {
 
 		mixedGallery := models.Gallery{
 			Title: "gallery-known-and-unknown",
-			Date:  models.NewString("2020-01-01"),
+			Date:  &galleryDate,
 			PerformerIDs: models.NewRelatedIDs([]int{
 				knownPerformer.ID,
 				unknownPerformer.ID,
@@ -2915,7 +2918,7 @@ func TestGalleryQuerySortingPerformerAgeNullHandling(t *testing.T) {
 
 		unknownOnlyGallery := models.Gallery{
 			Title: "gallery-unknown-only",
-			Date:  models.NewString("2020-01-01"),
+			Date:  &galleryDate,
 			PerformerIDs: models.NewRelatedIDs([]int{
 				unknownPerformer.ID,
 			}),
@@ -2970,6 +2973,8 @@ func TestGalleryQuerySortingPerformerAgeMultiPerformerAggregation(t *testing.T) 
 		require.NoError(t, err)
 		oldBirthdate, err := models.ParseDate("1980-01-01")
 		require.NoError(t, err)
+		galleryDate, err := models.ParseDate("2020-01-01")
+		require.NoError(t, err)
 
 		young := models.Performer{Name: "performer-young", Birthdate: &youngBirthdate}
 		mid := models.Performer{Name: "performer-mid", Birthdate: &midBirthdate}
@@ -2980,7 +2985,7 @@ func TestGalleryQuerySortingPerformerAgeMultiPerformerAggregation(t *testing.T) 
 
 		galleryYoungAndOld := models.Gallery{
 			Title: "gallery-young-and-old",
-			Date:  models.NewString("2020-01-01"),
+			Date:  &galleryDate,
 			PerformerIDs: models.NewRelatedIDs([]int{
 				young.ID,
 				old.ID,
@@ -2990,7 +2995,7 @@ func TestGalleryQuerySortingPerformerAgeMultiPerformerAggregation(t *testing.T) 
 
 		galleryMidOnly := models.Gallery{
 			Title: "gallery-mid-only",
-			Date:  models.NewString("2020-01-01"),
+			Date:  &galleryDate,
 			PerformerIDs: models.NewRelatedIDs([]int{
 				mid.ID,
 			}),
