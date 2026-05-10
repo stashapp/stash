@@ -3,10 +3,7 @@ import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { ObjectScrapeResult } from "./scrapeResult";
 import { Studio } from "src/components/Studios/StudioSelect";
-import {
-  useCreateScrapedStudio,
-  useLinkScrapedStudio,
-} from "./createObjects";
+import { useCreateScrapedStudio, useLinkScrapedStudio } from "./createObjects";
 import { ScrapedStudioRow } from "./ScrapedObjectsRow";
 import { CreateLinkStudioDialog } from "./CreateLinkStudioDialog";
 import { useStudioCreate, useStudioUpdate } from "src/core/StashService";
@@ -35,7 +32,9 @@ export function useScrapedStudios(
   const [newStudio, setNewStudio] = useState<GQL.ScrapedStudio | undefined>(
     scrapedStudio && !scrapedStudio.stored_id ? scrapedStudio : undefined
   );
-  const [linkedStudio, setLinkedStudio] = useState<GQL.ScrapedStudio | null>(null);
+  const [linkedStudio, setLinkedStudio] = useState<GQL.ScrapedStudio | null>(
+    null
+  );
 
   const createNewStudio = useCreateScrapedStudio({
     scrapeResult: studio,

@@ -39,7 +39,9 @@ export function useScrapedPerformers(
   const [newPerformers, setNewPerformers] = useState<GQL.ScrapedPerformer[]>(
     scrapedPerformers?.filter((p) => !p.stored_id) ?? []
   );
-  const [linkedPerformerIndex, setLinkedPerformerIndex] = useState<number | null>(null);
+  const [linkedPerformerIndex, setLinkedPerformerIndex] = useState<
+    number | null
+  >(null);
 
   const createNewPerformer = useCreateScrapedPerformer({
     scrapeResult: performers,
@@ -114,7 +116,8 @@ export function useScrapedPerformers(
     setLinkedPerformerIndex(null);
   }
 
-  const linkedPerformer = linkedPerformerIndex !== null ? newPerformers[linkedPerformerIndex] : null;
+  const linkedPerformer =
+    linkedPerformerIndex !== null ? newPerformers[linkedPerformerIndex] : null;
 
   const linkDialog = linkedPerformer ? (
     <CreateLinkPerformerDialog

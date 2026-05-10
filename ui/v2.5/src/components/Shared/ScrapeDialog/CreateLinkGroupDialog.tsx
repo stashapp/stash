@@ -42,7 +42,9 @@ export const CreateLinkGroupDialog: React.FC<{
         text: intl.formatMessage({ id: "actions.save" }),
         onClick: () => handleGroupSave(),
       }}
-      disabled={createNew ? (name?.trim() ?? "") === "" : existingGroup === null}
+      disabled={
+        createNew ? (name?.trim() ?? "") === "" : existingGroup === null
+      }
       cancel={{
         text: intl.formatMessage({ id: "actions.cancel" }),
         onClick: () => {

@@ -4,10 +4,7 @@ import * as GQL from "src/core/generated-graphql";
 import { ObjectListScrapeResult } from "./scrapeResult";
 import { sortStoredIdObjects } from "src/utils/data";
 import { Group } from "src/components/Groups/GroupSelect";
-import {
-  useCreateScrapedGroup,
-  useLinkScrapedGroup,
-} from "./createObjects";
+import { useCreateScrapedGroup, useLinkScrapedGroup } from "./createObjects";
 import { ScrapedGroupsRow } from "./ScrapedObjectsRow";
 import { CreateLinkGroupDialog } from "./CreateLinkGroupDialog";
 import { useGroupCreate, useGroupUpdate } from "src/core/StashService";
@@ -21,7 +18,9 @@ export function useScrapedGroups(
   const intl = useIntl();
   const Toast = useToast();
 
-  const [groups, setGroups] = useState<ObjectListScrapeResult<GQL.ScrapedGroup>>(
+  const [groups, setGroups] = useState<
+    ObjectListScrapeResult<GQL.ScrapedGroup>
+  >(
     new ObjectListScrapeResult<GQL.ScrapedGroup>(
       sortStoredIdObjects(
         existingGroups.map((g) => ({
@@ -110,7 +109,8 @@ export function useScrapedGroups(
     setLinkedGroupIndex(null);
   }
 
-  const linkedGroup = linkedGroupIndex !== null ? newGroups[linkedGroupIndex] : null;
+  const linkedGroup =
+    linkedGroupIndex !== null ? newGroups[linkedGroupIndex] : null;
 
   const linkDialog = linkedGroup ? (
     <CreateLinkGroupDialog

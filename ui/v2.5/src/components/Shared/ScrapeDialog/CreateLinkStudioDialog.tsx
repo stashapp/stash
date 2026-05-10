@@ -50,7 +50,9 @@ export const CreateLinkStudioDialog: React.FC<{
         text: intl.formatMessage({ id: "actions.save" }),
         onClick: () => handleStudioSave(),
       }}
-      disabled={createNew ? (name?.trim() ?? "") === "" : existingStudio === null}
+      disabled={
+        createNew ? (name?.trim() ?? "") === "" : existingStudio === null
+      }
       cancel={{
         text: intl.formatMessage({ id: "actions.cancel" }),
         onClick: () => {

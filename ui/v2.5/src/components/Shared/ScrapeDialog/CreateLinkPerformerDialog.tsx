@@ -19,7 +19,9 @@ export const CreateLinkPerformerDialog: React.FC<{
 
   const [createNew, setCreateNew] = useState(false);
   const [name, setName] = useState(performer.name);
-  const [existingPerformer, setExistingPerformer] = useState<Performer | null>(null);
+  const [existingPerformer, setExistingPerformer] = useState<Performer | null>(
+    null
+  );
 
   function handlePerformerSave() {
     if (createNew) {
@@ -50,7 +52,9 @@ export const CreateLinkPerformerDialog: React.FC<{
         text: intl.formatMessage({ id: "actions.save" }),
         onClick: () => handlePerformerSave(),
       }}
-      disabled={createNew ? (name?.trim() ?? "") === "" : existingPerformer === null}
+      disabled={
+        createNew ? (name?.trim() ?? "") === "" : existingPerformer === null
+      }
       cancel={{
         text: intl.formatMessage({ id: "actions.cancel" }),
         onClick: () => {
@@ -59,7 +63,9 @@ export const CreateLinkPerformerDialog: React.FC<{
       }}
       dialogClassName="create-link-performer-modal"
       icon={faLink}
-      header={intl.formatMessage({ id: "component_tagger.verb_match_performer" })}
+      header={intl.formatMessage({
+        id: "component_tagger.verb_match_performer",
+      })}
     >
       <Form>
         <Form.Check
