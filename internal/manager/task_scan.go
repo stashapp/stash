@@ -59,6 +59,28 @@ type ScanJob struct {
 	checkFolderThreshold float64
 }
 
+// CheckFolder hit-rate gating — assumptions and context:
+//
+//   - After warmup, cumulative hits/attempts proxies whether more CheckFolder
+//     calls pay off; walk order can skew this (single global ratio).
+//
+//   - A hit is CheckFolder returning unchanged: DB's folder ModTime equals this
+//     directory's ModTime from disk (see Scanner.CheckFolder). Skipping enqueue for
+//     direct files then assumes that invariant means nothing relevant changed among
+//     those children. This is safe for local filesystems, but not for network or
+//     coarse-modtime filesystems.
+//
+//   - When hits are rare (cold scan / folders absent or changed in DB), extra
+//     CheckFolder calls are mostly overhead versus processing dirs/files without this
+//     shortcut.
+//
+//   - Warmup assumes the first dirCheckWarmup CheckFolder calls are a representative
+//     sample of folder outcomes for this walk. It is treated as forecasting the whole
+//     job's hit rate. After warmup, a low cumulative rate stops further CheckFolder
+//     (e.g. first scan where almost every folder is new).
+//
+// Basic idea: we always CheckFolder until `dirCheckWarmup` folders have been checked,
+// then we continue to do so as long as the hit rate remains >= checkFolderHitRateThreshold
 const (
 	// dirCheckWarmup is the number of CheckFolder calls made before the
 	// hit-rate signal is trusted. Keeps the first few directories enabled
