@@ -12,8 +12,13 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm/v6" ];   then BIN=stash-linux-arm32v6; \
 FROM --platform=$TARGETPLATFORM alpine:latest AS app
 COPY --from=binary /stash /usr/bin/
 
-RUN apk add --no-cache ca-certificates python3 py3-requests py3-requests-toolbelt py3-lxml py3-pip ffmpeg tzdata vips vips-tools vips-heif \
+RUN apk add --no-cache ca-certificates python3 py3-requests py3-requests-toolbelt py3-lxml py3-pip ffmpeg tzdata vips vips-tools vips-heif su-exec \
     && pip install --break-system-packages mechanicalsoup cloudscraper stashapp-tools
+COPY scripts/docker-entrypoint.sh /usr/local/bin/stash-docker-entrypoint.sh
+RUN chmod 555 /usr/local/bin/stash-docker-entrypoint.sh
+ENV HOME=/root
+ENV PUID=1000
+ENV PGID=1000
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 
 # Basic build-time metadata as defined at https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
@@ -25,4 +30,5 @@ LABEL org.opencontainers.image.title="Stash" \
     org.opencontainers.image.licenses="AGPL-3.0"
 
 EXPOSE 9999
+ENTRYPOINT ["stash-docker-entrypoint.sh"]
 CMD ["stash"]

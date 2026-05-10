@@ -25,6 +25,8 @@ After building the container:
 
 ```
 docker run \
+ -e PUID=1000 \
+ -e PGID=1000 \
  -e STASH_STASH=/data/ \
  -e STASH_METADATA=/metadata/ \
  -e STASH_CACHE=/cache/ \
@@ -40,6 +42,8 @@ docker run \
 
 Change the `<xxx>` to the appropriate paths. Note that the `<path to media>` directory should be separate from the cache, generated and metadata directories. It is recommended to have the cache, generated and metadata directories in the same parent directory, for example:
 
+Set `PUID` and `PGID` to the owner of the host directories you mount into the container. Stash-owned paths are adjusted at startup; set `STASH_CHOWN_PATHS` if your installation needs a different set of paths.
+
 ```
 /stash
   /config
@@ -53,6 +57,8 @@ Using this example directory structure, the above command would be:
 
 ```
 docker run \
+ -e PUID=1000 \
+ -e PGID=1000 \
  -e STASH_STASH=/data/ \
  -e STASH_METADATA=/metadata/ \
  -e STASH_CACHE=/cache/ \
