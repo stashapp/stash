@@ -249,6 +249,8 @@ export function useLinkScrapedPerformer(props: IUseLinkScrapedPerformerProps) {
   const { scrapeResult, setScrapeResult, newObjects, setNewObjects } = props;
 
   function linkPerformer(id: string, matchedName: string, index: number) {
+    if (index < 0 || index >= newObjects.length) return;
+
     const newValue = [...(scrapeResult.newValue ?? [])];
     newValue.push({
       stored_id: id,
@@ -279,6 +281,8 @@ export function useLinkScrapedGroup(props: IUseLinkScrapedGroupProps) {
   const { scrapeResult, setScrapeResult, newObjects, setNewObjects } = props;
 
   function linkGroup(id: string, matchedName: string, index: number) {
+    if (index < 0 || index >= newObjects.length) return;
+
     const newValue = [...(scrapeResult.newValue ?? [])];
     newValue.push({
       stored_id: id,
