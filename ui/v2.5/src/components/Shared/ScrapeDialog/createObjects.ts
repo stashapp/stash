@@ -2,11 +2,8 @@ import { useToast } from "src/hooks/Toast";
 import * as GQL from "src/core/generated-graphql";
 import {
   useGroupCreate,
-  useGroupUpdate,
   usePerformerCreate,
-  usePerformerUpdate,
   useStudioCreate,
-  useStudioUpdate,
   useTagCreate,
 } from "src/core/StashService";
 import { ObjectScrapeResult, ScrapeResult } from "./scrapeResult";
@@ -225,7 +222,7 @@ interface IUseLinkScrapedStudioProps {
 }
 
 export function useLinkScrapedStudio(props: IUseLinkScrapedStudioProps) {
-  const { scrapeResult, setScrapeResult, newObject, setNewObject } = props;
+  const { scrapeResult, setScrapeResult, setNewObject } = props;
 
   function linkStudio(id: string, matchedName: string) {
     // set the new studio as the value

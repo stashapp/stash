@@ -9,10 +9,7 @@ import {
 } from "src/components/Shared/ScrapeDialog/ScrapeDialogRow";
 import { ScrapeDialog } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import TextUtils from "src/utils/text";
-import {
-  ObjectScrapeResult,
-  ScrapeResult,
-} from "src/components/Shared/ScrapeDialog/scrapeResult";
+import { ScrapeResult } from "src/components/Shared/ScrapeDialog/scrapeResult";
 import { Studio } from "src/components/Studios/StudioSelect";
 import { uniq } from "lodash-es";
 import { Tag } from "src/components/Tags/TagSelect";

@@ -7,12 +7,7 @@ import {
   ScrapedTextAreaRow,
 } from "src/components/Shared/ScrapeDialog/ScrapeDialogRow";
 import { ScrapeDialog } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
-import {
-  ObjectListScrapeResult,
-  ObjectScrapeResult,
-  ScrapeResult,
-} from "src/components/Shared/ScrapeDialog/scrapeResult";
-import { sortStoredIdObjects } from "src/utils/data";
+import { ScrapeResult } from "src/components/Shared/ScrapeDialog/scrapeResult";
 import { Performer } from "src/components/Performers/PerformerSelect";
 import { uniq } from "lodash-es";
 import { Tag } from "src/components/Tags/TagSelect";

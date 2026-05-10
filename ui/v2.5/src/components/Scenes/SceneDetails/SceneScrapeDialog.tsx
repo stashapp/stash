@@ -10,12 +10,7 @@ import { ScrapeDialog } from "src/components/Shared/ScrapeDialog/ScrapeDialog";
 import { useIntl } from "react-intl";
 import { uniq } from "lodash-es";
 import { Performer } from "src/components/Performers/PerformerSelect";
-import { sortStoredIdObjects } from "src/utils/data";
-import {
-  ObjectListScrapeResult,
-  ObjectScrapeResult,
-  ScrapeResult,
-} from "src/components/Shared/ScrapeDialog/scrapeResult";
+import { ScrapeResult } from "src/components/Shared/ScrapeDialog/scrapeResult";
 import { Tag } from "src/components/Tags/TagSelect";
 import { Studio } from "src/components/Studios/StudioSelect";
 import { Group } from "src/components/Groups/GroupSelect";
