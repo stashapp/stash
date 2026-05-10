@@ -16,20 +16,13 @@ import {
   ObjectScrapeResult,
   ScrapeResult,
 } from "src/components/Shared/ScrapeDialog/scrapeResult";
-import {
-  ScrapedGroupsRow,
-  ScrapedPerformersRow,
-  ScrapedStudioRow,
-} from "src/components/Shared/ScrapeDialog/ScrapedObjectsRow";
-import {
-  useCreateScrapedGroup,
-  useCreateScrapedPerformer,
-  useCreateScrapedStudio,
-} from "src/components/Shared/ScrapeDialog/createObjects";
 import { Tag } from "src/components/Tags/TagSelect";
 import { Studio } from "src/components/Studios/StudioSelect";
 import { Group } from "src/components/Groups/GroupSelect";
 import { useScrapedTags } from "src/components/Shared/ScrapeDialog/scrapedTags";
+import { useScrapedStudios } from "src/components/Shared/ScrapeDialog/scrapedStudios";
+import { useScrapedPerformers } from "src/components/Shared/ScrapeDialog/scrapedPerformers";
+import { useScrapedGroups } from "src/components/Shared/ScrapeDialog/scrapedGroups";
 
 interface ISceneScrapeDialogProps {
   scene: Partial<GQL.SceneUpdateInput>;
@@ -75,20 +68,12 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
   const [director, setDirector] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(scene.director, scraped.director)
   );
-  const [studio, setStudio] = useState<ObjectScrapeResult<GQL.ScrapedStudio>>(
-    new ObjectScrapeResult<GQL.ScrapedStudio>(
-      sceneStudio
-        ? {
-            stored_id: sceneStudio.id,
-            name: sceneStudio.name,
-          }
-        : undefined,
-      scraped.studio?.stored_id ? scraped.studio : undefined
-    )
-  );
-  const [newStudio, setNewStudio] = useState<GQL.ScrapedStudio | undefined>(
-    scraped.studio && !scraped.studio.stored_id ? scraped.studio : undefined
-  );
+  const {
+    studio,
+    newStudio,
+    linkDialog: studioLinkDialog,
+    scrapedStudioRow,
+  } = useScrapedStudios(sceneStudio, scraped.studio, endpoint);
 
   const [stashID, setStashID] = useState(
     new ScrapeResult<string>(
@@ -97,39 +82,24 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     )
   );
 
-  const [performers, setPerformers] = useState<
-    ObjectListScrapeResult<GQL.ScrapedPerformer>
-  >(
-    new ObjectListScrapeResult<GQL.ScrapedPerformer>(
-      sortStoredIdObjects(
-        scenePerformers.map((p) => ({
-          stored_id: p.id,
-          name: p.name,
-        }))
-      ),
-      sortStoredIdObjects(scraped.performers ?? undefined)
-    )
-  );
-  const [newPerformers, setNewPerformers] = useState<GQL.ScrapedPerformer[]>(
-    scraped.performers?.filter((t) => !t.stored_id) ?? []
+  const {
+    performers,
+    newPerformers,
+    linkDialog: performersLinkDialog,
+    scrapedPerformersRow,
+  } = useScrapedPerformers(
+    scenePerformers,
+    scraped.performers,
+    endpoint,
+    date.useNewValue ? date.newValue : date.originalValue
   );
 
-  const [groups, setGroups] = useState<
-    ObjectListScrapeResult<GQL.ScrapedGroup>
-  >(
-    new ObjectListScrapeResult<GQL.ScrapedGroup>(
-      sortStoredIdObjects(
-        sceneGroups.map((p) => ({
-          stored_id: p.id,
-          name: p.name,
-        }))
-      ),
-      sortStoredIdObjects(scraped.groups ?? undefined)
-    )
-  );
-  const [newGroups, setNewGroups] = useState<GQL.ScrapedGroup[]>(
-    scraped.groups?.filter((t) => !t.stored_id) ?? []
-  );
+  const {
+    groups,
+    newGroups,
+    linkDialog: groupsLinkDialog,
+    scrapedGroupsRow,
+  } = useScrapedGroups(sceneGroups, scraped.groups, endpoint);
 
   const { tags, newTags, scrapedTagsRow, linkDialog } = useScrapedTags(
     sceneTags,
@@ -144,29 +114,6 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
   const [image, setImage] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(scene.cover_image, scraped.image)
   );
-
-  const createNewStudio = useCreateScrapedStudio({
-    scrapeResult: studio,
-    setScrapeResult: setStudio,
-    setNewObject: setNewStudio,
-    endpoint,
-  });
-
-  const createNewPerformer = useCreateScrapedPerformer({
-    scrapeResult: performers,
-    setScrapeResult: setPerformers,
-    newObjects: newPerformers,
-    setNewObjects: setNewPerformers,
-    endpoint,
-  });
-
-  const createNewGroup = useCreateScrapedGroup({
-    scrapeResult: groups,
-    setScrapeResult: setGroups,
-    newObjects: newGroups,
-    setNewObjects: setNewGroups,
-    endpoint,
-  });
 
   const intl = useIntl();
 
@@ -193,6 +140,17 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
   ) {
     onClose();
     return <></>;
+  }
+
+  // render link dialogs if any are active
+  if (studioLinkDialog) {
+    return studioLinkDialog;
+  }
+  if (performersLinkDialog) {
+    return performersLinkDialog;
+  }
+  if (groupsLinkDialog) {
+    return groupsLinkDialog;
   }
 
   function makeNewScrapedItem(): GQL.ScrapedSceneDataFragment {
@@ -248,31 +206,9 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
           result={director}
           onChange={(value) => setDirector(value)}
         />
-        <ScrapedStudioRow
-          field="studio"
-          title={intl.formatMessage({ id: "studios" })}
-          result={studio}
-          onChange={(value) => setStudio(value)}
-          newStudio={newStudio}
-          onCreateNew={createNewStudio}
-        />
-        <ScrapedPerformersRow
-          field="performers"
-          title={intl.formatMessage({ id: "performers" })}
-          result={performers}
-          onChange={(value) => setPerformers(value)}
-          newObjects={newPerformers}
-          onCreateNew={createNewPerformer}
-          ageFromDate={date.useNewValue ? date.newValue : date.originalValue}
-        />
-        <ScrapedGroupsRow
-          field="groups"
-          title={intl.formatMessage({ id: "groups" })}
-          result={groups}
-          onChange={(value) => setGroups(value)}
-          newObjects={newGroups}
-          onCreateNew={createNewGroup}
-        />
+        {scrapedStudioRow}
+        {scrapedPerformersRow}
+        {scrapedGroupsRow}
         {scrapedTagsRow}
         <ScrapedTextAreaRow
           field="details"

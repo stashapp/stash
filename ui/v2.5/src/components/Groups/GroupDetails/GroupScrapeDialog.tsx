@@ -14,11 +14,10 @@ import {
   ScrapeResult,
 } from "src/components/Shared/ScrapeDialog/scrapeResult";
 import { Studio } from "src/components/Studios/StudioSelect";
-import { useCreateScrapedStudio } from "src/components/Shared/ScrapeDialog/createObjects";
-import { ScrapedStudioRow } from "src/components/Shared/ScrapeDialog/ScrapedObjectsRow";
 import { uniq } from "lodash-es";
 import { Tag } from "src/components/Tags/TagSelect";
 import { useScrapedTags } from "src/components/Shared/ScrapeDialog/scrapedTags";
+import { useScrapedStudios } from "src/components/Shared/ScrapeDialog/scrapedStudios";
 
 interface IGroupScrapeDialogProps {
   group: Partial<GQL.GroupUpdateInput>;
@@ -62,17 +61,13 @@ export const GroupScrapeDialog: React.FC<IGroupScrapeDialogProps> = ({
   const [synopsis, setSynopsis] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(group.synopsis, scraped.synopsis)
   );
-  const [studio, setStudio] = useState<ObjectScrapeResult<GQL.ScrapedStudio>>(
-    new ObjectScrapeResult<GQL.ScrapedStudio>(
-      groupStudio
-        ? {
-            stored_id: groupStudio.id,
-            name: groupStudio.name,
-          }
-        : undefined,
-      scraped.studio?.stored_id ? scraped.studio : undefined
-    )
-  );
+  const {
+    studio,
+    newStudio,
+    linkDialog: studioLinkDialog,
+    scrapedStudioRow,
+  } = useScrapedStudios(groupStudio, scraped.studio);
+
   const [urls, setURLs] = useState<ScrapeResult<string[]>>(
     new ScrapeResult<string[]>(
       group.urls,
@@ -87,16 +82,6 @@ export const GroupScrapeDialog: React.FC<IGroupScrapeDialogProps> = ({
   const [backImage, setBackImage] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(group.back_image, scraped.back_image)
   );
-
-  const [newStudio, setNewStudio] = useState<GQL.ScrapedStudio | undefined>(
-    scraped.studio && !scraped.studio.stored_id ? scraped.studio : undefined
-  );
-
-  const createNewStudio = useCreateScrapedStudio({
-    scrapeResult: studio,
-    setScrapeResult: setStudio,
-    setNewObject: setNewStudio,
-  });
 
   const { tags, newTags, scrapedTagsRow, linkDialog } = useScrapedTags(
     groupTags,
@@ -124,6 +109,11 @@ export const GroupScrapeDialog: React.FC<IGroupScrapeDialogProps> = ({
   ) {
     onClose();
     return <></>;
+  }
+
+  // render link dialogs if any are active
+  if (studioLinkDialog) {
+    return studioLinkDialog;
   }
 
   function makeNewScrapedItem(): GQL.ScrapedGroup {
@@ -185,14 +175,7 @@ export const GroupScrapeDialog: React.FC<IGroupScrapeDialogProps> = ({
           result={synopsis}
           onChange={(value) => setSynopsis(value)}
         />
-        <ScrapedStudioRow
-          field="studio"
-          title={intl.formatMessage({ id: "studios" })}
-          result={studio}
-          onChange={(value) => setStudio(value)}
-          newStudio={newStudio}
-          onCreateNew={createNewStudio}
-        />
+        {scrapedStudioRow}
         <ScrapedStringListRow
           field="urls"
           title={intl.formatMessage({ id: "urls" })}

@@ -2,8 +2,11 @@ import { useToast } from "src/hooks/Toast";
 import * as GQL from "src/core/generated-graphql";
 import {
   useGroupCreate,
+  useGroupUpdate,
   usePerformerCreate,
+  usePerformerUpdate,
   useStudioCreate,
+  useStudioUpdate,
   useTagCreate,
 } from "src/core/StashService";
 import { ObjectScrapeResult, ScrapeResult } from "./scrapeResult";
@@ -210,6 +213,100 @@ export function useLinkScrapedTag(
   }
 
   return linkTag;
+}
+
+interface IUseLinkScrapedStudioProps {
+  scrapeResult: ObjectScrapeResult<GQL.ScrapedStudio>;
+  setScrapeResult: (
+    scrapeResult: ObjectScrapeResult<GQL.ScrapedStudio>
+  ) => void;
+  newObject: GQL.ScrapedStudio | undefined;
+  setNewObject: (newObject: GQL.ScrapedStudio | undefined) => void;
+}
+
+export function useLinkScrapedStudio(props: IUseLinkScrapedStudioProps) {
+  const { scrapeResult, setScrapeResult, newObject, setNewObject } = props;
+
+  function linkStudio(id: string, matchedName: string) {
+    // set the new studio as the value
+    setScrapeResult(
+      scrapeResult.cloneWithValue({
+        stored_id: id,
+        name: matchedName,
+      })
+    );
+    setNewObject(undefined);
+  }
+
+  return linkStudio;
+}
+
+interface IUseLinkScrapedPerformerProps {
+  scrapeResult: ScrapeResult<GQL.ScrapedPerformer[]>;
+  setScrapeResult: (scrapeResult: ScrapeResult<GQL.ScrapedPerformer[]>) => void;
+  newObjects: GQL.ScrapedPerformer[];
+  setNewObjects: (newObjects: GQL.ScrapedPerformer[]) => void;
+}
+
+export function useLinkScrapedPerformer(props: IUseLinkScrapedPerformerProps) {
+  const { scrapeResult, setScrapeResult, newObjects, setNewObjects } = props;
+
+  function linkPerformer(id: string, matchedName: string, scrapedName: string) {
+    const newValue = [...(scrapeResult.newValue ?? [])];
+    newValue.push({
+      stored_id: id,
+      name: matchedName,
+    });
+
+    // add the new performer to the new performers value
+    const performerClone = scrapeResult.cloneWithValue(newValue);
+    setScrapeResult(performerClone);
+
+    // remove the performer from the list
+    const newPerformersClone = newObjects.concat();
+    const pIndex = newPerformersClone.findIndex((p) => p.name === scrapedName);
+    if (pIndex === -1) throw new Error("Could not find performer to remove");
+
+    newPerformersClone.splice(pIndex, 1);
+
+    setNewObjects(newPerformersClone);
+  }
+
+  return linkPerformer;
+}
+
+interface IUseLinkScrapedGroupProps {
+  scrapeResult: ScrapeResult<GQL.ScrapedGroup[]>;
+  setScrapeResult: (scrapeResult: ScrapeResult<GQL.ScrapedGroup[]>) => void;
+  newObjects: GQL.ScrapedGroup[];
+  setNewObjects: (newObjects: GQL.ScrapedGroup[]) => void;
+}
+
+export function useLinkScrapedGroup(props: IUseLinkScrapedGroupProps) {
+  const { scrapeResult, setScrapeResult, newObjects, setNewObjects } = props;
+
+  function linkGroup(id: string, matchedName: string, scrapedName: string) {
+    const newValue = [...(scrapeResult.newValue ?? [])];
+    newValue.push({
+      stored_id: id,
+      name: matchedName,
+    });
+
+    // add the new group to the new groups value
+    const groupClone = scrapeResult.cloneWithValue(newValue);
+    setScrapeResult(groupClone);
+
+    // remove the group from the list
+    const newGroupsClone = newObjects.concat();
+    const pIndex = newGroupsClone.findIndex((p) => p.name === scrapedName);
+    if (pIndex === -1) throw new Error("Could not find group to remove");
+
+    newGroupsClone.splice(pIndex, 1);
+
+    setNewObjects(newGroupsClone);
+  }
+
+  return linkGroup;
 }
 
 export function useCreateScrapedTag(

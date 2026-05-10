@@ -12,20 +12,14 @@ import {
   ObjectScrapeResult,
   ScrapeResult,
 } from "src/components/Shared/ScrapeDialog/scrapeResult";
-import {
-  ScrapedPerformersRow,
-  ScrapedStudioRow,
-} from "src/components/Shared/ScrapeDialog/ScrapedObjectsRow";
 import { sortStoredIdObjects } from "src/utils/data";
 import { Performer } from "src/components/Performers/PerformerSelect";
-import {
-  useCreateScrapedPerformer,
-  useCreateScrapedStudio,
-} from "src/components/Shared/ScrapeDialog/createObjects";
 import { uniq } from "lodash-es";
 import { Tag } from "src/components/Tags/TagSelect";
 import { Studio } from "src/components/Studios/StudioSelect";
 import { useScrapedTags } from "src/components/Shared/ScrapeDialog/scrapedTags";
+import { useScrapedStudios } from "src/components/Shared/ScrapeDialog/scrapedStudios";
+import { useScrapedPerformers } from "src/components/Shared/ScrapeDialog/scrapedPerformers";
 
 interface IImageScrapeDialogProps {
   image: Partial<GQL.ImageUpdateInput>;
@@ -68,36 +62,23 @@ export const ImageScrapeDialog: React.FC<IImageScrapeDialogProps> = ({
     new ScrapeResult<string>(image.photographer, scraped.photographer)
   );
 
-  const [studio, setStudio] = useState<ObjectScrapeResult<GQL.ScrapedStudio>>(
-    new ObjectScrapeResult<GQL.ScrapedStudio>(
-      imageStudio
-        ? {
-            stored_id: imageStudio.id,
-            name: imageStudio.name,
-          }
-        : undefined,
-      scraped.studio?.stored_id ? scraped.studio : undefined
-    )
-  );
-  const [newStudio, setNewStudio] = useState<GQL.ScrapedStudio | undefined>(
-    scraped.studio && !scraped.studio.stored_id ? scraped.studio : undefined
-  );
+  const {
+    studio,
+    newStudio,
+    linkDialog: studioLinkDialog,
+    scrapedStudioRow,
+  } = useScrapedStudios(imageStudio, scraped.studio);
 
-  const [performers, setPerformers] = useState<
-    ObjectListScrapeResult<GQL.ScrapedPerformer>
-  >(
-    new ObjectListScrapeResult<GQL.ScrapedPerformer>(
-      sortStoredIdObjects(
-        imagePerformers.map((p) => ({
-          stored_id: p.id,
-          name: p.name,
-        }))
-      ),
-      sortStoredIdObjects(scraped.performers ?? undefined)
-    )
-  );
-  const [newPerformers, setNewPerformers] = useState<GQL.ScrapedPerformer[]>(
-    scraped.performers?.filter((t) => !t.stored_id) ?? []
+  const {
+    performers,
+    newPerformers,
+    linkDialog: performersLinkDialog,
+    scrapedPerformersRow,
+  } = useScrapedPerformers(
+    imagePerformers,
+    scraped.performers,
+    undefined,
+    date.useNewValue ? date.newValue : date.originalValue
   );
 
   const { tags, newTags, scrapedTagsRow, linkDialog } = useScrapedTags(
@@ -108,19 +89,6 @@ export const ImageScrapeDialog: React.FC<IImageScrapeDialogProps> = ({
   const [details, setDetails] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(image.details, scraped.details)
   );
-
-  const createNewStudio = useCreateScrapedStudio({
-    scrapeResult: studio,
-    setScrapeResult: setStudio,
-    setNewObject: setNewStudio,
-  });
-
-  const createNewPerformer = useCreateScrapedPerformer({
-    scrapeResult: performers,
-    setScrapeResult: setPerformers,
-    newObjects: newPerformers,
-    setNewObjects: setNewPerformers,
-  });
 
   // don't show the dialog if nothing was scraped
   if (
@@ -141,6 +109,14 @@ export const ImageScrapeDialog: React.FC<IImageScrapeDialogProps> = ({
   ) {
     onClose();
     return <></>;
+  }
+
+  // render link dialogs if any are active
+  if (studioLinkDialog) {
+    return studioLinkDialog;
+  }
+  if (performersLinkDialog) {
+    return performersLinkDialog;
   }
 
   function makeNewScrapedItem(): GQL.ScrapedImageDataFragment {
@@ -193,22 +169,8 @@ export const ImageScrapeDialog: React.FC<IImageScrapeDialogProps> = ({
           result={photographer}
           onChange={(value) => setPhotographer(value)}
         />
-        <ScrapedStudioRow
-          field="studio"
-          title={intl.formatMessage({ id: "studios" })}
-          result={studio}
-          onChange={(value) => setStudio(value)}
-          newStudio={newStudio}
-          onCreateNew={createNewStudio}
-        />
-        <ScrapedPerformersRow
-          field="performers"
-          title={intl.formatMessage({ id: "performers" })}
-          result={performers}
-          onChange={(value) => setPerformers(value)}
-          newObjects={newPerformers}
-          onCreateNew={createNewPerformer}
-        />
+        {scrapedStudioRow}
+        {scrapedPerformersRow}
         {scrapedTagsRow}
         <ScrapedTextAreaRow
           field="details"
