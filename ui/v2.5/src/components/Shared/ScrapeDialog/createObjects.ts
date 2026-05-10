@@ -248,7 +248,7 @@ interface IUseLinkScrapedPerformerProps {
 export function useLinkScrapedPerformer(props: IUseLinkScrapedPerformerProps) {
   const { scrapeResult, setScrapeResult, newObjects, setNewObjects } = props;
 
-  function linkPerformer(id: string, matchedName: string, scrapedName: string) {
+  function linkPerformer(id: string, matchedName: string, index: number) {
     const newValue = [...(scrapeResult.newValue ?? [])];
     newValue.push({
       stored_id: id,
@@ -259,12 +259,8 @@ export function useLinkScrapedPerformer(props: IUseLinkScrapedPerformerProps) {
     const performerClone = scrapeResult.cloneWithValue(newValue);
     setScrapeResult(performerClone);
 
-    // remove the performer from the list
-    const newPerformersClone = newObjects.concat();
-    const pIndex = newPerformersClone.findIndex((p) => p.name === scrapedName);
-    if (pIndex === -1) throw new Error("Could not find performer to remove");
-
-    newPerformersClone.splice(pIndex, 1);
+    // remove the performer from the list using index
+    const newPerformersClone = newObjects.filter((_, i) => i !== index);
 
     setNewObjects(newPerformersClone);
   }
@@ -282,7 +278,7 @@ interface IUseLinkScrapedGroupProps {
 export function useLinkScrapedGroup(props: IUseLinkScrapedGroupProps) {
   const { scrapeResult, setScrapeResult, newObjects, setNewObjects } = props;
 
-  function linkGroup(id: string, matchedName: string, scrapedName: string) {
+  function linkGroup(id: string, matchedName: string, index: number) {
     const newValue = [...(scrapeResult.newValue ?? [])];
     newValue.push({
       stored_id: id,
@@ -293,12 +289,8 @@ export function useLinkScrapedGroup(props: IUseLinkScrapedGroupProps) {
     const groupClone = scrapeResult.cloneWithValue(newValue);
     setScrapeResult(groupClone);
 
-    // remove the group from the list
-    const newGroupsClone = newObjects.concat();
-    const pIndex = newGroupsClone.findIndex((p) => p.name === scrapedName);
-    if (pIndex === -1) throw new Error("Could not find group to remove");
-
-    newGroupsClone.splice(pIndex, 1);
+    // remove the group from the list using index
+    const newGroupsClone = newObjects.filter((_, i) => i !== index);
 
     setNewObjects(newGroupsClone);
   }

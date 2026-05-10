@@ -19,7 +19,7 @@ import { useIntl } from "react-intl";
 interface INewScrapedObjects<T> {
   newValues: T[];
   onCreateNew: (value: T) => void;
-  onLinkExisting?: (value: T) => void;
+  onLinkExisting?: (value: T, index: number) => void;
   getName: (value: T) => string;
 }
 
@@ -32,11 +32,11 @@ export const NewScrapedObjects = <T,>(props: INewScrapedObjects<T>) => {
 
   const ret = (
     <>
-      {props.newValues.map((t) => (
+      {props.newValues.map((t, index) => (
         <Badge
           className="tag-item"
           variant="secondary"
-          key={props.getName(t)}
+          key={index}
           onClick={() => props.onCreateNew(t)}
         >
           {props.getName(t)}
@@ -47,7 +47,7 @@ export const NewScrapedObjects = <T,>(props: INewScrapedObjects<T>) => {
             <Button
               className="minimal"
               onClick={(e) => {
-                props.onLinkExisting?.(t);
+                props.onLinkExisting?.(t, index);
                 e.stopPropagation();
               }}
             >
@@ -169,7 +169,7 @@ interface IScrapedObjectsRow<T> {
   onChange: (value: ScrapeResult<T[]>) => void;
   newObjects?: T[];
   onCreateNew?: (value: T) => void;
-  onLinkExisting?: (value: T) => void;
+  onLinkExisting?: (value: T, index: number) => void;
   renderObjects: (
     result: ScrapeResult<T[]>,
     isNew?: boolean,

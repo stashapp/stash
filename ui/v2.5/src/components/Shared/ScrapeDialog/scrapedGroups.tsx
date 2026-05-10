@@ -36,7 +36,7 @@ export function useScrapedGroups(
   const [newGroups, setNewGroups] = useState<GQL.ScrapedGroup[]>(
     scrapedGroups?.filter((g) => !g.stored_id) ?? []
   );
-  const [linkedGroup, setLinkedGroup] = useState<GQL.ScrapedGroup | null>(null);
+  const [linkedGroupIndex, setLinkedGroupIndex] = useState<number | null>(null);
 
   const createNewGroup = useCreateScrapedGroup({
     scrapeResult: groups,
@@ -67,11 +67,11 @@ export function useScrapedGroups(
             variables: { input: group.create! },
           });
 
-          if (result.data?.groupCreate) {
+          if (result.data?.groupCreate && linkedGroupIndex !== null) {
             linkScrapedGroup(
               result.data.groupCreate.id,
               result.data.groupCreate.name,
-              linkedGroup?.name ?? ""
+              linkedGroupIndex
             );
           }
         },
@@ -90,11 +90,11 @@ export function useScrapedGroups(
             variables: { input: group.update! },
           });
 
-          if (result.data?.groupUpdate) {
+          if (result.data?.groupUpdate && linkedGroupIndex !== null) {
             linkScrapedGroup(
               result.data.groupUpdate.id,
               result.data.groupUpdate.name,
-              linkedGroup?.name ?? ""
+              linkedGroupIndex
             );
           }
         },
@@ -107,8 +107,10 @@ export function useScrapedGroups(
       )();
     }
 
-    setLinkedGroup(null);
+    setLinkedGroupIndex(null);
   }
+
+  const linkedGroup = linkedGroupIndex !== null ? newGroups[linkedGroupIndex] : null;
 
   const linkDialog = linkedGroup ? (
     <CreateLinkGroupDialog
@@ -126,7 +128,7 @@ export function useScrapedGroups(
       onChange={(value) => setGroups(value)}
       newObjects={newGroups}
       onCreateNew={createNewGroup}
-      onLinkExisting={(g) => setLinkedGroup(g)}
+      onLinkExisting={(g, index) => setLinkedGroupIndex(index)}
     />
   );
 

@@ -39,7 +39,7 @@ export function useScrapedPerformers(
   const [newPerformers, setNewPerformers] = useState<GQL.ScrapedPerformer[]>(
     scrapedPerformers?.filter((p) => !p.stored_id) ?? []
   );
-  const [linkedPerformer, setLinkedPerformer] = useState<GQL.ScrapedPerformer | null>(null);
+  const [linkedPerformerIndex, setLinkedPerformerIndex] = useState<number | null>(null);
 
   const createNewPerformer = useCreateScrapedPerformer({
     scrapeResult: performers,
@@ -71,11 +71,11 @@ export function useScrapedPerformers(
             variables: { input: performer.create! },
           });
 
-          if (result.data?.performerCreate) {
+          if (result.data?.performerCreate && linkedPerformerIndex !== null) {
             linkScrapedPerformer(
               result.data.performerCreate.id,
               result.data.performerCreate.name,
-              linkedPerformer?.name ?? ""
+              linkedPerformerIndex
             );
           }
         },
@@ -94,11 +94,11 @@ export function useScrapedPerformers(
             variables: { input: performer.update! },
           });
 
-          if (result.data?.performerUpdate) {
+          if (result.data?.performerUpdate && linkedPerformerIndex !== null) {
             linkScrapedPerformer(
               result.data.performerUpdate.id,
               result.data.performerUpdate.name,
-              linkedPerformer?.name ?? ""
+              linkedPerformerIndex
             );
           }
         },
@@ -111,8 +111,10 @@ export function useScrapedPerformers(
       )();
     }
 
-    setLinkedPerformer(null);
+    setLinkedPerformerIndex(null);
   }
+
+  const linkedPerformer = linkedPerformerIndex !== null ? newPerformers[linkedPerformerIndex] : null;
 
   const linkDialog = linkedPerformer ? (
     <CreateLinkPerformerDialog
@@ -130,7 +132,7 @@ export function useScrapedPerformers(
       onChange={(value) => setPerformers(value)}
       newObjects={newPerformers}
       onCreateNew={createNewPerformer}
-      onLinkExisting={(p) => setLinkedPerformer(p)}
+      onLinkExisting={(p, index) => setLinkedPerformerIndex(index)}
       ageFromDate={ageFromDate}
     />
   );
