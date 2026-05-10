@@ -148,10 +148,12 @@ func (s *Scanner) getFolderID(ctx context.Context, path string) (*models.FolderI
 	return &ret.ID, nil
 }
 
-// ScanFolder scans the provided folder into the database, returning the folder entry.
-// If the folder already exists, it is updated if necessary.
-func (s *Scanner) ScanFolder(ctx context.Context, file ScannedFile) (*models.Folder, error) {
+// ScanFolder persists folder metadata (creating or updating the row as needed).
+// It returns the folder, whether it was new or had metadata changes, and any error.
+// On success it updates folderPathToID so subsequent lookups use the cached ID.
+func (s *Scanner) ScanFolder(ctx context.Context, file ScannedFile) (*models.Folder, bool, error) {
 	var f *models.Folder
+	var changed bool
 	var err error
 	path := file.Path
 
@@ -180,8 +182,9 @@ func (s *Scanner) ScanFolder(ctx context.Context, file ScannedFile) (*models.Fol
 		// if folder not exists, create it
 		if f == nil {
 			f, err = s.onNewFolder(ctx, file)
+			changed = true
 		} else {
-			f, err = s.onExistingFolder(ctx, file, f)
+			f, changed, err = s.onExistingFolder(ctx, file, f)
 		}
 
 		if err != nil {
@@ -195,7 +198,7 @@ func (s *Scanner) ScanFolder(ctx context.Context, file ScannedFile) (*models.Fol
 		return nil
 	})
 
-	return f, err
+	return f, changed, err
 }
 
 func (s *Scanner) isRootPath(path string) bool {
@@ -288,7 +291,7 @@ func (s *Scanner) handleFolderRename(ctx context.Context, file ScannedFile) (*mo
 	return renamedFrom, nil
 }
 
-func (s *Scanner) onExistingFolder(ctx context.Context, f ScannedFile, existing *models.Folder) (*models.Folder, error) {
+func (s *Scanner) onExistingFolder(ctx context.Context, f ScannedFile, existing *models.Folder) (*models.Folder, bool, error) {
 	update := false
 
 	// update if mod time is changed
@@ -326,7 +329,7 @@ func (s *Scanner) onExistingFolder(ctx context.Context, f ScannedFile, existing 
 		// create full folder hierarchy if parent folder doesn't exist, and set parent folder ID
 		parentFolder, err := GetOrCreateFolderHierarchy(ctx, s.Repository.Folder, filepath.Dir(f.Path), s.RootPaths)
 		if err != nil {
-			return nil, fmt.Errorf("getting parent folder for %q: %w", f.Path, err)
+			return nil, false, fmt.Errorf("getting parent folder for %q: %w", f.Path, err)
 		}
 		existing.ParentFolderID = &parentFolder.ID
 		update = true
@@ -335,11 +338,50 @@ func (s *Scanner) onExistingFolder(ctx context.Context, f ScannedFile, existing 
 	if update {
 		var err error
 		if err = s.Repository.Folder.Update(ctx, existing); err != nil {
-			return nil, fmt.Errorf("updating folder %q: %w", f.Path, err)
+			return nil, false, fmt.Errorf("updating folder %q: %w", f.Path, err)
 		}
 	}
 
-	return existing, nil
+	return existing, update, nil
+}
+
+// CheckFolder checks whether the directory already exists in the database and
+// whether its modtime has changed. It populates folderPathToID if the directory
+// is found. It does not write to the database.
+func (s *Scanner) CheckFolder(ctx context.Context, file ScannedFile) (existing *models.Folder, unchanged bool, err error) {
+	path := file.Path
+
+	err = s.Repository.WithReadTxn(ctx, func(ctx context.Context) error {
+		var findErr error
+		existing, findErr = s.Repository.Folder.FindByPath(ctx, path, true)
+		if findErr != nil {
+			return fmt.Errorf("checking for existing folder %q: %w", path, findErr)
+		}
+
+		if existing == nil && file.ZipFileID == nil {
+			caseSensitive, _ := file.FS.IsPathCaseSensitive(path)
+			if !caseSensitive {
+				existing, findErr = s.Repository.Folder.FindByPath(ctx, path, false)
+				if findErr != nil {
+					return fmt.Errorf("checking for existing folder %q: %w", path, findErr)
+				}
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, false, err
+	}
+
+	if existing == nil {
+		return nil, false, nil
+	}
+
+	s.folderPathToID.Store(existing.Path, existing.ID)
+
+	unchanged = existing.ModTime.Equal(file.ModTime)
+	return existing, unchanged, nil
 }
 
 type ScanFileResult struct {

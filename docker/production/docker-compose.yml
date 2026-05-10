@@ -30,7 +30,7 @@ services:
 
       ## Keep configs, scrapers, and plugins here.
       - ./config:/root/.stash
-      ## Point this at your collection.
+      ## Point this at your collection (bind-mount from host for normal filesystem semantics and scan optimizations).
       ## The left side is where your collection is on your host, the right side is where it will be in stash.
       - ./data:/data
       ## This is where your stash's metadata lives
