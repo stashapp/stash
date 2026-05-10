@@ -64,6 +64,13 @@ fragment SceneData on Scene {
     ...SlimTagData
   }
 
+  tag_ratings {
+    tag {
+      id
+    }
+    rating100
+  }
+
   performers {
     ...PerformerData
   }

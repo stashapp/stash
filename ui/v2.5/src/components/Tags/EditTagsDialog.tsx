@@ -59,7 +59,7 @@ interface IListOperationProps {
   onClose: (applied: boolean) => void;
 }
 
-const tagFields = ["favorite", "description", "ignore_auto_tag"];
+const tagFields = ["favorite", "description", "ignore_auto_tag", "supports_numeric_rating"];
 
 export const EditTagsDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
@@ -224,6 +224,16 @@ export const EditTagsDialog: React.FC<IListOperationProps> = (
               setUpdateField({ ignore_auto_tag: checked })
             }
             checked={updateInput.ignore_auto_tag ?? undefined}
+          />
+        </Form.Group>
+
+        <Form.Group controlId="supports-numeric-rating">
+          <IndeterminateCheckbox
+            label={intl.formatMessage({ id: "supports_numeric_rating" })}
+            setChecked={(checked) =>
+              setUpdateField({ supports_numeric_rating: checked })
+            }
+            checked={updateInput.supports_numeric_rating ?? undefined}
           />
         </Form.Group>
       </Form>

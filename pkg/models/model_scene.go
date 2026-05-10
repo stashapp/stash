@@ -100,6 +100,15 @@ func NewScenePartial() ScenePartial {
 	}
 }
 
+// SceneTagRating is a per-scene numeric rating for a single tag, expressed on
+// the 1-100 scale (matching Scene.Rating). Persisted in scene_tag_ratings.
+// The Tag field is populated by the GraphQL resolver via the TagByID dataloader;
+// the SQL layer only fills TagID and Rating100.
+type SceneTagRating struct {
+	TagID     int
+	Rating100 int
+}
+
 func (s *Scene) LoadURLs(ctx context.Context, l URLLoader) error {
 	return s.URLs.load(func() ([]string, error) {
 		return l.GetURLs(ctx, s.ID)

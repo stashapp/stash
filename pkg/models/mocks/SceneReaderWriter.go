@@ -1120,6 +1120,29 @@ func (_m *SceneReaderWriter) GetTagIDs(ctx context.Context, relatedID int) ([]in
 	return r0, r1
 }
 
+// GetTagRatings provides a mock function with given fields: ctx, sceneID
+func (_m *SceneReaderWriter) GetTagRatings(ctx context.Context, sceneID int) ([]models.SceneTagRating, error) {
+	ret := _m.Called(ctx, sceneID)
+
+	var r0 []models.SceneTagRating
+	if rf, ok := ret.Get(0).(func(context.Context, int) []models.SceneTagRating); ok {
+		r0 = rf(ctx, sceneID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]models.SceneTagRating)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, sceneID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetURLs provides a mock function with given fields: ctx, relatedID
 func (_m *SceneReaderWriter) GetURLs(ctx context.Context, relatedID int) ([]string, error) {
 	ret := _m.Called(ctx, relatedID)
@@ -1385,6 +1408,20 @@ func (_m *SceneReaderWriter) SetCustomFields(ctx context.Context, id int, fields
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, int, models.CustomFieldsInput) error); ok {
 		r0 = rf(ctx, id, fields)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// SetTagRating provides a mock function with given fields: ctx, sceneID, tagID, rating100
+func (_m *SceneReaderWriter) SetTagRating(ctx context.Context, sceneID int, tagID int, rating100 *int) error {
+	ret := _m.Called(ctx, sceneID, tagID, rating100)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, int, *int) error); ok {
+		r0 = rf(ctx, sceneID, tagID, rating100)
 	} else {
 		r0 = ret.Error(0)
 	}

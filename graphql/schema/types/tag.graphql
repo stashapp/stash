@@ -9,6 +9,8 @@ type Tag {
   created_at: Time!
   updated_at: Time!
   favorite: Boolean!
+  "If true, this tag may carry a per-scene numeric rating (1-100)."
+  supports_numeric_rating: Boolean!
   stash_ids: [StashID!]!
   image_path: String # Resolver
   scene_count(depth: Int): Int! # Resolver
@@ -36,6 +38,7 @@ input TagCreateInput {
   aliases: [String!]
   ignore_auto_tag: Boolean
   favorite: Boolean
+  supports_numeric_rating: Boolean
   "This should be a URL or a base64 encoded data URL"
   image: String
   stash_ids: [StashIDInput!]
@@ -56,6 +59,7 @@ input TagUpdateInput {
   aliases: [String!]
   ignore_auto_tag: Boolean
   favorite: Boolean
+  supports_numeric_rating: Boolean
   "This should be a URL or a base64 encoded data URL"
   image: String
   stash_ids: [StashIDInput!]
@@ -89,6 +93,7 @@ input BulkTagUpdateInput {
   aliases: BulkUpdateStrings
   ignore_auto_tag: Boolean
   favorite: Boolean
+  supports_numeric_rating: Boolean
 
   parent_ids: BulkUpdateIds
   child_ids: BulkUpdateIds

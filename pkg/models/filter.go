@@ -122,6 +122,13 @@ type IntCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 }
 
+// TagRatingCriterionInput filters scenes by the rating attached to a specific
+// tag for that scene.
+type TagRatingCriterionInput struct {
+	TagID     string            `json:"tag_id"`
+	Rating100 IntCriterionInput `json:"rating100"`
+}
+
 func (i IntCriterionInput) ValidModifier() bool {
 	switch i.Modifier {
 	case CriterionModifierEquals, CriterionModifierNotEquals, CriterionModifierGreaterThan, CriterionModifierLessThan, CriterionModifierIsNull, CriterionModifierNotNull, CriterionModifierBetween, CriterionModifierNotBetween:

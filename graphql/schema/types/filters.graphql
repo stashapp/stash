@@ -318,6 +318,8 @@ input SceneFilterType {
   tags: HierarchicalMultiCriterionInput
   "Filter by tag count"
   tag_count: IntCriterionInput
+  "Filter scenes by per-tag numeric ratings. Each criterion requires the named tag to be attached to the scene AND its rating to satisfy the comparator. Multiple entries are AND-combined."
+  tag_ratings: [TagRatingCriterionInput!]
   "Filter to only include scenes with performers with these tags"
   performer_tags: HierarchicalMultiCriterionInput
   "Filter scenes that have performers that have been favorited"
@@ -924,6 +926,12 @@ input MultiCriterionInput {
   value: [ID!]
   modifier: CriterionModifier!
   excludes: [ID!]
+}
+
+"Filters scenes by the rating attached to a specific tag for that scene."
+input TagRatingCriterionInput {
+  tag_id: ID!
+  rating100: IntCriterionInput!
 }
 
 input GenderCriterionInput {

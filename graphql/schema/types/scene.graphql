@@ -36,6 +36,12 @@ type VideoCaption {
   caption_type: String!
 }
 
+"Per-scene numeric rating (1-100) attached to a tag whose supports_numeric_rating flag is true."
+type SceneTagRating {
+  tag: Tag!
+  rating100: Int!
+}
+
 type Scene {
   id: ID!
   title: String
@@ -76,6 +82,8 @@ type Scene {
   groups: [SceneGroup!]!
   movies: [SceneMovie!]! @deprecated(reason: "Use groups")
   tags: [Tag!]!
+  "Per-tag numeric ratings for this scene. Only includes tags that currently have a stored rating."
+  tag_ratings: [SceneTagRating!]!
   performers: [Performer!]!
   stash_ids: [StashID!]!
 

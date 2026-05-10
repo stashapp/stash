@@ -26,8 +26,9 @@ func ToJSON(ctx context.Context, reader FinderAliasImageGetter, tag *models.Tag)
 		Name:          tag.Name,
 		SortName:      tag.SortName,
 		Description:   tag.Description,
-		Favorite:      tag.Favorite,
-		IgnoreAutoTag: tag.IgnoreAutoTag,
+		Favorite:              tag.Favorite,
+		IgnoreAutoTag:         tag.IgnoreAutoTag,
+		SupportsNumericRating: tag.SupportsNumericRating,
 		CreatedAt:     json.JSONTime{Time: tag.CreatedAt},
 		UpdatedAt:     json.JSONTime{Time: tag.UpdatedAt},
 	}

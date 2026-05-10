@@ -31,14 +31,15 @@ const (
 )
 
 type tagRow struct {
-	ID            int         `db:"id" goqu:"skipinsert"`
-	Name          null.String `db:"name"` // TODO: make schema non-nullable
-	SortName      zero.String `db:"sort_name"`
-	Favorite      bool        `db:"favorite"`
-	Description   zero.String `db:"description"`
-	IgnoreAutoTag bool        `db:"ignore_auto_tag"`
-	CreatedAt     Timestamp   `db:"created_at"`
-	UpdatedAt     Timestamp   `db:"updated_at"`
+	ID                    int         `db:"id" goqu:"skipinsert"`
+	Name                  null.String `db:"name"` // TODO: make schema non-nullable
+	SortName              zero.String `db:"sort_name"`
+	Favorite              bool        `db:"favorite"`
+	Description           zero.String `db:"description"`
+	IgnoreAutoTag         bool        `db:"ignore_auto_tag"`
+	SupportsNumericRating bool        `db:"supports_numeric_rating"`
+	CreatedAt             Timestamp   `db:"created_at"`
+	UpdatedAt             Timestamp   `db:"updated_at"`
 
 	// not used in resolutions or updates
 	ImageBlob zero.String `db:"image_blob"`
@@ -51,20 +52,22 @@ func (r *tagRow) fromTag(o models.Tag) {
 	r.Favorite = o.Favorite
 	r.Description = zero.StringFrom(o.Description)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
+	r.SupportsNumericRating = o.SupportsNumericRating
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
 }
 
 func (r *tagRow) resolve() *models.Tag {
 	ret := &models.Tag{
-		ID:            r.ID,
-		Name:          r.Name.String,
-		SortName:      r.SortName.String,
-		Favorite:      r.Favorite,
-		Description:   r.Description.String,
-		IgnoreAutoTag: r.IgnoreAutoTag,
-		CreatedAt:     r.CreatedAt.Timestamp,
-		UpdatedAt:     r.UpdatedAt.Timestamp,
+		ID:                    r.ID,
+		Name:                  r.Name.String,
+		SortName:              r.SortName.String,
+		Favorite:              r.Favorite,
+		Description:           r.Description.String,
+		IgnoreAutoTag:         r.IgnoreAutoTag,
+		SupportsNumericRating: r.SupportsNumericRating,
+		CreatedAt:             r.CreatedAt.Timestamp,
+		UpdatedAt:             r.UpdatedAt.Timestamp,
 	}
 
 	return ret
@@ -94,6 +97,7 @@ func (r *tagRowRecord) fromPartial(o models.TagPartial) {
 	r.setNullString("description", o.Description)
 	r.setBool("favorite", o.Favorite)
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
+	r.setBool("supports_numeric_rating", o.SupportsNumericRating)
 	r.setTimestamp("created_at", o.CreatedAt)
 	r.setTimestamp("updated_at", o.UpdatedAt)
 }

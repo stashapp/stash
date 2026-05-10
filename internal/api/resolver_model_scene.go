@@ -259,6 +259,31 @@ func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) (ret []*mod
 	return ret, firstError(errs)
 }
 
+func (r *sceneResolver) TagRatings(ctx context.Context, obj *models.Scene) ([]*models.SceneTagRating, error) {
+	var ratings []models.SceneTagRating
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		var err error
+		ratings, err = r.repository.Scene.GetTagRatings(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	ret := make([]*models.SceneTagRating, len(ratings))
+	for i := range ratings {
+		ret[i] = &ratings[i]
+	}
+	return ret, nil
+}
+
+func (r *sceneTagRatingResolver) Tag(ctx context.Context, obj *models.SceneTagRating) (*models.Tag, error) {
+	tag, err := loaders.From(ctx).TagByID.Load(obj.TagID)
+	if err != nil {
+		return nil, err
+	}
+	return tag, nil
+}
+
 func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) (ret []*models.Performer, err error) {
 	if !obj.PerformerIDs.Loaded() {
 		if err := r.withReadTxn(ctx, func(ctx context.Context) error {

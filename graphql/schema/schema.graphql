@@ -311,6 +311,9 @@ type Mutation {
   "Sets the resume time point (if provided) and adds the provided duration to the scene's play duration"
   sceneSaveActivity(id: ID!, resume_time: Float, playDuration: Float): Boolean!
 
+  "Sets (or clears, when rating100 is null) the per-scene numeric rating for a tag. The tag must have supports_numeric_rating=true."
+  setSceneTagRating(scene_id: ID!, tag_id: ID!, rating100: Int): Boolean!
+
   "Resets the resume time point and play duration"
   sceneResetActivity(
     id: ID!

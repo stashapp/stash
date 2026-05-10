@@ -113,6 +113,7 @@ type SceneReader interface {
 	PlayDuration(ctx context.Context) (float64, error)
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
 	HasCover(ctx context.Context, sceneID int) (bool, error)
+	GetTagRatings(ctx context.Context, sceneID int) ([]SceneTagRating, error)
 }
 
 type OHistoryWriter interface {
@@ -141,6 +142,7 @@ type SceneWriter interface {
 	ViewHistoryWriter
 	SaveActivity(ctx context.Context, sceneID int, resumeTime *float64, playDuration *float64) (bool, error)
 	ResetActivity(ctx context.Context, sceneID int, resetResume bool, resetDuration bool) (bool, error)
+	SetTagRating(ctx context.Context, sceneID, tagID int, rating100 *int) error
 	CustomFieldsWriter
 }
 

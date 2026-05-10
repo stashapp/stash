@@ -1083,6 +1083,42 @@ func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, res
 	return ret, nil
 }
 
+func (r *mutationResolver) SetSceneTagRating(ctx context.Context, sceneIDStr, tagIDStr string, rating100 *int) (bool, error) {
+	sceneID, err := strconv.Atoi(sceneIDStr)
+	if err != nil {
+		return false, fmt.Errorf("converting scene_id: %w", err)
+	}
+	tagID, err := strconv.Atoi(tagIDStr)
+	if err != nil {
+		return false, fmt.Errorf("converting tag_id: %w", err)
+	}
+
+	if rating100 != nil && (*rating100 < 1 || *rating100 > 100) {
+		return false, fmt.Errorf("%w: rating100 must be between 1 and 100", ErrInput)
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		if rating100 != nil {
+			tag, err := r.repository.Tag.Find(ctx, tagID)
+			if err != nil {
+				return err
+			}
+			if tag == nil {
+				return fmt.Errorf("%w: tag %d not found", ErrInput, tagID)
+			}
+			if !tag.SupportsNumericRating {
+				return fmt.Errorf("%w: tag %d does not support numeric rating", ErrInput, tagID)
+			}
+		}
+
+		return r.repository.Scene.SetTagRating(ctx, sceneID, tagID, rating100)
+	}); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
 func (r *mutationResolver) SceneResetActivity(ctx context.Context, id string, resetResume *bool, resetDuration *bool) (ret bool, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {

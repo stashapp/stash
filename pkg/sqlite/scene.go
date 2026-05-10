@@ -1418,6 +1418,43 @@ func (qb *SceneStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {
 	return sceneRepository.tags.getIDs(ctx, id)
 }
 
+func (qb *SceneStore) GetTagRatings(ctx context.Context, sceneID int) ([]models.SceneTagRating, error) {
+	rows := []struct {
+		TagID  int `db:"tag_id"`
+		Rating int `db:"rating"`
+	}{}
+	// Only return ratings for tags that are currently attached to the scene.
+	// Stored ratings for detached tags are kept silently (re-added tags get
+	// their old rating back) but should not surface in the API response.
+	const query = `
+		SELECT r.tag_id, r.rating
+		FROM scene_tag_ratings r
+		INNER JOIN scenes_tags st ON st.scene_id = r.scene_id AND st.tag_id = r.tag_id
+		WHERE r.scene_id = ?
+		ORDER BY r.tag_id
+	`
+	if err := dbWrapper.Select(ctx, &rows, query, sceneID); err != nil {
+		return nil, err
+	}
+	ret := make([]models.SceneTagRating, len(rows))
+	for i, r := range rows {
+		ret[i] = models.SceneTagRating{TagID: r.TagID, Rating100: r.Rating}
+	}
+	return ret, nil
+}
+
+// SetTagRating upserts the per-scene rating for a tag. If rating is nil, the
+// row is deleted. Caller is expected to have validated that the tag opts in to
+// numeric ratings.
+func (qb *SceneStore) SetTagRating(ctx context.Context, sceneID, tagID int, rating *int) error {
+	if rating == nil {
+		_, err := dbWrapper.Exec(ctx, "DELETE FROM scene_tag_ratings WHERE scene_id = ? AND tag_id = ?", sceneID, tagID)
+		return err
+	}
+	_, err := dbWrapper.Exec(ctx, "INSERT INTO scene_tag_ratings (scene_id, tag_id, rating) VALUES (?, ?, ?) ON CONFLICT(scene_id, tag_id) DO UPDATE SET rating = excluded.rating", sceneID, tagID, *rating)
+	return err
+}
+
 func (qb *SceneStore) GetGalleryIDs(ctx context.Context, id int) ([]int, error) {
 	return sceneRepository.galleries.getIDs(ctx, id)
 }

@@ -83,6 +83,8 @@ type SceneFilterType struct {
 	Tags *HierarchicalMultiCriterionInput `json:"tags"`
 	// Filter by tag count
 	TagCount *IntCriterionInput `json:"tag_count"`
+	// Filter scenes by per-tag numeric ratings (AND-combined).
+	TagRatings []*TagRatingCriterionInput `json:"tag_ratings"`
 	// Filter to only include scenes with performers with these tags
 	PerformerTags *HierarchicalMultiCriterionInput `json:"performer_tags"`
 	// Filter scenes that have performers that have been favorited

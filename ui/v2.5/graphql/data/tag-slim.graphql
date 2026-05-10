@@ -6,6 +6,7 @@ fragment SlimTagData on Tag {
   image_path
   parent_count
   child_count
+  supports_numeric_rating
 
   stash_ids {
     endpoint

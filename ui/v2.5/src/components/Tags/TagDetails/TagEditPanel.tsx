@@ -66,6 +66,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     parent_ids: yup.array(yup.string().required()).defined(),
     child_ids: yup.array(yup.string().required()).defined(),
     ignore_auto_tag: yup.boolean().defined(),
+    supports_numeric_rating: yup.boolean().defined(),
     stash_ids: yup.mixed<GQL.StashIdInput[]>().defined(),
     image: yup.string().nullable().optional(),
     custom_fields: yup.object().required().defined(),
@@ -79,6 +80,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     parent_ids: (tag?.parents ?? []).map((t) => t.id),
     child_ids: (tag?.children ?? []).map((t) => t.id),
     ignore_auto_tag: tag?.ignore_auto_tag ?? false,
+    supports_numeric_rating: tag?.supports_numeric_rating ?? false,
     stash_ids: getStashIDs(tag?.stash_ids),
     custom_fields: cloneDeep(tag?.custom_fields ?? {}),
   };
@@ -296,6 +298,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
           <hr />
           {renderInputField("ignore_auto_tag", "checkbox")}
+          {renderInputField("supports_numeric_rating", "checkbox")}
         </Form>
 
         <DetailsEditNavbar

@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -176,6 +177,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 
 		qb.tagsCriterionHandler(sceneFilter.Tags),
 		qb.tagCountCriterionHandler(sceneFilter.TagCount),
+		qb.tagRatingsCriterionHandler(sceneFilter.TagRatings),
 		qb.performersCriterionHandler(sceneFilter.Performers),
 		qb.performerCountCriterionHandler(sceneFilter.PerformerCount),
 		studioCriterionHandler(sceneTable, sceneFilter.Studios),
@@ -528,6 +530,35 @@ func (qb *sceneFilterHandler) tagCountCriterionHandler(tagCount *models.IntCrite
 	}
 
 	return h.handler(tagCount)
+}
+
+// tagRatingsCriterionHandler restricts scenes to those where each listed tag is
+// attached AND has a stored rating that satisfies the supplied IntCriterion.
+// Multiple criteria are AND-combined. We join scenes_tags as well as
+// scene_tag_ratings so that orphaned ratings (kept silently after a tag is
+// detached) do not satisfy the filter.
+func (qb *sceneFilterHandler) tagRatingsCriterionHandler(criteria []*models.TagRatingCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		for i, c := range criteria {
+			if c == nil {
+				continue
+			}
+			tagID, err := strconv.Atoi(c.TagID)
+			if err != nil {
+				f.setError(fmt.Errorf("tag_ratings[%d].tag_id: %w", i, err))
+				return
+			}
+
+			tagsAlias := fmt.Sprintf("scenes_tags_tr%d", i)
+			ratingsAlias := fmt.Sprintf("scene_tag_ratings_tr%d", i)
+			f.addInnerJoin(scenesTagsTable, tagsAlias,
+				fmt.Sprintf("%s.scene_id = scenes.id AND %s.tag_id = ?", tagsAlias, tagsAlias), tagID)
+			f.addInnerJoin("scene_tag_ratings", ratingsAlias,
+				fmt.Sprintf("%s.scene_id = scenes.id AND %s.tag_id = ?", ratingsAlias, ratingsAlias), tagID)
+
+			intCriterionHandler(&c.Rating100, ratingsAlias+".rating", nil)(ctx, f)
+		}
+	}
 }
 
 func (qb *sceneFilterHandler) stashIDCountCriterionHandler(stashIDCount *models.IntCriterionInput) criterionHandlerFunc {

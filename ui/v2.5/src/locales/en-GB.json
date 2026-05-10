@@ -1243,6 +1243,7 @@
   "help": "Help",
   "history": "History",
   "ignore_auto_tag": "Ignore auto tag",
+  "supports_numeric_rating": "Supports numeric rating",
   "image": "Image",
   "image_count": "Image Count",
   "image_index": "Image #",

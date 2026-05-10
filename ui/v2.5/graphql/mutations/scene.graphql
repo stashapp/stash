@@ -34,6 +34,18 @@ mutation SceneSaveActivity(
   )
 }
 
+mutation SceneSetTagRating(
+  $scene_id: ID!
+  $tag_id: ID!
+  $rating100: Int
+) {
+  setSceneTagRating(
+    scene_id: $scene_id
+    tag_id: $tag_id
+    rating100: $rating100
+  )
+}
+
 mutation SceneResetActivity(
   $id: ID!
   $reset_resume: Boolean!

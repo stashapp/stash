@@ -543,6 +543,18 @@ input[type="range"].blue-slider {
       }
     }
   }
+
+  .scene-tag-rating-row {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+
+    .rating-stars,
+    .rating-number {
+      flex-shrink: 0;
+    }
+  }
 }
 
 #scene-edit-details {
