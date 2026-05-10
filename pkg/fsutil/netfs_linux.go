@@ -30,7 +30,8 @@ func IsNetworkFS(path string) (bool, error) {
 		return false, err
 	}
 
-	switch s.Type {
+	// Type is int32 on e.g. linux/arm; SMB/CIFS f_type magics exceed MaxInt32 — compare as uint32.
+	switch uint32(s.Type) {
 	case nfsMagic, smbMagic, smb2Magic, cifsMagic, afsNetMagic, ncpMagic, cephMagic, fuseMagic:
 		return true, nil
 	}
