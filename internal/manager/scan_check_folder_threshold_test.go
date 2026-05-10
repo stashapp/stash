@@ -91,7 +91,7 @@ func TestShouldCheckFolder_Transition(t *testing.T) {
 // returns false, regardless of hit rate or warmup state.
 func TestShouldCheckFolder_RescanBypass(t *testing.T) {
 	j := newTestJob(0.30, true, true) // Rescan=true
-	simulateChecks(j, 200, 0)        // 100% hits, past warmup
+	simulateChecks(j, 200, 0)         // 100% hits, past warmup
 
 	if j.shouldCheckFolder() {
 		t.Fatal("shouldCheckFolder returned true when Rescan=true")

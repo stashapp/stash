@@ -8,9 +8,9 @@ import (
 
 // Magic numbers from Linux uapi/linux/magic.h (statfs.f_type).
 const (
-	msdosSuperMagic = 0x4d44       // FAT / VFAT (msdos)
-	fatSuperMagic   = 0x4006       // legacy FAT magic (rare)
-	exfatSuperMagic = 0x2011BAB0   // exFAT
+	msdosSuperMagic = 0x4d44     // FAT / VFAT (msdos)
+	fatSuperMagic   = 0x4006     // legacy FAT magic (rare)
+	exfatSuperMagic = 0x2011BAB0 // exFAT
 )
 
 // CoarseModtimeFilesystem reports whether path is on FAT, exFAT, or another

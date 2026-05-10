@@ -16,9 +16,9 @@ type fakeTxnManager struct{}
 func (m *fakeTxnManager) Begin(ctx context.Context, _ bool) (context.Context, error) {
 	return ctx, nil
 }
-func (m *fakeTxnManager) Commit(_ context.Context) error    { return nil }
-func (m *fakeTxnManager) Rollback(_ context.Context) error  { return nil }
-func (m *fakeTxnManager) IsLocked(_ error) bool             { return false }
+func (m *fakeTxnManager) Commit(_ context.Context) error   { return nil }
+func (m *fakeTxnManager) Rollback(_ context.Context) error { return nil }
+func (m *fakeTxnManager) IsLocked(_ error) bool            { return false }
 func (m *fakeTxnManager) WithDatabase(ctx context.Context) (context.Context, error) {
 	return ctx, nil
 }
@@ -75,11 +75,11 @@ func (s *fakeFolderStore) Destroy(_ context.Context, _ models.FolderID) error { 
 // Lstat always returns os.ErrNotExist so detectFolderMove aborts gracefully.
 type fakeFS struct{}
 
-func (f *fakeFS) Lstat(_ string) (fs.FileInfo, error)              { return nil, fs.ErrNotExist }
-func (f *fakeFS) Stat(_ string) (fs.FileInfo, error)               { return nil, fs.ErrNotExist }
-func (f *fakeFS) Open(_ string) (fs.ReadDirFile, error)            { return nil, fs.ErrNotExist }
-func (f *fakeFS) OpenZip(_ string, _ int64) (models.ZipFS, error)  { return nil, nil }
-func (f *fakeFS) IsPathCaseSensitive(_ string) (bool, error)       { return true, nil }
+func (f *fakeFS) Lstat(_ string) (fs.FileInfo, error)             { return nil, fs.ErrNotExist }
+func (f *fakeFS) Stat(_ string) (fs.FileInfo, error)              { return nil, fs.ErrNotExist }
+func (f *fakeFS) Open(_ string) (fs.ReadDirFile, error)           { return nil, fs.ErrNotExist }
+func (f *fakeFS) OpenZip(_ string, _ int64) (models.ZipFS, error) { return nil, nil }
+func (f *fakeFS) IsPathCaseSensitive(_ string) (bool, error)      { return true, nil }
 
 func makeTestScanner(store *fakeFolderStore) *file.Scanner {
 	return &file.Scanner{

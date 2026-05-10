@@ -62,7 +62,7 @@ func (s *fixedFolderStore) Create(_ context.Context, f *models.Folder) error {
 	f.ID = 1
 	return nil
 }
-func (s *fixedFolderStore) Update(_ context.Context, _ *models.Folder) error { return nil }
+func (s *fixedFolderStore) Update(_ context.Context, _ *models.Folder) error   { return nil }
 func (s *fixedFolderStore) Destroy(_ context.Context, _ models.FolderID) error { return nil }
 
 // fakeTaskFS is a minimal FS that returns ErrNotExist for all operations.

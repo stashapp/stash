@@ -9,13 +9,13 @@ import (
 // Network FS magic numbers from statfs(2)
 const (
 	// nfsSuper and related remote FS magic numbers
-	nfsMagic    = 0x6969
-	smbMagic    = 0xFF534D42 // SMBv1 / CIFS
-	smb2Magic   = 0xFE534D42 // SMBv2
-	cifsMagic   = 0x517B
-	afsNetMagic = 0x5346414F // AFS
-	ncpMagic    = 0x564C      // Novell NCP
-	cephMagic   = 0x00C36400
+	nfsMagic     = 0x6969
+	smbMagic     = 0xFF534D42 // SMBv1 / CIFS
+	smb2Magic    = 0xFE534D42 // SMBv2
+	cifsMagic    = 0x517B
+	afsNetMagic  = 0x5346414F // AFS
+	ncpMagic     = 0x564C     // Novell NCP
+	cephMagic    = 0x00C36400
 	glusterMagic = 0x65735546 // also FUSE magic — treat conservatively as unknown (network)
 	// FUSE magic covers e.g. sshfs, gvfs — conservatively treated as network
 	fuseMagic = 0x65735546

@@ -54,8 +54,8 @@ type ScanJob struct {
 	// dirCheckAttempts and dirCheckHits track the rolling hit rate of
 	// CheckFolder calls. shouldCheckFolder uses these to gate calls once the
 	// hit rate drops below checkFolderThreshold.
-	dirCheckAttempts    atomic.Int64
-	dirCheckHits        atomic.Int64
+	dirCheckAttempts     atomic.Int64
+	dirCheckHits         atomic.Int64
 	checkFolderThreshold float64
 }
 
