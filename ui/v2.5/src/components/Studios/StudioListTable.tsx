@@ -50,16 +50,17 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
     <Link to={`/studios/${studio.id}`}>
       <div className="ellips-data" title={studio.name ?? ""}>
         {studio.name}
-        {studio.aliases && studio.aliases.length > 0 && (
-          <span className="studio-aliases">{` (${studio.aliases.join(", ")})`}</span>
-        )}
       </div>
     </Link>
   );
 
   const AliasesCell = (studio: GQL.StudioDataFragment) => {
     const aliases = studio.aliases?.join(", ") ?? "";
-    return <span className="ellips-data" title={aliases}>{aliases}</span>;
+    return (
+      <span className="ellips-data" title={aliases}>
+        {aliases}
+      </span>
+    );
   };
 
   const RatingCell = (studio: GQL.StudioDataFragment) => (
@@ -96,7 +97,9 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
 
   const RelatedCell = (studio: GQL.StudioDataFragment) => {
     const parentLink = studio.parent_studio ? (
-      <Link to={`/studios/${studio.parent_studio.id}`}>{studio.parent_studio.name}</Link>
+      <Link to={`/studios/${studio.parent_studio.id}`}>
+        {studio.parent_studio.name}
+      </Link>
     ) : null;
     const childLink =
       studio.child_studios && studio.child_studios.length > 0 ? (
@@ -118,10 +121,7 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
     label: string;
     defaultShow?: boolean;
     mandatory?: boolean;
-    render?: (
-      studio: GQL.StudioDataFragment,
-      index: number
-    ) => React.ReactNode;
+    render?: (studio: GQL.StudioDataFragment, index: number) => React.ReactNode;
   }
 
   const allColumns: IColumnSpec[] = [
@@ -191,7 +191,10 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
     defaultColumns
   );
 
-  const columnRenderFuncs: Record<string, (studio: GQL.StudioDataFragment, index: number) => React.ReactNode> = {};
+  const columnRenderFuncs: Record<
+    string,
+    (studio: GQL.StudioDataFragment, index: number) => React.ReactNode
+  > = {};
   allColumns.forEach((col) => {
     if (col.render) {
       columnRenderFuncs[col.value] = col.render;
