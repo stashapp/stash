@@ -153,6 +153,10 @@ func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error
 		scanner:       scanner,
 		input:         input,
 		subscriptions: s.scanSubs,
+		embeddedCaptionExtractor: &video.EmbeddedCaptionExtractor{
+			FFProbe: s.FFProbe,
+			FFMpeg:  s.FFMpeg,
+		},
 	}
 
 	return s.JobManager.Add(ctx, "Scanning...", &scanJob), nil

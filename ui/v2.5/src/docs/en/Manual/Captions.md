@@ -4,6 +4,8 @@ Stash supports captioning with SRT and VTT files.
 
 Captions will only be detected if they are located in the same folder as the corresponding scene file.
 
+When a scene file is added, updated, renamed, or rescanned, supported embedded text subtitle tracks are extracted to SRT sidecar files in the same folder as the corresponding scene file. Image-based subtitle tracks are not extracted.
+
 Ensure the caption files follow these naming conventions:
 
 ## Scene
