@@ -234,7 +234,7 @@ export function useFilterState(
       viewConfig: {
         ...prev.viewConfig,
         [view]: {
-          ...prev.viewConfig[view],
+          ...prev.viewConfig?.[view],
           displayMode: filter.displayMode,
         },
       },
