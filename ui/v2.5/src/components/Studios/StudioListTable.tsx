@@ -39,7 +39,7 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
   }
 
   const ImageCell = (studio: GQL.StudioDataFragment) => (
-    <Link to={`/studios/${studio.id}`}>
+    <Link to={`/studios/${studio.id}`} aria-label={studio.name ?? ""}>
       {studio.image_path ? (
         <img
           loading="lazy"
