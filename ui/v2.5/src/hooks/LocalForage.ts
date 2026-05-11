@@ -3,6 +3,7 @@ import isEqual from "lodash-es/isEqual";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
 import { View } from "src/components/List/views";
 import { ConfigImageLightboxInput } from "src/core/generated-graphql";
+import { DisplayMode } from "src/models/list-filter/types";
 
 interface IInterfaceQueryConfig {
   filter: string;
@@ -12,6 +13,7 @@ interface IInterfaceQueryConfig {
 
 export interface IViewConfig {
   showSidebar?: boolean;
+  displayMode?: DisplayMode;
 }
 
 type IQueryConfig = Record<string, IInterfaceQueryConfig>;

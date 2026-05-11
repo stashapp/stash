@@ -11,6 +11,7 @@ import { usePrevious } from "src/hooks/state";
 import * as GQL from "src/core/generated-graphql";
 import { DisplayMode } from "src/models/list-filter/types";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
+import { useInterfaceLocalForage } from "src/hooks/LocalForage";
 
 function locationEquals(
   loc1: ReturnType<typeof useLocation> | undefined,
@@ -175,6 +176,50 @@ export function useFilterState(
     defaultFilter: propDefaultFilter ?? defaultFilterFromConfig,
     active: useURL,
   });
+
+  const location = useLocation();
+  const [
+    { data: interfaceData, loading: interfaceLoading },
+    setInterfaceLocalForage,
+  ] = useInterfaceLocalForage();
+
+  // on mount, restore persisted displayMode if URL doesn't specify one
+  useEffect(() => {
+    if (interfaceLoading || !interfaceData || !view) return;
+    const persisted = interfaceData.viewConfig?.[view]?.displayMode;
+    if (persisted === undefined) return;
+    if (location.search.includes("disp=")) return;
+
+    setFilter((cv) => {
+      if (cv.displayMode === persisted) return cv;
+      return cv.setDisplayMode(persisted);
+    });
+  }, [view, interfaceData, interfaceLoading, location.search, setFilter]);
+
+  // persist displayMode on change
+  const prevDisplayMode = usePrevious(filter.displayMode);
+  useEffect(() => {
+    if (!view || interfaceLoading) return;
+    if (prevDisplayMode === undefined) return;
+    if (filter.displayMode === prevDisplayMode) return;
+
+    setInterfaceLocalForage((prev) => ({
+      ...prev,
+      viewConfig: {
+        ...prev.viewConfig,
+        [view]: {
+          ...prev.viewConfig[view],
+          displayMode: filter.displayMode,
+        },
+      },
+    }));
+  }, [
+    view,
+    filter.displayMode,
+    prevDisplayMode,
+    interfaceLoading,
+    setInterfaceLocalForage,
+  ]);
 
   return { filter, setFilter };
 }
