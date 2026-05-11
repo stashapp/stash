@@ -4,6 +4,13 @@ mutation SceneCreate($input: SceneCreateInput!) {
   }
 }
 
+mutation SceneUpload($input: SceneUploadInput!) {
+  sceneUpload(input: $input) {
+    job_id
+    paths
+  }
+}
+
 mutation SceneUpdate($input: SceneUpdateInput!) {
   sceneUpdate(input: $input) {
     ...SceneData

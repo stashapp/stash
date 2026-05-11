@@ -120,6 +120,10 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	return ret, nil
 }
 
+func (r *mutationResolver) SceneUpload(ctx context.Context, input manager.SceneUploadInput) (*manager.SceneUploadResult, error) {
+	return manager.GetInstance().UploadScenes(ctx, input)
+}
+
 func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUpdateInput) (ret *models.Scene, err error) {
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),

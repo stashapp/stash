@@ -288,6 +288,8 @@ type Mutation {
   downloadFFMpeg: ID!
 
   sceneCreate(input: SceneCreateInput!): Scene
+  "Uploads scene files into a stash library path and starts a scan. Returns the scan job ID."
+  sceneUpload(input: SceneUploadInput!): SceneUploadResult!
   sceneUpdate(input: SceneUpdateInput!): Scene
   sceneMerge(input: SceneMergeInput!): Scene
   bulkSceneUpdate(input: BulkSceneUpdateInput!): [Scene!]

@@ -618,6 +618,16 @@ export const mutateCreateScene = (input: GQL.SceneCreateInput) =>
     },
   });
 
+export const mutateUploadSceneFiles = (files: File[]) =>
+  client.mutate<GQL.SceneUploadMutation>({
+    mutation: GQL.SceneUploadDocument,
+    variables: {
+      input: {
+        files,
+      },
+    },
+  });
+
 export const useSceneUpdate = () =>
   GQL.useSceneUpdateMutation({
     update(cache, result) {

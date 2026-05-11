@@ -1,10 +1,20 @@
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import cloneDeep from "lodash-es/cloneDeep";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory, useLocation } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
-import { queryFindScenes, useFindScenes } from "src/core/StashService";
+import {
+  mutateUploadSceneFiles,
+  queryFindScenes,
+  useFindScenes,
+} from "src/core/StashService";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { Tagger } from "../Tagger/scenes/SceneTagger";
@@ -54,11 +64,13 @@ import {
 import { PatchComponent, PatchContainerComponent } from "src/patch";
 import { Pagination, PaginationIndex } from "../List/Pagination";
 import { Button } from "react-bootstrap";
+import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import useFocus from "src/utils/focus";
 import { useZoomKeybinds } from "../List/ZoomSlider";
 import { FilteredListToolbar } from "../List/FilteredListToolbar";
 import { FilterTags } from "../List/FilterTags";
 import { SidebarFolderFilter } from "../List/Filters/FolderFilter";
+import { useToast } from "src/hooks/Toast";
 
 function renderMetadataByline(result: GQL.FindScenesQueryResult) {
   const duration = result?.data?.findScenes?.duration;
@@ -366,6 +378,9 @@ export const FilteredSceneList = PatchComponent(
     const intl = useIntl();
     const history = useHistory();
     const location = useLocation();
+    const Toast = useToast();
+    const uploadInputRef = useRef<HTMLInputElement>(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     const searchFocus = useFocus();
 
@@ -496,6 +511,32 @@ export const FilteredSceneList = PatchComponent(
       history.push(newPath);
     }
 
+    async function onSceneUploadChange(
+      event: React.ChangeEvent<HTMLInputElement>
+    ) {
+      const files = Array.from(event.currentTarget.files ?? []);
+      event.currentTarget.value = "";
+
+      if (files.length === 0 || isUploading) {
+        return;
+      }
+
+      setIsUploading(true);
+      try {
+        const result = await mutateUploadSceneFiles(files);
+        const jobID = result.data?.sceneUpload.job_id;
+        Toast.success(
+          jobID
+            ? `Upload complete. Scan job ${jobID} started.`
+            : "Upload complete."
+        );
+      } catch (e) {
+        Toast.error(e);
+      } finally {
+        setIsUploading(false);
+      }
+    }
+
     function onPlay() {
       if (items.length === 0) {
         return;
@@ -563,6 +604,17 @@ export const FilteredSceneList = PatchComponent(
         onClick: () => onCreateNew(),
         isDisplayed: () => !hasSelection,
         className: "create-new-item",
+      },
+      {
+        text: isUploading ? "Uploading…" : "Upload files…",
+        onClick: () => {
+          if (!isUploading) {
+            uploadInputRef.current?.click();
+          }
+        },
+        isDisplayed: () => !hasSelection,
+        icon: faUpload,
+        className: "upload-scene-files",
       },
       {
         text: intl.formatMessage({ id: "actions.select_all" }),
@@ -646,6 +698,14 @@ export const FilteredSceneList = PatchComponent(
           })}
         >
           {modal}
+
+          <input
+            ref={uploadInputRef}
+            className="d-none"
+            type="file"
+            multiple
+            onChange={onSceneUploadChange}
+          />
 
           <SidebarStateContext.Provider value={{ sectionOpen, setSectionOpen }}>
             <SidebarPane hideSidebar={!showSidebar}>

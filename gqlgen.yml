@@ -96,6 +96,10 @@ models:
     model: github.com/stashapp/stash/internal/manager.StashBoxBatchTagInput
   SceneStreamEndpoint:
     model: github.com/stashapp/stash/internal/manager.SceneStreamEndpoint
+  SceneUploadInput:
+    model: github.com/stashapp/stash/internal/manager.SceneUploadInput
+  SceneUploadResult:
+    model: github.com/stashapp/stash/internal/manager.SceneUploadResult
   ExportObjectTypeInput:
     model: github.com/stashapp/stash/internal/manager.ExportObjectTypeInput
   ExportObjectsInput:

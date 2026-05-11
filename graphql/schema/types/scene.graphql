@@ -126,6 +126,19 @@ input SceneCreateInput {
   custom_fields: Map
 }
 
+input SceneUploadInput {
+  files: [Upload!]!
+  "Optional destination folder. Defaults to an uploads folder in the first configured stash library path."
+  destination_folder: String
+}
+
+type SceneUploadResult {
+  "Scan job ID started after the upload completes."
+  job_id: ID!
+  "Absolute paths written for the uploaded files."
+  paths: [String!]!
+}
+
 input SceneUpdateInput {
   clientMutationId: String
   id: ID!
