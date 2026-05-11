@@ -5,6 +5,7 @@ src/core/generated-graphql.ts
 /node_modules
 /.pnp
 .pnp.js
+/.pnpm-store
 
 # testing
 /coverage
