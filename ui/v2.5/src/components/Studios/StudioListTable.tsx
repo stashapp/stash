@@ -1,4 +1,5 @@
 import React from "react";
+import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { useStudioUpdate } from "src/core/StashService";
 import { useTableColumns } from "src/hooks/useTableColumns";
@@ -20,6 +21,7 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
   selectedIds,
   onSelectChange,
 }) => {
+  const intl = useIntl();
   const [updateStudio] = useStudioUpdate();
 
   function setRating(v: number | null, studioId: string) {
@@ -37,12 +39,16 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
 
   const ImageCell = (studio: GQL.StudioDataFragment) => (
     <Link to={`/studios/${studio.id}`}>
-      <img
-        loading="lazy"
-        className="image-thumbnail"
-        alt={studio.name ?? ""}
-        src={studio.image_path ?? ""}
-      />
+      {studio.image_path ? (
+        <img
+          loading="lazy"
+          className="image-thumbnail"
+          alt={studio.name ?? ""}
+          src={studio.image_path}
+        />
+      ) : (
+        <span className="image-thumbnail" aria-hidden="true" />
+      )}
     </Link>
   );
 
@@ -127,56 +133,56 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
   const allColumns: IColumnSpec[] = [
     {
       value: "image",
-      label: "Logo",
+      label: intl.formatMessage({ id: "image" }),
       defaultShow: true,
       render: ImageCell,
     },
     {
       value: "name",
-      label: "Name",
+      label: intl.formatMessage({ id: "name" }),
       mandatory: true,
       defaultShow: true,
       render: NameCell,
     },
     {
       value: "aliases",
-      label: "Aliases",
+      label: intl.formatMessage({ id: "aliases" }),
       defaultShow: true,
       render: AliasesCell,
     },
     {
       value: "rating",
-      label: "Rating",
+      label: intl.formatMessage({ id: "rating" }),
       defaultShow: true,
       render: RatingCell,
     },
     {
       value: "scene_count",
-      label: "Scenes",
+      label: intl.formatMessage({ id: "scenes" }),
       defaultShow: true,
       render: SceneCountCell,
     },
     {
       value: "image_count",
-      label: "Images",
+      label: intl.formatMessage({ id: "images" }),
       defaultShow: true,
       render: ImageCountCell,
     },
     {
       value: "gallery_count",
-      label: "Galleries",
+      label: intl.formatMessage({ id: "galleries" }),
       defaultShow: true,
       render: GalleryCountCell,
     },
     {
       value: "performer_count",
-      label: "Performers",
+      label: intl.formatMessage({ id: "performers" }),
       defaultShow: true,
       render: PerformerCountCell,
     },
     {
       value: "related",
-      label: "Related",
+      label: intl.formatMessage({ id: "related_studios" }),
       defaultShow: true,
       render: RelatedCell,
     },
