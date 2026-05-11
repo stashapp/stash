@@ -629,10 +629,7 @@ func (m *stringListCriterionHandlerBuilder) handler(criterion *models.StringCrit
 				// 	Modifier: models.CriterionModifierNotNull,
 				// }, m.joinTable+"."+m.stringColumn)(ctx, f)
 			} else {
-				joinType := joinTypeInner
-				if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotMatchesRegex {
-					joinType = joinTypeLeft
-				}
+				joinType := joinTypeLeft
 				m.addJoinTable(f, joinType)
 				stringCriterionHandler(criterion, m.joinTable+"."+m.stringColumn)(ctx, f)
 			}
