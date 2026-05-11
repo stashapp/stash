@@ -7,6 +7,7 @@ import { ListTable, IColumn } from "../List/ListTable";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import { Link } from "react-router-dom";
 import NavUtils from "src/utils/navigation";
+import "./StudioListTable.scss";
 
 interface IStudioListTableProps {
   studios: GQL.StudioDataFragment[];
