@@ -86,7 +86,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 	}
 
 	if oldFile != nil {
-		if err := video.CleanCaptions(ctx, videoFile, nil, h.CaptionUpdater); err != nil {
+		if err := video.CleanCaptions(ctx, videoFile, nil, h.CaptionUpdater, h.Paths.Scene); err != nil {
 			return fmt.Errorf("cleaning captions: %w", err)
 		}
 	}

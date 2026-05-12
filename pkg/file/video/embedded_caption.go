@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
@@ -37,13 +38,13 @@ type embeddedCaptionTrack struct {
 }
 
 // EmbeddedCaptionExtractor extracts supported embedded text subtitle streams
-// into sidecar caption files that can be handled by the existing caption flow.
+// into generated caption files that can be handled by the existing caption flow.
 type EmbeddedCaptionExtractor struct {
 	FFProbe embeddedCaptionProbe
 	FFMpeg  embeddedCaptionEncoder
 }
 
-func (e *EmbeddedCaptionExtractor) Extract(ctx context.Context, videoFile *models.VideoFile) ([]string, error) {
+func (e *EmbeddedCaptionExtractor) Extract(ctx context.Context, videoFile *models.VideoFile, outputDir string, filenamePrefix string, existingCaptions []*models.VideoCaption, overwrite bool) ([]*models.VideoCaption, error) {
 	if e == nil || e.FFProbe == nil || e.FFMpeg == nil {
 		return nil, errors.New("embedded caption extractor is not configured")
 	}
@@ -53,43 +54,72 @@ func (e *EmbeddedCaptionExtractor) Extract(ctx context.Context, videoFile *model
 	if videoFile.ZipFileID != nil {
 		return nil, nil
 	}
+	if outputDir == "" {
+		return nil, errors.New("embedded caption output directory is empty")
+	}
+	if filenamePrefix == "" {
+		return nil, errors.New("embedded caption filename prefix is empty")
+	}
 
 	probed, err := e.FFProbe.NewVideoFile(videoFile.Path)
 	if err != nil {
 		return nil, fmt.Errorf("probing video captions: %w", err)
 	}
 
-	var ret []string
+	existingByKey := make(map[string]*models.VideoCaption)
+	for _, caption := range existingCaptions {
+		existingByKey[embeddedCaptionKey(caption.LanguageCode, caption.CaptionType)] = caption
+	}
+
+	var ret []*models.VideoCaption
 	for _, track := range embeddedCaptionTracks(probed.JSON.Streams) {
-		captionPath := GetCaptionPath(videoFile.Path, track.language, track.captionType)
+		if existing := existingByKey[embeddedCaptionKey(track.language, track.captionType)]; existing != nil && !existing.Generated {
+			continue
+		}
+
+		captionFilename := GetEmbeddedCaptionFilename(filenamePrefix, track.language, track.captionType)
+		captionPath := filepath.Join(outputDir, captionFilename)
 		exists, err := captionFileExists(captionPath)
 		if err != nil {
 			return ret, err
 		}
-		if !exists {
-			if err := e.extractTrack(ctx, videoFile.Path, track, captionPath); err != nil {
+		if overwrite || !exists {
+			if err := os.MkdirAll(filepath.Dir(captionPath), 0755); err != nil {
+				return ret, fmt.Errorf("creating embedded caption output directory: %w", err)
+			}
+			if err := e.extractTrack(ctx, videoFile.Path, track, captionPath, overwrite); err != nil {
 				_ = os.Remove(captionPath)
 				return ret, err
 			}
 		}
 
-		ret = append(ret, captionPath)
+		ret = append(ret, &models.VideoCaption{
+			LanguageCode: track.language,
+			Filename:     captionFilename,
+			CaptionType:  track.captionType,
+			Generated:    true,
+		})
 	}
 
 	return ret, nil
 }
 
-func (e *EmbeddedCaptionExtractor) extractTrack(ctx context.Context, videoPath string, track embeddedCaptionTrack, outputPath string) error {
+func (e *EmbeddedCaptionExtractor) extractTrack(ctx context.Context, videoPath string, track embeddedCaptionTrack, outputPath string, overwrite bool) error {
 	args := ffmpeg.Args{
 		"-v", "error",
 		"-nostdin",
+	}
+	if overwrite {
+		args = args.Overwrite()
+	}
+	args = append(args,
 		"-i", videoPath,
 		"-map", fmt.Sprintf("0:%d", track.streamIndex),
 		"-vn",
 		"-an",
 		"-c:s", track.captionType,
 		outputPath,
-	}
+	)
 
 	if err := e.FFMpeg.Generate(ctx, args); err != nil {
 		return fmt.Errorf("extracting embedded caption stream %d: %w", track.streamIndex, err)
@@ -123,6 +153,18 @@ func embeddedCaptionTracks(streams []ffmpeg.FFProbeStream) []embeddedCaptionTrac
 	}
 
 	return ret
+}
+
+func GetEmbeddedCaptionFilename(prefix string, lang string, suffix string) string {
+	if len(lang) == 0 {
+		lang = LangUnknown
+	}
+
+	return prefix + "." + lang + "." + suffix
+}
+
+func embeddedCaptionKey(lang string, captionType string) string {
+	return lang + "." + captionType
 }
 
 func isSupportedEmbeddedCaptionCodec(codec string) bool {

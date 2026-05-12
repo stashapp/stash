@@ -103,6 +103,9 @@ func (s *Manager) RefreshConfig() {
 		if err := fsutil.EnsureDir(s.Paths.Generated.Vtt); err != nil {
 			logger.Warnf("could not create VTT directory: %v", err)
 		}
+		if err := fsutil.EnsureDir(s.Paths.Generated.Captions); err != nil {
+			logger.Warnf("could not create captions directory: %v", err)
+		}
 		if err := fsutil.EnsureDir(s.Paths.Generated.Markers); err != nil {
 			logger.Warnf("could not create markers directory: %v", err)
 		}

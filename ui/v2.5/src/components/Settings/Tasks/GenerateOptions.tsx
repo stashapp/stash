@@ -151,6 +151,14 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
             headingID="dialogs.scene_gen.interactive_heatmap_speed"
             onChange={(v) => setOptions({ interactiveHeatmapsSpeeds: v })}
           />
+          <BooleanSetting
+            advanced
+            id="embedded-captions-task"
+            checked={options.embeddedCaptions ?? false}
+            headingID="dialogs.scene_gen.embedded_captions"
+            tooltipID="dialogs.scene_gen.embedded_captions_tooltip"
+            onChange={(v) => setOptions({ embeddedCaptions: v })}
+          />
         </>
       )}
       {showImageOptions && (

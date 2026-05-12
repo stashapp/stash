@@ -76,6 +76,17 @@ func (d *FileDeleter) MarkGeneratedFiles(scene *models.Scene) error {
 		files = append(files, heatmapPath)
 	}
 
+	fileID := scene.PrimaryFileID
+	if fileID == nil && scene.Files.PrimaryLoaded() {
+		if primaryFile := scene.Files.Primary(); primaryFile != nil {
+			fileID = &primaryFile.ID
+		}
+	}
+	if fileID != nil {
+		captionPaths, _ := filepath.Glob(d.Paths.Scene.GetGeneratedCaptionGlob(fileID.String()))
+		files = append(files, captionPaths...)
+	}
+
 	return d.FilesWithoutTrash(files)
 }
 

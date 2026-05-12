@@ -434,7 +434,8 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 			continue
 		}
 
-		sub, err := video.ReadSubs(caption.Path(s.Path))
+		captionPath := video.GetCaptionFilePath(caption, s.Path, manager.GetInstance().Paths.Scene)
+		sub, err := video.ReadSubs(captionPath)
 		if err != nil {
 			logger.Warnf("error while reading subs: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)

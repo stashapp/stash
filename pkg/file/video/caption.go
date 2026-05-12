@@ -59,6 +59,16 @@ func IsLangInCaptions(lang string, ext string, captions []*models.VideoCaption) 
 	return false
 }
 
+func captionIndex(lang string, ext string, captions []*models.VideoCaption) int {
+	for i, caption := range captions {
+		if lang == caption.LanguageCode && ext == caption.CaptionType {
+			return i
+		}
+	}
+
+	return -1
+}
+
 // getCaptionPrefix returns the prefix used to search for video files for the provided caption path
 func getCaptionPrefix(captionPath string) string {
 	basename := strings.TrimSuffix(captionPath, filepath.Ext(captionPath)) // caption filename without the extension
@@ -88,6 +98,42 @@ func getCaptionsLangFromPath(captionPath string) string {
 type CaptionUpdater interface {
 	GetCaptions(ctx context.Context, fileID models.FileID) ([]*models.VideoCaption, error)
 	UpdateCaptions(ctx context.Context, fileID models.FileID, captions []*models.VideoCaption) error
+}
+
+type GeneratedCaptionPathResolver interface {
+	GetGeneratedCaptionPath(filename string) string
+}
+
+func GetCaptionFilePath(caption *models.VideoCaption, videoPath string, generatedCaptionPathResolver GeneratedCaptionPathResolver) string {
+	if caption.Generated && generatedCaptionPathResolver != nil {
+		return generatedCaptionPathResolver.GetGeneratedCaptionPath(caption.Filename)
+	}
+
+	return caption.Path(videoPath)
+}
+
+func MergeGeneratedCaptions(captions []*models.VideoCaption, generatedCaptions []*models.VideoCaption) []*models.VideoCaption {
+	ret := make([]*models.VideoCaption, len(captions))
+	copy(ret, captions)
+
+	for _, generated := range generatedCaptions {
+		replaced := false
+		for i, caption := range ret {
+			if caption.LanguageCode == generated.LanguageCode && caption.CaptionType == generated.CaptionType {
+				if caption.Generated {
+					ret[i] = generated
+				}
+				replaced = true
+				break
+			}
+		}
+
+		if !replaced {
+			ret = append(ret, generated)
+		}
+	}
+
+	return ret
 }
 
 // MatchesCaption returns true if the caption file matches the video file based on the filename
@@ -135,20 +181,27 @@ func AssociateCaptions(ctx context.Context, captionPath string, txnMgr txn.Manag
 
 			fileExt := filepath.Ext(captionPath)
 			ext := fileExt[1:]
-			if !IsLangInCaptions(captionLang, ext, captions) { // only update captions if language code is not present
-				newCaption := &models.VideoCaption{
-					LanguageCode: captionLang,
-					Filename:     filepath.Base(captionPath),
-					CaptionType:  ext,
-				}
-				captions = append(captions, newCaption)
-				er = w.UpdateCaptions(ctx, fileID, captions)
-				if er != nil {
-					return fmt.Errorf("updating captions for file %s: %w", path, er)
-				}
-
-				logger.Debugf("Updated captions for file %s. Added %s", path, captionLang)
+			newCaption := &models.VideoCaption{
+				LanguageCode: captionLang,
+				Filename:     filepath.Base(captionPath),
+				CaptionType:  ext,
 			}
+
+			existingIndex := captionIndex(captionLang, ext, captions)
+			if existingIndex == -1 {
+				captions = append(captions, newCaption)
+			} else if captions[existingIndex].Generated {
+				captions[existingIndex] = newCaption
+			} else {
+				continue
+			}
+
+			er = w.UpdateCaptions(ctx, fileID, captions)
+			if er != nil {
+				return fmt.Errorf("updating captions for file %s: %w", path, er)
+			}
+
+			logger.Debugf("Updated captions for file %s. Added %s", path, captionLang)
 		}
 		return err
 	}); err != nil {
@@ -159,7 +212,7 @@ func AssociateCaptions(ctx context.Context, captionPath string, txnMgr txn.Manag
 }
 
 // CleanCaptions removes non existent/accessible language codes from captions
-func CleanCaptions(ctx context.Context, f *models.VideoFile, txnMgr txn.Manager, w CaptionUpdater) error {
+func CleanCaptions(ctx context.Context, f *models.VideoFile, txnMgr txn.Manager, w CaptionUpdater, generatedCaptionPathResolver GeneratedCaptionPathResolver) error {
 	captions, err := w.GetCaptions(ctx, f.ID)
 	if err != nil {
 		return fmt.Errorf("getting captions for file %s: %w", f.Path, err)
@@ -175,7 +228,7 @@ func CleanCaptions(ctx context.Context, f *models.VideoFile, txnMgr txn.Manager,
 	var newCaptions []*models.VideoCaption
 
 	for _, caption := range captions {
-		captionPath := caption.Path(filePath)
+		captionPath := GetCaptionFilePath(caption, filePath, generatedCaptionPathResolver)
 		_, err := os.Stat(captionPath)
 		if errors.Is(err, os.ErrNotExist) {
 			logger.Infof("Removing non existent caption %s for %s", caption.Filename, f.Path)

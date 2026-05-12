@@ -281,6 +281,7 @@ type VideoCaption struct {
 	LanguageCode string `json:"language_code"`
 	Filename     string `json:"filename"`
 	CaptionType  string `json:"caption_type"`
+	Generated    bool   `json:"generated"`
 }
 
 func (c VideoCaption) Path(filePath string) string {

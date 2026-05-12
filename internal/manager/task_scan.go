@@ -38,12 +38,6 @@ type ScanJob struct {
 	count     int
 
 	unmatchedCaptionFiles utils.MutexField[[]string]
-
-	embeddedCaptionExtractor embeddedCaptionExtractor
-}
-
-type embeddedCaptionExtractor interface {
-	Extract(ctx context.Context, videoFile *models.VideoFile) ([]string, error)
 }
 
 func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
@@ -375,15 +369,11 @@ func (j *ScanJob) handleFile(ctx context.Context, f file.ScannedFile, progress *
 			txnMgr := j.scanner.Repository.TxnManager
 			fileRepo := j.scanner.Repository.File
 			if err := txn.WithDatabase(ctx, txnMgr, func(ctx context.Context) error {
-				return video.CleanCaptions(ctx, videoFile, txnMgr, fileRepo)
+				return video.CleanCaptions(ctx, videoFile, txnMgr, fileRepo, GetInstance().Paths.Scene)
 			}); err != nil {
 				logger.Errorf("Error cleaning captions: %v", err)
 			}
 		}
-	}
-
-	if (r.New || r.Updated || r.Renamed) && videoFile != nil {
-		j.extractEmbeddedCaptions(ctx, videoFile)
 	}
 
 	// handle rename should have already handled the contents of the zip file
@@ -408,23 +398,6 @@ func (j *ScanJob) handleFile(ctx context.Context, f file.ScannedFile, progress *
 	}
 
 	return nil
-}
-
-func (j *ScanJob) extractEmbeddedCaptions(ctx context.Context, videoFile *models.VideoFile) {
-	if j.embeddedCaptionExtractor == nil || videoFile.ZipFileID != nil {
-		return
-	}
-
-	captionPaths, err := j.embeddedCaptionExtractor.Extract(ctx, videoFile)
-	if err != nil {
-		logger.Errorf("Error extracting embedded captions for %s: %v", videoFile.Path, err)
-		return
-	}
-
-	fileRepo := j.scanner.Repository.File
-	for _, captionPath := range captionPaths {
-		video.AssociateCaptions(ctx, captionPath, j.scanner.Repository.TxnManager, fileRepo, fileRepo)
-	}
 }
 
 func (j *ScanJob) scanZipFile(ctx context.Context, f file.ScannedFile, progress *job.Progress) error {

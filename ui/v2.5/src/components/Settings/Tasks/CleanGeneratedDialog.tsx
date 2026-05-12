@@ -57,6 +57,12 @@ const CleanGeneratedOptions: React.FC<{
         onChange={(v) => setOptions({ imageThumbnails: v })}
       />
       <BooleanSetting
+        id="clean-generated-captions"
+        checked={options.captions ?? false}
+        headingID="config.tasks.clean_generated.captions"
+        onChange={(v) => setOptions({ captions: v })}
+      />
+      <BooleanSetting
         id="clean-generated-dryrun"
         checked={options.dryRun ?? false}
         headingID="config.tasks.only_dry_run"
@@ -75,6 +81,7 @@ export const CleanGeneratedDialog: React.FC<{
 
   const [options, setOptions] = useState<GQL.CleanGeneratedInput>({
     blobFiles: true,
+    captions: true,
     imageThumbnails: true,
     markers: true,
     screenshots: true,

@@ -57,6 +57,7 @@ func TestEmbeddedCaptionTracks(t *testing.T) {
 
 func TestEmbeddedCaptionExtractorExtractsSupportedTracks(t *testing.T) {
 	dir := t.TempDir()
+	outputDir := filepath.Join(dir, "generated", "captions")
 	videoPath := filepath.Join(dir, "video.mkv")
 	probe := stubEmbeddedCaptionProbe{
 		file: &ffmpeg.VideoFile{
@@ -74,12 +75,19 @@ func TestEmbeddedCaptionExtractorExtractsSupportedTracks(t *testing.T) {
 		FFMpeg:  encoder,
 	}
 
-	paths, err := extractor.Extract(context.Background(), &models.VideoFile{
+	captions, err := extractor.Extract(context.Background(), &models.VideoFile{
 		BaseFile: &models.BaseFile{Path: videoPath},
-	})
+	}, outputDir, "123", nil, false)
 
 	require.NoError(t, err)
-	assert.Equal(t, []string{filepath.Join(dir, "video.en.srt")}, paths)
+	assert.Equal(t, []*models.VideoCaption{
+		{
+			LanguageCode: "en",
+			Filename:     "123.en.srt",
+			CaptionType:  "srt",
+			Generated:    true,
+		},
+	}, captions)
 	require.Len(t, encoder.args, 1)
 	assert.Equal(t, ffmpeg.Args{
 		"-v", "error",
@@ -89,14 +97,47 @@ func TestEmbeddedCaptionExtractorExtractsSupportedTracks(t *testing.T) {
 		"-vn",
 		"-an",
 		"-c:s", "srt",
-		filepath.Join(dir, "video.en.srt"),
+		filepath.Join(outputDir, "123.en.srt"),
 	}, encoder.args[0])
 }
 
-func TestEmbeddedCaptionExtractorSkipsExistingSidecar(t *testing.T) {
+func TestEmbeddedCaptionExtractorSkipsExistingExternalCaption(t *testing.T) {
 	dir := t.TempDir()
+	outputDir := filepath.Join(dir, "generated", "captions")
 	videoPath := filepath.Join(dir, "video.mkv")
-	captionPath := filepath.Join(dir, "video.en.srt")
+
+	encoder := &stubEmbeddedCaptionEncoder{}
+	extractor := EmbeddedCaptionExtractor{
+		FFProbe: stubEmbeddedCaptionProbe{
+			file: &ffmpeg.VideoFile{
+				JSON: ffmpeg.FFProbeJSON{
+					Streams: []ffmpeg.FFProbeStream{subtitleStream(1, "subrip", "eng")},
+				},
+			},
+		},
+		FFMpeg: encoder,
+	}
+
+	captions, err := extractor.Extract(context.Background(), &models.VideoFile{
+		BaseFile: &models.BaseFile{Path: videoPath},
+	}, outputDir, "123", []*models.VideoCaption{
+		{
+			LanguageCode: "en",
+			Filename:     "video.en.srt",
+			CaptionType:  "srt",
+		},
+	}, false)
+
+	require.NoError(t, err)
+	assert.Empty(t, captions)
+	assert.Empty(t, encoder.args)
+}
+
+func TestEmbeddedCaptionExtractorSkipsExistingGeneratedCaptionFile(t *testing.T) {
+	dir := t.TempDir()
+	outputDir := filepath.Join(dir, "generated", "captions")
+	captionPath := filepath.Join(outputDir, "123.en.srt")
+	require.NoError(t, os.MkdirAll(outputDir, 0755))
 	require.NoError(t, os.WriteFile(captionPath, []byte("synthetic caption"), 0o600))
 
 	encoder := &stubEmbeddedCaptionEncoder{}
@@ -111,12 +152,26 @@ func TestEmbeddedCaptionExtractorSkipsExistingSidecar(t *testing.T) {
 		FFMpeg: encoder,
 	}
 
-	paths, err := extractor.Extract(context.Background(), &models.VideoFile{
-		BaseFile: &models.BaseFile{Path: videoPath},
-	})
+	captions, err := extractor.Extract(context.Background(), &models.VideoFile{
+		BaseFile: &models.BaseFile{Path: filepath.Join(dir, "video.mkv")},
+	}, outputDir, "123", []*models.VideoCaption{
+		{
+			LanguageCode: "en",
+			Filename:     "123.en.srt",
+			CaptionType:  "srt",
+			Generated:    true,
+		},
+	}, false)
 
 	require.NoError(t, err)
-	assert.Equal(t, []string{captionPath}, paths)
+	assert.Equal(t, []*models.VideoCaption{
+		{
+			LanguageCode: "en",
+			Filename:     "123.en.srt",
+			CaptionType:  "srt",
+			Generated:    true,
+		},
+	}, captions)
 	assert.Empty(t, encoder.args)
 }
 
@@ -135,7 +190,7 @@ func TestEmbeddedCaptionExtractorReturnsEncoderErrors(t *testing.T) {
 
 	_, err := extractor.Extract(context.Background(), &models.VideoFile{
 		BaseFile: &models.BaseFile{Path: filepath.Join(t.TempDir(), "video.mkv")},
-	})
+	}, t.TempDir(), "123", nil, false)
 
 	require.Error(t, err)
 	assert.ErrorIs(t, err, expectedErr)
@@ -152,6 +207,7 @@ func TestEmbeddedCaptionExtractorWithSyntheticMedia(t *testing.T) {
 	require.NoError(t, err)
 
 	dir := t.TempDir()
+	outputDir := filepath.Join(dir, "generated", "captions")
 	subtitlePath := filepath.Join(dir, "input.srt")
 	require.NoError(t, os.WriteFile(subtitlePath, []byte("1\n00:00:00,000 --> 00:00:01,000\nSynthetic embedded caption\n"), 0o600))
 
@@ -177,13 +233,20 @@ func TestEmbeddedCaptionExtractorWithSyntheticMedia(t *testing.T) {
 		FFMpeg:  ffmpeg.NewEncoder(ffmpegPath),
 	}
 
-	paths, err := extractor.Extract(context.Background(), &models.VideoFile{
+	captions, err := extractor.Extract(context.Background(), &models.VideoFile{
 		BaseFile: &models.BaseFile{Path: videoPath},
-	})
+	}, outputDir, "123", nil, false)
 
-	captionPath := filepath.Join(dir, "video.en.srt")
+	captionPath := filepath.Join(outputDir, "123.en.srt")
 	require.NoError(t, err)
-	assert.Equal(t, []string{captionPath}, paths)
+	assert.Equal(t, []*models.VideoCaption{
+		{
+			LanguageCode: "en",
+			Filename:     "123.en.srt",
+			CaptionType:  "srt",
+			Generated:    true,
+		},
+	}, captions)
 
 	extracted, err := os.ReadFile(captionPath)
 	require.NoError(t, err)

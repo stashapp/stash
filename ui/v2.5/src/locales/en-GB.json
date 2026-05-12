@@ -533,6 +533,7 @@
       "clean_ignore_zip_contents_desc": "Faster but will miss files removed inside zip files. Safe to enable if you don't delete files within zips.",
       "clean_generated": {
         "blob_files": "Blob files",
+        "captions": "Embedded captions",
         "description": "Removes generated files without a corresponding database entry.",
         "image_thumbnails": "Image thumbnails",
         "image_thumbnails_desc": "Image thumbnails and clips",
@@ -1054,6 +1055,8 @@
     "scene_gen": {
       "clip_previews": "Image clip previews",
       "covers": "Scene covers",
+      "embedded_captions": "Embedded captions",
+      "embedded_captions_tooltip": "Extract supported embedded text subtitles to generated caption files",
       "force_transcodes": "Force Transcode generation",
       "force_transcodes_tooltip": "By default, transcodes are only generated when the video file is not supported in the browser. When enabled, transcodes will be generated even when the video file appears to be supported in the browser.",
       "image_phash": "Image perceptual hashes",

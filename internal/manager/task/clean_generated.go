@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/job"
@@ -26,6 +27,7 @@ type CleanGeneratedOptions struct {
 	Markers bool `json:"markers"`
 
 	ImageThumbnails bool `json:"imageThumbnails"`
+	Captions        bool `json:"captions"`
 
 	DryRun bool `json:"dryRun"`
 }
@@ -90,6 +92,9 @@ func (j *CleanGeneratedJob) countTasks() int {
 		tasks++
 	}
 	if j.Options.ImageThumbnails {
+		tasks++
+	}
+	if j.Options.Captions {
 		tasks++
 	}
 	return tasks
@@ -174,6 +179,15 @@ func (j *CleanGeneratedJob) Execute(ctx context.Context, progress *job.Progress)
 		progress.ExecuteTask("Cleaning thumbnail files", func() {
 			if err := j.cleanThumbnailFiles(ctx, progress); err != nil {
 				j.logError(fmt.Errorf("error cleaning thumbnail files: %w", err))
+			}
+		})
+		j.taskComplete(progress)
+	}
+
+	if j.Options.Captions {
+		progress.ExecuteTask("Cleaning caption files", func() {
+			if err := j.cleanCaptionFiles(ctx, progress); err != nil {
+				j.logError(fmt.Errorf("error cleaning caption files: %w", err))
 			}
 		})
 		j.taskComplete(progress)
@@ -525,6 +539,72 @@ func (j *CleanGeneratedJob) getTranscodeFileHash(basename string) (string, error
 
 func (j *CleanGeneratedJob) cleanTranscodeFiles(ctx context.Context, progress *job.Progress) error {
 	return j.cleanSceneFiles(ctx, j.Paths.Generated.Transcodes, "transcode", j.getTranscodeFileHash, progress)
+}
+
+func (j *CleanGeneratedJob) getCaptionFileID(basename string) (models.FileID, error) {
+	fileID, _, ok := strings.Cut(basename, ".")
+	if !ok {
+		return 0, fmt.Errorf("invalid generated caption filename")
+	}
+
+	id, err := strconv.Atoi(fileID)
+	if err != nil {
+		return 0, err
+	}
+
+	return models.FileID(id), nil
+}
+
+func (j *CleanGeneratedJob) cleanCaptionFiles(ctx context.Context, progress *job.Progress) error {
+	if job.IsCancelled(ctx) {
+		return nil
+	}
+
+	logger.Infof("Cleaning caption files")
+
+	if err := filepath.Walk(j.Paths.Generated.Captions, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		if err = ctx.Err(); err != nil {
+			return err
+		}
+
+		filename := info.Name()
+		fileID, err := j.getCaptionFileID(filename)
+		if err != nil {
+			logger.Warnf("Ignoring unknown caption file: %s", filename)
+			return nil
+		}
+
+		j.setTaskProgress(0, progress)
+
+		var files []models.File
+		if err := j.Repository.WithReadTxn(ctx, func(ctx context.Context) error {
+			var err error
+			files, err = j.Repository.File.Find(ctx, fileID)
+			return err
+		}); err != nil {
+			logger.Errorf("error checking file entry for caption: %v", err)
+			return nil
+		}
+
+		if len(files) == 0 {
+			j.logDelete("deleting unused caption file: %s", filename)
+			j.deleteFile(path)
+		}
+
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (j *CleanGeneratedJob) getMarkerSceneFileHash(basename string) (string, error) {

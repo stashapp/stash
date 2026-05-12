@@ -17,6 +17,7 @@ input GenerateMetadataInput {
   imagePhashes: Boolean
   imageThumbnails: Boolean
   clipPreviews: Boolean
+  embeddedCaptions: Boolean
 
   "scene ids to generate for"
   sceneIDs: [ID!]
@@ -60,6 +61,7 @@ type GenerateMetadataOptions {
   interactiveHeatmapsSpeeds: Boolean
   imageThumbnails: Boolean
   clipPreviews: Boolean
+  embeddedCaptions: Boolean
 }
 
 type GeneratePreviewOptions {
@@ -158,6 +160,9 @@ input CleanGeneratedInput {
 
   "Clean image thumbnails/clips without image entries"
   imageThumbnails: Boolean
+
+  "Clean generated embedded captions without file entries"
+  captions: Boolean
 
   "Do a dry run. Don't delete any files"
   dryRun: Boolean

@@ -3,6 +3,7 @@ package video
 import (
 	"testing"
 
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -50,4 +51,37 @@ func TestGetCaptionsLangFromPath(t *testing.T) {
 	for _, l := range testCases {
 		assert.Equal(t, l.expectedLang, getCaptionsLangFromPath(l.captionPath))
 	}
+}
+
+func TestMergeGeneratedCaptionsPreservesExternalCaption(t *testing.T) {
+	external := &models.VideoCaption{
+		LanguageCode: "en",
+		Filename:     "video.en.srt",
+		CaptionType:  "srt",
+	}
+	generated := &models.VideoCaption{
+		LanguageCode: "en",
+		Filename:     "123.en.srt",
+		CaptionType:  "srt",
+		Generated:    true,
+	}
+
+	assert.Equal(t, []*models.VideoCaption{external}, MergeGeneratedCaptions([]*models.VideoCaption{external}, []*models.VideoCaption{generated}))
+}
+
+func TestMergeGeneratedCaptionsReplacesGeneratedCaption(t *testing.T) {
+	oldGenerated := &models.VideoCaption{
+		LanguageCode: "en",
+		Filename:     "123.en.srt",
+		CaptionType:  "srt",
+		Generated:    true,
+	}
+	newGenerated := &models.VideoCaption{
+		LanguageCode: "en",
+		Filename:     "456.en.srt",
+		CaptionType:  "srt",
+		Generated:    true,
+	}
+
+	assert.Equal(t, []*models.VideoCaption{newGenerated}, MergeGeneratedCaptions([]*models.VideoCaption{oldGenerated}, []*models.VideoCaption{newGenerated}))
 }
