@@ -1714,5 +1714,6 @@
     "sub_folders": "子文件夹",
     "empty_value": "空的",
     "refer_to": "请看 {link}。",
-    "scenes_size": "场景大小"
+    "scenes_size": "场景大小",
+    "related_studios": "相关"
 }
