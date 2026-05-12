@@ -119,7 +119,7 @@ const PerformerTabs: React.FC<{
       id="performer-tabs"
       mountOnEnter
       unmountOnExit
-      activeKey={tabKey}
+      activeKey={tabKey ?? populatedDefaultTab}
       onSelect={setTabKey}
     >
       <Tab
