@@ -47,7 +47,14 @@ func generateSpriteScreenshot(encoder *ffmpeg.FFMpeg, input string, t float64) (
 	args := transcoder.ScreenshotTime(input, t, options)
 	data, err := encoder.GenerateOutput(context.Background(), args, nil)
 	if err != nil {
-		return nil, err
+		logger.Warnf("[generator] fast phash screenshot seek failed for %s at %.3fs, retrying with accurate seek: %v", input, t, err)
+
+		options.SeekMode = transcoder.ScreenshotSeekAccurate
+		args = transcoder.ScreenshotTime(input, t, options)
+		data, err = encoder.GenerateOutput(context.Background(), args, nil)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	reader := bytes.NewReader(data)
