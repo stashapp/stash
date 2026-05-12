@@ -487,6 +487,27 @@ func TestTagQuery(t *testing.T) {
 			nil,
 			false,
 		},
+		{
+			"match name or alias",
+			nil,
+			&models.TagFilterType{
+				OperatorFilter: models.OperatorFilter[models.TagFilterType]{
+					Or: &models.TagFilterType{
+						Aliases: &models.StringCriterionInput{
+							Value:    getTagStringValue(tagIdxWithChildTag, "Alias"),
+							Modifier: models.CriterionModifierEquals,
+						},
+					},
+				},
+				Name: &models.StringCriterionInput{
+					Value:    getTagStringValue(tagIdxWithScene, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+			},
+			[]int{tagIdxWithScene, tagIdxWithChildTag},
+			[]int{tagIdx2WithNothing},
+			false,
+		},
 	}
 
 	for _, tt := range tests {

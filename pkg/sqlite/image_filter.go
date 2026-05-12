@@ -41,13 +41,13 @@ func (qb *imageFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 		return
 	}
 
+	f.handleCriterion(ctx, qb.criterionHandler())
+
 	sf := imageFilter.SubFilter()
 	if sf != nil {
 		sub := &imageFilterHandler{sf}
 		handleSubFilter(ctx, sub, f, imageFilter.OperatorFilter)
 	}
-
-	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
 func (qb *imageFilterHandler) criterionHandler() criterionHandler {

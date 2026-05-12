@@ -42,13 +42,13 @@ func (qb *sceneFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 		return
 	}
 
+	f.handleCriterion(ctx, qb.criterionHandler())
+
 	sf := sceneFilter.SubFilter()
 	if sf != nil {
 		sub := &sceneFilterHandler{sf}
 		handleSubFilter(ctx, sub, f, sceneFilter.OperatorFilter)
 	}
-
-	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
 func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
