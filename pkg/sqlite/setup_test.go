@@ -237,15 +237,9 @@ const (
 	tagIdx1WithGroup
 	tagIdx2WithGroup
 	tagIdx3WithGroup
-	// new indexes above
-	// tags with dup names start from the end
-	tagIdx1WithDupName
-	tagIdxWithDupName
-
-	tagsNameNoCase = 2
-	tagsNameCase   = tagIdx1WithDupName
-
-	totalTags = tagsNameCase + tagsNameNoCase
+	tagIdx1WithNothing
+	tagIdx2WithNothing
+	totalTags
 )
 
 const (
@@ -270,14 +264,8 @@ const (
 	studioIdxWithGrandChild
 	studioIdxWithParentAndChild
 	studioIdxWithGrandParent
-	// new indexes above
-	// studios with dup names start from the end
-	studioIdxWithDupName
-
-	studiosNameCase   = studioIdxWithDupName
-	studiosNameNoCase = 1
-
-	totalStudios = studiosNameCase + studiosNameNoCase
+	studioIdxWithNothing
+	totalStudios
 )
 
 const (
@@ -708,7 +696,7 @@ func populateDB() error {
 			return fmt.Errorf("linking folders to zip files: %w", err)
 		}
 
-		if err := createTags(ctx, db.Tag, tagsNameCase, tagsNameNoCase); err != nil {
+		if err := createTags(ctx, db.Tag, totalTags); err != nil {
 			return fmt.Errorf("error creating tags: %s", err.Error())
 		}
 
@@ -720,7 +708,7 @@ func populateDB() error {
 			return fmt.Errorf("error creating performers: %s", err.Error())
 		}
 
-		if err := createStudios(ctx, studiosNameCase, studiosNameNoCase); err != nil {
+		if err := createStudios(ctx, totalStudios); err != nil {
 			return fmt.Errorf("error creating studios: %s", err.Error())
 		}
 
@@ -1816,21 +1804,11 @@ func getTagCustomFields(index int) map[string]interface{} {
 	}
 }
 
-// createTags creates n tags with plain Name and o tags with camel cased NaMe included
-func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) error {
-	const namePlain = "Name"
-	const nameNoCase = "NaMe"
+func createTags(ctx context.Context, tqb models.TagReaderWriter, n int) error {
+	const name = "Name"
 
-	name := namePlain
-
-	for i := 0; i < n+o; i++ {
+	for i := 0; i < n; i++ {
 		index := i
-
-		if i >= n { // i<n tags get normal names
-			name = nameNoCase       // i>=n tags get dup names if case is not checked
-			index = n + o - (i + 1) // for the name to be the same the number (index) must be the same also
-		} // so count backwards to 0 as needed
-		// tags [ i ] and [ n + o - i - 1  ] should have similar names with only the Name!=NaMe part different
 
 		tag := models.Tag{
 			Name:          getTagStringValue(index, name),
@@ -1940,21 +1918,13 @@ func getStudioStringList(index int, field string) []string {
 	return []string{v}
 }
 
-// createStudios creates n studios with plain Name and o studios with camel cased NaMe included
-func createStudios(ctx context.Context, n int, o int) error {
+func createStudios(ctx context.Context, n int) error {
 	sqb := db.Studio
 	const namePlain = "Name"
-	const nameNoCase = "NaMe"
 
-	for i := 0; i < n+o; i++ {
+	for i := 0; i < n; i++ {
 		index := i
 		name := namePlain
-
-		if i >= n { // i<n studios get normal names
-			name = nameNoCase       // i>=n studios get dup names if case is not checked
-			index = n + o - (i + 1) // for the name to be the same the number (index) must be the same also
-		} // so count backwards to 0 as needed
-		// studios [ i ] and [ n + o - i - 1  ] should have similar names with only the Name!=NaMe part different
 
 		name = getStudioStringValue(index, name)
 		tids := indexesToIDs(tagIDs, studioTags[i])
