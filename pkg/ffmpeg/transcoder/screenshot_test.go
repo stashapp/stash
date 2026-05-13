@@ -27,11 +27,11 @@ func TestScreenshotTimeDefaultUsesFastSeek(t *testing.T) {
 	}
 }
 
-func TestScreenshotTimeAccurateSeek(t *testing.T) {
+func TestScreenshotTimeSlowSeek(t *testing.T) {
 	options := ScreenshotOptions{
 		OutputPath: "out.jpg",
 		OutputType: ScreenshotOutputTypeImage2,
-		SeekMode:   ScreenshotSeekAccurate,
+		SlowSeek:   true,
 	}
 
 	got := ScreenshotTime("input.webm", 12.5, options)

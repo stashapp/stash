@@ -39,7 +39,7 @@ func (g Generator) SpriteScreenshot(ctx context.Context, input string, seconds f
 	if err != nil {
 		logger.Warnf("[generator] fast sprite screenshot seek failed for %s at %.3fs, retrying with accurate seek: %v", input, seconds, err)
 
-		ssOptions.SeekMode = transcoder.ScreenshotSeekAccurate
+		ssOptions.SlowSeek = true
 		args = transcoder.ScreenshotTime(input, seconds, ssOptions)
 		return g.generateImage(lockCtx, args)
 	}

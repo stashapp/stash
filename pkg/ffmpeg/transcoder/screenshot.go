@@ -20,9 +20,8 @@ type ScreenshotOptions struct {
 
 	UseSelectFilter bool
 
-	// ScreenshotSeekMode is the ffpmeg seek mode to use (Fast vs Accurate).
-	// Defaults to Fast Seek
-	SeekMode ScreenshotSeekMode
+	// SlowSeek uses accurate seek by placing -ss after the input.
+	SlowSeek bool
 }
 
 func (o *ScreenshotOptions) setDefaults() {
@@ -35,15 +34,6 @@ type ScreenshotOutputType struct {
 	codec  *ffmpeg.VideoCodec
 	format ffmpeg.Format
 }
-
-type ScreenshotSeekMode int
-
-const (
-	// ScreenshotSeekFast seeks before opening the input. This preserves the existing screenshot behavior.
-	ScreenshotSeekFast ScreenshotSeekMode = iota
-	// ScreenshotSeekAccurate seeks after opening the input. This is slower, but can handle some files where fast seek fails.
-	ScreenshotSeekAccurate
-)
 
 func (t ScreenshotOutputType) Args() []string {
 	var ret []string
@@ -74,11 +64,11 @@ func ScreenshotTime(input string, t float64, options ScreenshotOptions) ffmpeg.A
 	args = args.LogLevel(options.Verbosity)
 	args = args.Overwrite()
 
-	if options.SeekMode != ScreenshotSeekAccurate {
+	if !options.SlowSeek {
 		args = args.Seek(t)
 	}
 	args = args.Input(input)
-	if options.SeekMode == ScreenshotSeekAccurate {
+	if options.SlowSeek {
 		args = args.Seek(t)
 	}
 	args = args.VideoFrames(1)
