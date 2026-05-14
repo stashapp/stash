@@ -402,5 +402,6 @@ make build
 - **Development Guide**: See `docs/DEVELOPMENT.md`
 - **Contributing**: See `docs/CONTRIBUTING.md`
 - **GraphQL Schema**: `graphql/schema/schema.graphql`
-- **API Documentation**: Available in-app via Shift+?
+- **In-app Manual**: Available in-app via Shift+?
+- **GraphQL Playground**: Available at `/playground`
 - **Community**: [Discord](https://discord.gg/2TsNFKt) and [Discourse](https://discourse.stashapp.cc)
