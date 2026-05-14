@@ -1714,5 +1714,6 @@
     "sub_folders": "하위 폴더",
     "empty_value": "공백",
     "refer_to": "{link}를 참조해 주십시오.",
-    "scenes_size": "영상 크기"
+    "scenes_size": "영상 크기",
+    "related_studios": "연관됨"
 }
