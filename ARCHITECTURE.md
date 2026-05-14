@@ -22,22 +22,22 @@ stash/
 │   ├── stash/        # Main application (cmd/stash/main.go)
 │   └── phasher/      # Perceptual hash utility
 ├── pkg/              # Reusable Go packages
-│   ├── models/       # Interface definitions for data entities
-│   ├── sqlite/       # SQLite implementations of datalayer interfaces
 │   ├── file/         # File system operations and scanning
-│   ├── scene/        # Scene-specific business logic
-│   ├── image/        # Image-specific business logic
+│   ├── ffmpeg/       # FFmpeg integration for media processing
 │   ├── gallery/      # Gallery-specific business logic
+│   ├── group/        # Group (movie) business logic
+│   ├── hash/         # Hashing utilities (MD5, oshash, phash)
+│   ├── image/        # Image-specific business logic
+│   ├── job/          # Background job management
+│   ├── logger/       # Logging utilities
+│   ├── models/       # Interface definitions for data entities
 │   ├── performer/    # Performer-specific business logic
+│   ├── plugin/       # Plugin system
+│   ├── scraper/      # Metadata scraping system
+│   ├── scene/        # Scene-specific business logic
+│   ├── sqlite/       # SQLite implementations of datalayer interfaces
 │   ├── studio/       # Studio-specific business logic
 │   ├── tag/          # Tag-specific business logic
-│   ├── group/        # Group (movie) business logic
-│   ├── scraper/      # Metadata scraping system
-│   ├── plugin/       # Plugin system
-│   ├── job/          # Background job management
-│   ├── ffmpeg/       # FFmpeg integration for media processing
-│   ├── hash/         # Hashing utilities (MD5, oshash, phash)
-│   ├── logger/       # Logging utilities
 │   └── ...           # Other utility packages
 ├── internal/         # Internal application code
 │   ├── api/          # GraphQL API layer (resolvers, server)
