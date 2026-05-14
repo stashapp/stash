@@ -380,13 +380,8 @@ func (qb *SceneStore) Find(ctx context.Context, id int) (*models.Scene, error) {
 ### Running Tests
 
 ```bash
-# Backend tests
-go test ./pkg/...
-go test ./internal/...
-
-# Frontend tests
-cd ui/v2.5
-npm test
+# Backend test
+make it
 ```
 
 ### Building
