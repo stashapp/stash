@@ -103,6 +103,10 @@ The backend follows a layered architecture with clear separation of concerns:
 GraphQL Query/Mutation
     ↓
 Resolver (internal/api/resolver_*.go)
+    ↓ (complex entities: Scene, Gallery, Image, Group)
+Service Layer (pkg/scene/, pkg/gallery/, pkg/image/, pkg/group/)
+    ↓ (simpler entities: Performer, Studio, Tag)
+Validation (pkg/performer/, pkg/studio/, pkg/tag/)
     ↓
 Repository Interface (pkg/models/repository_*.go)
     ↓
