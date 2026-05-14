@@ -129,7 +129,7 @@ Note: `gqlgen.yml` maps GraphQL types to Go structs and controls code generation
 
 **Location**: `pkg/plugin/`
 
-- JavaScript-based plugins that can extend Stash functionality
+- Defines the plugin spec for UI-based plugins (including JavaScript), and supports executing external scripts, commands, and binaries via raw or RPC interface
 - Plugins are configured via YAML files in the plugins directory
 - Support for hooks that trigger on events (e.g., `Scene.Create.Post`)
 - Plugin cache in manager for performance
