@@ -57,7 +57,7 @@ stash/
 │   ├── studio/        # Studio-specific business logic
 │   ├── tag/           # Tag-specific business logic
 │   └── ...            # Other utility packages
-└── ui/                # React/TypeScript frontend
+├── ui/                # React/TypeScript frontend
 │   ├── login/         # Login page
 │   └── v2.5/          # Main frontend application
 ├── docs/              # Documentation
@@ -393,6 +393,8 @@ make it
 ```bash
 # Build frontend
 make ui
+# Develop frontend with hot-reload
+make ui-start
 # Build backend (requires frontend to be built first)
 make build
 ```
