@@ -47,7 +47,7 @@ stash/
 │   ├── dlna/         # DLNA media server
 │   ├── desktop/      # Desktop integration
 │   ├── static/       # Static asset serving
-│   └── log/          # Internal logging
+│   └── log/          # Implementation of log system
 ├── ui/               # React/TypeScript frontend
 │   ├── login/        # Login page
 │   └── v2.5/         # Main frontend application
