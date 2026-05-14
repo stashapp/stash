@@ -155,7 +155,10 @@
         "from_clipboard": "Panodan",
         "reveal_in_file_manager": "Dosya Yöneticisi'nde göster",
         "invert_selection": "Tersini Seç",
-        "selective_generate": "Seçerek oluştur"
+        "selective_generate": "Seçerek oluştur",
+        "create_parent_tag": "Üst etiket oluştur",
+        "exclude_lowercase": "hariç tut",
+        "save_and_new": "Kaydet ve Yeni Oluştur"
     },
     "actions_name": "Eylemler",
     "age": "Yaş",
@@ -195,7 +198,8 @@
             "performer_genders": {
                 "heading": "Oyuncu cinsiyetleri",
                 "description": "Sahneleri etiketlerken bu cinsiyetlere sahip oyuncular gösterilecektir."
-            }
+            },
+            "mark_organized_label": "Kaydederken \"Düzenlendi\" olarak işaretle"
         },
         "noun_query": "Sorgu",
         "results": {
@@ -519,7 +523,9 @@
                 "strategy": "Strateji",
                 "skip_multiple_matches": "Birden fazla sonucu olan eşleşmeleri atla",
                 "skip_multiple_matches_tooltip": "Bu etkinleştirilmezse ve birden fazla sonuç döndürülürse, eşleşmesi için rastgele bir sonuç seçilecektir",
-                "performer_genders": "Oyuncu cinsiyetleri"
+                "performer_genders": "Oyuncu cinsiyetleri",
+                "tag_skipped_performers": "Atlanan oyuncuları şununla etiketle",
+                "tag_skipped_matches": "Atlanan eşleşmeleri şununla etiketle"
             },
             "import_from_exported_json": "Üstveri dizinindeki dışa aktarılan JSON'dan içe aktarır. Mevcut veritabanını siler.",
             "incremental_import": "Sağlanan bir dışa aktarma zip dosyasından artımlı içe aktarır.",
@@ -573,7 +579,8 @@
                 "to_directory": "{directory} konumuna",
                 "destination": "Konum",
                 "sqlite": "Yedek dosya, {filename_format} dosya adıyla SQLite veritabanı dosyasının bir kopyası olacaktır",
-                "zip": "SQLite veritabanı dosyası ve blob dosyaları, {filename_format} dosya adıyla tek bir dosyaya sıkıştırılacaktır"
+                "zip": "SQLite veritabanı dosyası ve blob dosyaları, {filename_format} dosya adıyla tek bir dosyaya sıkıştırılacaktır",
+                "warning_blobs": "Blob dosyaları yedeklemeye dahil edilmeyecektir. Bu nedenle, yedekten başarılı bir şekilde geri yükleme yapabilmek için blob dosyalarının blob depolama konumunda mevcut olması gerekmektedir."
             },
             "clean_ignore_zip_contents_desc": "Daha hızlıdır ancak zip dosyalarının içindeki silinmiş dosyaları algılayamaz. Zip dosyalarının içindeki dosyaları silmiyorsanız bu seçeneği etkinleştirebilirsiniz.",
             "auto_tag_confirm": "Bu işlem, içeriğinizi mevcut üstverilerle eşleştirmeye çalışacaktır."
@@ -984,7 +991,8 @@
             "override_preview_generation_options": "Önizleme Oluşturma Seçeneklerini Geçersiz Kıl",
             "image_thumbnails": "Resim Önizlemeleri",
             "override_preview_generation_options_desc": "Bu işlem için Önizleme Oluşturma Seçeneklerini geçersiz kılın. Varsayılanlar Sistem -> Önizleme Oluşturma bölümünde ayarlanır.",
-            "clip_previews": "Resim Klibi Önizlemeleri"
+            "clip_previews": "Resim Klibi Önizlemeleri",
+            "image_phash": "Algısal resim hash değerleri"
         },
         "scenes_found": "{count} sahne bulundu",
         "scrape_entity_query": "{entity_type} Veri Toplama Sorgusu",
@@ -1133,7 +1141,11 @@
         "video_codec": "Video Kodlayıcı",
         "play_duration": "Oynatma Süresi",
         "play_count": "Oynatma Sayısı",
-        "o_count": "O Sayısı"
+        "o_count": "O Sayısı",
+        "md5": "MD5 Sağlaması",
+        "oshash": "oshash",
+        "oshash_meaning": "OpenSubtitles Hash Değeri",
+        "phash_meaning": "Algısal Hash Değeri"
     },
     "megabits_per_second": "{value} mbps",
     "metadata": "Üst Veri",
@@ -1177,7 +1189,8 @@
         "saved_filters": "Kaydedilmiş filtreler",
         "update_filter": "Filtreyi Güncelle",
         "edit_filter": "Filtreyi Düzenle",
-        "search_term": "Arama terimi"
+        "search_term": "Arama terimi",
+        "more_filter_criteria": "+{count} tane daha"
     },
     "seconds": "Saniye",
     "settings": "Ayarlar",
@@ -1238,7 +1251,8 @@
             "store_blobs_in_database": "Blob'ları veritabanında depola",
             "path_to_blobs_directory_empty_for_default": "blobs dizini yolu (varsayılan için boş bırakın)",
             "where_can_stash_store_cache_files_description": "Stash, HLS/DASH canlı video dönüştürme gibi bazı işlevlerin çalışabilmesi için geçici dosyalara yönelik bir önbellek dizini gerektirir. Varsayılan olarak, Stash yapılandırma dosyanızı içeren dizin içinde bir <code>cache</code> dizini oluşturacaktır. Bunu değiştirmek istiyorsanız, lütfen mutlak veya göreceli (geçerli çalışma dizinine) bir yol girin. Mevcut değilse, Stash bu dizini oluşturacaktır.",
-            "where_can_stash_store_blobs_description_addendum": "Alternatif olarak bu verileri veritabanında saklayabilirsiniz. <strong>Not:</strong>Bu işlem veritabanınızın boyutunu artıracak ve veritabanı taşıma süresini uzatacaktır."
+            "where_can_stash_store_blobs_description_addendum": "Alternatif olarak bu verileri veritabanında saklayabilirsiniz. <strong>Not:</strong>Bu işlem veritabanınızın boyutunu artıracak ve veritabanı taşıma süresini uzatacaktır.",
+            "use_sfw_content_mode": "SFW içerik modunu kullan"
         },
         "stash_setup_wizard": "Stash Kurulum Sihirbazı",
         "success": {
@@ -1281,7 +1295,8 @@
         "total_play_count": "Toplam Oynatma Sayısı",
         "total_play_duration": "Toplam Oynatma Süresi",
         "scenes_played": "Oynatılan Sahneler",
-        "total_o_count": "Toplam O Sayısı"
+        "total_o_count": "Toplam O Sayısı",
+        "total_o_count_sfw": "Toplam Beğeni"
     },
     "status": "Durum: {statusText}",
     "studio": "Stüdyo",
@@ -1313,7 +1328,10 @@
         "updated_entity": "{entity} güncellendi",
         "merged_scenes": "Birleştirilmiş sahneler",
         "reassign_past_tense": "Dosya yeniden atandı",
-        "removed_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} kaldırıldı"
+        "removed_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} kaldırıldı",
+        "clipboard_access_denied": "Panoya erişim reddedildi. Tarayıcı izinlerinizi kontrol edin",
+        "clipboard_no_image": "Panoda resim bulunamadı",
+        "image_index_too_large": "Hata: Resim dizini, Galeri'deki resim sayısından daha büyük"
     },
     "total": "Toplam",
     "true": "Doğru",
@@ -1355,7 +1373,7 @@
         "untagged_studios": "Etiketlenmemiş stüdyolar",
         "updating_untagged_studios_description": "Etiketlenmemiş stüdyoları güncellemek, stashid'si olmayan tüm stüdyoları eşleştirmeye ve üstverileri güncellemeye çalışacaktır.",
         "name_already_exists": "Ad zaten mevcut",
-        "status_tagging_job_queued": "Durum: Etiketleme işi sıraya alındı",
+        "status_tagging_job_queued": "Durum: Etiketleme işi kuyruğa alındı",
         "any_names_entered_will_be_queried": "Girilen tüm isimler karşıdaki Stash-Box oturumundan sorgulanacak ve bulunursa eklenecektir. Yalnızca tam eşleşmeler bir eşleşme olarak kabul edilecektir.",
         "refreshing_will_update_the_data": "Yenileme işlemi stash-box oturumundaki tüm etiketli stüdyoların verilerini güncelleyecektir.",
         "to_use_the_studio_tagger": "Stüdyo etiketleyiciyi kullanmak için bir stash-box oturumunun yapılandırılması gerekir.",
@@ -1466,7 +1484,8 @@
             "field_name_required": "Alan adı gereklidir",
             "field_name_whitespace": "Alan adının başında veya sonunda boşluk bulunamaz",
             "field_name_length": "Alan adı 65 karakterden az olmalıdır"
-        }
+        },
+        "image_index_greater_than_zero": "Görsel dizini 0'dan büyük olmalıdır"
     },
     "sub_group_order": "Alt Grup Sırası",
     "validation": {
@@ -1520,7 +1539,8 @@
     "criterion_modifier_values": {
         "only": "Sadece",
         "none": "Hiçbiri",
-        "any_of": "Herhangi biri"
+        "any_of": "Herhangi biri",
+        "any": "Herhangi"
     },
     "history": "Geçmiş",
     "existing_value": "mevcut değer",
@@ -1577,12 +1597,53 @@
     "career_start": "Kariyer Başlangıcı",
     "stash_id_count": "Stash ID Sayısı",
     "stashbox_search": {
-        "placeholder_name_or_id": "{entityType} adı veya StashID..."
+        "placeholder_name_or_id": "{entityType} adı veya StashID...",
+        "no_results": "Sonuç bulunamadı."
     },
     "tag_tagger": {
-        "tag_names_or_stashids_separated_by_comma": "Virgülle ayrılmış etiket adları veya StashID'ler"
+        "tag_names_or_stashids_separated_by_comma": "Virgülle ayrılmış etiket adları veya StashID'ler",
+        "batch_add_tags": "Toplu Etiket Ekle",
+        "batch_update_tags": "Toplu Etiket Güncelle",
+        "failed_to_save_tag": "\"{tag}\" etiketi kaydedilemedi",
+        "network_error": "Ağ Hatası",
+        "no_results_found": "Sonuç bulunamadı.",
+        "number_of_tags_will_be_processed": "{tag_count} etiket işlenecektir",
+        "query_all_tags_in_the_database": "Veritabanındaki tüm etiketler",
+        "status_tagging_job_queued": "Durum: Etiketleme işi kuyruğa alındı",
+        "tag_selection": "Etiket seçimi",
+        "tag_successfully_tagged": "Etiket başarıyla etiketlendi",
+        "tag_status": "Etiket Durumu",
+        "untagged_tags": "Etiketlenmemiş etiketler",
+        "update_tags": "Etiketleri Güncelle",
+        "refresh_tagged_tags": "Etiketlenmiş etiketleri yenile",
+        "status_tagging_tags": "Durum: Etiketler etiketleniyor"
     },
     "duplicated": "Yinelenen",
     "duplicated_stash_id": "Yinelenen (Stash ID)",
-    "duplicated_title": "Yinelenen (Başlık)"
+    "duplicated_title": "Yinelenen (Başlık)",
+    "empty_value": "boş",
+    "hasChapters": "Bölümler",
+    "include_sub_folders": "Alt klasörleri dahil et",
+    "sort_name": "Ada Göre Sırala",
+    "o_count_sfw": "Beğeni",
+    "o_history_sfw": "Beğeni Geçmişi",
+    "odate_recorded_no": "Kaydedilen O Tarihi Yok",
+    "odate_recorded_no_sfw": "Kaydedilen Beğeni Tarihi Yok",
+    "parent_folder": "Üst Klasör",
+    "refer_to": "Lütfen {link} adresine bakın.",
+    "related_studios": "İlgili",
+    "scenes_duration": "Sahne Süresi",
+    "scenes_size": "Sahne Boyutu",
+    "sub_folders": "Alt klasörler",
+    "tagger": {
+        "config": {
+            "excluded_fields": "Hariç tutulan alanlar:",
+            "edit_excluded_fields": "Hariç Tutulan Alanları Düzenle",
+            "no_fields_are_excluded": "Hiçbir alan hariç tutulmadı",
+            "fields_will_not_be_changed": "{entity} güncellenirken bu alanlar değişmeyecektir."
+        }
+    },
+    "unsupported_criteria": "Desteklenmeyen kriter: {criteria}",
+    "latest_scene": "Son Sahne",
+    "sub_folder_depth": "Alt klasör derinliği (tümü için boş bırakın)"
 }
