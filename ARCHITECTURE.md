@@ -411,4 +411,4 @@ make build-ci
 - **Contributing**: See `docs/CONTRIBUTING.md`
 - **GraphQL Schema**: `graphql/schema/schema.graphql`
 - **API Documentation**: Available in-app via Shift+?
-- **Community**: Discord and Discourse
+- **Community**: [Discord](https://discord.gg/2TsNFKt) and [Discourse](https://discourse.stashapp.cc)
