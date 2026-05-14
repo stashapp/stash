@@ -23,7 +23,7 @@ stash/
 │   └── phasher/      # Perceptual hash utility
 ├── pkg/              # Reusable Go packages
 │   ├── models/       # Interface definitions for data entities
-│   ├── sqlite/       # SQLite implementations of model interfaces
+│   ├── sqlite/       # SQLite implementations of datalayer interfaces
 │   ├── file/         # File system operations and scanning
 │   ├── scene/        # Scene-specific business logic
 │   ├── image/        # Image-specific business logic
