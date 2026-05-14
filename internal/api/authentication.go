@@ -19,16 +19,6 @@ import (
 	"github.com/stashapp/stash/pkg/user"
 )
 
-// const (
-// 	tripwireActivatedErrMsg = "Stash is exposed to the public internet without authentication, and is not serving any more content to protect your privacy. " +
-// 		"More information and fixes are available at https://discourse.stashapp.cc/t/-/1658"
-
-// 	externalAccessErrMsg = "You have attempted to access Stash over the internet, and authentication is not enabled. " +
-// 		"This is extremely dangerous! The whole world can see your your stash page and browse your files! " +
-// 		"Stash is not answering any other requests to protect your privacy. " +
-// 		"Please read the log entry or visit https://discourse.stashapp.cc/t/-/1658"
-// )
-
 func allowUnauthenticated(r *http.Request) bool {
 	// #2715 - allow access to UI files
 	return strings.HasPrefix(r.URL.Path, loginEndpoint) || r.URL.Path == logoutEndpoint || r.URL.Path == "/css" || strings.HasPrefix(r.URL.Path, "/assets")
@@ -166,12 +156,6 @@ func authenticateHandler(txnMgr models.TxnManager, cfg authenticationConfig) fun
 				}
 			}
 
-			// // error if external access tripwire activated
-			// if accessErr := session.CheckExternalAccessTripwire(loginRequired, c); accessErr != nil {
-			// 	httpError(w, r, tripwireActivatedErrMsg, http.StatusForbidden)
-			// 	return
-			// }
-
 			r = session.SetLocalRequest(r)
 
 			var u *models.User
@@ -249,25 +233,6 @@ func authenticateHandler(txnMgr models.TxnManager, cfg authenticationConfig) fun
 					// fall through and treat as unauthenticated
 				}
 			}
-
-			// TODO remove this in favour of ip whitelist
-			// if err := session.CheckAllowPublicWithoutAuth(loginRequired, c, r); err != nil {
-			// 	var accessErr session.ExternalAccessError
-			// 	if errors.As(err, &accessErr) {
-			// 		session.LogExternalAccessError(accessErr)
-
-			// 		err := c.ActivatePublicAccessTripwire(net.IP(accessErr).String())
-			// 		if err != nil {
-			// 			logger.Errorf("Error activating public access tripwire: %v", err)
-			// 		}
-
-			// 		httpError(w, r, externalAccessErrMsg, http.StatusForbidden)
-			// 	} else {
-			// 		logger.Errorf("Error checking external access security: %v", err)
-			// 		w.WriteHeader(http.StatusInternalServerError)
-			// 	}
-			// 	return
-			// }
 
 			if u == nil && !singleUserMode {
 				u = g.GetGuestUser(ctx)
