@@ -286,7 +286,7 @@ ui/v2.5/
 
 **Repository Pattern**:
 - All database access goes through repository interfaces
-- SQLite implementations use goqu query builder
+- SQLite implementations use a mix of goqu and a custom query builder within the `sqlite` package
 - Transactions managed via `txn.Manager`
 
 **Example Query** (`pkg/sqlite/scene.go`):
