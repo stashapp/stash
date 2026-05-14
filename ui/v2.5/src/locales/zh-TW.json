@@ -30,7 +30,7 @@
         "delete_entity": "刪除{entityType}",
         "delete_file": "刪除檔案",
         "delete_file_and_funscript": "刪除檔案 (及其 Funscript)",
-        "delete_generated_supporting_files": "刪除已生成的資訊檔案",
+        "delete_generated_supporting_files": "刪除已產生的資訊檔案",
         "disallow": "不允許",
         "download": "下載",
         "download_anonymised": "下載匿名化版本資料庫",
@@ -132,7 +132,7 @@
         "create_parent_studio": "建立母工作室",
         "optimise_database": "最佳化資料庫",
         "choose_date": "選擇日期",
-        "clean_generated": "清除已生成的檔案",
+        "clean_generated": "清除已產生的檔案",
         "view_history": "查看歷史",
         "reset_cover": "恢復預設封面",
         "reset_play_duration": "重置播放時長",
@@ -155,7 +155,7 @@
         "reveal_in_file_manager": "在資料夾中顯示",
         "save_and_new": "儲存並新增",
         "select_directory": "選擇目錄",
-        "selective_generate": "選擇性生成",
+        "selective_generate": "選擇性產生",
         "invert_selection": "反轉選取",
         "create_new": "建立",
         "exclude_lowercase": "不包含",
@@ -287,19 +287,19 @@
             "video_sort_order": "預設的影片排序",
             "video_sort_order_desc": "依照預設方式排序影片。",
             "server_port": "伺服器埠",
-            "server_port_desc": "運行 DLNA 伺服器的埠。更改後需要重新啟動 DLNA。"
+            "server_port_desc": "執行 DLNA 伺服器的連接埠。變更後需重新啟動 DLNA。"
         },
         "general": {
             "auth": {
                 "api_key": "API 金鑰",
-                "api_key_desc": "外部系統的 API 金鑰，有設定使用者名稱/密碼時才需要。在生成 API 金鑰之前必須先設定使用者名稱。",
+                "api_key_desc": "外部系統的 API 金鑰，有設定使用者名稱/密碼時才需要。在產生 API 金鑰之前必須先設定使用者名稱。",
                 "authentication": "驗證設定",
                 "clear_api_key": "清除 API 金鑰",
                 "credentials": {
                     "description": "用於限制 Stash 存取權限的帳戶資料。",
                     "heading": "帳戶資料"
                 },
-                "generate_api_key": "生成 API 金鑰",
+                "generate_api_key": "產生 API 金鑰",
                 "log_file": "日誌檔案",
                 "log_file_desc": "輸出日誌記錄到的檔案路徑，留空以關閉日誌檔案記錄。需重啟。",
                 "log_http": "記錄 HTTP 訪問紀錄",
@@ -321,7 +321,7 @@
                 "heading": "備份目錄路徑"
             },
             "blobs_path": {
-                "description": "存取物件檔案的檔案系統路徑。僅適用於使用檔案系統格式的物件檔案。警告：更改此選項後須手動遷移現有檔案。",
+                "description": "存取物件檔案的檔案系統路徑。僅適用於使用檔案系統格式的物件檔案。警告：變更此選項後須手動遷移現有檔案。",
                 "heading": "物件檔案檔案系統路徑"
             },
             "blobs_storage": {
@@ -330,7 +330,7 @@
             },
             "cache_location": "快取的檔案位置。透過 HLS 或 DASH 格式串流時所需的必要選項。",
             "cache_path_head": "快取路徑",
-            "calculate_md5_and_ohash_desc": "除 oshash 外，同時也計算 MD5 的雜湊值。開啟後，可能會影響初次掃描的速度。若要關閉 MD5 計算，請將『生成檔案名所使用的雜湊演算法』設為 oshash。",
+            "calculate_md5_and_ohash_desc": "除 oshash 外，同時也計算 MD5 的雜湊值。開啟後，可能會影響初次掃描的速度。若要關閉 MD5 計算，請將『產生檔案名所使用的雜湊演算法』設為 oshash。",
             "calculate_md5_and_ohash_label": "計算影片 MD5",
             "check_for_insecure_certificates": "檢查憑證安全性",
             "check_for_insecure_certificates_desc": "某些網站所使用的 SSL 憑證可能有安全性問題。取消勾選後，爬蟲工具會跳過不安全的憑證檢查，以允許爬蟲進行作業。如果您在抓取資訊時遇到憑證錯誤，請取消勾選此選項。",
@@ -376,36 +376,36 @@
                 },
                 "ffmpeg_path": {
                     "description": "ffmpeg 執行檔的路徑（而非僅是資料夾）。若留空，系統將透過 $PATH 環境變數、設定目錄或 $HOME/.stash 來尋找 ffmpeg。",
-                    "heading": "FFmpeg 執行檔案路徑"
+                    "heading": "FFmpeg 執行檔路徑"
                 },
                 "ffprobe_path": {
                     "description": "ffprobe 執行檔的路徑（而非僅是資料夾）。若留空，系統將透過 $PATH 環境變數、設定目錄或 $HOME/.stash 來尋找 ffprobe。",
-                    "heading": "FFprobe 執行檔案路徑"
+                    "heading": "FFprobe 執行檔路徑"
                 }
             },
             "gallery_ext_desc": "以逗號分隔的副檔名清單，用於辨識圖庫 ZIP 檔案。",
             "gallery_ext_head": "用於辨識圖庫 ZIP 檔案的副檔名",
-            "generated_file_naming_hash_desc": "用 MD5 或 oshash 命名檔案。更改此設定後，短片須有先有對應的 MD5/oshash 雜湊值，先前已產生的檔案或許需要遷移或重新產生。請參閱『遷移』頁面。",
-            "generated_file_naming_hash_head": "生成檔案名所使用的雜湊演算法",
-            "generated_files_location": "生成檔案位置（短片標記、短片預覽、預覽圖等）。",
-            "generated_path_head": "生成檔案儲存路徑",
+            "generated_file_naming_hash_desc": "用 MD5 或 oshash 命名檔案。變更此設定後，短片須先有對應的 MD5/oshash 雜湊值，先前已產生的檔案或許需要遷移或重新產生。請參閱『遷移』頁面。",
+            "generated_file_naming_hash_head": "產生檔案名所使用的雜湊演算法",
+            "generated_files_location": "產生檔案的儲存位置（短片標記、短片預覽、預覽圖等）。",
+            "generated_path_head": "產生檔案儲存路徑",
             "hashing": "雜湊值設定",
             "image_ext_desc": "以逗號分隔的副檔名名稱，這些檔案將視為圖片。",
             "image_ext_head": "圖片副檔名",
             "include_audio_desc": "產生預覽檔案時，順便產生音訊預覽。",
             "include_audio_head": "包含音訊",
             "logging": "日誌設定",
-            "maximum_streaming_transcode_size_desc": "轉檔生成的串流最大大小。",
+            "maximum_streaming_transcode_size_desc": "轉檔產生的串流最大大小。",
             "maximum_streaming_transcode_size_head": "最大的串流轉檔解析度大小",
-            "maximum_transcode_size_desc": "轉檔生成的影片最大大小。",
+            "maximum_transcode_size_desc": "轉檔產生的影片最大大小。",
             "maximum_transcode_size_head": "最大的轉檔解析度大小",
             "metadata_path": {
                 "description": "進行完整匯出或匯入時所使用的檔案位置。",
                 "heading": "Metadata 路徑"
             },
             "number_of_parallel_task_for_scan_generation_desc": "設定為 0 以自動偵測。請注意，執行超過 100% CPU 使用率所需的排程數量，可能會降低效能並導致其他問題。",
-            "number_of_parallel_task_for_scan_generation_head": "掃描/生成的並行排程數量",
-            "parallel_scan_head": "平行掃描／生成",
+            "number_of_parallel_task_for_scan_generation_head": "掃描/產生的並行排程數量",
+            "parallel_scan_head": "平行掃描／產生",
             "preview_generation": "預覽產生的檔案",
             "python_path": {
                 "description": "Python 執行檔的完整路徑（不只是資料夾），留空時將從作業系統的環境變數取得。用於爬蟲及外掛程式。",
@@ -430,17 +430,17 @@
             "funscript_heatmap_draw_range": "產生涵蓋此範圍的熱圖",
             "funscript_heatmap_draw_range_desc": "將移動範圍描繪在熱圖的Ｙ軸上；變更後需要重新產製現有的熱圖。",
             "gallery_cover_regex_label": "圖庫封面的表示式",
-            "heatmap_generation": "Funscript 熱圖生成",
+            "heatmap_generation": "Funscript 熱圖產生",
             "delete_trash_path": {
                 "description": "刪除的檔案將移動至此路徑而非直接永久刪除。若留空，則檔案將會被永久刪除。",
                 "heading": "檔案刪除路徑"
             },
-            "sprite_generation_head": "時間軸縮圖生成",
-            "sprite_interval_desc": "每次生成時間軸縮圖之間的時間間隔（秒）。",
+            "sprite_generation_head": "時間軸縮圖產生",
+            "sprite_interval_desc": "每次產生時間軸縮圖之間的時間間隔（秒）。",
             "sprite_interval_head": "時間軸縮圖間隔",
-            "sprite_maximum_desc": "每個短片生成的最大縮圖數量。設定為 0 則停用。",
+            "sprite_maximum_desc": "每個短片產生的最大縮圖數量。設定為 0 則停用。",
             "sprite_maximum_head": "最大縮圖數量",
-            "sprite_minimum_desc": "每個短片生成的最小縮圖數量",
+            "sprite_minimum_desc": "每個短片產生的最小縮圖數量",
             "sprite_minimum_head": "最小縮圖數量",
             "sprite_screenshot_size_desc": "每個縮圖的大小（像素）。",
             "sprite_screenshot_size_head": "縮圖大小",
@@ -491,7 +491,7 @@
         "tasks": {
             "added_job_to_queue": "已將『{operation_name}』加入至工作排程",
             "anonymise_and_download": "產生並下載匿名化版本的資料庫。",
-            "anonymise_database": "建立一份去除敏感資訊且匿名化的資料庫檔案至備份資料夾中。此檔案可供其他人員幫助您排除相關問題以及除錯用。您現有的資料庫當案將不會被修改。匿名化版本的資料庫檔案命名為 {filename_format}。",
+            "anonymise_database": "建立一份去除敏感資訊且匿名化的資料庫檔案至備份資料夾中。此檔案可供其他人員幫助您排除相關問題以及除錯用。您現有的資料庫檔案將不會被修改。匿名化版本的資料庫檔案命名為 {filename_format}。",
             "anonymising_database": "匿名化資料庫中",
             "auto_tag": {
                 "auto_tagging_all_paths": "為所有路徑自動套用標籤中",
@@ -500,7 +500,7 @@
             "auto_tag_based_on_filenames": "根據檔案名稱自動標記內容。",
             "auto_tagging": "自動套用標籤",
             "backing_up_database": "備份資料庫中",
-            "backup_and_download": "執行資料庫備份，並下載其生成的檔案。",
+            "backup_and_download": "執行資料庫備份，並下載其產生的檔案。",
             "cleanup_desc": "檢查遺失的檔案並從資料庫中移除。這是一項破壞性操作。",
             "data_management": "資料管理",
             "defaults_set": "已設定預設值；以後按下「{action}」按鈕時將會使用這些設定。",
@@ -508,19 +508,19 @@
             "empty_queue": "尚無排程執行中。",
             "export_to_json": "將資料庫中的 Metadata 匯出為 JSON 檔。",
             "generate": {
-                "generating_from_paths": "為以下路徑之短片生成檔案中",
-                "generating_scenes": "為{num}個{scene}生成檔案中"
+                "generating_from_paths": "為以下路徑之短片產生檔案中",
+                "generating_scenes": "為{num}個{scene}產生檔案中"
             },
             "generate_desc": "產生輔助圖片、預覽、影片檔、vtt 字幕等檔案。",
-            "generate_phashes_during_scan": "生成影片感知雜湊",
+            "generate_phashes_during_scan": "產生影片感知雜湊",
             "generate_phashes_during_scan_tooltip": "可用於辨認短片或偵測重複的短片。",
             "generate_previews_during_scan": "產生動態預覽圖",
-            "generate_previews_during_scan_tooltip": "同時產生動圖 (webp) 作為預覽，只有在短片/標記預覽牆設定為『動圖』時才需使用此選項。當瀏覽這些多媒體時，相較影片預覽將會使用較低的 CPU 資源，但是，它們必須在影片預覽之外生成，並且是較大的檔案。",
+            "generate_previews_during_scan_tooltip": "同時產生動圖 (webp) 作為預覽，只有在短片／標記預覽牆設定為『動圖』時才需使用此選項。瀏覽時相較於影片預覽會使用較少的 CPU，但會在影片預覽之外額外產生，且檔案較大。",
             "generate_sprites_during_scan": "產生時間軸預覽",
             "generate_thumbnails_during_scan": "替圖片產生縮圖",
             "generate_video_previews_during_scan": "產生影片預覽",
             "generate_video_previews_during_scan_tooltip": "產生影片預覽，此預覽將於滑鼠移至影片上時自動播放",
-            "generated_content": "生成的內容",
+            "generated_content": "產生的內容",
             "identify": {
                 "and_create_missing": "及建立尚有欄位",
                 "create_missing": "新增尚有的欄位",
@@ -540,7 +540,7 @@
                 "source_options": "{source} 選項",
                 "sources": "來源",
                 "strategy": "方法",
-                "skip_multiple_matches": "跳過具有多個結果的匹配結果",
+                "skip_multiple_matches": "跳過具有多個結果的比對",
                 "skip_single_name_performers": "跳過單名且沒有歧義的演員",
                 "skip_multiple_matches_tooltip": "如果未啟用此功能且搜尋回傳多個結果，將會隨機選擇其中一個進行比對",
                 "skip_single_name_performers_tooltip": "如果未啟用此功能，將會自動比對如 Samantha 或 Olga 這類常見名稱的演員",
@@ -555,7 +555,7 @@
             "incremental_import": "從匯出 zip 檔進行增量匯入。",
             "job_queue": "工作排程",
             "maintenance": "維護",
-            "migrate_hash_files": "在更改生成的檔案命名雜湊以將現有生成的檔案重新命名為新的雜湊格式後使用。",
+            "migrate_hash_files": "在變更產生檔案命名雜湊後使用，將現有的產生檔案重新命名為新的雜湊格式。",
             "migrations": "遷移",
             "only_dry_run": "僅模擬作業，不要刪除任何東西",
             "plugin_tasks": "外掛程式排程",
@@ -570,7 +570,7 @@
             "generate_video_covers_during_scan": "產生短片封面",
             "migrate_scene_screenshots": {
                 "delete_files": "刪除截圖檔案",
-                "description": "將場景螢幕截圖遷移到新的 blob 儲存系統中。應在將現有系統遷移到 0.20 後執行此遷移。可以選擇在遷移後刪除舊的螢幕截圖。",
+                "description": "將短片螢幕截圖遷移到新的 blob 儲存系統中。應在將現有系統遷移到 0.20 後執行此遷移。可以選擇在遷移後刪除舊的螢幕截圖。",
                 "overwrite_existing": "使用螢幕截圖資料覆蓋現有 blob"
             },
             "clean_generated": {
@@ -591,7 +591,7 @@
             "optimise_database": "嘗試透過分析並重建整個資料庫檔案來提升效能。",
             "optimise_database_warning": "警告：此工作執行時，任何修改資料庫的操作皆會失敗，且根據資料庫大小，可能需要數分鐘才能完成。此外，至少需要與資料庫大小相當的可用磁碟空間，建議預留 1.5 倍。",
             "rescan": "重新掃描檔案",
-            "rescan_tooltip": "重新掃描路徑中的每個檔案。 用於強制更新檔案中繼資料和重新掃描zip檔案。",
+            "rescan_tooltip": "重新掃描路徑中的每個檔案。用於強制更新檔案 Metadata 與重新掃描 zip 檔案。",
             "auto_tag_confirm": "系統將依據現有的 Metadata 進行內容比對。",
             "auto_tag_warning": "警告：此操作無法復原，且比對結果可能不正確。",
             "backup_database": {
@@ -607,7 +607,7 @@
             },
             "clean_ignore_zip_contents": "忽略壓縮檔內容",
             "clean_ignore_zip_contents_desc": "處理速度較快，但無法偵測到壓縮檔內已刪除的檔案。若您不會修改壓縮檔內容，則可安全啟用。",
-            "generate_image_phashes_during_scan": "生成圖片感知雜湊",
+            "generate_image_phashes_during_scan": "產生圖片感知雜湊",
             "generate_image_phashes_during_scan_tooltip": "可用於辨識圖片或偵測重複的圖片。"
         },
         "tools": {
@@ -621,7 +621,7 @@
                 "filename_pattern": "檔案名稱規則",
                 "ignore_organized": "忽略已整理的短片",
                 "ignored_words": "忽略字串",
-                "matches_with": "使用 {i} 匹配",
+                "matches_with": "使用 {i} 比對",
                 "select_parser_recipe": "選擇預設分析字串",
                 "title": "短片名稱分析工具",
                 "whitespace_chars": "空白字元",
@@ -648,7 +648,7 @@
                 "option_label": "已啟用自訂 JavaScript"
             },
             "custom_locales": {
-                "description": "強制使用特定翻譯字串。主列表請參閱 https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json。必須重新整理頁面才能使更改生效。",
+                "description": "強制使用特定翻譯字串。主列表請參閱 https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json。必須重新整理頁面才能使變更生效。",
                 "heading": "自訂翻譯",
                 "option_label": "啟用自訂翻譯"
             },
@@ -657,7 +657,7 @@
                 "heading": "刪除選項",
                 "options": {
                     "delete_file": "將『刪除檔案』設為預設選項",
-                    "delete_generated_supporting_files": "將『刪除已生成的資訊檔案』設為預設選項"
+                    "delete_generated_supporting_files": "將『刪除已產生的資訊檔案』設為預設選項"
                 }
             },
             "desktop_integration": {
@@ -754,7 +754,7 @@
                 }
             },
             "preview_type": {
-                "description": "預設選項是影片 (mp4) 預覽。 為了在瀏覽時減少 CPU 資源，您可以使用動畫影像 (webp) 預覽。 但是，它們必須在影片預覽之外生成，並且是較大的檔案。",
+                "description": "預設選項是影片 (mp4) 預覽。為了在瀏覽時減少 CPU 資源，您可以使用動畫影像 (webp) 預覽。但是，它們必須在影片預覽之外產生，且檔案較大。",
                 "heading": "預覽種類",
                 "options": {
                     "animated": "動圖",
@@ -786,11 +786,11 @@
                     "track_activity": "追蹤短片播放紀錄",
                     "vr_tag": {
                         "heading": "VR 標籤",
-                        "description": "VR 按鈕只會顯示在有此標籤的場景中。"
+                        "description": "VR 按鈕只會顯示在有此標籤的短片中。"
                     },
                     "enable_chromecast": "啟用 Chromecast",
                     "show_ab_loop_controls": "顯示 AB 循環控制",
-                    "disable_mobile_media_auto_rotate": "禁止全螢幕影音自動旋轉",
+                    "disable_mobile_media_auto_rotate": "停用全螢幕影音自動旋轉",
                     "show_range_markers": "顯示範圍標記"
                 }
             },
@@ -802,8 +802,8 @@
                 }
             },
             "scroll_attempts_before_change": {
-                "description": "在移動到下一項/上一項之前嘗試滑動的次數。僅適用於『Y軸滑動』模式。",
-                "heading": "場景變換滑動嘗試次數"
+                "description": "在移動到下一項/上一項之前嘗試滑動的次數。僅適用於『Y 軸滑動』模式。",
+                "heading": "短片變換滑動嘗試次數"
             },
             "show_tag_card_on_hover": {
                 "description": "游標移至標籤上時，顯示標籤頁卡。",
@@ -1014,16 +1014,16 @@
             "marker_screenshots": "章節截圖",
             "marker_screenshots_tooltip": "靜態 JPG 預覽，僅適用於設定為『靜態』的預覽類型",
             "markers": "章節預覽",
-            "markers_tooltip": "自標記的時間點算起長度20秒的短片預覽。",
+            "markers_tooltip": "自標記的時間點算起長度 20 秒的短片預覽。",
             "override_preview_generation_options": "強制使用所選的預覽產生設定",
-            "override_preview_generation_options_desc": "在本次工作排程中，強制使用所選的預覽產生設定。預設設定請見『系統』->『預覽生成設定』。",
-            "overwrite": "覆蓋現有的生成檔案",
+            "override_preview_generation_options_desc": "在本次工作排程中，強制使用所選的預覽產生設定。預設設定請見『系統』->『預覽產生設定』。",
+            "overwrite": "覆寫現有的產生檔案",
             "phash": "影片感知雜湊",
-            "preview_exclude_end_time_desc": "從場景預覽中排除最後 x 秒。這可以是一個以秒為單位的值，也可以是整個場景持續時間的百分比（例如 2%）。",
+            "preview_exclude_end_time_desc": "從短片預覽中排除最後 x 秒。這可以是一個以秒為單位的值，也可以是整個短片持續時間的百分比（例如 2%）。",
             "preview_exclude_end_time_head": "排除結束時間",
-            "preview_exclude_start_time_desc": "從場景預覽中排除前 x 秒。這可以是一個以秒為單位的值，也可以是整個場景持續時間的百分比（例如 2%）。",
+            "preview_exclude_start_time_desc": "從短片預覽中排除前 x 秒。這可以是一個以秒為單位的值，也可以是整個短片持續時間的百分比（例如 2%）。",
             "preview_exclude_start_time_head": "排除開始時間",
-            "preview_generation_options": "預覽生成設定",
+            "preview_generation_options": "預覽產生設定",
             "preview_options": "預覽選項",
             "preview_preset_desc": "此預設組合會影響預覽產生時的大小、品質與編碼時間。「slow」以上的預設組合效益遞減，不建議使用。",
             "preview_preset_head": "調整預設值 (Preset)",
@@ -1050,7 +1050,7 @@
         "scrape_results_existing": "現有資訊",
         "scrape_results_scraped": "爬取資訊",
         "set_image_url_title": "圖片連結",
-        "unsaved_changes": "尚有未儲存的更改。你確定要離開嗎？",
+        "unsaved_changes": "尚有未儲存的變更。你確定要離開嗎？",
         "imagewall": {
             "direction": {
                 "row": "行",
@@ -1209,7 +1209,7 @@
         "interactive_speed": "互動速度",
         "performer_card": {
             "age": "{age} {years_old}",
-            "age_context": "這齣戲時 {age} {years_old}"
+            "age_context": "拍攝本片時 {age} {years_old}"
         },
         "phash": "PHash",
         "play_count": "播放次數",
@@ -1234,7 +1234,7 @@
         "last": "最後一頁",
         "next": "下一頁",
         "previous": "上一頁",
-        "current_total": "第{current}頁， 共 {total}頁"
+        "current_total": "第 {current} 頁，共 {total} 頁"
     },
     "parent_of": "{children} 的母物件",
     "parent_studios": "母工作室",
@@ -1250,7 +1250,7 @@
     "performer_image": "演員圖像",
     "performer_tagger": {
         "add_new_performers": "新增演員",
-        "any_names_entered_will_be_queried": "如果輸入的名稱有在設定的 Stash-Box 端點上找到的話，則相對應的結果將會被自動新增。只有完全符合的結果才會被視為匹配。",
+        "any_names_entered_will_be_queried": "如果輸入的名稱有在設定的 Stash-Box 端點上找到的話，則相對應的結果將會被自動新增。只有完全符合的結果才會被視為相符。",
         "batch_add_performers": "大量新增演員",
         "batch_update_performers": "大量更新演員",
         "current_page": "目前頁面",
@@ -1272,7 +1272,7 @@
         "untagged_performers": "未標記的演員",
         "update_performer": "更新演員資料",
         "update_performers": "更新演員",
-        "updating_untagged_performers_description": "更新未標記的演員將試著把尚有 stashid 的演員在 Stash-Box 上找尋對應的資料，並將其資料加入至本機的 Metadata 中。",
+        "updating_untagged_performers_description": "更新未標記演員將會嘗試比對所有缺少 stashid 的演員並更新其 Metadata。",
         "performer_names_or_stashids_separated_by_comma": "演員名稱或 StashID (以逗號分隔)"
     },
     "performer_tags": "演員標籤",
@@ -1315,7 +1315,7 @@
             "almost_ready": "設定即將完成，請再次確認以下設定是否正確。若有任何不正確的內容，您可以按下「上一步」以進行修改。若一切無誤，請點選下方的「確認」按鈕以完成設定。",
             "configuration_file_location": "設定檔案路徑：",
             "database_file_path": "資料庫檔案路徑",
-            "generated_directory": "生成媒體路徑",
+            "generated_directory": "產生媒體路徑",
             "nearly_there": "快好了！",
             "stash_library_directories": "Stash 多媒體檔案路徑",
             "cache_directory": "快取目錄",
@@ -1352,13 +1352,13 @@
         },
         "paths": {
             "database_filename_empty_for_default": "資料庫檔案名稱（留空以使用預設）",
-            "description": "接下來，我們需要確定可以在哪裡找到你的內容，在哪裡儲存資料庫及其生成檔案等等。如果需要，您稍後可以再更改這些設定。",
-            "path_to_generated_directory_empty_for_default": "生成媒體資料夾路徑（留空以使用預設）",
+            "description": "接下來，我們需要確定可以在哪裡找到你的內容，在哪裡儲存資料庫及其產生檔案等等。如果需要，您稍後可以再變更這些設定。",
+            "path_to_generated_directory_empty_for_default": "產生媒體資料夾路徑（留空以使用預設）",
             "set_up_your_paths": "設定你的路徑",
             "stash_alert": "您尚未選取任何路徑，Stash 將無法掃描你的檔案。你確定要繼續嗎？",
             "where_can_stash_store_its_database": "Stash 可以在哪裡儲存資料庫？",
             "where_can_stash_store_its_database_description": "Stash 使用 SQLite 資料庫來儲存您的 Metadata。預設情況下，此資料庫會在設定檔所在的目錄中建立，檔名為 <code>stash-go.sqlite</code>。若要變更此設定，請輸入絕對路徑或相對於目前工作目錄的相對檔名。",
-            "where_can_stash_store_its_generated_content": "Stash 可以在哪裡儲存其生成內容？",
+            "where_can_stash_store_its_generated_content": "Stash 可以在哪裡儲存其產生內容？",
             "where_can_stash_store_its_generated_content_description": "為了提供縮圖及預覽，Stash 將會產生圖片與影片，其中也包括不支援的檔案格式的轉碼檔案。預設情況下，Stash 會在設定檔所在的目錄中建立名為 <code>generated</code> 的目錄。若要變更這些產生的媒體檔案的儲存位置，請輸入絕對路徑或相對於目前工作目錄的相對路徑。若該目錄不存在，Stash 會自動建立。",
             "where_is_your_porn_located": "你的內容都藏哪？",
             "where_is_your_porn_located_description": "在此選擇你影片及圖片的資料夾，Stash 將在掃描影片及圖片時使用這些路徑。",
@@ -1366,7 +1366,7 @@
             "path_to_cache_directory_empty_for_default": "快取目錄的路徑 (預設為空)",
             "store_blobs_in_database": "將 blobs 儲存到資料庫",
             "where_can_stash_store_blobs": "Stash 可以在哪裡儲存資料庫檔案？",
-            "where_can_stash_store_blobs_description": "Stash 可以將二進位資料（例如場景封面、演出者、工作室與標籤圖片）儲存於資料庫或檔案系統中。預設情況下，這些資料會儲存在設定檔所在目錄中名為 <code>blobs</code> 的子目錄裡。若要變更此路徑，請輸入絕對路徑或相對於目前工作目錄的相對路徑。若該目錄不存在，Stash 會自動建立。",
+            "where_can_stash_store_blobs_description": "Stash 可以將二進位資料（例如短片封面、演員、工作室與標籤圖片）儲存於資料庫或檔案系統中。預設情況下，這些資料會儲存在設定檔所在目錄中名為 <code>blobs</code> 的子目錄裡。若要變更此路徑，請輸入絕對路徑或相對於目前工作目錄的相對路徑。若該目錄不存在，Stash 會自動建立。",
             "where_can_stash_store_cache_files": "Stash 可以在哪裡儲存快取檔案？",
             "where_can_stash_store_blobs_description_addendum": "或者，您可以將此資料儲存在資料庫中。<strong>注意：</strong> 這將增加資料庫檔案的大小，並增加資料庫遷移時間。",
             "where_can_stash_store_cache_files_description": "為了讓 HLS／DASH 即時轉碼等部分功能正常運作，Stash 需要一個快取目錄來存放暫存檔案。預設情況下，Stash 會在設定檔所在的目錄中建立名為 <code>cache</code> 的目錄。若要變更此路徑，請輸入絕對路徑或相對於目前工作目錄的相對路徑。若該目錄不存在，Stash 會自動建立。",
@@ -1417,7 +1417,7 @@
         "submission_failed": "提交失敗",
         "submission_successful": "提交成功",
         "submit_update": "已存在於 {endpoint_name}",
-        "source": "Stash-Box源"
+        "source": "Stash-Box 來源"
     },
     "statistics": "統計資訊",
     "stats": {
@@ -1446,7 +1446,7 @@
     "title": "標題",
     "toast": {
         "added_entity": "已新增{singularEntity}",
-        "added_generation_job_to_queue": "已將『生成作業』加入至工作排程",
+        "added_generation_job_to_queue": "已將『產生作業』加入至工作排程",
         "created_entity": "已建立{entity}",
         "default_filter_set": "已設定預設過濾選項",
         "delete_past_tense": "已刪除{singularEntity}",
@@ -1458,7 +1458,7 @@
         "rescanning_entity": "重新掃描{singularEntity}中…",
         "saved_entity": "已儲存{entity}",
         "started_auto_tagging": "自動套用標籤中",
-        "started_generating": "生成檔案中",
+        "started_generating": "產生檔案中",
         "started_importing": "匯入中",
         "updated_entity": "已更新{entity}",
         "image_index_too_large": "錯誤：圖片索引大於圖庫中的圖片數量",
@@ -1516,7 +1516,7 @@
     "history": "歷史紀錄",
     "image_index": "圖片#",
     "index_of_total": "第{index}個，共 {total}個",
-    "last_o_at": "最後 O 在",
+    "last_o_at": "最後尻於",
     "package_manager": {
         "source": {
             "name": "名稱",
@@ -1537,7 +1537,7 @@
         "description": "描述",
         "edit_source": "編輯來源",
         "hide_unselected": "隱藏未選取的",
-        "install": "安装",
+        "install": "安裝",
         "installed_version": "已安裝版本",
         "latest_version": "最新版本",
         "no_packages": "未找到軟體包",
@@ -1558,7 +1558,7 @@
         "add_new_studios": "新增工作室",
         "batch_update_studios": "大量更新工作室",
         "config": {
-            "create_parent_desc": "從 stash-box 分類建立缺少的母工作室，或將名稱完全相符的現有標籤設為母工作室",
+            "create_parent_desc": "從 stash-box 分類建立缺少的母工作室，或將名稱完全相符的現有工作室設為母工作室",
             "create_parent_label": "建立母工作室"
         },
         "any_names_entered_will_be_queried": "如果輸入的名稱有在設定的 Stash-Box 端點上找到的話，則相對應的結果將會被自動新增。只有完全符合的結果才會被視為相符。",
@@ -1646,8 +1646,8 @@
     },
     "sort_name": "分類名稱",
     "eta": "預估剩餘時間",
-    "age_on_date": "在{age}歲時製作",
-    "scenes_duration": "場景持續時間",
+    "age_on_date": "拍攝時 {age} 歲",
+    "scenes_duration": "短片長度",
     "career_end": "畢業",
     "career_start": "出道",
     "o_history_sfw": "按讚紀錄",
