@@ -128,7 +128,7 @@
         "disable": "關閉",
         "enable": "開啟",
         "remove_date": "移除播放日期",
-        "assign_stashid_to_parent_studio": "將 Stash ID 指派到工作室並更新 Metadata",
+        "assign_stashid_to_parent_studio": "將 Stash ID 關聯至現有母工作室，並同步更新 Metadata",
         "create_parent_studio": "建立母工作室",
         "optimise_database": "最佳化資料庫",
         "choose_date": "選擇日期",
@@ -233,7 +233,7 @@
         "verb_add_as_alias": "將爬取到的名字做為別名",
         "verb_link_existing": "連結至現有項目",
         "verb_match_tag": "標籤比對",
-        "verb_scrape_selected": "抓取選取項目"
+        "verb_scrape_selected": "爬取所選項目"
     },
     "config": {
         "about": {
@@ -545,9 +545,9 @@
                 "skip_multiple_matches_tooltip": "如果未啟用此功能且搜尋回傳多個結果，則會隨機選擇一個其中一個進行匹配",
                 "skip_single_name_performers_tooltip": "如果未啟用此功能，則會自動匹配 Samantha 或者 Olga 這種常見名稱的演員",
                 "tag_skipped_matches": "標記跳過的匹配項",
-                "tag_skipped_matches_tooltip": "創建一個標籤，例如「識別：多個匹配項」，您可以在短片標籤器視圖中過濾該標籤，並手動選擇正確的匹配項",
-                "tag_skipped_performer_tooltip": "創建一個標籤，例如“識別：單名表演者”，您可以在短片標籤器視圖中篩選該標籤，並選擇您希望如何處理這些表演者",
-                "tag_skipped_performers": "標記跳過的表演者",
+                "tag_skipped_matches_tooltip": "您可以建立如『辨認多項匹配』之類的標籤，以便在『標記工具』功能中進行篩選及手動匹配",
+                "tag_skipped_performer_tooltip": "您可以建立如『辨認單一演員』之類的標籤，以便在『標記工具』功能中進行篩選與處理",
+                "tag_skipped_performers": "標記跳過的演員",
                 "performer_genders": "演員性別",
                 "performer_genders_desc": "辨識過程中，將納入符合所選性別的演員。"
             },
@@ -763,7 +763,7 @@
                 }
             },
             "scene_list": {
-                "heading": "網格視圖",
+                "heading": "網格顯示",
                 "options": {
                     "show_studio_as_text": "疊加顯示短片所屬工作室名稱",
                     "show_studio_as_text_desc": "預設顯示工作室圖標，啟用後則改用文字顯示名稱。"
@@ -798,7 +798,7 @@
                 "heading": "短片 / 章節標記預覽牆",
                 "options": {
                     "display_title": "顯示影片標題及標籤",
-                    "toggle_sound": "播放聲音"
+                    "toggle_sound": "啟用預覽音訊播放"
                 }
             },
             "scroll_attempts_before_change": {
@@ -814,16 +814,16 @@
                 "heading": "幻燈片延遲 (秒)"
             },
             "studio_panel": {
-                "heading": "檢視工作室",
+                "heading": "工作室顯示",
                 "options": {
                     "show_child_studio_content": {
-                        "description": "於工作室頁面中，同時顯示子工作室內容。",
+                        "description": "於工作室顯示中，同時顯示子工作室內容。",
                         "heading": "顯示子工作室內容"
                     }
                 }
             },
             "tag_panel": {
-                "heading": "檢視標籤",
+                "heading": "標籤顯示",
                 "options": {
                     "show_child_tagged_content": {
                         "description": "於標籤頁面中，同時顯示子標籤內容。",
@@ -857,16 +857,16 @@
                 }
             },
             "use_stash_hosted_funscript": {
-                "description": "啟用後，funscript 將直接從 Stash 傳送至您的 Handy 裝置，而無需使用第三方 Handy 伺服器。要求可從您的 Handy 裝置存取 Stash，且如果 stash 已設定憑證，則會產生 API 金鑰。",
+                "description": "啟用後，funscript 將直接透過 Stash 傳送至您的 Handy 裝置，而無需使用第三方 Handy 伺服器。您的 Handy 裝置必須能夠存取 Stash，且 Stash 若已設定登入相關設定，您則會同時需要產生一組 API 金鑰。",
                 "heading": "直接為 funscript 服務"
             },
             "performer_list": {
                 "options": {
                     "show_links_on_grid_card": {
-                        "heading": "在表演者卡片上顯示連結"
+                        "heading": "在演員卡片上顯示連結"
                     }
                 },
-                "heading": "表演者清單"
+                "heading": "演員清單"
             },
             "troubleshooting_mode": {
                 "button": "排錯模式",
@@ -885,6 +885,19 @@
             "custom_title": {
                 "description": "附加於頁面標題後的自訂文字。若留空，則預設為 'Stash'。",
                 "heading": "自訂標題"
+            },
+            "scene_view": {
+                "heading": "短片顯示",
+                "options": {
+                    "preview_volume": {
+                        "heading": "預覽音量",
+                        "description": "滑鼠滑過短片時，預覽播放的音量。設定為 0 則靜音。"
+                    }
+                }
+            },
+            "sfw_mode": {
+                "description": "啟用此功能以進入 SFW 模式。啟用後，系統將隱藏或更動部分與成人內容相關的介面元素。",
+                "heading": "SFW 內容模式"
             }
         },
         "advanced_mode": "進階模式",
@@ -910,7 +923,8 @@
     "criterion": {
         "greater_than": "大於",
         "less_than": "小於",
-        "value": "數值"
+        "value": "數值",
+        "unsupported": "{type} （不支援）"
     },
     "criterion_modifier": {
         "between": "與 ... 之間",
@@ -976,12 +990,14 @@
                 "pan_y": "Y 軸滑動",
                 "zoom": "放大"
             },
-            "page_header": "第 {page} 頁，共計{total}頁"
+            "page_header": "第 {page} 頁，共計{total}頁",
+            "disable_animation": "停用圖片切換動畫"
         },
         "merge": {
             "destination": "目標",
             "empty_results": "目標值將保持不變。",
-            "source": "源頭"
+            "source": "源頭",
+            "combined": "已合併"
         },
         "reassign_entity_title": "{count, plural, one {重新指定{singularEntity}}}",
         "reassign_files": {
@@ -991,12 +1007,12 @@
             "force_transcodes": "強制產生轉檔檔案",
             "force_transcodes_tooltip": "預設情況下，只有無法正常於瀏覽器中播放的影片檔會被轉檔成可播放的格式。開啟此設定後，即使是可正常播放的影片檔，也會被視為需轉檔的檔案。",
             "image_previews": "動圖預覽",
-            "image_previews_tooltip": "產生 WebP 動圖作為預覽，僅適用於設定為『動圖』的預覽類型。",
+            "image_previews_tooltip": "同時產生動態 (webp) 預覽，僅在『短片 / 章節標記預覽牆』設為『動圖』時需要。瀏覽時相較於影片預覽會使用較少的 CPU，但會在影片預覽之外額外產生，且檔案較大。",
             "interactive_heatmap_speed": "替可互動的短片產生熱圖 (heatmaps) 及速度",
             "marker_image_previews": "章節動圖預覽",
-            "marker_image_previews_tooltip": "產生 WebP 動圖作為章節預覽，僅適用於設定為『動圖』的預覽類型。",
+            "marker_image_previews_tooltip": "同時產生動態 (webp) 預覽，僅在『短片 / 章節標記預覽牆』設為『動圖』時需要。瀏覽時相較於影片預覽會使用較少的 CPU，但會在影片預覽之外額外產生，且檔案較大。",
             "marker_screenshots": "章節截圖",
-            "marker_screenshots_tooltip": "靜態 JPG 預覽，僅適用於設定為『靜態』的預覽類型。",
+            "marker_screenshots_tooltip": "靜態 JPG 預覽，僅適用於設定為『靜態』的預覽類型",
             "markers": "章節預覽",
             "markers_tooltip": "自標記的時間點算起長度20秒的短片預覽。",
             "override_preview_generation_options": "強制使用所選的預覽產生設定",
@@ -1009,7 +1025,7 @@
             "preview_exclude_start_time_head": "排除開始時間",
             "preview_generation_options": "預覽生成設定",
             "preview_options": "預覽選項",
-            "preview_preset_desc": "預設值會影響預覽影像的大小、品質和編碼時間。“slow” 以下的預設值會隨著層級降低整體CP值，不推薦使用。",
+            "preview_preset_desc": "此預設組合會影響預覽產生時的大小、品質與編碼時間。「slow」以上的預設組合效益遞減，不建議使用。",
             "preview_preset_head": "調整預設值 (Preset)",
             "preview_seg_count_desc": "設定預覽影片中的段數。",
             "preview_seg_count_head": "預覽影片段數",
@@ -1021,11 +1037,12 @@
             "transcodes_tooltip": "將不支援的影片格式轉換成 MP4",
             "video_previews": "影片預覽",
             "video_previews_tooltip": "此預覽將於滑鼠移至影片上時自動播放",
-            "clip_previews": "影象剪輯預覽",
+            "clip_previews": "圖片短片預覽",
             "covers": "短片封面",
             "image_thumbnails": "圖片縮圖",
             "phash_tooltip": "可用於辨認短片或偵測重複的短片",
-            "image_phash": "圖片感知雜湊"
+            "image_phash": "圖片感知雜湊",
+            "image_phash_tooltip": "用於辨識圖片或偵測重複的圖片"
         },
         "scenes_found": "已找到 {count} 個短片",
         "scrape_entity_query": "{entity_type}爬蟲搜尋",
@@ -1046,7 +1063,14 @@
         "clear_play_history_confirm": "您確定要清除播放紀錄嗎？",
         "performers_found": "找到{count} 個演員",
         "set_default_filter_confirm": "是否確定設定這一個過濾條件為預設?",
-        "overwrite_filter_warning": "篩選器 \"{entityName}\" 已存在，將被覆蓋。"
+        "overwrite_filter_warning": "篩選器 \"{entityName}\" 已存在，將被覆蓋。",
+        "clear_o_history_confirm_sfw": "您確定您想要清除按讚紀錄嗎？",
+        "delete_alert_to_trash": "以下{count, plural, one {{singularEntity}} other {{pluralEntity}}}將被移至垃圾桶中：",
+        "edit_entity_count_title": "編輯 {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "stashid_exists_warning": "此 stash-box 現有的 stash id 將會被取代。",
+        "studios_found": "已找到 {count} 個工作室",
+        "tags_found": "已找到 {count} 個標籤",
+        "scrape_results_missing": "缺失"
     },
     "dimensions": "解析度",
     "director": "導演",
@@ -1193,9 +1217,12 @@
         "stream": "串流連結",
         "video_codec": "影片編碼",
         "o_count": "O 計數",
-        "phash_meaning": "感知雜湊"
+        "phash_meaning": "感知雜湊",
+        "md5": "MD5 雜湊值",
+        "oshash": "oshash",
+        "oshash_meaning": "OpenSubtitles 雜湊值"
     },
-    "megabits_per_second": "{value} megabits/秒",
+    "megabits_per_second": "{value} mbps",
     "metadata": "Metadata",
     "name": "名稱",
     "new": "新增",
@@ -1338,8 +1365,8 @@
             "path_to_blobs_directory_empty_for_default": "blobs 目錄的路徑 (預設為空)",
             "path_to_cache_directory_empty_for_default": "快取目錄的路徑 (預設為空)",
             "store_blobs_in_database": "將 blobs 儲存到資料庫",
-            "where_can_stash_store_blobs": "Stash 可以在哪裡儲存資料庫的二進位資料？",
-            "where_can_stash_store_blobs_description": "Stash可以在資料庫或檔案系統中儲存二進位制資料，如場景封面、表演者、工作室和標籤影象。預設情況下，它會將這些資料儲存在檔案系統中包含配置檔案的目錄中的子目錄 <code>blobs</code> 中。如果要更改此項，請輸入絕對或相對（到當前工作目錄）路徑。如果Stash不存在此目錄，它將建立此目錄。",
+            "where_can_stash_store_blobs": "Stash 可以在哪裡儲存資料庫檔案？",
+            "where_can_stash_store_blobs_description": "Stash 可以儲存如封面、演出者圖片等二進位資料至檔案系統或資料庫中，且預設將儲存在設定檔路徑下的 <code>blobs</code> 子資料夾中，或是您指定的其他位置。若要更改此路徑，請輸入一個絕對或相對路徑；如果該路徑不存在，Stash 會自動建立它。",
             "where_can_stash_store_cache_files": "Stash可以在哪裡儲存快取檔案？",
             "where_can_stash_store_blobs_description_addendum": "或者，您可以將此資料儲存在資料庫中。<strong>注意：</strong> 這將增加資料庫檔案的大小，並增加資料庫遷移時間。",
             "where_can_stash_store_cache_files_description": "為了使HLS/DASH實時轉碼等功能正常執行，Stash需要一個臨時檔案的快取目錄。預設情況下，Stash將在包含您的配置檔案的目錄中建立一個 <code>cache</code> 目錄。如果您想更改此設定，請輸入絕對或相對（與當前工作目錄）路徑。如果Stash不存在，它將建立此目錄。",
@@ -1371,8 +1398,8 @@
             "store_stash_config": "您希望在哪裡儲存您的 Stash 設定呢？",
             "unable_to_locate_config": "如果看到此畫面的話，則代表 Stash 無法找到先前的設定檔案。本安裝畫面將帶您建立新的設定檔案。",
             "unexpected_explained": "如果您覺得此畫面不應該出現的話，請試著在正確的 Stash 資料夾中重新啟動本程式，或者將設定路徑設為 <code>-c</code>。",
-            "in_the_current_working_directory_disabled": "在<code>{path}</code>中，工作目錄：",
-            "in_the_current_working_directory_disabled_macos": "<code class=\"stashing\">Stash.app</code> 不支援此操作。<br></br>請改用 <code class=\"stashing\">stash-macos</code> 並於工作目錄中執行。"
+            "in_the_current_working_directory_disabled": "在 <code>{path}</code> 中，工作目錄：",
+            "in_the_current_working_directory_disabled_macos": "<code>Stash.app</code> 不支援此操作。<br></br>請改用 <code>stash-macos</code> 並於工作目錄中執行"
         },
         "welcome_specific_config": {
             "config_path": "Stash 將使用下列設定檔案路徑：<code>{path}</code>",
@@ -1434,7 +1461,11 @@
         "started_generating": "生成檔案中",
         "started_importing": "匯入中",
         "updated_entity": "已更新{entity}",
-        "image_index_too_large": "錯誤：圖片索引大於圖庫中的圖片數量"
+        "image_index_too_large": "錯誤：圖片索引大於圖庫中的圖片數量",
+        "clipboard_access_denied": "剪貼簿存取遭拒，請檢查瀏覽器權限",
+        "clipboard_image_pasted": "已從剪貼簿貼上圖片",
+        "clipboard_no_image": "剪貼簿中無圖片",
+        "merged_performers": "已合併演員"
     },
     "total": "總計",
     "true": "是",
@@ -1489,10 +1520,10 @@
     "package_manager": {
         "source": {
             "name": "名稱",
-            "url": "源 URL",
+            "url": "來源 URL",
             "local_path": {
                 "heading": "本地路徑",
-                "description": "儲存此源的軟體包的相對路徑。請注意，變更此路徑需要手動移動軟體包。"
+                "description": "儲存此來源的軟體包的相對路徑。請注意，變更此路徑需要手動移動軟體包。"
             }
         },
         "uninstall": "解除安裝",
@@ -1501,7 +1532,7 @@
         "version": "版本",
         "add_source": "新增來源",
         "check_for_updates": "檢查更新",
-        "confirm_delete_source": "您確定要刪除源{name} ({url})嗎？",
+        "confirm_delete_source": "您確定要刪除來源{name} ({url})嗎？",
         "confirm_uninstall": "您確定要解除安裝{number}軟體包嗎？",
         "description": "描述",
         "edit_source": "編輯來源",
@@ -1510,7 +1541,7 @@
         "installed_version": "已安裝版本",
         "latest_version": "最新版本",
         "no_packages": "未找到軟體包",
-        "no_sources": "未配置源",
+        "no_sources": "未設定來源",
         "no_upgradable": "未找到可升級軟體包",
         "package": "軟體包",
         "required_by": "為 {packages} 所需",
@@ -1557,9 +1588,9 @@
     },
     "include_sub_studio_content": "包括子工作室內容",
     "include_sub_tag_content": "包含子標籤內容",
-    "o_count": "O 計數",
-    "o_history": "o 歷史記錄",
-    "odate_recorded_no": "無O記錄日期",
+    "o_count": "尻尻計數",
+    "o_history": "尻尻歷史記錄",
+    "odate_recorded_no": "無尻尻日期記錄",
     "orientation": "方向",
     "parent_studio": "母工作室",
     "penis": "陰莖",
@@ -1569,7 +1600,7 @@
     "primary_tag": "主要標籤",
     "studio_tags": "工作室標籤",
     "subsidiary_studio_count": "子工作室數量",
-    "tag_parent_tooltip": "有父母標籤",
+    "tag_parent_tooltip": "有母標籤",
     "validation": {
         "required": "${path}是必填欄位",
         "date_invalid_form": "${path}必須是YYYY、 YYYY-MM或是YYYY-MM-DD形式",
@@ -1635,9 +1666,54 @@
     "tag_tagger": {
         "tag_names_or_stashids_separated_by_comma": "標籤名稱或 StashID (以逗號分隔)",
         "add_new_tags": "新增新的標籤",
-        "any_names_entered_will_be_queried": "輸入的名稱將從遠端 Stash-Box 進行查詢，若有找到則會自動新增。比對僅限於完全一致的名稱。"
+        "any_names_entered_will_be_queried": "輸入的名稱將從遠端 Stash-Box 進行查詢，若有找到則會自動新增。比對僅限於完全一致的名稱。",
+        "batch_add_tags": "大量新增標籤",
+        "batch_update_tags": "大量更新標籤",
+        "config": {
+            "create_parent_desc": "從 stash-box 分類建立缺少的母標籤，或將名稱完全相符的現有標籤設為母標籤",
+            "create_parent_label": "建立母標籤"
+        },
+        "create_or_tag_parent_tags": "建立缺失或關聯現有母標籤",
+        "current_page": "目前頁面",
+        "failed_to_save_tag": "儲存標籤「{tag}」失敗",
+        "name_already_exists": "名稱已存在",
+        "network_error": "網路錯誤",
+        "no_results_found": "無搜尋結果。",
+        "number_of_tags_will_be_processed": "即將處理 {tag_count} 個標籤",
+        "parent_tag_no_remote_site_id_warning": "母標籤沒有遠端站點 ID，將不會關聯至此 stash-box。",
+        "query_all_tags_in_the_database": "資料庫中所有標籤",
+        "refresh_tagged_tags": "重新整理所標記之標籤",
+        "refreshing_will_update_the_data": "重新整理將會從 stash-box 更新所有已標記標籤的資料。",
+        "status_tagging_job_queued": "狀態：標記工作已排入佇列",
+        "status_tagging_tags": "狀態：標記標籤中",
+        "tag_already_tagged": "標籤已標記",
+        "tag_selection": "所選標籤",
+        "tag_successfully_tagged": "已成功標記標籤",
+        "tag_status": "標記狀態",
+        "to_use_the_tag_tagger": "若要使用標籤標記工具，需先設定 stash-box。",
+        "untagged_tags": "尚未標記標籤",
+        "update_tags": "更新標籤",
+        "updating_untagged_tags_description": "更新未標記標籤將會嘗試比對所有缺少 stashid 的標籤並更新其 Metadata。"
     },
     "sub_folder_depth": "子資料夾深度（留空則包含所有層級）",
     "sub_folders": "子資料夾",
-    "unsupported_criteria": "不支援的條件: {criteria}"
+    "unsupported_criteria": "不支援的條件: {criteria}",
+    "duplicated": "重複",
+    "duplicated_stash_id": "重複 （Stash ID）",
+    "duplicated_title": "重複 （ 標題）",
+    "empty_value": "空白",
+    "include_sub_folders": "包含子資料夾",
+    "last_o_at_sfw": "上次按讚於",
+    "latest_scene": "最新短片",
+    "o_count_sfw": "按讚數",
+    "tagger": {
+        "config": {
+            "active_stash-box_instance": "使用中的 stash-box：",
+            "edit_excluded_fields": "編輯排除欄位",
+            "excluded_fields": "排除欄位：",
+            "fields_will_not_be_changed": "更新{entity}時，這些欄位將不會被變更。",
+            "no_fields_are_excluded": "未排除任何欄位",
+            "no_instances_found": "找不到任何實例"
+        }
+    }
 }
