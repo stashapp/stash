@@ -453,7 +453,7 @@ func setCachedValue[T any](i *Config, key string, value T) {
 func (i *Config) GetPublicAccess() bool {
 	// cache the value as it is used frequently in authentication
 	return getCachedValue(i, PublicAccess, func() bool {
-		return i.getBool(PublicAccess)
+		return i.getBoolDefault(PublicAccess, publicAccessDefault)
 	})
 }
 
