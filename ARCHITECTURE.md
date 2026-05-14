@@ -364,7 +364,7 @@ func (qb *SceneStore) Find(ctx context.Context, id int) (*models.Scene, error) {
    - Add interface to `pkg/models/repository_*.go`
    - Implement in `pkg/sqlite/*.go`
 5. Add frontend query in `ui/v2.5/graphql/`
-6. Run `npm run gqlgen` to regenerate frontend types
+6. Run `make generate-ui` to regenerate frontend types
 <<<<<<< HEAD
 - Frontend type checking runs in CI — you do not need to run tsc locally.
 =======
