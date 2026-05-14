@@ -391,15 +391,10 @@ make it
 ### Building
 
 ```bash
-# Build backend
-make build
-
 # Build frontend
-cd ui/v2.5
-npm run build
-
-# Full build
-make build-ci
+make ui
+# Build backend (requires frontend to be built first)
+make build
 ```
 
 ## Additional Resources
