@@ -18,54 +18,54 @@ Stash is a self-hosted web application written in Go that organizes and serves d
 
 ```
 stash/
-├── cmd/              # Application entry points
-│   ├── stash/        # Main application (cmd/stash/main.go)
-│   └── phasher/      # Perceptual hash utility
-├── pkg/              # Reusable Go packages
-│   ├── file/         # File system operations and scanning
-│   ├── ffmpeg/       # FFmpeg integration for media processing
-│   ├── gallery/      # Gallery-specific business logic
-│   ├── group/        # Group (movie) business logic
-│   ├── hash/         # Hashing utilities (MD5, oshash, phash)
-│   ├── image/        # Image-specific business logic
-│   ├── job/          # Background job management
-│   ├── logger/       # Logging utilities
-│   ├── models/       # Interface definitions for data entities
-│   ├── performer/    # Performer-specific business logic
-│   ├── plugin/       # Plugin system
-│   ├── scraper/      # Metadata scraping system
-│   ├── scene/        # Scene-specific business logic
-│   ├── sqlite/       # SQLite implementations of datalayer interfaces
-│   ├── studio/       # Studio-specific business logic
-│   ├── tag/          # Tag-specific business logic
-│   └── ...           # Other utility packages
-├── internal/         # Internal application code
-│   ├── api/          # GraphQL API layer (resolvers, server)
-│   ├── manager/      # Core application manager and services
-│   ├── autotag/      # Auto-tagging functionality
-│   ├── identify/     # Scene identification
-│   ├── dlna/         # DLNA media server
-│   ├── desktop/      # Desktop integration
-│   ├── static/       # Static asset serving
-│   └── log/          # Implementation of log system
-├── ui/               # React/TypeScript frontend
-│   ├── login/        # Login page
-│   └── v2.5/         # Main frontend application
-├── graphql/          # GraphQL schema definitions
-│   ├── schema/       # Main schema files
-│   │   └── types/    # GraphQL type definitions
-│   └── stash-box/    # Stash-box integration schema
-├── docker/           # Docker configuration
-│   ├── build/        # Build configurations
-│   ├── ci/           # CI configurations
-│   ├── compiler/     # Compiler Docker setup
-│   └── production/   # Production Docker setup
-├── docs/             # Documentation
-├── scripts/          # Utility scripts
-├── go.mod            # Go module definition
-├── go.sum            # Go dependency checksums
-├── gqlgen.yml        # GraphQL code generation config
-└── Makefile          # Build automation
+├── cmd/               # Application entry points
+│   ├── phasher/       # Perceptual hash utility
+│   └── stash/         # Main application (cmd/stash/main.go)
+├── docker/            # Docker configuration
+│   ├── build/         # Build configurations
+│   ├── ci/            # CI configurations
+│   ├── compiler/      # Compiler Docker setup
+│   └── production/    # Production Docker setup
+├── graphql/           # GraphQL schema definitions
+│   ├── schema/        # Main schema files
+│   │   └── types/     # GraphQL type definitions
+│   └── stash-box/     # Stash-box integration schema
+├── internal/          # Internal application code
+│   ├── api/           # GraphQL API layer (resolvers, server)
+│   ├── autotag/       # Auto-tagging functionality
+│   ├── desktop/       # Desktop integration
+│   ├── dlna/          # DLNA media server
+│   ├── identify/      # Scene identification
+│   ├── log/           # Implementation of log system
+│   ├── manager/       # Core application manager and services
+│   └── static/        # Static asset serving
+├── pkg/               # Reusable Go packages
+│   ├── ffmpeg/        # FFmpeg integration for media processing
+│   ├── file/          # File system operations and scanning
+│   ├── gallery/       # Gallery-specific business logic
+│   ├── group/         # Group (movie) business logic
+│   ├── hash/          # Hashing utilities (MD5, oshash, phash)
+│   ├── image/         # Image-specific business logic
+│   ├── job/           # Background job management
+│   ├── logger/        # Logging utilities
+│   ├── models/        # Interface definitions for data entities
+│   ├── performer/     # Performer-specific business logic
+│   ├── plugin/        # Plugin system
+│   ├── scene/         # Scene-specific business logic
+│   ├── scraper/       # Metadata scraping system
+│   ├── sqlite/        # SQLite implementations of datalayer interfaces
+│   ├── studio/        # Studio-specific business logic
+│   ├── tag/           # Tag-specific business logic
+│   └── ...            # Other utility packages
+└── ui/                # React/TypeScript frontend
+│   ├── login/         # Login page
+│   └── v2.5/          # Main frontend application
+├── docs/              # Documentation
+├── scripts/           # Utility scripts
+├── go.mod             # Go module definition
+├── go.sum             # Go dependency checksums
+├── gqlgen.yml         # GraphQL code generation config
+└── Makefile           # Build automation
 ```
 
 ## Backend Architecture
