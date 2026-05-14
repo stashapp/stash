@@ -77,7 +77,7 @@ The backend follows a layered architecture with clear separation of concerns:
 - Example: `repository.go` defines the main `Repository` struct with all entity repositories
 - Example: `repository_scene.go` defines `SceneReaderWriter` interface
 
-**`pkg/sqlite/` - Implementation Layer**
+**`pkg/sqlite/` - Implementation of datalayer interfaces**
 - Implements the interfaces defined in `pkg/models/`
 - Uses `goqu` query builder for SQL generation
 - Contains all database access logic
