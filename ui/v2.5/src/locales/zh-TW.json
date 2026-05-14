@@ -158,8 +158,8 @@
         "selective_generate": "選擇性生成",
         "invert_selection": "反轉選取",
         "create_new": "建立",
-        "exclude_lowercase": "排除",
-        "from_clipboard": "自剪貼簿"
+        "exclude_lowercase": "不包含",
+        "from_clipboard": "從剪貼簿讀取"
     },
     "actions_name": "動作",
     "age": "年齡",
@@ -230,10 +230,10 @@
         "verb_submit_fp": "{fpCount, plural, other{提交 # 個特徵碼}}",
         "verb_toggle_config": "{toggle}{configuration}",
         "verb_toggle_unmatched": "{toggle}不符合已知特徵碼的短片",
-        "verb_add_as_alias": "將抓取的名稱新增為別名",
+        "verb_add_as_alias": "將爬取到的名字做為別名",
         "verb_link_existing": "連結至現有項目",
-        "verb_match_tag": "辨別標籤",
-        "verb_scrape_selected": "爬取所選項目"
+        "verb_match_tag": "標籤比對",
+        "verb_scrape_selected": "抓取選取項目"
     },
     "config": {
         "about": {
@@ -1572,7 +1572,7 @@
     "tag_parent_tooltip": "有父母標籤",
     "validation": {
         "required": "${path}是必填欄位",
-        "date_invalid_form": "${path}必須是YYYY-MM-DD形式",
+        "date_invalid_form": "${path}必須是YYYY、 YYYY-MM或是YYYY-MM-DD形式",
         "unique": "${path}必須是唯一的",
         "blank": "${path}不能為空",
         "end_time_before_start_time": "結束時間必須大於或等於開始時間"
@@ -1617,8 +1617,8 @@
     "eta": "預估剩餘時間",
     "age_on_date": "在{age}歲時製作",
     "scenes_duration": "場景持續時間",
-    "career_end": "演藝生涯結束於",
-    "career_start": "演藝生涯開始於",
+    "career_end": "畢業",
+    "career_start": "出道",
     "o_history_sfw": "按讚紀錄",
     "odate_recorded_no_sfw": "尚無按讚時間紀錄",
     "parent_folder": "母資料夾",
@@ -1638,5 +1638,6 @@
         "any_names_entered_will_be_queried": "輸入的名稱將從遠端 Stash-Box 進行查詢，若有找到則會自動新增。比對僅限於完全一致的名稱。"
     },
     "sub_folder_depth": "子資料夾深度（留空則包含所有層級）",
-    "sub_folders": "子資料夾"
+    "sub_folders": "子資料夾",
+    "unsupported_criteria": "不支援的條件: {criteria}"
 }
