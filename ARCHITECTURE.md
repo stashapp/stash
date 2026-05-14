@@ -124,10 +124,13 @@ Note: `gqlgen.yml` maps GraphQL types to Go structs and controls code generation
 3. **Parsing**: gqlgen parses the query and validates against schema
 4. **Resolver Execution**: Appropriate resolver method in `internal/api/` is called
 5. **Transaction**: Resolver wraps operation in read or write transaction via `withReadTxn()` or `withTxn()`
-6. **Repository Call**: Resolver calls repository method (e.g., `r.repository.Scene.Find()`)
-7. **SQL Execution**: SQLite implementation executes SQL query using goqu
-8. **Response**: Data flows back through layers to frontend as JSON
-
+6. **Business Logic** (mutations only):
+   - Complex entities (Scene, Gallery, Image, Group): resolver delegates to service layer (`pkg/scene/`, `pkg/gallery/`, etc.)
+   - Simpler entities (Performer, Studio, Tag): resolver calls validation functions (`pkg/performer/`, `pkg/studio/`, etc.) then proceeds directly to repository
+   - Queries and model field resolvers skip this step entirely
+7. **Repository Call**: Resolver or service calls repository method (e.g., `r.repository.Scene.Find()`)
+8. **SQL Execution**: SQLite implementation executes SQL query using a mix of goqu and a custom query builder
+9. **Response**: Data flows back through layers to frontend as JSON
 
 ### Plugin System
 
