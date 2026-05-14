@@ -33,7 +33,7 @@ stash/
 │   ├── tag/          # Tag-specific business logic
 │   ├── group/        # Group (movie) business logic
 │   ├── scraper/      # Metadata scraping system
-│   ├── plugin/       # Plugin system (JavaScript-based)
+│   ├── plugin/       # Plugin system
 │   ├── job/          # Background job management
 │   ├── ffmpeg/       # FFmpeg integration for media processing
 │   ├── hash/         # Hashing utilities (MD5, oshash, phash)
