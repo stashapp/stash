@@ -53,8 +53,12 @@ stash/
 │   └── v2.5/         # Main frontend application
 ├── graphql/          # GraphQL schema definitions
 │   ├── schema/       # Main schema files
-│   └── stash-box/     # Stash-box integration schema
+│   │   └── types/    # GraphQL type definitions
+│   └── stash-box/    # Stash-box integration schema
 ├── docker/           # Docker configuration
+│   ├── build/        # Build configurations
+│   ├── ci/           # CI configurations
+│   ├── compiler/     # Compiler Docker setup
 │   └── production/   # Production Docker setup
 ├── docs/             # Documentation
 ├── scripts/          # Utility scripts
