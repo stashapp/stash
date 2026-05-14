@@ -207,7 +207,7 @@
             },
             "performer_genders": {
                 "heading": "演員性別",
-                "description": "標記場景時，會顯示具有這些性別的演員。"
+                "description": "標記短片時，會顯示具有這些性別的演員。"
             }
         },
         "noun_query": "關鍵字",
@@ -233,7 +233,7 @@
         "verb_add_as_alias": "將抓取的名稱新增為別名",
         "verb_link_existing": "連結至現有項目",
         "verb_match_tag": "辨別標籤",
-        "verb_scrape_selected": "爬取所選"
+        "verb_scrape_selected": "爬取所選項目"
     },
     "config": {
         "about": {
