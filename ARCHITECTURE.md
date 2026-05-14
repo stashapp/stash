@@ -358,7 +358,7 @@ func (qb *SceneStore) Find(ctx context.Context, id int) (*models.Scene, error) {
 ### Adding a New GraphQL Field
 
 1. Define field in `graphql/schema/schema.graphql`
-2. Run `go generate ./...` to regenerate types
+2. Run `make generate-backend` to regenerate types
 3. Implement resolver in `internal/api/resolver_*.go`
 4. If query requires new repository method:
    - Add interface to `pkg/models/repository_*.go`
