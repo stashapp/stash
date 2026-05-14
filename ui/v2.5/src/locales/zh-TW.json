@@ -570,7 +570,7 @@
             "generate_video_covers_during_scan": "產生短片封面",
             "migrate_scene_screenshots": {
                 "delete_files": "刪除截圖檔案",
-                "description": "將場景螢幕截圖遷移到新的 blob 儲存系統中。應在將現有系統遷移到 0.20 後運行此遷移。可以選擇在遷移後刪除舊的屏幕截圖。",
+                "description": "將場景螢幕截圖遷移到新的 blob 儲存系統中。應在將現有系統遷移到 0.20 後執行此遷移。可以選擇在遷移後刪除舊的螢幕截圖。",
                 "overwrite_existing": "使用螢幕截圖資料覆蓋現有 blob"
             },
             "clean_generated": {
@@ -1106,7 +1106,7 @@
         "select_oldest": "選取重複群組中最舊的檔案",
         "select_options": "選擇選項…",
         "select_youngest": "選擇重複組中最新的檔案",
-        "select_all_but_largest_resolution": "選取每個重复的群組中的每個檔案，解析度最高的檔案除外"
+        "select_all_but_largest_resolution": "選取每個重複的群組中的每個檔案，解析度最高的檔案除外"
     },
     "duplicated_phash": "重複的檔案 (pHash)",
     "duration": "長度",
@@ -1264,7 +1264,7 @@
         "performer_successfully_tagged": "成功新增演員資料：",
         "query_all_performers_in_the_database": "查詢所有資料庫中的演員",
         "refresh_tagged_performers": "重新整理已新增的演員資料",
-        "refreshing_will_update_the_data": "重新整理資料將會把任何現有的演員資料重新與 Stash-Box 端點上的資料同步。",
+        "refreshing_will_update_the_data": "重新整理後將從 stash-box 更新所有已標記演員的資料。",
         "status_tagging_job_queued": "狀態：標記工作已排入佇列",
         "status_tagging_performers": "狀態：標記演員中",
         "tag_status": "標記狀態",
@@ -1558,13 +1558,13 @@
         "add_new_studios": "新增工作室",
         "batch_update_studios": "大量更新工作室",
         "config": {
-            "create_parent_desc": "建立缺失的母工作室，或使用確切的名稱匹配標記和更新現有母工作室的資料/影象",
+            "create_parent_desc": "從 stash-box 分類建立缺少的母工作室，或將名稱完全相符的現有標籤設為母工作室",
             "create_parent_label": "建立母工作室"
         },
         "any_names_entered_will_be_queried": "如果輸入的名稱有在設定的 Stash-Box 端點上找到的話，則相對應的結果將會被自動新增。只有完全符合的結果才會被視為匹配。",
         "batch_add_studios": "大量新增工作室",
         "studio_already_tagged": "已經設定標籤的工作室",
-        "refreshing_will_update_the_data": "重新整理後將更新所有已在此stash-box例項被標記的工作室的资料。",
+        "refreshing_will_update_the_data": "重新整理後將從 stash-box 更新所有已標記工作室的資料。",
         "status_tagging_job_queued": "狀態：標記工作已排入佇列",
         "status_tagging_studios": "狀態：標記工作室中",
         "untagged_studios": "未設定標籤的工作室",
