@@ -261,7 +261,7 @@ ui/v2.5/
 
 **Migration Files**:
 - Numbered `.up.sql` files (e.g., `32_files.up.sql`)
-- Current schema version: 85
+- Current schema version is defined in `pkg/sqlite/database.go`
 - Migrations embedded via `//go:embed migrations/*.sql`
 - Uses `golang-migrate/migrate` library
 
