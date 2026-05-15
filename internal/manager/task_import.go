@@ -170,21 +170,17 @@ func (t *ImportTask) unzipFile() error {
 		if err != nil {
 			return err
 		}
+		defer o.Close()
 
 		i, err := f.Open()
 		if err != nil {
-			o.Close()
 			return err
 		}
+		defer i.Close()
 
 		if _, err := io.Copy(o, i); err != nil {
-			o.Close()
-			i.Close()
 			return err
 		}
-
-		o.Close()
-		i.Close()
 	}
 
 	return nil
