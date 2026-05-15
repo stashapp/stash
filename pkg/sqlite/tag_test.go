@@ -570,7 +570,7 @@ func TestTagQueryIsMissingImage(t *testing.T) {
 }
 
 func TestTagQuerySceneCount(t *testing.T) {
-	countCriterion := models.IntCriterionInput{
+	countCriterion := models.HierarchicalCountInput{
 		Value:    1,
 		Modifier: models.CriterionModifierEquals,
 	}
@@ -588,7 +588,7 @@ func TestTagQuerySceneCount(t *testing.T) {
 	verifyTagSceneCount(t, countCriterion)
 }
 
-func verifyTagSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
+func verifyTagSceneCount(t *testing.T, sceneCountCriterion models.HierarchicalCountInput) {
 	withTxn(func(ctx context.Context) error {
 		qb := db.Tag
 		tagFilter := models.TagFilterType{
@@ -601,7 +601,7 @@ func verifyTagSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionIn
 		}
 
 		for _, tag := range tags {
-			verifyInt(t, getTagSceneCount(tag.ID), sceneCountCriterion)
+			verifyInt(t, getTagSceneCount(tag.ID), models.IntCriterionInput{Value: sceneCountCriterion.Value, Modifier: sceneCountCriterion.Modifier})
 		}
 
 		return nil
@@ -609,7 +609,7 @@ func verifyTagSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionIn
 }
 
 func TestTagQueryMarkerCount(t *testing.T) {
-	countCriterion := models.IntCriterionInput{
+	countCriterion := models.HierarchicalCountInput{
 		Value:    1,
 		Modifier: models.CriterionModifierEquals,
 	}
@@ -627,7 +627,7 @@ func TestTagQueryMarkerCount(t *testing.T) {
 	verifyTagMarkerCount(t, countCriterion)
 }
 
-func verifyTagMarkerCount(t *testing.T, markerCountCriterion models.IntCriterionInput) {
+func verifyTagMarkerCount(t *testing.T, markerCountCriterion models.HierarchicalCountInput) {
 	withTxn(func(ctx context.Context) error {
 		qb := db.Tag
 		tagFilter := models.TagFilterType{
@@ -640,7 +640,7 @@ func verifyTagMarkerCount(t *testing.T, markerCountCriterion models.IntCriterion
 		}
 
 		for _, tag := range tags {
-			verifyInt(t, getTagMarkerCount(tag.ID), markerCountCriterion)
+			verifyInt(t, getTagMarkerCount(tag.ID), models.IntCriterionInput{Value: markerCountCriterion.Value, Modifier: markerCountCriterion.Modifier})
 		}
 
 		return nil
@@ -648,7 +648,7 @@ func verifyTagMarkerCount(t *testing.T, markerCountCriterion models.IntCriterion
 }
 
 func TestTagQueryImageCount(t *testing.T) {
-	countCriterion := models.IntCriterionInput{
+	countCriterion := models.HierarchicalCountInput{
 		Value:    1,
 		Modifier: models.CriterionModifierEquals,
 	}
@@ -666,7 +666,7 @@ func TestTagQueryImageCount(t *testing.T) {
 	verifyTagImageCount(t, countCriterion)
 }
 
-func verifyTagImageCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
+func verifyTagImageCount(t *testing.T, imageCountCriterion models.HierarchicalCountInput) {
 	withTxn(func(ctx context.Context) error {
 		qb := db.Tag
 		tagFilter := models.TagFilterType{
@@ -679,7 +679,7 @@ func verifyTagImageCount(t *testing.T, imageCountCriterion models.IntCriterionIn
 		}
 
 		for _, tag := range tags {
-			verifyInt(t, getTagImageCount(tag.ID), imageCountCriterion)
+			verifyInt(t, getTagImageCount(tag.ID), models.IntCriterionInput{Value: imageCountCriterion.Value, Modifier: imageCountCriterion.Modifier})
 		}
 
 		return nil
@@ -687,7 +687,7 @@ func verifyTagImageCount(t *testing.T, imageCountCriterion models.IntCriterionIn
 }
 
 func TestTagQueryGalleryCount(t *testing.T) {
-	countCriterion := models.IntCriterionInput{
+	countCriterion := models.HierarchicalCountInput{
 		Value:    1,
 		Modifier: models.CriterionModifierEquals,
 	}
@@ -705,7 +705,7 @@ func TestTagQueryGalleryCount(t *testing.T) {
 	verifyTagGalleryCount(t, countCriterion)
 }
 
-func verifyTagGalleryCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
+func verifyTagGalleryCount(t *testing.T, imageCountCriterion models.HierarchicalCountInput) {
 	withTxn(func(ctx context.Context) error {
 		qb := db.Tag
 		tagFilter := models.TagFilterType{
@@ -718,7 +718,7 @@ func verifyTagGalleryCount(t *testing.T, imageCountCriterion models.IntCriterion
 		}
 
 		for _, tag := range tags {
-			verifyInt(t, getTagGalleryCount(tag.ID), imageCountCriterion)
+			verifyInt(t, getTagGalleryCount(tag.ID), models.IntCriterionInput{Value: imageCountCriterion.Value, Modifier: imageCountCriterion.Modifier})
 		}
 
 		return nil
@@ -726,7 +726,7 @@ func verifyTagGalleryCount(t *testing.T, imageCountCriterion models.IntCriterion
 }
 
 func TestTagQueryPerformerCount(t *testing.T) {
-	countCriterion := models.IntCriterionInput{
+	countCriterion := models.HierarchicalCountInput{
 		Value:    1,
 		Modifier: models.CriterionModifierEquals,
 	}
@@ -744,7 +744,7 @@ func TestTagQueryPerformerCount(t *testing.T) {
 	verifyTagPerformerCount(t, countCriterion)
 }
 
-func verifyTagPerformerCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
+func verifyTagPerformerCount(t *testing.T, imageCountCriterion models.HierarchicalCountInput) {
 	withTxn(func(ctx context.Context) error {
 		qb := db.Tag
 		tagFilter := models.TagFilterType{
@@ -757,7 +757,7 @@ func verifyTagPerformerCount(t *testing.T, imageCountCriterion models.IntCriteri
 		}
 
 		for _, tag := range tags {
-			verifyInt(t, getTagPerformerCount(tag.ID), imageCountCriterion)
+			verifyInt(t, getTagPerformerCount(tag.ID), models.IntCriterionInput{Value: imageCountCriterion.Value, Modifier: imageCountCriterion.Modifier})
 		}
 
 		return nil
@@ -765,7 +765,7 @@ func verifyTagPerformerCount(t *testing.T, imageCountCriterion models.IntCriteri
 }
 
 func TestTagQueryStudioCount(t *testing.T) {
-	countCriterion := models.IntCriterionInput{
+	countCriterion := models.HierarchicalCountInput{
 		Value:    1,
 		Modifier: models.CriterionModifierEquals,
 	}
@@ -783,7 +783,7 @@ func TestTagQueryStudioCount(t *testing.T) {
 	verifyTagStudioCount(t, countCriterion)
 }
 
-func verifyTagStudioCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
+func verifyTagStudioCount(t *testing.T, imageCountCriterion models.HierarchicalCountInput) {
 	withTxn(func(ctx context.Context) error {
 		qb := db.Tag
 		tagFilter := models.TagFilterType{
@@ -796,7 +796,7 @@ func verifyTagStudioCount(t *testing.T, imageCountCriterion models.IntCriterionI
 		}
 
 		for _, tag := range tags {
-			verifyInt(t, getTagStudioCount(tag.ID), imageCountCriterion)
+			verifyInt(t, getTagStudioCount(tag.ID), models.IntCriterionInput{Value: imageCountCriterion.Value, Modifier: imageCountCriterion.Modifier})
 		}
 
 		return nil
