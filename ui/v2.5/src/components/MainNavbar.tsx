@@ -254,6 +254,11 @@ export const MainNavbar: React.FC = () => {
     }
   }
 
+  const openManualRef = useRef(openManual);
+  openManualRef.current = openManual;
+  const newPathRef = useRef(newPath);
+  newPathRef.current = newPath;
+
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("?", () => openManualRef.current());
@@ -345,11 +350,6 @@ export const MainNavbar: React.FC = () => {
       </>
     );
   }
-
-  const openManualRef = useRef(openManual);
-  openManualRef.current = openManual;
-  const newPathRef = useRef(newPath);
-  newPathRef.current = newPath;
 
   return (
     <>
