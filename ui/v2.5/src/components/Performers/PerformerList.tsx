@@ -1,5 +1,5 @@
 import cloneDeep from "lodash-es/cloneDeep";
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
@@ -430,16 +430,21 @@ export const FilteredPerformerList = PatchComponent(
       setShowSidebar,
     });
 
+    const onEditRef = useRef(onEdit);
+    onEditRef.current = onEdit;
+    const onDeleteRef = useRef(onDelete);
+    onDeleteRef.current = onDelete;
+
     useEffect(() => {
       Mousetrap.bind("e", () => {
         if (hasSelection) {
-          onEdit?.();
+          onEditRef.current?.();
         }
       });
 
       Mousetrap.bind("d d", () => {
         if (hasSelection) {
-          onDelete?.();
+          onDeleteRef.current?.();
         }
       });
 
@@ -447,7 +452,7 @@ export const FilteredPerformerList = PatchComponent(
         Mousetrap.unbind("e");
         Mousetrap.unbind("d d");
       };
-    });
+    }, [hasSelection]);
 
     const onCloseEditDelete = useCloseEditDelete({
       closeModal,

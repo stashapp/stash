@@ -83,7 +83,7 @@ export function useLocalForage<T extends {}>(
       };
       localForage.setItem(key, Cache[key]);
     }
-  });
+  }, [key, data]);
 
   const isLoading = loading || loading === undefined;
 

@@ -107,7 +107,7 @@ export const LightboxImage: React.FC<IProps> = ({
   const mouseDownEvent = useRef<MouseEvent>();
   const resetPositionRef = useRef(resetPosition);
 
-  const container = React.createRef<HTMLDivElement>();
+  const container = useRef<HTMLDivElement>(null);
   const startPoints = useRef<number[]>([0, 0]);
   const pointerCache = useRef<React.PointerEvent[]>([]);
   const prevDiff = useRef<number | undefined>();
@@ -138,7 +138,7 @@ export const LightboxImage: React.FC<IProps> = ({
     setTimeout(() => {
       toggleVideoPlay();
     }, 250);
-  }, [container]);
+  }, []);
 
   useEffect(() => {
     if (dimensionsProvided) {

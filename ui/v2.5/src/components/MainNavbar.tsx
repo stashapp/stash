@@ -256,15 +256,15 @@ export const MainNavbar: React.FC = () => {
 
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("?", () => openManual());
+    Mousetrap.bind("?", () => openManualRef.current());
     Mousetrap.bind("g z", () => goto("/settings"));
 
     menuItems.forEach((item) =>
       Mousetrap.bind(item.hotkey, () => goto(item.href))
     );
 
-    if (newPath) {
-      Mousetrap.bind("n", () => history.push(String(newPath)));
+    if (newPathRef.current) {
+      Mousetrap.bind("n", () => history.push(String(newPathRef.current)));
     }
 
     return () => {
@@ -272,11 +272,11 @@ export const MainNavbar: React.FC = () => {
       Mousetrap.unbind("g z");
       menuItems.forEach((item) => Mousetrap.unbind(item.hotkey));
 
-      if (newPath) {
+      if (newPathRef.current) {
         Mousetrap.unbind("n");
       }
     };
-  });
+  }, [goto, menuItems, history]);
 
   function maybeRenderLogout() {
     if (SessionUtils.isLoggedIn()) {
@@ -345,6 +345,11 @@ export const MainNavbar: React.FC = () => {
       </>
     );
   }
+
+  const openManualRef = useRef(openManual);
+  openManualRef.current = openManual;
+  const newPathRef = useRef(newPath);
+  newPathRef.current = newPath;
 
   return (
     <>

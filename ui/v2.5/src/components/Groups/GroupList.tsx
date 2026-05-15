@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
 import Mousetrap from "mousetrap";
@@ -271,16 +271,21 @@ export const FilteredGroupList = PatchComponent(
       setShowSidebar,
     });
 
+    const onEditRef = useRef(onEdit);
+    onEditRef.current = onEdit;
+    const onDeleteRef = useRef(onDelete);
+    onDeleteRef.current = onDelete;
+
     useEffect(() => {
       Mousetrap.bind("e", () => {
         if (hasSelection) {
-          onEdit?.();
+          onEditRef.current?.();
         }
       });
 
       Mousetrap.bind("d d", () => {
         if (hasSelection) {
-          onDelete?.();
+          onDeleteRef.current?.();
         }
       });
 
@@ -288,7 +293,7 @@ export const FilteredGroupList = PatchComponent(
         Mousetrap.unbind("e");
         Mousetrap.unbind("d d");
       };
-    });
+    }, [hasSelection]);
 
     const onCloseEditDelete = useCloseEditDelete({
       closeModal,

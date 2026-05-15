@@ -850,7 +850,7 @@ export const SceneDuplicateChecker: React.FC = () => {
                   scene.files.length > 0 ? scene.files[0] : undefined;
 
                 return (
-                  <>
+                  <React.Fragment key={scene.id}>
                     {i === 0 && groupIndex !== 0 ? (
                       <tr className="separator" />
                     ) : undefined}
@@ -950,7 +950,7 @@ export const SceneDuplicateChecker: React.FC = () => {
                         </Button>
                       </td>
                     </tr>
-                  </>
+                  </React.Fragment>
                 );
               })
             )}
