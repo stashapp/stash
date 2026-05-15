@@ -1419,6 +1419,7 @@
   "scene": "Scene",
   "sceneTagger": "Scene Tagger",
   "scene_code": "Studio Code",
+  "scene_marker_count": "Scene Marker Count",
   "scene_count": "Scene Count",
   "scenes_duration": "Scene Duration",
   "scenes_size": "Scene Size",
