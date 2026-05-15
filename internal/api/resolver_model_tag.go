@@ -119,6 +119,20 @@ func (r *tagResolver) PerformerCount(ctx context.Context, obj *models.Tag, depth
 	return ret, nil
 }
 
+func (r *tagResolver) Performers(ctx context.Context, obj *models.Tag) (ret []*models.Performer, err error) {
+	if !obj.PerformerIDs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadPerformerIDs(ctx, r.repository.Tag)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	var errs []error
+	ret, errs = loaders.From(ctx).PerformerByID.LoadAll(obj.PerformerIDs.List())
+	return ret, firstError(errs)
+}
+
 func (r *tagResolver) StudioCount(ctx context.Context, obj *models.Tag, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = studio.CountByTagID(ctx, r.repository.Studio, obj.ID, depth)

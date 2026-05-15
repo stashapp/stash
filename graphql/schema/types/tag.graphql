@@ -21,6 +21,7 @@ type Tag {
   movie_count(depth: Int): Int! @deprecated(reason: "use group_count instead") # Resolver
   parents: [Tag!]!
   children: [Tag!]!
+  performers: [Performer!]!
 
   parent_count: Int! # Resolver
   child_count: Int! # Resolver

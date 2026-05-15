@@ -680,6 +680,29 @@ func (_m *TagReaderWriter) GetParentIDs(ctx context.Context, relatedID int) ([]i
 	return r0, r1
 }
 
+// GetPerformerIDs provides a mock function with given fields: ctx, relatedID
+func (_m *TagReaderWriter) GetPerformerIDs(ctx context.Context, relatedID int) ([]int, error) {
+	ret := _m.Called(ctx, relatedID)
+
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(context.Context, int) []int); ok {
+		r0 = rf(ctx, relatedID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, relatedID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetStashIDs provides a mock function with given fields: ctx, relatedID
 func (_m *TagReaderWriter) GetStashIDs(ctx context.Context, relatedID int) ([]models.StashID, error) {
 	ret := _m.Called(ctx, relatedID)

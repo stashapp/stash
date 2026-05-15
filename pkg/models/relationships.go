@@ -29,6 +29,7 @@ type TagIDLoader interface {
 type TagRelationLoader interface {
 	GetParentIDs(ctx context.Context, relatedID int) ([]int, error)
 	GetChildIDs(ctx context.Context, relatedID int) ([]int, error)
+	GetPerformerIDs(ctx context.Context, relatedID int) ([]int, error)
 }
 
 type FileIDLoader interface {

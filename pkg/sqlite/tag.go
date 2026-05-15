@@ -668,6 +668,10 @@ func (qb *TagStore) GetChildIDs(ctx context.Context, relatedID int) ([]int, erro
 	return tagsChildTagsTableMgr.get(ctx, relatedID)
 }
 
+func (qb *TagStore) GetPerformerIDs(ctx context.Context, relatedID int) ([]int, error) {
+	return tagsPerformersTableMgr.get(ctx, relatedID)
+}
+
 func (qb *TagStore) FindByParentTagID(ctx context.Context, parentID int) ([]*models.Tag, error) {
 	query := `
 		SELECT tags.* FROM tags

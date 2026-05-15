@@ -389,6 +389,15 @@ var (
 			idColumn: tagsStashIDsJoinTable.Col(tagIDColumn),
 		},
 	}
+
+	tagsPerformersTableMgr = &joinTable{
+		table: table{
+			table:    performersTagsJoinTable,
+			idColumn: performersTagsJoinTable.Col(tagIDColumn),
+		},
+		fkColumn:     performersTagsJoinTable.Col(performerIDColumn),
+		foreignTable: performerTableMgr,
+	}
 )
 
 var (
