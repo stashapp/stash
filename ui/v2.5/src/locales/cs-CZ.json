@@ -1701,7 +1701,8 @@
         "to_use_the_tag_tagger": "Pro použití tag taggeru je nutné nakonfigurovat instanci stash-box.",
         "untagged_tags": "Neoznačené tagy",
         "update_tags": "Aktualizovat tagy",
-        "updating_untagged_tags_description": "Aktualizace neoznačených tagů se pokusí najít všechny tagy, které nemají stashid, a aktualizovat metadata."
+        "updating_untagged_tags_description": "Aktualizace neoznačených tagů se pokusí najít všechny tagy, které nemají stashid, a aktualizovat metadata.",
+        "parent_tag_no_remote_site_id_warning": "Nadřazená značka nemá ID vzdáleného webu a nebude propojena do stash-box instance."
     },
     "tagger": {
         "config": {
@@ -1713,5 +1714,6 @@
             "no_instances_found": "Nenalezeny žádné instance"
         }
     },
-    "unsupported_criteria": "Nepodporovaná kritéria: {criteria}"
+    "unsupported_criteria": "Nepodporovaná kritéria: {criteria}",
+    "related_studios": "Související"
 }
