@@ -60,6 +60,121 @@ import { FilteredListToolbar } from "../List/FilteredListToolbar";
 import { FilterTags } from "../List/FilterTags";
 import { SidebarFolderFilter } from "../List/Filters/FolderFilter";
 
+function renderMetadataByline(result: GQL.FindScenesQueryResult) {
+  const duration = result?.data?.findScenes?.duration;
+  const size = result?.data?.findScenes?.filesize;
+
+  if (!duration && !size) {
+    return;
+  }
+
+  const separator = duration && size ? " - " : "";
+
+  return (
+    <span className="scenes-stats">
+      &nbsp;(
+      {duration ? (
+        <span className="scenes-duration">
+          {TextUtils.secondsAsTimeString(duration, 3)}
+        </span>
+      ) : undefined}
+      {separator}
+      {size ? (
+        <span className="scenes-size">
+          <FileSize size={size} />
+        </span>
+      ) : undefined}
+      )
+    </span>
+  );
+}
+
+function usePlayScene() {
+  const history = useHistory();
+
+  const { configuration: config } = useConfigurationContext();
+  const cont = config?.interface.continuePlaylistDefault ?? false;
+  const autoPlay = config?.interface.autostartVideoOnPlaySelected ?? false;
+
+  const playScene = useCallback(
+    (queue: SceneQueue, sceneID: string, options?: IPlaySceneOptions) => {
+      history.push(
+        queue.makeLink(sceneID, { autoPlay, continue: cont, ...options })
+      );
+    },
+    [history, cont, autoPlay]
+  );
+
+  return playScene;
+}
+
+function usePlaySelected(selectedIds: Set<string>) {
+  const playScene = usePlayScene();
+
+  const playSelected = useCallback(() => {
+    const sceneIDs = Array.from(selectedIds.values());
+    const queue = SceneQueue.fromSceneIDList(sceneIDs);
+
+    playScene(queue, sceneIDs[0]);
+  }, [selectedIds, playScene]);
+
+  return playSelected;
+}
+
+function usePlayFirst() {
+  const playScene = usePlayScene();
+
+  const playFirst = useCallback(
+    (queue: SceneQueue, sceneID: string, index: number) => {
+      playScene(queue, sceneID, { sceneIndex: index });
+    },
+    [playScene]
+  );
+
+  return playFirst;
+}
+
+function usePlayRandom(filter: ListFilterModel, count: number) {
+  const playScene = usePlayScene();
+
+  const playRandom = useCallback(async () => {
+    if (count === 0) {
+      return;
+    }
+
+    const pages = Math.ceil(count / filter.itemsPerPage);
+    const page = Math.floor(Math.random() * pages) + 1;
+
+    const indexMax = Math.min(filter.itemsPerPage, count);
+    const index = Math.floor(Math.random() * indexMax);
+    const filterCopy = cloneDeep(filter);
+    filterCopy.currentPage = page;
+    filterCopy.sortBy = "random";
+    const queryResults = await queryFindScenes(filterCopy);
+    const scene = queryResults.data.findScenes.scenes[index];
+    if (scene) {
+      const queue = SceneQueue.fromListFilterModel(filterCopy);
+      playScene(queue, scene.id, { sceneIndex: index });
+    }
+  }, [filter, count, playScene]);
+
+  return playRandom;
+}
+
+function useAddKeybinds(filter: ListFilterModel, count: number) {
+  const playRandom = usePlayRandom(filter, count);
+
+  useEffect(() => {
+    Mousetrap.bind("p r", () => {
+      playRandom();
+    });
+
+    return () => {
+      Mousetrap.unbind("p r");
+    };
+  }, [playRandom]);
+}
+
 const sceneColumnSortMap: Record<string, string> = {
   scene_code: "code",
 };
@@ -81,7 +196,8 @@ const SceneList: React.FC<{
       });
       return rev;
     }, []);
-    const activeSortColumn = reverseSortMap[filter.sortBy] ?? filter.sortBy;
+    const activeSortColumn =
+      reverseSortMap[filter.sortBy ?? ""] ?? filter.sortBy;
 
     const queue = useMemo(
       () => SceneQueue.fromListFilterModel(filter),

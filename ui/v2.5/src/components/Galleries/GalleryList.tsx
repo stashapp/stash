@@ -74,7 +74,8 @@ const GalleryList: React.FC<{
       });
       return rev;
     }, []);
-    const activeSortColumn = reverseSortMap[filter.sortBy] ?? filter.sortBy;
+    const activeSortColumn =
+      reverseSortMap[filter.sortBy ?? ""] ?? filter.sortBy;
 
     if (galleries.length === 0) {
       return null;

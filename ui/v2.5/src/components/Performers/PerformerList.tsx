@@ -232,7 +232,8 @@ const PerformerList: React.FC<{
       });
       return rev;
     }, []);
-    const activeSortColumn = reverseSortMap[filter.sortBy] ?? filter.sortBy;
+    const activeSortColumn =
+      reverseSortMap[filter.sortBy ?? ""] ?? filter.sortBy;
 
     if (performers.length === 0 && filter.displayMode !== DisplayMode.Tagger) {
       return null;

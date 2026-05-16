@@ -71,7 +71,8 @@ const StudioList: React.FC<{
       });
       return rev;
     }, []);
-    const activeSortColumn = reverseSortMap[filter.sortBy] ?? filter.sortBy;
+    const activeSortColumn =
+      reverseSortMap[filter.sortBy ?? ""] ?? filter.sortBy;
 
     if (studios.length === 0 && filter.displayMode !== DisplayMode.Tagger) {
       return null;
@@ -94,8 +95,8 @@ const StudioList: React.FC<{
           studios={studios}
           selectedIds={selectedIds}
           onSelectChange={onSelectChange}
-           onSort={onSort}
-           sortBy={activeSortColumn}
+          onSort={onSort}
+          sortBy={activeSortColumn}
           sortDirection={filter.sortDirection}
         />
       );
