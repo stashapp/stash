@@ -1252,20 +1252,20 @@ func (_m *SceneReaderWriter) OCountByPerformerID(ctx context.Context, performerI
 	return r0, r1
 }
 
-// OCountByStudioID provides a mock function with given fields: ctx, studioID
-func (_m *SceneReaderWriter) OCountByStudioID(ctx context.Context, studioID int) (int, error) {
-	ret := _m.Called(ctx, studioID)
+// OCountByStudioID provides a mock function with given fields: ctx, studioID, depth
+func (_m *SceneReaderWriter) OCountByStudioID(ctx context.Context, studioID int, depth *int) (int, error) {
+	ret := _m.Called(ctx, studioID, depth)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
-		r0 = rf(ctx, studioID)
+	if rf, ok := ret.Get(0).(func(context.Context, int, *int) int); ok {
+		r0 = rf(ctx, studioID, depth)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, studioID)
+	if rf, ok := ret.Get(1).(func(context.Context, int, *int) error); ok {
+		r1 = rf(ctx, studioID, depth)
 	} else {
 		r1 = ret.Error(1)
 	}

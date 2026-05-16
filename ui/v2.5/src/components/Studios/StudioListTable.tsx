@@ -80,7 +80,7 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
 
   const SceneCountCell = (studio: GQL.StudioDataFragment) => (
     <Link to={NavUtils.makeStudioScenesUrl(studio)}>
-      <span>{studio.scene_count}</span>
+      <span>{studio.scene_count_all}</span>
     </Link>
   );
 
@@ -98,8 +98,12 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
 
   const PerformerCountCell = (studio: GQL.StudioDataFragment) => (
     <Link to={NavUtils.makeStudioPerformersUrl(studio)}>
-      <span>{studio.performer_count}</span>
+      <span>{studio.performer_count_all}</span>
     </Link>
+  );
+
+  const OCountCell = (studio: GQL.StudioDataFragment) => (
+    <span>{studio.o_counter_all}</span>
   );
 
   const RelatedCell = (studio: GQL.StudioDataFragment) => {
@@ -174,6 +178,12 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
       label: intl.formatMessage({ id: "galleries" }),
       defaultShow: true,
       render: GalleryCountCell,
+    },
+    {
+      value: "o_counter",
+      label: intl.formatMessage({ id: "o_count" }),
+      defaultShow: true,
+      render: OCountCell,
     },
     {
       value: "performer_count",

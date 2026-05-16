@@ -98,13 +98,13 @@ export const StudioCard: React.FC<IProps> = PatchComponent(
     }
 
     function maybeRenderScenesPopoverButton() {
-      if (!studio.scene_count) return;
+      if (!studio.scene_count_all) return;
 
       return (
         <PopoverCountButton
           className="scene-count"
           type="scene"
-          count={studio.scene_count}
+          count={studio.scene_count_all}
           url={NavUtils.makeStudioScenesUrl(studio)}
         />
       );
@@ -150,13 +150,13 @@ export const StudioCard: React.FC<IProps> = PatchComponent(
     }
 
     function maybeRenderPerformersPopoverButton() {
-      if (!studio.performer_count) return;
+      if (!studio.performer_count_all) return;
 
       return (
         <PopoverCountButton
           className="performer-count"
           type="performer"
-          count={studio.performer_count}
+          count={studio.performer_count_all}
           url={NavUtils.makeStudioPerformersUrl(studio)}
         />
       );
@@ -180,9 +180,9 @@ export const StudioCard: React.FC<IProps> = PatchComponent(
     }
 
     function maybeRenderOCounter() {
-      if (!studio.o_counter) return;
+      if (!studio.o_counter_all) return;
 
-      return <OCounterButton value={studio.o_counter} />;
+      return <OCounterButton value={studio.o_counter_all} />;
     }
 
     function maybeRenderOrganized() {
@@ -208,12 +208,12 @@ export const StudioCard: React.FC<IProps> = PatchComponent(
 
     function maybeRenderPopoverButtonGroup() {
       if (
-        studio.scene_count ||
+        studio.scene_count_all ||
         studio.image_count ||
         studio.gallery_count ||
         studio.group_count ||
-        studio.performer_count ||
-        studio.o_counter ||
+        studio.performer_count_all ||
+        studio.o_counter_all ||
         studio.tags.length > 0 ||
         studio.organized
       ) {

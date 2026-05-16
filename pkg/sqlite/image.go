@@ -732,13 +732,38 @@ func (qb *ImageStore) OCountByPerformerID(ctx context.Context, performerID int) 
 	return ret, nil
 }
 
-func (qb *ImageStore) OCountByStudioID(ctx context.Context, studioID int) (int, error) {
+func (qb *ImageStore) OCountByStudioID(ctx context.Context, studioID int, depth *int) (int, error) {
+	var ret int
+
+	if depth != nil && *depth != 0 {
+		q := `
+		WITH RECURSIVE sub_studios AS (
+			SELECT id FROM studios WHERE id = ?
+			UNION ALL
+			SELECT s.id FROM studios s
+			INNER JOIN sub_studios ss ON s.parent_id = ss.id
+		)
+		SELECT COALESCE(SUM(o_counter), 0) FROM images
+		WHERE images.studio_id IN (SELECT id FROM sub_studios)`
+
+		rows, err := dbWrapper.QueryxContext(ctx, q, studioID)
+		if err != nil {
+			return 0, fmt.Errorf("querying image o_count by studio: %w", err)
+		}
+		defer rows.Close()
+		if rows.Next() {
+			if err := rows.Scan(&ret); err != nil {
+				return 0, fmt.Errorf("scanning image o_count: %w", err)
+			}
+		}
+		return ret, nil
+	}
+
 	table := qb.table()
 	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table).Where(
 		table.Col(studioIDColumn).Eq(studioID),
 	)
 
-	var ret int
 	if err := querySimple(ctx, q, &ret); err != nil {
 		return 0, err
 	}
