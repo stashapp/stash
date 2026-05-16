@@ -18,6 +18,9 @@ interface ISceneListTableProps {
   queue?: SceneQueue;
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
+  onSort?: (value: string) => void;
+  sortBy?: string;
+  sortDirection?: string;
 }
 
 const TABLE_NAME = "scenes";
@@ -249,6 +252,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
     label: string;
     defaultShow?: boolean;
     mandatory?: boolean;
+    sortable?: boolean;
     render?: (
       scene: GQL.SlimSceneDataFragment,
       index: number
@@ -260,6 +264,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
       value: "cover_image",
       label: intl.formatMessage({ id: "cover_image" }),
       defaultShow: true,
+      sortable: false,
       render: CoverImageCell,
     },
     {
@@ -302,24 +307,28 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
       value: "performers",
       label: intl.formatMessage({ id: "performers" }),
       defaultShow: true,
+      sortable: false,
       render: PerformersCell,
     },
     {
       value: "tags",
       label: intl.formatMessage({ id: "tags" }),
       defaultShow: true,
+      sortable: false,
       render: TagCell,
     },
     {
       value: "groups",
       label: intl.formatMessage({ id: "groups" }),
       defaultShow: true,
+      sortable: false,
       render: GroupCell,
     },
     {
       value: "galleries",
       label: intl.formatMessage({ id: "galleries" }),
       defaultShow: true,
+      sortable: false,
       render: GalleriesCell,
     },
     {
@@ -365,11 +374,13 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
     {
       value: "video_codec",
       label: intl.formatMessage({ id: "video_codec" }),
+      sortable: false,
       render: VideoCodecCell,
     },
     {
       value: "audio_codec",
       label: intl.formatMessage({ id: "audio_codec" }),
+      sortable: false,
       render: AudioCodecCell,
     },
   ];
@@ -413,6 +424,9 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
       selectedIds={props.selectedIds}
       onSelectChange={props.onSelectChange}
       renderCell={renderCell}
+      onSort={props.onSort}
+      sortBy={props.sortBy}
+      sortDirection={props.sortDirection}
     />
   );
 };

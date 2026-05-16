@@ -17,6 +17,9 @@ interface ITagListTableProps {
   tags: GQL.TagListDataFragment[];
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
+  onSort?: (value: string) => void;
+  sortBy?: string;
+  sortDirection?: string;
 }
 
 const TABLE_NAME = "tags";
@@ -119,6 +122,7 @@ export const TagListTable: React.FC<ITagListTableProps> = (
     label: string;
     defaultShow?: boolean;
     mandatory?: boolean;
+    sortable?: boolean;
     render?: (tag: GQL.TagListDataFragment, index: number) => React.ReactNode;
   }
 
@@ -127,6 +131,7 @@ export const TagListTable: React.FC<ITagListTableProps> = (
       value: "image",
       label: intl.formatMessage({ id: "image" }),
       defaultShow: true,
+      sortable: false,
       render: ImageCell,
     },
     {
@@ -140,12 +145,14 @@ export const TagListTable: React.FC<ITagListTableProps> = (
       value: "aliases",
       label: intl.formatMessage({ id: "aliases" }),
       defaultShow: true,
+      sortable: false,
       render: AliasesCell,
     },
     {
       value: "favourite",
       label: intl.formatMessage({ id: "favourite" }),
       defaultShow: true,
+      sortable: false,
       render: FavoriteCell,
     },
     {
@@ -225,6 +232,9 @@ export const TagListTable: React.FC<ITagListTableProps> = (
       selectedIds={props.selectedIds}
       onSelectChange={props.onSelectChange}
       renderCell={renderCell}
+      onSort={props.onSort}
+      sortBy={props.sortBy}
+      sortDirection={props.sortDirection}
     />
   );
 };

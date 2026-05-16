@@ -1,5 +1,5 @@
 import cloneDeep from "lodash-es/cloneDeep";
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
@@ -191,6 +191,15 @@ export const FormatPenisLength = (penis_length?: number | null) => {
   );
 };
 
+const performerColumnSortMap: Record<string, string> = {
+  height_cm: "height",
+  penis_length_cm: "penis_length",
+  scene_count: "scenes_count",
+  gallery_count: "galleries_count",
+  image_count: "images_count",
+  age: "birthdate",
+};
+
 interface IPerformerList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   view?: View;
@@ -205,9 +214,26 @@ const PerformerList: React.FC<{
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
   extraCriteria?: IPerformerCardExtraCriteria;
+  onSort?: (value: string) => void;
 }> = PatchComponent(
   "PerformerList",
-  ({ performers, filter, selectedIds, onSelectChange, extraCriteria }) => {
+  ({
+    performers,
+    filter,
+    selectedIds,
+    onSelectChange,
+    extraCriteria,
+    onSort,
+  }) => {
+    const reverseSortMap = useMemo(() => {
+      const rev: Record<string, string> = {};
+      Object.entries(performerColumnSortMap).forEach(([k, v]) => {
+        rev[v] = k;
+      });
+      return rev;
+    }, []);
+    const activeSortColumn = reverseSortMap[filter.sortBy] ?? filter.sortBy;
+
     if (performers.length === 0 && filter.displayMode !== DisplayMode.Tagger) {
       return null;
     }
@@ -229,6 +255,9 @@ const PerformerList: React.FC<{
           performers={performers}
           selectedIds={selectedIds}
           onSelectChange={onSelectChange}
+          onSort={onSort}
+          sortBy={activeSortColumn}
+          sortDirection={filter.sortDirection}
         />
       );
     }
@@ -402,6 +431,20 @@ export const FilteredPerformerList = PatchComponent(
       });
 
     const { filter, setFilter } = filterState;
+
+    const onSort = useCallback(
+      (value: string) => {
+        const backendField = performerColumnSortMap[value] ?? value;
+        if (filter.sortBy === backendField) {
+          setFilter(filter.toggleSortDirection());
+        } else {
+          const newFilter = filter.setSortBy(backendField);
+          newFilter.sortDirection = GQL.SortDirectionEnum.Asc;
+          setFilter(newFilter);
+        }
+      },
+      [filter, setFilter]
+    );
 
     const { effectiveFilter, result, cachedResult, items, totalCount } =
       queryResult;
@@ -636,6 +679,7 @@ export const FilteredPerformerList = PatchComponent(
                   selectedIds={selectedIds}
                   onSelectChange={onSelectChange}
                   extraCriteria={extraCriteria}
+                  onSort={onSort}
                 />
               </LoadedContent>
 

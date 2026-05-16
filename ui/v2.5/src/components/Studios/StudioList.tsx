@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
@@ -48,15 +48,31 @@ import { FavoriteStudioCriterionOption } from "src/models/list-filter/criteria/f
 import { Button } from "react-bootstrap";
 import cx from "classnames";
 
+const studioColumnSortMap: Record<string, string> = {
+  scene_count: "scenes_count",
+  image_count: "images_count",
+  gallery_count: "galleries_count",
+};
+
 const StudioList: React.FC<{
   studios: GQL.StudioDataFragment[];
   filter: ListFilterModel;
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
   fromParent?: boolean;
+  onSort?: (value: string) => void;
 }> = PatchComponent(
   "StudioList",
-  ({ studios, filter, selectedIds, onSelectChange, fromParent }) => {
+  ({ studios, filter, selectedIds, onSelectChange, fromParent, onSort }) => {
+    const reverseSortMap = useMemo(() => {
+      const rev: Record<string, string> = {};
+      Object.entries(studioColumnSortMap).forEach(([k, v]) => {
+        rev[v] = k;
+      });
+      return rev;
+    }, []);
+    const activeSortColumn = reverseSortMap[filter.sortBy] ?? filter.sortBy;
+
     if (studios.length === 0 && filter.displayMode !== DisplayMode.Tagger) {
       return null;
     }
@@ -78,6 +94,9 @@ const StudioList: React.FC<{
           studios={studios}
           selectedIds={selectedIds}
           onSelectChange={onSelectChange}
+           onSort={onSort}
+           sortBy={activeSortColumn}
+          sortDirection={filter.sortDirection}
         />
       );
     }
@@ -236,6 +255,20 @@ export const FilteredStudioList = PatchComponent(
       });
 
     const { filter, setFilter } = filterState;
+
+    const onSort = useCallback(
+      (value: string) => {
+        const backendField = studioColumnSortMap[value] ?? value;
+        if (filter.sortBy === backendField) {
+          setFilter(filter.toggleSortDirection());
+        } else {
+          const newFilter = filter.setSortBy(backendField);
+          newFilter.sortDirection = GQL.SortDirectionEnum.Asc;
+          setFilter(newFilter);
+        }
+      },
+      [filter, setFilter]
+    );
 
     const { effectiveFilter, result, cachedResult, items, totalCount } =
       queryResult;
@@ -444,6 +477,7 @@ export const FilteredStudioList = PatchComponent(
                   studios={items}
                   selectedIds={selectedIds}
                   onSelectChange={onSelectChange}
+                  onSort={onSort}
                 />
               </LoadedContent>
 

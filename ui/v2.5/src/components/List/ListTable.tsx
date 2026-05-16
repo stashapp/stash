@@ -7,6 +7,7 @@ export interface IColumn {
   label: string;
   value: string;
   mandatory?: boolean;
+  sortable?: boolean;
 }
 
 export const ColumnSelector: React.FC<{
@@ -47,6 +48,9 @@ interface IListTableProps<T> {
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
   renderCell: (column: IColumn, item: T, index: number) => React.ReactNode;
+  onSort?: (value: string) => void;
+  sortBy?: string;
+  sortDirection?: string;
 }
 
 export const ListTable = <T extends { id: string }>(
@@ -61,6 +65,9 @@ export const ListTable = <T extends { id: string }>(
     selectedIds,
     onSelectChange,
     renderCell,
+    onSort,
+    sortBy,
+    sortDirection,
   } = props;
 
   const visibleColumns = useMemo(() => {
@@ -102,12 +109,25 @@ export const ListTable = <T extends { id: string }>(
   };
 
   const columnHeaders = useMemo(() => {
-    return visibleColumns.map((column) => (
-      <th key={column.value} className={`${column.value}-head`}>
-        {column.label}
-      </th>
-    ));
-  }, [visibleColumns]);
+    const arrow = sortDirection === "ASC" ? " \u25B2" : " \u25BC";
+
+    return visibleColumns.map((column) => {
+      const isSortable = column.sortable !== false && onSort;
+      const isActive = sortBy === column.value;
+
+      return (
+        <th
+          key={column.value}
+          className={`${column.value}-head${isSortable ? " sortable" : ""}`}
+          onClick={isSortable ? () => onSort(column.value) : undefined}
+          style={isSortable ? { cursor: "pointer" } : undefined}
+        >
+          {column.label}
+          {isActive && arrow}
+        </th>
+      );
+    });
+  }, [visibleColumns, onSort, sortBy, sortDirection]);
 
   return (
     <div className={cx("table-list", className)}>
