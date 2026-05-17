@@ -1714,5 +1714,6 @@
     "sub_folders": "Sous-répertoires",
     "empty_value": "vide",
     "scenes_size": "Taille de la scène",
-    "refer_to": "Merci de consulter {link}."
+    "refer_to": "Merci de consulter {link}.",
+    "related_studios": "En rapport"
 }
