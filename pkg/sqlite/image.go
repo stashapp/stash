@@ -955,6 +955,7 @@ var imageSortOptions = sortOptions{
 	"id",
 	"o_counter",
 	"path",
+	"performer_age",
 	"performer_count",
 	"random",
 	"rating",
@@ -1030,6 +1031,26 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 			addFilesJoin()
 			addFolderJoin()
 			sortClause = " ORDER BY COALESCE(images.title, files.basename) COLLATE NATURAL_CI " + direction + ", folders.path COLLATE NATURAL_CI " + direction
+		case "performer_age":
+			aggregation := "MIN"
+			if direction == "DESC" {
+				aggregation = "MAX"
+			}
+			fallback := "NULL"
+			if direction == "ASC" {
+				fallback = "9223372036854775807"
+			}
+			sortClause = fmt.Sprintf(
+				" ORDER BY (SELECT COALESCE(%s(JulianDay(images.date) - JulianDay(performers.birthdate)), %s) FROM %s as performers INNER JOIN %s AS aggregation WHERE performers.id = aggregation.%s AND aggregation.%s = %s.id) %s",
+				aggregation,
+				fallback,
+				performerTable,
+				performersImagesTable,
+				performerIDColumn,
+				imageIDColumn,
+				imageTable,
+				getSortDirection(direction),
+			)
 		default:
 			sortClause = getSort(sort, direction, "images")
 		}
