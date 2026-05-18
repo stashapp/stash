@@ -218,6 +218,9 @@ func (qb *tagFilterHandler) isMissingCriterionHandler(isMissing *string) criteri
 	}
 }
 
+// addHierarchicalCountCTE adds a recursive CTE to walk the tag hierarchy.
+// depth < 0 includes all descendant levels (unlimited recursion).
+// depth >= 0 limits the recursion to that many levels from the root tag.
 func (qb *tagFilterHandler) addHierarchicalCountCTE(f *filterBuilder, cteAlias string, depth int) {
 	var depthCondition string
 	if depth >= 0 {
