@@ -83,7 +83,7 @@ The backend follows a layered architecture with clear separation of concerns:
 
 **`pkg/sqlite/` - Implementation of datalayer interfaces**
 - Implements the interfaces defined in `pkg/models/`
-- Uses `goqu` query builder for SQL generation
+- Uses `goqu` for CRUD operations and standard queries, and a custom query builder for complex filtering/listing
 - Contains all database access logic
 - Example: `scene.go` implements `SceneStore` with CRUD operations
 - Example: `scene_filter.go` implements filtering logic
@@ -309,9 +309,10 @@ func (qb *SceneStore) Find(ctx context.Context, id int) (*models.Scene, error) {
 ```
 
 **Filtering**:
-- Complex filtering via `criterion_handlers.go`
-- Supports hierarchical filters (tags, studios)
-- Joins handled via query builder
+- Complex filtering via a custom query builder system (`query.go`, `filter.go`) that constructs raw SQL
+- Criterion handlers in `criterion_handlers.go` dynamically build WHERE, HAVING, and WITH clauses
+- Supports hierarchical filters (tags, studios) via recursive CTEs
+- Simpler queries (CRUD, join-table lookups) use `goqu` via the `table` abstraction
 
 ## Key Data Flows
 
@@ -328,7 +329,7 @@ func (qb *SceneStore) Find(ctx context.Context, id int) (*models.Scene, error) {
 
 5. Repository calls the SQLite implementation in `pkg/sqlite/scene.go` to execute the query
 
-6. SQLite executes a parameterized SQL query via goqu to fetch the scene record
+6. SQLite generates and executes the SQL query (using goqu or the custom queryBuilder depending on operation) to fetch the scene record
 
 7. Scene object flows back through layers: SQLite → Repository → Resolver → GraphQL → Frontend
 
