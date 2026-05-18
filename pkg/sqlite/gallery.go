@@ -528,6 +528,38 @@ func (qb *GalleryStore) FindByFileID(ctx context.Context, fileID models.FileID) 
 	return ret, nil
 }
 
+func (qb *GalleryStore) GetManyIDsByFileIDs(ctx context.Context, fileIDs []models.FileID) ([][]int, error) {
+	sq := dialect.From(galleriesFilesJoinTable).Select(galleriesFilesJoinTable.Col(galleryIDColumn), galleriesFilesJoinTable.Col(fileIDColumn)).Where(
+		galleriesFilesJoinTable.Col(fileIDColumn).In(fileIDs),
+	)
+
+	sql, args, err := sq.ToSQL()
+	if err != nil {
+		return nil, fmt.Errorf("building query: %w", err)
+	}
+
+	var results []struct {
+		GalleryID int           `db:"gallery_id"`
+		FileID    models.FileID `db:"file_id"`
+	}
+
+	if err := querySelect(ctx, sql, args, &results); err != nil {
+		return nil, fmt.Errorf("getting galleries by file ids %v: %w", fileIDs, err)
+	}
+
+	retMap := make(map[models.FileID][]int)
+	for _, r := range results {
+		retMap[r.FileID] = append(retMap[r.FileID], r.GalleryID)
+	}
+
+	ret := make([][]int, len(fileIDs))
+	for i, id := range fileIDs {
+		ret[i] = retMap[id]
+	}
+
+	return ret, nil
+}
+
 func (qb *GalleryStore) CountByFileID(ctx context.Context, fileID models.FileID) (int, error) {
 	joinTable := galleriesFilesJoinTable
 
