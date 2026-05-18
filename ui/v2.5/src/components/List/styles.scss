@@ -1067,7 +1067,9 @@ ul.selectable-list {
 .pagination-footer-container {
   background-color: transparent;
   bottom: $navbar-height;
+  margin: auto;
   position: sticky;
+  width: fit-content;
   z-index: 10;
 
   @include media-breakpoint-up(sm) {
