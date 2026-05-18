@@ -1714,5 +1714,6 @@
     "sub_folders": "Subcarpetas",
     "empty_value": "vacío",
     "refer_to": "Consulte {enlace}.",
-    "scenes_size": "Tamaño de la escena"
+    "scenes_size": "Tamaño de la escena",
+    "related_studios": "Relacionado"
 }
