@@ -42,7 +42,7 @@ func (r *queryResolver) FindFile(ctx context.Context, id *string, path *string) 
 		return nil, err
 	}
 
-	return convertBaseFile(ret), nil
+	return convertBaseFile(ret)
 }
 
 func (r *queryResolver) FindFiles(
@@ -103,9 +103,14 @@ func (r *queryResolver) FindFiles(
 			return err
 		}
 
+		convertedFiles, err := convertBaseFiles(files)
+		if err != nil {
+			return err
+		}
+
 		ret = &FindFilesResultType{
 			Count:      result.Count,
-			Files:      convertBaseFiles(files),
+			Files:      convertedFiles,
 			Duration:   result.TotalDuration,
 			Megapixels: result.Megapixels,
 			Size:       int(result.TotalSize),
