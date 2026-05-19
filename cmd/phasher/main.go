@@ -122,10 +122,13 @@ func main() {
 	// don't need to InitHWSupport, phashing doesn't use hw acceleration
 	ffprobe := ffmpeg.NewFFProbe(ffprobePath)
 
+	exitCode := 0
 	for _, item := range args {
 		if err := printPhash(encoder, ffprobe, item, quiet); err != nil {
 			fmt.Fprintln(os.Stderr, err)
+			exitCode = 1
 		}
 	}
 
+	os.Exit(exitCode)
 }
