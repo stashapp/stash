@@ -554,7 +554,7 @@
                 "performer_genders_desc": "Identifitseerimise käigus kaasatakse valitud sooga näitlejad."
             },
             "import_from_exported_json": "Impordi eksporditud JSON-ist metaandmete kataloogist. Kustutab olemasoleva andmebaasi.",
-            "incremental_import": "Järkjärguline import esitatud eksporditud ZIP-failist.",
+            "incremental_import": "Järkjärguline import ekspordi zip-failist.",
             "job_queue": "Ülesannete Järjekord",
             "maintenance": "Hooldus",
             "migrate_blobs": {
@@ -592,7 +592,7 @@
                 "description": "Eemaldab genereeritud failid ilma vastava andmebaasi kirjeta."
             },
             "rescan": "Skaneeri failid uuesti",
-            "rescan_tooltip": "Kontrollige uuesti kõiki teel olevaid faile. Kasutatakse faili metaandmete värskendamiseks ja ZIP-failide uuesti skannimiseks.",
+            "rescan_tooltip": "Kontrollige uuesti kõiki teel olevaid faile. Kasutatakse faili metaandmete värskendamiseks ja zip-failide uuesti skannimiseks.",
             "backup_database": {
                 "description": "Varundab andmebaasi ja blob-failid.",
                 "destination": "Sihtkoht",
@@ -1714,5 +1714,6 @@
     "unsupported_criteria": "Ilma toeata kriteeriumid: {criteria}",
     "empty_value": "tühi",
     "refer_to": "Palun vaata {link}.",
-    "scenes_size": "Ekraani Suurus"
+    "scenes_size": "Ekraani Suurus",
+    "related_studios": "Seotud"
 }
