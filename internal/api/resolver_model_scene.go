@@ -284,7 +284,6 @@ func (r *sceneResolver) StashIds(ctx context.Context, obj *models.Scene) (ret []
 }
 
 func (r *sceneResolver) SceneStreams(ctx context.Context, obj *models.Scene) ([]*manager.SceneStreamEndpoint, error) {
-	// load the primary file into the scene
 	_, err := r.getPrimaryFile(ctx, obj)
 	if err != nil {
 		return nil, err
@@ -293,10 +292,20 @@ func (r *sceneResolver) SceneStreams(ctx context.Context, obj *models.Scene) ([]
 	config := manager.GetInstance().Config
 
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
+	userAgent, _ := ctx.Value(UserAgentCtxKey).(string)
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj)
 	apiKey := config.GetAPIKey()
 
-	return manager.GetSceneStreamPaths(obj, builder.GetStreamURL(apiKey), config.GetMaxStreamingTranscodeSize())
+	endpoints, err := manager.GetSceneStreamPaths(obj, builder.GetStreamURL(apiKey), config.GetMaxStreamingTranscodeSize())
+	if err != nil {
+		return nil, err
+	}
+
+	if err := manager.MarkDefaultStream(ctx, endpoints, userAgent, r.repository.PlaybackDefault); err != nil {
+		return nil, err
+	}
+
+	return endpoints, nil
 }
 
 func (r *sceneResolver) Interactive(ctx context.Context, obj *models.Scene) (bool, error) {

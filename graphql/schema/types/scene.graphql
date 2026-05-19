@@ -270,6 +270,7 @@ type SceneStreamEndpoint {
   url: String!
   mime_type: String
   label: String
+  default: Boolean
 }
 
 input AssignSceneFileInput {

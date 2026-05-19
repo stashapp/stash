@@ -14,6 +14,7 @@ type SceneStreamEndpoint struct {
 	URL      string  `json:"url"`
 	MimeType *string `json:"mime_type"`
 	Label    *string `json:"label"`
+	Default  *bool   `json:"default"`
 }
 
 type endpointType struct {

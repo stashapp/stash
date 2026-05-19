@@ -96,6 +96,12 @@ models:
     model: github.com/stashapp/stash/internal/manager.StashBoxBatchTagInput
   SceneStreamEndpoint:
     model: github.com/stashapp/stash/internal/manager.SceneStreamEndpoint
+  PlaybackDefault:
+    model: github.com/stashapp/stash/pkg/models.PlaybackDefault
+  PlaybackDefaultCreateInput:
+    model: github.com/stashapp/stash/pkg/models.PlaybackDefaultCreateInput
+  PlaybackDefaultUpdateInput:
+    model: github.com/stashapp/stash/pkg/models.PlaybackDefaultUpdateInput
   ExportObjectTypeInput:
     model: github.com/stashapp/stash/internal/manager.ExportObjectTypeInput
   ExportObjectsInput:

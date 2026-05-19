@@ -1,0 +1,6 @@
+mutation SavePlaybackPreference(
+  $stream_type: String!
+  $quality: StreamingResolutionEnum
+) {
+  savePlaybackPreference(stream_type: $stream_type, quality: $quality)
+}

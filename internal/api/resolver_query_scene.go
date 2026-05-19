@@ -38,8 +38,18 @@ func (r *queryResolver) SceneStreams(ctx context.Context, id *string) ([]*manage
 	config := manager.GetInstance().Config
 
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
+	userAgent, _ := ctx.Value(UserAgentCtxKey).(string)
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, scene)
 	apiKey := config.GetAPIKey()
 
-	return manager.GetSceneStreamPaths(scene, builder.GetStreamURL(apiKey), config.GetMaxStreamingTranscodeSize())
+	endpoints, err := manager.GetSceneStreamPaths(scene, builder.GetStreamURL(apiKey), config.GetMaxStreamingTranscodeSize())
+	if err != nil {
+		return nil, err
+	}
+
+	if err := manager.MarkDefaultStream(ctx, endpoints, userAgent, r.repository.PlaybackDefault); err != nil {
+		return nil, err
+	}
+
+	return endpoints, nil
 }

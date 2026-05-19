@@ -140,6 +140,7 @@ func Initialize() (*Server, error) {
 	r.Use(middleware.Compress(4))
 	r.Use(middleware.StripSlashes)
 	r.Use(BaseURLMiddleware)
+	r.Use(UserAgentMiddleware)
 
 	recoverFunc := func(ctx context.Context, err interface{}) error {
 		logger.Error(err)
@@ -637,7 +638,8 @@ type contextKey struct {
 }
 
 var (
-	BaseURLCtxKey = &contextKey{"BaseURL"}
+	BaseURLCtxKey  = &contextKey{"BaseURL"}
+	UserAgentCtxKey = &contextKey{"UserAgent"}
 )
 
 func BaseURLMiddleware(next http.Handler) http.Handler {
@@ -659,6 +661,14 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 
 		r = r.WithContext(context.WithValue(ctx, BaseURLCtxKey, baseURL))
 
+		next.ServeHTTP(w, r)
+	}
+	return http.HandlerFunc(fn)
+}
+
+func UserAgentMiddleware(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		r = r.WithContext(context.WithValue(r.Context(), UserAgentCtxKey, r.Header.Get("User-Agent")))
 		next.ServeHTTP(w, r)
 	}
 	return http.HandlerFunc(fn)

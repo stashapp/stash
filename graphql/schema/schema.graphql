@@ -1,5 +1,8 @@
 "The query root for this schema"
 type Query {
+  # Playback defaults
+  playbackDefaults: [PlaybackDefault!]!
+
   # Filters
   findSavedFilter(id: ID!): SavedFilter
   findSavedFilters(mode: FilterMode): [SavedFilter!]!
@@ -430,6 +433,12 @@ type Mutation {
   revealFileInFileManager(id: ID!): Boolean!
   "Reveal the folder in the system file manager"
   revealFolderInFileManager(id: ID!): Boolean!
+
+  # Playback defaults
+  savePlaybackPreference(stream_type: String!, quality: StreamingResolutionEnum): Boolean!
+  playbackDefaultCreate(input: PlaybackDefaultCreateInput!): PlaybackDefault!
+  playbackDefaultUpdate(input: PlaybackDefaultUpdateInput!): PlaybackDefault!
+  playbackDefaultDestroy(id: ID!): Boolean!
 
   # Saved filters
   saveFilter(input: SaveFilterInput!): SavedFilter!

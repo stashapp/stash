@@ -123,6 +123,8 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
 
       const loadSrc = this.sources[this.selectedIndex];
 
+      player.trigger("playbackSourceSelected", source);
+
       const currentTime = player.currentTime();
       const paused = player.paused();
 

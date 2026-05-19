@@ -962,6 +962,9 @@ export const mutateSceneMerge = (
     },
   });
 
+export const useSavePlaybackPreference = () =>
+  GQL.useSavePlaybackPreferenceMutation();
+
 export const useSceneSaveActivity = () =>
   GQL.useSceneSaveActivityMutation({
     update(cache, result, { variables }) {

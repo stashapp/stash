@@ -30,6 +30,7 @@ import {
   useSceneSaveActivity,
   useSceneIncrementPlayCount,
   useConfigureInterface,
+  useSavePlaybackPreference,
 } from "src/core/StashService";
 
 import * as GQL from "src/core/generated-graphql";
@@ -252,6 +253,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     const [sceneSaveActivity] = useSceneSaveActivity();
     const [sceneIncrementPlayCount] = useSceneIncrementPlayCount();
     const [updateInterfaceConfig] = useConfigureInterface();
+    const [savePlaybackPreference] = useSavePlaybackPreference();
 
     const [time, setTime] = useState(0);
     const [ready, setReady] = useState(false);
@@ -904,6 +906,41 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       player.play();
       auto.current = false;
     }, [getPlayer, scene, ready, interactiveClient, currentScript]);
+
+    useEffect(() => {
+      const player = getPlayer();
+      if (!player) return;
+
+      function playbackSourceSelected(_: unknown, source: import("./source-selector").ISource) {
+        try {
+          const u = new URL(source.src);
+          const path = u.pathname;
+
+          let stream_type: string;
+          if (path.endsWith("/stream.mp4")) stream_type = "MP4";
+          else if (path.endsWith("/stream.webm")) stream_type = "WEBM";
+          else if (path.endsWith("/stream.mkv")) stream_type = "MKV";
+          else if (path.endsWith("/stream.m3u8")) stream_type = "HLS";
+          else if (path.endsWith("/stream.mpd")) stream_type = "DASH";
+          else if (path.endsWith("/stream")) stream_type = "DIRECT";
+          else return;
+
+          const quality =
+            (u.searchParams.get("resolution") as GQL.StreamingResolutionEnum | null) ??
+            undefined;
+
+          savePlaybackPreference({
+            variables: { stream_type, quality },
+          });
+        } catch {
+          // malformed URL — skip
+        }
+      }
+
+      player.on("playbackSourceSelected", playbackSourceSelected);
+
+      return () => player.off("playbackSourceSelected", playbackSourceSelected);
+    }, [getPlayer, savePlaybackPreference]);
 
     // Attach handler for onComplete event
     useEffect(() => {

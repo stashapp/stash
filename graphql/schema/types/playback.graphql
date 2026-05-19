@@ -1,0 +1,22 @@
+type PlaybackDefault {
+  id: ID!
+  user_agent_pattern: String!
+  priority: Int!
+  stream_type: String!
+  quality: StreamingResolutionEnum
+}
+
+input PlaybackDefaultCreateInput {
+  user_agent_pattern: String!
+  priority: Int!
+  stream_type: String!
+  quality: StreamingResolutionEnum
+}
+
+input PlaybackDefaultUpdateInput {
+  id: ID!
+  user_agent_pattern: String
+  priority: Int
+  stream_type: String
+  quality: StreamingResolutionEnum
+}
