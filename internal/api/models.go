@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 type BaseFile interface {
@@ -28,28 +27,34 @@ func convertVisualFile(f models.File) (VisualFile, error) {
 	}
 }
 
-func convertBaseFile(f models.File) BaseFile {
-	if f == nil {
-		return nil
-	}
-
-	switch f := f.(type) {
-	case BaseFile:
-		return f
-	case *models.VideoFile:
-		return &VideoFile{VideoFile: f}
-	case *models.ImageFile:
-		return &ImageFile{ImageFile: f}
-	case *models.BaseFile:
-		// assume gallery file if it's not a video or image file
-		return &GalleryFile{BaseFile: f}
-	default:
-		panic("unknown file type")
-	}
+func convertBaseFile(f models.File) (BaseFile, error) {
+    if f == nil {
+        return nil, nil
+    }
+    switch f := f.(type) {
+    case BaseFile:
+        return f, nil
+    case *models.VideoFile:
+        return &VideoFile{VideoFile: f}, nil
+    case *models.ImageFile:
+        return &ImageFile{ImageFile: f}, nil
+    case *models.BaseFile:
+        return &GalleryFile{BaseFile: f}, nil
+    default:
+        return nil, fmt.Errorf("unknown file type %T", f)
+    }
 }
 
-func convertBaseFiles(files []models.File) []BaseFile {
-	return sliceutil.Map(files, convertBaseFile)
+func convertBaseFiles(files []models.File) ([]BaseFile, error) {
+    ret := make([]BaseFile, len(files))
+    for i, f := range files {
+        bf, err := convertBaseFile(f)
+        if err != nil {
+            return nil, err
+        }
+        ret[i] = bf
+    }
+    return ret, nil
 }
 
 type GalleryFile struct {
