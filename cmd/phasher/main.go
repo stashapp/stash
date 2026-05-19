@@ -23,6 +23,9 @@ func customUsage() {
 func printPhash(ff *ffmpeg.FFMpeg, ffp *ffmpeg.FFProbe, inputfile string, quiet *bool) error {
 	// Determine if this is a video or image file based on extension
 	ext := filepath.Ext(inputfile)
+	if ext == "" {
+		return fmt.Errorf("file %q has no extension, cannot determine type", inputfile)
+	}
 	ext = ext[1:] // remove the leading dot
 
 	// Common image extensions
