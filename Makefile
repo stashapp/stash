@@ -29,7 +29,10 @@ ifdef OUTPUT
   PHASHER_OUTPUT := $(OUTPUT)
 endif
 ifdef STASH_OUTPUT
+  STASH_BINARY := $(STASH_OUTPUT)
   STASH_OUTPUT := -o $(STASH_OUTPUT)
+else
+  STASH_BINARY := stash
 endif
 ifdef PHASHER_OUTPUT
   PHASHER_OUTPUT := -o $(PHASHER_OUTPUT)
@@ -446,8 +449,8 @@ remove-compiler-container:
 install: build-release
 ifdef IS_WIN_SHELL
 	@if not exist "$(PREFIX)" mkdir $(PREFIX)
-	@copy "dist\\stash-win.exe" "$(PREFIX)\\stash-win.exe"
+	@copy "$(STASH_BINARY).exe" "$(PREFIX)\\stash.exe"
 else
 	@mkdir -p $(PREFIX)/bin
-	@install -m 755 $(STASH_OUTPUT) $(PREFIX)/bin/stash
+	@install -m 755 $(STASH_BINARY) $(PREFIX)/bin/stash
 endif
