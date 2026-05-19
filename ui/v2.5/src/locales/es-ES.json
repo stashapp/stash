@@ -602,7 +602,7 @@
                 "include_blobs_desc": "Desactivar para realizar únicamente una copia de seguridad del archivo de base de datos SQLite.",
                 "sqlite": "El archivo de copia de seguridad será una copia del archivo de base de datos SQLite, con el nombre de archivo {filename_format}",
                 "to_directory": "A {directory}",
-                "warning_blobs": "Los archivos blob no se incluirán en la copia de seguridad. Esto significa que, para restaurar correctamente desde la copia de seguridad, los archivos blob deben estar presentes en la ubicación de almacenamiento de blobs.",
+                "warning_blobs": "Los archivos blob no se incluirán en la copia de seguridad. Esto significa que, para restaurar con éxito a partir de la copia de seguridad, los archivos blob deben estar presentes en la ubicación de almacenamiento de blobs.",
                 "zip": "El archivo de base de datos SQLite y los archivos blob se comprimirán en un único archivo, con el nombre de archivo {filename_format}"
             },
             "auto_tag_confirm": "Esto intentará comparar tu contenido con los metadatos existentes.",
