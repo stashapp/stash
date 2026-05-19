@@ -28,33 +28,33 @@ func convertVisualFile(f models.File) (VisualFile, error) {
 }
 
 func convertBaseFile(f models.File) (BaseFile, error) {
-    if f == nil {
-        return nil, nil
-    }
-    switch f := f.(type) {
-    case BaseFile:
-        return f, nil
-    case *models.VideoFile:
-        return &VideoFile{VideoFile: f}, nil
-    case *models.ImageFile:
-        return &ImageFile{ImageFile: f}, nil
-    case *models.BaseFile:
-        return &GalleryFile{BaseFile: f}, nil
-    default:
-        return nil, fmt.Errorf("unknown file type %T", f)
-    }
+	if f == nil {
+		return nil, nil
+	}
+	switch f := f.(type) {
+	case BaseFile:
+		return f, nil
+	case *models.VideoFile:
+		return &VideoFile{VideoFile: f}, nil
+	case *models.ImageFile:
+		return &ImageFile{ImageFile: f}, nil
+	case *models.BaseFile:
+		return &GalleryFile{BaseFile: f}, nil
+	default:
+		return nil, fmt.Errorf("unknown file type %T", f)
+	}
 }
 
 func convertBaseFiles(files []models.File) ([]BaseFile, error) {
-    ret := make([]BaseFile, len(files))
-    for i, f := range files {
-        bf, err := convertBaseFile(f)
-        if err != nil {
-            return nil, err
-        }
-        ret[i] = bf
-    }
-    return ret, nil
+	ret := make([]BaseFile, len(files))
+	for i, f := range files {
+		bf, err := convertBaseFile(f)
+		if err != nil {
+			return nil, err
+		}
+		ret[i] = bf
+	}
+	return ret, nil
 }
 
 type GalleryFile struct {
