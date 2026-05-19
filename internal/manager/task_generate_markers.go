@@ -64,7 +64,7 @@ func (t *GenerateMarkersTask) Start(ctx context.Context) {
 
 		videoFile := scene.Files.Primary()
 
-		if videoFile == nil {
+		if videoFile == nil || videoFile.Width == 0 || videoFile.Height == 0 {
 			// nothing to do
 			return
 		}
@@ -97,7 +97,7 @@ func (t *GenerateMarkersTask) generateSceneMarkers(ctx context.Context) {
 
 	videoFile := t.Scene.Files.Primary()
 
-	if len(sceneMarkers) == 0 || videoFile == nil {
+	if len(sceneMarkers) == 0 || videoFile == nil || videoFile.Width == 0 || videoFile.Height == 0 {
 		return
 	}
 

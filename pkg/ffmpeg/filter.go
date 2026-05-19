@@ -37,8 +37,12 @@ func (f VideoFilter) ScaleMaxSize(maxDimensions int) VideoFilter {
 }
 
 // ScaledHeight returns the height a source would have if scaled to targetWidth
-// with preserved aspect ratio, rounded down to an even value.
+// with preserved aspect ratio, rounded down to an even value. Returns 0 if the
+// source has no width (e.g. an audio-only file).
 func ScaledHeight(width, height, targetWidth int) int {
+	if width == 0 {
+		return 0
+	}
 	return (targetWidth * height / width) &^ 1
 }
 
