@@ -16,6 +16,10 @@ services:
         max-file: "10"
         max-size: "2m"
     environment:
+      ## Run the container process as a non-root user.
+      ## Adjust these if your host paths use a different user/group owner.
+      - PUID=1000
+      - PGID=1000
       - STASH_STASH=/data/
       - STASH_GENERATED=/generated/
       - STASH_METADATA=/metadata/
