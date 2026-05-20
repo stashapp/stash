@@ -609,7 +609,7 @@
                 "include_blobs_desc": "Stäng av för att endast säkerhetskopiera SQLites databasfil.",
                 "sqlite": "Säkerhetskopiafilen kommer vara en kopia av SQLites databasfil, med namnet {filename_format}",
                 "to_directory": "Till {directory}",
-                "warning_blobs": "Blobb-filer kommer inte inkluderas i säkerhetskopian. Detta betyder att för att komplett återställa från en säkerhetskopia, så måste blobb-filena vara närvarande på blobb-förvaringsplatsen.",
+                "warning_blobs": "Blobb-filer kommer inte inkluderas i säkerhetskopian. Detta betyder att för att komplett lyckas att återställa från en säkerhetskopia, så måste blobb-filena vara närvarande på blobb-förvaringsplatsen.",
                 "zip": "SQLite-databasfilen och blobb-filerna kommer zippas till en enda fil med namnet {filename_format}"
             },
             "auto_tag_confirm": "Detta kommer att försöka matcha ditt innehåll mot befintlig metadata.",
