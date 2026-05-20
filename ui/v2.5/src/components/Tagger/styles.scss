@@ -211,6 +211,16 @@
   object-fit: contain;
 }
 
+.scene-image-overlay-container {
+  display: inline-flex;
+  position: relative;
+
+  .scene-specs-overlay {
+    bottom: 0.3rem;
+    right: 0.4rem;
+  }
+}
+
 .scene-metadata {
   margin-left: 1rem;
 }
@@ -485,8 +495,8 @@ li:not(.active) {
     display: none;
   }
 
-  .scene-image {
-    padding-left: 1rem;
+  .scene-image-overlay-container {
+    margin-left: 1rem;
   }
 }
 

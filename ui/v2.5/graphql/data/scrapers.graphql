@@ -175,6 +175,7 @@ fragment ScrapedSceneData on ScrapedScene {
   code
   details
   director
+  duration
   urls
   date
   production_date
