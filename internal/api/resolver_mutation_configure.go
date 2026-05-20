@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
@@ -100,6 +101,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 				}
 			}
 			if isNew {
+				s.Path = strings.Trim(s.Path, "\"")
 				s.Path = filepath.Clean(s.Path)
 
 				// if it exists, it must be directory

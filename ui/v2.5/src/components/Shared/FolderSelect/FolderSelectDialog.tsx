@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { Button, Modal } from "react-bootstrap";
+import TextUtils from "src/utils/text";
 import { FolderSelect } from "./FolderSelect";
 
 interface IProps {
@@ -13,8 +14,10 @@ export const FolderSelectDialog: React.FC<IProps> = ({
   onClose,
 }) => {
   const [currentDirectory, setCurrentDirectory] = useState<string>(
-    currentValue ?? ""
+    TextUtils.stripQuotes(currentValue ?? "")
   );
+  const handleChangeDirectory = (v: string) =>
+    setCurrentDirectory(TextUtils.stripQuotes(v));
 
   return (
     <Modal show onHide={() => onClose()} title="">
@@ -25,7 +28,7 @@ export const FolderSelectDialog: React.FC<IProps> = ({
         <div className="dialog-content">
           <FolderSelect
             currentDirectory={currentDirectory}
-            onChangeDirectory={setCurrentDirectory}
+            onChangeDirectory={handleChangeDirectory}
           />
         </div>
       </Modal.Body>
@@ -33,7 +36,10 @@ export const FolderSelectDialog: React.FC<IProps> = ({
         <Button variant="secondary" onClick={() => onClose()}>
           <FormattedMessage id="actions.cancel" />
         </Button>
-        <Button variant="success" onClick={() => onClose(currentDirectory)}>
+        <Button
+          variant="success"
+          onClick={() => onClose(TextUtils.stripQuotes(currentDirectory))}
+        >
           <FormattedMessage id="actions.confirm" />
         </Button>
       </Modal.Footer>
