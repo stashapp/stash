@@ -24,6 +24,8 @@ Once you have that file where you want it, modify the settings as you please, an
 docker compose up -d
 ```
 
+By default, the production image now starts `stash` as a non-root user using `PUID` and `PGID` from `docker-compose.yml` (both default to `1000`). Adjust these values to match the UID/GID that should own created files on your host.
+
 Installing StashApp this way will by default bind stash to port 9999. This is available in your web browser locally at http://localhost:9999 or on your network as http://YOUR-LOCAL-IP:9999
 
 Good luck and have fun!
