@@ -1,6 +1,7 @@
 type Movie {
   id: ID!
   name: String!
+  "Comma-delimited list of aliases"
   aliases: String
   "Duration in seconds"
   duration: Int

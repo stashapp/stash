@@ -36,7 +36,7 @@ input ScrapedMovieInput {
 type ScrapedGroup {
   stored_id: ID
   name: String
-  aliases: String
+  aliases: [String!]
   duration: String
   date: String
   rating: String
@@ -54,7 +54,7 @@ type ScrapedGroup {
 
 input ScrapedGroupInput {
   name: String
-  aliases: String
+  aliases: [String!]
   duration: String
   date: String
   rating: String

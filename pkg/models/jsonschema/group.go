@@ -17,21 +17,23 @@ type SubGroupDescription struct {
 }
 
 type Group struct {
-	Name       string                `json:"name,omitempty"`
-	Aliases    string                `json:"aliases,omitempty"`
-	Duration   int                   `json:"duration,omitempty"`
-	Date       string                `json:"date,omitempty"`
-	Rating     int                   `json:"rating,omitempty"`
-	Director   string                `json:"director,omitempty"`
-	Synopsis   string                `json:"synopsis,omitempty"`
-	FrontImage string                `json:"front_image,omitempty"`
-	BackImage  string                `json:"back_image,omitempty"`
-	URLs       []string              `json:"urls,omitempty"`
-	Studio     string                `json:"studio,omitempty"`
-	Tags       []string              `json:"tags,omitempty"`
-	SubGroups  []SubGroupDescription `json:"sub_groups,omitempty"`
-	CreatedAt  json.JSONTime         `json:"created_at,omitempty"`
-	UpdatedAt  json.JSONTime         `json:"updated_at,omitempty"`
+	Name       string `json:"name,omitempty"`
+	Duration   int    `json:"duration,omitempty"`
+	Date       string `json:"date,omitempty"`
+	Rating     int    `json:"rating,omitempty"`
+	Director   string `json:"director,omitempty"`
+	Synopsis   string `json:"synopsis,omitempty"`
+	FrontImage string `json:"front_image,omitempty"`
+	BackImage  string `json:"back_image,omitempty"`
+	Studio     string `json:"studio,omitempty"`
+
+	CreatedAt json.JSONTime `json:"created_at,omitempty"`
+	UpdatedAt json.JSONTime `json:"updated_at,omitempty"`
+
+	Aliases   StringOrStringList    `json:"aliases,omitempty"`
+	URLs      []string              `json:"urls,omitempty"`
+	Tags      []string              `json:"tags,omitempty"`
+	SubGroups []SubGroupDescription `json:"sub_groups,omitempty"`
 
 	CustomFields map[string]interface{} `json:"custom_fields,omitempty"`
 

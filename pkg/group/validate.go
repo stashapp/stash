@@ -2,11 +2,17 @@ package group
 
 import (
 	"context"
+	"errors"
 	"slices"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil"
+)
+
+var (
+	ErrEmptyAlias      = errors.New("group alias must not be an empty string")
+	ErrAliasNotTrimmed = errors.New("group alias contains spaces at the beginning or the end")
 )
 
 func (s *Service) validateCreate(ctx context.Context, group *models.Group) error {
@@ -52,6 +58,24 @@ func validateName(n string) error {
 	// ensure name is not empty
 	if strings.TrimSpace(n) == "" {
 		return ErrEmptyName
+	}
+
+	return nil
+}
+
+// only validate if aliases are not empty and trimmed
+// no requirement for uniqueness or difference from group name here
+func ValidateAliases(ctx context.Context, aliases []string) error {
+	for _, a := range aliases {
+		if err := validateName(a); err != nil {
+			if errors.Is(err, ErrEmptyName) {
+				return ErrEmptyAlias
+			}
+			return err
+		}
+		if strings.TrimSpace(a) != a {
+			return ErrAliasNotTrimmed
+		}
 	}
 
 	return nil

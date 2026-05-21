@@ -31,7 +31,8 @@ const (
 )
 
 const movieName = "testMovie"
-const movieAliases = "aliases"
+
+var movieAliases = []string{"aliases"}
 
 var (
 	date       = "2001-01-01"
@@ -73,7 +74,7 @@ func createFullMovie(id int, studioID int) models.Group {
 	return models.Group{
 		ID:        id,
 		Name:      movieName,
-		Aliases:   movieAliases,
+		Aliases:   models.NewRelatedStrings(movieAliases),
 		Date:      &dateObj,
 		Rating:    &rating,
 		Duration:  &duration,
@@ -120,7 +121,8 @@ func createFullJSONMovie(studio, frontImage, backImage string, customFields map[
 
 func createEmptyJSONMovie() *jsonschema.Group {
 	return &jsonschema.Group{
-		URLs: []string{},
+		Aliases: []string{},
+		URLs:    []string{},
 		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},
@@ -210,6 +212,8 @@ func TestToJSON(t *testing.T) {
 	db.Group.On("GetBackImage", testCtx, errFrontImageID).Return(backImageBytes, nil).Maybe()
 	db.Group.On("GetBackImage", testCtx, errStudioMovieID).Return(backImageBytes, nil).Maybe()
 	db.Group.On("GetBackImage", testCtx, errCustomFieldsID).Return(nil, nil).Once()
+
+	db.Group.On("GetAliases", testCtx, emptyID).Return(nil, nil).Once()
 
 	db.Group.On("GetCustomFields", testCtx, movieID).Return(customFields, nil).Once()
 	db.Group.On("GetCustomFields", testCtx, errCustomFieldsID).Return(nil, errors.New("error getting custom fields")).Once()

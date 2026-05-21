@@ -167,11 +167,6 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
   const [backImage, setBackImage] = useState<string | null>();
   const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
-  const aliases = useMemo(
-    () => (group.aliases ? [group.aliases] : []),
-    [group.aliases]
-  );
-
   const isDefaultImage =
     group.front_image_path && group.front_image_path.includes("default=true");
 
@@ -400,7 +395,7 @@ const GroupPage: React.FC<IProps> = ({ group, tabKey }) => {
                 </span>
               </DetailTitle>
 
-              <AliasList aliases={aliases} />
+              <AliasList aliases={group.aliases ?? []} />
               <RatingSystem
                 value={group.rating100}
                 onSetRating={(value) => setRating(value)}
