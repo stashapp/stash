@@ -608,7 +608,7 @@
                 "include_blobs_desc": "SQLite 데이터베이스 파일만을 백업하려면 비활성화하세요.",
                 "sqlite": "백업 파일은 SQLite 데이터베이스 파일의 복제본이 될 것입니다. (백업 파일 이름: {filename_format})",
                 "to_directory": "{directory} 경로로",
-                "warning_blobs": "blob 파일들은 백업 파일에 포함되지 않을 것입니다. 이는, 백업을 완전히 복원하려면 blob 저장 위치에 blob 파일이 존재해야 함을 의미합니다.",
+                "warning_blobs": "Blob 파일들은 백업 파일에 포함되지 않을 것입니다. 이는, 백업을 완전히 복원하려면 blob 저장 위치에 blob 파일이 존재해야 함을 의미합니다.",
                 "zip": "SQLite 데이터베이스 파일과 blob 파일은 하나의 파일로 압축될 것입니다. (압축 파일 이름: {filename_format})"
             },
             "clean_ignore_zip_contents": "zip 파일 컨텐츠 무시",
