@@ -13,7 +13,33 @@ FROM --platform=$TARGETPLATFORM alpine:latest AS app
 COPY --from=binary /stash /usr/bin/
 
 RUN apk add --no-cache ca-certificates python3 py3-requests py3-requests-toolbelt py3-lxml py3-pip ffmpeg tzdata vips vips-tools vips-heif \
-    && pip install --break-system-packages mechanicalsoup cloudscraper stashapp-tools
+    su-exec \
+    && pip install --break-system-packages mechanicalsoup cloudscraper stashapp-tools \
+    && mkdir -p /root/.stash /data /metadata /cache /blobs /generated \
+    && { \
+      echo '#!/bin/sh'; \
+      echo 'set -eu'; \
+      echo ': "${PUID:=1000}"'; \
+      echo ': "${PGID:=1000}"'; \
+      echo 'if [ -z "${HOME:-}" ] || [ "$HOME" = "/" ]; then'; \
+      echo '  HOME=/root'; \
+      echo 'fi'; \
+      echo 'export HOME'; \
+      echo 'if [ "$(id -u)" = "0" ]; then'; \
+      echo '  for dir in "$HOME" /data /metadata /cache /blobs /generated; do'; \
+      echo '    if [ -e "$dir" ]; then'; \
+      echo '      chown -R "$PUID:$PGID" "$dir" 2>/dev/null || true'; \
+      echo '    fi'; \
+      echo '  done'; \
+      echo '  exec su-exec "$PUID:$PGID" env HOME="$HOME" "$@"'; \
+      echo 'fi'; \
+      echo 'exec "$@"'; \
+    } > /usr/local/bin/docker-entrypoint.sh \
+    && chmod 755 /usr/local/bin/docker-entrypoint.sh
+
+ENV HOME=/root
+ENV PUID=1000
+ENV PGID=1000
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 
 # Basic build-time metadata as defined at https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
@@ -25,4 +51,5 @@ LABEL org.opencontainers.image.title="Stash" \
     org.opencontainers.image.licenses="AGPL-3.0"
 
 EXPOSE 9999
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["stash"]

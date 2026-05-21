@@ -33,6 +33,10 @@ Docker is effectively a cross-platform software package repository. It allows yo
 
 The StashApp docker container ships with everything you need to automatically run stash, including ffmpeg.
 
+The container runs Stash as a non-root user by default. Set the `PUID` and `PGID`
+environment variables in `docker-compose.yml` if files created by Stash should
+match a specific host user and group.
+
 ### docker compose
 Docker Compose lets you specify how and where to run your containers, and to manage their environment. The docker-compose.yml file in this folder gets you a fully working instance of StashApp exactly as you would need it to have a reasonable instance for testing / developing on. If you are deploying a live instance for production, a [reverse proxy](https://docs.stashapp.cc/guides/reverse-proxy/) (such as NGINX or Traefik) is recommended, but not required.
 
