@@ -2,11 +2,8 @@ import { IntlShape } from "react-intl";
 import { ITypename } from "src/utils/data";
 import { ImageWallOptions } from "src/utils/imageWall";
 import { RatingSystemOptions } from "src/utils/rating";
-import {
-  FilterMode,
-  SavedFilterDataFragment,
-  SortDirectionEnum,
-} from "./generated-graphql";
+import { FilterMode, SortDirectionEnum } from "./generated-graphql";
+import type { SavedFilterDataFragment } from "./generated-graphql";
 import { View } from "src/components/List/views";
 import { ITaggerConfig } from "src/components/Tagger/constants";
 
@@ -36,6 +33,13 @@ export type DefaultFilters = {
 };
 
 export type FrontPageContent = ISavedFilterRow | ICustomFilter;
+
+export interface ISavedFilterMenuItem {
+  id: string;
+  label: string;
+  filterId: string;
+  mode: FilterMode;
+}
 
 export const defaultMaxOptionsShown = 200;
 export const defaultPreviewVolume = 25;
@@ -99,6 +103,7 @@ export interface IUIConfig {
   vrTag?: string;
 
   pinnedFilters?: Record<string, string[]>;
+  savedFilterMenuItems?: ISavedFilterMenuItem[];
   tableColumns?: Record<string, string[]>;
 
   advancedMode?: boolean;
