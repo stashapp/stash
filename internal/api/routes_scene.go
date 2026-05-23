@@ -55,6 +55,9 @@ type sceneRoutes struct {
 func (rs sceneRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
 
+	// File upload endpoint - must be before /{sceneId} to avoid routing conflicts
+	r.Post("/upload", rs.Upload)
+
 	r.Route("/{sceneId}", func(r chi.Router) {
 		r.Use(rs.SceneCtx)
 
