@@ -38,7 +38,23 @@ RUN make flags-release flags-pie stash
 # Final Runnable Image
 FROM alpine:latest
 RUN apk add --no-cache ca-certificates vips-tools ffmpeg
+
+# Create non-privileged user for security best practices
+# PUID/PGID can be overridden at build time if needed
+ARG PUID=1000
+ARG PGID=1000
+RUN addgroup -g ${PGID} stash && \
+    adduser -D -G stash -u ${PUID} stash
+
 COPY --from=backend /stash/stash /usr/bin/
-ENV STASH_CONFIG_FILE=/root/.stash/config.yml
+
+# Create default config directory with proper ownership
+RUN mkdir -p /config && chown stash:stash /config
+
+ENV STASH_CONFIG_FILE=/config/config.yml
+ENV PUID=1000
+ENV PGID=1000
+
 EXPOSE 9999
+USER stash
 ENTRYPOINT ["stash"]

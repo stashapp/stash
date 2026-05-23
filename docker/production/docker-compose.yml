@@ -29,7 +29,7 @@ services:
       ## The left part is the path on your host, the right part is the path in the stash container.
 
       ## Keep configs, scrapers, and plugins here.
-      - ./config:/root/.stash
+      - ./config:/config
       ## Point this at your collection.
       ## The left side is where your collection is on your host, the right side is where it will be in stash.
       - ./data:/data
