@@ -14,7 +14,7 @@ import (
 )
 
 func (rs sceneRoutes) Upload(w http.ResponseWriter, r *http.Request) {
-	// Limit upload size to 10GB
+	// Limit upload size based on configuration
 	mgr := manager.GetInstance()
 	// Use configured max upload size, default to 10GB
 	maxUploadSize := mgr.Config.GetMaxUploadSize()
