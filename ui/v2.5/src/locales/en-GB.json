@@ -159,7 +159,9 @@
     "unset": "Unset",
     "use_default": "Use default",
     "view_history": "View history",
-    "view_random": "View Random"
+    "view_random": "View Random",
+    "upload_file": "Upload a file",
+    "choose_file": "Choose file"
   },
   "actions_name": "Actions",
   "age": "Age",
@@ -1691,7 +1693,9 @@
     "started_auto_tagging": "Started auto tagging",
     "started_generating": "Started generating",
     "started_importing": "Started importing",
-    "updated_entity": "Updated {entity}"
+    "updated_entity": "Updated {entity}",
+    "upload_complete": "Uploaded {filename}",
+    "upload_failed": "File upload failed"
   },
   "total": "Total",
   "true": "True",
@@ -1715,5 +1719,9 @@
   "weight": "Weight",
   "weight_kg": "Weight (kg)",
   "years_old": "years old",
-  "zip_file_count": "Zip File Count"
+  "zip_file_count": "Zip File Count",
+  "upload_scene": {
+    "description": "Upload a video file to add it to your library. The file will be saved to your stash library path and scanned automatically.",
+    "success": "File uploaded to {path}. The scan has started in the background."
+  }
 }
