@@ -15,7 +15,13 @@ import (
 
 func (rs sceneRoutes) Upload(w http.ResponseWriter, r *http.Request) {
 	// Limit upload size to 10GB
-	r.Body = http.MaxBytesReader(w, r.Body, 10<<30)
+	mgr := manager.GetInstance()
+	// Use configured max upload size, default to 10GB
+	maxUploadSize := mgr.Config.GetMaxUploadSize()
+	if maxUploadSize <= 0 {
+		maxUploadSize = 10 << 30
+	}
+	r.Body = http.MaxBytesReader(w, r.Body, maxUploadSize)
 
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		logger.Errorf("error parsing upload form: %v", err)
@@ -31,7 +37,6 @@ func (rs sceneRoutes) Upload(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	mgr := manager.GetInstance()
 	cfg := mgr.Config
 
 	// Determine destination path
