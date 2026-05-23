@@ -7,6 +7,9 @@ import { mutateCreateScene, useFindScene } from "src/core/StashService";
 import ImageUtils from "src/utils/image";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
+import { Button } from "react-bootstrap";
+import { Icon } from "src/components/Shared/Icon";
+import { faUpload } from "@fortawesome/free-solid-svg-icons";
 
 const SceneCreate: React.FC = () => {
   const history = useHistory();
@@ -20,6 +23,8 @@ const SceneCreate: React.FC = () => {
   const { data, loading } = useFindScene(query.get("from_scene_id") ?? "new");
   const [loadingCoverImage, setLoadingCoverImage] = useState(false);
   const [coverImage, setCoverImage] = useState<string>();
+  const [uploading, setUploading] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<{ path: string } | null>(null);
 
   const scene = useMemo(() => {
     if (data?.findScene) {
@@ -57,6 +62,41 @@ const SceneCreate: React.FC = () => {
     return <LoadingIndicator />;
   }
 
+  async function onFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", files[0]);
+
+    try {
+      const resp = await fetch("/scene/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const result = await resp.json();
+
+      if (result.success) {
+        setUploadedFile(result);
+        Toast.success(
+          intl.formatMessage(
+            { id: "toast.upload_complete" },
+            { filename: files[0].name }
+          )
+        );
+        // Navigate to scenes list to see the scan result
+        history.push("/scenes");
+      } else {
+        Toast.error(intl.formatMessage({ id: "toast.upload_failed" }));
+      }
+    } catch (err) {
+      Toast.error(intl.formatMessage({ id: "toast.upload_failed" }));
+    } finally {
+      setUploading(false);
+    }
+  }
+
   async function onSave(input: GQL.SceneCreateInput, andNew?: boolean) {
     const fileID = query.get("file_id") ?? undefined;
     const result = await mutateCreateScene({
@@ -85,6 +125,46 @@ const SceneCreate: React.FC = () => {
             values={{ entityType: intl.formatMessage({ id: "scene" }) }}
           />
         </h2>
+
+        {!uploadedFile && (
+          <div className="upload-area mb-4 p-4 text-center border rounded">
+            <h5>
+              <Icon icon={faUpload} className="mr-2" />
+              <FormattedMessage id="actions.upload_file" />
+            </h5>
+            <p className="text-muted">
+              <FormattedMessage id="upload_scene.description" />
+            </p>
+            <Button
+              variant="primary"
+              disabled={uploading}
+              onClick={() => document.getElementById("scene-file-input")?.click()}
+            >
+              {uploading ? (
+                <LoadingIndicator inline small />
+              ) : (
+                <FormattedMessage id="actions.choose_file" />
+              )}
+            </Button>
+            <input
+              id="scene-file-input"
+              type="file"
+              accept="video/*"
+              className="d-none"
+              onChange={onFileUpload}
+            />
+          </div>
+        )}
+
+        {uploadedFile && (
+          <div className="alert alert-success">
+            <FormattedMessage
+              id="upload_scene.success"
+              values={{ path: uploadedFile.path }}
+            />
+          </div>
+        )}
+
         <SceneEditPanel
           scene={scene}
           initialCoverImage={coverImage}
