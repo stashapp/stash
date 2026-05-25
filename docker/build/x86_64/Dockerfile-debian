@@ -1,0 +1,57 @@
+# This dockerfile should be built with `make docker-build-debian` from the stash root.
+# Debian-based variant with improved non-free repo setup for Intel GPU drivers.
+
+# Build Frontend
+FROM node:24-alpine AS frontend
+RUN apk add --no-cache make git
+## cache node_modules separately
+COPY ./ui/v2.5/package.json ./ui/v2.5/pnpm-lock.yaml /stash/ui/v2.5/
+WORKDIR /stash
+COPY Makefile /stash/
+COPY ./graphql /stash/graphql/
+COPY ./ui /stash/ui/
+# pnpm install with npm
+RUN npm install -g pnpm
+RUN make pre-ui
+RUN make generate-ui
+ARG GITHASH
+ARG STASH_VERSION
+RUN BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S") make ui-build
+
+# Build Backend
+FROM golang:1.25.9-bookworm AS backend
+RUN apt-get update && apt-get install -y --no-install-recommends make git build-essential && rm -rf /var/lib/apt/lists/*
+WORKDIR /stash
+COPY ./go* ./*.go Makefile gqlgen.yml .gqlgenc.yml /stash/
+COPY ./graphql /stash/graphql/
+COPY ./scripts /stash/scripts/
+COPY ./pkg /stash/pkg/
+COPY ./cmd /stash/cmd/
+COPY ./internal /stash/internal/
+# needed for generate-login-locale
+COPY ./ui /stash/ui/
+RUN make generate-backend generate-login-locale
+COPY --from=frontend /stash /stash/
+ARG GITHASH
+ARG STASH_VERSION
+RUN make flags-release flags-pie stash
+
+# Final Runnable Image
+FROM python:3.12-slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    ffmpeg \
+    git \
+    libvips-tools \
+    mesa-va-drivers \
+    && rm -rf /var/lib/apt/lists/*
+
+# Enable non-free repos for Intel GPU drivers (Gen9+)
+RUN echo "deb http://deb.debian.org/debian bookworm non-free non-free-firmware" > /etc/apt/sources.list.d/non-free.list && \
+    apt-get update && apt-get install -y --no-install-recommends intel-media-va-driver-non-free && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=backend /stash/stash /usr/bin/
+ENV STASH_CONFIG_FILE=/root/.stash/config.yml
+EXPOSE 9999
+ENTRYPOINT ["stash"]

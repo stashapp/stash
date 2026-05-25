@@ -1,23 +1,41 @@
 # Introduction
 
-This dockerfile is used to build a stash docker container using the current source code. This is ideal for testing your current branch in docker. Note that it does not include python, so python-based scrapers will not work in this image. The production docker images distributed by the project contain python and the necessary packages.
+This directory contains Dockerfiles for building Stash container images using the current source code. There are three variants:
 
-# Building the docker container
+| Dockerfile | Built-in GPU Support | Use Case |
+|---|---|---|
+| `Dockerfile` | None | Default — alpine-based frontend/backend, alpine final image, no GPU drivers |
+| `Dockerfile-debian` | Intel/AMD | Debian-based final image with VA-API support (mesa-va-drivers + intel-media-va-driver-non-free) |
+| `Dockerfile-CUDA` | NVIDIA | NVIDIA GPU support with CUDA, NVENC patch, and VA-API for Intel GPUs |
+
+# Building the docker containers
 
 From the top-level directory (should contain `tools.go` file):
 
 ```
+# Default variant (alpine-based, no GPU)
 make docker-build
 
+# Debian-based variant with high Python binary compatibility and built-in Intel/AMD drivers
+make docker-build-debian
+
+# NVIDIA CUDA variant
+make docker-cuda-build
 ```
 
-# Running the docker container
+# Running the docker containers
 
 ## Using docker-compose
 
 See the `README.md` file in `docker/production` for instructions on how to get docker-compose if needed.
 
-The `stash/build` container can be run with the `docker-compose.yml` file in `docker/production` by changing the `image` value to be `stash/build`. See the instructions in `docker/production` for how to run docker-compose.
+The `stash/build` container can be run with the `docker-compose.yml` file in `docker/production` by changing the `image` value to the appropriate variant:
+
+- `stash/build` — default variant (alpine-based, no GPU)
+- `stash/build-debian` — Debian-based variant with VA-API GPU support
+- `stash/cuda-build` — NVIDIA GPU variant
+
+See the instructions in `docker/production` for how to run docker-compose.
 
 ## Using `docker run`
 

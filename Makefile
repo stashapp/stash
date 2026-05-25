@@ -371,6 +371,10 @@ endif
 .PHONY: ui
 ui: pre-ui generate ui-only generate-login-locale
 
+.PHONY: ui-build
+ui-build: ui-env pre-ui generate-ui
+	cd ui/v2.5 && npm run build
+
 .PHONY: ui-only
 ui-only: ui-env generate ui
 	cd ui/v2.5 && npm run build
@@ -423,6 +427,11 @@ validate: validate-ui validate-backend
 .PHONY: docker-build
 docker-build: build-info
 	docker build --build-arg GITHASH=$(GITHASH) --build-arg STASH_VERSION=$(STASH_VERSION) -t stash/build -f docker/build/x86_64/Dockerfile .
+
+# locally builds and tags a 'stash/build-debian' docker image (debian-based, improved non-free repo setup)
+.PHONY: docker-build-debian
+docker-build-debian: build-info
+	docker build --build-arg GITHASH=$(GITHASH) --build-arg STASH_VERSION=$(STASH_VERSION) -t stash/build-debian -f docker/build/x86_64/Dockerfile-debian .
 
 # locally builds and tags a 'stash/cuda-build' docker image
 .PHONY: docker-cuda-build
