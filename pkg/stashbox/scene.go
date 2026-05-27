@@ -45,7 +45,7 @@ func (c Client) QueryScene(ctx context.Context, queryStr string) ([]*models.Scra
 }
 
 // FindStashBoxScenesByFingerprints queries stash-box for a scene using the
-// scene's MD5/OSHASH checksum, or PHash.
+// scene's MD5 checksum, or PHash.
 func (c Client) FindSceneByFingerprints(ctx context.Context, fps models.Fingerprints) ([]*models.ScrapedScene, error) {
 	res, err := c.FindScenesByFingerprints(ctx, []models.Fingerprints{fps})
 	if len(res) > 0 {
@@ -55,7 +55,7 @@ func (c Client) FindSceneByFingerprints(ctx context.Context, fps models.Fingerpr
 }
 
 // FindScenesByFingerprints queries stash-box for scenes using every
-// scene's MD5/OSHASH checksum, or PHash, and returns results in the same order
+// scene's MD5 checksum, or PHash, and returns results in the same order
 // as the input slice.
 func (c Client) FindScenesByFingerprints(ctx context.Context, fps []models.Fingerprints) ([][]*models.ScrapedScene, error) {
 	var fingerprints [][]*graphql.FingerprintQueryInput
@@ -75,9 +75,6 @@ func convertFingerprints(fps models.Fingerprints) []*graphql.FingerprintQueryInp
 		switch f.Type {
 		case models.FingerprintTypeMD5:
 			i.Algorithm = graphql.FingerprintAlgorithmMd5
-			i.Hash = f.String()
-		case models.FingerprintTypeOshash:
-			i.Algorithm = graphql.FingerprintAlgorithmOshash
 			i.Hash = f.String()
 		case models.FingerprintTypePhash:
 			i.Algorithm = graphql.FingerprintAlgorithmPhash
@@ -373,6 +370,7 @@ func newSceneDraftInput(d SceneDraft, endpoint string) graphql.SceneDraftInput {
 	return draft
 }
 
+// OSHASH is intentionally omitted. Stashbox looking to drop support.
 func fileFingerprintsToInputGraphQL(fps models.Fingerprints, duration int) []*graphql.FingerprintInput {
 	var ret []*graphql.FingerprintInput
 
@@ -383,9 +381,6 @@ func fileFingerprintsToInputGraphQL(fps models.Fingerprints, duration int) []*gr
 		switch f.Type {
 		case models.FingerprintTypeMD5:
 			i.Algorithm = graphql.FingerprintAlgorithmMd5
-			i.Hash = f.String()
-		case models.FingerprintTypeOshash:
-			i.Algorithm = graphql.FingerprintAlgorithmOshash
 			i.Hash = f.String()
 		case models.FingerprintTypePhash:
 			i.Algorithm = graphql.FingerprintAlgorithmPhash
