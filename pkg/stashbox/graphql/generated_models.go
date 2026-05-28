@@ -46,7 +46,25 @@ type ActivateNewUserInput struct {
 	Password      string `json:"password"`
 }
 
-type ApplyEditInput struct {
+type AmendEditInput struct {
+	ID     string `json:"id"`
+	Reason string `json:"reason"`
+	// Fields to remove from the diff (e.g., ["name", "disambiguation"])
+	RemoveFields []string `json:"remove_fields,omitempty"`
+	// Array items to remove from added arrays
+	RemoveAddedItems []*AmendItemRemoval `json:"remove_added_items,omitempty"`
+	// Array items to remove from removed arrays
+	RemoveRemovedItems []*AmendItemRemoval `json:"remove_removed_items,omitempty"`
+}
+
+type AmendItemRemoval struct {
+	// Field name (e.g., "aliases", "urls", "images")
+	Field string `json:"field"`
+	// Indices to remove from the array
+	Indices []int `json:"indices"`
+}
+
+type ApproveEditInput struct {
 	ID string `json:"id"`
 }
 
@@ -96,6 +114,16 @@ func (CommentVotedEdit) IsNotificationData() {}
 type DateCriterionInput struct {
 	Value    string            `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
+}
+
+type DeleteEditInput struct {
+	ID     string `json:"id"`
+	Reason string `json:"reason"`
+}
+
+type DeleteFingerprintSubmissionsInput struct {
+	Fingerprints []*FingerprintQueryInput `json:"fingerprints"`
+	SceneID      string                   `json:"scene_id"`
 }
 
 type DownvoteOwnEdit struct {
@@ -283,6 +311,13 @@ type Fingerprint struct {
 	UserReported bool `json:"user_reported"`
 }
 
+type FingerprintBatchSubmission struct {
+	SceneID   string               `json:"scene_id"`
+	Hash      string               `json:"hash"`
+	Algorithm FingerprintAlgorithm `json:"algorithm"`
+	Duration  int                  `json:"duration"`
+}
+
 type FingerprintEditInput struct {
 	UserIds     []string             `json:"user_ids,omitempty"`
 	Hash        string               `json:"hash"`
@@ -313,6 +348,15 @@ type FingerprintSubmission struct {
 	Vote        *FingerprintSubmissionType `json:"vote,omitempty"`
 }
 
+type FingerprintSubmissionResult struct {
+	// The fingerprint hash that was submitted
+	Hash string `json:"hash"`
+	// The scene ID that was submitted to
+	SceneID string `json:"scene_id"`
+	// Error message if submission failed
+	Error *string `json:"error,omitempty"`
+}
+
 type FingerprintedSceneEdit struct {
 	Edit *Edit `json:"edit"`
 }
@@ -322,6 +366,11 @@ func (FingerprintedSceneEdit) IsNotificationData() {}
 type FuzzyDate struct {
 	Date     string           `json:"date"`
 	Accuracy DateAccuracyEnum `json:"accuracy"`
+}
+
+type GenderFacet struct {
+	Gender GenderEnum `json:"gender"`
+	Count  int        `json:"count"`
 }
 
 type GenerateInviteCodeInput struct {
@@ -387,6 +436,30 @@ type Measurements struct {
 	BandSize *int    `json:"band_size,omitempty"`
 	Waist    *int    `json:"waist,omitempty"`
 	Hip      *int    `json:"hip,omitempty"`
+}
+
+type ModAudit struct {
+	ID         string             `json:"id"`
+	Action     ModAuditActionEnum `json:"action"`
+	User       *User              `json:"user,omitempty"`
+	TargetID   string             `json:"target_id"`
+	TargetType string             `json:"target_type"`
+	Data       string             `json:"data"`
+	Reason     *string            `json:"reason,omitempty"`
+	CreatedAt  time.Time          `json:"created_at"`
+}
+
+type ModAuditQueryInput struct {
+	Page    int                 `json:"page"`
+	PerPage int                 `json:"per_page"`
+	Action  *ModAuditActionEnum `json:"action,omitempty"`
+	UserID  *string             `json:"user_id,omitempty"`
+}
+
+type MoveFingerprintSubmissionsInput struct {
+	Fingerprints  []*FingerprintQueryInput `json:"fingerprints"`
+	SourceSceneID string                   `json:"source_scene_id"`
+	TargetSceneID string                   `json:"target_scene_id"`
 }
 
 type MultiIDCriterionInput struct {
@@ -686,6 +759,15 @@ type PerformerScenesInput struct {
 	Tags *MultiIDCriterionInput `json:"tags,omitempty"`
 }
 
+type PerformerSearchFacets struct {
+	Genders []*GenderFacet `json:"genders"`
+}
+
+type PerformerSearchFilter struct {
+	// Filter by gender
+	Gender *GenderEnum `json:"gender,omitempty"`
+}
+
 type PerformerStudio struct {
 	Studio     *Studio `json:"studio"`
 	SceneCount int     `json:"scene_count"`
@@ -748,6 +830,11 @@ type QueryExistingSceneResult struct {
 	Scenes []*Scene `json:"scenes"`
 }
 
+type QueryModAuditsResultType struct {
+	Count  int         `json:"count"`
+	Audits []*ModAudit `json:"audits"`
+}
+
 type QueryNotificationsInput struct {
 	Page       int               `json:"page"`
 	PerPage    int               `json:"per_page"`
@@ -763,6 +850,8 @@ type QueryNotificationsResult struct {
 type QueryPerformersResultType struct {
 	Count      int          `json:"count"`
 	Performers []*Performer `json:"performers"`
+	// Search facets, only available for searchPerformer queries
+	Facets *PerformerSearchFacets `json:"facets,omitempty"`
 }
 
 type QueryScenesResultType struct {
@@ -1051,6 +1140,7 @@ type Studio struct {
 	Urls         []*URL                     `json:"urls"`
 	Parent       *Studio                    `json:"parent,omitempty"`
 	ChildStudios []*Studio                  `json:"child_studios"`
+	SubStudios   *QueryStudiosResultType    `json:"sub_studios"`
 	Images       []*Image                   `json:"images"`
 	Deleted      bool                       `json:"deleted"`
 	IsFavorite   bool                       `json:"is_favorite"`
@@ -2172,6 +2262,61 @@ func (e HairColorEnum) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+type ModAuditActionEnum string
+
+const (
+	ModAuditActionEnumEditDelete    ModAuditActionEnum = "EDIT_DELETE"
+	ModAuditActionEnumEditAmendment ModAuditActionEnum = "EDIT_AMENDMENT"
+)
+
+var AllModAuditActionEnum = []ModAuditActionEnum{
+	ModAuditActionEnumEditDelete,
+	ModAuditActionEnumEditAmendment,
+}
+
+func (e ModAuditActionEnum) IsValid() bool {
+	switch e {
+	case ModAuditActionEnumEditDelete, ModAuditActionEnumEditAmendment:
+		return true
+	}
+	return false
+}
+
+func (e ModAuditActionEnum) String() string {
+	return string(e)
+}
+
+func (e *ModAuditActionEnum) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ModAuditActionEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ModAuditActionEnum", str)
+	}
+	return nil
+}
+
+func (e ModAuditActionEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *ModAuditActionEnum) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e ModAuditActionEnum) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
 type NotificationEnum string
 
 const (
@@ -2376,11 +2521,12 @@ func (e PerformerSortEnum) MarshalJSON() ([]byte, error) {
 type RoleEnum string
 
 const (
-	RoleEnumRead   RoleEnum = "READ"
-	RoleEnumVote   RoleEnum = "VOTE"
-	RoleEnumEdit   RoleEnum = "EDIT"
-	RoleEnumModify RoleEnum = "MODIFY"
-	RoleEnumAdmin  RoleEnum = "ADMIN"
+	RoleEnumRead     RoleEnum = "READ"
+	RoleEnumVote     RoleEnum = "VOTE"
+	RoleEnumEdit     RoleEnum = "EDIT"
+	RoleEnumModify   RoleEnum = "MODIFY"
+	RoleEnumModerate RoleEnum = "MODERATE"
+	RoleEnumAdmin    RoleEnum = "ADMIN"
 	// May generate invites without tokens
 	RoleEnumInvite RoleEnum = "INVITE"
 	// May grant and rescind invite tokens and resind invite keys
@@ -2395,6 +2541,7 @@ var AllRoleEnum = []RoleEnum{
 	RoleEnumVote,
 	RoleEnumEdit,
 	RoleEnumModify,
+	RoleEnumModerate,
 	RoleEnumAdmin,
 	RoleEnumInvite,
 	RoleEnumManageInvites,
@@ -2405,7 +2552,7 @@ var AllRoleEnum = []RoleEnum{
 
 func (e RoleEnum) IsValid() bool {
 	switch e {
-	case RoleEnumRead, RoleEnumVote, RoleEnumEdit, RoleEnumModify, RoleEnumAdmin, RoleEnumInvite, RoleEnumManageInvites, RoleEnumBot, RoleEnumReadOnly, RoleEnumEditTags:
+	case RoleEnumRead, RoleEnumVote, RoleEnumEdit, RoleEnumModify, RoleEnumModerate, RoleEnumAdmin, RoleEnumInvite, RoleEnumManageInvites, RoleEnumBot, RoleEnumReadOnly, RoleEnumEditTags:
 		return true
 	}
 	return false

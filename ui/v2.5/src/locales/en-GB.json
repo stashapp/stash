@@ -228,11 +228,11 @@
       "fp_found": "{fpCount, plural, =0 {No new fingerprint matches found} other {# new fingerprint matches found}}",
       "fp_matches": "Duration is a match",
       "fp_matches_multi": "Duration matches {matchCount}/{durationsLength} fingerprints",
-      "hash_matches": "{hash_type} is a match",
+      "hash_matches": "{count, plural, one {# {hash_type} match} other {# {hash_type} matches}}",
+      "hash_submissions": "{count} submissions",
       "match_failed_already_tagged": "Scene already tagged",
       "match_failed_no_result": "No results found",
       "match_success": "Scene successfully tagged",
-      "phash_matches": "{count} PHashes match",
       "unnamed": "Unnamed"
     },
     "verb_add_as_alias": "Add scraped name as alias",

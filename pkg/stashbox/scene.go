@@ -223,9 +223,10 @@ func getFingerprints(scene *graphql.SceneFragment) []*models.StashBoxFingerprint
 	fingerprints := []*models.StashBoxFingerprint{}
 	for _, fp := range scene.Fingerprints {
 		fingerprint := models.StashBoxFingerprint{
-			Algorithm: fp.Algorithm.String(),
-			Hash:      fp.Hash,
-			Duration:  fp.Duration,
+			Algorithm:   fp.Algorithm.String(),
+			Hash:        fp.Hash,
+			Duration:    fp.Duration,
+			Submissions: fp.Submissions,
 		}
 		fingerprints = append(fingerprints, &fingerprint)
 	}
