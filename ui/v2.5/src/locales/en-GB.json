@@ -1298,7 +1298,7 @@
     "interactive_speed": "Interactive Speed",
     "md5": "MD5 Checksum",
     "o_count": "O Count",
-    "oshash": "oshash",
+    "oshash": "OSHash",
     "oshash_meaning": "OpenSubtitles Hash",
     "performer_card": {
       "age": "{age} {years_old}",
