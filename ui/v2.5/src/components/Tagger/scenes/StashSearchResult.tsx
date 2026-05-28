@@ -214,7 +214,10 @@ const getFingerprintStatus = (
               <FormattedMessage
                 id="component_tagger.results.hash_matches"
                 values={{
-                  count: oshashMatches.length,
+                  count: oshashMatches.reduce(
+                    (sum, fp) => sum + fp.submissions,
+                    0
+                  ),
                   hash_type: <FormattedMessage id="media_info.oshash" />,
                 }}
               />
