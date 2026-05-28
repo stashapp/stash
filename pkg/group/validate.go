@@ -20,6 +20,12 @@ func (s *Service) validateCreate(ctx context.Context, group *models.Group) error
 		return err
 	}
 
+	if group.Aliases.Loaded() {
+		if err := ValidateAliases(ctx, group.Aliases.List()); err != nil {
+			return err
+		}
+	}
+
 	containingIDs := group.ContainingGroups.IDs()
 	subIDs := group.SubGroups.IDs()
 
@@ -43,6 +49,12 @@ func (s *Service) validateUpdate(ctx context.Context, id int, partial models.Gro
 
 	if partial.Name.Set {
 		if err := validateName(partial.Name.Value); err != nil {
+			return err
+		}
+	}
+
+	if partial.Aliases != nil {
+		if err := ValidateAliases(ctx, partial.Aliases.Values); err != nil {
 			return err
 		}
 	}

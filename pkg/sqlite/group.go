@@ -13,7 +13,6 @@ import (
 	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
 
-	"github.com/stashapp/stash/pkg/group"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -179,10 +178,6 @@ func (qb *GroupStore) Create(ctx context.Context, newObject *models.Group) error
 	}
 
 	if newObject.Aliases.Loaded() {
-		if err := group.ValidateAliases(ctx, newObject.Aliases.List()); err != nil {
-			return err
-		}
-
 		if err := groupAliasesTableMgr.insertJoins(ctx, id, newObject.Aliases.List()); err != nil {
 			return err
 		}
