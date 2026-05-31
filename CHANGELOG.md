@@ -45,7 +45,16 @@ versioning is independent of upstream — it is anchored to the upstream base re
   fails to build via the official Dockerfile (Makefile regression in commit `92349790`, 2026-05-05, that
   makes the node-only frontend stage invoke Go). Rationale captured in `docs/llm/DESIGN.md`.
 
+### Fixed
+- Assistant tools no longer crash the chat stream when the library DB isn't ready (e.g. before stash
+  Setup has been run): `runToolSafely` recovers any tool-handler panic and returns it as a graceful
+  tool error the model can report. Found during the first NAS deploy — chatting before Setup hit a
+  nil-pointer in `library_stats` and the SSE stream died mid-turn.
+
 ### Notes
+- **First NAS deploy** 2026-05-31: stash + litellm + cli-proxy-api up on overwatch-stash via
+  `docker compose`; `/llm/status` → `configured:true, model:minimax`. Live chat pending stash Setup
+  (DB creation + library scan) and, for grok, the one-time OAuth login.
 - **Phase 0 (baseline) validated** on 2026-05-31: `docker/build/x86_64/Dockerfile` builds UI + Go from
   source; the container boots on `:9999`, returns HTTP 200, and reports `stash v0.31.1`.
 

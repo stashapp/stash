@@ -31,6 +31,34 @@ func TestRegistryDefsFiltersWrites(t *testing.T) {
 	}
 }
 
+func TestRunToolSafelyRecoversPanic(t *testing.T) {
+	panicTool := &Tool{
+		Name: "boom",
+		Run: func(ctx context.Context, _ json.RawMessage) (string, error) {
+			var p *int
+			_ = *p // nil deref, like querying an uninitialized DB
+			return "unreachable", nil
+		},
+	}
+	// must not panic; must surface an error
+	out, err := runToolSafely(context.Background(), panicTool, json.RawMessage(`{}`))
+	if err == nil {
+		t.Fatalf("expected error from panicking tool, got out=%q", out)
+	}
+	if !strings.Contains(err.Error(), "boom") {
+		t.Fatalf("error should name the tool: %v", err)
+	}
+
+	// and via the service runTool path: a panic becomes is_error, not a crash
+	s := &Service{registry: NewRegistry(), convs: newConvStore()}
+	s.registry.Register(panicTool)
+	tc := ToolCall{ID: "c1", Type: "function", Function: FunctionCall{Name: "boom", Arguments: "{}"}}
+	gotOut, isErr := s.runTool(context.Background(), tc, "auto", func(string, any) error { return nil })
+	if !isErr || !strings.Contains(gotOut, "boom") {
+		t.Fatalf("runTool should report a graceful error, got isErr=%v out=%q", isErr, gotOut)
+	}
+}
+
 func TestClientChatCompletionToolCall(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v1/chat/completions" {

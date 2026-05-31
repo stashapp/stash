@@ -160,11 +160,23 @@ func (s *Service) runTool(ctx context.Context, tc ToolCall, writePolicy string, 
 		return "This write action requires user confirmation (write policy = ask). Do not retry it; " +
 			"briefly tell the user what you will change and ask them to approve it in the UI.", false
 	}
-	res, err := tool.Run(ctx, json.RawMessage(args))
+	res, err := runToolSafely(ctx, tool, json.RawMessage(args))
 	if err != nil {
 		return err.Error(), true
 	}
 	return res, false
+}
+
+// runToolSafely invokes a tool handler, converting any panic into an error so a
+// single bad tool call (e.g. querying the DB before stash Setup has created it)
+// becomes a graceful tool_result the model can report — never a mid-stream crash.
+func runToolSafely(ctx context.Context, tool *Tool, input json.RawMessage) (out string, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("tool %q failed: %v — the library may not be ready (has stash Setup been completed and a scan run?)", tool.Name, r)
+		}
+	}()
+	return tool.Run(ctx, input)
 }
 
 // ExecuteConfirmed runs a single tool directly, bypassing the ask gate. It is used
@@ -184,7 +196,7 @@ func (s *Service) ExecuteConfirmed(ctx context.Context, name string, input json.
 	if len(input) == 0 {
 		input = json.RawMessage("{}")
 	}
-	return tool.Run(ctx, input)
+	return runToolSafely(ctx, tool, input)
 }
 
 // ── conversation store ───────────────────────────────────────────────────────
