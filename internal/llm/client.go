@@ -1,5 +1,5 @@
 // Package llm implements the embedded assistant: an OpenAI-compatible chat client
-// (pointed at a gateway such as LiteLLM that fronts MiniMax, Claude-OAuth, etc.), a
+// (pointed at a gateway such as LiteLLM that fronts MiniMax, xAI/Grok, etc.), a
 // tool registry that wraps stash's data layer, and the agent loop that drives a
 // conversation. See docs/llm/DESIGN.md.
 package llm

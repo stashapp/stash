@@ -20,7 +20,7 @@ versioning is independent of upstream — it is anchored to the upstream base re
     repository in-process via `txn.WithReadTxn` / `txn.WithTxn`.
   - **Multi-provider via a gateway:** stash talks to one OpenAI-compatible endpoint (a LiteLLM
     gateway) that fronts the real providers and owns their auth/OAuth refresh — `docker/llm/litellm/`
-    config exposes `minimax` (MiniMax-M2.7, API key) and `claude` (via an external OAuth bridge).
+    config exposes `minimax` (MiniMax-M2.7) and `grok` (xAI Grok) — both via API keys, OpenAI-compatible.
   - Write policy: `readonly` omits write tools, `auto` executes them, `ask` (default) emits a
     `confirm_required` event and defers to `POST /llm/confirm` after the user approves in the UI.
   - `internal/api/routes_llm.go`: `GET /llm/status`, `POST /llm/chat` (Server-Sent Events),
@@ -35,7 +35,7 @@ versioning is independent of upstream — it is anchored to the upstream base re
   - `README.md` fork banner (purpose, added code paths, quick build), preserving upstream's README below it.
   - `docs/llm/DESIGN.md` — architecture, phased plan, Phase 1 tool surface, config/secrets, and safety model, grounded in the real v0.31.1 integration points (`internal/api/server.go` routing, the `Resolver` services, `internal/manager/config` keys, UI layout).
   - `docs/llm/DEPLOY-NAS.md` — NAS Docker deployment guide (stash + litellm, reuse Jellyfin media folders read-only, app state under `/volume1/docker/stash`, ghcr vs save-load transfer, verification).
-  - `docker/llm/`: `docker-compose.nas.yml` (stash + litellm services), `build-and-push.sh`, `litellm/config.yaml` (gateway: minimax + claude), and `.env.example` (stash) + `litellm.env.example` (provider secrets).
+  - `docker/llm/`: `docker-compose.nas.yml` (stash + litellm services), `build-and-push.sh`, `litellm/config.yaml` (gateway: minimax + grok), and `.env.example` (stash) + `litellm.env.example` (provider secrets).
 - `.gitignore` rules blocking secret env files (`stash.env`, `*.env`) and saved image tars (`stash-llm-*.tar`).
 - `.gitattributes` rule forcing `*.sh` to LF line endings so the build script's shebang works in bash.
 

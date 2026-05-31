@@ -66,7 +66,7 @@ New Go code: **`internal/llm/`** (OpenAI-compatible client, tool registry, agent
             ▼                                                   ▼
   models.Repository · Scene/Performer/             ┌──────── LiteLLM gateway ────────┐
   Studio/Tag reader-writers                        │  minimax → MiniMax API (key)     │
-            │                                       │  claude  → Claude-OAuth bridge   │
+            │                                       │  grok    → xAI Grok API (key)    │
             ▼                                       └──────────────────────────────────┘
    SQLite · ffmpeg · generated content
 ```
@@ -126,16 +126,17 @@ Natural follow-ups (not yet built): `get_scene` detail, `find_duplicates` (phash
 ## 5. Providers, config & secrets
 
 The assistant does **not** call providers directly. It speaks one OpenAI-compatible chat-completions
-API to a **gateway** (LiteLLM) that fronts the real providers and owns their auth + OAuth refresh. This
-keeps four very different auth schemes (MiniMax API key, Claude/Codex/xAI OAuth) out of stash entirely,
-and lets the model set change without touching stash code.
+API to a **gateway** (LiteLLM) that fronts the real providers and owns their auth. This keeps provider
+keys out of stash entirely and lets the model set change without touching stash code.
 
-- **Gateway:** `docker/llm/litellm/config.yaml` exposes named models to stash:
-  - `minimax` → `minimax/MiniMax-M2.7` via `MINIMAX_API_KEY` (OpenAI-compatible; headless default).
-  - `claude` → routed to an external **Claude-OAuth bridge** (`CLAUDE_BRIDGE_URL`) that holds and
-    refreshes the setup-token. LiteLLM's own raw-OAuth passthrough is unreliable
-    ([BerriAI/litellm#19618](https://github.com/BerriAI/litellm/issues/19618)) — the bridge is what
-    makes Claude-OAuth work headless.
+- **Gateway:** `docker/llm/litellm/config.yaml` exposes named models to stash, both via first-party
+  API keys (OpenAI-compatible, headless, ToS-compliant — no OAuth bridge):
+  - `minimax` → `minimax/MiniMax-M2.7` via `MINIMAX_API_KEY` (the default).
+  - `grok` → `xai/grok-4.3` via `XAI_API_KEY`.
+  - _Provider history:_ Claude-OAuth was evaluated and dropped — exposing a Claude Max/Pro
+    subscription as an API requires a CLI-spoofing bridge, violates Anthropic's ToS, risks account
+    suspension, and is being actively shut down. xAI's first-party API avoids all of that. (The
+    grok.com *subscription* via OAuth would reintroduce the same bridge tradeoffs — use the key.)
 - **Config keys** in `internal/manager/config/config.go` (mirroring `GetHandyKey()` / `GetAPIKey()`):
   - `assistant_base_url` (string) — gateway OpenAI base, e.g. `http://litellm:4000/v1`. Env `STASH_ASSISTANT_BASE_URL`.
   - `assistant_api_key` (string) — the gateway (LiteLLM) master key. Env `STASH_ASSISTANT_API_KEY`.

@@ -5,7 +5,7 @@
 #
 # Models exposed to stash-llm (set STASH_ASSISTANT_MODEL to one of these):
 #   • minimax  — MiniMax-M2.7 via API key. Works headless; the default.
-#   • claude   — Claude via OAuth, routed to an external bridge (see notes below).
+#   • grok     — xAI Grok via API key (OpenAI-compatible). Works headless; compliant.
 
 model_list:
   # ── MiniMax (API key, OpenAI-compatible) — reliable headless default ──────────
@@ -17,19 +17,16 @@ model_list:
       # If tool-calling misbehaves with the native provider, switch the model line
       # to:  model: openai/MiniMax-M2.7   (routes via LiteLLM's OpenAI interface)
 
-  # ── Claude via OAuth — routed to an external bridge ──────────────────────────
-  # IMPORTANT: LiteLLM cannot reliably use a raw Claude setup-token (sk-ant-oat*)
-  # itself — OAuth needs `Authorization: Bearer` + token refresh, which LiteLLM's
-  # passthrough has historically gotten wrong (BerriAI/litellm#19618). Instead run
-  # a small Claude-OAuth bridge (e.g. the fleet's claude-bridge, or claude-code-proxy)
-  # that holds the setup-token, refreshes it, and exposes an OpenAI-compatible
-  # endpoint. Point CLAUDE_BRIDGE_URL at that bridge. Comment this block out until
-  # the bridge is running.
-  - model_name: claude
+  # ── xAI / Grok (API key, OpenAI-compatible) — compliant, headless, no bridge ──
+  # xAI sells a first-party API (api.x.ai/v1) with function calling, so no OAuth
+  # bridge is needed — just XAI_API_KEY. (Using the grok.com *subscription* via
+  # OAuth instead would require a CLIProxyAPI-style bridge with the same ToS/
+  # fragility tradeoffs as Claude-OAuth — not recommended; use the API key.)
+  # Adjust the model id to whatever's current on your xAI account.
+  - model_name: grok
     litellm_params:
-      model: openai/claude            # the model name your bridge exposes
-      api_base: os.environ/CLAUDE_BRIDGE_URL   # e.g. http://claude-bridge:8000/v1
-      api_key: os.environ/CLAUDE_BRIDGE_KEY    # bridge key, or any non-empty value
+      model: xai/grok-4.3
+      api_key: os.environ/XAI_API_KEY
 
 litellm_settings:
   # tolerate provider-specific param differences (e.g. max_tokens handling)

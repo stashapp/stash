@@ -48,7 +48,7 @@ const (
 	// Env overrides follow the STASH_ prefix convention, e.g. STASH_ASSISTANT_BASE_URL.
 	AssistantBaseURL        = "assistant_base_url" // OpenAI-style base, e.g. http://litellm:4000/v1
 	AssistantAPIKey         = "assistant_api_key"  // gateway key (may be empty)
-	AssistantModel          = "assistant_model"    // gateway model name, e.g. minimax | claude
+	AssistantModel          = "assistant_model"    // gateway model name, e.g. minimax | grok
 	AssistantEnabled        = "assistant_enabled"
 	AssistantWritePolicy    = "assistant_write_policy"     // ask | auto | readonly
 	AssistantDevLoopEnabled = "assistant_dev_loop_enabled" // Phase 2 gate

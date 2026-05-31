@@ -2,7 +2,7 @@
 #
 # Two services on a private network:
 #   • stash    — this fork's image; talks ONLY to the litellm gateway for the assistant
-#   • litellm  — OpenAI-compatible gateway fronting MiniMax (+ Claude via a bridge)
+#   • litellm  — OpenAI-compatible gateway fronting MiniMax + xAI/Grok (both via API keys)
 #
 # Media is the SAME folders Jellyfin uses, mounted READ-ONLY. App state lives under
 # /volume1/docker/stash/ (Jellyfin uses /volume1/docker/jellyfin/).
@@ -52,7 +52,7 @@ services:
     container_name: stash-litellm
     restart: unless-stopped
     env_file:
-      - ./litellm.env          # MINIMAX_API_KEY, LITELLM_MASTER_KEY, CLAUDE_BRIDGE_* (git-ignored)
+      - ./litellm.env          # MINIMAX_API_KEY, XAI_API_KEY, LITELLM_MASTER_KEY (git-ignored)
     command: ["--config", "/etc/litellm/config.yaml", "--port", "4000"]
     volumes:
       - ./litellm/config.yaml:/etc/litellm/config.yaml:ro

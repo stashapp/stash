@@ -50,14 +50,13 @@ tar cf - docker-compose.nas.yml litellm/config.yaml | ssh -p 3239 shadowshark@ov
 Then create the two env files in `/volume1/docker/stash/compose/` from their `.env.example` templates
 (**do not commit them**):
 - `stash.env` — `STASH_ASSISTANT_API_KEY` = the LiteLLM master key (must match `litellm.env`), and
-  `STASH_ASSISTANT_MODEL` (`minimax` or `claude`). Base URL is preset in the compose file.
-- `litellm.env` — `LITELLM_MASTER_KEY` (a random string), `MINIMAX_API_KEY`, and (only if using Claude)
-  `CLAUDE_BRIDGE_URL` / `CLAUDE_BRIDGE_KEY` pointing at your Claude-OAuth bridge.
+  `STASH_ASSISTANT_MODEL` (`minimax` or `grok`). Base URL is preset in the compose file.
+- `litellm.env` — `LITELLM_MASTER_KEY` (a random string), `MINIMAX_API_KEY`, and `XAI_API_KEY`
+  (only needed for the `grok` model).
 
-> **Claude via OAuth:** LiteLLM can't reliably use a raw Claude setup-token itself — run a Claude-OAuth
-> bridge (claude-bridge / claude-code-proxy) that holds + refreshes the token and exposes an
-> OpenAI-compatible endpoint, then set `CLAUDE_BRIDGE_URL`. Until then, comment out the `claude` model
-> in `litellm/config.yaml` and use `minimax` (which works headless with just the API key).
+> Both providers use first-party API keys (no OAuth bridge) — compliant and headless. Set
+> `STASH_ASSISTANT_MODEL=minimax` or `=grok`; provide whichever provider key(s) you'll use in
+> `litellm.env`, and comment out the unused model in `litellm/config.yaml`.
 
 ## 4. Bring it up
 Synology Container Manager supports compose projects; via CLI (verify the compose binary name on the

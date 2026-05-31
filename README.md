@@ -12,7 +12,7 @@
 >   `ui/v2.5/src/components/Assistant/` (React widget), plus a LiteLLM gateway config under
 >   `docker/llm/litellm/`. Nothing in this fork is committed with secrets.
 > - **Model access:** stash speaks one OpenAI-compatible API to a **LiteLLM gateway** that fronts the
->   real providers (MiniMax via API key; Claude via an OAuth bridge) and owns provider auth/refresh.
+>   real providers (MiniMax and xAI/Grok via API keys) and owns provider auth.
 >   stash holds only the gateway URL/key/model — never provider secrets. See `docker/llm/litellm/`.
 > - **Deploy target:** two Docker containers (stash + litellm) on the NAS, reusing the existing
 >   Jellyfin media folders read-only. See [`docs/llm/DEPLOY-NAS.md`](docs/llm/DEPLOY-NAS.md).

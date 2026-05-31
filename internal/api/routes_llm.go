@@ -11,7 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-// llmRoutes exposes the embedded Claude assistant. All routes sit behind the
+// llmRoutes exposes the embedded LLM assistant. All routes sit behind the
 // global authenticateHandler middleware (see server.go), so they share stash's
 // session/API-key auth.
 type llmRoutes struct {
