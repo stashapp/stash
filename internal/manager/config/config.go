@@ -43,15 +43,17 @@ const (
 	Password            = "password"
 	MaxSessionAge       = "max_session_age"
 
-	// Assistant (Claude LLM) config keys — see internal/llm.
-	// Env overrides follow the STASH_ prefix convention, e.g. STASH_ANTHROPIC_API_KEY.
-	AnthropicAPIKey         = "anthropic_api_key"
-	AssistantModel          = "assistant_model"
+	// Assistant (LLM) config keys — see internal/llm. The assistant talks to an
+	// OpenAI-compatible gateway (e.g. LiteLLM) that fronts the real providers.
+	// Env overrides follow the STASH_ prefix convention, e.g. STASH_ASSISTANT_BASE_URL.
+	AssistantBaseURL        = "assistant_base_url" // OpenAI-style base, e.g. http://litellm:4000/v1
+	AssistantAPIKey         = "assistant_api_key"  // gateway key (may be empty)
+	AssistantModel          = "assistant_model"    // gateway model name, e.g. minimax | claude
 	AssistantEnabled        = "assistant_enabled"
 	AssistantWritePolicy    = "assistant_write_policy"     // ask | auto | readonly
 	AssistantDevLoopEnabled = "assistant_dev_loop_enabled" // Phase 2 gate
 
-	assistantModelDefault       = "claude-opus-4-8"
+	assistantModelDefault       = "minimax"
 	assistantEnabledDefault     = true
 	assistantWritePolicyDefault = "ask"
 
@@ -1562,10 +1564,14 @@ func (i *Config) GetHandyKey() string {
 	return i.getString(HandyKey)
 }
 
-// Assistant (Claude LLM) settings — see internal/llm.
+// Assistant (LLM) settings — see internal/llm.
 
-func (i *Config) GetAnthropicAPIKey() string {
-	return i.getString(AnthropicAPIKey)
+func (i *Config) GetAssistantBaseURL() string {
+	return i.getString(AssistantBaseURL)
+}
+
+func (i *Config) GetAssistantAPIKey() string {
+	return i.getString(AssistantAPIKey)
 }
 
 func (i *Config) GetAssistantModel() string {

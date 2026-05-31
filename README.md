@@ -10,7 +10,9 @@
 > - **What's added** lives under clearly namespaced paths so upstream merges stay clean:
 >   `internal/llm/` (Go service), an `/llm` HTTP route, an `assistant` GraphQL/SSE surface, and
 >   `ui/v2.5/src/components/Assistant/` (React panel). Nothing in this fork is committed with secrets.
-> - **Model provider:** Anthropic (Claude). The API key is read from stash config / env, never committed.
+> - **Model access:** stash speaks one OpenAI-compatible API to a **LiteLLM gateway** that fronts the
+>   real providers (MiniMax via API key; Claude via an OAuth bridge) and owns provider auth/refresh.
+>   stash holds only the gateway URL/key/model — never provider secrets. See `docker/llm/litellm/`.
 > - **Deploy target:** a Docker container on the NAS, reusing the existing Jellyfin media folders
 >   read-only. See [`docs/llm/DEPLOY-NAS.md`](docs/llm/DEPLOY-NAS.md).
 >

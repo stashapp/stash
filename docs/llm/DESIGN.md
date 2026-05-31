@@ -35,7 +35,7 @@ Mapped from the v0.31.1 source:
 | GraphQL schema | `graphql/schema/schema.graphql` + `graphql/schema/types/*.graphql` | Add `graphql/schema/types/assistant.graphql`; `make generate-backend` regenerates |
 | GraphQL resolvers | `internal/api/resolver.go` (`Resolver` struct holds `repository`, `sceneService`, `imageService`, `galleryService`, `groupService`) | New `resolver_*_assistant.go`; reuse the same services/repository the resolver already has |
 | Data access | `models.Repository` + the `*Service` types in `internal/manager` | LLM **tools call these directly in-process** — no HTTP round-trip back to `/graphql` |
-| Config / secrets | `internal/manager/config/config.go` (keys like `ApiKey = "api_key"`, getters like `GetAPIKey()`, viper-backed with env override) | Add `AnthropicAPIKey = "anthropic_api_key"` + `GetAnthropicAPIKey()`, env override `STASH_ANTHROPIC_API_KEY` |
+| Config / secrets | `internal/manager/config/config.go` (keys like `ApiKey = "api_key"`, getters like `GetAPIKey()`, koanf-backed with `STASH_` env override) | Add `assistant_base_url` / `assistant_api_key` / `assistant_model` (+ getters); env overrides `STASH_ASSISTANT_BASE_URL`, … |
 | UI components | `ui/v2.5/src/components/` (domain folders), `MainNavbar.tsx`, `Settings/` | Add `components/Assistant/`, a navbar entry, and a Settings section for the API key/model |
 
 New Go code: **`internal/llm/`** (provider client, tool registry, chat session/loop). It depends on
@@ -50,14 +50,14 @@ New Go code: **`internal/llm/`** (provider client, tool registry, chat session/l
 │  components/Assistant/                                                            │
 │   • ChatPanel.tsx  — message list, composer, streaming tokens                     │
 │   • useAssistant.ts — opens SSE to POST /llm/chat, renders tool-call cards         │
-│  components/Settings/  → Anthropic key + model + feature flags                     │
+│  components/Settings/  → gateway URL + model + feature flags (or via env)          │
 └───────────────────────────────────┬───────────────────────────────────────────────┘
                                      │  POST /llm/chat  (SSE stream of tokens + events)
                                      ▼
 ┌──────────────────── Go backend (internal/api  +  internal/llm) ────────────────────┐
 │  internal/api/routes_llm.go        — chi route, auth, request/SSE plumbing          │
 │  internal/llm/                                                                      │
-│   • client.go      — Anthropic Messages API client (streaming, tool use)            │
+│   • client.go      — OpenAI-compatible chat-completions client (tool use)           │
 │   • session.go     — the agent loop: send → tool_use → run tool → tool_result → …   │
 │   • tools.go       — tool registry; each tool = JSON schema + Go handler            │
 │   • tools_library.go — Phase 1 handlers calling repository / *Service               │
@@ -120,20 +120,30 @@ use down. Pagination is enforced (default 25, hard cap) and surfaced to the mode
 
 ---
 
-## 5. Config & secrets
+## 5. Providers, config & secrets
 
-- New config keys in `internal/manager/config/config.go`, mirroring the existing `GetHandyKey()` /
-  `GetAPIKey()` pattern:
-  - `anthropic_api_key` (string) — env override `STASH_ANTHROPIC_API_KEY`
-  - `assistant_model` (string, default `claude-opus-4-8` / a configured default)
+The assistant does **not** call providers directly. It speaks one OpenAI-compatible chat-completions
+API to a **gateway** (LiteLLM) that fronts the real providers and owns their auth + OAuth refresh. This
+keeps four very different auth schemes (MiniMax API key, Claude/Codex/xAI OAuth) out of stash entirely,
+and lets the model set change without touching stash code.
+
+- **Gateway:** `docker/llm/litellm/config.yaml` exposes named models to stash:
+  - `minimax` → `minimax/MiniMax-M2.7` via `MINIMAX_API_KEY` (OpenAI-compatible; headless default).
+  - `claude` → routed to an external **Claude-OAuth bridge** (`CLAUDE_BRIDGE_URL`) that holds and
+    refreshes the setup-token. LiteLLM's own raw-OAuth passthrough is unreliable
+    ([BerriAI/litellm#19618](https://github.com/BerriAI/litellm/issues/19618)) — the bridge is what
+    makes Claude-OAuth work headless.
+- **Config keys** in `internal/manager/config/config.go` (mirroring `GetHandyKey()` / `GetAPIKey()`):
+  - `assistant_base_url` (string) — gateway OpenAI base, e.g. `http://litellm:4000/v1`. Env `STASH_ASSISTANT_BASE_URL`.
+  - `assistant_api_key` (string) — the gateway (LiteLLM) master key. Env `STASH_ASSISTANT_API_KEY`.
+  - `assistant_model` (string, default `minimax`) — gateway model name. Env `STASH_ASSISTANT_MODEL`.
   - `assistant_enabled` (bool, default true)
+  - `assistant_write_policy` (enum `ask` | `auto` | `readonly`, default `ask`)
   - `assistant_dev_loop_enabled` (bool, default **false** — Phase 2 gate)
-  - `assistant_write_policy` (enum: `ask` | `auto` | `readonly`, default `ask`)
-- Key is settable in the **Settings UI** (write-only field; never echoed back) or via env for the NAS
-  container. **Never committed** — `docker/llm/.env.example` holds key *names* only, matching the
-  fleet's redaction discipline.
-- On the NAS the key is injected via the container environment (compose `env_file`), consistent with
-  how other fleet containers handle secrets.
+- **Secrets stay in the gateway.** The stash container holds only the gateway URL/key/model; provider
+  keys live in `litellm.env` (git-ignored; `.env.example` files hold names only). On the NAS both env
+  files are injected via compose `env_file`, and litellm is not published to the host — only stash
+  reaches it over the private Docker network.
 
 ---
 

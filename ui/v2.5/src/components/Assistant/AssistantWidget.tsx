@@ -204,7 +204,7 @@ export const AssistantWidget: React.FC = () => {
           <div className="assistant-notice">
             {!status?.enabled
               ? "The assistant is disabled in settings."
-              : "No Anthropic API key configured. Set STASH_ANTHROPIC_API_KEY (or anthropic_api_key in config.yml) and restart."}
+              : "No model gateway configured. Set STASH_ASSISTANT_BASE_URL (and STASH_ASSISTANT_MODEL) to your OpenAI-compatible gateway and restart."}
           </div>
         )}
         {!unavailable && entries.length === 0 && (

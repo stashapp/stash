@@ -43,6 +43,14 @@ var (
 		"cache":         Cache,
 		"stash":         Stash,
 		"ui":            UILocation,
+
+		// assistant (LLM) — see internal/llm
+		"assistant_base_url":         AssistantBaseURL,
+		"assistant_api_key":          AssistantAPIKey,
+		"assistant_model":            AssistantModel,
+		"assistant_enabled":          AssistantEnabled,
+		"assistant_write_policy":     AssistantWritePolicy,
+		"assistant_dev_loop_enabled": AssistantDevLoopEnabled,
 	}
 )
 

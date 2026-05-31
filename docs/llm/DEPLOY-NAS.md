@@ -41,14 +41,23 @@ If you use path **B**, set `image: stash-llm:dev` in the compose file instead of
 ssh -p 3239 shadowshark@overwatch-stash \
   'mkdir -p /volume1/docker/stash/{config,metadata,cache,blobs,generated}'
 ```
-Copy the compose + env into place (via tar, since no scp):
+Copy the compose + LiteLLM gateway config into place (via tar, since no scp):
 ```bash
 cd /b/Downloads2/Projects/stash-llm/docker/llm
-tar cf - docker-compose.nas.yml | ssh -p 3239 shadowshark@overwatch-stash \
+tar cf - docker-compose.nas.yml litellm/config.yaml | ssh -p 3239 shadowshark@overwatch-stash \
   'mkdir -p /volume1/docker/stash/compose && tar xf - -C /volume1/docker/stash/compose'
 ```
-Then create `/volume1/docker/stash/compose/stash.env` on the NAS from `.env.example`, filling
-`STASH_ANTHROPIC_API_KEY` from your secret store. **Do not commit it.**
+Then create the two env files in `/volume1/docker/stash/compose/` from their `.env.example` templates
+(**do not commit them**):
+- `stash.env` — `STASH_ASSISTANT_API_KEY` = the LiteLLM master key (must match `litellm.env`), and
+  `STASH_ASSISTANT_MODEL` (`minimax` or `claude`). Base URL is preset in the compose file.
+- `litellm.env` — `LITELLM_MASTER_KEY` (a random string), `MINIMAX_API_KEY`, and (only if using Claude)
+  `CLAUDE_BRIDGE_URL` / `CLAUDE_BRIDGE_KEY` pointing at your Claude-OAuth bridge.
+
+> **Claude via OAuth:** LiteLLM can't reliably use a raw Claude setup-token itself — run a Claude-OAuth
+> bridge (claude-bridge / claude-code-proxy) that holds + refreshes the token and exposes an
+> OpenAI-compatible endpoint, then set `CLAUDE_BRIDGE_URL`. Until then, comment out the `claude` model
+> in `litellm/config.yaml` and use `minimax` (which works headless with just the API key).
 
 ## 4. Bring it up
 Synology Container Manager supports compose projects; via CLI (verify the compose binary name on the
@@ -77,7 +86,7 @@ ssh -p 3239 shadowshark@overwatch-stash '/usr/local/bin/docker logs --tail 20 st
 # expect: "stash is listening on 0.0.0.0:9999" and the correct version line
 ```
 Then browse to `http://overwatch-stash:9999/` (over Tailscale). First run shows Stash's setup wizard;
-point the library at `/data` and let it scan. Configure the Anthropic key under Settings (or rely on
+point the library at `/data` and let it scan. The assistant is configured via the gateway env (or rely on
 the env var) and open the Assistant panel.
 
 ## Gotchas

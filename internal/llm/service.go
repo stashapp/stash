@@ -29,12 +29,13 @@ Guidelines:
 var (
 	// ErrDisabled is returned when the assistant is turned off in settings.
 	ErrDisabled = errors.New("assistant is disabled")
-	// ErrNoAPIKey is returned when no Anthropic API key is configured.
-	ErrNoAPIKey = errors.New("no Anthropic API key configured")
+	// ErrNotConfigured is returned when no gateway base URL is configured.
+	ErrNotConfigured = errors.New("assistant gateway is not configured (set assistant_base_url)")
 )
 
 // Service drives conversations: it owns the tool registry and an in-memory
-// conversation store. Provider key/model are read from config per request.
+// conversation store. Gateway base URL / key / model are read from config per
+// request, so settings changes take effect without a restart.
 type Service struct {
 	registry *Registry
 	convs    *convStore
@@ -49,6 +50,7 @@ func NewService(deps Deps) *Service {
 
 type settings struct {
 	enabled     bool
+	baseURL     string
 	apiKey      string
 	model       string
 	writePolicy string
@@ -58,7 +60,8 @@ func currentSettings() settings {
 	c := config.GetInstance()
 	return settings{
 		enabled:     c.GetAssistantEnabled(),
-		apiKey:      c.GetAnthropicAPIKey(),
+		baseURL:     c.GetAssistantBaseURL(),
+		apiKey:      c.GetAssistantAPIKey(),
 		model:       c.GetAssistantModel(),
 		writePolicy: c.GetAssistantWritePolicy(),
 	}
@@ -75,93 +78,89 @@ type Status struct {
 
 func (s *Service) Status() Status {
 	st := currentSettings()
-	defs := s.registry.Defs(st.writePolicy != "readonly")
-	tools := make([]string, 0, len(defs))
-	for _, d := range defs {
-		tools = append(tools, d.Name)
-	}
 	return Status{
 		Enabled:     st.enabled,
-		Configured:  st.apiKey != "",
+		Configured:  st.baseURL != "",
 		Model:       st.model,
 		WritePolicy: st.writePolicy,
-		Tools:       tools,
+		Tools:       s.registry.defNames(st.writePolicy != "readonly"),
 	}
 }
 
 // Chat runs one user turn through the agent loop, emitting SSE events as it goes.
-// It returns the (possibly new) conversation id via the EventDone payload.
 func (s *Service) Chat(ctx context.Context, convID, userMessage string, emit Emitter) error {
 	st := currentSettings()
 	if !st.enabled {
 		return ErrDisabled
 	}
-	if st.apiKey == "" {
-		return ErrNoAPIKey
+	if st.baseURL == "" {
+		return ErrNotConfigured
 	}
-	client := NewClient(st.apiKey, st.model)
+	client := NewClient(st.baseURL, st.apiKey, st.model)
 
 	if convID == "" {
 		convID = newID()
 	}
 	msgs := s.convs.get(convID)
-	msgs = append(msgs, Message{Role: "user", Content: []ContentBlock{{Type: "text", Text: userMessage}}})
+	if len(msgs) == 0 {
+		msgs = append(msgs, Message{Role: "system", Content: systemPrompt})
+	}
+	msgs = append(msgs, Message{Role: "user", Content: userMessage})
 
 	tools := s.registry.Defs(st.writePolicy != "readonly")
 
 	for turn := 0; turn < maxTurns; turn++ {
-		resp, err := client.CreateMessage(ctx, systemPrompt, msgs, tools)
+		resp, err := client.CreateChatCompletion(ctx, msgs, tools)
 		if err != nil {
 			return err
 		}
-		msgs = append(msgs, Message{Role: "assistant", Content: resp.Content})
+		if len(resp.Choices) == 0 {
+			return emit(EventError, map[string]string{"error": "gateway returned no choices"})
+		}
+		choice := resp.Choices[0]
+		msg := choice.Message
+		msg.Role = "assistant"
+		msgs = append(msgs, msg)
 
-		var toolUses []ContentBlock
-		for _, b := range resp.Content {
-			switch b.Type {
-			case "text":
-				if b.Text != "" {
-					_ = emit(EventText, map[string]string{"text": b.Text})
-				}
-			case "tool_use":
-				toolUses = append(toolUses, b)
-			}
+		if msg.Content != "" {
+			_ = emit(EventText, map[string]string{"text": msg.Content})
 		}
 
-		if resp.StopReason != "tool_use" || len(toolUses) == 0 {
+		if choice.FinishReason != "tool_calls" || len(msg.ToolCalls) == 0 {
 			s.convs.set(convID, msgs)
 			return emit(EventDone, map[string]any{"conversationId": convID, "usage": resp.Usage})
 		}
 
-		results := make([]ContentBlock, 0, len(toolUses))
-		for _, tu := range toolUses {
-			_ = emit(EventToolCall, map[string]any{"id": tu.ID, "name": tu.Name, "input": tu.Input})
-			out, isErr := s.runTool(ctx, tu, st.writePolicy, emit)
+		for _, tc := range msg.ToolCalls {
+			args := json.RawMessage(tc.Function.Arguments)
+			_ = emit(EventToolCall, map[string]any{"id": tc.ID, "name": tc.Function.Name, "input": args})
+			out, isErr := s.runTool(ctx, tc, st.writePolicy, emit)
 			_ = emit(EventToolResult, map[string]any{
-				"id": tu.ID, "name": tu.Name, "is_error": isErr, "summary": truncate(out, 600),
+				"id": tc.ID, "name": tc.Function.Name, "is_error": isErr, "summary": truncate(out, 600),
 			})
-			results = append(results, ContentBlock{
-				Type: "tool_result", ToolUseID: tu.ID, Content: out, IsError: isErr,
-			})
+			msgs = append(msgs, Message{Role: "tool", ToolCallID: tc.ID, Content: out})
 		}
-		msgs = append(msgs, Message{Role: "user", Content: results})
 	}
 
 	s.convs.set(convID, msgs)
 	return emit(EventError, map[string]string{"error": "reached the maximum number of reasoning steps"})
 }
 
-func (s *Service) runTool(ctx context.Context, tu ContentBlock, writePolicy string, emit Emitter) (out string, isErr bool) {
-	tool, ok := s.registry.Get(tu.Name)
+func (s *Service) runTool(ctx context.Context, tc ToolCall, writePolicy string, emit Emitter) (out string, isErr bool) {
+	tool, ok := s.registry.Get(tc.Function.Name)
 	if !ok {
-		return fmt.Sprintf("unknown tool %q", tu.Name), true
+		return fmt.Sprintf("unknown tool %q", tc.Function.Name), true
+	}
+	args := tc.Function.Arguments
+	if args == "" {
+		args = "{}"
 	}
 	if tool.Writes && writePolicy == "ask" {
-		_ = emit(EventConfirmRequired, map[string]any{"id": tu.ID, "name": tu.Name, "input": tu.Input})
+		_ = emit(EventConfirmRequired, map[string]any{"id": tc.ID, "name": tc.Function.Name, "input": json.RawMessage(args)})
 		return "This write action requires user confirmation (write policy = ask). Do not retry it; " +
 			"briefly tell the user what you will change and ask them to approve it in the UI.", false
 	}
-	res, err := tool.Run(ctx, tu.Input)
+	res, err := tool.Run(ctx, json.RawMessage(args))
 	if err != nil {
 		return err.Error(), true
 	}
@@ -181,6 +180,9 @@ func (s *Service) ExecuteConfirmed(ctx context.Context, name string, input json.
 	tool, ok := s.registry.Get(name)
 	if !ok {
 		return "", fmt.Errorf("unknown tool %q", name)
+	}
+	if len(input) == 0 {
+		input = json.RawMessage("{}")
 	}
 	return tool.Run(ctx, input)
 }

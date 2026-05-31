@@ -38,8 +38,8 @@ func (r *Registry) Get(name string) (*Tool, bool) {
 	return t, ok
 }
 
-// Defs returns the tool definitions to advertise to the model. When includeWrites
-// is false, write tools are omitted entirely (readonly policy).
+// Defs returns the tool definitions to advertise to the model (OpenAI function
+// format). When includeWrites is false, write tools are omitted (readonly policy).
 func (r *Registry) Defs(includeWrites bool) []ToolDef {
 	defs := make([]ToolDef, 0, len(r.order))
 	for _, name := range r.order {
@@ -48,12 +48,25 @@ func (r *Registry) Defs(includeWrites bool) []ToolDef {
 			continue
 		}
 		defs = append(defs, ToolDef{
-			Name:        t.Name,
-			Description: t.Description,
-			InputSchema: t.Schema,
+			Type: "function",
+			Function: FunctionDef{
+				Name:        t.Name,
+				Description: t.Description,
+				Parameters:  t.Schema,
+			},
 		})
 	}
 	return defs
+}
+
+// defNames is a small helper for status/tests.
+func (r *Registry) defNames(includeWrites bool) []string {
+	defs := r.Defs(includeWrites)
+	names := make([]string, 0, len(defs))
+	for _, d := range defs {
+		names = append(names, d.Function.Name)
+	}
+	return names
 }
 
 // Event types streamed to the UI over SSE.

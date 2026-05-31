@@ -1,6 +1,7 @@
-// Package llm implements the embedded Claude assistant: an Anthropic Messages API
-// client, a tool registry that wraps stash's data layer, and the agent loop that
-// drives a conversation. See docs/llm/DESIGN.md.
+// Package llm implements the embedded assistant: an OpenAI-compatible chat client
+// (pointed at a gateway such as LiteLLM that fronts MiniMax, Claude-OAuth, etc.), a
+// tool registry that wraps stash's data layer, and the agent loop that drives a
+// conversation. See docs/llm/DESIGN.md.
 package llm
 
 import (
@@ -10,128 +11,134 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
-const (
-	anthropicEndpoint = "https://api.anthropic.com/v1/messages"
-	anthropicVersion  = "2023-06-01"
-	defaultMaxTokens  = 4096
-)
+const defaultMaxTokens = 4096
 
-// Client is a minimal Anthropic Messages API client. It is intentionally
-// dependency-free (net/http + encoding/json) so the fork stays lean and easy to
-// merge with upstream.
+// Client is a minimal OpenAI-compatible chat-completions client. It is dependency
+// free (net/http + encoding/json) and talks to whatever base URL is configured —
+// typically a LiteLLM gateway that owns provider auth and OAuth refresh.
 type Client struct {
+	baseURL   string
 	apiKey    string
 	model     string
 	maxTokens int
-	baseURL   string
 	http      *http.Client
 }
 
-// NewClient builds a client for the given key/model. A fresh client is created per
-// request so changes to the configured key/model take effect without a restart.
-func NewClient(apiKey, model string) *Client {
+// NewClient builds a client. baseURL is the OpenAI-style base (e.g.
+// "http://litellm:4000/v1"); "/chat/completions" is appended. apiKey may be empty
+// for gateways that don't require one.
+func NewClient(baseURL, apiKey, model string) *Client {
 	return &Client{
+		baseURL:   strings.TrimRight(baseURL, "/"),
 		apiKey:    apiKey,
 		model:     model,
 		maxTokens: defaultMaxTokens,
-		baseURL:   anthropicEndpoint,
 		http:      &http.Client{Timeout: 120 * time.Second},
 	}
 }
 
-// Message is a single conversation message. Content is always the block form so we
-// can carry tool_use / tool_result blocks alongside text.
+// Message is an OpenAI chat message. Content is omitted for assistant messages that
+// only carry tool calls; ToolCallID is set on role:"tool" result messages.
 type Message struct {
-	Role    string         `json:"role"` // "user" | "assistant"
-	Content []ContentBlock `json:"content"`
+	Role       string     `json:"role"` // system | user | assistant | tool
+	Content    string     `json:"content,omitempty"`
+	ToolCalls  []ToolCall `json:"tool_calls,omitempty"`
+	ToolCallID string     `json:"tool_call_id,omitempty"`
 }
 
-// ContentBlock is a tagged union over Anthropic content block types: "text",
-// "tool_use", and "tool_result". Unused fields are omitted on marshal.
-type ContentBlock struct {
-	Type string `json:"type"`
-
-	// type == "text"
-	Text string `json:"text,omitempty"`
-
-	// type == "tool_use"
-	ID    string          `json:"id,omitempty"`
-	Name  string          `json:"name,omitempty"`
-	Input json.RawMessage `json:"input,omitempty"`
-
-	// type == "tool_result"
-	ToolUseID string `json:"tool_use_id,omitempty"`
-	Content   string `json:"content,omitempty"`
-	IsError   bool   `json:"is_error,omitempty"`
+// ToolCall is a function call requested by the model.
+type ToolCall struct {
+	ID       string       `json:"id"`
+	Type     string       `json:"type"` // "function"
+	Function FunctionCall `json:"function"`
 }
 
-// ToolDef is a tool advertised to the model.
+type FunctionCall struct {
+	Name      string `json:"name"`
+	Arguments string `json:"arguments"` // JSON-encoded argument object
+}
+
+// ToolDef advertises a tool to the model in OpenAI function format.
 type ToolDef struct {
+	Type     string      `json:"type"` // "function"
+	Function FunctionDef `json:"function"`
+}
+
+type FunctionDef struct {
 	Name        string          `json:"name"`
 	Description string          `json:"description"`
-	InputSchema json.RawMessage `json:"input_schema"`
+	Parameters  json.RawMessage `json:"parameters"`
 }
 
 // Usage mirrors the token accounting returned by the API.
 type Usage struct {
-	InputTokens  int `json:"input_tokens"`
-	OutputTokens int `json:"output_tokens"`
+	PromptTokens     int `json:"prompt_tokens"`
+	CompletionTokens int `json:"completion_tokens"`
+	TotalTokens      int `json:"total_tokens"`
 }
 
-type messagesRequest struct {
-	Model     string    `json:"model"`
-	MaxTokens int       `json:"max_tokens"`
-	System    string    `json:"system,omitempty"`
-	Messages  []Message `json:"messages"`
-	Tools     []ToolDef `json:"tools,omitempty"`
+type chatRequest struct {
+	Model      string    `json:"model"`
+	Messages   []Message `json:"messages"`
+	Tools      []ToolDef `json:"tools,omitempty"`
+	ToolChoice string    `json:"tool_choice,omitempty"`
+	MaxTokens  int       `json:"max_tokens,omitempty"`
 }
 
-// Response is the decoded Messages API response.
+// Choice is one completion choice.
+type Choice struct {
+	Index        int     `json:"index"`
+	Message      Message `json:"message"`
+	FinishReason string  `json:"finish_reason"`
+}
+
+// Response is the decoded chat-completions response.
 type Response struct {
-	ID         string         `json:"id"`
-	Model      string         `json:"model"`
-	Role       string         `json:"role"`
-	StopReason string         `json:"stop_reason"`
-	Content    []ContentBlock `json:"content"`
-	Usage      Usage          `json:"usage"`
+	ID      string   `json:"id"`
+	Model   string   `json:"model"`
+	Choices []Choice `json:"choices"`
+	Usage   Usage    `json:"usage"`
 }
 
 type apiError struct {
-	Type  string `json:"type"`
 	Error struct {
 		Type    string `json:"type"`
 		Message string `json:"message"`
 	} `json:"error"`
 }
 
-// CreateMessage performs a single (non-streaming) Messages API call.
-func (c *Client) CreateMessage(ctx context.Context, system string, messages []Message, tools []ToolDef) (*Response, error) {
-	reqBody := messagesRequest{
+// CreateChatCompletion performs a single (non-streaming) chat-completions call.
+func (c *Client) CreateChatCompletion(ctx context.Context, messages []Message, tools []ToolDef) (*Response, error) {
+	reqBody := chatRequest{
 		Model:     c.model,
-		MaxTokens: c.maxTokens,
-		System:    system,
 		Messages:  messages,
-		Tools:     tools,
+		MaxTokens: c.maxTokens,
+	}
+	if len(tools) > 0 {
+		reqBody.Tools = tools
+		reqBody.ToolChoice = "auto"
 	}
 	buf, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("marshal request: %w", err)
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL, bytes.NewReader(buf))
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/chat/completions", bytes.NewReader(buf))
 	if err != nil {
 		return nil, fmt.Errorf("build request: %w", err)
 	}
 	httpReq.Header.Set("content-type", "application/json")
-	httpReq.Header.Set("x-api-key", c.apiKey)
-	httpReq.Header.Set("anthropic-version", anthropicVersion)
+	if c.apiKey != "" {
+		httpReq.Header.Set("authorization", "Bearer "+c.apiKey)
+	}
 
 	resp, err := c.http.Do(httpReq)
 	if err != nil {
-		return nil, fmt.Errorf("call anthropic: %w", err)
+		return nil, fmt.Errorf("call gateway: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -143,9 +150,9 @@ func (c *Client) CreateMessage(ctx context.Context, system string, messages []Me
 	if resp.StatusCode != http.StatusOK {
 		var ae apiError
 		if json.Unmarshal(body, &ae) == nil && ae.Error.Message != "" {
-			return nil, fmt.Errorf("anthropic %d: %s", resp.StatusCode, ae.Error.Message)
+			return nil, fmt.Errorf("gateway %d: %s", resp.StatusCode, ae.Error.Message)
 		}
-		return nil, fmt.Errorf("anthropic %d: %s", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("gateway %d: %s", resp.StatusCode, string(body))
 	}
 
 	var out Response

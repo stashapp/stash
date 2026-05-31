@@ -1,0 +1,41 @@
+# LiteLLM gateway config for stash-llm.
+#
+# stash-llm talks ONLY to this gateway (one OpenAI-compatible client). The gateway
+# owns provider auth so the stash container never holds provider secrets.
+#
+# Models exposed to stash-llm (set STASH_ASSISTANT_MODEL to one of these):
+#   • minimax  — MiniMax-M2.7 via API key. Works headless; the default.
+#   • claude   — Claude via OAuth, routed to an external bridge (see notes below).
+
+model_list:
+  # ── MiniMax (API key, OpenAI-compatible) — reliable headless default ──────────
+  - model_name: minimax
+    litellm_params:
+      model: minimax/MiniMax-M2.7
+      api_base: https://api.minimax.io/v1
+      api_key: os.environ/MINIMAX_API_KEY
+      # If tool-calling misbehaves with the native provider, switch the model line
+      # to:  model: openai/MiniMax-M2.7   (routes via LiteLLM's OpenAI interface)
+
+  # ── Claude via OAuth — routed to an external bridge ──────────────────────────
+  # IMPORTANT: LiteLLM cannot reliably use a raw Claude setup-token (sk-ant-oat*)
+  # itself — OAuth needs `Authorization: Bearer` + token refresh, which LiteLLM's
+  # passthrough has historically gotten wrong (BerriAI/litellm#19618). Instead run
+  # a small Claude-OAuth bridge (e.g. the fleet's claude-bridge, or claude-code-proxy)
+  # that holds the setup-token, refreshes it, and exposes an OpenAI-compatible
+  # endpoint. Point CLAUDE_BRIDGE_URL at that bridge. Comment this block out until
+  # the bridge is running.
+  - model_name: claude
+    litellm_params:
+      model: openai/claude            # the model name your bridge exposes
+      api_base: os.environ/CLAUDE_BRIDGE_URL   # e.g. http://claude-bridge:8000/v1
+      api_key: os.environ/CLAUDE_BRIDGE_KEY    # bridge key, or any non-empty value
+
+litellm_settings:
+  # tolerate provider-specific param differences (e.g. max_tokens handling)
+  drop_params: true
+  request_timeout: 600
+
+general_settings:
+  # stash-llm authenticates to the gateway with this key (STASH_ASSISTANT_API_KEY)
+  master_key: os.environ/LITELLM_MASTER_KEY

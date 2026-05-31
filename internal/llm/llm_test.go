@@ -18,99 +18,101 @@ func TestRegistryDefsFiltersWrites(t *testing.T) {
 		t.Fatalf("Defs(true): want 2, got %d", got)
 	}
 	defs := reg.Defs(false)
-	if len(defs) != 1 || defs[0].Name != "read1" {
+	if len(defs) != 1 || defs[0].Function.Name != "read1" {
 		t.Fatalf("Defs(false): want only read1, got %+v", defs)
 	}
-
-	// registration order is preserved
-	if reg.Defs(true)[0].Name != "read1" {
-		t.Fatalf("expected stable order, got %+v", reg.Defs(true))
+	// OpenAI function shape
+	if defs[0].Type != "function" || string(defs[0].Function.Parameters) != `{"type":"object"}` {
+		t.Fatalf("unexpected function def: %+v", defs[0])
+	}
+	// stable registration order
+	if got := reg.defNames(true); got[0] != "read1" || got[1] != "write1" {
+		t.Fatalf("expected stable order, got %v", got)
 	}
 }
 
-func TestClientCreateMessageToolUse(t *testing.T) {
+func TestClientChatCompletionToolCall(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("x-api-key") != "test-key" {
-			t.Errorf("missing x-api-key header")
+		if r.URL.Path != "/v1/chat/completions" {
+			t.Errorf("unexpected path %q", r.URL.Path)
 		}
-		if r.Header.Get("anthropic-version") == "" {
-			t.Errorf("missing anthropic-version header")
+		if r.Header.Get("authorization") != "Bearer test-key" {
+			t.Errorf("missing/incorrect auth header: %q", r.Header.Get("authorization"))
 		}
-		var req messagesRequest
+		var req chatRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			t.Errorf("decode request: %v", err)
 		}
 		if req.Model != "test-model" {
 			t.Errorf("model not propagated: %q", req.Model)
 		}
-		if req.System != "sys" {
-			t.Errorf("system not propagated: %q", req.System)
+		if len(req.Tools) != 1 || req.Tools[0].Function.Name != "find_scenes" || req.ToolChoice != "auto" {
+			t.Errorf("tools not propagated: %+v choice=%q", req.Tools, req.ToolChoice)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"id":"x","model":"test-model","role":"assistant","stop_reason":"tool_use",` +
-			`"content":[{"type":"text","text":"hi"},{"type":"tool_use","id":"t1","name":"find_scenes","input":{"query":"foo"}}],` +
-			`"usage":{"input_tokens":5,"output_tokens":7}}`))
+		_, _ = w.Write([]byte(`{"id":"x","model":"test-model","choices":[{"index":0,` +
+			`"message":{"role":"assistant","content":"on it","tool_calls":[{"id":"call_1","type":"function",` +
+			`"function":{"name":"find_scenes","arguments":"{\"query\":\"foo\"}"}}]},"finish_reason":"tool_calls"}],` +
+			`"usage":{"prompt_tokens":5,"completion_tokens":7,"total_tokens":12}}`))
 	}))
 	defer ts.Close()
 
-	c := NewClient("test-key", "test-model")
-	c.baseURL = ts.URL
-
-	resp, err := c.CreateMessage(context.Background(), "sys",
-		[]Message{{Role: "user", Content: []ContentBlock{{Type: "text", Text: "hello"}}}},
-		[]ToolDef{{Name: "find_scenes", InputSchema: json.RawMessage(`{"type":"object"}`)}},
+	c := NewClient(ts.URL+"/v1", "test-key", "test-model")
+	resp, err := c.CreateChatCompletion(context.Background(),
+		[]Message{{Role: "user", Content: "hello"}},
+		[]ToolDef{{Type: "function", Function: FunctionDef{Name: "find_scenes", Parameters: json.RawMessage(`{"type":"object"}`)}}},
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StopReason != "tool_use" {
-		t.Fatalf("stop_reason: %q", resp.StopReason)
+	if len(resp.Choices) != 1 || resp.Choices[0].FinishReason != "tool_calls" {
+		t.Fatalf("bad choices: %+v", resp.Choices)
 	}
-	if len(resp.Content) != 2 {
-		t.Fatalf("want 2 content blocks, got %d", len(resp.Content))
+	tcs := resp.Choices[0].Message.ToolCalls
+	if len(tcs) != 1 || tcs[0].Function.Name != "find_scenes" || tcs[0].Function.Arguments != `{"query":"foo"}` {
+		t.Fatalf("tool_call not decoded: %+v", tcs)
 	}
-	tu := resp.Content[1]
-	if tu.Type != "tool_use" || tu.Name != "find_scenes" {
-		t.Fatalf("bad tool_use block: %+v", tu)
-	}
-	if string(tu.Input) != `{"query":"foo"}` {
-		t.Fatalf("tool input not preserved: %s", tu.Input)
-	}
-	if resp.Usage.OutputTokens != 7 {
+	if resp.Usage.CompletionTokens != 7 {
 		t.Fatalf("usage not decoded: %+v", resp.Usage)
 	}
 }
 
-func TestClientCreateMessageAPIError(t *testing.T) {
+func TestClientBaseURLTrailingSlash(t *testing.T) {
+	c := NewClient("http://gw:4000/v1/", "", "m")
+	if c.baseURL != "http://gw:4000/v1" {
+		t.Fatalf("trailing slash not trimmed: %q", c.baseURL)
+	}
+}
+
+func TestClientChatCompletionAPIError(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte(`{"type":"error","error":{"type":"invalid_request_error","message":"bad model"}}`))
+		_, _ = w.Write([]byte(`{"error":{"type":"invalid_request_error","message":"bad model"}}`))
 	}))
 	defer ts.Close()
 
-	c := NewClient("k", "m")
-	c.baseURL = ts.URL
-	_, err := c.CreateMessage(context.Background(), "", nil, nil)
+	c := NewClient(ts.URL, "", "m")
+	_, err := c.CreateChatCompletion(context.Background(), nil, nil)
 	if err == nil || !strings.Contains(err.Error(), "bad model") {
 		t.Fatalf("want surfaced api error, got %v", err)
 	}
 }
 
-// tool_result blocks must marshal with tool_use_id + content and omit the text/id
-// fields so the Anthropic API accepts the follow-up message.
-func TestToolResultBlockMarshal(t *testing.T) {
-	b := ContentBlock{Type: "tool_result", ToolUseID: "t1", Content: `{"count":3}`}
-	out, err := json.Marshal(b)
+// A role:"tool" result message must marshal with tool_call_id + content and omit
+// tool_calls so the gateway accepts the follow-up message.
+func TestToolResultMessageMarshal(t *testing.T) {
+	m := Message{Role: "tool", ToolCallID: "call_1", Content: `{"count":3}`}
+	out, err := json.Marshal(m)
 	if err != nil {
 		t.Fatal(err)
 	}
 	s := string(out)
-	for _, want := range []string{`"type":"tool_result"`, `"tool_use_id":"t1"`, `"content":"{\"count\":3}"`} {
+	for _, want := range []string{`"role":"tool"`, `"tool_call_id":"call_1"`, `"content":"{\"count\":3}"`} {
 		if !strings.Contains(s, want) {
-			t.Fatalf("marshalled block missing %s: %s", want, s)
+			t.Fatalf("marshalled tool message missing %s: %s", want, s)
 		}
 	}
-	if strings.Contains(s, `"text"`) || strings.Contains(s, `"name"`) {
-		t.Fatalf("tool_result block should omit text/name: %s", s)
+	if strings.Contains(s, "tool_calls") {
+		t.Fatalf("tool message should omit tool_calls: %s", s)
 	}
 }

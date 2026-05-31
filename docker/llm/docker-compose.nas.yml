@@ -1,44 +1,66 @@
 # stash-llm — NAS deployment (overwatch-stash, Synology DSM, x86_64)
 #
-# Mirrors the Jellyfin layout already on this NAS:
-#   • media is the SAME folders Jellyfin uses, mounted READ-ONLY
-#   • app state lives under /volume1/docker/stash/ (Jellyfin uses /volume1/docker/jellyfin/)
+# Two services on a private network:
+#   • stash    — this fork's image; talks ONLY to the litellm gateway for the assistant
+#   • litellm  — OpenAI-compatible gateway fronting MiniMax (+ Claude via a bridge)
 #
-# The image is this fork's build (custom LLM code baked in) — NOT stashapp/stash:latest.
-# Either pull from ghcr (see DEPLOY-NAS.md) or load a saved tar:  image: stash-llm:dev
-#
-# Secrets (Anthropic key) come from ./stash.env — see .env.example. Never commit the real file.
+# Media is the SAME folders Jellyfin uses, mounted READ-ONLY. App state lives under
+# /volume1/docker/stash/ (Jellyfin uses /volume1/docker/jellyfin/).
+# Secrets come from ./stash.env and ./litellm.env — see the .env.example files.
+# Never commit the real env files.
 
 services:
   stash:
     image: ghcr.io/ryokushen/stash:dev
     container_name: stash-llm
     restart: unless-stopped
+    depends_on:
+      - litellm
     ports:
       - "9999:9999"
     env_file:
-      - ./stash.env          # ANTHROPIC API key + assistant settings (git-ignored)
+      - ./stash.env            # assistant gateway settings (git-ignored)
     environment:
       - STASH_STASH=/data/
       - STASH_GENERATED=/generated/
       - STASH_METADATA=/metadata/
       - STASH_CACHE=/cache/
       - STASH_PORT=9999
+      # assistant → gateway (override here or in stash.env)
+      - STASH_ASSISTANT_BASE_URL=http://litellm:4000/v1
+      - STASH_ASSISTANT_MODEL=minimax
     logging:
       driver: "json-file"
       options:
         max-file: "10"
         max-size: "2m"
+    networks: [stashnet]
     volumes:
       - /etc/localtime:/etc/localtime:ro
-
       # ── App state (read-write), mirroring the Jellyfin path convention ──
       - /volume1/docker/stash/config:/root/.stash      # config.yml, scrapers, plugins (REQUIRED dir)
       - /volume1/docker/stash/metadata:/metadata
       - /volume1/docker/stash/cache:/cache
       - /volume1/docker/stash/blobs:/blobs
       - /volume1/docker/stash/generated:/generated
-
       # ── Media library: the SAME folders Jellyfin indexes, READ-ONLY ──
       - /volume2/data/torrents/completed:/data/completed:ro
       - /volume2/data/torrents/incoming:/data/incoming:ro
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-stable   # pin/verify; avoid 1.82.7/1.82.8 (compromised)
+    container_name: stash-litellm
+    restart: unless-stopped
+    env_file:
+      - ./litellm.env          # MINIMAX_API_KEY, LITELLM_MASTER_KEY, CLAUDE_BRIDGE_* (git-ignored)
+    command: ["--config", "/etc/litellm/config.yaml", "--port", "4000"]
+    volumes:
+      - ./litellm/config.yaml:/etc/litellm/config.yaml:ro
+    networks: [stashnet]
+    # not published to the host — only stash reaches it over the private network.
+    # expose 4000 externally only for debugging:
+    # ports: ["4000:4000"]
+
+networks:
+  stashnet:
+    driver: bridge

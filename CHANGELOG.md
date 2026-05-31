@@ -12,21 +12,24 @@ versioning is independent of upstream — it is anchored to the upstream base re
 ## [Unreleased]
 
 ### Added
-- **Phase 1 — Claude library assistant** (see `docs/llm/DESIGN.md`):
-  - `internal/llm/`: a dependency-free Anthropic Messages API client, a tool registry, the
-    agent loop with an in-memory conversation store, and the Phase 1 library tools —
-    `library_stats`, `find_scenes` / `find_performers` / `find_studios` / `find_tags` (read) and
-    `create_tag`, `add_tags_to_scenes`, `set_scenes_organized` (write). Tools call stash's
+- **Phase 1 — library assistant** (see `docs/llm/DESIGN.md`):
+  - `internal/llm/`: a dependency-free **OpenAI-compatible** chat-completions client (function
+    calling), a tool registry, the agent loop with an in-memory conversation store, and the Phase 1
+    library tools — `library_stats`, `find_scenes` / `find_performers` / `find_studios` / `find_tags`
+    (read) and `create_tag`, `add_tags_to_scenes`, `set_scenes_organized` (write). Tools call stash's
     repository in-process via `txn.WithReadTxn` / `txn.WithTxn`.
+  - **Multi-provider via a gateway:** stash talks to one OpenAI-compatible endpoint (a LiteLLM
+    gateway) that fronts the real providers and owns their auth/OAuth refresh — `docker/llm/litellm/`
+    config exposes `minimax` (MiniMax-M2.7, API key) and `claude` (via an external OAuth bridge).
   - Write policy: `readonly` omits write tools, `auto` executes them, `ask` (default) emits a
     `confirm_required` event and defers to `POST /llm/confirm` after the user approves in the UI.
   - `internal/api/routes_llm.go`: `GET /llm/status`, `POST /llm/chat` (Server-Sent Events),
     `POST /llm/confirm` — behind stash's global auth middleware.
-  - Config keys `anthropic_api_key` + `assistant_{model,enabled,write_policy,dev_loop_enabled}`
-    with env overrides (`STASH_ANTHROPIC_API_KEY`, …).
+  - Config keys `assistant_base_url` / `assistant_api_key` / `assistant_model` +
+    `assistant_{enabled,write_policy,dev_loop_enabled}`, env overrides (`STASH_ASSISTANT_BASE_URL`, …).
   - `ui/v2.5/src/components/Assistant/`: a floating chat widget (SSE-over-fetch) mounted on all
     authenticated views, with inline tool activity and write-confirmation prompts.
-  - Unit tests for the registry, client request/response, API-error surfacing, and tool_result
+  - Unit tests for the registry, client request/response, API-error surfacing, and tool-result
     marshalling. Verified end-to-end with a full Docker build + boot (UI 200, all 8 tools listed).
 - Fork scaffolding and documentation:
   - `README.md` fork banner (purpose, added code paths, quick build), preserving upstream's README below it.
