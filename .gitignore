@@ -64,3 +64,10 @@ node_modules
 dist
 .DS_Store
 /.local*
+
+# stash-llm fork: never commit secrets or local build artifacts
+stash.env
+docker/llm/stash.env
+*.env
+!docker/llm/.env.example
+stash-llm-*.tar

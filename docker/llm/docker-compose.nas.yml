@@ -1,0 +1,44 @@
+# stash-llm — NAS deployment (overwatch-stash, Synology DSM, x86_64)
+#
+# Mirrors the Jellyfin layout already on this NAS:
+#   • media is the SAME folders Jellyfin uses, mounted READ-ONLY
+#   • app state lives under /volume1/docker/stash/ (Jellyfin uses /volume1/docker/jellyfin/)
+#
+# The image is this fork's build (custom LLM code baked in) — NOT stashapp/stash:latest.
+# Either pull from ghcr (see DEPLOY-NAS.md) or load a saved tar:  image: stash-llm:dev
+#
+# Secrets (Anthropic key) come from ./stash.env — see .env.example. Never commit the real file.
+
+services:
+  stash:
+    image: ghcr.io/ryokushen/stash:dev
+    container_name: stash-llm
+    restart: unless-stopped
+    ports:
+      - "9999:9999"
+    env_file:
+      - ./stash.env          # ANTHROPIC API key + assistant settings (git-ignored)
+    environment:
+      - STASH_STASH=/data/
+      - STASH_GENERATED=/generated/
+      - STASH_METADATA=/metadata/
+      - STASH_CACHE=/cache/
+      - STASH_PORT=9999
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "10"
+        max-size: "2m"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+
+      # ── App state (read-write), mirroring the Jellyfin path convention ──
+      - /volume1/docker/stash/config:/root/.stash      # config.yml, scrapers, plugins (REQUIRED dir)
+      - /volume1/docker/stash/metadata:/metadata
+      - /volume1/docker/stash/cache:/cache
+      - /volume1/docker/stash/blobs:/blobs
+      - /volume1/docker/stash/generated:/generated
+
+      # ── Media library: the SAME folders Jellyfin indexes, READ-ONLY ──
+      - /volume2/data/torrents/completed:/data/completed:ro
+      - /volume2/data/torrents/incoming:/data/incoming:ro

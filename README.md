@@ -1,3 +1,35 @@
+# stash-llm — Stash with an embedded Claude assistant
+
+> **This is a fork of [stashapp/stash](https://github.com/stashapp/stash).** It adds an internal,
+> Claude-powered LLM interface so the media library can be queried and curated in natural language —
+> and, in a later phase, so new features can be iterated on from inside the running app.
+>
+> - **Upstream:** `stashapp/stash` (tracked via the `upstream` git remote). This fork is based on the
+>   stable release **v0.31.1** (the `develop` tip currently has a Docker-build regression — see
+>   [`docs/llm/DESIGN.md`](docs/llm/DESIGN.md#appendix-why-v0311-not-develop)).
+> - **What's added** lives under clearly namespaced paths so upstream merges stay clean:
+>   `internal/llm/` (Go service), an `/llm` HTTP route, an `assistant` GraphQL/SSE surface, and
+>   `ui/v2.5/src/components/Assistant/` (React panel). Nothing in this fork is committed with secrets.
+> - **Model provider:** Anthropic (Claude). The API key is read from stash config / env, never committed.
+> - **Deploy target:** a Docker container on the NAS, reusing the existing Jellyfin media folders
+>   read-only. See [`docs/llm/DEPLOY-NAS.md`](docs/llm/DEPLOY-NAS.md).
+>
+> | Doc | What it covers |
+> |---|---|
+> | [`docs/llm/DESIGN.md`](docs/llm/DESIGN.md) | Architecture, phased plan, tool surface, endpoints, config/secrets, Phase 2 sandboxing |
+> | [`docs/llm/DEPLOY-NAS.md`](docs/llm/DEPLOY-NAS.md) | NAS Docker deployment (mounts, env, ghcr build/push/pull) |
+> | [`docker/llm/`](docker/llm/) | `docker-compose.nas.yml`, `build-and-push.sh`, `.env.example` |
+>
+> ### Quick build (this fork)
+> ```bash
+> # builds UI + Go backend from source into an image (no local Go/Node needed — all in Docker)
+> ./docker/llm/build-and-push.sh            # local image stash-llm:dev
+> ./docker/llm/build-and-push.sh --push     # also push to ghcr.io/ryokushen/stash:dev
+> ```
+> Everything below this line is upstream Stash's original README.
+
+---
+
 # Stash
 
 [![Build](https://github.com/stashapp/stash/actions/workflows/build.yml/badge.svg?branch=develop&event=push)](https://github.com/stashapp/stash/actions/workflows/build.yml)
