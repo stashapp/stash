@@ -4,3 +4,6 @@ go.sum text eol=lf
 vendor/** -text
 ui/v2.5/**/*.ts* text eol=lf
 ui/v2.5/**/*.scss text eol=lf
+
+# stash-llm: shell scripts must stay LF so the shebang works in bash
+*.sh text eol=lf
