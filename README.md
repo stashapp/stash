@@ -1,26 +1,27 @@
-# stash-llm — Stash with an embedded Claude assistant
+# stash-llm — Stash with an embedded LLM assistant
 
-> **This is a fork of [stashapp/stash](https://github.com/stashapp/stash).** It adds an internal,
-> Claude-powered LLM interface so the media library can be queried and curated in natural language —
-> and, in a later phase, so new features can be iterated on from inside the running app.
+> **This is a fork of [stashapp/stash](https://github.com/stashapp/stash).** It adds an internal LLM
+> assistant so the media library can be queried and curated in natural language — and, in a later
+> phase, so new features can be iterated on from inside the running app.
 >
 > - **Upstream:** `stashapp/stash` (tracked via the `upstream` git remote). This fork is based on the
 >   stable release **v0.31.1** (the `develop` tip currently has a Docker-build regression — see
 >   [`docs/llm/DESIGN.md`](docs/llm/DESIGN.md#appendix-why-v0311-not-develop)).
 > - **What's added** lives under clearly namespaced paths so upstream merges stay clean:
->   `internal/llm/` (Go service), an `/llm` HTTP route, an `assistant` GraphQL/SSE surface, and
->   `ui/v2.5/src/components/Assistant/` (React panel). Nothing in this fork is committed with secrets.
+>   `internal/llm/` (Go service + OpenAI-compatible client + tools), an `/llm` REST + SSE route, and
+>   `ui/v2.5/src/components/Assistant/` (React widget), plus a LiteLLM gateway config under
+>   `docker/llm/litellm/`. Nothing in this fork is committed with secrets.
 > - **Model access:** stash speaks one OpenAI-compatible API to a **LiteLLM gateway** that fronts the
 >   real providers (MiniMax via API key; Claude via an OAuth bridge) and owns provider auth/refresh.
 >   stash holds only the gateway URL/key/model — never provider secrets. See `docker/llm/litellm/`.
-> - **Deploy target:** a Docker container on the NAS, reusing the existing Jellyfin media folders
->   read-only. See [`docs/llm/DEPLOY-NAS.md`](docs/llm/DEPLOY-NAS.md).
+> - **Deploy target:** two Docker containers (stash + litellm) on the NAS, reusing the existing
+>   Jellyfin media folders read-only. See [`docs/llm/DEPLOY-NAS.md`](docs/llm/DEPLOY-NAS.md).
 >
 > | Doc | What it covers |
 > |---|---|
-> | [`docs/llm/DESIGN.md`](docs/llm/DESIGN.md) | Architecture, phased plan, tool surface, endpoints, config/secrets, Phase 2 sandboxing |
-> | [`docs/llm/DEPLOY-NAS.md`](docs/llm/DEPLOY-NAS.md) | NAS Docker deployment (mounts, env, ghcr build/push/pull) |
-> | [`docker/llm/`](docker/llm/) | `docker-compose.nas.yml`, `build-and-push.sh`, `.env.example` |
+> | [`docs/llm/DESIGN.md`](docs/llm/DESIGN.md) | Architecture, phased plan, tool surface, endpoints, providers/config/secrets, Phase 2 sandboxing |
+> | [`docs/llm/DEPLOY-NAS.md`](docs/llm/DEPLOY-NAS.md) | NAS Docker deployment (stash + litellm, mounts, env, ghcr/save-load transfer) |
+> | [`docker/llm/`](docker/llm/) | `docker-compose.nas.yml`, `build-and-push.sh`, `.env.example` (stash), `litellm.env.example`, `litellm/config.yaml` |
 > | [`CHANGELOG.md`](CHANGELOG.md) | Fork-specific changes (Keep a Changelog format) |
 >
 > ### Quick build (this fork)

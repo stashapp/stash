@@ -66,7 +66,12 @@ box — `docker compose` plugin vs `docker-compose`):
 ssh -p 3239 shadowshark@overwatch-stash \
   'cd /volume1/docker/stash/compose && /usr/local/bin/docker compose -f docker-compose.nas.yml up -d'
 ```
-Fallback plain `docker run` (if compose isn't available):
+**Compose is the recommended path** — it brings up both `stash` and `litellm` on a private network so
+stash can reach the gateway at `http://litellm:4000/v1`. The plain `docker run` fallback below starts
+**only stash**; if you use it you must also run litellm yourself (`docker run … ghcr.io/berriai/litellm:main-stable
+--config …`) on a shared network and set `STASH_ASSISTANT_BASE_URL` accordingly.
+
+Fallback plain `docker run` (stash only — see note above):
 ```bash
 ssh -p 3239 shadowshark@overwatch-stash '/usr/local/bin/docker run -d --name stash-llm \
   --restart unless-stopped -p 9999:9999 \

@@ -1,6 +1,6 @@
 # stash-llm — Design
 
-Embedding a Claude-powered assistant inside Stash. This document is the source of truth for the
+Embedding an LLM-powered assistant inside Stash (model-agnostic, via a gateway). This document is the source of truth for the
 architecture and the phased plan. It references the real upstream code paths so implementation can
 follow it directly.
 
@@ -9,7 +9,7 @@ follow it directly.
 ## 1. Goals & non-goals
 
 **Goals**
-- A **library assistant** (Phase 1): chat with Claude to search, summarize, and curate the media
+- A **library assistant** (Phase 1): chat with an LLM to search, summarize, and curate the media
   library in natural language — find scenes, bulk-tag, clean up metadata, answer "what do I have"
   questions — by calling Stash's existing data layer through a defined tool surface.
 - An **agentic dev loop** (Phase 2): an in-app agent that can read/write this fork's own source,
@@ -29,17 +29,19 @@ follow it directly.
 
 Mapped from the v0.31.1 source:
 
-| Concern | Upstream location | How we hook in |
-|---|---|---|
-| HTTP routing (chi) | `internal/api/server.go` (`r.Mount("/scene", …)` block, ~L214) | Add `r.Mount("/llm", server.getLLMRoutes())` next to the others |
-| GraphQL schema | `graphql/schema/schema.graphql` + `graphql/schema/types/*.graphql` | Add `graphql/schema/types/assistant.graphql`; `make generate-backend` regenerates |
-| GraphQL resolvers | `internal/api/resolver.go` (`Resolver` struct holds `repository`, `sceneService`, `imageService`, `galleryService`, `groupService`) | New `resolver_*_assistant.go`; reuse the same services/repository the resolver already has |
-| Data access | `models.Repository` + the `*Service` types in `internal/manager` | LLM **tools call these directly in-process** — no HTTP round-trip back to `/graphql` |
-| Config / secrets | `internal/manager/config/config.go` (keys like `ApiKey = "api_key"`, getters like `GetAPIKey()`, koanf-backed with `STASH_` env override) | Add `assistant_base_url` / `assistant_api_key` / `assistant_model` (+ getters); env overrides `STASH_ASSISTANT_BASE_URL`, … |
-| UI components | `ui/v2.5/src/components/` (domain folders), `MainNavbar.tsx`, `Settings/` | Add `components/Assistant/`, a navbar entry, and a Settings section for the API key/model |
+As built (mapped from the v0.31.1 source). We deliberately kept the surface minimal — a REST + SSE
+route, **no GraphQL schema changes** — so upstream merges stay clean:
 
-New Go code: **`internal/llm/`** (provider client, tool registry, chat session/loop). It depends on
-`models.Repository` and the manager services — injected the same way the resolver gets them.
+| Concern | Upstream location | How we hooked in |
+|---|---|---|
+| HTTP routing (chi) | `internal/api/server.go` (`r.Mount("/scene", …)` block, ~L214) | `r.Mount("/llm", server.getLLMRoutes())` next to the others ✓ |
+| Assistant endpoints | new `internal/api/routes_llm.go` | `GET /llm/status`, `POST /llm/chat` (SSE), `POST /llm/confirm`. Behind the global `authenticateHandler` middleware. **No GraphQL schema/resolver was added.** |
+| Data access | `models.Repository` + the `*Service` types in `internal/manager` | LLM **tools call these directly in-process** via `txn.WithReadTxn`/`txn.WithTxn` — no HTTP round-trip back to `/graphql` |
+| Config / secrets | `internal/manager/config/config.go` + the env allowlist in `init.go` | `assistant_base_url` / `assistant_api_key` / `assistant_model` (+ `enabled`/`write_policy`/`dev_loop_enabled`) keys & getters. **Each key must also be added to the `envBinds` map in `init.go`** or its `STASH_*` env var is silently dropped. |
+| UI | `ui/v2.5/src/components/` + `App.tsx` | A floating `components/Assistant/AssistantWidget.tsx` mounted once in `App.tsx` (gated off setup views). No navbar entry or Settings section — config is via env/`config.yml`. |
+
+New Go code: **`internal/llm/`** (OpenAI-compatible client, tool registry, agent loop). It depends on
+`models.Repository` and the repository's reader/writers — injected from `server.go` (`getLLMRoutes`).
 
 ---
 
@@ -47,76 +49,77 @@ New Go code: **`internal/llm/`** (provider client, tool registry, chat session/l
 
 ```
 ┌──────────────────────────── browser (React, ui/v2.5) ────────────────────────────┐
-│  components/Assistant/                                                            │
-│   • ChatPanel.tsx  — message list, composer, streaming tokens                     │
-│   • useAssistant.ts — opens SSE to POST /llm/chat, renders tool-call cards         │
-│  components/Settings/  → gateway URL + model + feature flags (or via env)          │
+│  components/Assistant/AssistantWidget.tsx — floating chat widget mounted in App.tsx │
+│   parses the SSE stream (text / tool_call / tool_result / confirm_required / done)  │
 └───────────────────────────────────┬───────────────────────────────────────────────┘
-                                     │  POST /llm/chat  (SSE stream of tokens + events)
+                                     │  POST /llm/chat  (SSE event stream)
                                      ▼
 ┌──────────────────── Go backend (internal/api  +  internal/llm) ────────────────────┐
-│  internal/api/routes_llm.go        — chi route, auth, request/SSE plumbing          │
+│  internal/api/routes_llm.go   — chi route (/status, /chat SSE, /confirm), auth      │
 │  internal/llm/                                                                      │
-│   • client.go      — OpenAI-compatible chat-completions client (tool use)           │
-│   • session.go     — the agent loop: send → tool_use → run tool → tool_result → …   │
-│   • tools.go       — tool registry; each tool = JSON schema + Go handler            │
+│   • client.go        — OpenAI-compatible chat-completions client (function calling) │
+│   • service.go       — agent loop + in-memory conversations + settings/status        │
+│   • tools.go         — tool registry; each tool = JSON schema + Go handler           │
 │   • tools_library.go — Phase 1 handlers calling repository / *Service               │
-│   • config.go      — reads key/model/flags from manager/config                      │
-└───────────────────────────────────┬───────────────────────────────────────────────┘
-                                     │  in-process calls (no self-HTTP)
-                                     ▼
-        models.Repository · SceneService · ImageService · GalleryService · GroupService
-                                     │
-                                     ▼
-                          SQLite · ffmpeg · generated content
+└───────────┬─────────────────────────────────────────────────┬───────────────────────┘
+            │ in-process calls (no self-HTTP)                   │ OpenAI /v1/chat/completions
+            ▼                                                   ▼
+  models.Repository · Scene/Performer/             ┌──────── LiteLLM gateway ────────┐
+  Studio/Tag reader-writers                        │  minimax → MiniMax API (key)     │
+            │                                       │  claude  → Claude-OAuth bridge   │
+            ▼                                       └──────────────────────────────────┘
+   SQLite · ffmpeg · generated content
 ```
 
 ### Transport choice — REST + SSE for the chat, in-process for tools
 - **Chat stream:** `POST /llm/chat` returning **Server-Sent Events**. SSE is the simplest fit for
-  streaming Claude tokens + structured events (`tool_call`, `tool_result`, `error`, `done`). A
-  GraphQL subscription (Stash already runs a websocket transport, `server.go` ~L176) is the
-  alternative; we pick SSE to keep the assistant self-contained and avoid schema churn on the hot path.
-- **Tools:** the LLM service calls `repository`/`*Service` **directly in Go**. We do *not* have Claude
-  call back into `/graphql` over HTTP — same process, so direct calls are faster, transactional, and
-  avoid auth re-plumbing. (The GraphQL schema addition in §2 is only for *non-streaming* helpers like
-  listing available tools / conversation history, not the token stream.)
+  emitting the assistant's text plus structured events (`text`, `tool_call`, `tool_result`,
+  `confirm_required`, `error`, `done`) per loop turn. (A GraphQL subscription over Stash's existing
+  websocket transport was the alternative; SSE keeps the assistant self-contained with no schema churn.)
+- **Tools:** the LLM service calls the repository reader/writers **directly in Go** — it does *not* call
+  back into `/graphql` over HTTP. Same process, so calls are faster, transactional, and need no auth
+  re-plumbing. No GraphQL schema or resolver was added (see §2).
 
 ### Request/response shape (`POST /llm/chat`)
 ```jsonc
 // request
-{ "conversationId": "uuid|null", "message": "tag every untagged scene from studio X as 'review'" }
+{ "conversationId": "uuid|null", "message": "tag every unorganized scene from studio X as 'review'" }
 
-// SSE events (text/event-stream)
-event: token        data: {"text":"I found "}
-event: tool_call    data: {"id":"t1","name":"find_scenes","input":{"studio":"X","untagged":true}}
-event: tool_result  data: {"id":"t1","summary":"12 scenes"}
-event: token        data: {"text":"…tagging them now."}
-event: done         data: {"conversationId":"uuid","usage":{"input":1234,"output":567}}
+// SSE events (text/event-stream) — one event per line-pair, terminated by a blank line
+event: text             data: {"text":"I found "}
+event: tool_call        data: {"id":"call_1","name":"find_scenes","input":{"studio":"X","organized":false}}
+event: tool_result      data: {"id":"call_1","name":"find_scenes","is_error":false,"summary":"{\"count\":12,...}"}
+event: confirm_required data: {"id":"call_2","name":"add_tags_to_scenes","input":{"scene_ids":[...],"tag_ids":[7]}}
+event: text             data: {"text":"That will tag 12 scenes — approve?"}
+event: done             data: {"conversationId":"uuid","usage":{"prompt_tokens":1234,"completion_tokens":567,"total_tokens":1801}}
 ```
+`confirm_required` appears only under the `ask` write policy; the UI then calls `POST /llm/confirm`
+`{name, input}` to execute the approved write.
 
 ---
 
 ## 4. Tool surface (Phase 1)
 
-Each tool is a JSON-schema definition (sent to Claude as a `tool`) plus a Go handler that wraps the
-existing data layer. **Read tools** are always on; **write tools** are gated by a confirmation policy
-(see §6). Initial set:
+Each tool is a JSON-schema definition (sent to the model as an OpenAI function) plus a Go handler that
+wraps the data layer. **Read tools** are always on; **write tools** are gated by the write policy
+(see §6). The **8 tools shipped in Phase 1** (`internal/llm/tools_library.go`):
 
 | Tool | Wraps | Kind |
 |---|---|---|
-| `find_scenes` | scene query (filters: text, studio, performer, tags, rating, organized, date, duration) | read |
-| `find_performers` / `find_studios` / `find_tags` | corresponding queries | read |
-| `get_scene` | scene by id incl. files, tags, performers, markers | read |
-| `library_stats` | the stats resolver (`internal/api`, `Stats.tsx` backs this in UI) | read |
-| `find_duplicates` | phash duplicate query (Stash already computes phash) | read |
-| `add_tags_to_scenes` / `remove_tags_from_scenes` | bulk scene update via `SceneService` | write |
-| `set_scene_studio` / `set_scene_performers` | scene update | write |
-| `set_organized` | bulk organized flag | write |
-| `create_tag` / `create_studio` | tag/studio create | write |
-| `trigger_scan` / `trigger_generate` | the metadata task mutations (`resolver_mutation_metadata.go`) | write (job) |
+| `library_stats` | counts via `repo.{Scene,Performer,Studio,Tag}.Count` | read |
+| `find_scenes` | scene query (filters: free-text, organized, tag names, studio name, performer names; paginated) | read |
+| `find_performers` | performer query (free-text) | read |
+| `find_studios` | studio query (free-text) | read |
+| `find_tags` | tag query (free-text) | read |
+| `create_tag` | `Tag.Create` | write |
+| `add_tags_to_scenes` | `Scene.UpdatePartial` with `UpdateIDs{Mode: Add}` over many scene ids | write |
+| `set_scenes_organized` | `Scene.UpdatePartial` setting the organized flag over many scene ids | write |
 
 Tools return compact, model-friendly JSON (ids + a few display fields), never raw rows, to keep token
-use down. Pagination is enforced (default 25, hard cap) and surfaced to the model.
+use down. `find_scenes` pagination defaults to 25 with a hard cap of 100.
+
+Natural follow-ups (not yet built): `get_scene` detail, `find_duplicates` (phash), `remove_tags`,
+`set_scene_studio`/`set_scene_performers`, `create_studio`, and `trigger_scan`/`trigger_generate` jobs.
 
 ---
 

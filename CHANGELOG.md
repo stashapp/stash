@@ -1,7 +1,7 @@
 # Changelog
 
 All notable changes to the **stash-llm** fork are documented here. This tracks *fork-specific* changes
-only — the embedded Claude assistant and related infrastructure. For changes to upstream Stash itself,
+only — the embedded LLM assistant and related infrastructure. For changes to upstream Stash itself,
 see [stashapp/stash releases](https://github.com/stashapp/stash/releases) and the in-app changelog under
 `ui/v2.5/src/docs/en/Changelog/`.
 
@@ -34,8 +34,8 @@ versioning is independent of upstream — it is anchored to the upstream base re
 - Fork scaffolding and documentation:
   - `README.md` fork banner (purpose, added code paths, quick build), preserving upstream's README below it.
   - `docs/llm/DESIGN.md` — architecture, phased plan, Phase 1 tool surface, config/secrets, and safety model, grounded in the real v0.31.1 integration points (`internal/api/server.go` routing, the `Resolver` services, `internal/manager/config` keys, UI layout).
-  - `docs/llm/DEPLOY-NAS.md` — NAS Docker deployment guide (reuse Jellyfin media folders read-only, app state under `/volume1/docker/stash`, ghcr vs save-load transfer, verification).
-  - `docker/llm/docker-compose.nas.yml`, `docker/llm/build-and-push.sh`, `docker/llm/.env.example`.
+  - `docs/llm/DEPLOY-NAS.md` — NAS Docker deployment guide (stash + litellm, reuse Jellyfin media folders read-only, app state under `/volume1/docker/stash`, ghcr vs save-load transfer, verification).
+  - `docker/llm/`: `docker-compose.nas.yml` (stash + litellm services), `build-and-push.sh`, `litellm/config.yaml` (gateway: minimax + claude), and `.env.example` (stash) + `litellm.env.example` (provider secrets).
 - `.gitignore` rules blocking secret env files (`stash.env`, `*.env`) and saved image tars (`stash-llm-*.tar`).
 - `.gitattributes` rule forcing `*.sh` to LF line endings so the build script's shebang works in bash.
 
