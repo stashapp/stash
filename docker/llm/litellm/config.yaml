@@ -5,7 +5,7 @@
 #
 # Models exposed to stash-llm (set STASH_ASSISTANT_MODEL to one of these):
 #   • minimax  — MiniMax-M2.7 via API key. Works headless; the default.
-#   • grok     — xAI Grok via API key (OpenAI-compatible). Works headless; compliant.
+#   • grok     — Grok via grok.com OAuth subscription, routed to the cli-proxy-api bridge.
 
 model_list:
   # ── MiniMax (API key, OpenAI-compatible) — reliable headless default ──────────
@@ -17,16 +17,16 @@ model_list:
       # If tool-calling misbehaves with the native provider, switch the model line
       # to:  model: openai/MiniMax-M2.7   (routes via LiteLLM's OpenAI interface)
 
-  # ── xAI / Grok (API key, OpenAI-compatible) — compliant, headless, no bridge ──
-  # xAI sells a first-party API (api.x.ai/v1) with function calling, so no OAuth
-  # bridge is needed — just XAI_API_KEY. (Using the grok.com *subscription* via
-  # OAuth instead would require a CLIProxyAPI-style bridge with the same ToS/
-  # fragility tradeoffs as Claude-OAuth — not recommended; use the API key.)
-  # Adjust the model id to whatever's current on your xAI account.
+  # ── Grok via OAuth (your grok.com SUBSCRIPTION, not metered API) ─────────────
+  # Routed to the cli-proxy-api bridge container, which holds the Grok OAuth token
+  # and exposes an OpenAI-compatible endpoint. See docker/llm/cliproxy/ and
+  # DEPLOY-NAS.md. NOTE: subscription-OAuth-as-API is gray-area vs xAI's ToS and
+  # depends on OAuth token refresh — fragile, but no metered per-token billing.
   - model_name: grok
     litellm_params:
-      model: xai/grok-4.3
-      api_key: os.environ/XAI_API_KEY
+      model: openai/grok-4.3               # model the bridge exposes (alias grok-latest)
+      api_base: os.environ/GROK_PROXY_URL  # e.g. http://cli-proxy-api:8317/v1
+      api_key: os.environ/GROK_PROXY_KEY   # one of cli-proxy-api's configured api-keys
 
 litellm_settings:
   # tolerate provider-specific param differences (e.g. max_tokens handling)

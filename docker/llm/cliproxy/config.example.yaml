@@ -1,0 +1,22 @@
+# CLIProxyAPI — the Grok-OAuth bridge for stash-llm.
+# Copy to `config.yaml` (git-ignored) and set a random api-key. This container holds
+# your grok.com OAuth token (in auth-dir) and exposes an OpenAI-compatible endpoint
+# that the LiteLLM gateway routes the `grok` model to. See docs/llm/DEPLOY-NAS.md.
+
+port: 8317
+
+# OAuth credential store. Mounted into the container at this path; the Grok login
+# (run once, see DEPLOY-NAS.md) writes the token file here.
+auth-dir: "/root/.cli-proxy-api"
+
+# Keys a caller must present to use this proxy. LiteLLM authenticates with one of
+# these via GROK_PROXY_KEY in litellm.env. Use a random string; this is NOT secret
+# to xAI — it just gates access to the bridge on the private Docker network.
+api-keys:
+  - "REPLACE_WITH_A_RANDOM_KEY"
+
+# Expose the Grok OAuth model under a stable name the gateway can target.
+oauth-model-alias:
+  xai:
+    - name: "grok-4.3"
+      alias: "grok-latest"

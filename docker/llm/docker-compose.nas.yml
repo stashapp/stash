@@ -1,8 +1,9 @@
 # stash-llm — NAS deployment (overwatch-stash, Synology DSM, x86_64)
 #
-# Two services on a private network:
-#   • stash    — this fork's image; talks ONLY to the litellm gateway for the assistant
-#   • litellm  — OpenAI-compatible gateway fronting MiniMax + xAI/Grok (both via API keys)
+# Three services on a private network:
+#   • stash         — this fork's image; talks ONLY to the litellm gateway
+#   • litellm        — OpenAI-compatible gateway: minimax (API key) + grok (→ bridge)
+#   • cli-proxy-api  — Grok-OAuth bridge holding your grok.com OAuth token
 #
 # Media is the SAME folders Jellyfin uses, mounted READ-ONLY. App state lives under
 # /volume1/docker/stash/ (Jellyfin uses /volume1/docker/jellyfin/).
@@ -51,8 +52,10 @@ services:
     image: ghcr.io/berriai/litellm:main-stable   # pin/verify; avoid 1.82.7/1.82.8 (compromised)
     container_name: stash-litellm
     restart: unless-stopped
+    depends_on:
+      - cli-proxy-api
     env_file:
-      - ./litellm.env          # MINIMAX_API_KEY, XAI_API_KEY, LITELLM_MASTER_KEY (git-ignored)
+      - ./litellm.env          # MINIMAX_API_KEY, LITELLM_MASTER_KEY, GROK_PROXY_* (git-ignored)
     command: ["--config", "/etc/litellm/config.yaml", "--port", "4000"]
     volumes:
       - ./litellm/config.yaml:/etc/litellm/config.yaml:ro
@@ -60,6 +63,19 @@ services:
     # not published to the host — only stash reaches it over the private network.
     # expose 4000 externally only for debugging:
     # ports: ["4000:4000"]
+
+  # Grok-OAuth bridge. Holds your grok.com OAuth token (auth-dir) and exposes an
+  # OpenAI-compatible endpoint on :8317 that litellm's `grok` model routes to.
+  # One-time login writes the token into the auth-dir — see DEPLOY-NAS.md.
+  cli-proxy-api:
+    image: eceasy/cli-proxy-api:latest
+    container_name: stash-grok-bridge
+    restart: unless-stopped
+    volumes:
+      - ./cliproxy/config.yaml:/CLIProxyAPI/config.yaml:ro
+      - /volume1/docker/stash/cliproxy/auth:/root/.cli-proxy-api   # OAuth token store
+    networks: [stashnet]
+    # not published to the host — only litellm reaches it over the private network.
 
 networks:
   stashnet:

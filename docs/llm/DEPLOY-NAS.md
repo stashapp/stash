@@ -39,24 +39,42 @@ If you use path **B**, set `image: stash-llm:dev` in the compose file instead of
 ## 3. Prepare state dirs + secrets on the NAS
 ```bash
 ssh -p 3239 shadowshark@overwatch-stash \
-  'mkdir -p /volume1/docker/stash/{config,metadata,cache,blobs,generated}'
+  'mkdir -p /volume1/docker/stash/{config,metadata,cache,blobs,generated} \
+            /volume1/docker/stash/cliproxy/auth'
 ```
-Copy the compose + LiteLLM gateway config into place (via tar, since no scp):
+Copy the compose + gateway/bridge configs into place (via tar, since no scp):
 ```bash
 cd /b/Downloads2/Projects/stash-llm/docker/llm
-tar cf - docker-compose.nas.yml litellm/config.yaml | ssh -p 3239 shadowshark@overwatch-stash \
-  'mkdir -p /volume1/docker/stash/compose && tar xf - -C /volume1/docker/stash/compose'
+tar cf - docker-compose.nas.yml litellm/config.yaml cliproxy/config.example.yaml \
+  | ssh -p 3239 shadowshark@overwatch-stash \
+    'mkdir -p /volume1/docker/stash/compose && tar xf - -C /volume1/docker/stash/compose'
+# on the NAS: cp cliproxy/config.example.yaml cliproxy/config.yaml and set a random api-key
 ```
-Then create the two env files in `/volume1/docker/stash/compose/` from their `.env.example` templates
+Then create the env files in `/volume1/docker/stash/compose/` from their `.env.example` templates
 (**do not commit them**):
 - `stash.env` — `STASH_ASSISTANT_API_KEY` = the LiteLLM master key (must match `litellm.env`), and
   `STASH_ASSISTANT_MODEL` (`minimax` or `grok`). Base URL is preset in the compose file.
-- `litellm.env` — `LITELLM_MASTER_KEY` (a random string), `MINIMAX_API_KEY`, and `XAI_API_KEY`
-  (only needed for the `grok` model).
+- `litellm.env` — `LITELLM_MASTER_KEY` (random), `MINIMAX_API_KEY`, and for the `grok` model:
+  `GROK_PROXY_URL=http://cli-proxy-api:8317/v1` + `GROK_PROXY_KEY` = the api-key you put in
+  `cliproxy/config.yaml`.
+- `cliproxy/config.yaml` — set one random string under `api-keys` (this is `GROK_PROXY_KEY`).
 
-> Both providers use first-party API keys (no OAuth bridge) — compliant and headless. Set
-> `STASH_ASSISTANT_MODEL=minimax` or `=grok`; provide whichever provider key(s) you'll use in
-> `litellm.env`, and comment out the unused model in `litellm/config.yaml`.
+### 3a. One-time Grok OAuth login (only for the `grok` model)
+The `cli-proxy-api` bridge needs your **grok.com OAuth token**. The login is an interactive
+browser flow, so do it on a machine with a browser, then copy the token to the NAS:
+```bash
+# on your laptop (has a browser) — run the bridge's Grok login (see help.router-for.me for the
+# exact flag; it writes the token into ~/.cli-proxy-api):
+docker run --rm -it -p 8317:8317 -v "$HOME/.cli-proxy-api:/root/.cli-proxy-api" \
+  eceasy/cli-proxy-api:latest <grok-login-command>
+# then ship the resulting token dir to the NAS auth-dir (no scp → tar over ssh):
+tar cf - -C "$HOME/.cli-proxy-api" . | ssh -p 3239 shadowshark@overwatch-stash \
+  'tar xf - -C /volume1/docker/stash/cliproxy/auth'
+```
+> **MiniMax needs none of this** — `STASH_ASSISTANT_MODEL=minimax` works with just `MINIMAX_API_KEY`.
+> Use `grok` only if you want the subscription path (gray-area vs xAI ToS; OAuth tokens refresh and
+> can expire — re-run the login if Grok calls start failing). If you skip Grok, comment out the
+> `grok` model in `litellm/config.yaml` and drop the `cli-proxy-api` service from the compose file.
 
 ## 4. Bring it up
 Synology Container Manager supports compose projects; via CLI (verify the compose binary name on the
@@ -65,10 +83,12 @@ box — `docker compose` plugin vs `docker-compose`):
 ssh -p 3239 shadowshark@overwatch-stash \
   'cd /volume1/docker/stash/compose && /usr/local/bin/docker compose -f docker-compose.nas.yml up -d'
 ```
-**Compose is the recommended path** — it brings up both `stash` and `litellm` on a private network so
-stash can reach the gateway at `http://litellm:4000/v1`. The plain `docker run` fallback below starts
-**only stash**; if you use it you must also run litellm yourself (`docker run … ghcr.io/berriai/litellm:main-stable
---config …`) on a shared network and set `STASH_ASSISTANT_BASE_URL` accordingly.
+**Compose is the recommended path** — it brings up `stash`, `litellm`, and `cli-proxy-api` on a private
+network so stash reaches the gateway at `http://litellm:4000/v1` and litellm reaches the bridge at
+`http://cli-proxy-api:8317/v1`. (If you're only using `minimax`, the `cli-proxy-api` service is
+unused and can be removed.) The plain `docker run` fallback below starts **only stash**; if you use it
+you must run litellm (and, for grok, cli-proxy-api) yourself on a shared network and set
+`STASH_ASSISTANT_BASE_URL` accordingly.
 
 Fallback plain `docker run` (stash only — see note above):
 ```bash

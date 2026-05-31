@@ -70,4 +70,5 @@ stash.env
 docker/llm/stash.env
 *.env
 !docker/llm/.env.example
+docker/llm/cliproxy/config.yaml
 stash-llm-*.tar

@@ -66,9 +66,10 @@ New Go code: **`internal/llm/`** (OpenAI-compatible client, tool registry, agent
             ▼                                                   ▼
   models.Repository · Scene/Performer/             ┌──────── LiteLLM gateway ────────┐
   Studio/Tag reader-writers                        │  minimax → MiniMax API (key)     │
-            │                                       │  grok    → xAI Grok API (key)    │
-            ▼                                       └──────────────────────────────────┘
-   SQLite · ffmpeg · generated content
+            │                                       │  grok    → cli-proxy-api bridge  │
+            ▼                                       └──────────────┬───────────────────┘
+   SQLite · ffmpeg · generated content                            ▼  (Grok OAuth token)
+                                                    cli-proxy-api → grok.com subscription
 ```
 
 ### Transport choice — REST + SSE for the chat, in-process for tools
@@ -129,14 +130,19 @@ The assistant does **not** call providers directly. It speaks one OpenAI-compati
 API to a **gateway** (LiteLLM) that fronts the real providers and owns their auth. This keeps provider
 keys out of stash entirely and lets the model set change without touching stash code.
 
-- **Gateway:** `docker/llm/litellm/config.yaml` exposes named models to stash, both via first-party
-  API keys (OpenAI-compatible, headless, ToS-compliant — no OAuth bridge):
-  - `minimax` → `minimax/MiniMax-M2.7` via `MINIMAX_API_KEY` (the default).
-  - `grok` → `xai/grok-4.3` via `XAI_API_KEY`.
+- **Gateway:** `docker/llm/litellm/config.yaml` exposes named models to stash:
+  - `minimax` → `minimax/MiniMax-M2.7` via `MINIMAX_API_KEY` (OpenAI-compatible API key; the default,
+    headless and compliant).
+  - `grok` → routed to a **cli-proxy-api bridge** (`docker/llm/cliproxy/`) that holds a **grok.com
+    OAuth subscription** token and exposes an OpenAI-compatible endpoint. This is the operator's
+    explicit choice: use the flat-rate subscription, not metered xAI API billing. Tradeoff:
+    subscription-OAuth-as-API is gray-area vs xAI's ToS and depends on OAuth token refresh (fragile),
+    but xAI has not taken the legal/shutdown stance Anthropic has — so it's viable where Claude-OAuth
+    was not.
   - _Provider history:_ Claude-OAuth was evaluated and dropped — exposing a Claude Max/Pro
     subscription as an API requires a CLI-spoofing bridge, violates Anthropic's ToS, risks account
-    suspension, and is being actively shut down. xAI's first-party API avoids all of that. (The
-    grok.com *subscription* via OAuth would reintroduce the same bridge tradeoffs — use the key.)
+    suspension, and is being actively shut down. The metered xAI API key was also considered but the
+    operator opted for the subscription via OAuth (above).
 - **Config keys** in `internal/manager/config/config.go` (mirroring `GetHandyKey()` / `GetAPIKey()`):
   - `assistant_base_url` (string) — gateway OpenAI base, e.g. `http://litellm:4000/v1`. Env `STASH_ASSISTANT_BASE_URL`.
   - `assistant_api_key` (string) — the gateway (LiteLLM) master key. Env `STASH_ASSISTANT_API_KEY`.

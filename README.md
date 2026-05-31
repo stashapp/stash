@@ -12,10 +12,11 @@
 >   `ui/v2.5/src/components/Assistant/` (React widget), plus a LiteLLM gateway config under
 >   `docker/llm/litellm/`. Nothing in this fork is committed with secrets.
 > - **Model access:** stash speaks one OpenAI-compatible API to a **LiteLLM gateway** that fronts the
->   real providers (MiniMax and xAI/Grok via API keys) and owns provider auth.
->   stash holds only the gateway URL/key/model — never provider secrets. See `docker/llm/litellm/`.
-> - **Deploy target:** two Docker containers (stash + litellm) on the NAS, reusing the existing
->   Jellyfin media folders read-only. See [`docs/llm/DEPLOY-NAS.md`](docs/llm/DEPLOY-NAS.md).
+>   providers: `minimax` (MiniMax API key) and `grok` (your grok.com **OAuth subscription** via a
+>   `cli-proxy-api` bridge — not metered API billing). stash holds only the gateway URL/key/model.
+>   See `docker/llm/`.
+> - **Deploy target:** up to three Docker containers (stash + litellm + the grok bridge) on the NAS,
+>   reusing the existing Jellyfin media folders read-only. See [`docs/llm/DEPLOY-NAS.md`](docs/llm/DEPLOY-NAS.md).
 >
 > | Doc | What it covers |
 > |---|---|
