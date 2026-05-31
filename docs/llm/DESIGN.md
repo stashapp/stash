@@ -162,12 +162,14 @@ use down. Pagination is enforced (default 25, hard cap) and surfaced to the mode
 ## 7. Phased plan
 
 - **Phase 0 — baseline** ✅ — fork builds & runs (v0.31.1); image `stash-llm:dev`; validated on :9999.
-- **Phase 1 — library assistant**
-  1. `internal/llm/` client + loop + tool registry (read tools first).
-  2. `routes_llm.go` SSE endpoint + auth + config keys.
-  3. `components/Assistant/` chat panel + Settings section.
-  4. Write tools behind the `ask` policy + confirmation cards.
-  5. Regression tests under `internal/llm/` and `internal/api/`; live smoke against a seeded library.
+- **Phase 1 — library assistant** ✅ — shipped:
+  1. ✅ `internal/llm/` client + loop + tool registry (8 read/write tools).
+  2. ✅ `routes_llm.go` SSE endpoint + `/status` + `/confirm`, behind global auth; config keys.
+  3. ✅ `components/Assistant/` floating chat widget mounted in `App.tsx`.
+  4. ✅ Write tools behind the `ask` policy + confirm round-trip via `/llm/confirm`.
+  5. ✅ Unit tests; full Docker build + boot smoke. Live chat smoke (real key + library) is the
+     operator's step. Follow-ups: token streaming, a Settings GraphQL UI for the key, persistent
+     conversations (see CHANGELOG "Planned").
 - **Phase 2 — agentic dev loop** — flag-gated, path-jailed, diff-for-review (per §6).
 
 ---

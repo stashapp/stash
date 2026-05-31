@@ -12,6 +12,22 @@ versioning is independent of upstream — it is anchored to the upstream base re
 ## [Unreleased]
 
 ### Added
+- **Phase 1 — Claude library assistant** (see `docs/llm/DESIGN.md`):
+  - `internal/llm/`: a dependency-free Anthropic Messages API client, a tool registry, the
+    agent loop with an in-memory conversation store, and the Phase 1 library tools —
+    `library_stats`, `find_scenes` / `find_performers` / `find_studios` / `find_tags` (read) and
+    `create_tag`, `add_tags_to_scenes`, `set_scenes_organized` (write). Tools call stash's
+    repository in-process via `txn.WithReadTxn` / `txn.WithTxn`.
+  - Write policy: `readonly` omits write tools, `auto` executes them, `ask` (default) emits a
+    `confirm_required` event and defers to `POST /llm/confirm` after the user approves in the UI.
+  - `internal/api/routes_llm.go`: `GET /llm/status`, `POST /llm/chat` (Server-Sent Events),
+    `POST /llm/confirm` — behind stash's global auth middleware.
+  - Config keys `anthropic_api_key` + `assistant_{model,enabled,write_policy,dev_loop_enabled}`
+    with env overrides (`STASH_ANTHROPIC_API_KEY`, …).
+  - `ui/v2.5/src/components/Assistant/`: a floating chat widget (SSE-over-fetch) mounted on all
+    authenticated views, with inline tool activity and write-confirmation prompts.
+  - Unit tests for the registry, client request/response, API-error surfacing, and tool_result
+    marshalling. Verified end-to-end with a full Docker build + boot (UI 200, all 8 tools listed).
 - Fork scaffolding and documentation:
   - `README.md` fork banner (purpose, added code paths, quick build), preserving upstream's README below it.
   - `docs/llm/DESIGN.md` — architecture, phased plan, Phase 1 tool surface, config/secrets, and safety model, grounded in the real v0.31.1 integration points (`internal/api/server.go` routing, the `Resolver` services, `internal/manager/config` keys, UI layout).
@@ -30,9 +46,9 @@ versioning is independent of upstream — it is anchored to the upstream base re
   source; the container boots on `:9999`, returns HTTP 200, and reports `stash v0.31.1`.
 
 ### Planned
-- **Phase 1 — library assistant:** `internal/llm/` (Anthropic client + agent loop + tool registry),
-  `/llm/chat` SSE route, `ui/v2.5/src/components/Assistant/` chat panel, read tools then write tools
-  behind an `ask | auto | readonly` policy with confirmation cards.
+- **Phase 1 polish:** token-level streaming (currently streams per loop turn), a Settings UI to set
+  the API key/model via GraphQL (currently env/config.yml + the `/llm/status` notice), and persisting
+  conversations across restarts (currently in-memory).
 - **Phase 2 — agentic dev loop:** flag-gated, path-jailed, diff-for-review.
 
 [Unreleased]: https://github.com/Ryokushen/stash/compare/v0.31.1...llm-interface
