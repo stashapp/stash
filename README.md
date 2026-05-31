@@ -19,6 +19,7 @@
 > | [`docs/llm/DESIGN.md`](docs/llm/DESIGN.md) | Architecture, phased plan, tool surface, endpoints, config/secrets, Phase 2 sandboxing |
 > | [`docs/llm/DEPLOY-NAS.md`](docs/llm/DEPLOY-NAS.md) | NAS Docker deployment (mounts, env, ghcr build/push/pull) |
 > | [`docker/llm/`](docker/llm/) | `docker-compose.nas.yml`, `build-and-push.sh`, `.env.example` |
+> | [`CHANGELOG.md`](CHANGELOG.md) | Fork-specific changes (Keep a Changelog format) |
 >
 > ### Quick build (this fork)
 > ```bash
