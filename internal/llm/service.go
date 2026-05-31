@@ -41,10 +41,11 @@ type Service struct {
 	convs    *convStore
 }
 
-// NewService builds the service and registers the Phase 1 library tools.
+// NewService builds the service and registers the Phase 1 library + scraper tools.
 func NewService(deps Deps) *Service {
 	reg := NewRegistry()
 	RegisterLibraryTools(reg, deps)
+	RegisterScraperTools(reg)
 	return &Service{registry: reg, convs: newConvStore()}
 }
 

@@ -12,6 +12,12 @@ versioning is independent of upstream — it is anchored to the upstream base re
 ## [Unreleased]
 
 ### Added
+- **Scraper management** — the assistant can now manage metadata scrapers itself:
+  - `internal/llm/tools_scrapers.go`: `list_scrapers` (read) and `reload_scrapers` (write), wrapping
+    `manager.GetInstance().ScraperCache.ListScrapers` and `RefreshScraperCache` in-process.
+  - The runtime image now ships **Python 3** + the common CommunityScrapers deps (requests, lxml,
+    beautifulsoup4, dateutil via apk; cloudscraper + stashapp-tools via pip) so python-backed scrapers
+    actually run (`docker/build/x86_64/Dockerfile`). Previously the alpine image had no Python.
 - **Phase 1 — library assistant** (see `docs/llm/DESIGN.md`):
   - `internal/llm/`: a dependency-free **OpenAI-compatible** chat-completions client (function
     calling), a tool registry, the agent loop with an in-memory conversation store, and the Phase 1

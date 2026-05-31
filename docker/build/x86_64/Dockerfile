@@ -38,6 +38,10 @@ RUN make flags-release flags-pie stash
 # Final Runnable Image
 FROM alpine:latest
 RUN apk add --no-cache ca-certificates vips-tools ffmpeg
+# stash-llm: Python runtime for CommunityScrapers' python-backed scrapers.
+# Prebuilt alpine wheels (no compiler in the final image); pip for the pure-python rest.
+RUN apk add --no-cache python3 py3-pip py3-requests py3-lxml py3-beautifulsoup4 py3-dateutil \
+    && pip install --no-cache-dir --break-system-packages cloudscraper stashapp-tools
 COPY --from=backend /stash/stash /usr/bin/
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 EXPOSE 9999
