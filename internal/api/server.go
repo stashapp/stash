@@ -32,6 +32,7 @@ import (
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/build"
+	"github.com/stashapp/stash/internal/llm"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -220,6 +221,7 @@ func Initialize() (*Server, error) {
 	r.Mount("/tag", server.getTagRoutes())
 	r.Mount("/downloads", server.getDownloadsRoutes())
 	r.Mount("/plugin", server.getPluginRoutes())
+	r.Mount("/llm", server.getLLMRoutes())
 
 	r.HandleFunc("/css", cssHandler(cfg))
 	r.HandleFunc("/javascript", javascriptHandler(cfg))
@@ -412,6 +414,21 @@ func (s *Server) getTagRoutes() chi.Router {
 
 func (s *Server) getDownloadsRoutes() chi.Router {
 	return downloadsRoutes{}.Routes()
+}
+
+func (s *Server) getLLMRoutes() chi.Router {
+	repo := s.manager.Repository
+	service := llm.NewService(llm.Deps{
+		TxnManager: repo.TxnManager,
+		Scene:      repo.Scene,
+		Performer:  repo.Performer,
+		Studio:     repo.Studio,
+		Tag:        repo.Tag,
+	})
+	return llmRoutes{
+		routes:  routes{txnManager: repo.TxnManager},
+		service: service,
+	}.Routes()
 }
 
 func (s *Server) getPluginRoutes() chi.Router {

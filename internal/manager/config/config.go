@@ -43,6 +43,18 @@ const (
 	Password            = "password"
 	MaxSessionAge       = "max_session_age"
 
+	// Assistant (Claude LLM) config keys — see internal/llm.
+	// Env overrides follow the STASH_ prefix convention, e.g. STASH_ANTHROPIC_API_KEY.
+	AnthropicAPIKey         = "anthropic_api_key"
+	AssistantModel          = "assistant_model"
+	AssistantEnabled        = "assistant_enabled"
+	AssistantWritePolicy    = "assistant_write_policy"     // ask | auto | readonly
+	AssistantDevLoopEnabled = "assistant_dev_loop_enabled" // Phase 2 gate
+
+	assistantModelDefault       = "claude-opus-4-8"
+	assistantEnabledDefault     = true
+	assistantWritePolicyDefault = "ask"
+
 	// SFWContentMode mode config key
 	SFWContentMode = "sfw_content_mode"
 
@@ -1548,6 +1560,37 @@ func (i *Config) GetDisableCustomizations() bool {
 
 func (i *Config) GetHandyKey() string {
 	return i.getString(HandyKey)
+}
+
+// Assistant (Claude LLM) settings — see internal/llm.
+
+func (i *Config) GetAnthropicAPIKey() string {
+	return i.getString(AnthropicAPIKey)
+}
+
+func (i *Config) GetAssistantModel() string {
+	if v := i.getString(AssistantModel); v != "" {
+		return v
+	}
+	return assistantModelDefault
+}
+
+func (i *Config) GetAssistantEnabled() bool {
+	return i.getBoolDefault(AssistantEnabled, assistantEnabledDefault)
+}
+
+// GetAssistantWritePolicy returns one of "ask", "auto", or "readonly".
+func (i *Config) GetAssistantWritePolicy() string {
+	switch v := i.getString(AssistantWritePolicy); v {
+	case "ask", "auto", "readonly":
+		return v
+	default:
+		return assistantWritePolicyDefault
+	}
+}
+
+func (i *Config) GetAssistantDevLoopEnabled() bool {
+	return i.getBool(AssistantDevLoopEnabled)
 }
 
 func (i *Config) GetFunscriptOffset() int {
