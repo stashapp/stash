@@ -26,6 +26,7 @@ import Mousetrap from "mousetrap";
 import MousetrapPause from "mousetrap-pause";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { MainNavbar } from "./components/MainNavbar";
+import { AssistantWidget } from "./components/Assistant/AssistantWidget";
 import { PageNotFound } from "./components/PageNotFound";
 import * as GQL from "./core/generated-graphql";
 import { makeTitleProps } from "./hooks/title";
@@ -242,6 +243,13 @@ export const App: React.FC = () => {
     }
   }
 
+  function maybeRenderAssistant() {
+    // floating Claude assistant — available on all authenticated views, not setup
+    if (!setupMatch) {
+      return <AssistantWidget />;
+    }
+  }
+
   function renderContent() {
     if (!systemStatusData) {
       return <LoadingIndicator />;
@@ -371,6 +379,7 @@ export const App: React.FC = () => {
                         <Helmet {...titleProps} />
                         {maybeRenderNavbar()}
                         <MainContainer>{renderContent()}</MainContainer>
+                        {maybeRenderAssistant()}
                       </InteractiveProvider>
                     </ManualProvider>
                   </LightboxProvider>
