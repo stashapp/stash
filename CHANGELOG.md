@@ -12,6 +12,13 @@ versioning is independent of upstream — it is anchored to the upstream base re
 ## [Unreleased]
 
 ### Added
+- **Bulk identify / mass tagging** — the assistant can now drive stash-box identification:
+  - `identify_scenes` (write): wraps `metadataIdentify` / `manager.CreateIdentifyJob` — runs the
+    Identify task over all or selected scenes against the configured stash-box endpoints (StashDB,
+    ThePornDB, …) in priority order, as a background job. Supports `set_organized`,
+    `skip_multiple_matches`, and `flag_multiple_as_tag` (tags ambiguous skips for manual review).
+  - `fingerprint_coverage` (read): reports phash coverage (with/missing) so you know whether to run
+    Generate → Phash before identifying (mass matching is fingerprint-based).
 - **Scraper management** — the assistant can now manage metadata scrapers itself:
   - `internal/llm/tools_scrapers.go`: `list_scrapers` (read) and `reload_scrapers` (write), wrapping
     `manager.GetInstance().ScraperCache.ListScrapers` and `RefreshScraperCache` in-process.

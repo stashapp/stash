@@ -23,6 +23,7 @@ type Deps struct {
 // RegisterLibraryTools registers the Phase 1 read + write tools against deps.
 func RegisterLibraryTools(reg *Registry, deps Deps) {
 	reg.Register(deps.libraryStatsTool())
+	reg.Register(deps.fingerprintCoverageTool())
 	reg.Register(deps.findScenesTool())
 	reg.Register(deps.findPerformersTool())
 	reg.Register(deps.findStudiosTool())
@@ -107,6 +108,41 @@ func (d Deps) libraryStatsTool() *Tool {
 			}
 			return resultJSON(map[string]int{
 				"scenes": scenes, "performers": performers, "studios": studios, "tags": tags,
+			})
+		},
+	}
+}
+
+func (d Deps) fingerprintCoverageTool() *Tool {
+	return &Tool{
+		Name: "fingerprint_coverage",
+		Description: "Report how many scenes have a perceptual-hash (phash) fingerprint versus none. " +
+			"Bulk identification against stash-box matches by fingerprint, so low coverage means you " +
+			"should run the Generate → Phash task before identify_scenes.",
+		Schema: json.RawMessage(`{"type":"object","properties":{},"additionalProperties":false}`),
+		Run: func(ctx context.Context, _ json.RawMessage) (string, error) {
+			var total, withPhash int
+			err := txn.WithReadTxn(ctx, d.TxnManager, func(ctx context.Context) error {
+				var e error
+				if total, e = d.Scene.Count(ctx); e != nil {
+					return e
+				}
+				sf := &models.SceneFilterType{
+					Phash: &models.StringCriterionInput{Modifier: models.CriterionModifierNotNull},
+				}
+				withPhash, e = d.Scene.QueryCount(ctx, sf, nil)
+				return e
+			})
+			if err != nil {
+				return "", err
+			}
+			pct := 0
+			if total > 0 {
+				pct = withPhash * 100 / total
+			}
+			return resultJSON(map[string]any{
+				"total_scenes": total, "with_phash": withPhash,
+				"missing_phash": total - withPhash, "coverage_percent": pct,
 			})
 		},
 	}
