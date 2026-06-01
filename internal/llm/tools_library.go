@@ -8,7 +8,13 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
+	"github.com/vektah/gqlparser/v2/ast"
 )
+
+// GraphQLExec runs a single GraphQL operation against stash's own schema
+// in-process (full resolver chain + dataloaders) and returns the raw GraphQL
+// JSON response body ({"data":…,"errors":…}). Wired from internal/api.
+type GraphQLExec func(ctx context.Context, query string, vars map[string]any) (json.RawMessage, error)
 
 // Deps is the slice of stash's data layer the library tools need. It is wired from
 // the repository in internal/api (getLLMRoutes).
@@ -18,6 +24,17 @@ type Deps struct {
 	Performer  models.PerformerReaderWriter
 	Studio     models.StudioReaderWriter
 	Tag        models.TagReaderWriter
+
+	// GraphQL executes arbitrary operations against stash's schema in-process.
+	// Powers the generic graphql_* tools and assistant-defined dynamic tools.
+	// Nil disables those tools (the hand-coded library tools still work).
+	GraphQL GraphQLExec
+	// Schema is stash's parsed GraphQL schema, for the introspection tool.
+	Schema *ast.Schema
+	// ToolsDir is a writable directory (on a persistent volume, not the image)
+	// where assistant-defined dynamic tools are saved as JSON and reloaded at
+	// startup — so new capabilities survive restarts with no rebuild.
+	ToolsDir string
 }
 
 // RegisterLibraryTools registers the Phase 1 read + write tools against deps.

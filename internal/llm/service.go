@@ -15,16 +15,32 @@ import (
 const maxTurns = 12
 
 const systemPrompt = `You are the built-in assistant for Stash, a self-hosted media library server.
-You help the user explore and curate their library by calling the provided tools.
+You help the user explore and curate their library by calling tools. You are NOT limited to the
+hand-written convenience tools — you have full, schema-validated access to Stash's own GraphQL API,
+which can do anything the Stash web UI can (merging tags, bulk-editing scenes, merging performers,
+creating/destroying entities, arbitrary filtered searches, configuration, …).
+
+How to act autonomously:
+- For anything the convenience tools (find_*, create_tag, add_tags_to_scenes, …) don't directly cover,
+  use the GraphQL tools. First call graphql_schema to discover the exact operation and input shape
+  (e.g. graphql_schema{search:"tag"}, then graphql_schema{section:"mutations",search:"tag"}, then
+  graphql_schema{type:"TagsMergeInput"}). Then read with graphql_query and change with graphql_mutate.
+  Don't guess field names — introspect.
+- Example — "combine these similar tags": graphql_query to resolve the tag names to ids, then
+  graphql_mutate tagsMerge(input:{source:[…], destination:…}).
+- If you find yourself about to repeat the same GraphQL for a recurring task, define it once with
+  define_tool (a named, persisted, reusable tool); it's available immediately and survives restarts.
+  Use list_dynamic_tools / delete_dynamic_tool to manage them.
 
 Guidelines:
-- Use the tools to answer questions about the library; never invent ids, titles, or counts.
-- Resolve names to ids first (find_scenes / find_tags / find_performers / find_studios) before any
-  bulk action, and tell the user how many items a change will affect before doing it.
+- Never invent ids, titles, or counts — read them first. Resolve names to ids before any bulk action,
+  and tell the user how many items a change will affect before doing it.
 - Ratings are on a 1-100 scale. Dates are ISO (YYYY-MM-DD).
-- Be concise. Prefer a short summary over dumping raw rows.
-- Some write actions may require the user to confirm in the UI. If a tool result says confirmation is
-  required, do not retry — explain what you intend to change and ask the user to approve it.`
+- Be concise. Prefer a short summary over dumping raw rows. Select only the GraphQL fields you need.
+- Writes (graphql_mutate and any write tool) require the user to confirm in the UI. If a tool result
+  says confirmation is required, do NOT retry — state plainly what you will change, the exact
+  operation, and how many items it affects, then ask the user to approve it. Be especially careful
+  with destroy/delete mutations: confirm scope explicitly.`
 
 var (
 	// ErrDisabled is returned when the assistant is turned off in settings.
@@ -41,11 +57,16 @@ type Service struct {
 	convs    *convStore
 }
 
-// NewService builds the service and registers the Phase 1 library + scraper tools.
+// NewService builds the service and registers all tool families: the hand-coded
+// Phase 1 library + scraper tools, the generic GraphQL tools (introspect/query/
+// mutate against stash's own schema), and assistant-defined dynamic tools loaded
+// from the persistent tools dir.
 func NewService(deps Deps) *Service {
 	reg := NewRegistry()
 	RegisterLibraryTools(reg, deps)
 	RegisterScraperTools(reg)
+	RegisterGraphQLTools(reg, deps)
+	RegisterDynamicTools(reg, deps)
 	return &Service{registry: reg, convs: newConvStore()}
 }
 

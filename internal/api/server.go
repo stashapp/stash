@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"io/fs"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"path"
 	"path/filepath"
@@ -172,7 +174,8 @@ func Initialize() (*Server, error) {
 		hookExecutor:   pluginCache,
 	}
 
-	gqlSrv := gqlHandler.New(NewExecutableSchema(Config{Resolvers: resolver}))
+	executableSchema := NewExecutableSchema(Config{Resolvers: resolver})
+	gqlSrv := gqlHandler.New(executableSchema)
 	gqlSrv.SetRecoverFunc(recoverFunc)
 	gqlSrv.AddTransport(gqlTransport.Websocket{
 		Upgrader: websocket.Upgrader{
@@ -205,6 +208,29 @@ func Initialize() (*Server, error) {
 	gqlHandler := visitedPluginHandler(dataloaders.Middleware(http.HandlerFunc(gqlHandlerFunc)))
 	pluginCache.RegisterGQLHandler(gqlHandler)
 
+	// llmGraphQLExec lets the built-in assistant run arbitrary operations against
+	// stash's own GraphQL schema in-process — the full resolver chain plus the
+	// dataloader middleware (many resolvers require loaders in context). This is
+	// what lets the assistant do anything stash's UI can without a hand-coded Go
+	// tool per operation. Auth is intentionally not re-checked here: the /llm
+	// route is already behind stash's auth, and the assistant runs privileged.
+	llmGQLHandler := dataloaders.Middleware(http.HandlerFunc(gqlHandlerFunc))
+	llmGraphQLExec := func(ctx context.Context, query string, vars map[string]any) (json.RawMessage, error) {
+		payload := map[string]any{"query": query}
+		if len(vars) > 0 {
+			payload["variables"] = vars
+		}
+		body, err := json.Marshal(payload)
+		if err != nil {
+			return nil, err
+		}
+		req := httptest.NewRequest(http.MethodPost, gqlEndpoint, bytes.NewReader(body)).WithContext(ctx)
+		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+		llmGQLHandler.ServeHTTP(rec, req)
+		return rec.Body.Bytes(), nil
+	}
+
 	r.HandleFunc(gqlEndpoint, gqlHandlerFunc)
 	r.HandleFunc(playgroundEndpoint, func(w http.ResponseWriter, r *http.Request) {
 		setPageSecurityHeaders(w, r, pluginCache.ListPlugins())
@@ -221,7 +247,7 @@ func Initialize() (*Server, error) {
 	r.Mount("/tag", server.getTagRoutes())
 	r.Mount("/downloads", server.getDownloadsRoutes())
 	r.Mount("/plugin", server.getPluginRoutes())
-	r.Mount("/llm", server.getLLMRoutes())
+	r.Mount("/llm", server.getLLMRoutes(llmGraphQLExec, executableSchema.Schema()))
 
 	r.HandleFunc("/css", cssHandler(cfg))
 	r.HandleFunc("/javascript", javascriptHandler(cfg))
@@ -416,7 +442,7 @@ func (s *Server) getDownloadsRoutes() chi.Router {
 	return downloadsRoutes{}.Routes()
 }
 
-func (s *Server) getLLMRoutes() chi.Router {
+func (s *Server) getLLMRoutes(gqlExec llm.GraphQLExec, schema *ast.Schema) chi.Router {
 	repo := s.manager.Repository
 	service := llm.NewService(llm.Deps{
 		TxnManager: repo.TxnManager,
@@ -424,6 +450,9 @@ func (s *Server) getLLMRoutes() chi.Router {
 		Performer:  repo.Performer,
 		Studio:     repo.Studio,
 		Tag:        repo.Tag,
+		GraphQL:    gqlExec,
+		Schema:     schema,
+		ToolsDir:   filepath.Join(s.manager.Config.GetConfigPath(), "llm_tools"),
 	})
 	return llmRoutes{
 		routes:  routes{txnManager: repo.TxnManager},
