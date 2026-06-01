@@ -62,3 +62,19 @@ Images are still not handled.
 - **Rate limits**: it paces requests from each endpoint's `maxRequestsPerMinute`
   (defaults to a gentle ~4/s when unset). ThePornDB is stricter than StashDB.
 - Always do a `--dry-run` pass first and skim the matches.
+
+## Companion: `external_filename_parse.py` (no stash-box needed)
+
+For the long tail of scenes that **no stash-box can match**, this companion links them
+to metadata parsed from their **path** — but **LINK-ONLY**: it matches the path against
+your *existing* studios/performers (multi-word names/aliases, whole-word) and never
+creates new records, so it can't pollute the library. MERGE semantics: fills an empty
+studio, merges performers on top of existing, fills an empty date, and (with
+`--set-title`) a cleaned title. Single-token names are deliberately ignored (a first-name
+alias would mislink). Lower fidelity than fingerprint identify — `--dry-run` is the
+default; review before `--apply`.
+
+```bash
+python3 external_filename_parse.py --stash-url http://overwatch-stash:9999            # dry-run
+python3 external_filename_parse.py --stash-url http://overwatch-stash:9999 --apply
+```

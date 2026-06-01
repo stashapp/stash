@@ -134,6 +134,13 @@ func (g GeneratedPaths) SpriteVTT(checksum string) string {
 	return filepath.Join(g.Root, "vtt", checksum+"_thumbs.vtt")
 }
 
+// Transcode returns "<Root>/transcodes/<checksum>.mp4" — the pre-generated
+// browser-friendly transcode stash serves directly via GetStreamPath() when the
+// file exists (paths_scenes.go:28-35), instead of live-transcoding.
+func (g GeneratedPaths) Transcode(checksum string) string {
+	return filepath.Join(g.Root, "transcodes", checksum+".mp4")
+}
+
 // TmpDir returns "<Root>/tmp", stash's own scratch dir (paths_generated.go:34).
 // Worker writes ".partial" files here, then atomically renames to the
 // destination. Using a different directory than the destination avoids stash

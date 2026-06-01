@@ -21,6 +21,7 @@ The worker exists at [`../../worker/`](../../worker/) as a separate Go module wi
 | **A.5 — covers** | Single-frame extract at 20% of duration → `sceneUpdate(cover_image: data:…)` | **shipped** (commit `1ff3812d`) | ~3s/scene |
 | **B — sprites** | Per-frame NVDEC seek + Go-side `image/draw` tiling + WebVTT | **shipped + optimized** (commits `071ceb2c` → `45206dc8`) | ~30s/scene (down from 73s in initial impl) |
 | **C — phash** | Per-file phash via existing `fileSetFingerprints` mutation; bit-for-bit replica of `pkg/hash/videophash` | **shipped + gate-validated** | `--verify-phash 25` → 25/25 bit-identical to native (2026-06-01); ~15-25s/scene |
+| **D — transcode** | Pre-generate `generated/transcodes/<hash>.mp4` for non-browser-streamable scenes (+HEVC) so stash serves it via `GetStreamPath` instead of live-transcoding. h264 source → stream-copy remux; else full NVENC h264. `NeedsTranscode` ports `pkg/ffmpeg/browser.go`. | **shipped 2026-06-01** | classification + remux/NVENC live-validated; ~25-30% of library qualifies. Run after previews/phash (heavy NAS I/O). |
 
 **Notes on what's in production now:**
 - Multi-task dispatch via `--tasks previews,covers,sprites,phash` (one or many, in order).

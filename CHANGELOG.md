@@ -12,6 +12,28 @@ versioning is independent of upstream — it is anchored to the upstream base re
 ## [Unreleased]
 
 ### Added
+- **Library maintenance + transcode tooling** (four off-queue/external helpers):
+  - **`worker` transcode task** — new `--tasks transcode` pre-generates a
+    browser-friendly h264/aac MP4 into `generated/transcodes/<hash>.mp4`, which stash
+    serves directly (`GetStreamPath`, `pkg/models/paths/paths_scenes.go:28-35`) so the
+    weak NAS never live-transcodes. Smart: if the video is already h264 it **remuxes**
+    (`-c:v copy`, lossless, just fixes audio/container); otherwise a full **NVENC h264**
+    re-encode at full resolution (CPU decode for universal codec support). Targets
+    everything stash can't stream directly **plus HEVC** (which stash serves direct but
+    browsers often can't play). `worker/internal/transcode.go` + `NeedsTranscode` +
+    `GeneratedPaths.Transcode`; scene projection extended with
+    `video_codec/audio_codec/format/width/height`. ~25-30% of the library qualifies.
+  - **`tools/maintenance/tag_consolidate.py`** — clusters duplicate tags; auto-merges
+    the SAFE set (case/punctuation/plural/`blond`↔`blonde`) via `tagsMerge`, preserving
+    merged names as aliases, and reports subjective families (POV/hair/age/1-edit) for
+    review. Dry-run by default.
+  - **`tools/maintenance/generated_sweeper.py`** — audits `generated/` for orphaned,
+    zero-byte, and stale-tmp artifacts against live file hashes; `--prune` quarantines
+    orphans (reversible). Doubles as a coverage report. Runs on the NAS.
+  - **`tools/identify/external_filename_parse.py`** — links unidentified scenes to
+    **existing** studios/performers parsed from their path (multi-word name/alias
+    matching only — never creates records, so it can't introduce junk). Fills empty
+    studio/date (+ optional title), merges performers. Dry-run by default.
 - **Assistant autonomy — generic GraphQL access + self-defined tools** (`internal/llm/tools_graphql.go`,
   `tools_dynamic.go`). The assistant is no longer limited to hand-coded Go tools; new capabilities no
   longer require a rebuild/redeploy:

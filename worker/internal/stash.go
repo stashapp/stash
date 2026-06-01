@@ -174,9 +174,14 @@ type Scene struct {
 
 // SceneFile is the subset of a scene's File the worker cares about.
 type SceneFile struct {
-	ID          string
-	Path        string  // stash-side path (will be translated to worker-side via prefix rewriter)
-	Duration    float64 // seconds; from video metadata
+	ID         string
+	Path       string  // stash-side path (will be translated to worker-side via prefix rewriter)
+	Duration   float64 // seconds; from video metadata
+	VideoCodec string  // e.g. "h264", "hevc", "mpeg4", "wmv2"
+	AudioCodec string  // e.g. "aac", "ac3", "wmav2"
+	Format     string  // container, e.g. "mov,mp4,m4a,…", "matroska,webm", "avi", "asf"
+	Width      int
+	Height     int
 	Fingerprints []Fingerprint
 }
 
@@ -211,6 +216,11 @@ const scenesQuery = `query($filter: FindFilterType, $scene_filter: SceneFilterTy
         id
         path
         duration
+        video_codec
+        audio_codec
+        format
+        width
+        height
         fingerprints { type value }
       }
     }
@@ -227,6 +237,11 @@ type scenesRespRaw struct {
 				ID           string  `json:"id"`
 				Path         string  `json:"path"`
 				Duration     float64 `json:"duration"`
+				VideoCodec   string  `json:"video_codec"`
+				AudioCodec   string  `json:"audio_codec"`
+				Format       string  `json:"format"`
+				Width        int     `json:"width"`
+				Height       int     `json:"height"`
 				Fingerprints []struct {
 					Type  string `json:"type"`
 					Value string `json:"value"`
@@ -266,7 +281,9 @@ func (c *StashClient) FetchScenesPage(ctx context.Context, page, perPage int, mi
 				fps = append(fps, Fingerprint{Type: fp.Type, Value: fp.Value})
 			}
 			files = append(files, SceneFile{
-				ID: f.ID, Path: f.Path, Duration: f.Duration, Fingerprints: fps,
+				ID: f.ID, Path: f.Path, Duration: f.Duration,
+				VideoCodec: f.VideoCodec, AudioCodec: f.AudioCodec, Format: f.Format,
+				Width: f.Width, Height: f.Height, Fingerprints: fps,
 			})
 		}
 		out = append(out, Scene{ID: s.ID, Title: s.Title, Files: files})

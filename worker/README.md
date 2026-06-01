@@ -9,7 +9,7 @@ is for builders/operators; the design doc explains why.
 
 ## Current state — live-validated 2026-06-01 on RTX 5080
 
-Four task types are shipped and live-tested against the production NAS:
+Five task types are shipped and live-tested against the production NAS:
 
 | Task | Output | Per-scene time | Notes |
 |---|---|---|---|
@@ -17,6 +17,7 @@ Four task types are shipped and live-tested against the production NAS:
 | **covers** | base64 JPEG via `sceneUpdate(cover_image: …)` mutation | ~3s | Single-frame extract at 20% of duration (mirrors `screenshotDurationProportion` in stash). CPU JPEG (no NVENC overhead). |
 | **sprites** | `<generated>/vtt/<hash>_sprite.jpg` + `_thumbs.vtt` | ~30s | Per-frame `-ss` seek with NVDEC, tiled in Go via `image/draw`. WebVTT cues match stash's `gridSize = ⌈√N⌉` math. |
 | **phash** | `phash` fingerprint via `fileSetFingerprints` mutation | ~15-25s | **Bit-for-bit** replica of stash's `pkg/hash/videophash`: 25 BMP frames (5×5) at 5%-offset timestamps, `imaging` montage, `goimagehash.PerceptionHash`. **CPU decode (no NVDEC)** — hardware decode would change pixels and break the hash. Gated by `--verify-phash` (see below). |
+| **transcode** | `<generated>/transcodes/<hash>.mp4` | remux ~fast / NVENC varies | Pre-generates a browser-friendly h264/aac MP4 for scenes stash can't stream directly (HEVC, mpeg4/wmv, ac3/dts audio, mkv/avi/wmv containers); stash then serves it directly (`GetStreamPath`) instead of live-transcoding on the weak NAS. If the video is already h264 it **stream-copies** (lossless, just fixes audio/container); otherwise full **NVENC h264** re-encode at full resolution (CPU decode → universal codec support). HEVC is treated as needs-transcode even though stash considers it streamable. Heavy on NAS I/O — run after previews/phash, in `--limit` batches. |
 
 **What's NOT shipped:**
 - Concurrent multi-scene encoding (sequential per worker; run two `.exe` processes in parallel as a poor-man's concurrency — proven to work, see "Parallel workers" below).
@@ -61,7 +62,7 @@ Either path produces a single statically-linked Windows executable (~6.3MB).
 | `--media-prefix` `STASH=WORKER` | translate stash's media paths to the worker's view (e.g. SMB share). UNC paths with one or two leading backslashes are both accepted — see "UNC path quoting" below. | empty |
 | `--generated-prefix` `STASH=WORKER` | same, for the `generated/` dir. The worker writes here. **Required for `previews`/`sprites`** (they write files); optional for `covers`/`phash` (those write via the API). | empty |
 | `--ffmpeg` | path to `ffmpeg.exe`. Must be a build with NVENC + NVDEC. | `ffmpeg` (PATH) |
-| `--tasks` | comma-separated, in order: `previews`, `covers`, `sprites`, `phash` | `previews` |
+| `--tasks` | comma-separated, in order: `previews`, `covers`, `sprites`, `phash`, `transcode` | `previews` |
 | `--verify-phash N` | **gate, not a task.** Recompute `N` files that already have a native stash phash and compare. Exits non-zero on any mismatch. Run this once before trusting `--tasks phash`. | `0` (off) |
 | `--limit` | cap items ENCODED per run (skips don't count). `--limit 1` encodes exactly one missing item then exits. | `0` (unbounded) |
 | `--max-failures` | abort after N **consecutive** failures (catches systemic problems vs thrashing the whole library) | `5` |

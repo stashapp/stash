@@ -127,8 +127,8 @@ func parseFlags() (*runConfig, error) {
 		if t == "" {
 			continue
 		}
-		if t != "previews" && t != "covers" && t != "sprites" && t != "phash" {
-			return nil, fmt.Errorf("--tasks: unknown task %q (available: previews, covers, sprites, phash)", t)
+		if t != "previews" && t != "covers" && t != "sprites" && t != "phash" && t != "transcode" {
+			return nil, fmt.Errorf("--tasks: unknown task %q (available: previews, covers, sprites, phash, transcode)", t)
 		}
 		cfg.tasks = append(cfg.tasks, t)
 	}
@@ -141,7 +141,7 @@ func parseFlags() (*runConfig, error) {
 	// those.
 	needsGenerated := false
 	for _, t := range cfg.tasks {
-		if t == "previews" || t == "sprites" {
+		if t == "previews" || t == "sprites" || t == "transcode" {
 			needsGenerated = true
 		}
 	}
@@ -365,6 +365,8 @@ func processScene(
 		return processSprite(ctx, s, scfg, c, gen, enc)
 	case "phash":
 		return processPhash(ctx, s, c, enc, stash)
+	case "transcode":
+		return processTranscode(ctx, s, scfg, c, gen, enc)
 	default:
 		log.Printf("scene %s: unknown task %q; skipping", s.ID, taskName)
 		return outcomeSkipped
@@ -499,6 +501,67 @@ func processSprite(
 	log.Printf("scene %s: generating sprite + VTT", s.ID)
 	if err := enc.GenerateSprite(ctx, source, spritePath, vttPath, gen.TmpDir()); err != nil {
 		log.Printf("scene %s: sprite failed: %v", s.ID, err)
+		return outcomeFailed
+	}
+	return outcomeEncoded
+}
+
+// ── transcode ──────────────────────────────────────────────────────────────
+
+// processTranscode pre-generates a browser-friendly h264/aac MP4 into
+// generated/transcodes/<hash>.mp4 for scenes stash can't stream directly, so the
+// NAS never has to live-transcode them. Skips scenes that already have a transcode
+// or are already streamable. Like previews, existence is a filesystem check.
+func processTranscode(
+	ctx context.Context,
+	s *internal.Scene,
+	scfg *internal.StashConfig,
+	c *runConfig,
+	gen internal.GeneratedPaths,
+	enc *internal.Encoder,
+) outcome {
+	if len(s.Files) == 0 {
+		log.Printf("scene %s: no files; skipping", s.ID)
+		return outcomeSkipped
+	}
+	hash, err := s.PrimaryHash(scfg.VideoFileNamingAlgorithm)
+	if err != nil {
+		log.Printf("scene %s: %v; skipping", s.ID, err)
+		return outcomeSkipped
+	}
+	exists, err := internal.TranscodeExists(gen, hash)
+	if err != nil {
+		log.Printf("scene %s: stat transcode: %v", s.ID, err)
+		return outcomeFailed
+	}
+	if exists {
+		return outcomeSkipped
+	}
+	pf := s.Files[0]
+	if !internal.NeedsTranscode(pf.VideoCodec, pf.AudioCodec, pf.Format) {
+		return outcomeSkipped // already directly browser-streamable
+	}
+
+	source := pf.Path
+	if c.mediaRewriter != nil {
+		source = c.mediaRewriter.Rewrite(source)
+	}
+	output := gen.Transcode(hash)
+	if !c.dryRun {
+		if err := os.MkdirAll(filepath.Dir(output), 0o755); err != nil {
+			log.Printf("scene %s: mkdir transcodes: %v", s.ID, err)
+			return outcomeFailed
+		}
+	}
+
+	mode := "remux (copy video)"
+	if strings.ToLower(pf.VideoCodec) != "h264" {
+		mode = "NVENC h264 re-encode"
+	}
+	log.Printf("scene %s: transcoding [%s] %s/%s/%s -> %s",
+		s.ID, mode, pf.VideoCodec, pf.AudioCodec, pf.Format, filepath.Base(output))
+	if err := enc.Transcode(ctx, source, output, gen.TmpDir(), pf.VideoCodec, pf.AudioCodec); err != nil {
+		log.Printf("scene %s: transcode failed: %v", s.ID, err)
 		return outcomeFailed
 	}
 	return outcomeEncoded
