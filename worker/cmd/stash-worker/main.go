@@ -223,14 +223,23 @@ func runTask(
 ) (int, error) {
 	// is_missing filter on the stash query for tasks where stash tracks
 	// missingness. Previews aren't tracked — we filesystem-check instead.
+	// shrinksOnSuccess = true means: as the worker applies items, those items
+	// drop out of the server-side filter result set. The pagination strategy
+	// MUST always re-fetch page 1 in that case — otherwise pages 2+ silently
+	// skip items (the resultset shifted under us). For tasks that use a
+	// client-side filter (file existence check), the resultset is stable and
+	// normal page++ pagination is correct.
 	missingFilter := ""
+	shrinksOnSuccess := false
 	if taskName == "covers" {
 		missingFilter = "cover"
+		shrinksOnSuccess = true
 	}
 
 	page := 1
 	passEncoded := 0
 	consecutiveFailures := 0
+	firstPageLogged := false
 	for {
 		scenes, total, err := stash.FetchScenesPage(ctx, page, c.perPage, missingFilter)
 		if err != nil {
@@ -239,9 +248,11 @@ func runTask(
 		if len(scenes) == 0 {
 			break
 		}
-		if page == 1 {
+		if !firstPageLogged {
 			log.Printf("[%s] scanning %d scenes (per-page %d)", taskName, total, c.perPage)
+			firstPageLogged = true
 		}
+		pageProgressed := 0 // count successful encodes within THIS page
 		for _, s := range scenes {
 			if c.limit > 0 && t.encoded >= c.limit {
 				return passEncoded, nil
@@ -255,6 +266,7 @@ func runTask(
 			case outcomeEncoded:
 				t.encoded++
 				passEncoded++
+				pageProgressed++
 				consecutiveFailures = 0
 			case outcomeSkipped:
 				t.skipped++
@@ -263,10 +275,20 @@ func runTask(
 				consecutiveFailures++
 			}
 		}
-		if len(scenes) < c.perPage {
+		// Pagination strategy:
+		//   shrinksOnSuccess + page made progress → re-fetch page 1 (filter has shrunk;
+		//     advancing the page number would skip items that just shifted into the
+		//     lower positions).
+		//   shrinksOnSuccess + page made NO progress → advance, otherwise we'd loop
+		//     forever on a page full of un-processable scenes (all skipped/failed).
+		//   stable resultset → straight page++.
+		if shrinksOnSuccess && pageProgressed > 0 {
+			page = 1
+		} else if len(scenes) < c.perPage {
 			break
+		} else {
+			page++
 		}
-		page++
 	}
 	return passEncoded, nil
 }
