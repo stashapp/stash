@@ -46,6 +46,42 @@ python3 generated_sweeper.py --stash-url http://localhost:9999 \
 Good as a periodic cron — its yield is low on a tidy library but it doubles as a
 coverage dashboard and catches corruption early.
 
+## scene_dedup.py — find near-duplicate scenes (phash)
+
+Clusters scenes whose perceptual hashes are within a Hamming distance (`--max-distance`,
+default 8), picks a keeper (highest resolution → largest file → lowest id), and reports the
+rest as dup-candidates with reclaimable space. `--apply` tags non-keepers `_dupe-candidate`
+(merge, never replace) for review/deletion. Dry-run default.
+
+```bash
+python3 scene_dedup.py --stash-url http://overwatch-stash:9999                 # report
+python3 scene_dedup.py --stash-url http://overwatch-stash:9999 --apply          # tag dup-candidates
+```
+
+## db_backup.py — consistent metadata-DB + config backup (run on the NAS)
+
+Online-backup (sqlite3 `.backup` API — safe while stash runs) of `stash-go.sqlite` + `config.yml`
+→ timestamped gzip tar in `--out`, keeps the most recent `--keep` (default 14), optional off-NAS
+`--remote user@host:/path` rsync. **Dry-run by default; pass `--apply` to write.** Recommended NAS
+cron (DSM Task Scheduler, nightly): `db_backup.py --apply`.
+
+## ingest_pipeline.py — off-queue metadata orchestrator
+
+Runs the chain in the only safe order — `external_identify.py` (fingerprint) **then**
+`external_filename_parse.py` (link-only) for the leftovers (they must never run together) — with
+before/after gap snapshots. The single cron entry point to keep a growing library's metadata current.
+
+```bash
+python3 ingest_pipeline.py --stash-url http://localhost:9999            # dry-run both steps
+python3 ingest_pipeline.py --stash-url http://localhost:9999 --apply     # apply
+```
+
+## tag_consolidate.py --emit-plan
+
+In addition to its SAFE auto-merge, `tag_consolidate.py --emit-plan` outputs a structured JSON merge
+plan of the **subjective** families (POV/hair/age/1-edit) — destination + sources + confidence — for the
+in-app assistant or a human to execute via `tagsMerge`. Read-only.
+
 ## Notes
 
 - Both send a browser `User-Agent` (stash's stack rejects the default `Python-urllib`

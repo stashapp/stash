@@ -12,6 +12,26 @@ versioning is independent of upstream — it is anchored to the upstream base re
 ## [Unreleased]
 
 ### Added
+- **Seven more speed/convenience tools** (built in parallel; all default to dry-run/report):
+  - **`worker` image-phash task** (`worker/internal/image.go`) — `--tasks image-phash` enumerates
+    `findImages`, decodes each ImageFile, computes `goimagehash.PerceptionHash`, writes via
+    `fileSetFingerprints`. Images don't support `is_missing:"phash"` server-side, so it enumerates all
+    and skips phashed files client-side (stable pagination, like previews). Unlocks image dedup.
+  - **`tools/maintenance/scene_dedup.py`** — clusters near-duplicate scenes by phash Hamming distance
+    (`--max-distance`, default 8), reports keeper vs dup-candidates + reclaimable space, `--apply` tags
+    non-keepers `_dupe-candidate`.
+  - **`tools/maintenance/db_backup.py`** — consistent SQLite **online-backup** of the metadata DB +
+    `config.yml` → gzip tar, retention (`--keep`), optional off-NAS `--remote` rsync. Meant as a NAS cron.
+  - **`tools/maintenance/ingest_pipeline.py`** — orchestrates the off-queue chain (identify → filename-parse,
+    in that safe order) over a growing library, with before/after gap snapshots. Single cron entry point.
+  - **`tag_consolidate.py --emit-plan`** — emits a structured JSON merge plan of the subjective tag
+    families (POV/hair/age/1-edit) for the in-app assistant or a human to execute via `tagsMerge`.
+  - **`tools/facerec/`** (InsightFace) — performer face tagger for the scenes that resist both fingerprint
+    and filename matching: build per-performer embeddings from stash images, match scene frames, link
+    **existing** performers only (never creates), dry-run default. Runs on the RTX box (GPU deps + model
+    download required — see `tools/facerec/README.md`).
+  - **`external_identify_performers.py` documented** (`tools/identify/README.md`) — modes, invocations,
+    NAS cron for periodic performer metadata enrichment.
 - **Assistant `run_command` (shell escape hatch) + action-first prompt** (`internal/llm/tools_exec.go`).
   The assistant can now run shell commands inside the Stash container — the escape hatch for anything
   GraphQL/`define_tool` can't express: running the bundled helper scripts with custom flags (e.g.
