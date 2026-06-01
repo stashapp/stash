@@ -84,6 +84,8 @@ const (
 	sceneIdxMissingPhash
 	sceneIdxWithPerformerParentTag
 	sceneIdxWithGroupWithParent
+	sceneIdxWithChildTag
+	sceneIdxWithGrandChildTag
 	// new indexes above
 	lastSceneIdx
 
@@ -378,6 +380,8 @@ var (
 		sceneIdxWithThreeTags:     {tagIdx1WithScene, tagIdx2WithScene, tagIdx3WithScene},
 		sceneIdxWithMarkerAndTag:  {tagIdx3WithScene},
 		sceneIdxWithMarkerTwoTags: {tagIdx2WithScene, tagIdx3WithScene},
+		sceneIdxWithChildTag:      {tagIdxWithParentTag},
+		sceneIdxWithGrandChildTag: {tagIdxWithGrandParent},
 	}
 
 	scenePerformers = linkMap{
@@ -603,6 +607,10 @@ func indexFromID(ids []int, id int) int {
 	}
 
 	return -1
+}
+
+func ptr[T any](v T) *T {
+	return &v
 }
 
 var db *sqlite.Database

@@ -583,6 +583,16 @@ func TestTagQueryCounts(t *testing.T) {
 			excludeIdxs: []int{tagIdx1WithNothing, tagIdx1WithScene, tagIdx2WithScene, tagIdx3WithScene},
 		},
 		{
+			name: "scene_count_equals_1_depth_1",
+			buildFilter: models.TagFilterType{SceneCount: &models.HierarchicalCountInput{
+				Value:    1,
+				Modifier: models.CriterionModifierEquals,
+				Depth:    ptr(1),
+			}},
+			includeIdxs: []int{tagIdxWithScene, tagIdxWithParentTag, tagIdxWithChildTag},
+			excludeIdxs: []int{tagIdxWithGrandParent, tagIdx1WithNothing, tagIdx1WithScene, tagIdx2WithScene, tagIdx3WithScene},
+		},
+		{
 			name:        "marker_count_equals_2",
 			buildFilter: models.TagFilterType{MarkerCount: &models.HierarchicalCountInput{Value: 2, Modifier: models.CriterionModifierEquals}},
 			includeIdxs: []int{tagIdxWithMarkers, tagIdx2WithMarkers},
