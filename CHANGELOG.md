@@ -12,6 +12,36 @@ versioning is independent of upstream — it is anchored to the upstream base re
 ## [Unreleased]
 
 ### Added
+- **External GPU worker** (`worker/`) — separate Go module producing a single Windows `.exe` that
+  offloads stash's heaviest media-generation work to a Windows + NVIDIA box, with outputs landing
+  directly in stash's `generated/` share over SMB. Runs **outside stash's job queue** (parallel
+  with whatever stash is doing). **Live-validated 2026-06-01 on RTX 5080** against the production NAS.
+  Tasks shipped:
+  - **previews** — 12-segment NVENC encode + concat demuxer matching stash's `transcoder.Splice`
+    output. CRF→`-cq 21`, scale=640:-2, yuv420p high@4.2, 128k AAC, faststart. Two-pass slow-seek
+    retry on first-pass failure (matches `task_generate_preview.go:67-72`). VFR `-vsync 2` branch
+    when ffprobe reports ≤0.01 fps. ~7s/scene; 98% success rate observed on a 50-scene batch.
+  - **covers** — single-frame extract at 20% of duration (mirrors `screenshotDurationProportion`
+    in `pkg/scene/generate/screenshot.go:17`). Base64 JPEG → `sceneUpdate(cover_image:…)` mutation
+    (no fork additions needed — `SceneUpdateInput.cover_image` already exists in upstream). ~3s/scene.
+  - **sprites** — per-frame `-ss` seek with NVDEC, tiled in Go via `image/draw` instead of ffmpeg's
+    `tile` filter. WebVTT cells derived from the actual decoded frame dimensions. Initial
+    implementation used the `fps` filter (full-pass decode) at 73s/scene; later optimized to
+    parallel-bounded seek + Go tiling at ~30s/scene (commit `45206dc8`).
+  - CLI: `--tasks previews,covers,sprites` dispatcher; `--limit N` caps **encoded items**
+    (skips don't count); `--max-failures` safety brake; `--watch` keep-running mode; `--dry-run`
+    prints commands without writing.
+  - Worker-side path translation (`internal/paths.go`): `normalizeUNC` recovers from
+    bash/PowerShell/MSYS collapsing `\\server\share` to `\server\share`, so SMB UNC paths "just work"
+    regardless of shell quoting layer.
+  - SMB atomicity: `.partial` files live in `<generated>/tmp/` (stash's own scratch dir), atomic
+    rename to destination so stash never sees half-written outputs.
+  - `--tasks` filter strategy per task: `is_missing:"cover"` filter for covers (stash tracks
+    missingness in SQLite); filesystem walk for previews and sprites (stash doesn't track those —
+    `pkg/sqlite/scene_filter.go:396-436`).
+  - Two concurrent `.exe` instances are supported and useful — run a `--tasks covers` worker in
+    parallel with a `--tasks previews,covers` worker so the cover sweep finishes much sooner than
+    waiting for previews to complete. NAS disk is the real bottleneck at that point.
 - **`phashed_only` filter** on `identify_scenes_fast` / `external_identify.py` — when set, only scenes
   with a phash are considered. Lets you target the **high-yield** scenes first while stash is still
   generating phashes for the rest (work in parallel, no waiting on the queue). The script now also

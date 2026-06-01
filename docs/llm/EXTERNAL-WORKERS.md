@@ -2,10 +2,36 @@
 
 A design for offloading the heavy media-generation work (previews, scrubber sprites, eventually
 phashes) from the NAS to a Windows + NVIDIA GPU worker, with outputs landing back in the NAS's stash
-`generated/` directory so stash auto-detects them. No code yet — this doc is the spec.
+`generated/` directory so stash auto-detects them.
 
 Target operator: 1 user, 1 worker box (Windows, NVIDIA GPU). Designed to scale to multiple workers
 later without a rewrite.
+
+---
+
+## Status — what's actually built (2026-06-01)
+
+The worker exists at [`../../worker/`](../../worker/) as a separate Go module with a single Windows
+`.exe`. Operator docs are in [`../../worker/README.md`](../../worker/README.md). Everything below is
+**live-validated on RTX 5080** against the production NAS.
+
+| Phase | What | Status | Live numbers |
+|---|---|---|---|
+| **A — previews** | NVENC per-segment + concat demuxer, two-pass slow-seek retry, VFR detect | **shipped** (commit `8b65b795`) | ~7s/scene; 50-batch confirmed 98% success rate (1 corrupt H.264 failed both passes) |
+| **A.5 — covers** | Single-frame extract at 20% of duration → `sceneUpdate(cover_image: data:…)` | **shipped** (commit `1ff3812d`) | ~3s/scene |
+| **B — sprites** | Per-frame NVDEC seek + Go-side `image/draw` tiling + WebVTT | **shipped + optimized** (commits `071ceb2c` → `45206dc8`) | ~30s/scene (down from 73s in initial impl) |
+| **C — phash** | Per-file phash via existing `fileSetFingerprints` mutation | **NOT built yet** | — |
+
+**Notes on what's in production now:**
+- Multi-task dispatch via `--tasks previews,covers,sprites` (one or many, in order).
+- Two `.exe` instances can run concurrently (different output paths; no write conflicts) — only the
+  NAS disk is the bottleneck (~93% busy at 2 workers, see §10).
+- `normalizeUNC` in `internal/paths.go` recovers from shells (bash/PowerShell/MSYS) collapsing `\\`
+  to `\` before args reach the binary — so `\\server\share` "just works" regardless of quoting.
+
+**Sections 4-9 below describe the design.** Where the design and shipped behavior diverge — usually
+where live-testing surfaced a better choice — there are inline `// shipped:` notes calling out the
+deviation.
 
 ---
 
