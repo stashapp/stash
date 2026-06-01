@@ -12,6 +12,13 @@ versioning is independent of upstream — it is anchored to the upstream base re
 ## [Unreleased]
 
 ### Added
+- **`identify_scenes_fast` assistant tool** — bundles `external_identify.py` into the runtime image
+  (`/usr/local/bin/identify_external.py`) and exposes it as an assistant tool that shells out via
+  `os/exec`. Runs **outside stash's job queue** (parallel with Generate→Phash etc.) and uses **batched
+  fingerprint lookups** (~40× fewer round-trips than native Identify). Default 200 unorganized
+  scenes/run, `--set-organized`, multi-match skip; 100s timeout (under the LLM client's 120s) so a
+  run fits in one chat turn. Parses the summary into compact JSON (matched/applied/skipped/no_match).
+  Native `identify_scenes` remains for full-fidelity, no-urgency runs.
 - **`tools/identify/external_identify.py`** — standalone, dependency-free (stdlib) fingerprint
   identifier that runs **outside stash's job queue** (so it works in parallel with a long
   Generate→Phash, or on another machine). Reads scene oshashes from the stash API, queries

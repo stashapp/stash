@@ -1,11 +1,15 @@
 package llm
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/stashapp/stash/internal/identify"
 	"github.com/stashapp/stash/internal/manager"
@@ -21,6 +25,7 @@ func RegisterScraperTools(reg *Registry) {
 	reg.Register(listScrapersTool())
 	reg.Register(reloadScrapersTool())
 	reg.Register(identifyScenesTool())
+	reg.Register(identifyScenesFastTool())
 }
 
 type scraperOut struct {
@@ -260,6 +265,129 @@ func identifyScenesTool() *Tool {
 			})
 		},
 	}
+}
+
+// ── identify_scenes_fast: batched, parallel-to-job-queue identifier ────────
+
+type identifyFastInput struct {
+	Limit         int  `json:"limit"`
+	SetOrganized  bool `json:"set_organized"`
+	AllowMultiple bool `json:"allow_multiple"`
+	AllScenes     bool `json:"all_scenes"`
+	DryRun        bool `json:"dry_run"`
+}
+
+// summaryRE parses the python tool's final line:
+//   summary: matched=180 applied=175 skipped_multiple=4 no_match=1 (dry-run — re-run with --apply)
+var summaryRE = regexp.MustCompile(`matched=(\d+)\s+applied=(\d+)\s+skipped_multiple=(\d+)\s+no_match=(\d+)`)
+
+// identifyExternalPath is where the Dockerfile installs the bundled script.
+const identifyExternalPath = "/usr/local/bin/identify_external.py"
+
+func identifyScenesFastTool() *Tool {
+	return &Tool{
+		Name: "identify_scenes_fast",
+		Description: "FAST batched scene identification — runs the bundled external identifier in a " +
+			"separate process so it does NOT queue behind stash's other tasks (Generate→Phash etc.), " +
+			"and uses batched stash-box fingerprint queries (~40× fewer round-trips than native). " +
+			"Matches by oshash (no phash required). Default: 200 unorganized scenes, sets organized, " +
+			"skips ambiguous multi-matches. Returns summary counts. Use this for SPEED; use " +
+			"identify_scenes for native full-fidelity matching when no urgency.",
+		Writes: true,
+		Schema: json.RawMessage(`{
+			"type":"object",
+			"properties":{
+				"limit":{"type":"integer","minimum":1,"maximum":500,"description":"max scenes per run (default 200; capped so the run fits within the chat turn timeout)"},
+				"set_organized":{"type":"boolean","description":"mark matched scenes organized (default true)"},
+				"allow_multiple":{"type":"boolean","description":"apply first match when a scene has several (default false; skip ambiguous)"},
+				"all_scenes":{"type":"boolean","description":"include already-organized scenes too (default false)"},
+				"dry_run":{"type":"boolean","description":"preview only, no writes (default false; the tool is invoked deliberately)"}
+			},
+			"additionalProperties":false
+		}`),
+		Run: func(ctx context.Context, raw json.RawMessage) (string, error) {
+			in := identifyFastInput{Limit: 200, SetOrganized: true}
+			if len(raw) > 0 {
+				// re-decode to preserve explicit false defaults if caller sent them
+				if err := json.Unmarshal(raw, &in); err != nil {
+					return "", fmt.Errorf("invalid input: %w", err)
+				}
+			}
+			if in.Limit <= 0 {
+				in.Limit = 200
+			}
+			if in.Limit > 500 {
+				in.Limit = 500
+			}
+
+			args := []string{
+				identifyExternalPath,
+				"--stash-url", "http://localhost:9999",
+				"--limit", strconv.Itoa(in.Limit),
+			}
+			if !in.DryRun {
+				args = append(args, "--apply")
+			}
+			if in.SetOrganized {
+				args = append(args, "--set-organized")
+			}
+			if in.AllowMultiple {
+				args = append(args, "--allow-multiple")
+			}
+			if in.AllScenes {
+				args = append(args, "--all-scenes")
+			}
+
+			// 100s ceiling — well below the 120s LLM client timeout. limit=200 typically
+			// finishes in <60s; the ceiling protects against a stuck stash-box endpoint.
+			cmdCtx, cancel := context.WithTimeout(ctx, 100*time.Second)
+			defer cancel()
+			cmd := exec.CommandContext(cmdCtx, "python3", args...)
+			var stdout, stderr bytes.Buffer
+			cmd.Stdout = &stdout
+			cmd.Stderr = &stderr
+			start := time.Now()
+			err := cmd.Run()
+			elapsed := time.Since(start).Round(time.Millisecond)
+			out := stdout.String()
+
+			if err != nil {
+				if cmdCtx.Err() == context.DeadlineExceeded {
+					return "", fmt.Errorf("identifier timed out after %s — try a smaller limit", elapsed)
+				}
+				// keep the response actionable: tail of stderr, then exit error
+				return "", fmt.Errorf("identifier failed (%s) in %s: %s", err, elapsed, truncate(stderr.String(), 300))
+			}
+
+			// parse the final summary line; fall back to truncated stdout if missing
+			result := map[string]any{
+				"limit":   in.Limit,
+				"dry_run": in.DryRun,
+				"elapsed": elapsed.String(),
+			}
+			if m := summaryRE.FindStringSubmatch(out); m != nil {
+				result["matched"], _ = strconv.Atoi(m[1])
+				result["applied"], _ = strconv.Atoi(m[2])
+				result["skipped_multiple"], _ = strconv.Atoi(m[3])
+				result["no_match"], _ = strconv.Atoi(m[4])
+			} else {
+				// unusual output — surface a tail so we can debug from the tool result
+				result["raw_tail"] = tailLines(out, 8)
+			}
+			if in.DryRun {
+				result["note"] = "dry-run; nothing was written. Re-run without dry_run to apply."
+			}
+			return resultJSON(result)
+		},
+	}
+}
+
+func tailLines(s string, n int) string {
+	lines := strings.Split(strings.TrimRight(s, "\n"), "\n")
+	if len(lines) > n {
+		lines = lines[len(lines)-n:]
+	}
+	return strings.Join(lines, "\n")
 }
 
 func reloadScrapersTool() *Tool {

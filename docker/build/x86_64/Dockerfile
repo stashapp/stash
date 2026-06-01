@@ -43,6 +43,10 @@ RUN apk add --no-cache ca-certificates vips-tools ffmpeg
 RUN apk add --no-cache python3 py3-pip py3-requests py3-lxml py3-beautifulsoup4 py3-dateutil \
     && pip install --no-cache-dir --break-system-packages cloudscraper stashapp-tools
 COPY --from=backend /stash/stash /usr/bin/
+# stash-llm: bundle the external batched-fingerprint identifier so the assistant's
+# identify_scenes_fast tool can invoke it. Stdlib-only, no extra deps.
+COPY tools/identify/external_identify.py /usr/local/bin/identify_external.py
+RUN chmod +x /usr/local/bin/identify_external.py
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 EXPOSE 9999
 ENTRYPOINT ["stash"]
