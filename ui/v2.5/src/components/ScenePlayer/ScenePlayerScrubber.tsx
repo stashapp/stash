@@ -80,10 +80,10 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
       position.current = newPosition;
 
       if (seek) {
-        onSeek(percentage * (file.duration || 0));
+        onSeek(percentage * (scene.duration ?? file.duration ?? 0));
       }
     },
-    [onSeek, file.duration, scrubWidth]
+    [onSeek, file.duration, scene.duration, scrubWidth]
   );
 
   const spriteInfo = useSpriteInfo(scene.paths.vtt ?? undefined);
@@ -172,7 +172,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
   useEffect(() => {
     if (!scrubWidth || !width) return;
 
-    const duration = Number(file.duration);
+    const duration = Number(scene.duration ?? file.duration);
     const percentage = time / duration;
     const newPosition = width / 2 - percentage * scrubWidth;
 
@@ -192,7 +192,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
     prevTime.current = time;
 
     setPosition(newPosition, false);
-  }, [file.duration, setPosition, time, width, scrubWidth]);
+  }, [file.duration, scene.duration, setPosition, time, width, scrubWidth]);
 
   const onMouseUp = useCallback(
     (event: MouseEvent) => {
@@ -301,8 +301,10 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
     if (!spriteItems) return;
 
     return scene.scene_markers.map((marker, index) => {
-      const { duration } = file;
-      const left = (scrubWidth * marker.seconds) / duration;
+      const duration = scene.duration ?? file.duration;
+      const markerSeconds = marker.seconds - (scene.start_time ?? 0);
+      if (markerSeconds < 0 || markerSeconds > duration) return null;
+      const left = (scrubWidth * markerSeconds) / duration;
       const style = { left: `${left}px` };
 
       return (

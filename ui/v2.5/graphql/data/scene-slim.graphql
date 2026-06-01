@@ -13,6 +13,9 @@ fragment SlimSceneData on Scene {
   interactive_speed
   resume_time
   play_duration
+  start_time
+  end_time
+  duration
   play_count
 
   files {

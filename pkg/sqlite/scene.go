@@ -76,6 +76,14 @@ INNER JOIN video_files ON (files.id == video_files.file_id)
 ORDER BY files.size DESC;
 `
 
+const sceneDurationSQL = `
+CASE
+	WHEN COALESCE(scenes_files.end_time, video_files.duration, 0) > COALESCE(scenes_files.start_time, 0)
+		THEN COALESCE(scenes_files.end_time, video_files.duration, 0) - COALESCE(scenes_files.start_time, 0)
+	ELSE 0
+END
+`
+
 type sceneRow struct {
 	ID            int         `db:"id" goqu:"skipinsert"`
 	Title         zero.String `db:"title"`
@@ -121,6 +129,8 @@ type sceneQueryRow struct {
 	PrimaryFileBasename   zero.String `db:"primary_file_basename"`
 	PrimaryFileOshash     zero.String `db:"primary_file_oshash"`
 	PrimaryFileChecksum   zero.String `db:"primary_file_checksum"`
+	StartTime             null.Float  `db:"start_time"`
+	EndTime               null.Float  `db:"end_time"`
 }
 
 func (r *sceneQueryRow) resolve() *models.Scene {
@@ -144,6 +154,8 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 
 		ResumeTime:   r.ResumeTime,
 		PlayDuration: r.PlayDuration,
+		StartTime:    nullFloatPtr(r.StartTime),
+		EndTime:      nullFloatPtr(r.EndTime),
 	}
 
 	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {
@@ -299,6 +311,8 @@ func (qb *SceneStore) selectDataset() *goqu.SelectDataset {
 	).Select(
 		qb.table().All(),
 		scenesFilesJoinTable.Col(fileIDColumn).As("primary_file_id"),
+		scenesFilesJoinTable.Col("start_time").As("start_time"),
+		scenesFilesJoinTable.Col("end_time").As("end_time"),
 		folders.Col("path").As("primary_file_folder_path"),
 		files.Col("basename").As("primary_file_basename"),
 		checksum.Col("fingerprint").As("primary_file_checksum"),
@@ -415,6 +429,11 @@ func (qb *SceneStore) UpdatePartial(ctx context.Context, id int, partial models.
 	}
 	if partial.PrimaryFileID != nil {
 		if err := scenesFilesTableMgr.setPrimary(ctx, id, *partial.PrimaryFileID); err != nil {
+			return nil, err
+		}
+	}
+	if partial.StartTime.Set || partial.EndTime.Set {
+		if err := scenesFilesTableMgr.setPrimaryRange(ctx, id, partial.StartTime, partial.EndTime); err != nil {
 			return nil, err
 		}
 	}
@@ -918,7 +937,7 @@ func (qb *SceneStore) Duration(ctx context.Context) (float64, error) {
 	videoFileTable := videoFileTableMgr.table
 
 	q := dialect.Select(
-		goqu.COALESCE(goqu.SUM(videoFileTable.Col("duration")), 0),
+		goqu.COALESCE(goqu.SUM(goqu.L(sceneDurationSQL)), 0),
 	).From(table).InnerJoin(
 		scenesFilesJoinTable,
 		goqu.On(scenesFilesJoinTable.Col("scene_id").Eq(table.Col(idColumn))),
@@ -1102,7 +1121,7 @@ func (qb *SceneStore) queryGroupedFields(ctx context.Context, options models.Sce
 				onClause: "scenes_files.file_id = video_files.file_id",
 			},
 		)
-		query.addColumn("COALESCE(video_files.duration, 0) as duration")
+		query.addColumn(sceneDurationSQL + " as duration")
 		aggregateQuery.addColumn("SUM(temp.duration) as duration")
 	}
 

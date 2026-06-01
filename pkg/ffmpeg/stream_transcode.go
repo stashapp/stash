@@ -147,6 +147,7 @@ type TranscodeOptions struct {
 	VideoFile  *models.VideoFile
 	Resolution string
 	StartTime  float64
+	Duration   float64
 }
 
 func (o TranscodeOptions) FileGetCodec(sm *StreamManager, maxTranscodeSize int) (codec VideoCodec) {
@@ -212,6 +213,10 @@ func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 	videoFilter := sm.encoder.hwMaxResFilter(codec, o.VideoFile, maxTranscodeSize, fullhw)
 
 	args = append(args, o.StreamType.Args(codec, videoFilter, videoOnly)...)
+
+	if o.Duration > 0 {
+		args = args.Duration(o.Duration)
+	}
 
 	args = append(args, extraOutputArgs...)
 

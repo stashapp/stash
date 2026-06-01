@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"errors"
+	"fmt"
 	"path/filepath"
 	"strconv"
 	"time"
@@ -36,6 +37,8 @@ type Scene struct {
 
 	ResumeTime   float64 `json:"resume_time"`
 	PlayDuration float64 `json:"play_duration"`
+	StartTime    *float64
+	EndTime      *float64
 
 	URLs         RelatedStrings  `json:"urls"`
 	GalleryIDs   RelatedIDs      `json:"gallery_ids"`
@@ -83,6 +86,8 @@ type ScenePartial struct {
 	UpdatedAt    OptionalTime
 	ResumeTime   OptionalFloat64
 	PlayDuration OptionalFloat64
+	StartTime    OptionalFloat64
+	EndTime      OptionalFloat64
 
 	URLs          *UpdateStrings
 	GalleryIDs    *UpdateIDs
@@ -227,6 +232,8 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 		Movies:       s.GroupIDs.SceneMovieInputs(),
 		TagIds:       s.TagIDs.IDStrings(),
 		StashIds:     stashIDs.ToStashIDInputs(),
+		StartTime:    s.StartTime.Ptr(),
+		EndTime:      s.EndTime.Ptr(),
 	}
 
 	return ret
@@ -263,6 +270,58 @@ func (s Scene) GetHash(hashAlgorithm HashAlgorithm) string {
 	}
 
 	return ""
+}
+
+func (s Scene) RangeDuration(fileDuration float64) *float64 {
+	start := 0.0
+	if s.StartTime != nil {
+		start = *s.StartTime
+	}
+
+	end := fileDuration
+	if s.EndTime != nil {
+		end = *s.EndTime
+	}
+
+	if end <= start {
+		duration := 0.0
+		return &duration
+	}
+
+	duration := end - start
+	return &duration
+}
+
+func (s Scene) HasFileRange() bool {
+	return s.StartTime != nil || s.EndTime != nil
+}
+
+func ValidateSceneFileRange(startTime *float64, endTime *float64) error {
+	if startTime != nil && *startTime < 0 {
+		return fmt.Errorf("start time must be greater than or equal to 0")
+	}
+	if endTime != nil && *endTime < 0 {
+		return fmt.Errorf("end time must be greater than or equal to 0")
+	}
+	if startTime != nil && endTime != nil && *endTime <= *startTime {
+		return fmt.Errorf("end time must be greater than start time")
+	}
+
+	return nil
+}
+
+func ValidateSceneFileRangeWithDuration(startTime *float64, endTime *float64, fileDuration float64) error {
+	if err := ValidateSceneFileRange(startTime, endTime); err != nil {
+		return err
+	}
+	if startTime != nil && fileDuration > 0 && *startTime >= fileDuration {
+		return fmt.Errorf("start time must be less than file duration")
+	}
+	if endTime != nil && fileDuration > 0 && *endTime > fileDuration {
+		return fmt.Errorf("end time must be less than or equal to file duration")
+	}
+
+	return nil
 }
 
 // SceneFileType represents the file metadata for a scene.

@@ -873,6 +873,30 @@ func (t *relatedFilesTable) setPrimary(ctx context.Context, id int, fileID model
 	return nil
 }
 
+func (t *relatedFilesTable) setPrimaryRange(ctx context.Context, id int, startTime, endTime models.OptionalFloat64) error {
+	r := updateRecord{
+		Record: make(exp.Record),
+	}
+	r.setNullFloat64("start_time", startTime)
+	r.setNullFloat64("end_time", endTime)
+
+	if len(r.Record) == 0 {
+		return nil
+	}
+
+	table := t.table.table
+	q := dialect.Update(table).Prepared(true).Set(r.Record).Where(
+		t.idColumn.Eq(id),
+		table.Col("primary").Eq(1),
+	)
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("setting primary file range in %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return nil
+}
+
 type viewHistoryTable struct {
 	table
 	dateColumn exp.IdentifierExpression

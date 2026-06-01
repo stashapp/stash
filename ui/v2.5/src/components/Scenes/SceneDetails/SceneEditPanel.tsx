@@ -143,6 +143,16 @@ export const SceneEditPanel: React.FC<IProps> = ({
       .defined(),
     tag_ids: yup.array(yup.string().required()).defined(),
     stash_ids: yup.mixed<GQL.StashIdInput[]>().defined(),
+    start_time: yup.number().min(0).nullable().defined(),
+    end_time: yup
+      .number()
+      .min(0)
+      .nullable()
+      .defined()
+      .test("end-after-start", (value, context) => {
+        const start = context.parent.start_time;
+        return value == null || start == null || value > start;
+      }),
     details: yup.string().ensure(),
     cover_image: yup.string().nullable().optional(),
     custom_fields: yup.object().required().defined(),
@@ -163,6 +173,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
       }),
       tag_ids: (scene.tags ?? []).map((t) => t.id),
       stash_ids: getStashIDs(scene.stash_ids),
+      start_time: scene.start_time ?? null,
+      end_time: scene.end_time ?? null,
       details: scene.details ?? "",
       cover_image: initialCoverImage,
       custom_fields: cloneDeep(scene.custom_fields ?? {}),
@@ -656,6 +668,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     renderField,
     renderInputField,
     renderDateField,
+    renderDurationField,
     renderURLListField,
     renderStashIDsField,
   } = formikUtils(intl, formik, splitProps);
@@ -850,6 +863,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
             {renderDateField("date")}
             {renderInputField("director")}
+            {renderDurationField("start_time", "time_start")}
+            {renderDurationField("end_time", "time_end")}
 
             {renderGalleriesField()}
             {renderStudioField()}

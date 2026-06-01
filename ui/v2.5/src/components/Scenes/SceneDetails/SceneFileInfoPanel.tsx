@@ -24,6 +24,9 @@ import { FileSize } from "src/components/Shared/FileSize";
 interface IFileInfoPanelProps {
   sceneID: string;
   file: GQL.VideoFileDataFragment;
+  startTime?: number | null;
+  endTime?: number | null;
+  sceneDuration?: number | null;
   primary?: boolean;
   ofMany?: boolean;
   onSetPrimaryFile?: () => void;
@@ -96,9 +99,25 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
         </TextField>
         <TextField
           id="duration"
-          value={TextUtils.secondsToTimestamp(props.file.duration ?? 0)}
+          value={TextUtils.secondsToTimestamp(
+            props.sceneDuration ?? props.file.duration ?? 0
+          )}
           truncate
         />
+        {props.startTime != null && (
+          <TextField
+            id="time_start"
+            value={TextUtils.secondsToTimestamp(props.startTime)}
+            truncate
+          />
+        )}
+        {props.endTime != null && (
+          <TextField
+            id="time_end"
+            value={TextUtils.secondsToTimestamp(props.endTime)}
+            truncate
+          />
+        )}
         <TextField
           id="dimensions"
           value={`${props.file.width} x ${props.file.height}`}
@@ -156,6 +175,13 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
             onClick={props.onDeleteFile}
           >
             <FormattedMessage id="actions.delete_file" />
+          </Button>
+        </div>
+      )}
+      {!props.ofMany && (
+        <div>
+          <Button className="edit-button" onClick={onSplit}>
+            <FormattedMessage id="actions.split" />
           </Button>
         </div>
       )}
@@ -232,7 +258,13 @@ const _SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
 
     if (props.scene.files.length === 1) {
       return (
-        <FileInfoPanel sceneID={props.scene.id} file={props.scene.files[0]} />
+        <FileInfoPanel
+          sceneID={props.scene.id}
+          file={props.scene.files[0]}
+          startTime={props.scene.start_time}
+          endTime={props.scene.end_time}
+          sceneDuration={props.scene.duration}
+        />
       );
     }
 
@@ -271,6 +303,9 @@ const _SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
                 <FileInfoPanel
                   sceneID={props.scene.id}
                   file={file}
+                  startTime={index === 0 ? props.scene.start_time : undefined}
+                  endTime={index === 0 ? props.scene.end_time : undefined}
+                  sceneDuration={index === 0 ? props.scene.duration : undefined}
                   primary={index === 0}
                   ofMany
                   onSetPrimaryFile={() => onSetPrimaryFile(file.id)}

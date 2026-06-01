@@ -121,7 +121,15 @@ func (s *Service) AssignFile(ctx context.Context, sceneID int, fileID models.Fil
 	}
 
 	if isPrimary {
-		return errors.New("cannot reassign primary file")
+		primaryScenes, err := s.Repository.FindByPrimaryFileID(ctx, fileID)
+		if err != nil {
+			return err
+		}
+		if len(primaryScenes) == 0 {
+			return errors.New("cannot reassign primary file")
+		}
+
+		return s.Repository.AddFileID(ctx, sceneID, fileID)
 	}
 
 	return s.Repository.AssignFiles(ctx, sceneID, []models.FileID{fileID})

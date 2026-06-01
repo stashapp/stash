@@ -92,6 +92,11 @@ func (rs sceneRoutes) Routes() chi.Router {
 
 func (rs sceneRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
+	if scene.HasFileRange() {
+		rs.streamTranscode(w, r, ffmpeg.StreamTypeMP4)
+		return
+	}
+
 	ss := manager.SceneServer{
 		TxnManager:       rs.txnManager,
 		SceneCoverGetter: rs.sceneFinder,
@@ -152,13 +157,25 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, st
 
 	startTime := r.Form.Get("start")
 	ss, _ := strconv.ParseFloat(startTime, 64)
+	if scene.StartTime != nil && (startTime == "" || ss < *scene.StartTime) {
+		ss = *scene.StartTime
+	}
 	resolution := r.Form.Get("resolution")
+	duration := 0.0
+	if scene.EndTime != nil {
+		if ss >= *scene.EndTime {
+			http.Error(w, "Start time is outside the scene range", http.StatusRequestedRangeNotSatisfiable)
+			return
+		}
+		duration = *scene.EndTime - ss
+	}
 
 	options := ffmpeg.TranscodeOptions{
 		StreamType: streamType,
 		VideoFile:  f,
 		Resolution: resolution,
 		StartTime:  ss,
+		Duration:   duration,
 	}
 
 	logger.Debugf("[transcode] streaming scene %d as %s", scene.ID, streamType.MimeType)
@@ -175,6 +192,10 @@ func (rs sceneRoutes) StreamDASH(w http.ResponseWriter, r *http.Request) {
 
 func (rs sceneRoutes) streamManifest(w http.ResponseWriter, r *http.Request, streamType *ffmpeg.StreamType, logName string) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
+	if scene.HasFileRange() {
+		http.Error(w, "Segmented streaming is not available for ranged scenes", http.StatusBadRequest)
+		return
+	}
 
 	streamManager := manager.GetInstance().StreamManager
 	if streamManager == nil {
@@ -211,6 +232,10 @@ func (rs sceneRoutes) StreamDASHAudioSegment(w http.ResponseWriter, r *http.Requ
 
 func (rs sceneRoutes) streamSegment(w http.ResponseWriter, r *http.Request, streamType *ffmpeg.StreamType) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
+	if scene.HasFileRange() {
+		http.Error(w, "Segmented streaming is not available for ranged scenes", http.StatusBadRequest)
+		return
+	}
 
 	streamManager := manager.GetInstance().StreamManager
 	if streamManager == nil {

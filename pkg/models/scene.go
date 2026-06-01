@@ -194,8 +194,10 @@ type SceneCreateInput struct {
 	StashIds   []StashIDInput `json:"stash_ids"`
 	// The first id will be assigned as primary.
 	// Files will be reassigned from existing scenes if applicable.
-	// Files must not already be primary for another scene.
+	// Files that are primary for another scene may be reused to create ranged scenes.
 	FileIds      []string       `json:"file_ids"`
+	StartTime    *float64       `json:"start_time"`
+	EndTime      *float64       `json:"end_time"`
 	CustomFields map[string]any `json:"custom_fields,omitempty"`
 }
 
@@ -223,6 +225,8 @@ type SceneUpdateInput struct {
 	StashIds      []StashIDInput `json:"stash_ids"`
 	ResumeTime    *float64       `json:"resume_time"`
 	PlayDuration  *float64       `json:"play_duration"`
+	StartTime     *float64       `json:"start_time"`
+	EndTime       *float64       `json:"end_time"`
 	PlayCount     *int           `json:"play_count"`
 	PrimaryFileID *string        `json:"primary_file_id"`
 	CustomFields  *CustomFieldsInput

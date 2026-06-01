@@ -60,6 +60,12 @@ type Scene {
   resume_time: Float
   "The total time a scene has spent playing"
   play_duration: Float
+  "Start time within the primary file, in seconds"
+  start_time: Float
+  "End time within the primary file, in seconds"
+  end_time: Float
+  "Duration of the scene, respecting any primary-file start/end bounds"
+  duration: Float
   "The number ot times a scene has been played"
   play_count: Int
 
@@ -119,9 +125,13 @@ input SceneCreateInput {
   """
   The first id will be assigned as primary.
   Files will be reassigned from existing scenes if applicable.
-  Files must not already be primary for another scene.
+  Files that are primary for another scene may be reused to create ranged scenes.
   """
   file_ids: [ID!]
+  "Start time within the primary file, in seconds"
+  start_time: Float
+  "End time within the primary file, in seconds"
+  end_time: Float
 
   custom_fields: Map
 }
@@ -155,6 +165,10 @@ input SceneUpdateInput {
   resume_time: Float
   "The total time a scene has spent playing"
   play_duration: Float
+  "Start time within the primary file, in seconds"
+  start_time: Float
+  "End time within the primary file, in seconds"
+  end_time: Float
   "The number ot times a scene has been played"
   play_count: Int
     @deprecated(

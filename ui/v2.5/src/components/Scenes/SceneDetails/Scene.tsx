@@ -318,6 +318,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
   };
 
   function onClickMarker(marker: GQL.SceneMarkerDataFragment) {
+    const markerSeconds = marker.seconds - (scene.start_time ?? 0);
     const abLoopPlugin = getAbLoopPlugin();
     const opts = abLoopPlugin?.getOptions();
     const start = opts?.start;
@@ -334,8 +335,8 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
       abLoopPlugin &&
       opts &&
       hasLoopRange &&
-      (marker.seconds < Math.min(start as number, end as number) ||
-        marker.seconds > Math.max(start as number, end as number))
+      (markerSeconds < Math.min(start as number, end as number) ||
+        markerSeconds > Math.max(start as number, end as number))
     ) {
       abLoopPlugin.setOptions({
         ...opts,
@@ -343,15 +344,18 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
       });
     }
 
-    setTimestamp(marker.seconds);
+    setTimestamp(markerSeconds);
   }
 
   function onLoopMarker(marker: GQL.SceneMarkerDataFragment) {
     if (marker.end_seconds == null) return;
 
-    setTimestamp(marker.seconds);
-    const start = Math.min(marker.seconds, marker.end_seconds);
-    const end = Math.max(marker.seconds, marker.end_seconds);
+    const sceneStart = scene.start_time ?? 0;
+    const markerStart = marker.seconds - sceneStart;
+    const markerEnd = marker.end_seconds - sceneStart;
+    setTimestamp(markerStart);
+    const start = Math.min(markerStart, markerEnd);
+    const end = Math.max(markerStart, markerEnd);
     const abLoopPlugin = getAbLoopPlugin();
     const opts = abLoopPlugin?.getOptions();
 

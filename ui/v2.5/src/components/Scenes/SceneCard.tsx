@@ -364,6 +364,7 @@ export const SceneSpecsOverlay: React.FC<ISceneSpecsOverlay> = PatchComponent(
   ({ scene }) => {
     const file = scene.files?.[0];
     if (!file) return null;
+    const duration = scene.duration ?? file.duration;
     return (
       <div className="scene-specs-overlay">
         <span className="overlay-filesize extra-scene-info">
@@ -376,9 +377,9 @@ export const SceneSpecsOverlay: React.FC<ISceneSpecsOverlay> = PatchComponent(
         ) : (
           ""
         )}
-        {file.duration > 0 ? (
+        {duration > 0 ? (
           <span className="overlay-duration">
-            {TextUtils.secondsToTimestamp(file.duration)}
+            {TextUtils.secondsToTimestamp(duration)}
           </span>
         ) : (
           ""

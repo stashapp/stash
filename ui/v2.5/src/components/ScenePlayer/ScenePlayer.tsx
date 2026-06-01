@@ -287,11 +287,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     const maxLoopDuration = interfaceConfig?.maximumLoopDuration ?? 0;
     const looping = useMemo(
       () =>
-        !!file?.duration &&
+        !!(scene.duration ?? file?.duration) &&
         permitLoop &&
         maxLoopDuration !== 0 &&
-        file.duration < maxLoopDuration,
-      [file, permitLoop, maxLoopDuration]
+        (scene.duration ?? file?.duration ?? 0) < maxLoopDuration,
+      [file, scene.duration, permitLoop, maxLoopDuration]
     );
 
     const getPlayer = useCallback(() => {
@@ -618,7 +618,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         );
       }
 
-      const { duration } = file;
+      const duration = scene.duration ?? file.duration;
+      const startTime = scene.start_time ?? 0;
       const sourceSelector = player.sourceSelector();
       sourceSelector.setSources(
         scene.sceneStreams
@@ -637,6 +638,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
               label: stream.label ?? undefined,
               offset: !isDirect(src),
               duration,
+              startTime,
             };
           })
       );
@@ -692,7 +694,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       if (
         !startPosition &&
         !alwaysStartFromBeginning &&
-        file.duration > resumeTime
+        duration > resumeTime
       ) {
         startPosition = resumeTime;
       }
@@ -743,12 +745,22 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       const player = getPlayer();
       if (!player) return;
 
-      const markerData = scene.scene_markers.map((marker) => ({
-        title: getMarkerTitle(marker),
-        seconds: marker.seconds,
-        end_seconds: marker.end_seconds ?? null,
-        primaryTag: marker.primary_tag,
-      }));
+      const sceneStart = scene.start_time ?? 0;
+      const sceneDuration = scene.duration ?? file?.duration ?? 0;
+      const markerData = scene.scene_markers
+        .map((marker) => ({
+          title: getMarkerTitle(marker),
+          seconds: marker.seconds - sceneStart,
+          end_seconds:
+            marker.end_seconds == null ? null : marker.end_seconds - sceneStart,
+          primaryTag: marker.primary_tag,
+        }))
+        .filter(
+          (marker) =>
+            marker.seconds >= 0 &&
+            marker.seconds <= sceneDuration &&
+            (marker.end_seconds == null || marker.end_seconds >= 0)
+        );
 
       const markers = player!.markers();
 
@@ -782,7 +794,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         markers.addDotMarkers(timestampMarkers);
         markers.addRangeMarkers(rangeMarkers);
       });
-    }, [getPlayer, scene, uiConfig]);
+    }, [file?.duration, getPlayer, scene, uiConfig]);
 
     useEffect(() => {
       const player = getPlayer();

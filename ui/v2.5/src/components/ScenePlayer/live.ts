@@ -4,6 +4,7 @@ import videojs, { VideoJsPlayer } from "video.js";
 export interface ISource extends videojs.Tech.SourceObject {
   offset?: boolean;
   duration?: number;
+  startTime?: number;
 }
 
 interface ICue extends TextTrackCue {
@@ -57,7 +58,10 @@ function offsetMiddleware(player: VideoJsPlayer) {
   const loadSource = debounce(
     (seconds: number) => {
       const srcUrl = new URL(source.src);
-      srcUrl.searchParams.set("start", seconds.toString());
+      srcUrl.searchParams.set(
+        "start",
+        ((source.startTime ?? 0) + seconds).toString()
+      );
       source.src = srcUrl.toString();
 
       const poster = player.poster();
@@ -124,6 +128,11 @@ function offsetMiddleware(player: VideoJsPlayer) {
       next: (err: unknown, src: videojs.Tech.SourceObject) => void
     ) {
       if (srcObj.offset && srcObj.duration) {
+        if (srcObj.startTime) {
+          const srcUrl = new URL(srcObj.src);
+          srcUrl.searchParams.set("start", srcObj.startTime.toString());
+          srcObj.src = srcUrl.toString();
+        }
         updateOffsetStart(0);
       } else {
         updateOffsetStart(undefined);

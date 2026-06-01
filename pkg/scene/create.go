@@ -15,6 +15,24 @@ func (s *Service) Create(ctx context.Context, input models.CreateSceneInput) (*m
 	if input.Scene.Title == "" && len(input.FileIDs) == 0 {
 		return nil, errors.New("title must be set if scene has no files")
 	}
+	if err := models.ValidateSceneFileRange(input.Scene.StartTime, input.Scene.EndTime); err != nil {
+		return nil, err
+	}
+	if len(input.FileIDs) == 0 && input.Scene.HasFileRange() {
+		return nil, errors.New("scene file range requires a primary file")
+	}
+	if len(input.FileIDs) > 0 {
+		files, err := s.File.Find(ctx, input.FileIDs[0])
+		if err != nil {
+			return nil, fmt.Errorf("finding primary file: %w", err)
+		}
+		if len(files) == 0 {
+			return nil, fmt.Errorf("primary file %d not found", input.FileIDs[0])
+		}
+		if err := validateSceneFileRangeForFile(files[0], input.Scene.StartTime, input.Scene.EndTime); err != nil {
+			return nil, err
+		}
+	}
 
 	now := time.Now()
 	newScene := *input.Scene
@@ -45,6 +63,8 @@ func (s *Service) Create(ctx context.Context, input models.CreateSceneInput) (*m
 		// assign the primary to the first
 		if _, err := s.Repository.UpdatePartial(ctx, newScene.ID, models.ScenePartial{
 			PrimaryFileID: &input.FileIDs[0],
+			StartTime:     models.NewOptionalFloat64Ptr(input.Scene.StartTime),
+			EndTime:       models.NewOptionalFloat64Ptr(input.Scene.EndTime),
 		}); err != nil {
 			return nil, fmt.Errorf("setting primary file on new scene: %w", err)
 		}

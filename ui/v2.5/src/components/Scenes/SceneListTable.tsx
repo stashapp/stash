@@ -85,7 +85,8 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
 
   const DurationCell = (scene: GQL.SlimSceneDataFragment) => {
     const file = scene.files.length > 0 ? scene.files[0] : undefined;
-    return file?.duration && TextUtils.secondsToTimestamp(file.duration);
+    const duration = scene.duration ?? file?.duration;
+    return duration && TextUtils.secondsToTimestamp(duration);
   };
 
   const TagCell = (scene: GQL.SlimSceneDataFragment) => (

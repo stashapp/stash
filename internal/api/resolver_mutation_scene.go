@@ -52,6 +52,8 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	newScene.Rating = input.Rating100
 	newScene.Organized = translator.bool(input.Organized)
 	newScene.StashIDs = models.NewRelatedStashIDs(models.StashIDInputs(input.StashIds).ToStashIDs())
+	newScene.StartTime = input.StartTime
+	newScene.EndTime = input.EndTime
 
 	newScene.Date, err = translator.datePtr(input.Date)
 	if err != nil {
@@ -198,6 +200,8 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 	}
 
 	updatedScene.PlayDuration = translator.optionalFloat64(input.PlayDuration, "play_duration")
+	updatedScene.StartTime = translator.optionalFloat64(input.StartTime, "start_time")
+	updatedScene.EndTime = translator.optionalFloat64(input.EndTime, "end_time")
 	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
 	updatedScene.StashIDs = translator.updateStashIDs(input.StashIds, "stash_ids")
 
@@ -281,6 +285,7 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		}
 	}
 
+	var rangeFile *models.VideoFile
 	if updatedScene.PrimaryFileID != nil {
 		newPrimaryFileID := *updatedScene.PrimaryFileID
 
@@ -300,6 +305,34 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 
 		if f == nil {
 			return nil, fmt.Errorf("file with id %d not associated with scene", newPrimaryFileID)
+		}
+		rangeFile = f
+	}
+
+	startTime := originalScene.StartTime
+	if updatedScene.StartTime.Set {
+		startTime = updatedScene.StartTime.Ptr()
+	}
+	endTime := originalScene.EndTime
+	if updatedScene.EndTime.Set {
+		endTime = updatedScene.EndTime.Ptr()
+	}
+	if updatedScene.StartTime.Set || updatedScene.EndTime.Set {
+		if rangeFile == nil {
+			if err := originalScene.LoadPrimaryFile(ctx, r.repository.File); err != nil {
+				return nil, err
+			}
+			rangeFile = originalScene.Files.Primary()
+		}
+		if rangeFile == nil {
+			if err := models.ValidateSceneFileRange(startTime, endTime); err != nil {
+				return nil, err
+			}
+			if startTime != nil || endTime != nil {
+				return nil, errors.New("scene file range requires a primary file")
+			}
+		} else if err := models.ValidateSceneFileRangeWithDuration(startTime, endTime, rangeFile.Duration); err != nil {
+			return nil, err
 		}
 	}
 

@@ -21,3 +21,12 @@ type Service struct {
 	Paths  *paths.Paths
 	Config Config
 }
+
+func validateSceneFileRangeForFile(file models.File, startTime *float64, endTime *float64) error {
+	videoFile, ok := file.(*models.VideoFile)
+	if !ok {
+		return models.ValidateSceneFileRange(startTime, endTime)
+	}
+
+	return models.ValidateSceneFileRangeWithDuration(startTime, endTime, videoFile.Duration)
+}

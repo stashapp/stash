@@ -103,13 +103,34 @@ func (r *sceneResolver) Rating100(ctx context.Context, obj *models.Scene) (*int,
 	return obj.Rating, nil
 }
 
+func (r *sceneResolver) Duration(ctx context.Context, obj *models.Scene) (*float64, error) {
+	primaryFile, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
+	if primaryFile == nil {
+		return nil, nil
+	}
+
+	return obj.RangeDuration(primaryFile.Duration), nil
+}
+
 func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePathsType, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	config := manager.GetInstance().Config
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj)
 	screenshotPath := builder.GetScreenshotURL()
 	previewPath := builder.GetStreamPreviewURL()
-	streamPath := builder.GetStreamURL(config.GetAPIKey()).String()
+	streamURL := builder.GetStreamURL(config.GetAPIKey())
+	if obj.HasFileRange() {
+		streamURL.Path += ".mp4"
+		if obj.StartTime != nil {
+			v := streamURL.Query()
+			v.Set("start", fmt.Sprintf("%f", *obj.StartTime))
+			streamURL.RawQuery = v.Encode()
+		}
+	}
+	streamPath := streamURL.String()
 	webpPath := builder.GetStreamPreviewImageURL()
 	objHash := obj.GetHash(config.GetVideoFileNamingAlgorithm())
 	vttPath := builder.GetSpriteVTTURL(objHash)
