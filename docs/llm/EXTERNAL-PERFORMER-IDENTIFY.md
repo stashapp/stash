@@ -8,6 +8,11 @@ Same architectural pattern as the scene identifier: stdlib Python, talks to stas
 configured stash-box endpoints, applies MERGE-like updates. The bundled fragment query at
 `graphql/stash-box/query.graphql` (`PerformerFragment`) already returns every field we need.
 
+> **Critical reference: `pkg/stashbox/performer.go`** — stash itself contains the canonical
+> stash-box → stash translation logic. **The Python tool MUST mirror this file byte-for-byte** for
+> measurements formatting, body-mod string formatting, enum mapping, null handling, alias dedup,
+> and merged-performer redirects. Don't re-derive — port. Quoted line refs throughout this doc.
+
 ---
 
 ## 1. Why this is needed
@@ -31,75 +36,123 @@ anything stash is doing.
 | Mode | Target performers | stash-box query | Ambiguity |
 |---|---|---|---|
 | **`refresh`** | Already linked (`stash_ids` not empty) but fields empty | `findPerformer(id: <stash_id>)` — direct, by id | None |
-| **`search`** | Unlinked (no `stash_id`) | `searchPerformer(term: <name>)` | Multi-match possible |
+| **`search`** | Unlinked (no `stash_id`) | `searchPerformer(term: <name>)` — **fuzzy, returns up to ~30 results** | Yes — see below |
 
 `refresh` mode is the high-yield, zero-risk first pass — every match is unambiguous because we have
 the canonical id. `search` mode handles the long tail (older performers, ones imported without
 stash-box links) at higher ambiguity risk.
+
+**`search` mode ambiguity handling (important):** stash-box's `searchPerformer` is a fuzzy name
+match — searching "Mia" returns many results, and the API does not document ordering as "best match
+first." Stash itself filters with `strings.EqualFold(performer.Name, name)` post-search
+(`pkg/stashbox/performer.go:311-325`). **The tool must do the same** — apply an exact case-
+insensitive name filter before any apply step. `--allow-multiple` only kicks in for genuine
+post-filter ambiguity.
+
+**Filtering candidate performers from stash** (B9 from the review):
+`PerformerFilterType` has `is_missing: String` but it only accepts **one value per call**
+(`pkg/sqlite/performer_filter.go:331-365`). There is no compound "all these fields are empty"
+filter. So the tool does **client-side filtering**: fetch all performers in pages (including all
+fields we might fill), then filter in memory. At "few hundred bare performers" scale this is fine.
 
 ---
 
 ## 3. Architecture
 
 ```
-stash GraphQL                  stash-box GraphQL                stash GraphQL
-   findPerformers   ─→ for each ─→  findPerformer(id)   ─→ MERGE diff ─→  performerUpdate
-                                    searchPerformer(term)
+stash findPerformers (paged, with files/aliases/stash_ids/all fields)
+   ↓
+client-side filter (refresh = stash_ids set & some field empty; search = no stash_ids)
+   ↓
+per-performer:  stash-box findPerformer(id) OR searchPerformer(term)→EqualFold(name) filter
+   ↓
+build SceneUpdate from PerformerFragment using pkg/stashbox/performer.go translation
+   ↓
+**merge with existing alias_list + stash_ids** (Set mode REPLACES wholesale; must union explicitly)
+   ↓
+stash performerUpdate
 ```
 
 - One Python script (stdlib only) — proposed name `external_identify_performers.py`.
-- Reuses `gql()` helper, `Stash` / `StashBox` classes from `external_identify.py`.
+- Reuses `gql()` helper + `Stash`/`StashBox` classes + `fetch_stash_boxes` from `external_identify.py`.
 - `--dry-run` default, `--apply` to write, `--mode refresh|search|both`.
 - Sources in stash-box priority order (StashDB first, TPDB fallback) — same as scene identifier.
+
+**Don't run alongside native stash performer scraping.** `performerUpdate` is full-record partial
+replace under one txn; concurrent updates clobber each other (last write wins). Same caveat as
+`external_identify.py` for scenes — document it in the script's `--help`.
 
 ---
 
 ## 4. Field mapping (stash-box `PerformerFragment` → stash `PerformerUpdateInput`)
 
-Verbatim from `graphql/stash-box/query.graphql` (already in repo) and
-`graphql/schema/types/performer.graphql:107`. Type translations called out where needed:
+**Port `pkg/stashbox/performer.go` directly.** That file already does this translation for stash's
+internal scraper — every formatting decision and null-handling rule below comes from there:
 
 | Stash-box field | Type | → | Stash field | Type | Translation |
 |---|---|---|---|---|---|
-| `name` | String | | `name` | String | direct |
+| `name` | String | | `name` | String | direct (refresh mode: never overwrite existing name) |
 | `disambiguation` | String | | `disambiguation` | String | direct |
-| `aliases` | [String!] | | `alias_list` | [String!] | direct (dupes auto-filtered server-side) |
-| `gender` | GenderEnum | | `gender` | GenderEnum | direct (enums align: MALE/FEMALE/…) |
-| `urls[].url` | [URL] | | `urls` | [String!] | flatten to URL strings |
-| `images[0].url` | [Image] | | `image` | String | pass URL — stash field accepts URL OR base64 |
-| `birth_date` | String | | `birthdate` | String | direct (rename only) |
+| `aliases` | [String!] | | `alias_list` | [String!] | filter aliases case-equal to name (`performer.go:273-280`), case-fold dedupe with existing, then UNION with existing (Set mode replaces — see §5) |
+| `gender` | GenderEnum | | `gender` | GenderEnum | direct — enum names match exactly (MALE/FEMALE/TRANSGENDER_MALE/TRANSGENDER_FEMALE/INTERSEX/NON_BINARY) |
+| `urls[].url` | [URL] | | `urls` | [String!] | flatten to URL strings; merge with existing |
+| `images[0].url` | [Image] | | `image` | String | URL passthrough (stash downloads it). **Pre-HEAD the URL** — skip image on non-200 to avoid full-update rollback on CDN hiccup. No `is_primary` field exists on Image; convention is index 0 (`performer.go:225-227`) |
+| `birth_date` | String | | `birthdate` | String | direct (just renamed) — `YYYY-MM-DD` |
 | `death_date` | String | | `death_date` | String | direct |
-| `ethnicity` | String | | `ethnicity` | String | direct |
+| `ethnicity` | enum/String | | `ethnicity` | String | stash-box returns an enum; map to lowercase string (`performer.go` converts via `String()`) |
 | `country` | String | | `country` | String | direct |
-| `eye_color` | String | | `eye_color` | String | direct |
-| `hair_color` | String | | `hair_color` | String | direct |
-| `height` | Int (cm) | | `height_cm` | Int | direct (rename only) |
-| `measurements{band_size,cup_size,waist,hip}` | struct | | `measurements` | String | **format as `"<band><cup>-<waist>-<hip>"`** (e.g. `32C-26-36`) |
+| `eye_color` | enum | | `eye_color` | String | stash-box enum → lowercase string |
+| `hair_color` | enum | | `hair_color` | String | stash-box enum → lowercase string |
+| `height` | Int (cm) | | `height_cm` | Int | **skip when `0`** (`performer.go:229`) |
+| `measurements{band_size,cup_size,waist,hip}` | struct | | `measurements` | String | format as `"<band><cup>-<waist>-<hip>"` — **only when ALL FOUR sub-fields are non-null** (`performer.go:128-135`). Skip otherwise. Practically: female-only data. |
 | `career_start_year` | Int | | `career_start` | String | stringify (`"2018"`) |
 | `career_end_year` | Int | | `career_end` | String | stringify |
-| `tattoos[]{location,description}` | [BodyMod] | | `tattoos` | String | **join as `"<location>: <description>"` newline-separated** |
-| `piercings[]{location,description}` | [BodyMod] | | `piercings` | String | same as tattoos |
-| `breast_type` | enum | | `fake_tits` | String | map: `NATURAL→"No"`, `FAKE→"Yes"`, `NA→""` (best-effort; verify against stash UI strings) |
-| `id` (stash-box id) | ID | | `stash_ids` | [StashIDInput!] | append `{endpoint, stash_id: id}` if not already present |
+| `tattoos[]{location,description}` | [BodyMod] | | `tattoos` | String | port `formatBodyModifications` from `performer.go` (exact format used by stash itself) |
+| `piercings[]{location,description}` | [BodyMod] | | `piercings` | String | same source function |
+| `breast_type` | enum | | `fake_tits` | String | port the exact mapping in `performer.go` — verify before guessing (the doc draft's `NATURAL→"No"` was unverified) |
+| `id` (stash-box id) | ID | | `stash_ids` | [StashIDInput!] | UNION with existing (Set mode replaces — see §5) |
 
-**MERGE semantics**: only write fields where stash's current value is empty/null. Always append the
-stash-box `stash_id` if missing. Never overwrite existing user edits.
+**Fields with no source — acknowledge the gap:**
+- stash has `weight: Int`, `penis_length: Float`, `details: String`, `tag_ids: [ID!]`, `favorite`,
+  `rating100`, `circumcised`, `fake_tits` (existing user values) → stash-box's PerformerFragment has
+  no analog. The tool **never touches these** (MERGE rule: missing source = don't write).
+- stash-box has `merged_ids`, `breast_type` (handled), `merged_into_id`, `deleted` → see merge
+  redirect handling in §5.
 
-**Open question on measurements format** — stash UI accepts arbitrary strings, but multiple
-conventions exist (`32C-26-36`, `32-26-36`, etc.). The format proposed matches the most common
-StashDB convention. Worth verifying against a few real performers before committing.
+**MERGE semantics**: only write fields where stash's current value is empty/null *and* stash-box's
+value is non-empty. Never overwrite existing user edits. For multi-value fields (`urls`,
+`alias_list`, `stash_ids`), always pass the union with the existing stash values — see §5.
 
 ---
 
-## 5. Field-by-field decisions worth flagging
+## 5. Multi-value fields & merge semantics — the trap
 
-- **Aliases**: union with existing stash aliases (stash server dedupes case-insensitively per the
-  schema comment at line 128). Don't drop user-added aliases.
-- **Images**: stash-box performer `images` is an array; take `images[0]` (StashDB returns the
-  primary first). Passing the URL means stash downloads it server-side — saves bandwidth on our end.
-- **Empty stash-box fields**: many are nullable. Skip the update for any field stash-box returned
-  null/empty.
-- **Birthdate / death_date format**: stash-box returns ISO `YYYY-MM-DD`; stash accepts the same.
+The earlier draft of this doc claimed `alias_list` would "union with existing automatically." **That
+is wrong.** Verified in `internal/api/resolver_mutation_performer.go:401`: even in `Set` mode the
+resolver calls `updatedPerformer.Aliases.Apply(p.Aliases.List())` which **replaces wholesale**. The
+"dupes auto-filtered server-side" schema comment is intra-list dedupe, not union-with-existing.
+
+So for **`alias_list`, `stash_ids`, and `urls`**, the tool's apply step must:
+1. Fetch the performer's current values (already done — the candidate enumeration query selects all
+   fields needed).
+2. Build the union: `existing ∪ new_from_stashbox`.
+3. Pass the unioned list in `performerUpdate`. The server's case-fold dedupe trims dupes but won't
+   restore values you didn't include.
+
+For `stash_ids` specifically: keep all existing entries from any endpoint; add `{endpoint, stash_id}`
+only if not already present. Never drop entries from other stash-box endpoints.
+
+**Merge redirects** (`merged_into_id`, `deleted` on PerformerFragment): if a fetched performer has
+`deleted == true` and `merged_into_id != nil`, refetch that target id **once** (single hop, no
+recursion — the doc draft said "follow the redirect" without bounds; that's an infinite-loop risk if
+stash-box data is corrupt). If the target is also deleted, log and skip the performer.
+
+**Other gotchas:**
+- **Images**: pre-HEAD the URL before passing it in `performerUpdate`. A 404/timeout makes stash
+  fail the full mutation, rolling back every field. Better to skip just the image.
+- **`weight`, `penis_length`, `details`**: in stash, not in stash-box. Don't touch.
+- **`circumcised`, `favorite`, `rating100`, `tag_ids`**: same — never overwrite user values.
+- **Birthdate / death_date format**: stash-box returns ISO `YYYY-MM-DD`; stash accepts that exactly.
 
 ---
 
@@ -134,12 +187,14 @@ check:
 
 | Question | Risk | Mitigation |
 |---|---|---|
-| `measurements` string format conventions vary | Cosmetic only — values still searchable | Verify against existing entries; offer a `--measurements-format` flag if needed |
-| `breast_type` mapping to stash's `fake_tits` string | Misleading display ("No" vs "Natural") | Confirm against stash UI text; allow override via config |
-| Multi-match in `search` mode could pick wrong person | Wrong metadata applied to wrong performer | Skip by default; offer `flag_multiple_as_tag` like scene identifier |
-| Image URL changes / 404s | Performer ends up without image | Pre-HEAD the URL before passing to stash; fall back to skipping image |
-| Stash-box rate limits | Throttle/ban on rapid enrichment of large libraries | Inherit `max_requests_per_minute` from stash config (same as scene identifier) |
-| Stash-box performer merges (`merged_into_id`) | We update against a stale/merged performer record | If `merged_into_id` is set on a fetch, follow the redirect to the current id |
+| ~~`measurements` format~~ | — | **Closed.** Port `formatMeasurements` from `pkg/stashbox/performer.go` — matches whatever stash itself produces. No format flag needed. |
+| ~~`breast_type` mapping~~ | — | **Closed.** Port the exact map from `performer.go`. Stop guessing. |
+| Multi-match in `search` mode | Wrong metadata applied to wrong performer | EqualFold(name) post-filter is mandatory (§2). `--allow-multiple` only after that filter. Default skip. |
+| ~~Image URL changes / 404s~~ | — | **Closed.** Pre-HEAD before update; skip image on non-200. Documented in §4 + §5. |
+| Stash-box rate limits, especially with `--mode both` | Cumulative cost doubles | Inherit `max_requests_per_minute` from stash config; emit progress meter so big runs are observable. |
+| Performer merges (`merged_into_id`) | We update against a stale record | 1-hop redirect only, no recursion. If target also deleted, skip with warning. |
+| Race with native stash performer scrape | Last-write-wins under one txn | Document in `--help`; recommend disabling native auto-scrape during bulk runs. |
+| `weight`/`penis_length`/`details` are stash-only | Could be enriched from elsewhere later | Acknowledged in §4 — never touched by this tool. Future scope. |
 
 ---
 
