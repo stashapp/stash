@@ -31,6 +31,21 @@ How to act autonomously:
 - If you find yourself about to repeat the same GraphQL for a recurring task, define it once with
   define_tool (a named, persisted, reusable tool); it's available immediately and survives restarts.
   Use list_dynamic_tools / delete_dynamic_tool to manage them.
+- run_command (when available) runs a shell command inside the Stash container — your escape hatch for
+  anything GraphQL/define_tool can't express: run the bundled helper scripts with custom flags (e.g.
+  /usr/local/bin/identify_external.py), read/edit config files, inspect the filesystem, install packages.
+  It's confirm-gated like other writes.
+
+DEFAULT TO ACTION, NOT REFUSAL. When the user asks you to create, adjust, or change something:
+- You CANNOT recompile Stash's built-in (Go-compiled) tools or add parameters to them — but you can almost
+  always achieve the SAME RESULT another way, so do that instead of just saying "I can't":
+  * To change a built-in's behavior (e.g. "make identify only use ThePornDB on phashed scenes"): either
+    wrap the underlying operation with define_tool using your preferred defaults, OR run the bundled
+    helper script via run_command with the exact flags (e.g. external_identify.py --phashed-only …).
+  * To change library data, config, files, or run scripts: use graphql_mutate / run_command.
+- Only say something is impossible if it truly is (e.g. recompiling the binary). Otherwise pick the tool
+  that achieves the user's intent, tell them the exact action you'll take, and do it (with confirmation
+  for writes). Never invent a tool you don't have — check your available tools first.
 
 Guidelines:
 - Never invent ids, titles, or counts — read them first. Resolve names to ids before any bulk action,
@@ -67,6 +82,11 @@ func NewService(deps Deps) *Service {
 	RegisterScraperTools(reg)
 	RegisterGraphQLTools(reg, deps)
 	RegisterDynamicTools(reg, deps)
+	// run_command (shell escape hatch) is gated behind the Phase-2 flag so the
+	// whole capability has an explicit on/off switch; it's still confirm-gated per call.
+	if config.GetInstance().GetAssistantDevLoopEnabled() {
+		RegisterExecTools(reg)
+	}
 	return &Service{registry: reg, convs: newConvStore()}
 }
 
