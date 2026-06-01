@@ -88,8 +88,11 @@ func (e *Encoder) EncodePreview(
 		segFiles = append(segFiles, segPath)
 	}
 
-	// Concat via demuxer (no re-encode), then atomic rename into place.
-	partial := finalPath + ".partial"
+	// Concat via demuxer (no re-encode) to a partial file in stash's own tmp/
+	// scratch dir, then atomic rename to the destination. Writing to tmp/
+	// (different directory from screenshots/) means stash never sees a partial
+	// file via path-existence checks — see EXTERNAL-WORKERS.md §9 (atomicity).
+	partial := filepath.Join(tmpDir, stem+".mp4.partial")
 	if err := e.concatSegments(ctx, segFiles, partial); err != nil {
 		return fmt.Errorf("concat: %w", err)
 	}
@@ -253,6 +256,10 @@ func (e *Encoder) concatSegments(ctx context.Context, segFiles []string, output 
 		"-i", listFile,
 		"-c", "copy",
 		"-movflags", "+faststart",
+		// Force output format: the partial file ends in ".partial" so ffmpeg
+		// can't auto-detect MP4 from the extension. Explicit -f keeps the
+		// rename-after-write atomic strategy working.
+		"-f", "mp4",
 		output,
 	}
 	return e.runFFmpeg(ctx, args)

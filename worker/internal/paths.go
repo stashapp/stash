@@ -19,6 +19,11 @@ type PrefixRewriter struct {
 
 // ParsePrefixRewriter parses a CLI flag value "stash=worker" (or "stash:worker")
 // into a PrefixRewriter. Returns an error if the format is wrong.
+//
+// Both the bash and PowerShell quoting layers collapse "\\" to "\" before the
+// arg reaches the binary, so a user passing "\\server\share" typically arrives
+// as "\server\share" inside the program. Normalize that case back to a valid
+// Windows UNC path.
 func ParsePrefixRewriter(s string) (*PrefixRewriter, error) {
 	// Prefer "=" as the separator; ":" is ambiguous with Windows drive letters.
 	idx := strings.Index(s, "=")
@@ -29,8 +34,40 @@ func ParsePrefixRewriter(s string) (*PrefixRewriter, error) {
 	to := strings.TrimSpace(s[idx+1:])
 	return &PrefixRewriter{
 		from: strings.TrimRight(from, "/\\"),
-		to:   strings.TrimRight(to, "/\\"),
+		to:   strings.TrimRight(normalizeUNC(to), "/\\"),
 	}, nil
+}
+
+// normalizeUNC converts a half-escaped UNC path ("\server\share") into the
+// canonical form ("\\server\share"). Drive-letter paths ("C:\...") are left
+// alone. Already-correct UNC paths ("\\server\share") are idempotent. POSIX-
+// style paths are left alone too — only Windows-style paths are touched.
+func normalizeUNC(p string) string {
+	if len(p) < 2 {
+		return p
+	}
+	// Drive letter (C:\, D:/, etc.) — not UNC.
+	if (p[0] >= 'A' && p[0] <= 'Z') || (p[0] >= 'a' && p[0] <= 'z') {
+		if p[1] == ':' {
+			return p
+		}
+	}
+	// Already a UNC ("\\server" or "//server").
+	if (p[0] == '\\' && p[1] == '\\') || (p[0] == '/' && p[1] == '/') {
+		return p
+	}
+	// Malformed UNC: single leading "\" followed by an alphanumeric (a host
+	// name character). Prepend the missing "\".
+	if p[0] == '\\' && isAlphaNum(p[1]) {
+		return "\\" + p
+	}
+	return p
+}
+
+func isAlphaNum(c byte) bool {
+	return (c >= '0' && c <= '9') ||
+		(c >= 'a' && c <= 'z') ||
+		(c >= 'A' && c <= 'Z')
 }
 
 // To returns the worker-side prefix (the right-hand side of the CLI value). Useful

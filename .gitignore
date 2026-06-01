@@ -76,3 +76,8 @@ stash-llm-*.tar
 # Python bytecode from compile-checking the identify tools
 __pycache__/
 *.pyc
+
+# stash-worker build artifacts (not committed)
+worker/stash-worker.exe
+worker/ffmpeg.zip
+worker/ffmpeg-master-latest-win64-gpl/

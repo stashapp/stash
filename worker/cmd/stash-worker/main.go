@@ -63,10 +63,11 @@ type runConfig struct {
 
 	ffmpegPath string
 
-	limit   int
-	perPage int
-	watch   bool
-	dryRun  bool
+	limit       int
+	maxFailures int
+	perPage     int
+	watch       bool
+	dryRun      bool
 }
 
 func parseFlags() (*runConfig, error) {
@@ -76,7 +77,8 @@ func parseFlags() (*runConfig, error) {
 	mediaPrefix := fs.String("media-prefix", "", "STASH=WORKER prefix rewrite for media file paths (e.g. \"/data=\\\\overwatch-stash\\torrents\").")
 	generatedPrefix := fs.String("generated-prefix", "", "STASH=WORKER prefix rewrite for the generated/ dir.")
 	ffmpegPath := fs.String("ffmpeg", "ffmpeg", "Path to ffmpeg.exe with NVENC + NVDEC support.")
-	limit := fs.Int("limit", 0, "Cap on scenes processed per run (0 = unbounded).")
+	limit := fs.Int("limit", 0, "Cap on scenes ENCODED per run (skips don't count; 0 = unbounded). Useful for tests: --limit 1 encodes exactly one missing scene then exits.")
+	maxFailures := fs.Int("max-failures", 5, "Abort the run after N consecutive scene failures (catches systemic problems like a wrong ffmpeg flag instead of thrashing the whole library).")
 	perPage := fs.Int("per-page", 200, "GraphQL pagination size for scene enumeration.")
 	watch := fs.Bool("watch", false, "Keep polling for new work instead of exiting when the queue is empty.")
 	dryRun := fs.Bool("dry-run", false, "Print ffmpeg commands without executing or writing any files.")
@@ -90,6 +92,7 @@ func parseFlags() (*runConfig, error) {
 		stashAPIKey: strings.TrimSpace(*apiKey),
 		ffmpegPath:  strings.TrimSpace(*ffmpegPath),
 		limit:       *limit,
+		maxFailures: *maxFailures,
 		perPage:     *perPage,
 		watch:       *watch,
 		dryRun:      *dryRun,
@@ -160,9 +163,13 @@ func run(ctx context.Context, c *runConfig) error {
 			if page == 1 {
 				log.Printf("scanning %d scenes (page %d, per-page %d)", total, page, c.perPage)
 			}
+			consecutiveFailures := 0
 			for _, s := range scenes {
-				if c.limit > 0 && processed >= c.limit {
+				if c.limit > 0 && encoded >= c.limit {
 					break
+				}
+				if c.maxFailures > 0 && consecutiveFailures >= c.maxFailures {
+					return fmt.Errorf("aborting: %d consecutive failures (likely systemic — check the last ffmpeg error)", consecutiveFailures)
 				}
 				processed++
 				outcome := processScene(ctx, &s, scfg, c, gen, enc)
@@ -170,13 +177,15 @@ func run(ctx context.Context, c *runConfig) error {
 				case outcomeEncoded:
 					encoded++
 					passEncoded++
+					consecutiveFailures = 0
 				case outcomeSkipped:
-					skipped++
+					// neutral; doesn't reset or increment the failure counter
 				case outcomeFailed:
 					failed++
+					consecutiveFailures++
 				}
 			}
-			if c.limit > 0 && processed >= c.limit {
+			if c.limit > 0 && encoded >= c.limit {
 				break
 			}
 			if len(scenes) < c.perPage {
@@ -190,7 +199,7 @@ func run(ctx context.Context, c *runConfig) error {
 		if !c.watch {
 			break
 		}
-		if c.limit > 0 && processed >= c.limit {
+		if c.limit > 0 && encoded >= c.limit {
 			log.Printf("limit %d reached; exiting watch loop", c.limit)
 			break
 		}
