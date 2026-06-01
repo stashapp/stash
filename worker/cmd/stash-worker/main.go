@@ -31,8 +31,6 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Graceful Ctrl-C: first signal cancels the context (lets in-flight ffmpeg
-	// finish or be killed by its own cancellation), second forces exit.
 	sigCh := make(chan os.Signal, 2)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 	go func() {
@@ -63,6 +61,7 @@ type runConfig struct {
 
 	ffmpegPath string
 
+	tasks       []string // ordered task names: "previews", "covers"
 	limit       int
 	maxFailures int
 	perPage     int
@@ -77,11 +76,12 @@ func parseFlags() (*runConfig, error) {
 	mediaPrefix := fs.String("media-prefix", "", "STASH=WORKER prefix rewrite for media file paths (e.g. \"/data=\\\\overwatch-stash\\torrents\").")
 	generatedPrefix := fs.String("generated-prefix", "", "STASH=WORKER prefix rewrite for the generated/ dir.")
 	ffmpegPath := fs.String("ffmpeg", "ffmpeg", "Path to ffmpeg.exe with NVENC + NVDEC support.")
-	limit := fs.Int("limit", 0, "Cap on scenes ENCODED per run (skips don't count; 0 = unbounded). Useful for tests: --limit 1 encodes exactly one missing scene then exits.")
-	maxFailures := fs.Int("max-failures", 5, "Abort the run after N consecutive scene failures (catches systemic problems like a wrong ffmpeg flag instead of thrashing the whole library).")
+	tasks := fs.String("tasks", "previews", "Comma-separated tasks to run, in order. Available: previews, covers.")
+	limit := fs.Int("limit", 0, "Cap on items ENCODED/applied per run across ALL tasks (0 = unbounded). Useful for tests.")
+	maxFailures := fs.Int("max-failures", 5, "Abort the run after N consecutive failures (catches systemic problems).")
 	perPage := fs.Int("per-page", 200, "GraphQL pagination size for scene enumeration.")
 	watch := fs.Bool("watch", false, "Keep polling for new work instead of exiting when the queue is empty.")
-	dryRun := fs.Bool("dry-run", false, "Print ffmpeg commands without executing or writing any files.")
+	dryRun := fs.Bool("dry-run", false, "Print actions without writing.")
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		return nil, err
@@ -115,15 +115,37 @@ func parseFlags() (*runConfig, error) {
 		}
 		cfg.mediaRewriter = mr
 	}
+	for _, t := range strings.Split(*tasks, ",") {
+		t = strings.TrimSpace(strings.ToLower(t))
+		if t == "" {
+			continue
+		}
+		if t != "previews" && t != "covers" {
+			return nil, fmt.Errorf("--tasks: unknown task %q (available: previews, covers)", t)
+		}
+		cfg.tasks = append(cfg.tasks, t)
+	}
+	if len(cfg.tasks) == 0 {
+		return nil, errors.New("--tasks: at least one task required")
+	}
 	return cfg, nil
 }
 
 // ── main loop ──────────────────────────────────────────────────────────────
 
-// run drives the preview-generation loop. It reads stash's config, enumerates
-// scenes in id-ASC order, and encodes a preview for each scene whose target
-// file is missing. With --watch, it idles between empty passes; otherwise it
-// exits after the first empty pass.
+type outcome int
+
+const (
+	outcomeEncoded outcome = iota // counts as work done (cover applied OR preview encoded)
+	outcomeSkipped
+	outcomeFailed
+)
+
+// totals tracks counters across all tasks in a single invocation.
+type totals struct {
+	processed, encoded, skipped, failed int
+}
+
 func run(ctx context.Context, c *runConfig) error {
 	stash := internal.NewStashClient(c.stashURL, c.stashAPIKey)
 	scfg, err := stash.FetchConfig(ctx)
@@ -132,74 +154,37 @@ func run(ctx context.Context, c *runConfig) error {
 	}
 	log.Printf("stash config: algorithm=%s previewSegments=%d previewDur=%.2fs audio=%v",
 		scfg.VideoFileNamingAlgorithm, scfg.PreviewSegments, scfg.PreviewSegmentDuration, scfg.PreviewAudio)
+	log.Printf("tasks: %s", strings.Join(c.tasks, ", "))
 
-	// Worker's view of stash's generated/ dir is the rewriter's right-hand side.
 	gen := internal.GeneratedPaths{Root: c.generatedRewriter.To()}
 	if err := internal.EnsureTmpDir(gen); err != nil {
 		return fmt.Errorf("ensure tmp dir %s: %w", gen.TmpDir(), err)
 	}
 	enc := internal.NewEncoder(c.ffmpegPath, c.dryRun)
-
-	processed := 0
-	encoded := 0
-	skipped := 0
-	failed := 0
+	t := &totals{}
 	emptyPasses := 0
 
 	for {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
-		page := 1
 		passEncoded := 0
-		for {
-			scenes, total, err := stash.FetchScenesPage(ctx, page, c.perPage)
+		for _, taskName := range c.tasks {
+			if c.limit > 0 && t.encoded >= c.limit {
+				break
+			}
+			n, err := runTask(ctx, taskName, c, stash, scfg, gen, enc, t)
 			if err != nil {
-				return fmt.Errorf("page %d: %w", page, err)
+				return err
 			}
-			if len(scenes) == 0 {
-				break
-			}
-			if page == 1 {
-				log.Printf("scanning %d scenes (page %d, per-page %d)", total, page, c.perPage)
-			}
-			consecutiveFailures := 0
-			for _, s := range scenes {
-				if c.limit > 0 && encoded >= c.limit {
-					break
-				}
-				if c.maxFailures > 0 && consecutiveFailures >= c.maxFailures {
-					return fmt.Errorf("aborting: %d consecutive failures (likely systemic — check the last ffmpeg error)", consecutiveFailures)
-				}
-				processed++
-				outcome := processScene(ctx, &s, scfg, c, gen, enc)
-				switch outcome {
-				case outcomeEncoded:
-					encoded++
-					passEncoded++
-					consecutiveFailures = 0
-				case outcomeSkipped:
-					// neutral; doesn't reset or increment the failure counter
-				case outcomeFailed:
-					failed++
-					consecutiveFailures++
-				}
-			}
-			if c.limit > 0 && encoded >= c.limit {
-				break
-			}
-			if len(scenes) < c.perPage {
-				break // last page
-			}
-			page++
+			passEncoded += n
 		}
-		log.Printf("pass complete: encoded=%d skipped=%d failed=%d (processed %d total)",
-			passEncoded, skipped, failed, processed)
+		log.Printf("pass complete: encoded=%d failed=%d (processed %d total)", t.encoded, t.failed, t.processed)
 
 		if !c.watch {
 			break
 		}
-		if c.limit > 0 && encoded >= c.limit {
+		if c.limit > 0 && t.encoded >= c.limit {
 			log.Printf("limit %d reached; exiting watch loop", c.limit)
 			break
 		}
@@ -212,7 +197,6 @@ func run(ctx context.Context, c *runConfig) error {
 		} else {
 			emptyPasses = 0
 		}
-		// Sleep before next pass; honor cancellation.
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -220,22 +204,99 @@ func run(ctx context.Context, c *runConfig) error {
 		}
 	}
 
-	log.Printf("done: encoded=%d skipped=%d failed=%d", encoded, skipped, failed)
+	log.Printf("done: encoded=%d skipped=%d failed=%d", t.encoded, t.skipped, t.failed)
 	return nil
 }
 
-type outcome int
+// runTask drives one task's enumeration + per-scene dispatch. Returns the
+// count of items encoded in this pass (used to break the watch loop's empty
+// detection).
+func runTask(
+	ctx context.Context,
+	taskName string,
+	c *runConfig,
+	stash *internal.StashClient,
+	scfg *internal.StashConfig,
+	gen internal.GeneratedPaths,
+	enc *internal.Encoder,
+	t *totals,
+) (int, error) {
+	// is_missing filter on the stash query for tasks where stash tracks
+	// missingness. Previews aren't tracked — we filesystem-check instead.
+	missingFilter := ""
+	if taskName == "covers" {
+		missingFilter = "cover"
+	}
 
-const (
-	outcomeEncoded outcome = iota
-	outcomeSkipped
-	outcomeFailed
-)
+	page := 1
+	passEncoded := 0
+	consecutiveFailures := 0
+	for {
+		scenes, total, err := stash.FetchScenesPage(ctx, page, c.perPage, missingFilter)
+		if err != nil {
+			return passEncoded, fmt.Errorf("[%s] page %d: %w", taskName, page, err)
+		}
+		if len(scenes) == 0 {
+			break
+		}
+		if page == 1 {
+			log.Printf("[%s] scanning %d scenes (per-page %d)", taskName, total, c.perPage)
+		}
+		for _, s := range scenes {
+			if c.limit > 0 && t.encoded >= c.limit {
+				return passEncoded, nil
+			}
+			if c.maxFailures > 0 && consecutiveFailures >= c.maxFailures {
+				return passEncoded, fmt.Errorf("[%s] aborting: %d consecutive failures", taskName, consecutiveFailures)
+			}
+			t.processed++
+			out := processScene(ctx, taskName, &s, scfg, c, gen, enc, stash)
+			switch out {
+			case outcomeEncoded:
+				t.encoded++
+				passEncoded++
+				consecutiveFailures = 0
+			case outcomeSkipped:
+				t.skipped++
+			case outcomeFailed:
+				t.failed++
+				consecutiveFailures++
+			}
+		}
+		if len(scenes) < c.perPage {
+			break
+		}
+		page++
+	}
+	return passEncoded, nil
+}
 
-// processScene handles one scene: checks if the preview is already on disk,
-// and if not, runs the encode pipeline. All errors are logged and converted
-// to outcomes — one bad scene doesn't kill the whole run.
+// processScene dispatches by task. Per-scene errors are logged and turned into
+// outcomes — one bad scene doesn't kill the run.
 func processScene(
+	ctx context.Context,
+	taskName string,
+	s *internal.Scene,
+	scfg *internal.StashConfig,
+	c *runConfig,
+	gen internal.GeneratedPaths,
+	enc *internal.Encoder,
+	stash *internal.StashClient,
+) outcome {
+	switch taskName {
+	case "previews":
+		return processPreview(ctx, s, scfg, c, gen, enc)
+	case "covers":
+		return processCover(ctx, s, c, enc, stash)
+	default:
+		log.Printf("scene %s: unknown task %q; skipping", s.ID, taskName)
+		return outcomeSkipped
+	}
+}
+
+// ── previews ───────────────────────────────────────────────────────────────
+
+func processPreview(
 	ctx context.Context,
 	s *internal.Scene,
 	scfg *internal.StashConfig,
@@ -261,10 +322,9 @@ func processScene(
 		return outcomeSkipped
 	}
 
-	stashSourcePath := s.Files[0].Path
-	source := stashSourcePath
+	source := s.Files[0].Path
 	if c.mediaRewriter != nil {
-		source = c.mediaRewriter.Rewrite(stashSourcePath)
+		source = c.mediaRewriter.Rewrite(source)
 	}
 	output := gen.VideoPreview(hash)
 
@@ -276,3 +336,47 @@ func processScene(
 	return outcomeEncoded
 }
 
+// ── covers ─────────────────────────────────────────────────────────────────
+
+// processCover extracts a single JPEG frame at stash's 20% timestamp and
+// uploads it via sceneUpdate. Stash decodes the base64 and writes to its blob
+// storage (DB or blobs/ dir, per config).
+func processCover(
+	ctx context.Context,
+	s *internal.Scene,
+	c *runConfig,
+	enc *internal.Encoder,
+	stash *internal.StashClient,
+) outcome {
+	if len(s.Files) == 0 {
+		log.Printf("scene %s: no files; skipping", s.ID)
+		return outcomeSkipped
+	}
+	pf := s.Files[0]
+	if pf.Duration <= 0 {
+		log.Printf("scene %s: no duration metadata; skipping cover", s.ID)
+		return outcomeSkipped
+	}
+	source := pf.Path
+	if c.mediaRewriter != nil {
+		source = c.mediaRewriter.Rewrite(source)
+	}
+	at := internal.CoverScreenshotProportion * pf.Duration
+
+	log.Printf("scene %s: extracting cover at %.1fs (%.0f%% of %.0fs)",
+		s.ID, at, internal.CoverScreenshotProportion*100, pf.Duration)
+	jpeg, err := enc.ExtractCover(ctx, source, at)
+	if err != nil {
+		log.Printf("scene %s: cover extract failed: %v", s.ID, err)
+		return outcomeFailed
+	}
+	if c.dryRun {
+		log.Printf("scene %s: (dry-run) would upload %d-byte JPEG", s.ID, len(jpeg))
+		return outcomeEncoded
+	}
+	if err := stash.SceneUpdateCover(ctx, s.ID, jpeg); err != nil {
+		log.Printf("scene %s: upload cover: %v", s.ID, err)
+		return outcomeFailed
+	}
+	return outcomeEncoded
+}

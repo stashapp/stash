@@ -4,6 +4,7 @@ package internal
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -199,8 +200,8 @@ func (s *Scene) PrimaryHash(algorithm string) (string, error) {
 	return "", fmt.Errorf("scene %s primary file has no %s fingerprint", s.ID, algorithm)
 }
 
-const scenesQuery = `query($filter: FindFilterType) {
-  findScenes(filter: $filter) {
+const scenesQuery = `query($filter: FindFilterType, $scene_filter: SceneFilterType) {
+  findScenes(filter: $filter, scene_filter: $scene_filter) {
     count
     scenes {
       id
@@ -235,7 +236,9 @@ type scenesRespRaw struct {
 }
 
 // FetchScenesPage pulls a single page of scenes ordered by id ASC. Page is 1-based.
-func (c *StashClient) FetchScenesPage(ctx context.Context, page, perPage int) ([]Scene, int, error) {
+// missingFilter (e.g. "cover") narrows to scenes stash flags as missing that
+// artifact. Empty string = all scenes.
+func (c *StashClient) FetchScenesPage(ctx context.Context, page, perPage int, missingFilter string) ([]Scene, int, error) {
 	asc := "ASC"
 	sort := "id"
 	vars := map[string]any{
@@ -245,6 +248,9 @@ func (c *StashClient) FetchScenesPage(ctx context.Context, page, perPage int) ([
 			"sort":      sort,
 			"direction": asc,
 		},
+	}
+	if missingFilter != "" {
+		vars["scene_filter"] = map[string]any{"is_missing": missingFilter}
 	}
 	var raw scenesRespRaw
 	if err := c.do(ctx, scenesQuery, vars, &raw); err != nil {
@@ -265,6 +271,38 @@ func (c *StashClient) FetchScenesPage(ctx context.Context, page, perPage int) ([
 		out = append(out, Scene{ID: s.ID, Title: s.Title, Files: files})
 	}
 	return out, raw.FindScenes.Count, nil
+}
+
+// ── mutations ──────────────────────────────────────────────────────────────
+
+const sceneUpdateCoverMutation = `mutation($id: ID!, $cover: String!) {
+  sceneUpdate(input: { id: $id, cover_image: $cover }) { id }
+}`
+
+type sceneUpdateRespRaw struct {
+	SceneUpdate struct {
+		ID string `json:"id"`
+	} `json:"sceneUpdate"`
+}
+
+// SceneUpdateCover sets the scene's cover image. The PerformerUpdateInput-style
+// `cover_image` field accepts a base64 data-URL ("data:image/jpeg;base64,...");
+// stash unpacks it server-side and writes to its blob storage.
+// See graphql/schema/types/scene.graphql:151 + repository_scene.go:60.
+func (c *StashClient) SceneUpdateCover(ctx context.Context, sceneID string, jpeg []byte) error {
+	if len(jpeg) == 0 {
+		return errors.New("empty cover bytes")
+	}
+	dataURL := "data:image/jpeg;base64," + base64.StdEncoding.EncodeToString(jpeg)
+	var raw sceneUpdateRespRaw
+	err := c.do(ctx, sceneUpdateCoverMutation, map[string]any{
+		"id":    sceneID,
+		"cover": dataURL,
+	}, &raw)
+	if err != nil {
+		return fmt.Errorf("sceneUpdate cover for %s: %w", sceneID, err)
+	}
+	return nil
 }
 
 func truncate(s string, n int) string {
