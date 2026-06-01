@@ -44,6 +44,12 @@ def gql(url, query, variables=None, headers=None, timeout=60):
     body = json.dumps({"query": query, "variables": variables or {}}).encode()
     req = urllib.request.Request(url, data=body, method="POST")
     req.add_header("Content-Type", "application/json")
+    # ThePornDB sits behind Cloudflare, which 403s (error 1010) the default
+    # "Python-urllib/x.y" User-Agent. Present a browser UA so the stdlib client
+    # isn't bot-blocked. StashDB doesn't care.
+    req.add_header("User-Agent",
+                   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                   "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
     for k, v in (headers or {}).items():
         req.add_header(k, v)
     try:
