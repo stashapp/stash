@@ -99,5 +99,12 @@ func (rs llmRoutes) Confirm(w http.ResponseWriter, r *http.Request) {
 		_ = json.NewEncoder(w).Encode(map[string]any{"ok": false, "error": err.Error()})
 		return
 	}
-	_ = json.NewEncoder(w).Encode(map[string]any{"ok": true, "result": json.RawMessage(out)})
+	// Tool output is usually JSON (graphql/library tools) but may be plain text
+	// (run_command). Pass JSON through as-is; otherwise emit it as a string so the
+	// response is always well-formed (json.RawMessage of non-JSON breaks Encode).
+	var result any = out
+	if json.Valid([]byte(out)) {
+		result = json.RawMessage(out)
+	}
+	_ = json.NewEncoder(w).Encode(map[string]any{"ok": true, "result": result})
 }
