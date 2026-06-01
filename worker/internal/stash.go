@@ -44,15 +44,47 @@ type graphqlResp struct {
 }
 
 // do runs a GraphQL request and decodes the data field into out.
+// doMaxAttempts caps GraphQL retries. With linear backoff (3s,6s,…) this rides
+// through a ~10-15s stash restart (container redeploy) without the worker dying —
+// so long-running tasks aren't interrupted while the stash container is iterated.
+const doMaxAttempts = 6
+
 func (c *StashClient) do(ctx context.Context, query string, vars map[string]any, out any) error {
 	body, err := json.Marshal(graphqlReq{Query: query, Variables: vars})
 	if err != nil {
 		return fmt.Errorf("marshal graphql request: %w", err)
 	}
 
+	var lastErr error
+	for attempt := 0; attempt < doMaxAttempts; attempt++ {
+		if attempt > 0 {
+			// Transient failure (stash briefly down / restarting). Back off and
+			// retry rather than aborting the whole run.
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-time.After(time.Duration(attempt) * 3 * time.Second):
+			}
+		}
+		retryable, err := c.attempt(ctx, body, out)
+		if err == nil {
+			return nil
+		}
+		lastErr = err
+		if !retryable {
+			return err // real GraphQL/decode error — retrying won't help
+		}
+	}
+	return fmt.Errorf("stash request failed after %d attempts: %w", doMaxAttempts, lastErr)
+}
+
+// attempt performs one GraphQL request. retryable is true for transient failures
+// (connection refused, read error, 5xx, empty/garbage body — all expected during a
+// container restart) and false for permanent ones (bad request, GraphQL errors).
+func (c *StashClient) attempt(ctx context.Context, body []byte, out any) (retryable bool, err error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/graphql", bytes.NewReader(body))
 	if err != nil {
-		return fmt.Errorf("build request: %w", err)
+		return false, fmt.Errorf("build request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	if c.apiKey != "" {
@@ -61,36 +93,37 @@ func (c *StashClient) do(ctx context.Context, query string, vars map[string]any,
 
 	resp, err := c.http.Do(req)
 	if err != nil {
-		return fmt.Errorf("stash request: %w", err)
+		return true, fmt.Errorf("stash request: %w", err) // connection refused/reset during restart
 	}
 	defer resp.Body.Close()
 
 	raw, err := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
 	if err != nil {
-		return fmt.Errorf("read response: %w", err)
+		return true, fmt.Errorf("read response: %w", err)
 	}
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("stash HTTP %d: %s", resp.StatusCode, truncate(string(raw), 300))
+		// 5xx (and gateway 0) are transient during a restart; 4xx are not.
+		return resp.StatusCode >= 500, fmt.Errorf("stash HTTP %d: %s", resp.StatusCode, truncate(string(raw), 300))
 	}
 
 	var gr graphqlResp
 	if err := json.Unmarshal(raw, &gr); err != nil {
-		return fmt.Errorf("decode response envelope: %w", err)
+		return true, fmt.Errorf("decode response envelope: %w", err) // empty/garbage body mid-restart
 	}
 	if len(gr.Errors) > 0 {
 		msgs := make([]string, 0, len(gr.Errors))
 		for _, e := range gr.Errors {
 			msgs = append(msgs, e.Message)
 		}
-		return fmt.Errorf("graphql errors: %s", strings.Join(msgs, "; "))
+		return false, fmt.Errorf("graphql errors: %s", strings.Join(msgs, "; "))
 	}
 	if out == nil {
-		return nil
+		return false, nil
 	}
 	if err := json.Unmarshal(gr.Data, out); err != nil {
-		return fmt.Errorf("decode response data: %w", err)
+		return false, fmt.Errorf("decode response data: %w", err)
 	}
-	return nil
+	return false, nil
 }
 
 // ── config ─────────────────────────────────────────────────────────────────
