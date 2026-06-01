@@ -569,318 +569,86 @@ func TestTagQueryIsMissingImage(t *testing.T) {
 	})
 }
 
-func TestTagQuerySceneCount(t *testing.T) {
-	countCriterion := models.HierarchicalCountInput{
-		Value:    1,
-		Modifier: models.CriterionModifierEquals,
+func TestTagQueryCounts(t *testing.T) {
+	tests := []struct {
+		name        string
+		buildFilter models.TagFilterType
+		includeIdxs []int
+		excludeIdxs []int
+	}{
+		{
+			name:        "scene_count_equals_1",
+			buildFilter: models.TagFilterType{SceneCount: &models.HierarchicalCountInput{Value: 1, Modifier: models.CriterionModifierEquals}},
+			includeIdxs: []int{tagIdxWithScene},
+			excludeIdxs: []int{tagIdx1WithNothing, tagIdx1WithScene, tagIdx2WithScene, tagIdx3WithScene},
+		},
+		{
+			name:        "marker_count_equals_2",
+			buildFilter: models.TagFilterType{MarkerCount: &models.HierarchicalCountInput{Value: 2, Modifier: models.CriterionModifierEquals}},
+			includeIdxs: []int{tagIdxWithMarkers, tagIdx2WithMarkers},
+			excludeIdxs: []int{tagIdxWithPrimaryMarkers, tagIdx1WithNothing, tagIdx2WithNothing},
+		},
+		{
+			name:        "image_count_equals_1",
+			buildFilter: models.TagFilterType{ImageCount: &models.HierarchicalCountInput{Value: 1, Modifier: models.CriterionModifierEquals}},
+			includeIdxs: []int{tagIdxWithImage, tagIdx3WithImage},
+			excludeIdxs: []int{tagIdx1WithImage, tagIdx2WithImage, tagIdxWithCoverImage, tagIdx1WithNothing, tagIdx2WithNothing},
+		},
+		{
+			name:        "gallery_count_equals_1",
+			buildFilter: models.TagFilterType{GalleryCount: &models.HierarchicalCountInput{Value: 1, Modifier: models.CriterionModifierEquals}},
+			includeIdxs: []int{tagIdxWithGallery, tagIdx3WithGallery},
+			excludeIdxs: []int{tagIdx1WithGallery, tagIdx2WithGallery, tagIdx1WithNothing, tagIdx2WithNothing},
+		},
+		{
+			name:        "performer_count_equals_1",
+			buildFilter: models.TagFilterType{PerformerCount: &models.HierarchicalCountInput{Value: 1, Modifier: models.CriterionModifierEquals}},
+			includeIdxs: []int{tagIdxWithPerformer, tagIdx1WithPerformer, tagIdxWithParentAndChild},
+			excludeIdxs: []int{tagIdx2WithPerformer, tagIdx1WithNothing, tagIdx2WithNothing},
+		},
+		{
+			name:        "studio_count_equals_1",
+			buildFilter: models.TagFilterType{StudioCount: &models.HierarchicalCountInput{Value: 1, Modifier: models.CriterionModifierEquals}},
+			includeIdxs: []int{tagIdxWithStudio, tagIdx1WithStudio},
+			excludeIdxs: []int{tagIdx2WithStudio, tagIdx1WithNothing, tagIdx2WithNothing},
+		},
+		{
+			name:        "parent_count_equals_1",
+			buildFilter: models.TagFilterType{ParentCount: &models.IntCriterionInput{Value: 1, Modifier: models.CriterionModifierEquals}},
+			includeIdxs: []int{tagIdxWithParentTag, tagIdxWithGrandParent, tagIdxWithParentAndChild},
+			excludeIdxs: []int{tagIdx1WithNothing, tagIdx2WithNothing},
+		},
+		{
+			name:        "child_count_equals_1",
+			buildFilter: models.TagFilterType{ChildCount: &models.IntCriterionInput{Value: 1, Modifier: models.CriterionModifierEquals}},
+			includeIdxs: []int{tagIdxWithChildTag, tagIdxWithGrandChild, tagIdxWithParentAndChild},
+			excludeIdxs: []int{tagIdx1WithNothing, tagIdx2WithNothing},
+		},
 	}
 
-	verifyTagSceneCount(t, countCriterion)
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			qb := db.Tag
+			tagFilter := &tt.buildFilter
 
-	countCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyTagSceneCount(t, countCriterion)
+			tags, _, err := qb.Query(ctx, tagFilter, nil)
+			if err != nil {
+				t.Fatalf("%s: Error querying tag: %v", tt.name, err)
+			}
 
-	countCriterion.Modifier = models.CriterionModifierLessThan
-	verifyTagSceneCount(t, countCriterion)
+			ids := tagsToIDs(tags)
+			include := indexesToIDs(tagIDs, tt.includeIdxs)
+			exclude := indexesToIDs(tagIDs, tt.excludeIdxs)
 
-	countCriterion.Value = 0
-	countCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyTagSceneCount(t, countCriterion)
-}
+			for _, id := range include {
+				assert.Contains(t, ids, id, "%s: expected id %d to be included", tt.name, id)
+			}
 
-func verifyTagSceneCount(t *testing.T, sceneCountCriterion models.HierarchicalCountInput) {
-	withTxn(func(ctx context.Context) error {
-		qb := db.Tag
-		tagFilter := models.TagFilterType{
-			SceneCount: &sceneCountCriterion,
-		}
-
-		tags, _, err := qb.Query(ctx, &tagFilter, nil)
-		if err != nil {
-			t.Errorf("Error querying tag: %s", err.Error())
-		}
-
-		for _, tag := range tags {
-			verifyInt(t, getTagSceneCount(tag.ID), models.IntCriterionInput{Value: sceneCountCriterion.Value, Modifier: sceneCountCriterion.Modifier})
-		}
-
-		return nil
-	})
-}
-
-func TestTagQueryMarkerCount(t *testing.T) {
-	countCriterion := models.HierarchicalCountInput{
-		Value:    1,
-		Modifier: models.CriterionModifierEquals,
+			for _, id := range exclude {
+				assert.NotContains(t, ids, id, "%s: expected id %d to be excluded", tt.name, id)
+			}
+		})
 	}
-
-	verifyTagMarkerCount(t, countCriterion)
-
-	countCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyTagMarkerCount(t, countCriterion)
-
-	countCriterion.Modifier = models.CriterionModifierLessThan
-	verifyTagMarkerCount(t, countCriterion)
-
-	countCriterion.Value = 0
-	countCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyTagMarkerCount(t, countCriterion)
-}
-
-func verifyTagMarkerCount(t *testing.T, markerCountCriterion models.HierarchicalCountInput) {
-	withTxn(func(ctx context.Context) error {
-		qb := db.Tag
-		tagFilter := models.TagFilterType{
-			MarkerCount: &markerCountCriterion,
-		}
-
-		tags, _, err := qb.Query(ctx, &tagFilter, nil)
-		if err != nil {
-			t.Errorf("Error querying tag: %s", err.Error())
-		}
-
-		for _, tag := range tags {
-			verifyInt(t, getTagMarkerCount(tag.ID), models.IntCriterionInput{Value: markerCountCriterion.Value, Modifier: markerCountCriterion.Modifier})
-		}
-
-		return nil
-	})
-}
-
-func TestTagQueryImageCount(t *testing.T) {
-	countCriterion := models.HierarchicalCountInput{
-		Value:    1,
-		Modifier: models.CriterionModifierEquals,
-	}
-
-	verifyTagImageCount(t, countCriterion)
-
-	countCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyTagImageCount(t, countCriterion)
-
-	countCriterion.Modifier = models.CriterionModifierLessThan
-	verifyTagImageCount(t, countCriterion)
-
-	countCriterion.Value = 0
-	countCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyTagImageCount(t, countCriterion)
-}
-
-func verifyTagImageCount(t *testing.T, imageCountCriterion models.HierarchicalCountInput) {
-	withTxn(func(ctx context.Context) error {
-		qb := db.Tag
-		tagFilter := models.TagFilterType{
-			ImageCount: &imageCountCriterion,
-		}
-
-		tags, _, err := qb.Query(ctx, &tagFilter, nil)
-		if err != nil {
-			t.Errorf("Error querying tag: %s", err.Error())
-		}
-
-		for _, tag := range tags {
-			verifyInt(t, getTagImageCount(tag.ID), models.IntCriterionInput{Value: imageCountCriterion.Value, Modifier: imageCountCriterion.Modifier})
-		}
-
-		return nil
-	})
-}
-
-func TestTagQueryGalleryCount(t *testing.T) {
-	countCriterion := models.HierarchicalCountInput{
-		Value:    1,
-		Modifier: models.CriterionModifierEquals,
-	}
-
-	verifyTagGalleryCount(t, countCriterion)
-
-	countCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyTagGalleryCount(t, countCriterion)
-
-	countCriterion.Modifier = models.CriterionModifierLessThan
-	verifyTagGalleryCount(t, countCriterion)
-
-	countCriterion.Value = 0
-	countCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyTagGalleryCount(t, countCriterion)
-}
-
-func verifyTagGalleryCount(t *testing.T, imageCountCriterion models.HierarchicalCountInput) {
-	withTxn(func(ctx context.Context) error {
-		qb := db.Tag
-		tagFilter := models.TagFilterType{
-			GalleryCount: &imageCountCriterion,
-		}
-
-		tags, _, err := qb.Query(ctx, &tagFilter, nil)
-		if err != nil {
-			t.Errorf("Error querying tag: %s", err.Error())
-		}
-
-		for _, tag := range tags {
-			verifyInt(t, getTagGalleryCount(tag.ID), models.IntCriterionInput{Value: imageCountCriterion.Value, Modifier: imageCountCriterion.Modifier})
-		}
-
-		return nil
-	})
-}
-
-func TestTagQueryPerformerCount(t *testing.T) {
-	countCriterion := models.HierarchicalCountInput{
-		Value:    1,
-		Modifier: models.CriterionModifierEquals,
-	}
-
-	verifyTagPerformerCount(t, countCriterion)
-
-	countCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyTagPerformerCount(t, countCriterion)
-
-	countCriterion.Modifier = models.CriterionModifierLessThan
-	verifyTagPerformerCount(t, countCriterion)
-
-	countCriterion.Value = 0
-	countCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyTagPerformerCount(t, countCriterion)
-}
-
-func verifyTagPerformerCount(t *testing.T, imageCountCriterion models.HierarchicalCountInput) {
-	withTxn(func(ctx context.Context) error {
-		qb := db.Tag
-		tagFilter := models.TagFilterType{
-			PerformerCount: &imageCountCriterion,
-		}
-
-		tags, _, err := qb.Query(ctx, &tagFilter, nil)
-		if err != nil {
-			t.Errorf("Error querying tag: %s", err.Error())
-		}
-
-		for _, tag := range tags {
-			verifyInt(t, getTagPerformerCount(tag.ID), models.IntCriterionInput{Value: imageCountCriterion.Value, Modifier: imageCountCriterion.Modifier})
-		}
-
-		return nil
-	})
-}
-
-func TestTagQueryStudioCount(t *testing.T) {
-	countCriterion := models.HierarchicalCountInput{
-		Value:    1,
-		Modifier: models.CriterionModifierEquals,
-	}
-
-	verifyTagStudioCount(t, countCriterion)
-
-	countCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyTagStudioCount(t, countCriterion)
-
-	countCriterion.Modifier = models.CriterionModifierLessThan
-	verifyTagStudioCount(t, countCriterion)
-
-	countCriterion.Value = 0
-	countCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyTagStudioCount(t, countCriterion)
-}
-
-func verifyTagStudioCount(t *testing.T, imageCountCriterion models.HierarchicalCountInput) {
-	withTxn(func(ctx context.Context) error {
-		qb := db.Tag
-		tagFilter := models.TagFilterType{
-			StudioCount: &imageCountCriterion,
-		}
-
-		tags, _, err := qb.Query(ctx, &tagFilter, nil)
-		if err != nil {
-			t.Errorf("Error querying tag: %s", err.Error())
-		}
-
-		for _, tag := range tags {
-			verifyInt(t, getTagStudioCount(tag.ID), models.IntCriterionInput{Value: imageCountCriterion.Value, Modifier: imageCountCriterion.Modifier})
-		}
-
-		return nil
-	})
-}
-
-func TestTagQueryParentCount(t *testing.T) {
-	countCriterion := models.IntCriterionInput{
-		Value:    1,
-		Modifier: models.CriterionModifierEquals,
-	}
-
-	verifyTagParentCount(t, countCriterion)
-
-	countCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyTagParentCount(t, countCriterion)
-
-	countCriterion.Modifier = models.CriterionModifierLessThan
-	verifyTagParentCount(t, countCriterion)
-
-	countCriterion.Value = 0
-	countCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyTagParentCount(t, countCriterion)
-}
-
-func verifyTagParentCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
-	withTxn(func(ctx context.Context) error {
-		qb := db.Tag
-		tagFilter := models.TagFilterType{
-			ParentCount: &sceneCountCriterion,
-		}
-
-		tags := queryTags(ctx, t, qb, &tagFilter, nil)
-
-		if len(tags) == 0 {
-			t.Error("Expected at least one tag")
-		}
-
-		for _, tag := range tags {
-			verifyInt(t, getTagParentCount(tag.ID), sceneCountCriterion)
-		}
-
-		return nil
-	})
-}
-
-func TestTagQueryChildCount(t *testing.T) {
-	countCriterion := models.IntCriterionInput{
-		Value:    1,
-		Modifier: models.CriterionModifierEquals,
-	}
-
-	verifyTagChildCount(t, countCriterion)
-
-	countCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyTagChildCount(t, countCriterion)
-
-	countCriterion.Modifier = models.CriterionModifierLessThan
-	verifyTagChildCount(t, countCriterion)
-
-	countCriterion.Value = 0
-	countCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyTagChildCount(t, countCriterion)
-}
-
-func verifyTagChildCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
-	withTxn(func(ctx context.Context) error {
-		qb := db.Tag
-		tagFilter := models.TagFilterType{
-			ChildCount: &sceneCountCriterion,
-		}
-
-		tags := queryTags(ctx, t, qb, &tagFilter, nil)
-
-		if len(tags) == 0 {
-			t.Error("Expected at least one tag")
-		}
-
-		for _, tag := range tags {
-			verifyInt(t, getTagChildCount(tag.ID), sceneCountCriterion)
-		}
-
-		return nil
-	})
 }
 
 func TestTagQueryParent(t *testing.T) {
