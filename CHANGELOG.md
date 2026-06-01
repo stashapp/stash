@@ -94,6 +94,11 @@ versioning is independent of upstream — it is anchored to the upstream base re
   StashDB/TPDB via `findScenesBySceneFingerprints`, and applies MERGE-like updates via `sceneUpdate`
   (find-or-create studio/performers by name + stash_id stamp). Defaults to `--dry-run`. Lower fidelity
   than native Identify; documented in `tools/identify/README.md`.
+  - **Tags now applied by default (MERGE).** The stash-box query now requests `tags { id name }`,
+    and matched tags are added on top of the scene's existing tags (never replacing them), creating
+    any tag that doesn't exist yet (stamped with its stash-box id). Idempotent — only writes `tag_ids`
+    when there's something new to add. `--no-tags` opts out. This closes the previous "no tags" gap;
+    the in-app `identify_scenes_fast` inherits it (it shells out to the same script).
 - **Bulk identify / mass tagging** — the assistant can now drive stash-box identification:
   - `identify_scenes` (write): wraps `metadataIdentify` / `manager.CreateIdentifyJob` — runs the
     Identify task over all or selected scenes against the configured stash-box endpoints (StashDB,

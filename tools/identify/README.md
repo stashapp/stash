@@ -47,14 +47,18 @@ For each single fingerprint match it fills only what's **missing**: title / date
 details (only if empty), studio and performers (only if the scene has none —
 find-or-create by name, stamping the stash-box `stash_id`), always adds the scene's
 stash-box `stash_id`, and optionally sets `organized`. It does **not** overwrite
-existing values, and does **not** yet handle tags or images.
+existing single-value fields. **Tags are added by default** with a MERGE strategy —
+the match's tags are added on top of the scene's existing tags (never replacing them),
+creating any missing tag (stamped with its stash-box id). Pass `--no-tags` to disable.
+Images are still not handled.
 
 ## Important caveats
 - **Don't run this at the same time as a native Identify** over the same library —
   you'd double the stash-box queries and race on writes.
-- **Lower fidelity than stash's native Identify**: name-based performer/studio
-  linking (vs stash's richer stash-id matching), no tags/images. Prefer the native
-  Identify when you can run it; use this for parallel/off-box runs.
+- **Slightly lower fidelity than stash's native Identify**: name-based performer/studio/
+  tag linking (vs stash's richer stash-id + alias matching), no images. Tags ARE applied
+  by default (merge + create-missing). Prefer native Identify when you can run it; use
+  this for parallel/off-box runs.
 - **Rate limits**: it paces requests from each endpoint's `maxRequestsPerMinute`
   (defaults to a gentle ~4/s when unset). ThePornDB is stricter than StashDB.
 - Always do a `--dry-run` pass first and skim the matches.

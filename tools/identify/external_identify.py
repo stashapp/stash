@@ -12,10 +12,13 @@ It matches by FINGERPRINT (oshash + phash), exactly like stash's native Identify
 the stash-box `findScenesBySceneFingerprints` query. oshash is computed at scan time
 (no phash needed), so this works immediately.
 
-SAFETY: defaults to --dry-run (no writes). Field strategy is MERGE-like: it only fills
+SAFETY: defaults to --dry-run (no writes). Field strategy is MERGE-like: it fills
 title/date/details/studio/performers when the scene doesn't already have them, always
-stamps the stash-box stash_id, and (optionally) marks the scene organized. Lower fidelity
-than stash's native Identify (no tags/images, name-based performer/studio linking) — use
+stamps the stash-box stash_id, and (optionally) marks the scene organized. TAGS are added
+by default using a MERGE strategy — the match's tags are added on top of the scene's
+existing tags (never replacing them), creating any tag that doesn't exist yet (stamped with
+its stash-box id). Pass --no-tags to disable. Tag/performer/studio linking is name-based
+(no alias resolution), so it's slightly lower fidelity than stash's native Identify — use
 native Identify when you can; use this when you need it to run in parallel/off-box.
 
 Do NOT run this at the same time as a native Identify job over the same library.
@@ -93,6 +96,7 @@ query($fingerprints: [[FingerprintQueryInput!]!]!) {
     urls { url }
     studio { id name }
     performers { as performer { id name } }
+    tags { id name }
   }
 }
 """
@@ -110,6 +114,7 @@ query($filter: FindFilterType, $scene_filter: SceneFilterType) {
       id title date details organized
       studio { id }
       performers { id }
+      tags { id }
       stash_ids { endpoint stash_id }
       files { fingerprints { type value } }
     }
@@ -207,8 +212,33 @@ def ensure_performer(stash, sb_endpoint, sb_perf, cache, dry):
     return pid
 
 
-def build_update(stash, scene, match, sb_endpoint, set_organized, studio_cache, perf_cache, dry):
-    """MERGE-like SceneUpdateInput: fill empty fields, always stamp stash_id."""
+def ensure_tag(stash, sb_endpoint, sb_tag, cache, dry):
+    """Find a tag by name, creating it (stamped with its stash-box id) if missing."""
+    name = sb_tag["name"]
+    if name in cache:
+        return cache[name]
+    found = stash.q(
+        "query($f:TagFilterType){findTags(tag_filter:$f,filter:{per_page:1}){tags{id}}}",
+        {"f": {"name": {"value": name, "modifier": "EQUALS"}}},
+    )["findTags"]["tags"]
+    if found:
+        cache[name] = found[0]["id"]
+        return cache[name]
+    if dry:
+        cache[name] = f"(would-create:{name})"
+        return cache[name]
+    stash_ids = [{"endpoint": sb_endpoint, "stash_id": sb_tag["id"]}] if sb_tag.get("id") else []
+    tid = stash.q(
+        "mutation($i:TagCreateInput!){tagCreate(input:$i){id}}",
+        {"i": {"name": name, "stash_ids": stash_ids}},
+    )["tagCreate"]["id"]
+    cache[name] = tid
+    return tid
+
+
+def build_update(stash, scene, match, sb_endpoint, set_organized,
+                 studio_cache, perf_cache, tag_cache, add_tags, dry):
+    """MERGE-like SceneUpdateInput: fill empty single-value fields, merge tags, stamp stash_id."""
     upd = {"id": scene["id"]}
     if not scene.get("title") and match.get("title"):
         upd["title"] = match["title"]
@@ -226,6 +256,19 @@ def build_update(stash, scene, match, sb_endpoint, set_organized, studio_cache, 
                 ids.append(ensure_performer(stash, sb_endpoint, p, perf_cache, dry))
         if ids:
             upd["performer_ids"] = ids
+    # tags — MERGE strategy: add the match's tags on top of the scene's existing tags
+    # (never replacing them), creating any tag that doesn't exist yet. Default on.
+    if add_tags and match.get("tags"):
+        existing_tag_ids = [t["id"] for t in scene.get("tags") or []]
+        tag_ids = list(existing_tag_ids)
+        for tg in match["tags"]:
+            if not tg.get("name"):
+                continue
+            tid = ensure_tag(stash, sb_endpoint, tg, tag_cache, dry)
+            if tid not in tag_ids:
+                tag_ids.append(tid)
+        if tag_ids != existing_tag_ids:
+            upd["tag_ids"] = tag_ids
     # stamp stash-box id if not already linked
     existing = {(s["endpoint"], s["stash_id"]) for s in scene.get("stash_ids") or []}
     new_sid = (sb_endpoint, match["id"])
@@ -247,11 +290,13 @@ def main():
     ap.add_argument("--all-scenes", action="store_true", help="consider all scenes (default: only unorganized)")
     ap.add_argument("--phashed-only", action="store_true", help="only consider scenes that have a phash (best match yield while phash gen is in progress)")
     ap.add_argument("--set-organized", action="store_true", help="mark matched scenes organized")
+    ap.add_argument("--no-tags", action="store_true", help="do not add tags from the match (tags are added by default, merged with existing)")
     ap.add_argument("--allow-multiple", action="store_true", help="apply first match when a scene has several")
     ap.add_argument("--batch", type=int, default=40, help="scenes per stash-box fingerprint query")
     ap.add_argument("--limit", type=int, default=0, help="cap scenes processed (0 = no cap)")
     args = ap.parse_args()
     dry = not args.apply
+    add_tags = not args.no_tags
 
     stash = Stash(args.stash_url, args.stash_api_key)
     boxes = [StashBox(b["endpoint"], b["api_key"], b["name"], b.get("max_requests_per_minute") or 0)
@@ -282,13 +327,15 @@ def main():
         flags.append("phashed-only")
     if args.all_scenes:
         flags.append("all-scenes")
+    if add_tags:
+        flags.append("tags:merge")
     if dry:
         flags.append("dry-run")
     print(f"{len(pending)} candidate scene(s) "
           f"[{with_phash} with phash+oshash, {oshash_only} with oshash only]"
           f"{' (' + ', '.join(flags) + ')' if flags else ''}")
 
-    studio_cache, perf_cache = {}, {}
+    studio_cache, perf_cache, tag_cache = {}, {}, {}
     matched = skipped_multi = no_match = applied = 0
 
     for box in boxes:
@@ -316,7 +363,7 @@ def main():
                 match = res[0]
                 matched += 1
                 upd = build_update(stash, scene, match, box.endpoint, args.set_organized,
-                                   studio_cache, perf_cache, dry)
+                                   studio_cache, perf_cache, tag_cache, add_tags, dry)
                 title = match.get("title") or "(untitled)"
                 if dry:
                     print(f"  [match] scene {scene['id']} -> \"{title}\" via {box.name}; would set {sorted(k for k in upd if k!='id')}")
