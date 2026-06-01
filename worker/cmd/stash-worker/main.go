@@ -76,7 +76,7 @@ func parseFlags() (*runConfig, error) {
 	mediaPrefix := fs.String("media-prefix", "", "STASH=WORKER prefix rewrite for media file paths (e.g. \"/data=\\\\overwatch-stash\\torrents\").")
 	generatedPrefix := fs.String("generated-prefix", "", "STASH=WORKER prefix rewrite for the generated/ dir.")
 	ffmpegPath := fs.String("ffmpeg", "ffmpeg", "Path to ffmpeg.exe with NVENC + NVDEC support.")
-	tasks := fs.String("tasks", "previews", "Comma-separated tasks to run, in order. Available: previews, covers.")
+	tasks := fs.String("tasks", "previews", "Comma-separated tasks to run, in order. Available: previews, covers, sprites.")
 	limit := fs.Int("limit", 0, "Cap on items ENCODED/applied per run across ALL tasks (0 = unbounded). Useful for tests.")
 	maxFailures := fs.Int("max-failures", 5, "Abort the run after N consecutive failures (catches systemic problems).")
 	perPage := fs.Int("per-page", 200, "GraphQL pagination size for scene enumeration.")
@@ -120,8 +120,8 @@ func parseFlags() (*runConfig, error) {
 		if t == "" {
 			continue
 		}
-		if t != "previews" && t != "covers" {
-			return nil, fmt.Errorf("--tasks: unknown task %q (available: previews, covers)", t)
+		if t != "previews" && t != "covers" && t != "sprites" {
+			return nil, fmt.Errorf("--tasks: unknown task %q (available: previews, covers, sprites)", t)
 		}
 		cfg.tasks = append(cfg.tasks, t)
 	}
@@ -288,6 +288,8 @@ func processScene(
 		return processPreview(ctx, s, scfg, c, gen, enc)
 	case "covers":
 		return processCover(ctx, s, c, enc, stash)
+	case "sprites":
+		return processSprite(ctx, s, scfg, c, gen, enc)
 	default:
 		log.Printf("scene %s: unknown task %q; skipping", s.ID, taskName)
 		return outcomeSkipped
@@ -376,6 +378,52 @@ func processCover(
 	}
 	if err := stash.SceneUpdateCover(ctx, s.ID, jpeg); err != nil {
 		log.Printf("scene %s: upload cover: %v", s.ID, err)
+		return outcomeFailed
+	}
+	return outcomeEncoded
+}
+
+// ── sprites ────────────────────────────────────────────────────────────────
+
+// processSprite generates a sprite + VTT pair for scenes that don't already
+// have both. Like previews, stash detects sprite existence lazily by file
+// path, so the filter is filesystem-based.
+func processSprite(
+	ctx context.Context,
+	s *internal.Scene,
+	scfg *internal.StashConfig,
+	c *runConfig,
+	gen internal.GeneratedPaths,
+	enc *internal.Encoder,
+) outcome {
+	if len(s.Files) == 0 {
+		log.Printf("scene %s: no files; skipping", s.ID)
+		return outcomeSkipped
+	}
+	hash, err := s.PrimaryHash(scfg.VideoFileNamingAlgorithm)
+	if err != nil {
+		log.Printf("scene %s: %v; skipping", s.ID, err)
+		return outcomeSkipped
+	}
+	exists, err := internal.SpriteExists(gen, hash)
+	if err != nil {
+		log.Printf("scene %s: stat sprite: %v", s.ID, err)
+		return outcomeFailed
+	}
+	if exists {
+		return outcomeSkipped
+	}
+
+	source := s.Files[0].Path
+	if c.mediaRewriter != nil {
+		source = c.mediaRewriter.Rewrite(source)
+	}
+	spritePath := gen.SpriteImage(hash)
+	vttPath := gen.SpriteVTT(hash)
+
+	log.Printf("scene %s: generating sprite + VTT", s.ID)
+	if err := enc.GenerateSprite(ctx, source, spritePath, vttPath, gen.TmpDir()); err != nil {
+		log.Printf("scene %s: sprite failed: %v", s.ID, err)
 		return outcomeFailed
 	}
 	return outcomeEncoded
