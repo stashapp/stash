@@ -12,6 +12,12 @@ versioning is independent of upstream — it is anchored to the upstream base re
 ## [Unreleased]
 
 ### Added
+- **`tools/identify/external_identify.py`** — standalone, dependency-free (stdlib) fingerprint
+  identifier that runs **outside stash's job queue** (so it works in parallel with a long
+  Generate→Phash, or on another machine). Reads scene oshashes from the stash API, queries
+  StashDB/TPDB via `findScenesBySceneFingerprints`, and applies MERGE-like updates via `sceneUpdate`
+  (find-or-create studio/performers by name + stash_id stamp). Defaults to `--dry-run`. Lower fidelity
+  than native Identify; documented in `tools/identify/README.md`.
 - **Bulk identify / mass tagging** — the assistant can now drive stash-box identification:
   - `identify_scenes` (write): wraps `metadataIdentify` / `manager.CreateIdentifyJob` — runs the
     Identify task over all or selected scenes against the configured stash-box endpoints (StashDB,
