@@ -12,6 +12,17 @@ versioning is independent of upstream — it is anchored to the upstream base re
 ## [Unreleased]
 
 ### Added
+- **Assistant `run_command` (shell escape hatch) + action-first prompt** (`internal/llm/tools_exec.go`).
+  The assistant can now run shell commands inside the Stash container — the escape hatch for anything
+  GraphQL/`define_tool` can't express: running the bundled helper scripts with custom flags (e.g.
+  `external_identify.py --phashed-only`), editing config, filesystem inspection, package installs. It's
+  `Writes:true` so every command is **confirm-gated** (shown to the user before it runs), and its
+  registration is gated behind **`assistant_dev_loop_enabled`** (`STASH_ASSISTANT_DEV_LOOP_ENABLED=true`)
+  so the whole capability has an explicit on/off switch. The system prompt now **defaults to action** —
+  when asked to change a built-in's behavior it wraps it via `define_tool` or runs the underlying helper
+  via `run_command` instead of refusing (it cannot recompile the Go binary, the one true limit).
+  Also fixed `/llm/confirm` to return a well-formed body for plain-text tool output (it had wrapped
+  output as `json.RawMessage`, breaking on non-JSON results like `run_command`'s).
 - **Library maintenance + transcode tooling** (four off-queue/external helpers):
   - **`worker` transcode task** — new `--tasks transcode` pre-generates a
     browser-friendly h264/aac MP4 into `generated/transcodes/<hash>.mp4`, which stash

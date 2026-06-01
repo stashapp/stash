@@ -138,6 +138,7 @@ never require new Go code.
 | `graphql_mutate` | Run a mutation. `Writes:true` → confirm-gated like every other write. | write |
 | `define_tool` | Create/update a **persisted, reusable** tool: a named GraphQL op + a JSON-Schema for its args (the call's args pass straight through as variables). Saved as JSON in `<config>/llm_tools/`, hot-registered immediately, reloaded on boot. A mutating definition is auto-marked write-gated. | meta |
 | `list_dynamic_tools` / `delete_dynamic_tool` | Inspect / remove assistant-defined tools. | meta |
+| `run_command` | Run `sh -c <cmd>` inside the container (helper scripts, config edits, filesystem, installs). `Writes:true` → confirm-gated. **Registration gated behind `assistant_dev_loop_enabled`** (default off). Cannot recompile the Go binary. | write (gated) |
 
 **Execution path.** `internal/api/server.go` builds an in-process executor closure that performs an
 `httptest` round-trip through the **dataloader-wrapped** gql handler — i.e. operations run with Stash's
