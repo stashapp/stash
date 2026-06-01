@@ -119,8 +119,40 @@ wraps the data layer. **Read tools** are always on; **write tools** are gated by
 Tools return compact, model-friendly JSON (ids + a few display fields), never raw rows, to keep token
 use down. `find_scenes` pagination defaults to 25 with a hard cap of 100.
 
-Natural follow-ups (not yet built): `get_scene` detail, `find_duplicates` (phash), `remove_tags`,
-`set_scene_studio`/`set_scene_performers`, `create_studio`, and `trigger_scan`/`trigger_generate` jobs.
+These hand-coded tools are now a **convenience layer**, not the limit of what the assistant can do —
+see §4a.
+
+### 4a. Generic GraphQL + self-defined tools (autonomy layer)
+
+The hand-coded tools above are ergonomic shortcuts, but the assistant is **not** confined to them.
+Adding a new operation as a Go tool meant a rebuild + redeploy every time — so instead the assistant
+gets direct, schema-validated access to Stash's **own** GraphQL API (the same surface its web UI uses),
+which already implements essentially every curation operation (`tagsMerge`, `bulkSceneUpdate`,
+`performerMerge`, destroys, arbitrary filtered searches, configuration, …). New *operations* therefore
+never require new Go code.
+
+| Tool | Purpose | Kind |
+|---|---|---|
+| `graphql_schema` | Introspect the live schema (`{type:…}` for a full type, `{section:"mutations"\|"queries"}` for root signatures, `{search:…}` to filter). Backed by the parsed `*ast.Schema`. | read |
+| `graphql_query` | Run a read-only query. Validated against the schema; **rejects** any doc containing a mutation/subscription. | read |
+| `graphql_mutate` | Run a mutation. `Writes:true` → confirm-gated like every other write. | write |
+| `define_tool` | Create/update a **persisted, reusable** tool: a named GraphQL op + a JSON-Schema for its args (the call's args pass straight through as variables). Saved as JSON in `<config>/llm_tools/`, hot-registered immediately, reloaded on boot. A mutating definition is auto-marked write-gated. | meta |
+| `list_dynamic_tools` / `delete_dynamic_tool` | Inspect / remove assistant-defined tools. | meta |
+
+**Execution path.** `internal/api/server.go` builds an in-process executor closure that performs an
+`httptest` round-trip through the **dataloader-wrapped** gql handler — i.e. operations run with Stash's
+full resolver chain *and* the request-scoped dataloaders many resolvers require (a bare gqlgen executor
+would nil-panic on loader access). The closure + the parsed `*ast.Schema` + a persistent `ToolsDir`
+(`<config>/llm_tools`, on a mounted volume — not the image) are passed into `llm.Deps`. **Still no
+GraphQL schema or resolver was added** (§2 holds); this reuses the existing one.
+
+**Persistence.** Dynamic-tool definitions live on the config bind-mount, so self-authored capabilities
+survive restarts *and* image rebuilds. Validated live 2026-06-01: introspect→query, the write
+confirm-gate firing on `tagCreate`, approve→execute via `/llm/confirm`, and a `define_tool` tool
+reloading after a container restart.
+
+Natural follow-ups (not yet built): `get_scene` detail, `find_duplicates` (phash), and convenience
+wrappers for common multi-step recipes (which the assistant can now also build itself via `define_tool`).
 
 ---
 
@@ -164,6 +196,12 @@ keys out of stash entirely and lets the model set change without touching stash 
   action; the UI renders a confirmation card with the exact change + affected count; the user approves.
 - `auto`: writes execute without confirmation (power users).
 - `readonly`: write tools are not registered at all.
+- **The generic layer (§4a) honors the same gate.** `graphql_mutate` and any assistant-defined dynamic
+  tool whose GraphQL contains a mutation are marked `Writes:true`, so they flow through the identical
+  `ask` confirm path — the user sees the exact GraphQL document and variables before it runs.
+  `graphql_query` refuses mutation/subscription documents, so reads can never smuggle a write, and
+  built-in tool names cannot be shadowed by `define_tool`. Be especially deliberate with `destroy`/
+  `delete` mutations — confirm scope explicitly.
 - All write tools log to Stash's logger with a clear `[assistant]` prefix and record an audit line
   (who/what/when/affected ids) so changes are traceable.
 - Pagination/row caps prevent a single prompt from mutating the whole library by accident.

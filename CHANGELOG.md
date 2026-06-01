@@ -12,6 +12,26 @@ versioning is independent of upstream — it is anchored to the upstream base re
 ## [Unreleased]
 
 ### Added
+- **Assistant autonomy — generic GraphQL access + self-defined tools** (`internal/llm/tools_graphql.go`,
+  `tools_dynamic.go`). The assistant is no longer limited to hand-coded Go tools; new capabilities no
+  longer require a rebuild/redeploy:
+  - **In-process GraphQL executor** wired in `internal/api/server.go`: runs arbitrary operations against
+    stash's own schema through the full resolver chain **and the dataloader middleware** (an httptest
+    round-trip through the dataloader-wrapped gql handler). Passed into `llm.Deps` alongside the parsed
+    `*ast.Schema` and a persistent `ToolsDir`.
+  - `graphql_schema` (introspection, scoped by `type`/`section`/`search`), `graphql_query` (read-only —
+    rejects mutation/subscription docs), and `graphql_mutate` (`Writes:true` → confirm-gated).
+    Operations are validated against the live schema before execution, so the model gets precise
+    correction errors. "Combine similar tags" is now just `tagsMerge` via `graphql_mutate` — no new Go code.
+  - **Persisted dynamic tools:** `define_tool` lets the assistant create a named, reusable tool (a GraphQL
+    op + a JSON-Schema for its args; the call's args pass through as GraphQL variables). Definitions are
+    saved as JSON under `<config>/llm_tools/` (a mounted volume, **not** the image), hot-registered for
+    immediate use, and reloaded on boot — so self-authored capabilities survive restarts with no rebuild.
+    `list_dynamic_tools` / `delete_dynamic_tool` manage them. A dynamic tool whose GraphQL mutates is
+    auto-marked write-gated.
+  - **Safety:** every library mutation (`graphql_mutate` + mutating dynamic tools) flows through the
+    existing write-policy confirm gate (`write_policy=ask`); reads stay un-gated; built-in tool names
+    can't be shadowed. The system prompt now teaches introspect → read → mutate and self-extension.
 - **External GPU worker** (`worker/`) — separate Go module producing a single Windows `.exe` that
   offloads stash's heaviest media-generation work to a Windows + NVIDIA box, with outputs landing
   directly in stash's `generated/` share over SMB. Runs **outside stash's job queue** (parallel
