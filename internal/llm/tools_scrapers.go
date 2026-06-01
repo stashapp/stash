@@ -274,12 +274,17 @@ type identifyFastInput struct {
 	SetOrganized  bool `json:"set_organized"`
 	AllowMultiple bool `json:"allow_multiple"`
 	AllScenes     bool `json:"all_scenes"`
+	PhashedOnly   bool `json:"phashed_only"`
 	DryRun        bool `json:"dry_run"`
 }
 
 // summaryRE parses the python tool's final line:
 //   summary: matched=180 applied=175 skipped_multiple=4 no_match=1 (dry-run — re-run with --apply)
 var summaryRE = regexp.MustCompile(`matched=(\d+)\s+applied=(\d+)\s+skipped_multiple=(\d+)\s+no_match=(\d+)`)
+
+// candidatesRE parses the diagnostic line:
+//   "N candidate scene(s) [X with phash+oshash, Y with oshash only] (...)"
+var candidatesRE = regexp.MustCompile(`(\d+) candidate scene\(s\) \[(\d+) with phash\+oshash, (\d+) with oshash only\]`)
 
 // identifyExternalPath is where the Dockerfile installs the bundled script.
 const identifyExternalPath = "/usr/local/bin/identify_external.py"
@@ -290,8 +295,10 @@ func identifyScenesFastTool() *Tool {
 		Description: "FAST batched scene identification — runs the bundled external identifier in a " +
 			"separate process so it does NOT queue behind stash's other tasks (Generate→Phash etc.), " +
 			"and uses batched stash-box fingerprint queries (~40× fewer round-trips than native). " +
-			"Matches by oshash (no phash required). Default: 200 unorganized scenes, sets organized, " +
-			"skips ambiguous multi-matches. Returns summary counts. Use this for SPEED; use " +
+			"Sends BOTH oshash and phash for matching (whichever stash has on the scene). Default: 200 " +
+			"unorganized scenes, sets organized, skips ambiguous multi-matches. Tip: while phash gen is " +
+			"in progress, set phashed_only=true to target the high-yield scenes first. Returns counts " +
+			"plus a diagnostic of how many candidates had phash vs oshash-only. Use this for SPEED; use " +
 			"identify_scenes for native full-fidelity matching when no urgency.",
 		Writes: true,
 		Schema: json.RawMessage(`{
@@ -301,6 +308,7 @@ func identifyScenesFastTool() *Tool {
 				"set_organized":{"type":"boolean","description":"mark matched scenes organized (default true)"},
 				"allow_multiple":{"type":"boolean","description":"apply first match when a scene has several (default false; skip ambiguous)"},
 				"all_scenes":{"type":"boolean","description":"include already-organized scenes too (default false)"},
+				"phashed_only":{"type":"boolean","description":"only consider scenes that already have a phash — best yield while stash is still generating phashes for the rest (default false)"},
 				"dry_run":{"type":"boolean","description":"preview only, no writes (default false; the tool is invoked deliberately)"}
 			},
 			"additionalProperties":false
@@ -337,6 +345,9 @@ func identifyScenesFastTool() *Tool {
 			if in.AllScenes {
 				args = append(args, "--all-scenes")
 			}
+			if in.PhashedOnly {
+				args = append(args, "--phashed-only")
+			}
 
 			// 100s ceiling — well below the 120s LLM client timeout. limit=200 typically
 			// finishes in <60s; the ceiling protects against a stuck stash-box endpoint.
@@ -370,7 +381,13 @@ func identifyScenesFastTool() *Tool {
 				result["applied"], _ = strconv.Atoi(m[2])
 				result["skipped_multiple"], _ = strconv.Atoi(m[3])
 				result["no_match"], _ = strconv.Atoi(m[4])
-			} else {
+			}
+			if m := candidatesRE.FindStringSubmatch(out); m != nil {
+				result["candidates"], _ = strconv.Atoi(m[1])
+				result["with_phash"], _ = strconv.Atoi(m[2])
+				result["oshash_only"], _ = strconv.Atoi(m[3])
+			}
+			if _, ok := result["matched"]; !ok {
 				// unusual output — surface a tail so we can debug from the tool result
 				result["raw_tail"] = tailLines(out, 8)
 			}

@@ -123,8 +123,16 @@ def fetch_stash_boxes(stash):
     return data["configuration"]["general"]["stashBoxes"] or []
 
 
-def fetch_scenes(stash, only_unorganized, per_page=100):
-    scene_filter = {"organized": False} if only_unorganized else None
+def fetch_scenes(stash, only_unorganized, phashed_only=False, per_page=100):
+    """Fetch candidate scenes. Filters by organized flag and (optionally) by phash
+    presence so callers can target the high-yield (phashed) scenes first while stash
+    is still generating phashes for the rest."""
+    sf = {}
+    if only_unorganized:
+        sf["organized"] = False
+    if phashed_only:
+        sf["phash"] = {"modifier": "NOT_NULL", "value": ""}
+    scene_filter = sf or None
     page, out = 1, []
     while True:
         data = stash.q(SCENES_Q, {
@@ -237,6 +245,7 @@ def main():
     ap.add_argument("--stash-api-key", default=None)
     ap.add_argument("--apply", action="store_true", help="actually write changes (default is dry-run)")
     ap.add_argument("--all-scenes", action="store_true", help="consider all scenes (default: only unorganized)")
+    ap.add_argument("--phashed-only", action="store_true", help="only consider scenes that have a phash (best match yield while phash gen is in progress)")
     ap.add_argument("--set-organized", action="store_true", help="mark matched scenes organized")
     ap.add_argument("--allow-multiple", action="store_true", help="apply first match when a scene has several")
     ap.add_argument("--batch", type=int, default=40, help="scenes per stash-box fingerprint query")
@@ -251,13 +260,34 @@ def main():
         sys.exit("No stash-box endpoints configured in stash.")
     print(f"stash-box sources (priority order): {', '.join(b.name for b in boxes)}")
 
-    scenes = fetch_scenes(stash, only_unorganized=not args.all_scenes)
+    scenes = fetch_scenes(
+        stash,
+        only_unorganized=not args.all_scenes,
+        phashed_only=args.phashed_only,
+    )
     if args.limit:
         scenes = scenes[: args.limit]
-    print(f"{len(scenes)} candidate scene(s){' (dry-run)' if dry else ''}")
 
     # only scenes that actually have a fingerprint
     pending = [s for s in scenes if scene_fingerprints(s)]
+
+    # diagnostic: how many of these have phash vs only oshash?
+    def has_algo(s, name):
+        return any(fp.get("algorithm") == name for fp in scene_fingerprints(s))
+
+    with_phash = sum(1 for s in pending if has_algo(s, "PHASH"))
+    oshash_only = len(pending) - with_phash
+    flags = []
+    if args.phashed_only:
+        flags.append("phashed-only")
+    if args.all_scenes:
+        flags.append("all-scenes")
+    if dry:
+        flags.append("dry-run")
+    print(f"{len(pending)} candidate scene(s) "
+          f"[{with_phash} with phash+oshash, {oshash_only} with oshash only]"
+          f"{' (' + ', '.join(flags) + ')' if flags else ''}")
+
     studio_cache, perf_cache = {}, {}
     matched = skipped_multi = no_match = applied = 0
 

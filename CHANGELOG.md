@@ -12,6 +12,11 @@ versioning is independent of upstream — it is anchored to the upstream base re
 ## [Unreleased]
 
 ### Added
+- **`phashed_only` filter** on `identify_scenes_fast` / `external_identify.py` — when set, only scenes
+  with a phash are considered. Lets you target the **high-yield** scenes first while stash is still
+  generating phashes for the rest (work in parallel, no waiting on the queue). The script now also
+  prints a diagnostic line (`N candidate scene(s) [X with phash+oshash, Y with oshash only]`) and the
+  assistant tool parses this into the result so the model can report fingerprint coverage of each run.
 - **`identify_scenes_fast` assistant tool** — bundles `external_identify.py` into the runtime image
   (`/usr/local/bin/identify_external.py`) and exposes it as an assistant tool that shells out via
   `os/exec`. Runs **outside stash's job queue** (parallel with Generate→Phash etc.) and uses **batched
