@@ -100,7 +100,7 @@ query($fingerprints: [[FingerprintQueryInput!]!]!) {
 
 # ── stash queries ──────────────────────────────────────────────────────────────
 
-STASH_BOXES_Q = "{ configuration { general { stashBoxes { endpoint apiKey name maxRequestsPerMinute } } } }"
+STASH_BOXES_Q = "{ configuration { general { stashBoxes { endpoint api_key name max_requests_per_minute } } } }"
 
 SCENES_Q = """
 query($filter: FindFilterType, $scene_filter: SceneFilterType) {
@@ -245,7 +245,7 @@ def main():
     dry = not args.apply
 
     stash = Stash(args.stash_url, args.stash_api_key)
-    boxes = [StashBox(b["endpoint"], b["apiKey"], b["name"], b.get("maxRequestsPerMinute") or 0)
+    boxes = [StashBox(b["endpoint"], b["api_key"], b["name"], b.get("max_requests_per_minute") or 0)
              for b in fetch_stash_boxes(stash)]
     if not boxes:
         sys.exit("No stash-box endpoints configured in stash.")
