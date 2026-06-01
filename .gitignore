@@ -72,3 +72,7 @@ docker/llm/stash.env
 !docker/llm/.env.example
 docker/llm/cliproxy/config.yaml
 stash-llm-*.tar
+
+# Python bytecode from compile-checking the identify tools
+__pycache__/
+*.pyc
