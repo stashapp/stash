@@ -21,6 +21,7 @@ with the most scenes (ties: longer name, then alphabetical; "blonde" preferred o
 Usage:
   python3 tag_consolidate.py --stash-url http://overwatch-stash:9999          # dry-run report
   python3 tag_consolidate.py --stash-url http://overwatch-stash:9999 --apply   # merge SAFE clusters
+  python3 tag_consolidate.py --stash-url http://overwatch-stash:9999 --emit-plan  # read-only JSON merge plan
 """
 
 import argparse
@@ -145,6 +146,28 @@ def union_aliases(dest, sources):
     return out
 
 
+def _tag_ref(t):
+    """Minimal tag descriptor used in the emitted JSON plan."""
+    return {"id": t["id"], "name": t["name"], "scene_count": t["scene_count"]}
+
+
+def proposed_merge(family, members, rationale, confidence):
+    """Build one structured proposed-merge entry for the JSON plan. Destination is
+    picked exactly as the SAFE path does (pick_destination: most scenes, then
+    'blonde' over 'blond', then longest name, then alphabetical); every other
+    member becomes a source (ordered most-scenes-first for readability)."""
+    dest = pick_destination(members)
+    sources = sorted((t for t in members if t["id"] != dest["id"]),
+                     key=lambda t: (-t["scene_count"], t["name"].lower()))
+    return {
+        "family": family,
+        "destination": _tag_ref(dest),
+        "sources": [_tag_ref(s) for s in sources],
+        "rationale": rationale,
+        "confidence": confidence,
+    }
+
+
 # ── main ────────────────────────────────────────────────────────────────────
 
 ALL_TAGS_Q = "{ findTags(filter:{per_page:-1}){ count tags { id name aliases scene_count } } }"
@@ -156,13 +179,35 @@ def main():
     ap.add_argument("--stash-url", default="http://localhost:9999")
     ap.add_argument("--stash-api-key", default=None)
     ap.add_argument("--apply", action="store_true", help="execute the SAFE merges (default: dry-run report)")
+    ap.add_argument("--emit-plan", action="store_true",
+                    help="read-only: emit a structured JSON merge plan to stdout instead of the report "
+                         "(mutually exclusive with --apply; never merges)")
+    ap.add_argument("--plan-out", default=None,
+                    help="with --emit-plan, also write the JSON plan to this file (UTF-8)")
     ap.add_argument("--show-subjective", type=int, default=40, help="max subjective groups to print")
     args = ap.parse_args()
+    if args.emit_plan and args.apply:
+        ap.error("--emit-plan is read-only and mutually exclusive with --apply")
     dry = not args.apply
+    emit_plan = args.emit_plan
+
+    # Tag names routinely carry en/em-dashes, ’ and emoji. The Windows console
+    # defaults to cp1252 and would crash mid-run on an unencodable char — force
+    # UTF-8 output with lossy replacement so a print/JSON dump never aborts the run
+    # (mirrors tools/identify/external_filename_parse.py).
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
+
+    # In --emit-plan mode stdout must carry ONLY the JSON plan, so route all
+    # human-readable diagnostics to stderr.
+    log = (lambda *a, **k: print(*a, file=sys.stderr, **k)) if emit_plan else print
 
     stash = Stash(args.stash_url, args.stash_api_key)
     tags = stash.q(ALL_TAGS_Q)["findTags"]["tags"]
-    print(f"{len(tags)} tags loaded.")
+    log(f"{len(tags)} tags loaded.")
 
     by_id = {t["id"]: t for t in tags}
 
@@ -173,13 +218,24 @@ def main():
     safe_clusters = [g for g in safe_groups.values() if len(g) > 1]
     in_safe = {t["id"] for g in safe_clusters for t in g}
 
-    print(f"\n=== SAFE clusters (auto-merge{'' if not dry else ' — DRY RUN'}): {len(safe_clusters)} ===")
+    # In --emit-plan mode the already-mergeable SAFE clusters become the
+    # "safe_auto" section of the plan; subjective families become "review".
+    safe_auto_plan = []
+    review_plan = []
+
+    log(f"\n=== SAFE clusters (auto-merge{'' if not dry else ' — DRY RUN'}): {len(safe_clusters)} ===")
     merged = failed = 0
     for g in sorted(safe_clusters, key=lambda g: -sum(t["scene_count"] for t in g)):
         dest = pick_destination(g)
         sources = [t for t in g if t["id"] != dest["id"]]
         names = ", ".join(f"{t['name']}({t['scene_count']})" for t in sources)
-        print(f"  {names}  ->  {dest['name']}({dest['scene_count']}) [id {dest['id']}]")
+        log(f"  {names}  ->  {dest['name']}({dest['scene_count']}) [id {dest['id']}]")
+        if emit_plan:
+            safe_auto_plan.append(proposed_merge(
+                "safe formatting/plural/blond-blonde", g,
+                "trivial variant (case / punctuation / dash / plural / blond->blonde); auto-mergeable",
+                "high"))
+            continue
         if dry:
             continue
         try:
@@ -191,12 +247,16 @@ def main():
             merged += 1
         except RuntimeError as e:
             failed += 1
-            print(f"    ! merge failed: {e}")
+            log(f"    ! merge failed: {e}")
 
-    # ── SUBJECTIVE families (report only) ──
-    def report_group(title, groups):
+    # ── SUBJECTIVE families (report only / collected into the plan's review list) ──
+    def report_group(title, groups, rationale=None, confidence=None):
         groups = [g for g in groups if len(g) > 1]
         if not groups:
+            return
+        if emit_plan:
+            for g in sorted(groups, key=lambda g: -sum(t['scene_count'] for t in g)):
+                review_plan.append(proposed_merge(title, g, rationale or title, confidence or "low"))
             return
         print(f"\n=== {title} (review — NOT auto-merged): {len(groups)} groups ===")
         for g in sorted(groups, key=lambda g: -sum(t['scene_count'] for t in g))[: args.show_subjective]:
@@ -207,13 +267,19 @@ def main():
         fam.setdefault(base_family(t["name"]), []).append(t)
     # only families that aren't already a single SAFE cluster
     fam_groups = [g for g in fam.values() if len(g) > 1 and not {t["id"] for t in g} <= in_safe]
-    report_group("POV / parenthetical families", fam_groups)
+    report_group("POV / parenthetical families", fam_groups,
+                 "share a base name once a trailing POV marker or parenthetical qualifier is stripped",
+                 "medium")
 
     hair = [t for t in tags if t["name"].strip().lower().endswith("hair")]
-    report_group("Hair-colour tags", [hair])
+    report_group("Hair-colour tags", [hair],
+                 "hair-colour scheme: all tags ending in 'hair' — collapsing the scheme is a judgement call",
+                 "low")
 
     age = [t for t in tags if re.search(r"\(\s*\d+\s*[-–+]", t["name"])]
-    report_group("Age-bracket tags", [age])
+    report_group("Age-bracket tags", [age],
+                 "age-bracket scheme: tags carrying a numeric age range — collapsing the scheme is a judgement call",
+                 "low")
 
     # 1-edit near-dupes not already grouped (bounded, informative)
     near = []
@@ -230,7 +296,29 @@ def main():
                 if pair not in seen_pairs:
                     seen_pairs.add(pair)
                     near.append([ta, tb])
-    report_group("1-edit near-duplicates", near)
+    report_group("1-edit near-duplicates", near,
+                 "normalized names differ by exactly one edit (insert/delete/substitute) — likely typo/variant",
+                 "medium")
+
+    if emit_plan:
+        plan = {
+            "safe_auto": safe_auto_plan,
+            "review": review_plan,
+            "generated": (
+                f"tag_consolidate.py --emit-plan over {len(tags)} tags; "
+                f"{len(safe_auto_plan)} already-mergeable SAFE clusters, "
+                f"{len(review_plan)} subjective families proposed for review. "
+                "Read-only: nothing was merged. Execute via the tagsMerge mutation "
+                "(destination = the listed destination.id, source = the listed source ids)."
+            ),
+        }
+        out = json.dumps(plan, ensure_ascii=False, indent=2)
+        if args.plan_out:
+            with open(args.plan_out, "w", encoding="utf-8", errors="replace") as fh:
+                fh.write(out + "\n")
+            log(f"plan written to {args.plan_out}")
+        print(out)
+        return
 
     print(f"\nsummary: {len(safe_clusters)} safe clusters "
           f"({'would merge' if dry else f'merged {merged}, failed {failed}'}), "

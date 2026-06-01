@@ -82,7 +82,7 @@ func parseFlags() (*runConfig, error) {
 	mediaPrefix := fs.String("media-prefix", "", "STASH=WORKER prefix rewrite for media file paths (e.g. \"/data=\\\\overwatch-stash\\torrents\").")
 	generatedPrefix := fs.String("generated-prefix", "", "STASH=WORKER prefix rewrite for the generated/ dir.")
 	ffmpegPath := fs.String("ffmpeg", "ffmpeg", "Path to ffmpeg.exe with NVENC + NVDEC support.")
-	tasks := fs.String("tasks", "previews", "Comma-separated tasks to run, in order. Available: previews, covers, sprites, phash.")
+	tasks := fs.String("tasks", "previews", "Comma-separated tasks to run, in order. Available: previews, covers, sprites, phash, transcode, image-phash.")
 	verifyPhash := fs.Int("verify-phash", 0, "VERIFICATION GATE: recompute N files that already have a native stash phash and compare (proves bit-exactness). Skips the normal loop.")
 	limit := fs.Int("limit", 0, "Cap on items ENCODED/applied per run across ALL tasks (0 = unbounded). Useful for tests.")
 	maxFailures := fs.Int("max-failures", 5, "Abort the run after N consecutive failures (catches systemic problems).")
@@ -127,8 +127,8 @@ func parseFlags() (*runConfig, error) {
 		if t == "" {
 			continue
 		}
-		if t != "previews" && t != "covers" && t != "sprites" && t != "phash" && t != "transcode" {
-			return nil, fmt.Errorf("--tasks: unknown task %q (available: previews, covers, sprites, phash, transcode)", t)
+		if t != "previews" && t != "covers" && t != "sprites" && t != "phash" && t != "transcode" && t != "image-phash" {
+			return nil, fmt.Errorf("--tasks: unknown task %q (available: previews, covers, sprites, phash, transcode, image-phash)", t)
 		}
 		cfg.tasks = append(cfg.tasks, t)
 	}
@@ -265,6 +265,13 @@ func runTask(
 	enc *internal.Encoder,
 	t *totals,
 ) (int, error) {
+	// Images are a different GraphQL entity than scenes (findImages, not
+	// findScenes), so image-phash gets its own enumeration loop rather than going
+	// through the scene fetch/dispatch below.
+	if taskName == "image-phash" {
+		return runImagePhashTask(ctx, c, stash, t)
+	}
+
 	// is_missing filter on the stash query for tasks where stash tracks
 	// missingness. Previews aren't tracked — we filesystem-check instead.
 	// shrinksOnSuccess = true means: as the worker applies items, those items
@@ -625,6 +632,117 @@ func processPhash(
 			return outcomeFailed
 		}
 		log.Printf("scene %s file %s: phash=%s set", s.ID, f.ID, strconv.FormatUint(hash, 16))
+		did = true
+	}
+	if did {
+		return outcomeEncoded
+	}
+	return outcomeSkipped
+}
+
+// ── image-phash ──────────────────────────────────────────────────────────────
+
+// runImagePhashTask is the image analog of runTask's scene loop. Images do NOT
+// support is_missing:"phash" server-side (only scenes do), so we enumerate ALL
+// images with stable pagination and skip already-phashed files client-side —
+// exactly like previews/sprites. Honors --limit / --max-failures / --dry-run.
+func runImagePhashTask(
+	ctx context.Context,
+	c *runConfig,
+	stash *internal.StashClient,
+	t *totals,
+) (int, error) {
+	const taskName = "image-phash"
+	page := 1
+	passEncoded := 0
+	consecutiveFailures := 0
+	firstPageLogged := false
+	for {
+		images, total, err := stash.FetchImagesPage(ctx, page, c.perPage, "")
+		if err != nil {
+			return passEncoded, fmt.Errorf("[%s] page %d: %w", taskName, page, err)
+		}
+		if len(images) == 0 {
+			break
+		}
+		if !firstPageLogged {
+			log.Printf("[%s] scanning %d images (per-page %d)", taskName, total, c.perPage)
+			firstPageLogged = true
+		}
+		pageProgressed := 0
+		for i := range images {
+			if c.limit > 0 && t.encoded >= c.limit {
+				return passEncoded, nil
+			}
+			if c.maxFailures > 0 && consecutiveFailures >= c.maxFailures {
+				return passEncoded, fmt.Errorf("[%s] aborting: %d consecutive failures", taskName, consecutiveFailures)
+			}
+			t.processed++
+			out := processImagePhash(ctx, &images[i], c, stash)
+			switch out {
+			case outcomeEncoded:
+				t.encoded++
+				passEncoded++
+				pageProgressed++
+				consecutiveFailures = 0
+			case outcomeSkipped:
+				t.skipped++
+			case outcomeFailed:
+				t.failed++
+				consecutiveFailures++
+			}
+		}
+		// Stable pagination: the findImages result set doesn't shrink (no
+		// server-side phash filter), so just page straight through, skipping
+		// already-phashed files client-side. _ = pageProgressed (kept for parity).
+		_ = pageProgressed
+		if len(images) < c.perPage {
+			break
+		}
+		page++
+	}
+	return passEncoded, nil
+}
+
+// processImagePhash computes and writes the perceptual hash for every ImageFile
+// of an image that doesn't already have one. Unlike a scene phash (a 25-frame
+// montage), an image phash is computed directly on the decoded image. Reuses
+// SetFilePhash — the fileSetFingerprints mutation works for any file id.
+func processImagePhash(
+	ctx context.Context,
+	im *internal.Image,
+	c *runConfig,
+	stash *internal.StashClient,
+) outcome {
+	if len(im.Files) == 0 {
+		log.Printf("image %s: no image files; skipping", im.ID)
+		return outcomeSkipped
+	}
+	did := false
+	for _, f := range im.Files {
+		if f.HasPhash() {
+			continue // already phashed
+		}
+		source := f.Path
+		if c.mediaRewriter != nil {
+			source = c.mediaRewriter.Rewrite(source)
+		}
+		log.Printf("image %s file %s: computing phash", im.ID, f.ID)
+		hash, err := internal.GenerateImagePhash(source)
+		if err != nil {
+			log.Printf("image %s file %s: phash failed: %v", im.ID, f.ID, err)
+			return outcomeFailed
+		}
+		if c.dryRun {
+			log.Printf("image %s file %s: (dry-run) phash=%s", im.ID, f.ID, strconv.FormatUint(hash, 16))
+			did = true
+			continue
+		}
+		if err := stash.SetFilePhash(ctx, f.ID, hash); err != nil {
+			log.Printf("image %s file %s: set phash: %v", im.ID, f.ID, err)
+			return outcomeFailed
+		}
+		log.Printf("image %s file %s: phash=%s set", im.ID, f.ID, strconv.FormatUint(hash, 16))
 		did = true
 	}
 	if did {

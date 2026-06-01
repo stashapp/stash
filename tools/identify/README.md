@@ -78,3 +78,93 @@ default; review before `--apply`.
 python3 external_filename_parse.py --stash-url http://overwatch-stash:9999            # dry-run
 python3 external_filename_parse.py --stash-url http://overwatch-stash:9999 --apply
 ```
+
+## Companion: `external_identify_performers.py` — enrich **performers** (not scenes)
+
+The scene tools above link *scenes*. This one enriches **performers** with canonical
+metadata (birthdate, ethnicity, eye/hair colour, measurements, country, aliases, URLs,
+image, …) pulled straight from your stash-box endpoints (StashDB, ThePornDB) — again
+**outside** stash's job queue. It already sends the browser `User-Agent` that ThePornDB's
+Cloudflare requires (the default `Python-urllib` UA gets a 403 / error 1010).
+
+It reads your configured stash-box endpoints and their API keys from stash, and is a
+faithful port of stash's own `pkg/stashbox/performer.go` translation logic, so the values
+it writes match what a native performer scrape would produce.
+
+### Modes
+| mode | what it does |
+|---|---|
+| `refresh` (default) | for **linked** performers (those that already have a `stash_id`) that are **missing some fields**, fetch the canonical record via `findPerformer(id)` and **fill only the empty fields** |
+| `search` | for **unlinked** performers, run `searchPerformer(term=name)`, post-filter to a case-insensitive **exact** name match, and link/merge the single survivor |
+| `both` | refresh, then search |
+
+### Usage
+```bash
+# safe preview (default is dry-run): refresh linked performers' empty fields
+python3 external_identify_performers.py --stash-url http://overwatch-stash:9999
+
+# find linkage for performers that have no stash_id yet
+python3 external_identify_performers.py --stash-url http://overwatch-stash:9999 --mode search
+
+# refresh THEN search, small first pass to eyeball the matches
+python3 external_identify_performers.py --stash-url http://overwatch-stash:9999 --mode both --limit 20
+
+# actually write (after reviewing a dry-run)
+python3 external_identify_performers.py --stash-url http://overwatch-stash:9999 --mode both --apply
+```
+
+### Options
+| flag | effect |
+|---|---|
+| (default) | **dry-run** — preview only, no writes |
+| `--apply` | write changes via `performerUpdate` |
+| `--mode {refresh,search,both}` | which candidate set to process (default `refresh`) |
+| `--limit N` | cap performers processed (good for a first test; `0` = no cap) |
+| `--allow-multiple` | search mode: take the first remaining result after the exact-name filter instead of skipping ambiguous |
+| `--per-page N` | stash pagination page size (default 100) |
+| `--stash-api-key KEY` | stash API key, if auth is on (omit when running on the stash host) |
+
+### What it writes (MERGE + union, non-destructive)
+Single-value fields are filled **only when stash's value is empty** — it never overwrites
+an existing value (e.g. `height_cm` only when stash has none, `height > 0` skip). Multi-value
+fields (`alias_list`, `urls`, `stash_ids`) are **unioned** with the existing values before
+sending, because stash's update replaces these wholesale — so existing aliases/URLs and
+stash-ids from *other* endpoints are preserved, never dropped. Aliases case-equal to the
+performer's own name are filtered out. Images are pre-`HEAD`ed and skipped if the CDN URL is
+dead, so a bad image can't roll back the whole update. A `[noop]` line means the stash-box
+record had nothing new to merge.
+
+### Caveats
+- **Don't run it concurrently with a native stash performer scrape** — both issue
+  `performerUpdate` in a single txn and it's last-write-wins.
+- It paces stash-box requests off each endpoint's `maxRequestsPerMinute` (gentle ~4/s when
+  unset); ThePornDB is stricter than StashDB.
+- Always do the default **dry-run** first and skim the `[match] … would set [...]` lines
+  before adding `--apply`.
+
+### NAS cron (periodic enrichment)
+The canonical NAS copy lives next to the scene tool at
+`/volume1/docker/stash/identify/` (or `~shadowshark/stash-tools/`). The NAS host has
+**Python 3.8** and reaches stash at `http://localhost:9999` with no API key. Push the
+script the same way as the others:
+
+```bash
+# from this repo (tar-over-ssh; the NAS has no scp/sftp):
+tar cf - -C tools/identify external_identify_performers.py \
+  | ssh -p 3239 shadowshark@overwatch-stash 'tar xf - -C /volume1/docker/stash/identify'
+```
+
+Recommended cron line — a **weekly** dry-run-then-apply refresh+search pass, logged so you
+can eyeball what it touched (Synology has no per-user `crontab`; add this via **DSM →
+Control Panel → Task Scheduler** as a *Scheduled Task → User-defined script*, run as
+`shadowshark`, or append it to root's `/etc/crontab` — note `/etc/crontab` needs the
+**user column**):
+
+```cron
+# m h dom mon dow  user        command
+  30 4 *   *   1    shadowshark /usr/bin/python3 /volume1/docker/stash/identify/external_identify_performers.py --stash-url http://localhost:9999 --mode both --apply >> /volume1/docker/stash/identify/enrich_performers.log 2>&1
+```
+
+Drop `--apply` for a report-only schedule. New performers only appear after you've scanned
+new media, so weekly (or right after a big import) is plenty — this is low-yield on an
+already-enriched library but cheap to run.

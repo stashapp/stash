@@ -324,6 +324,114 @@ func (c *StashClient) FetchScenesPage(ctx context.Context, page, perPage int, mi
 	return out, raw.FindScenes.Count, nil
 }
 
+// ── images ─────────────────────────────────────────────────────────────────
+
+// Image is the subset of a stash Image the worker cares about for image-phash.
+// Images are a DIFFERENT GraphQL entity than scenes: they expose visual_files
+// (a VisualFile union of VideoFile | ImageFile) rather than files. For phash we
+// only care about the ImageFile members.
+type Image struct {
+	ID    string
+	Files []ImageFileRef // the ImageFile members of visual_files
+}
+
+// ImageFileRef is one ImageFile of an image: enough to compute + write its phash.
+type ImageFileRef struct {
+	ID           string
+	Path         string // stash-side path (translate via the media rewriter)
+	Fingerprints []Fingerprint
+}
+
+// HasPhash reports whether this image file already carries a phash fingerprint.
+func (f ImageFileRef) HasPhash() bool {
+	for _, fp := range f.Fingerprints {
+		if strings.EqualFold(fp.Type, "phash") && fp.Value != "" {
+			return true
+		}
+	}
+	return false
+}
+
+// imagesQuery projects only the ImageFile members of the visual_files union via
+// an inline fragment (VideoFile members — images backed by a video, e.g. an
+// animated source — are intentionally not selected; they have no still-image
+// phash to write here). __typename lets the decoder skip non-ImageFile members
+// cleanly even though the inline fragment alone already filters the projection.
+const imagesQuery = `query($filter: FindFilterType, $image_filter: ImageFilterType) {
+  findImages(filter: $filter, image_filter: $image_filter) {
+    count
+    images {
+      id
+      visual_files {
+        __typename
+        ... on ImageFile {
+          id
+          path
+          fingerprints { type value }
+        }
+      }
+    }
+  }
+}`
+
+type imagesRespRaw struct {
+	FindImages struct {
+		Count  int `json:"count"`
+		Images []struct {
+			ID          string `json:"id"`
+			VisualFiles []struct {
+				Typename     string `json:"__typename"`
+				ID           string `json:"id"`
+				Path         string `json:"path"`
+				Fingerprints []struct {
+					Type  string `json:"type"`
+					Value string `json:"value"`
+				} `json:"fingerprints"`
+			} `json:"visual_files"`
+		} `json:"images"`
+	} `json:"findImages"`
+}
+
+// FetchImagesPage pulls a single page of images ordered by id ASC. Page is
+// 1-based. missingFilter (e.g. "phash") narrows to images stash flags as missing
+// that artifact, via image_filter:{is_missing:...}. Empty string = all images.
+// Only ImageFile members of each image's visual_files are returned.
+func (c *StashClient) FetchImagesPage(ctx context.Context, page, perPage int, missingFilter string) ([]Image, int, error) {
+	vars := map[string]any{
+		"filter": map[string]any{
+			"page":      page,
+			"per_page":  perPage,
+			"sort":      "id",
+			"direction": "ASC",
+		},
+	}
+	if missingFilter != "" {
+		vars["image_filter"] = map[string]any{"is_missing": missingFilter}
+	}
+	var raw imagesRespRaw
+	if err := c.do(ctx, imagesQuery, vars, &raw); err != nil {
+		return nil, 0, fmt.Errorf("fetch images page %d: %w", page, err)
+	}
+	out := make([]Image, 0, len(raw.FindImages.Images))
+	for _, im := range raw.FindImages.Images {
+		files := make([]ImageFileRef, 0, len(im.VisualFiles))
+		for _, vf := range im.VisualFiles {
+			// Inline fragment fields are empty on non-ImageFile members; also guard
+			// on __typename so a VideoFile-backed image is never phashed here.
+			if vf.Typename != "ImageFile" || vf.ID == "" {
+				continue
+			}
+			fps := make([]Fingerprint, 0, len(vf.Fingerprints))
+			for _, fp := range vf.Fingerprints {
+				fps = append(fps, Fingerprint{Type: fp.Type, Value: fp.Value})
+			}
+			files = append(files, ImageFileRef{ID: vf.ID, Path: vf.Path, Fingerprints: fps})
+		}
+		out = append(out, Image{ID: im.ID, Files: files})
+	}
+	return out, raw.FindImages.Count, nil
+}
+
 // ── mutations ──────────────────────────────────────────────────────────────
 
 const sceneUpdateCoverMutation = `mutation($id: ID!, $cover: String!) {

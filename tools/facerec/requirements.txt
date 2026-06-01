@@ -1,0 +1,11 @@
+# Face-recognition performer tagger — GPU box (Windows + RTX) deps.
+# Install into a venv on the RTX box; see README.md for CUDA/onnxruntime notes.
+#
+# IMPORTANT: install ONLY onnxruntime-gpu (NOT plain onnxruntime). If both are
+# present they conflict and InsightFace may silently fall back to CPU.
+
+insightface>=0.7.3
+onnxruntime-gpu>=1.17
+numpy>=1.24,<2.0
+opencv-python>=4.8
+Pillow>=10.0

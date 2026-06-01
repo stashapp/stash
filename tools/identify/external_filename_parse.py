@@ -175,6 +175,15 @@ def main():
     args = ap.parse_args()
     dry = not args.apply
 
+    # Filenames routinely contain emoji/unicode (♥, en-dashes, …). The Windows
+    # console defaults to cp1252 and would crash mid-run on an unencodable char —
+    # force UTF-8 output with lossy replacement so a print never aborts the run.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
+
     stash = Stash(args.stash_url, args.stash_api_key)
 
     print("loading existing performers + studios …")
