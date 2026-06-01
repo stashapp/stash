@@ -59,7 +59,7 @@ Either path produces a single statically-linked Windows executable (~6.3MB).
 | `--stash-url` | base URL of your stash instance (over Tailscale) | `http://localhost:9999` |
 | `--stash-api-key` | optional; sent as `ApiKey` header (also via `STASH_API_KEY` env) | empty |
 | `--media-prefix` `STASH=WORKER` | translate stash's media paths to the worker's view (e.g. SMB share). UNC paths with one or two leading backslashes are both accepted — see "UNC path quoting" below. | empty |
-| `--generated-prefix` `STASH=WORKER` | same, for the `generated/` dir. The worker writes here. **Required.** | empty |
+| `--generated-prefix` `STASH=WORKER` | same, for the `generated/` dir. The worker writes here. **Required for `previews`/`sprites`** (they write files); optional for `covers`/`phash` (those write via the API). | empty |
 | `--ffmpeg` | path to `ffmpeg.exe`. Must be a build with NVENC + NVDEC. | `ffmpeg` (PATH) |
 | `--tasks` | comma-separated, in order: `previews`, `covers`, `sprites`, `phash` | `previews` |
 | `--verify-phash N` | **gate, not a task.** Recompute `N` files that already have a native stash phash and compare. Exits non-zero on any mismatch. Run this once before trusting `--tasks phash`. | `0` (off) |

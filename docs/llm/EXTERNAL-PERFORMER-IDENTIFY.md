@@ -1,8 +1,9 @@
 # External performer identifier — design
 
 Companion to `external_identify.py` (which identifies **scenes**). This tool enriches **performers**
-with full metadata from StashDB / ThePornDB, running outside stash's job queue. No code yet — this is
-the spec.
+with full metadata from StashDB / ThePornDB, running outside stash's job queue. Shipped as
+`tools/identify/external_identify_performers.py` (commit `fac8b029`) — `refresh`/`search`/`both`
+modes per §6. This doc remains the design spec it was built to.
 
 Same architectural pattern as the scene identifier: stdlib Python, talks to stash GraphQL + the
 configured stash-box endpoints, applies MERGE-like updates. The bundled fragment query at

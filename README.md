@@ -10,7 +10,12 @@
 > - **What's added** lives under clearly namespaced paths so upstream merges stay clean:
 >   `internal/llm/` (Go service + OpenAI-compatible client + tools), an `/llm` REST + SSE route, and
 >   `ui/v2.5/src/components/Assistant/` (React widget), plus a LiteLLM gateway config under
->   `docker/llm/litellm/`. Nothing in this fork is committed with secrets.
+>   `docker/llm/litellm/`. The assistant is **not confined to hand-coded tools** — it has generic,
+>   schema-validated access to stash's own GraphQL API and can persist its own reusable tools
+>   (`internal/llm/tools_graphql.go`, `tools_dynamic.go`), so new operations need no rebuild.
+>   Also added: an external GPU worker (`worker/` — a standalone Go module producing a Windows `.exe`
+>   that offloads preview/cover/sprite/phash generation to an NVIDIA box) and standalone
+>   off-queue identify scripts (`tools/identify/`). Nothing in this fork is committed with secrets.
 > - **Model access:** stash speaks one OpenAI-compatible API to a **LiteLLM gateway** that fronts the
 >   providers: `minimax` (MiniMax API key) and `grok` (your grok.com **OAuth subscription** via a
 >   `cli-proxy-api` bridge — not metered API billing). stash holds only the gateway URL/key/model.
@@ -20,8 +25,10 @@
 >
 > | Doc | What it covers |
 > |---|---|
-> | [`docs/llm/DESIGN.md`](docs/llm/DESIGN.md) | Architecture, phased plan, tool surface, endpoints, providers/config/secrets, Phase 2 sandboxing |
+> | [`docs/llm/DESIGN.md`](docs/llm/DESIGN.md) | Architecture, phased plan, tool surface (incl. the generic GraphQL + self-defined-tools autonomy layer), endpoints, providers/config/secrets, Phase 2 sandboxing |
 > | [`docs/llm/DEPLOY-NAS.md`](docs/llm/DEPLOY-NAS.md) | NAS Docker deployment (stash + litellm, mounts, env, ghcr/save-load transfer) |
+> | [`docs/llm/EXTERNAL-WORKERS.md`](docs/llm/EXTERNAL-WORKERS.md) / [`worker/README.md`](worker/README.md) | External GPU worker — design + operator guide (previews/covers/sprites/phash) |
+> | [`docs/llm/EXTERNAL-PERFORMER-IDENTIFY.md`](docs/llm/EXTERNAL-PERFORMER-IDENTIFY.md) / [`tools/identify/README.md`](tools/identify/README.md) | Off-queue stash-box identification scripts |
 > | [`docker/llm/`](docker/llm/) | `docker-compose.nas.yml`, `build-and-push.sh`, `.env.example` (stash), `litellm.env.example`, `litellm/config.yaml` |
 > | [`CHANGELOG.md`](CHANGELOG.md) | Fork-specific changes (Keep a Changelog format) |
 >
