@@ -9,16 +9,16 @@ is for builders/operators; the design doc explains why.
 
 ## Current state — live-validated 2026-06-01 on RTX 5080
 
-Three task types are shipped and live-tested against the production NAS:
+Four task types are shipped and live-tested against the production NAS:
 
 | Task | Output | Per-scene time | Notes |
 |---|---|---|---|
 | **previews** | `<generated>/screenshots/<hash>.mp4` | ~7s | 12 NVENC-encoded segments + concat demuxer (matches stash's `transcoder.Splice`). Two-pass slow-seek retry + VFR `-vsync 2` detection both implemented. |
 | **covers** | base64 JPEG via `sceneUpdate(cover_image: …)` mutation | ~3s | Single-frame extract at 20% of duration (mirrors `screenshotDurationProportion` in stash). CPU JPEG (no NVENC overhead). |
 | **sprites** | `<generated>/vtt/<hash>_sprite.jpg` + `_thumbs.vtt` | ~30s | Per-frame `-ss` seek with NVDEC, tiled in Go via `image/draw`. WebVTT cues match stash's `gridSize = ⌈√N⌉` math. |
+| **phash** | `phash` fingerprint via `fileSetFingerprints` mutation | ~15-25s | **Bit-for-bit** replica of stash's `pkg/hash/videophash`: 25 BMP frames (5×5) at 5%-offset timestamps, `imaging` montage, `goimagehash.PerceptionHash`. **CPU decode (no NVDEC)** — hardware decode would change pixels and break the hash. Gated by `--verify-phash` (see below). |
 
 **What's NOT shipped:**
-- Phase C (phash via `fileSetFingerprints`) — the design is in `EXTERNAL-WORKERS.md` §6 but no code yet.
 - Concurrent multi-scene encoding (sequential per worker; run two `.exe` processes in parallel as a poor-man's concurrency — proven to work, see "Parallel workers" below).
 
 ## Build
@@ -61,7 +61,8 @@ Either path produces a single statically-linked Windows executable (~6.3MB).
 | `--media-prefix` `STASH=WORKER` | translate stash's media paths to the worker's view (e.g. SMB share). UNC paths with one or two leading backslashes are both accepted — see "UNC path quoting" below. | empty |
 | `--generated-prefix` `STASH=WORKER` | same, for the `generated/` dir. The worker writes here. **Required.** | empty |
 | `--ffmpeg` | path to `ffmpeg.exe`. Must be a build with NVENC + NVDEC. | `ffmpeg` (PATH) |
-| `--tasks` | comma-separated, in order: `previews`, `covers`, `sprites` | `previews` |
+| `--tasks` | comma-separated, in order: `previews`, `covers`, `sprites`, `phash` | `previews` |
+| `--verify-phash N` | **gate, not a task.** Recompute `N` files that already have a native stash phash and compare. Exits non-zero on any mismatch. Run this once before trusting `--tasks phash`. | `0` (off) |
 | `--limit` | cap items ENCODED per run (skips don't count). `--limit 1` encodes exactly one missing item then exits. | `0` (unbounded) |
 | `--max-failures` | abort after N **consecutive** failures (catches systemic problems vs thrashing the whole library) | `5` |
 | `--per-page` | GraphQL pagination size for scene enumeration | `200` |
@@ -116,6 +117,29 @@ page).
 3. Base64-encode the JPEG, send via `sceneUpdate(input:{id, cover_image: "data:image/jpeg;base64,…"})`.
    Stash unpacks and writes to its blob storage.
 
+### phash
+
+Replicates `pkg/hash/videophash/phash.go` exactly — the output **must** be a bit-identical
+`uint64` or it won't match StashDB/TPDB fingerprints and the work is wasted.
+
+1. Page through `findScenes` with `scene_filter: {is_missing: "phash"}` — server-side filter that
+   **shrinks** as phashes are applied (same re-fetch-page-1 pagination as covers).
+2. For each **file** lacking a phash (phash is per-file, not per-scene): use the **stash-stored
+   duration** (from the API — NOT a fresh ffprobe; a few-ms drift would shift every sampled
+   timestamp and change the hash).
+3. Extract 25 frames (5×5 grid) at `offset + i·step` where `offset = 0.05·dur`, `step = 0.9·dur/25`.
+   Each frame: `ffmpeg -v error -y -ss <t> -i <src> -frames:v 1 -vf scale=160:-2 -c:v bmp -f rawvideo -`
+   (lossless BMP, **CPU decode** — exactly stash's `transcoder.ScreenshotTime`).
+4. Montage the 25 frames with `disintegration/imaging` (same lib/version as stash), perceptual-hash
+   with `corona10/goimagehash` (same), take `GetHash()`.
+5. Send `fileSetFingerprints(input:{id, fingerprints:[{type:"phash", value:<hex>}]})`. Value is
+   `strconv.FormatUint(hash, 16)` — stash parses it back with `ParseUint(_, 16, 64)`, so the
+   round-trip matches stash's own.
+
+**Always run the gate first:** `--verify-phash 25` recomputes 25 files that already have a native
+phash and compares. Bit-exactness depends on the ffmpeg build's decoder/scaler producing identical
+pixels; if your ffmpeg differs from the NAS's, the gate catches it before you write 700 wrong hashes.
+
 ### sprites
 1. Page through `findScenes` (no filter — stash doesn't track sprite existence).
 2. For each scene: skip if both `<hash>_sprite.jpg` and `<hash>_thumbs.vtt` already exist.
@@ -151,8 +175,9 @@ If `%util` is >85% you're at the disk's limit; more workers will just slow each 
 
 - **Sprite gen is the slowest task** (~30s/scene even after optimization). 1417 scenes = ~12h
   uncontested. The bottleneck is NAS read I/O across 4 parallel ffmpeg seeks per scene.
-- **No phash worker yet** (Phase C). When built, it'll call the existing `fileSetFingerprints`
-  mutation per file.
+- **phash is bit-exactness-sensitive.** It depends on your ffmpeg build decoding + scaling to the
+  same pixels the NAS's ffmpeg does. The `--verify-phash` gate exists precisely because this can't
+  be assumed — always run it after changing ffmpeg builds. CPU decode is mandatory (no NVDEC).
 - **Corrupt H.264 sources** (Invalid NAL unit, etc.) fail both fast-seek AND slow-seek passes. Seen
   in ~1% of scenes in testing. They show up as `[stash-worker] scene N: encode failed: ...` in the
   log and don't block the rest of the run (unless you hit `--max-failures` consecutively).

@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -61,12 +62,17 @@ type runConfig struct {
 
 	ffmpegPath string
 
-	tasks       []string // ordered task names: "previews", "covers"
+	tasks       []string // ordered task names: "previews", "covers", "sprites", "phash"
 	limit       int
 	maxFailures int
 	perPage     int
 	watch       bool
 	dryRun      bool
+
+	// verifyPhash > 0 runs the phash VERIFICATION GATE instead of the normal
+	// loop: recompute phashes for N files that already have a native stash
+	// phash and compare. Used to prove bit-exactness before any bulk phash run.
+	verifyPhash int
 }
 
 func parseFlags() (*runConfig, error) {
@@ -76,7 +82,8 @@ func parseFlags() (*runConfig, error) {
 	mediaPrefix := fs.String("media-prefix", "", "STASH=WORKER prefix rewrite for media file paths (e.g. \"/data=\\\\overwatch-stash\\torrents\").")
 	generatedPrefix := fs.String("generated-prefix", "", "STASH=WORKER prefix rewrite for the generated/ dir.")
 	ffmpegPath := fs.String("ffmpeg", "ffmpeg", "Path to ffmpeg.exe with NVENC + NVDEC support.")
-	tasks := fs.String("tasks", "previews", "Comma-separated tasks to run, in order. Available: previews, covers, sprites.")
+	tasks := fs.String("tasks", "previews", "Comma-separated tasks to run, in order. Available: previews, covers, sprites, phash.")
+	verifyPhash := fs.Int("verify-phash", 0, "VERIFICATION GATE: recompute N files that already have a native stash phash and compare (proves bit-exactness). Skips the normal loop.")
 	limit := fs.Int("limit", 0, "Cap on items ENCODED/applied per run across ALL tasks (0 = unbounded). Useful for tests.")
 	maxFailures := fs.Int("max-failures", 5, "Abort the run after N consecutive failures (catches systemic problems).")
 	perPage := fs.Int("per-page", 200, "GraphQL pagination size for scene enumeration.")
@@ -96,18 +103,11 @@ func parseFlags() (*runConfig, error) {
 		perPage:     *perPage,
 		watch:       *watch,
 		dryRun:      *dryRun,
+		verifyPhash: *verifyPhash,
 	}
 	if cfg.stashURL == "" {
 		return nil, errors.New("--stash-url is required")
 	}
-	if *generatedPrefix == "" {
-		return nil, errors.New("--generated-prefix is required (where to write generated files)")
-	}
-	gr, err := internal.ParsePrefixRewriter(*generatedPrefix)
-	if err != nil {
-		return nil, fmt.Errorf("--generated-prefix: %w", err)
-	}
-	cfg.generatedRewriter = gr
 	if *mediaPrefix != "" {
 		mr, err := internal.ParsePrefixRewriter(*mediaPrefix)
 		if err != nil {
@@ -115,18 +115,52 @@ func parseFlags() (*runConfig, error) {
 		}
 		cfg.mediaRewriter = mr
 	}
+
+	// verify-phash mode bypasses the task loop entirely — it only needs to read
+	// media (for recompute) and the API (for stored hashes), never generated/.
+	if cfg.verifyPhash > 0 {
+		return cfg, nil
+	}
+
 	for _, t := range strings.Split(*tasks, ",") {
 		t = strings.TrimSpace(strings.ToLower(t))
 		if t == "" {
 			continue
 		}
-		if t != "previews" && t != "covers" && t != "sprites" {
-			return nil, fmt.Errorf("--tasks: unknown task %q (available: previews, covers, sprites)", t)
+		if t != "previews" && t != "covers" && t != "sprites" && t != "phash" {
+			return nil, fmt.Errorf("--tasks: unknown task %q (available: previews, covers, sprites, phash)", t)
 		}
 		cfg.tasks = append(cfg.tasks, t)
 	}
 	if len(cfg.tasks) == 0 {
 		return nil, errors.New("--tasks: at least one task required")
+	}
+
+	// Only previews and sprites write into generated/. covers (API upload) and
+	// phash (fingerprint mutation) don't, so --generated-prefix is optional for
+	// those.
+	needsGenerated := false
+	for _, t := range cfg.tasks {
+		if t == "previews" || t == "sprites" {
+			needsGenerated = true
+		}
+	}
+	if needsGenerated {
+		if *generatedPrefix == "" {
+			return nil, errors.New("--generated-prefix is required for previews/sprites (where to write generated files)")
+		}
+		gr, err := internal.ParsePrefixRewriter(*generatedPrefix)
+		if err != nil {
+			return nil, fmt.Errorf("--generated-prefix: %w", err)
+		}
+		cfg.generatedRewriter = gr
+	} else if *generatedPrefix != "" {
+		// Accept it if supplied (harmless) so mixed task sets still work.
+		gr, err := internal.ParsePrefixRewriter(*generatedPrefix)
+		if err != nil {
+			return nil, fmt.Errorf("--generated-prefix: %w", err)
+		}
+		cfg.generatedRewriter = gr
 	}
 	return cfg, nil
 }
@@ -148,6 +182,14 @@ type totals struct {
 
 func run(ctx context.Context, c *runConfig) error {
 	stash := internal.NewStashClient(c.stashURL, c.stashAPIKey)
+	enc := internal.NewEncoder(c.ffmpegPath, c.dryRun)
+
+	// Verification gate: prove worker phashes match native stash phashes bit-for-bit
+	// before any bulk phash run. Bypasses the normal task loop.
+	if c.verifyPhash > 0 {
+		return runVerifyPhash(ctx, c, stash, enc)
+	}
+
 	scfg, err := stash.FetchConfig(ctx)
 	if err != nil {
 		return fmt.Errorf("fetch stash config: %w", err)
@@ -156,11 +198,13 @@ func run(ctx context.Context, c *runConfig) error {
 		scfg.VideoFileNamingAlgorithm, scfg.PreviewSegments, scfg.PreviewSegmentDuration, scfg.PreviewAudio)
 	log.Printf("tasks: %s", strings.Join(c.tasks, ", "))
 
-	gen := internal.GeneratedPaths{Root: c.generatedRewriter.To()}
-	if err := internal.EnsureTmpDir(gen); err != nil {
-		return fmt.Errorf("ensure tmp dir %s: %w", gen.TmpDir(), err)
+	var gen internal.GeneratedPaths
+	if c.generatedRewriter != nil {
+		gen = internal.GeneratedPaths{Root: c.generatedRewriter.To()}
+		if err := internal.EnsureTmpDir(gen); err != nil {
+			return fmt.Errorf("ensure tmp dir %s: %w", gen.TmpDir(), err)
+		}
 	}
-	enc := internal.NewEncoder(c.ffmpegPath, c.dryRun)
 	t := &totals{}
 	emptyPasses := 0
 
@@ -231,8 +275,15 @@ func runTask(
 	// normal page++ pagination is correct.
 	missingFilter := ""
 	shrinksOnSuccess := false
-	if taskName == "covers" {
+	switch taskName {
+	case "covers":
 		missingFilter = "cover"
+		shrinksOnSuccess = true
+	case "phash":
+		// is_missing:"phash" left-joins fingerprints and selects files with no
+		// phash row; as the worker sets phashes the result set shrinks, exactly
+		// like covers — so the same re-fetch-page-1 strategy is required.
+		missingFilter = "phash"
 		shrinksOnSuccess = true
 	}
 
@@ -312,6 +363,8 @@ func processScene(
 		return processCover(ctx, s, c, enc, stash)
 	case "sprites":
 		return processSprite(ctx, s, scfg, c, gen, enc)
+	case "phash":
+		return processPhash(ctx, s, c, enc, stash)
 	default:
 		log.Printf("scene %s: unknown task %q; skipping", s.ID, taskName)
 		return outcomeSkipped
@@ -449,4 +502,151 @@ func processSprite(
 		return outcomeFailed
 	}
 	return outcomeEncoded
+}
+
+// ── phash ──────────────────────────────────────────────────────────────────
+
+// filePhash returns the file's existing phash fingerprint value (hex), if any.
+func filePhash(f internal.SceneFile) (string, bool) {
+	for _, fp := range f.Fingerprints {
+		if strings.EqualFold(fp.Type, "phash") && fp.Value != "" {
+			return fp.Value, true
+		}
+	}
+	return "", false
+}
+
+// processPhash computes stash's perceptual hash for every file of a scene that
+// doesn't already have one, and writes it back via fileSetFingerprints. phash is
+// a per-FILE fingerprint, so a multi-file scene may produce several. Uses the
+// stash-stored duration (NOT a fresh probe) so the sampled timestamps — and thus
+// the hash — match what stash itself would compute.
+func processPhash(
+	ctx context.Context,
+	s *internal.Scene,
+	c *runConfig,
+	enc *internal.Encoder,
+	stash *internal.StashClient,
+) outcome {
+	if len(s.Files) == 0 {
+		log.Printf("scene %s: no files; skipping", s.ID)
+		return outcomeSkipped
+	}
+	did := false
+	for i := range s.Files {
+		f := s.Files[i]
+		if _, has := filePhash(f); has {
+			continue // already phashed
+		}
+		if f.Duration <= 0 {
+			log.Printf("scene %s file %s: no duration metadata; skipping phash", s.ID, f.ID)
+			continue
+		}
+		source := f.Path
+		if c.mediaRewriter != nil {
+			source = c.mediaRewriter.Rewrite(source)
+		}
+		log.Printf("scene %s file %s: computing phash (%.0fs)", s.ID, f.ID, f.Duration)
+		hash, err := enc.GeneratePhash(ctx, source, f.Duration)
+		if err != nil {
+			log.Printf("scene %s file %s: phash failed: %v", s.ID, f.ID, err)
+			return outcomeFailed
+		}
+		if c.dryRun {
+			log.Printf("scene %s file %s: (dry-run) phash=%s", s.ID, f.ID, strconv.FormatUint(hash, 16))
+			did = true
+			continue
+		}
+		if err := stash.SetFilePhash(ctx, f.ID, hash); err != nil {
+			log.Printf("scene %s file %s: set phash: %v", s.ID, f.ID, err)
+			return outcomeFailed
+		}
+		log.Printf("scene %s file %s: phash=%s set", s.ID, f.ID, strconv.FormatUint(hash, 16))
+		did = true
+	}
+	if did {
+		return outcomeEncoded
+	}
+	return outcomeSkipped
+}
+
+// runVerifyPhash is the bit-exactness GATE. It recomputes phashes for files that
+// ALREADY have a native stash phash and compares. If any differ, the worker's
+// hashes won't match StashDB/TPDB fingerprints and a bulk run is worthless — so
+// this returns a non-zero error and you must NOT proceed to --tasks phash.
+func runVerifyPhash(ctx context.Context, c *runConfig, stash *internal.StashClient, enc *internal.Encoder) error {
+	target := c.verifyPhash
+	log.Printf("PHASH VERIFICATION GATE: recomputing up to %d files that already have a native phash", target)
+
+	var checked, matched, mismatched, skipped int
+	page := 1
+	for checked < target {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		scenes, total, err := stash.FetchScenesPage(ctx, page, c.perPage, "")
+		if err != nil {
+			return fmt.Errorf("verify: page %d: %w", page, err)
+		}
+		if len(scenes) == 0 {
+			break
+		}
+		if page == 1 {
+			log.Printf("verify: library has %d scenes", total)
+		}
+		for _, s := range scenes {
+			if checked >= target {
+				break
+			}
+			for _, f := range s.Files {
+				if checked >= target {
+					break
+				}
+				native, has := filePhash(f)
+				if !has || f.Duration <= 0 {
+					continue
+				}
+				nativeU, err := strconv.ParseUint(native, 16, 64)
+				if err != nil {
+					log.Printf("verify: scene %s file %s: bad native phash %q; skipping", s.ID, f.ID, native)
+					skipped++
+					continue
+				}
+				source := f.Path
+				if c.mediaRewriter != nil {
+					source = c.mediaRewriter.Rewrite(source)
+				}
+				got, err := enc.GeneratePhash(ctx, source, f.Duration)
+				if err != nil {
+					log.Printf("verify: scene %s file %s: recompute failed: %v", s.ID, f.ID, err)
+					skipped++
+					continue
+				}
+				checked++
+				if got == nativeU {
+					matched++
+					log.Printf("MATCH    scene %s file %s  %s", s.ID, f.ID, native)
+				} else {
+					mismatched++
+					log.Printf("MISMATCH scene %s file %s  native=%s computed=%s",
+						s.ID, f.ID, native, strconv.FormatUint(got, 16))
+				}
+			}
+		}
+		if len(scenes) < c.perPage {
+			break
+		}
+		page++
+	}
+
+	log.Printf("verification: %d checked, %d matched, %d mismatched, %d skipped",
+		checked, matched, mismatched, skipped)
+	if checked == 0 {
+		return errors.New("no files with a native phash found — generate some phashes in stash first, then re-run the gate")
+	}
+	if mismatched > 0 {
+		return fmt.Errorf("VERIFICATION FAILED: %d/%d phashes did not match native — DO NOT run --tasks phash", mismatched, checked)
+	}
+	log.Printf("VERIFICATION PASSED: all %d phashes are bit-identical to native — safe to run --tasks phash", checked)
+	return nil
 }

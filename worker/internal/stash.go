@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -301,6 +302,34 @@ func (c *StashClient) SceneUpdateCover(ctx context.Context, sceneID string, jpeg
 	}, &raw)
 	if err != nil {
 		return fmt.Errorf("sceneUpdate cover for %s: %w", sceneID, err)
+	}
+	return nil
+}
+
+const fileSetFingerprintsMutation = `mutation($id: ID!, $fingerprints: [SetFingerprintsInput!]!) {
+  fileSetFingerprints(input: { id: $id, fingerprints: $fingerprints })
+}`
+
+// SetFilePhash sets the phash fingerprint on a single file. The value is the
+// uint64 hash formatted as lowercase hex — stash's FileSetFingerprints resolver
+// parses it with strconv.ParseUint(value, 16, 64) and stores it as int64, and
+// its Fingerprint.Value() reads it back as strconv.FormatUint(_, 16). So hex in,
+// hex out — the worker matches stash's own round-trip exactly.
+//
+// "only supplied fingerprint types will be modified" (per the schema), so this
+// leaves oshash/md5 untouched.
+func (c *StashClient) SetFilePhash(ctx context.Context, fileID string, hash uint64) error {
+	if fileID == "" {
+		return errors.New("empty file id")
+	}
+	vars := map[string]any{
+		"id": fileID,
+		"fingerprints": []map[string]any{
+			{"type": "phash", "value": strconv.FormatUint(hash, 16)},
+		},
+	}
+	if err := c.do(ctx, fileSetFingerprintsMutation, vars, nil); err != nil {
+		return fmt.Errorf("fileSetFingerprints phash for file %s: %w", fileID, err)
 	}
 	return nil
 }

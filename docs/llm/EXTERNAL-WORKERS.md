@@ -20,10 +20,10 @@ The worker exists at [`../../worker/`](../../worker/) as a separate Go module wi
 | **A — previews** | NVENC per-segment + concat demuxer, two-pass slow-seek retry, VFR detect | **shipped** (commit `8b65b795`) | ~7s/scene; 50-batch confirmed 98% success rate (1 corrupt H.264 failed both passes) |
 | **A.5 — covers** | Single-frame extract at 20% of duration → `sceneUpdate(cover_image: data:…)` | **shipped** (commit `1ff3812d`) | ~3s/scene |
 | **B — sprites** | Per-frame NVDEC seek + Go-side `image/draw` tiling + WebVTT | **shipped + optimized** (commits `071ceb2c` → `45206dc8`) | ~30s/scene (down from 73s in initial impl) |
-| **C — phash** | Per-file phash via existing `fileSetFingerprints` mutation | **NOT built yet** | — |
+| **C — phash** | Per-file phash via existing `fileSetFingerprints` mutation; bit-for-bit replica of `pkg/hash/videophash` | **shipped + gate-validated** | `--verify-phash 25` → 25/25 bit-identical to native (2026-06-01); ~15-25s/scene |
 
 **Notes on what's in production now:**
-- Multi-task dispatch via `--tasks previews,covers,sprites` (one or many, in order).
+- Multi-task dispatch via `--tasks previews,covers,sprites,phash` (one or many, in order).
 - Two `.exe` instances can run concurrently (different output paths; no write conflicts) — only the
   NAS disk is the bottleneck (~93% busy at 2 workers, see §10).
 - `normalizeUNC` in `internal/paths.go` recovers from shells (bash/PowerShell/MSYS) collapsing `\\`
@@ -300,8 +300,10 @@ Same worker process, add a second task. Most of the work is the **VTT format**: 
 stash's expected grid layout exactly. The sprite image format is forgiving (any JPEG with the right
 dimensions); the VTT must reference its cells with the right `#xywh=` regions.
 
-### Phase C — phash worker (no fork addition needed)
-This unblocks `identify_scenes_fast` for the long tail.
+### Phase C — phash worker (no fork addition needed) — ✅ SHIPPED 2026-06-01
+This unblocks `identify_scenes_fast` for the long tail. Implemented in `worker/internal/phash.go`
+(generation) + `SetFilePhash` in `worker/internal/stash.go` (mutation) + the `phash` task and
+`--verify-phash` gate in `worker/cmd/stash-worker/main.go`.
 
 **Use the existing `fileSetFingerprints` mutation.** Phash in stash is stored **per file**
 (`files_fingerprints` table, keyed by `file_id + type='phash'`), NOT per scene. The mutation
@@ -314,24 +316,33 @@ Stash's resolver parses the hex string into a uint64 (`strconv.ParseUint(value, 
 writes the row. **No new mutation needed.** The original doc draft proposed adding `sceneSetPhash`;
 that was the wrong shape (scenes can have multiple files; phash is per-file).
 
-#### Worker flow
-1. Pull scenes missing phash. The filter `scene_filter: {phash: {modifier: IS_NULL, value: ""}}` is
-   accepted — verified in `pkg/sqlite/scene_filter.go:422-425`. Include `files { id fingerprints { type value } }`
-   in the projection so the worker can decide which files need a phash.
+#### Worker flow (as built)
+1. Enumerate with `scene_filter: {is_missing: "phash"}` (`pkg/sqlite/scene_filter.go:422-425`).
+   This **shrinks** as phashes are written, so the dispatcher uses the same re-fetch-page-1
+   pagination as covers (`shrinksOnSuccess`). Project `files { id duration fingerprints { type value } }`.
 2. For each scene, iterate **all files** (multi-file scenes are real). For each file missing phash:
-   a. Generate the 5×5 phash sprite per the §4 spec — width=160 aspect-preserved, sampling at
-      `offset+i·step` per the formula. Decode with NVDEC, scale on the GPU where possible.
-   b. Tile in-memory (`image/draw` in Go; no file written).
-   c. Hash with `goimagehash.PerceptionHash`. This guarantees bit-compatibility with stash's
-      native phash — same library, same algorithm.
-3. Call `fileSetFingerprints` with the file's ID and the 16-char hex hash.
+   a. Use the **stash-stored `duration`** from the API — **not** a fresh ffprobe. A few-ms drift
+      shifts every sampled timestamp and changes the hash.
+   b. Extract 25 frames at `offset + i·step` (`offset=0.05·dur, step=0.9·dur/25`), each via
+      `ffmpeg -v error -y -ss <fmt.Sprint(t)> -i <src> -frames:v 1 -vf scale=160:-2 -c:v bmp -f rawvideo -`.
+      This is a byte-for-byte match of `transcoder.ScreenshotTime(input, t, {Width:160, BMP})`.
+      **CPU decode — NO `-hwaccel`/NVDEC.** Hardware decode produces subtly different pixels than
+      libavcodec's software path, which changes the perceptual hash. (This corrects the earlier
+      draft of this doc, which wrongly suggested NVDEC + GPU scaling here.)
+   c. Montage the 25 frames with `disintegration/imaging` (`imaging.New` + `imaging.Paste`), exactly
+      replicating `combineImages`. Hash with `corona10/goimagehash.PerceptionHash` → `GetHash()`.
+      Same libs **and versions** as stash (`goimagehash v1.1.0`, `imaging v1.6.2`, `x/image v0.18.0`).
+3. Call `fileSetFingerprints` with the file's ID and `strconv.FormatUint(hash, 16)` (lowercase hex;
+   stash's resolver round-trips it via `ParseUint(_, 16, 64)`).
 
-#### Verification (do this before bulk-running)
-Generate phash for ~20 files that **already have a native phash from stash**. Compare hex output.
-If even one differs, the sprite generation isn't matching stash's params — fix before bulk-running
-or you'll write wrong hashes to the DB. Likely culprits: frame timestamps off (5%/95% window),
-scale dimensions wrong, color space mismatch, JPEG vs BMP intermediate (stash uses BMP via
-`transcoder.ScreenshotOutputTypeBMP`).
+#### Verification gate (built in: `--verify-phash N`)
+`--verify-phash N` recomputes `N` files that **already have a native phash from stash** and compares
+as uint64. Any mismatch → non-zero exit and a refusal to proceed. This is mandatory because
+bit-exactness ultimately depends on the **ffmpeg build's** decoder/scaler matching the NAS's; the
+gate is the only way to know your Windows ffmpeg agrees with stash's. First run 2026-06-01:
+**25/25 bit-identical**. Re-run it after any ffmpeg build change. Historical culprits to check on a
+mismatch: timestamps off (5%/95% window), scale dimensions, hardware vs software decode, JPEG vs BMP
+intermediate (stash uses BMP via `transcoder.ScreenshotOutputTypeBMP`).
 
 ---
 
@@ -439,10 +450,10 @@ Smallest valuable shippable: **Phase A only**, preview worker, ~3–5 days of wo
 5. Polish: logs, summary, signal handling.
 
 **Phase B** (sprites) is +1-2 days — same architecture, adds the VTT grid math + sqrt-grid tiling.
-**Phase C** (phash) is **~3-4 days** (down from the original "week" — no fork mutation needed; use
-the existing `fileSetFingerprints`). Most of Phase C's time is the **verification gate**: prove the
-worker's phash output matches stash's bit-for-bit against ~20 known files. If they don't match,
-fixing the sprite-gen params can eat days.
+**Phase C** (phash) **shipped 2026-06-01** — and the verification gate (the part that was expected to
+eat the most time) passed first try at 25/25 bit-identical, because the worker reuses stash's exact
+ffmpeg args + the same goimagehash/imaging versions and the Windows BtbN ffmpeg happens to decode +
+scale identically to the NAS's. Re-run `--verify-phash` if either ffmpeg build changes.
 
 ---
 

@@ -28,9 +28,23 @@ versioning is independent of upstream — it is anchored to the upstream base re
     `tile` filter. WebVTT cells derived from the actual decoded frame dimensions. Initial
     implementation used the `fps` filter (full-pass decode) at 73s/scene; later optimized to
     parallel-bounded seek + Go tiling at ~30s/scene (commit `45206dc8`).
-  - CLI: `--tasks previews,covers,sprites` dispatcher; `--limit N` caps **encoded items**
+  - **phash** (Phase C) — a **bit-for-bit** replica of stash's `pkg/hash/videophash/phash.go`:
+    25 lossless BMP frames (5×5) at `offset=0.05·dur, step=0.9·dur/25`, scaled `scale=160:-2`,
+    montaged with `disintegration/imaging` v1.6.2, hashed with `corona10/goimagehash` v1.1.0
+    (the exact libs + versions stash uses). Frames are **CPU-decoded** (no NVDEC — hardware decode
+    yields different pixels and breaks the hash). Uses the **stash-stored duration** from the API,
+    not a fresh ffprobe, so sampled timestamps match stash's. Writes per-FILE via the existing
+    `fileSetFingerprints` mutation (value = `FormatUint(hash, 16)`; stash round-trips it through
+    `ParseUint(_,16,64)`). No fork additions. `is_missing:"phash"` server-side filter (shrinks as
+    phashes are applied → same re-fetch-page-1 pagination as covers). ~15-25s/scene.
+  - **`--verify-phash N` gate** — recomputes `N` files that already have a native stash phash and
+    compares; exits non-zero on any mismatch. Bit-exactness depends on the ffmpeg build's
+    decoder/scaler, so this proves the worker matches the NAS **before** writing hashes in bulk.
+    First gate run 2026-06-01: 25/25 bit-identical against native phashes.
+  - CLI: `--tasks previews,covers,sprites,phash` dispatcher; `--limit N` caps **encoded items**
     (skips don't count); `--max-failures` safety brake; `--watch` keep-running mode; `--dry-run`
-    prints commands without writing.
+    prints commands without writing. `--generated-prefix` is now required only for previews/sprites
+    (covers and phash write via the API, not the filesystem).
   - Worker-side path translation (`internal/paths.go`): `normalizeUNC` recovers from
     bash/PowerShell/MSYS collapsing `\\server\share` to `\server\share`, so SMB UNC paths "just work"
     regardless of shell quoting layer.
