@@ -33,6 +33,9 @@ func (t *GenerateTranscodeTask) Start(ctx context.Context) {
 	}
 
 	f := t.Scene.Files.Primary()
+	if f == nil {
+		return
+	}
 
 	ffprobe := instance.FFProbe
 	var container ffmpeg.Container

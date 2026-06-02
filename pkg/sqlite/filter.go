@@ -246,6 +246,11 @@ func (f *filterBuilder) or(o *filterBuilder) {
 
 	f.subFilter = o
 	f.subFilterOp = orOp
+
+	// #6914 - joined tables are inner joins by default, but if this is an OR filter,
+	// they need to be left joins
+	f.innerJoinsToLeftJoins()
+	o.innerJoinsToLeftJoins()
 }
 
 // not sets the sub-filter that will be AND NOTed with this one.
@@ -309,6 +314,14 @@ func (f *filterBuilder) addInnerJoin(table, as, onClause string, args ...interfa
 	}
 
 	f.joins.add(newJoin)
+}
+
+func (f *filterBuilder) innerJoinsToLeftJoins() {
+	for i := range f.joins {
+		if f.joins[i].getJoinType() == joinTypeInner {
+			f.joins[i].joinType = joinTypeLeft
+		}
+	}
 }
 
 // addWhere adds a where clause and arguments to the filter. Where clauses

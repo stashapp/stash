@@ -119,7 +119,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithNothing]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
@@ -166,7 +166,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithNothing]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
@@ -352,7 +352,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithNothing]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
@@ -573,7 +573,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 					Mode: models.RelationshipUpdateModeSet,
 				},
 				TagIDs: &models.UpdateIDs{
-					IDs:  []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
+					IDs:  []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithNothing]},
 					Mode: models.RelationshipUpdateModeSet,
 				},
 				PerformerIDs: &models.UpdateIDs{
@@ -628,7 +628,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithNothing]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
@@ -808,7 +808,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			sceneIDs[sceneIdxWithTwoTags],
 			models.ScenePartial{
 				TagIDs: &models.UpdateIDs{
-					IDs:  []int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGallery]},
+					IDs:  []int{tagIDs[tagIdx1WithGallery], tagIDs[tagIdx1WithNothing]},
 					Mode: models.RelationshipUpdateModeAdd,
 				},
 			},
@@ -816,7 +816,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				TagIDs: models.NewRelatedIDs(append(
 					[]int{
 						tagIDs[tagIdx1WithGallery],
-						tagIDs[tagIdx1WithDupName],
+						tagIDs[tagIdx1WithNothing],
 					},
 					indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags])...,
 				)),
@@ -828,14 +828,14 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			sceneIDs[sceneIdxWithTwoTags],
 			models.ScenePartial{
 				TagIDs: &models.UpdateIDs{
-					IDs:  []int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithDupName]},
+					IDs:  []int{tagIDs[tagIdx1WithNothing], tagIDs[tagIdx1WithNothing]},
 					Mode: models.RelationshipUpdateModeAdd,
 				},
 			},
 			models.Scene{
 				TagIDs: models.NewRelatedIDs(append(
 					[]int{
-						tagIDs[tagIdx1WithDupName],
+						tagIDs[tagIdx1WithNothing],
 					},
 					indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags])...,
 				)),

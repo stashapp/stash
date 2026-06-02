@@ -547,26 +547,6 @@ func (qb *FolderStore) validateFilter(fileFilter *models.FolderFilterType) error
 	return nil
 }
 
-func (qb *FolderStore) makeFilter(ctx context.Context, folderFilter *models.FolderFilterType) *filterBuilder {
-	query := &filterBuilder{}
-
-	if folderFilter.And != nil {
-		query.and(qb.makeFilter(ctx, folderFilter.And))
-	}
-	if folderFilter.Or != nil {
-		query.or(qb.makeFilter(ctx, folderFilter.Or))
-	}
-	if folderFilter.Not != nil {
-		query.not(qb.makeFilter(ctx, folderFilter.Not))
-	}
-
-	filter := filterBuilderFromHandler(ctx, &folderFilterHandler{
-		folderFilter: folderFilter,
-	})
-
-	return filter
-}
-
 func (qb *FolderStore) Query(ctx context.Context, options models.FolderQueryOptions) (*models.FolderQueryResult, error) {
 	folderFilter := options.FolderFilter
 	findFilter := options.FindFilter
@@ -590,7 +570,10 @@ func (qb *FolderStore) Query(ctx context.Context, options models.FolderQueryOpti
 	if err := qb.validateFilter(folderFilter); err != nil {
 		return nil, err
 	}
-	filter := qb.makeFilter(ctx, folderFilter)
+
+	filter := filterBuilderFromHandler(ctx, &folderFilterHandler{
+		folderFilter: folderFilter,
+	})
 
 	if err := query.addFilter(filter); err != nil {
 		return nil, err
