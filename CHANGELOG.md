@@ -12,6 +12,11 @@ versioning is independent of upstream — it is anchored to the upstream base re
 ## [Unreleased]
 
 ### Added
+- **`docs/llm/RUNBOOK.md`** — single operations runbook consolidating every external/off-queue tool's
+  copy-paste command (worker tasks, the identify/parse/enrichment scripts, maintenance tools, db_backup,
+  facerec), with the real NAS/`--media-prefix`/`--ffmpeg` values, dry-run-first defaults, the pipeline run
+  order, the don't-run-together rules, and the NAS-disk concurrency cap. Linked from the README. Audited
+  every tool's flags against the code first (no drift found). Replaces hopping between five per-tool READMEs.
 - **Seven more speed/convenience tools** (built in parallel; all default to dry-run/report):
   - **`worker` image-phash task** (`worker/internal/image.go`) — `--tasks image-phash` enumerates
     `findImages`, decodes each ImageFile, computes `goimagehash.PerceptionHash`, writes via

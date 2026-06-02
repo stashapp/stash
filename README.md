@@ -25,6 +25,7 @@
 >
 > | Doc | What it covers |
 > |---|---|
+> | [`docs/llm/RUNBOOK.md`](docs/llm/RUNBOOK.md) | **Operations runbook — every external tool, every copy-paste command, run order + what's safe in parallel** |
 > | [`docs/llm/DESIGN.md`](docs/llm/DESIGN.md) | Architecture, phased plan, tool surface (incl. the generic GraphQL + self-defined-tools autonomy layer), endpoints, providers/config/secrets, Phase 2 sandboxing |
 > | [`docs/llm/DEPLOY-NAS.md`](docs/llm/DEPLOY-NAS.md) | NAS Docker deployment (stash + litellm, mounts, env, ghcr/save-load transfer) |
 > | [`docs/llm/EXTERNAL-WORKERS.md`](docs/llm/EXTERNAL-WORKERS.md) / [`worker/README.md`](worker/README.md) | External GPU worker — design + operator guide (previews/covers/sprites/phash) |
