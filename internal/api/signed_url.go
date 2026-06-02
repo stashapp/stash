@@ -17,7 +17,7 @@ func userSigningKey(c *config.Config, _ string) []byte {
 func signedParams(c *config.Config, userID string, prefix string) url.Values {
 	secret := userSigningKey(c, userID)
 	cid := signedurl.GenerateCredentialID(secret, userID)
-	expires := time.Now().Add(time.Duration(c.GetSignedURLExpiry()) * time.Second)
+	expires := time.Now().Add(c.GetSignedURLExpiry())
 	return signedurl.SignPrefix(prefix, secret, cid, expires)
 }
 

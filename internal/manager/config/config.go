@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	"sync"
 	// "github.com/sasha-s/go-deadlock" // if you have deadlock issues
@@ -44,7 +45,7 @@ const (
 	MaxSessionAge       = "max_session_age"
 
 	SignedURLExpiry        = "signed_url_expiry"
-	signedURLExpiryDefault = 60 * 60 * 24 // 24 hours in seconds
+	signedURLExpiryDefault = 60 * 60 * 4 // 4 hours in seconds
 
 	// SFWContentMode mode config key
 	SFWContentMode = "sfw_content_mode"
@@ -1233,15 +1234,15 @@ func (i *Config) GetMaxSessionAge() int {
 }
 
 // GetSignedURLExpiry gets the expiry time for signed URLs, in seconds.
-// Defaults to 24 hours to accommodate long video playback sessions.
-func (i *Config) GetSignedURLExpiry() int {
+// Defaults to 4 hours to accommodate long video playback sessions.
+func (i *Config) GetSignedURLExpiry() time.Duration {
 	i.RLock()
 	defer i.RUnlock()
 
-	ret := signedURLExpiryDefault
+	ret := signedURLExpiryDefault * time.Second
 	v := i.forKey(SignedURLExpiry)
 	if v.Exists(SignedURLExpiry) {
-		ret = v.Int(SignedURLExpiry)
+		ret = time.Duration(v.Int(SignedURLExpiry)) * time.Second
 	}
 
 	return ret
