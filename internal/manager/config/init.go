@@ -43,6 +43,7 @@ var (
 		"cache":         Cache,
 		"stash":         Stash,
 		"ui":            UILocation,
+		"public_access": PublicAccess,
 	}
 )
 
@@ -75,6 +76,8 @@ func Initialize() (*Config, error) {
 			// system has been initialised by the environment
 			cfg.isNewSystem = false
 		}
+
+		cfg.setNewSystemDefaults()
 	}
 
 	if !cfg.isNewSystem {
@@ -94,6 +97,10 @@ func Initialize() (*Config, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	if err := cfg.initialisePublicWhitelist(); err != nil {
+		return nil, fmt.Errorf("error initializing public access whitelist: %w", err)
 	}
 
 	instance = cfg

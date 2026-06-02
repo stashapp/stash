@@ -30,4 +30,9 @@
     margin-bottom: 1rem;
     margin-top: 0;
   }
+
+  #username,
+  #password {
+    max-width: 300px;
+  }
 }

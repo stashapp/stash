@@ -1,17 +1,18 @@
 package session
 
+import "context"
+
 type ExternalAccessConfig interface {
-	HasCredentials() bool
 	GetDangerousAllowPublicWithoutAuth() bool
 	GetSecurityTripwireAccessedFromPublicInternet() string
 	IsNewSystem() bool
 }
 
-type SessionConfig interface {
-	GetUsername() string
-	GetAPIKey() string
+type CredentialStore interface {
+	LoginRequired(ctx context.Context) bool
+}
 
+type SessionConfig interface {
 	GetSessionStoreKey() []byte
 	GetMaxSessionAge() int
-	ValidateCredentials(username string, password string) bool
 }

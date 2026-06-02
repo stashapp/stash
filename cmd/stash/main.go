@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -48,6 +49,12 @@ func main() {
 	cpuProfilePath := ""
 	pflag.StringVar(&cpuProfilePath, "cpuprofile", "", "write cpu profile to file")
 
+	getUsersFlag := false
+	pflag.BoolVar(&getUsersFlag, "users", false, "print all user names and exit")
+
+	resetPasswordFlag := ""
+	pflag.StringVar(&resetPasswordFlag, "reset-password", "", "reset the password for the specified user and exit")
+
 	pflag.Parse()
 
 	if helpFlag {
@@ -86,6 +93,20 @@ func main() {
 		return
 	}
 	defer mgr.Shutdown()
+
+	if getUsersFlag {
+		if err := mgr.PrintUsers(context.Background()); err != nil {
+			exitError(fmt.Errorf("error printing users: %w", err))
+		}
+		return
+	}
+
+	if resetPasswordFlag != "" {
+		if err := mgr.ResetUserPassword(context.Background(), resetPasswordFlag); err != nil {
+			exitError(fmt.Errorf("error resetting user password: %w", err))
+		}
+		return
+	}
 
 	server, err := api.Initialize()
 	if err != nil {

@@ -6,13 +6,13 @@ import (
 	"github.com/stashapp/stash/pkg/txn"
 )
 
-type TxnManager interface {
+type TxnManager struct {
 	txn.Manager
 	txn.DatabaseProvider
 }
 
 type Repository struct {
-	TxnManager TxnManager
+	TxnManager
 
 	Blob           BlobReader
 	File           FileReaderWriter
@@ -29,14 +29,14 @@ type Repository struct {
 	SavedFilter    SavedFilterReaderWriter
 }
 
-func (r *Repository) WithTxn(ctx context.Context, fn txn.TxnFunc) error {
-	return txn.WithTxn(ctx, r.TxnManager, fn)
+func (r *TxnManager) WithTxn(ctx context.Context, fn txn.TxnFunc) error {
+	return txn.WithTxn(ctx, r, fn)
 }
 
-func (r *Repository) WithReadTxn(ctx context.Context, fn txn.TxnFunc) error {
-	return txn.WithReadTxn(ctx, r.TxnManager, fn)
+func (r *TxnManager) WithReadTxn(ctx context.Context, fn txn.TxnFunc) error {
+	return txn.WithReadTxn(ctx, r, fn)
 }
 
-func (r *Repository) WithDB(ctx context.Context, fn txn.TxnFunc) error {
-	return txn.WithDatabase(ctx, r.TxnManager, fn)
+func (r *TxnManager) WithDB(ctx context.Context, fn txn.TxnFunc) error {
+	return txn.WithDatabase(ctx, r, fn)
 }

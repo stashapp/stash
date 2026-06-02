@@ -1,0 +1,57 @@
+enum RoleEnum {
+  ADMIN
+  READ
+  MODIFY
+  GENERATE_API_KEY
+}
+
+directive @hasRole(role: RoleEnum!) on FIELD_DEFINITION
+directive @isUserOwner on FIELD_DEFINITION
+
+type User {
+  name: String!
+  notes: String!
+  """
+  If the user has no roles, they are considered locked and cannot log in.
+  Should not be visible to other users
+  """
+  roles: [RoleEnum!] @isUserOwner
+  """
+  Whether the user is locked (cannot log in). Not visible to other users.
+  """
+  locked: Boolean! @isUserOwner
+}
+
+input UserCreateInput {
+  name: String!
+  notes: String
+  """
+  Password in plain text
+  """
+  password: String!
+  roles: [RoleEnum!]!
+}
+
+input UserUpdateInput {
+  existingName: String!
+  name: String!
+  notes: String
+  roles: [RoleEnum!]!
+}
+
+input UserDestroyInput {
+  name: String!
+}
+
+input UserChangePasswordInput {
+  """
+  Password in plain text
+  """
+  existingPassword: String!
+  newPassword: String!
+}
+
+input ChangeUserPasswordInput {
+  name: String!
+  newPassword: String!
+}

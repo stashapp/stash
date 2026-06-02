@@ -1,0 +1,19 @@
+CREATE TABLE `users` (
+    `id` INTEGER PRIMARY KEY,
+    `username` TEXT NOT NULL,
+    `notes` TEXT,
+    `api_key` TEXT,
+    `locked` BOOLEAN NOT NULL DEFAULT '0',
+    `password_hash` TEXT,
+    `created_at` datetime NOT NULL,
+    `updated_at` datetime NOT NULL
+);
+
+CREATE UNIQUE INDEX `users_username_unique` on `users` (`username`);
+
+CREATE TABLE `user_roles` (
+    `user_id` INTEGER NOT NULL,
+    `role` TEXT NOT NULL,
+    PRIMARY KEY (`user_id`, `role`),
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+);

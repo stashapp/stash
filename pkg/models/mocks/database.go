@@ -102,7 +102,10 @@ func (db *Database) WithTxnCtx(fn func(ctx context.Context)) {
 
 func (db *Database) Repository() models.Repository {
 	return models.Repository{
-		TxnManager:     db,
+		TxnManager: models.TxnManager{
+			Manager:          db,
+			DatabaseProvider: db,
+		},
 		File:           db.File,
 		Folder:         db.Folder,
 		Gallery:        db.Gallery,

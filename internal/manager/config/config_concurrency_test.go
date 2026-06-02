@@ -22,8 +22,6 @@ func TestConcurrentConfigAccess(t *testing.T) {
 					t.Errorf("Failure setting initial configuration in worker %v iteration %v: %v", wk, l, err)
 				}
 
-				i.HasCredentials()
-				i.ValidateCredentials("", "")
 				i.GetConfigFile()
 				i.GetConfigPath()
 				i.GetDefaultDatabaseFilePath()
@@ -72,10 +70,6 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.SetInterface(PreviewPreset, i.GetPreviewPreset())
 				i.SetInterface(MaxTranscodeSize, i.GetMaxTranscodeSize())
 				i.SetInterface(MaxStreamingTranscodeSize, i.GetMaxStreamingTranscodeSize())
-				i.SetInterface(ApiKey, i.GetAPIKey())
-				i.SetInterface(Username, i.GetUsername())
-				i.SetInterface(Password, i.GetPasswordHash())
-				i.GetCredentials()
 				i.SetInterface(MaxSessionAge, i.GetMaxSessionAge())
 				i.SetInterface(CustomServedFolders, i.GetCustomServedFolders())
 				i.SetInterface(LegacyCustomUILocation, i.GetUILocation())

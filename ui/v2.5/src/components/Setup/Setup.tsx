@@ -9,11 +9,7 @@ import {
   InputGroup,
 } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import {
-  mutateSetup,
-  useConfigureUI,
-  useSystemStatus,
-} from "src/core/StashService";
+import { mutateSetup, useSystemStatus } from "src/core/StashService";
 import { useHistory } from "react-router-dom";
 import { useConfigurationContext } from "src/hooks/Config";
 import StashConfiguration from "../Settings/StashConfiguration";
@@ -24,9 +20,7 @@ import { FolderSelectDialog } from "../Shared/FolderSelect/FolderSelectDialog";
 import {
   faEllipsisH,
   faExclamationTriangle,
-  faQuestionCircle,
 } from "@fortawesome/free-solid-svg-icons";
-import { releaseNotes } from "src/docs/en/ReleaseNotes";
 import { ExternalLink } from "../Shared/ExternalLink";
 
 interface ISetupContextState {
@@ -53,7 +47,7 @@ const useSetupContext = () => {
   const context = React.useContext(SetupStateContext);
 
   if (context === null) {
-    throw new Error("useSettings must be used within a SettingsContext");
+    throw new Error("useSetupContext must be used within a SetupContext");
   }
 
   return context;
@@ -672,6 +666,94 @@ const StashExclusions: React.FC<{ stash: GQL.StashConfig }> = ({ stash }) => {
   return <span>{`(excludes ${excludes.join(" and ")})`}</span>;
 };
 
+function validateUsername(username: string) {
+  if (!username || username.trim() !== username) {
+    return false;
+  }
+
+  return true;
+}
+
+const CredentialsStep: React.FC<IWizardStep> = ({ goBack, next }) => {
+  const { setupState } = useSetupContext();
+  const intl = useIntl();
+
+  const [username, setUsername] = useState(
+    setupState.initialUsername || "admin"
+  );
+  const [password, setPassword] = useState(setupState.initialPassword ?? "");
+  const valid = validateUsername(username);
+
+  function onNext() {
+    const input: Partial<GQL.SetupInput> = {
+      initialUsername: username.trim() === "" ? undefined : username,
+      initialPassword: password === "" ? undefined : password,
+    };
+    next(input);
+  }
+
+  return (
+    <>
+      <section>
+        <h2 className="mb-3">
+          <FormattedMessage id="setup.credentials.heading" />
+        </h2>
+        <p>
+          <FormattedMessage id="setup.credentials.description" />
+        </p>
+
+        <Form.Group controlId="username">
+          <Form.Label>
+            <FormattedMessage id="login.username" />:
+          </Form.Label>
+          <Form.Control
+            className="text-input"
+            placeholder={intl.formatMessage({
+              id: "setup.credentials.username",
+            })}
+            value={username}
+            onChange={(e) => setUsername(e.currentTarget.value)}
+          />
+          <Form.Control.Feedback type="invalid">
+            {!valid ? "setup.credentials.username_invalid" : null}
+          </Form.Control.Feedback>
+        </Form.Group>
+        <Form.Group controlId="password">
+          <Form.Label>
+            <FormattedMessage id="login.password" />:
+          </Form.Label>
+          <Form.Group id="password">
+            <Form.Control
+              className="text-input"
+              type="password"
+              placeholder={intl.formatMessage({
+                id: "login.password",
+              })}
+              value={password}
+              onChange={(e) => setPassword(e.currentTarget.value)}
+            />
+          </Form.Group>
+        </Form.Group>
+      </section>
+
+      <section className="mt-5">
+        <div className="d-flex justify-content-center">
+          <Button variant="secondary mx-2 p-5" onClick={() => goBack()}>
+            <FormattedMessage id="actions.previous_action" />
+          </Button>
+          <Button
+            variant="primary mx-2 p-5"
+            onClick={() => onNext()}
+            disabled={!valid}
+          >
+            <FormattedMessage id="actions.next_action" />
+          </Button>
+        </div>
+      </section>
+    </>
+  );
+};
+
 const ConfirmStep: React.FC<IWizardStep> = ({ goBack, next }) => {
   const {
     configuration,
@@ -694,6 +776,8 @@ const ConfirmStep: React.FC<IWizardStep> = ({ goBack, next }) => {
     cacheLocation,
     blobsLocation,
     storeBlobsInDatabase,
+    initialUsername,
+    initialPassword,
   } = setupState;
 
   const overrideDatabase = configuration?.general.databasePath;
@@ -787,7 +871,35 @@ const ConfirmStep: React.FC<IWizardStep> = ({ goBack, next }) => {
             </dd>
           </dl>
         )}
+        <dl>
+          <dt>
+            <FormattedMessage id="login.username" />
+          </dt>
+          <dd>
+            <code>{initialUsername}</code>
+          </dd>
+        </dl>
+        <dl>
+          <dt>
+            <FormattedMessage id="login.password" />
+          </dt>
+          <dd>
+            <code>
+              {initialPassword ? (
+                "********"
+              ) : (
+                <FormattedMessage id="setup.confirm.no_password_set" />
+              )}
+            </code>
+          </dd>
+        </dl>
       </section>
+      {initialPassword && (
+        <p className="lead">
+          <Icon icon={faExclamationTriangle} className="text-warning" />
+          <FormattedMessage id="setup.confirm.password_set_warning" />
+        </p>
+      )}
       <section className="mt-5">
         <div className="d-flex justify-content-center">
           <Button variant="secondary mx-2 p-5" onClick={() => goBack()}>
@@ -845,137 +957,21 @@ const ErrorStep: React.FC<{ error: string; goBack: () => void }> = ({
   );
 };
 
-const SuccessStep: React.FC<{}> = () => {
-  const intl = useIntl();
-  const history = useHistory();
-
-  const [mutateDownloadFFMpeg] = GQL.useDownloadFfMpegMutation();
-
-  const [downloadFFmpeg, setDownloadFFmpeg] = useState(true);
-
-  const { systemStatus } = useSetupContext();
-  const status = systemStatus?.systemStatus;
-
-  function onFinishClick() {
-    if ((!status?.ffmpegPath || !status?.ffprobePath) && downloadFFmpeg) {
-      mutateDownloadFFMpeg();
-    }
-
-    history.push("/settings?tab=library");
-  }
-
-  return (
-    <>
-      <section>
-        <h2>
-          <FormattedMessage id="setup.success.your_system_has_been_created" />
-        </h2>
-        <p>
-          <FormattedMessage id="setup.success.next_config_step_one" />
-        </p>
-        <p>
-          <FormattedMessage
-            id="setup.success.next_config_step_two"
-            values={{
-              code: (chunks: string) => <code>{chunks}</code>,
-              localized_task: intl.formatMessage({
-                id: "config.categories.tasks",
-              }),
-              localized_scan: intl.formatMessage({ id: "actions.scan" }),
-            }}
-          />
-        </p>
-        {!status?.ffmpegPath || !status?.ffprobePath ? (
-          <>
-            <Alert variant="warning text-center">
-              <FormattedMessage
-                id="setup.success.missing_ffmpeg"
-                values={{
-                  code: (chunks: string) => <code>{chunks}</code>,
-                }}
-              />
-            </Alert>
-            <p>
-              <Form.Check
-                id="download-ffmpeg"
-                checked={downloadFFmpeg}
-                label={intl.formatMessage({
-                  id: "setup.success.download_ffmpeg",
-                })}
-                onChange={() => setDownloadFFmpeg(!downloadFFmpeg)}
-              />
-            </p>
-          </>
-        ) : null}
-      </section>
-      <section>
-        <h3>
-          <FormattedMessage id="setup.success.getting_help" />
-        </h3>
-        <p>
-          <FormattedMessage
-            id="setup.success.in_app_manual_explained"
-            values={{ icon: <Icon icon={faQuestionCircle} /> }}
-          />
-        </p>
-        <p>
-          <FormattedMessage
-            id="setup.success.help_links"
-            values={{ discordLink: DiscordLink, githubLink: GithubLink }}
-          />
-        </p>
-      </section>
-      <section>
-        <h3>
-          <FormattedMessage id="setup.success.support_us" />
-        </h3>
-        <p>
-          <FormattedMessage
-            id="setup.success.open_collective"
-            values={{
-              open_collective_link: (
-                <ExternalLink href="https://opencollective.com/stashapp">
-                  Open Collective
-                </ExternalLink>
-              ),
-            }}
-          />
-        </p>
-        <p>
-          <FormattedMessage id="setup.success.welcome_contrib" />
-        </p>
-      </section>
-      <section>
-        <p className="lead text-center">
-          <FormattedMessage id="setup.success.thanks_for_trying_stash" />
-        </p>
-      </section>
-      <section className="mt-5">
-        <div className="d-flex justify-content-center">
-          <Button variant="success mx-2 p-5" onClick={() => onFinishClick()}>
-            <FormattedMessage id="actions.finish" />
-          </Button>
-        </div>
-      </section>
-    </>
-  );
-};
-
 const FinishStep: React.FC<IWizardStep> = ({ goBack }) => {
   const { setupError } = useSetupContext();
 
-  if (setupError !== undefined) {
-    return <ErrorStep error={setupError} goBack={goBack} />;
+  if (!setupError) {
+    throw new Error(
+      "FinishStep should only be shown when there is a setupError"
+    );
   }
 
-  return <SuccessStep />;
+  return <ErrorStep error={setupError} goBack={goBack} />;
 };
 
 export const Setup: React.FC = () => {
   const intl = useIntl();
   const { configuration } = useConfigurationContext();
-
-  const [saveUI] = useConfigureUI();
 
   const {
     data: systemStatus,
@@ -993,6 +989,7 @@ export const Setup: React.FC = () => {
   const steps: React.FC<IWizardStep>[] = [
     WelcomeStep,
     SetPathsStep,
+    CredentialsStep,
     ConfirmStep,
     FinishStep,
   ];
@@ -1003,24 +1000,16 @@ export const Setup: React.FC = () => {
       setCreating(true);
       setSetupError(undefined);
       await mutateSetup(setupInput as GQL.SetupInput);
-      // Set lastNoteSeen to hide release notes dialog
-      await saveUI({
-        variables: {
-          input: {
-            ...configuration?.ui,
-            lastNoteSeen: releaseNotes[0].date,
-          },
-        },
-      });
+      history.replace("/welcome");
     } catch (e) {
       if (e instanceof Error && e.message) {
         setSetupError(e.message);
       } else {
         setSetupError(String(e));
       }
+      setStep(step + 1);
     } finally {
       setCreating(false);
-      setStep(step + 1);
     }
   }
 
@@ -1053,8 +1042,8 @@ export const Setup: React.FC = () => {
     systemStatus &&
     systemStatus.systemStatus.status !== GQL.SystemStatusEnum.Setup
   ) {
-    // redirect to main page
-    history.push("/");
+    // redirect to welcome page
+    history.push("/welcome");
     return <LoadingIndicator />;
   }
 

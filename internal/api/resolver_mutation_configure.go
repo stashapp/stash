@@ -320,27 +320,17 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.SetString(config.GalleryCoverRegex, *input.GalleryCoverRegex)
 	}
 
-	if input.Username != nil && *input.Username != c.GetUsername() {
-		c.SetString(config.Username, *input.Username)
-		if *input.Password == "" {
-			logger.Info("Username cleared")
-		} else {
-			logger.Info("Username changed")
-		}
+	if input.Username != nil {
+		return makeConfigGeneralResult(), fmt.Errorf("username not supported")
 	}
 
 	if input.Password != nil {
-		// bit of a hack - check if the passed in password is the same as the stored hash
-		// and only set if they are different
-		currentPWHash := c.GetPasswordHash()
+		return makeConfigGeneralResult(), fmt.Errorf("password not supported")
+	}
 
-		if *input.Password != currentPWHash {
-			if *input.Password == "" {
-				logger.Info("Password cleared")
-			} else {
-				logger.Info("Password changed")
-			}
-			c.SetPassword(*input.Password)
+	if input.GuestAccountEnabled != nil {
+		if err := manager.GetInstance().UserService.SetGuestUserEnabled(*input.GuestAccountEnabled); err != nil {
+			return makeConfigGeneralResult(), fmt.Errorf("error setting guest account enabled: %w", err)
 		}
 	}
 
@@ -554,8 +544,10 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input ConfigDLNAIn
 
 	r.setConfigString(config.DLNAServerName, input.ServerName)
 
+	updateDLNAWhitelist := false
 	if input.WhitelistedIPs != nil {
 		c.SetInterface(config.DLNADefaultIPWhitelist, input.WhitelistedIPs)
+		updateDLNAWhitelist = true
 	}
 
 	r.setConfigString(config.DLNAVideoSortOrder, input.VideoSortOrder)
@@ -573,6 +565,11 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input ConfigDLNAIn
 
 	if err := c.Write(); err != nil {
 		return makeConfigDLNAResult(), err
+	}
+
+	// need to update the whitelist manager with the new default whitelist
+	if updateDLNAWhitelist {
+		manager.GetInstance().DLNAService.IPWhitelistMgr.SetDefaultWhitelist(input.WhitelistedIPs)
 	}
 
 	if refresh {
@@ -647,29 +644,6 @@ func (r *mutationResolver) ConfigureDefaults(ctx context.Context, input ConfigDe
 	}
 
 	return makeConfigDefaultsResult(), nil
-}
-
-func (r *mutationResolver) GenerateAPIKey(ctx context.Context, input GenerateAPIKeyInput) (string, error) {
-	c := config.GetInstance()
-
-	var newAPIKey string
-	if input.Clear == nil || !*input.Clear {
-		username := c.GetUsername()
-		if username != "" {
-			var err error
-			newAPIKey, err = manager.GenerateAPIKey(username)
-			if err != nil {
-				return "", err
-			}
-		}
-	}
-
-	c.SetString(config.ApiKey, newAPIKey)
-	if err := c.Write(); err != nil {
-		return newAPIKey, err
-	}
-
-	return newAPIKey, nil
 }
 
 func (r *mutationResolver) ConfigureUI(ctx context.Context, input map[string]interface{}, partial map[string]interface{}) (map[string]interface{}, error) {

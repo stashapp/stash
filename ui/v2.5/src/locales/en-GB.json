@@ -1274,7 +1274,8 @@
     "username": "Username",
     "password": "Password",
     "invalid_credentials": "Invalid username or password",
-    "internal_error": "Unexpected internal error. See logs for more details"
+    "internal_error": "Unexpected internal error. See logs for more details",
+    "too_many_attempts": "Too many failed login attempts. Please try again later."
   },
   "marker_count": "Marker Count",
   "markers": "Markers",
@@ -1441,6 +1442,10 @@
   "seconds": "Seconds",
   "settings": "Settings",
   "setup": {
+    "credentials": {
+      "description": "Enter your username to identify you in the stash system. If you want to use a password, you can set one here as well. If you leave the password fields blank, your account will be created without a password and you can set one later if needed. A password is mandatory for systems accessible from public internet.",
+      "heading": "Setup your user account"
+    },
     "confirm": {
       "almost_ready": "We're almost ready to complete the configuration. Please confirm the following settings. You can click back to change anything incorrect. If everything looks good, click Confirm to create your system.",
       "blobs_directory": "Binary data directory",
@@ -1450,6 +1455,8 @@
       "database_file_path": "Database file path",
       "generated_directory": "Generated directory",
       "nearly_there": "Nearly there!",
+      "no_password_set": "<no password set>",
+      "password_set_warning": "Note: you will be asked to enter your credentials after the system is created.",
       "stash_library_directories": "Stash library directories"
     },
     "creating": {

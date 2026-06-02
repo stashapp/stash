@@ -61,7 +61,7 @@ func setVisitedPluginHooks(ctx context.Context, visitedPlugins []VisitedPluginHo
 }
 
 func (s *Store) MakePluginCookie(ctx context.Context) *http.Cookie {
-	currentUser := GetCurrentUserID(ctx)
+	currentUser := GetCurrentUser(ctx)
 	visitedPlugins := GetVisitedPluginHooks(ctx)
 
 	session := sessions.NewSession(s.sessionStore, cookieName)

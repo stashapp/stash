@@ -27,6 +27,8 @@ import (
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/sqlite"
+	"github.com/stashapp/stash/pkg/user"
+	"github.com/stashapp/stash/pkg/utils"
 
 	// register custom migrations
 	_ "github.com/stashapp/stash/pkg/sqlite/migrations"
@@ -67,6 +69,9 @@ type Manager struct {
 	ImageService   ImageService
 	GalleryService GalleryService
 	GroupService   GroupService
+	UserService    UserService
+
+	UserServiceObservers utils.Observer[UserService]
 
 	scanSubs *subscriptionManager
 }
@@ -212,6 +217,11 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 	setSetupDefaults(&input)
 	cfg := s.Config
 
+	// validate user credentials if we are in public mode
+	if cfg.GetPublicAccess() && (input.InitialUsername == "" || input.InitialPassword == "") {
+		return errors.New("initial username and password must be set when public access is enabled")
+	}
+
 	// create the config directory if it does not exist
 	// don't do anything if config is already set in the environment
 	if !config.FileEnvSet() {
@@ -296,12 +306,58 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		return fmt.Errorf("error writing configuration file: %v", err)
 	}
 
+	newCtx := models.WithSetupContext(ctx)
+
 	// finish initialization
-	if err := s.postInit(ctx); err != nil {
+	if err := s.postInit(newCtx); err != nil {
 		return fmt.Errorf("error completing initialization: %v", err)
 	}
 
 	cfg.FinalizeSetup()
+
+	if input.InitialUsername != "" {
+		if err := s.Repository.TxnManager.WithTxn(newCtx, func(ctx context.Context) error {
+			u := models.User{
+				Username:  input.InitialUsername,
+				Roles:     []models.RoleEnum{models.RoleEnumAdmin},
+				UpdatedAt: time.Now(),
+			}
+
+			// create a temporary user to set the password, since CreateUser requires a user to be passed in
+			newCtx := session.SetCurrentUser(ctx, models.User{
+				Username: "setup",
+			})
+
+			if err := s.UserService.CreateUser(newCtx, u, input.InitialPassword); err != nil {
+				return fmt.Errorf("error initialising user service: %w", err)
+			}
+			return nil
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *Manager) PostMigrate(ctx context.Context) error {
+	// reinitialise the user service as it may be using the legacy service
+	s.UserService = &user.Service{
+		Store:  s.Database.User,
+		Config: s.Config,
+	}
+
+	if err := s.Repository.TxnManager.WithReadTxn(ctx, func(ctx context.Context) error {
+		if err := s.UserService.Init(ctx); err != nil {
+			return fmt.Errorf("error initialising user service: %w", err)
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	s.UserServiceObservers.Notify(s.UserService)
+	s.SessionStore.RegisterAuthenticator(s.UserService)
 
 	return nil
 }
