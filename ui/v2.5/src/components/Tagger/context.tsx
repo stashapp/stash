@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useIntl } from "react-intl";
 import { initialConfig, ITaggerConfig } from "src/components/Tagger/constants";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -129,6 +130,7 @@ export const TaggerContext: React.FC = ({ children }) => {
   const Scrapers = useListSceneScrapers();
 
   const Toast = useToast();
+  const intl = useIntl();
   const [createTag] = useTagCreate();
   const [createPerformer] = usePerformerCreate();
   const [updatePerformer] = usePerformerUpdate();
@@ -245,6 +247,8 @@ export const TaggerContext: React.FC = ({ children }) => {
 
     try {
       setLoading(true);
+      // submission runs as a background job, so we don't wait for it to
+      // complete - clear the queue once the job has been queued
       await submitFingerprintsMutation({
         variables: {
           input: {
@@ -255,6 +259,17 @@ export const TaggerContext: React.FC = ({ children }) => {
       });
 
       clearSubmissionQueue();
+
+      Toast.success(
+        intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          {
+            operation_name: intl.formatMessage({
+              id: "component_tagger.noun_submit_fp",
+            }),
+          }
+        )
+      );
     } catch (err) {
       Toast.error(err);
     } finally {

@@ -221,6 +221,7 @@
       "source": "Source"
     },
     "noun_query": "Query",
+    "noun_submit_fp": "Fingerprint submission",
     "results": {
       "duration_off": "Duration off by at least {number}s",
       "duration_unknown": "Duration unknown",

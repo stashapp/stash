@@ -8,34 +8,23 @@ import (
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/stashbox"
 )
 
-func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input StashBoxFingerprintSubmissionInput) (bool, error) {
+func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input StashBoxFingerprintSubmissionInput) (string, error) {
 	b, err := resolveStashBox(input.StashBoxIndex, input.StashBoxEndpoint)
 	if err != nil {
-		return false, err
+		return "", err
 	}
 
 	ids, err := stringslice.StringSliceToIntSlice(input.SceneIds)
 	if err != nil {
-		return false, err
+		return "", err
 	}
 
-	client := r.newStashBoxClient(*b)
-
-	var scenes []*models.Scene
-
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		scenes, err = r.sceneService.FindByIDs(ctx, ids, scene.LoadStashIDs, scene.LoadFiles)
-		return err
-	}); err != nil {
-		return false, err
-	}
-
-	return client.SubmitFingerprints(ctx, scenes)
+	jobID := manager.GetInstance().SubmitStashBoxFingerprints(ctx, b, ids)
+	return strconv.Itoa(jobID), nil
 }
 
 func (r *mutationResolver) StashBoxBatchPerformerTag(ctx context.Context, input manager.StashBoxBatchTagInput) (string, error) {
