@@ -41,13 +41,13 @@ func (qb *tagFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 		return
 	}
 
+	f.handleCriterion(ctx, qb.criterionHandler())
+
 	sf := tagFilter.SubFilter()
 	if sf != nil {
 		sub := &tagFilterHandler{sf}
 		handleSubFilter(ctx, sub, f, tagFilter.OperatorFilter)
 	}
-
-	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
 var tagHierarchyHandler = hierarchicalRelationshipHandler{

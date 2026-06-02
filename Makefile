@@ -10,10 +10,12 @@ ifdef IS_WIN_SHELL
   RM := del /s /q
   RMDIR := rmdir /s /q
   NOOP := @@
+  PREFIX := $(USERPROFILE)\\bin
 else
   RM := rm -f
   RMDIR := rm -rf
   NOOP := @:
+  PREFIX := $(HOME)/.local
 endif
 
 # set LDFLAGS environment variable to any extra ldflags required
@@ -39,9 +41,6 @@ GO_BUILD_FLAGS := $(GO_BUILD_FLAGS)
 # set GO_BUILD_TAGS environment variable to any extra build tags required
 GO_BUILD_TAGS := $(GO_BUILD_TAGS)
 GO_BUILD_TAGS += sqlite_stat4 sqlite_math_functions
-
-# set STASH_NOLEGACY environment variable or uncomment to disable legacy browser support
-# STASH_NOLEGACY := true
 
 # set STASH_SOURCEMAPS environment variable or uncomment to enable UI sourcemaps
 # STASH_SOURCEMAPS := true
@@ -282,7 +281,7 @@ endif
 generate: generate-backend generate-ui
 
 .PHONY: generate-ui
-generate-ui:
+generate-ui: pre-ui
 	cd ui/v2.5 && npm run gqlgen
 
 .PHONY: generate-backend
@@ -365,18 +364,15 @@ ui-env: build-info
 	$(eval export VITE_APP_DATE := $(BUILD_DATE))
 	$(eval export VITE_APP_GITHASH := $(GITHASH))
 	$(eval export VITE_APP_STASH_VERSION := $(STASH_VERSION))
-ifdef STASH_NOLEGACY
-	$(eval export VITE_APP_NOLEGACY := true)
-endif
 ifdef STASH_SOURCEMAPS
 	$(eval export VITE_APP_SOURCEMAPS := true)
 endif
 
 .PHONY: ui
-ui: ui-only generate-login-locale
+ui: pre-ui generate ui-only generate-login-locale
 
 .PHONY: ui-only
-ui-only: ui-env
+ui-only: ui-env generate ui
 	cd ui/v2.5 && npm run build
 
 .PHONY: zip-ui
@@ -394,7 +390,7 @@ fmt-ui:
 
 # runs all of the frontend PR-acceptance steps
 .PHONY: validate-ui
-validate-ui:
+validate-ui: pre-ui generate
 	cd ui/v2.5 && npm run validate
 
 # these targets run the same steps as fmt-ui and validate-ui, but only on files that have changed
@@ -445,3 +441,13 @@ start-compiler-container:
 .PHONY: remove-compiler-container
 remove-compiler-container:
 	docker rm -f -v build
+
+.PHONY: install
+install: build-release
+ifdef IS_WIN_SHELL
+	@if not exist "$(PREFIX)" mkdir $(PREFIX)
+	@copy "dist\\stash-win.exe" "$(PREFIX)\\stash-win.exe"
+else
+	@mkdir -p $(PREFIX)/bin
+	@install -m 755 $(STASH_OUTPUT) $(PREFIX)/bin/stash
+endif

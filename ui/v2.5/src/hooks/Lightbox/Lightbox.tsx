@@ -233,7 +233,7 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   // slideshowInterval is used for controlling the logic
   // displaySlideshowInterval is for display purposes only
-  // keeping them separate and independant allows us to handle the logic however we want
+  // keeping them separate and independent allows us to handle the logic however we want
   // while still displaying something that makes sense to the user
   const [slideshowInterval, setSlideshowInterval] = useState<number | null>(
     null

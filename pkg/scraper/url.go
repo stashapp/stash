@@ -78,6 +78,7 @@ func loadURL(ctx context.Context, loadURL string, client *http.Client, def Defin
 		return nil, err
 	}
 	defer resp.Body.Close()
+
 	if resp.StatusCode >= 400 {
 		return nil, fmt.Errorf("http error %d:%s", resp.StatusCode, http.StatusText(resp.StatusCode))
 	}
@@ -143,6 +144,7 @@ func urlFromSurf(ctx context.Context, loadURL string, driverOptions scraperDrive
 		return nil, err
 	}
 	defer resp.Body.Close()
+
 	if resp.StatusCode >= 400 {
 		return nil, fmt.Errorf("http error %d:%s", resp.StatusCode, http.StatusText(resp.StatusCode))
 	}
@@ -161,7 +163,6 @@ func urlFromSurf(ctx context.Context, loadURL string, driverOptions scraperDrive
 // if remote is set as true in the scraperConfig  it will try to use localhost:9222
 // else it will look for google-chrome in path
 func urlFromCDP(ctx context.Context, urlCDP string, driverOptions scraperDriverOptions, globalConfig GlobalConfig) (io.Reader, error) {
-
 	if !driverOptions.UseCDP {
 		return nil, fmt.Errorf("url shouldn't be fetched through CDP")
 	}
