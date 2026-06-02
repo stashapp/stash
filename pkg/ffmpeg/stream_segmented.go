@@ -435,22 +435,7 @@ func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request,
 
 	urlQuery := url.Values{}
 
-	// Forward auth params to segment URLs. API key takes precedence
-	// over signed params since it is explicitly configured by the user.
-	// TODO - this needs to be handled outside of this package
-	apikey := r.URL.Query().Get(apiKeyParamKey)
-	if apikey != "" {
-		urlQuery.Set(apiKeyParamKey, apikey)
-	} else {
-		cid := r.URL.Query().Get(signedurl.CIDParam)
-		expires := r.URL.Query().Get(signedurl.ExpiresParam)
-		sig := r.URL.Query().Get(signedurl.SigParam)
-		if cid != "" && expires != "" && sig != "" {
-			urlQuery.Set(signedurl.CIDParam, cid)
-			urlQuery.Set(signedurl.ExpiresParam, expires)
-			urlQuery.Set(signedurl.SigParam, sig)
-		}
-	}
+	copyAuthParams(urlQuery, r.URL.Query())
 
 	if resolution != "" {
 		urlQuery.Set(resolutionParamKey, resolution)
@@ -489,6 +474,25 @@ func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request,
 
 	w.Header().Set("Content-Type", MimeHLS)
 	utils.ServeStaticContent(w, r, buf.Bytes())
+}
+
+// Forward auth params to segment URLs. API key takes precedence
+// over signed params since it is explicitly configured by the user.
+// TODO - this needs to be handled outside of this package
+func copyAuthParams(dest url.Values, src url.Values) {
+	apikey := src.Get(apiKeyParamKey)
+	if apikey != "" {
+		dest.Set(apiKeyParamKey, apikey)
+	} else {
+		cid := src.Get(signedurl.CIDParam)
+		expires := src.Get(signedurl.ExpiresParam)
+		sig := src.Get(signedurl.SigParam)
+		if cid != "" && expires != "" && sig != "" {
+			dest.Set(signedurl.CIDParam, cid)
+			dest.Set(signedurl.ExpiresParam, expires)
+			dest.Set(signedurl.SigParam, sig)
+		}
+	}
 }
 
 // serveDASHManifest serves a generated DASH manifest.
@@ -543,19 +547,7 @@ func serveDASHManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request
 	// Forward auth params to segment URLs. API key takes precedence
 	// over signed params since it is explicitly configured by the user.
 	// TODO - this needs to be handled outside of this package
-	apikey := r.URL.Query().Get(apiKeyParamKey)
-	if apikey != "" {
-		urlQuery.Set(apiKeyParamKey, apikey)
-	} else {
-		cid := r.URL.Query().Get(signedurl.CIDParam)
-		expires := r.URL.Query().Get(signedurl.ExpiresParam)
-		sig := r.URL.Query().Get(signedurl.SigParam)
-		if cid != "" && expires != "" && sig != "" {
-			urlQuery.Set(signedurl.CIDParam, cid)
-			urlQuery.Set(signedurl.ExpiresParam, expires)
-			urlQuery.Set(signedurl.SigParam, sig)
-		}
-	}
+	copyAuthParams(urlQuery, r.URL.Query())
 
 	maxTranscodeSize := sm.config.GetMaxStreamingTranscodeSize().GetMaxResolution()
 	if resolution != "" {
