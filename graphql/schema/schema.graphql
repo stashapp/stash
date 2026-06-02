@@ -561,9 +561,7 @@ type Mutation {
   stopAllJobs: Boolean!
 
   "Submit fingerprints to stash-box instance. Returns the ID of the job that performs the submission."
-  submitStashBoxFingerprints(
-    input: StashBoxFingerprintSubmissionInput!
-  ): ID!
+  submitStashBoxFingerprints(input: StashBoxFingerprintSubmissionInput!): ID!
 
   "Submit scene as draft to stash-box instance"
   submitStashBoxSceneDraft(input: StashBoxDraftSubmissionInput!): ID
