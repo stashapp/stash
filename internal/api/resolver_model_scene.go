@@ -125,7 +125,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePat
 
 		// Sign the caption prefix
 		captionBase := builder.GetCaptionURL()
-		captionBasePath = captionBase + "?" + signedParams(config, *userID, "/scene/"+builder.SceneID+"/caption").Encode()
+		captionBasePath = captionBase + "?" + signedParams(config, *userID, builder.GetCaptionPath()).Encode()
 	} else {
 		apiKey := config.GetAPIKey()
 		streamURL := builder.GetStreamURL(apiKey)
