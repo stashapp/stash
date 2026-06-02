@@ -495,7 +495,11 @@
             "anonymising_database": "Aninimizando base de datos",
             "auto_tag": {
                 "auto_tagging_all_paths": "Etiquetar automáticamente todas las rutas",
-                "auto_tagging_paths": "Etiquetar automáticamente las siguientes rutas"
+                "auto_tagging_paths": "Etiquetar automáticamente las siguientes rutas",
+                "disable_warning": {
+                    "description": "Desactive la advertencia de confirmación que se muestra antes de ejecutar el etiquetado automático.",
+                    "heading": "Desactivar la advertencia de etiquetado automático"
+                }
             },
             "auto_tag_based_on_filenames": "Etiquetado automatizado del contenido basado en nombres de archivo.",
             "auto_tagging": "Etiquetado automático",
@@ -1069,7 +1073,8 @@
         "studios_found": "{count} estudios encontrados",
         "tags_found": "{count} etiquetas encontradas",
         "scrape_results_missing": "Faltante",
-        "edit_entity_count_title": "Editar {count} {count, plural, una {{singularEntity}} otra {{pluralEntity}}}"
+        "edit_entity_count_title": "Editar {count} {count, plural, una {{singularEntity}} otra {{pluralEntity}}}",
+        "dont_show_again": "No mostrar esta advertencia de nuevo"
     },
     "dimensions": "Dimensiones",
     "director": "Director",
