@@ -1,11 +1,22 @@
 # Face-recognition performer tagger — GPU box (Windows + RTX) deps.
 # Install into a venv on the RTX box; see README.md for CUDA/onnxruntime notes.
 #
-# IMPORTANT: install ONLY onnxruntime-gpu (NOT plain onnxruntime). If both are
-# present they conflict and InsightFace may silently fall back to CPU.
+# IMPORTANT: install ONLY onnxruntime-gpu (NOT plain onnxruntime). insightface
+# pulls in plain `onnxruntime` as a dep and the two conflict — InsightFace then
+# silently falls back to CPU. After install, leave only the GPU build:
+#     pip uninstall -y onnxruntime onnxruntime-gpu && pip install onnxruntime-gpu
 
 insightface>=0.7.3
-onnxruntime-gpu>=1.17
+onnxruntime-gpu>=1.20          # >=1.20 for Blackwell (sm_120 / RTX 50xx); 1.23.x verified to load
 numpy>=1.24,<2.0
 opencv-python>=4.8
 Pillow>=10.0
+
+# CUDA 12 runtime + cuDNN 9 redistributables — onnxruntime-gpu needs these DLLs
+# (cublasLt64_12.dll, cudnn*64_9.dll, …); they do NOT ship with the GPU driver.
+# facerec.py registers each nvidia/*/bin dir on the DLL search path at import.
+nvidia-cublas-cu12
+nvidia-cudnn-cu12
+nvidia-cuda-runtime-cu12
+nvidia-cufft-cu12
+nvidia-curand-cu12

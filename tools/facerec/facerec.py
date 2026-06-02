@@ -68,6 +68,28 @@ import urllib.error
 import urllib.request
 
 
+# ── CUDA DLL discovery (Windows) ─────────────────────────────────────────────
+# onnxruntime-gpu loads CUDA/cuDNN from the pip `nvidia-*-cu12` wheels, but cuDNN's
+# primary DLL pulls in its engine sub-DLLs (e.g. cudnn_engines_tensor_ir64_9.dll)
+# by name — that secondary load fails ("module could not be found") unless each
+# nvidia wheel's bin/ dir is on the DLL search path. ort.preload_dlls() alone isn't
+# enough, so register the dirs here at import, before the lazy onnxruntime import.
+# No-op when the wheels are absent or off-Windows (then it runs on CPU).
+def _register_cuda_dll_dirs():
+    if not hasattr(os, "add_dll_directory"):
+        return  # not Windows
+    import glob
+    base = os.path.join(sys.prefix, "Lib", "site-packages", "nvidia")
+    for d in glob.glob(os.path.join(base, "*", "bin")):
+        try:
+            os.add_dll_directory(d)
+        except OSError:
+            pass
+
+
+_register_cuda_dll_dirs()
+
+
 # ── GraphQL plumbing (mirrors tools/identify/external_identify.py gql()/Stash) ──
 
 def gql(url, query, variables=None, headers=None, timeout=60):
