@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strconv"
+	"strings"
 	"sync"
 	"testing"
 
@@ -372,6 +373,10 @@ type fakeStashBox struct {
 	batchSizes  []int
 }
 
+func writeRaw(w http.ResponseWriter, body string) {
+	_, _ = io.WriteString(w, body)
+}
+
 func (s *fakeStashBox) handler(w http.ResponseWriter, r *http.Request) {
 	body, _ := io.ReadAll(r.Body)
 
@@ -387,10 +392,7 @@ func (s *fakeStashBox) handler(w http.ResponseWriter, r *http.Request) {
 
 	switch req.OperationName {
 	case "SubmitFingerprints":
-		var input []struct {
-			SceneID string `json:"scene_id"`
-			Hash    string `json:"hash"`
-		}
+		var input []json.RawMessage
 		_ = json.Unmarshal(req.Variables.Input, &input)
 
 		s.mu.Lock()
@@ -400,21 +402,20 @@ func (s *fakeStashBox) handler(w http.ResponseWriter, r *http.Request) {
 
 		if !s.batchSupported {
 			// emulate the GraphQL validation error an older stash-box returns
-			io.WriteString(w, `{"errors":[{"message":"Cannot query field \"submitFingerprints\" on type \"Mutation\"."}]}`)
+			writeRaw(w, `{"errors":[{"message":"Cannot query field \"submitFingerprints\" on type \"Mutation\"."}]}`)
 			return
 		}
 
-		results := make([]map[string]any, len(input))
-		for i, in := range input {
-			results[i] = map[string]any{"scene_id": in.SceneID, "hash": in.Hash, "error": nil}
-		}
-		_ = json.NewEncoder(w).Encode(map[string]any{"data": map[string]any{"submitFingerprints": results}})
+		// return one success result per submitted fingerprint
+		item := `{"scene_id":"","hash":"","error":null}`
+		list := strings.TrimSuffix(strings.Repeat(item+",", len(input)), ",")
+		writeRaw(w, `{"data":{"submitFingerprints":[`+list+`]}}`)
 
 	case "SubmitFingerprint":
 		s.mu.Lock()
 		s.singleCalls++
 		s.mu.Unlock()
-		io.WriteString(w, `{"data":{"submitFingerprint":true}}`)
+		writeRaw(w, `{"data":{"submitFingerprint":true}}`)
 
 	default:
 		http.Error(w, "unexpected operation", http.StatusBadRequest)
