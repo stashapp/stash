@@ -52,8 +52,14 @@ ifndef COMPILER_IMAGE
   COMPILER_IMAGE := ghcr.io/stashapp/compiler:latest
 endif
 
+# cannot really parallelise the release target
+# generate requires pre-ui, ui requires generate and build-release requires ui, so they must be run sequentially
 .PHONY: release
-release: pre-ui generate ui build-release
+release: 
+	$(MAKE) pre-ui
+	$(MAKE) generate
+	$(MAKE) ui
+	$(MAKE) build-release
 
 # targets to set various build flags
 # use combinations on the make command-line to configure a build, e.g.:
@@ -119,7 +125,7 @@ build-flags: build-info
 	$(eval BUILD_FLAGS := -v -tags "$(GO_BUILD_TAGS)" $(GO_BUILD_FLAGS) -ldflags "$(BUILD_LDFLAGS)")
 
 .PHONY: stash
-stash: build-flags | generate ui
+stash: build-flags
 	go build $(STASH_OUTPUT) $(BUILD_FLAGS) ./cmd/stash
 
 .PHONY: phasher
@@ -281,7 +287,7 @@ endif
 generate: generate-backend generate-ui
 
 .PHONY: generate-ui
-generate-ui: | pre-ui
+generate-ui:
 	cd ui/v2.5 && pnpm run gqlgen
 
 .PHONY: generate-backend
@@ -372,7 +378,7 @@ endif
 ui: ui-only generate-login-locale
 
 .PHONY: ui-only
-ui-only: ui-env | pre-ui generate
+ui-only: ui-env
 	cd ui/v2.5 && pnpm run build
 
 .PHONY: zip-ui
@@ -390,7 +396,7 @@ fmt-ui:
 
 # runs all of the frontend PR-acceptance steps
 .PHONY: validate-ui
-validate-ui: | pre-ui generate
+validate-ui:
 	cd ui/v2.5 && pnpm run validate
 
 # these targets run the same steps as fmt-ui and validate-ui, but only on files that have changed
@@ -443,7 +449,7 @@ remove-compiler-container:
 	docker rm -f -v build
 
 .PHONY: install
-install: | build-release
+install:
 ifdef IS_WIN_SHELL
 	@if not exist "$(PREFIX)" mkdir $(PREFIX)
 	@copy "dist\\stash-win.exe" "$(PREFIX)\\stash-win.exe"
