@@ -16,7 +16,7 @@ All pull requests must use descriptive and concise titles and follow the provide
 
 - You must link to an open issue that pull request addresses (see [GitHub documentation](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue) on how to do that).
 - Pull requests must be focused on a single issue or feature. Large, multi-purpose pull requests will be rejected.
-- Large features must be discussed with maintainers before submitting a pull request to ensure it fits with the overall design vision of the project.
+- Large features must be discussed with maintainers before submitting a pull request to ensure it fits with the overall design vision of the project. Failure to do so may result in the pull request being rejected.
 - Pull requests must include code tests that sufficiently cover the changes made.
 - You must detail the manual testing done and describe the steps taken to sufficiently verify the changes.
 - You must be able to explain any line of code and design decision during the review process.
