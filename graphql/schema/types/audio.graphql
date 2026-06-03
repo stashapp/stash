@@ -7,7 +7,6 @@ type AudioGroup {
   audio_index: Int
 }
 
-
 type Audio {
   id: ID!
   title: String

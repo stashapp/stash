@@ -138,3 +138,15 @@ The resulting file can then be used with pprof as follows:
 With `graphviz` installed and in the path, a call graph can be generated with:
 
 `go tool pprof -svg <path to binary> <path to profile filename> > <output svg file>`
+
+## Contributing
+
+Make sure all of the following commands succeed on your local branch before pushing remotely.
+
+**GOTCHA:** Linting pulls in `develop` and then applies your PR on top, so if you are behind `develop` this can make you local tests pass but CI checks fail.
+
+1. `make generate`
+2. `make fmt`
+3. `make lint`
+4. `make fmt-ui`
+5. `make validate-ui`

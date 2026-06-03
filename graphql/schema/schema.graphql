@@ -375,7 +375,6 @@ type Mutation {
     reset_duration: Boolean
   ): Boolean!
 
-
   "Increments the play count for the audio. Uses the current time if none provided."
   audioAddPlay(id: ID!, times: [Timestamp!]): HistoryMutationResult!
   "Decrements the play count for the audio, removing the specific times or the last recorded time if not provided."
