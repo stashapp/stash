@@ -9,9 +9,9 @@
   "scripts": {
     "start": "vite",
     "build": "vite build",
-    "build-ci": "npm run validate && npm run build",
-    "validate": "npm run lint && npm run check && npm run format-check",
-    "lint": "npm run lint:js && npm run lint:css",
+    "build-ci": "pnpm run validate && pnpm run build",
+    "validate": "pnpm run lint && pnpm run check && pnpm run format-check",
+    "lint": "pnpm run lint:js && pnpm run lint:css",
     "lint:css": "stylelint --cache \"src/**/*.scss\"",
     "lint:js": "biome check src/",
     "check": "tsc --noEmit",
@@ -84,6 +84,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
+    "@biomejs/biome": "2.4.16",
     "@graphql-codegen/cli": "^5.0.0",
     "@graphql-codegen/time": "^5.0.0",
     "@graphql-codegen/typescript": "^4.0.1",
