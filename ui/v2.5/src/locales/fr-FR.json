@@ -502,7 +502,11 @@
             "anonymising_database": "Anonymisation de la base de données",
             "auto_tag": {
                 "auto_tagging_all_paths": "Étiquetage automatique de tous les chemins",
-                "auto_tagging_paths": "Étiquetage automatique des chemins suivants"
+                "auto_tagging_paths": "Étiquetage automatique des chemins suivants",
+                "disable_warning": {
+                    "description": "Désactivez l'avertissement de confirmation affiché avant l'exécution de la fonction d'étiquetage automatique.",
+                    "heading": "Désactiver l'avertissement d'étiquetage automatique"
+                }
             },
             "auto_tag_based_on_filenames": "Étiquetage automatique du contenu basé sur les chemins d'accès des fichiers.",
             "auto_tagging": "Étiquetage automatique",
@@ -1079,7 +1083,8 @@
         "studios_found": "{count} studios trouvés",
         "tags_found": "{count} étiquettes trouvées",
         "scrape_results_missing": "Manquant",
-        "edit_entity_count_title": "Éditer {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}"
+        "edit_entity_count_title": "Éditer {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "dont_show_again": "Ne plus afficher cet avertissement"
     },
     "dimensions": "Dimensions",
     "director": "Réalisateur",
