@@ -117,6 +117,7 @@ const (
 	imageIdxWithPerformerTwoTags
 	imageIdxWithGrandChildStudio
 	imageIdxWithPerformerParentTag
+	imageIdxWithGrandChildTag
 	// new indexes above
 	totalImages
 )
@@ -169,6 +170,7 @@ const (
 	groupIdxWithGrandParent
 	groupIdxWithParentAndScene
 	groupIdxWithChildWithScene
+	groupIdxWithGrandChildTag
 	// groups with dup names start from the end
 	groupIdxWithDupName
 
@@ -201,6 +203,7 @@ const (
 	galleryIdxWithGrandChildStudio
 	galleryIdxWithoutFile
 	galleryIdxWithPerformerParentTag
+	galleryIdxWithGrandChildTag
 	// new indexes above
 	lastGalleryIdx
 
@@ -434,6 +437,7 @@ var (
 		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, []int{tagIdxWithMarkers, tagIdx2WithMarkers}},
 		{sceneIdxWithMarkerAndTag, tagIdxWithPrimaryMarkers, nil},
 		{sceneIdxWithMarkerTwoTags, tagIdxWithPrimaryMarkers, nil},
+		{sceneIdxWithGrandChildTag, tagIdxWithGrandParent, nil},
 	}
 )
 
@@ -465,9 +469,10 @@ var (
 		imageIdxWithGrandChildStudio: studioIdxWithGrandParent,
 	}
 	imageTags = linkMap{
-		imageIdxWithTag:       {tagIdxWithImage},
-		imageIdxWithTwoTags:   {tagIdx1WithImage, tagIdx2WithImage},
-		imageIdxWithThreeTags: {tagIdx1WithImage, tagIdx2WithImage, tagIdx3WithImage},
+		imageIdxWithTag:           {tagIdxWithImage},
+		imageIdxWithTwoTags:       {tagIdx1WithImage, tagIdx2WithImage},
+		imageIdxWithThreeTags:     {tagIdx1WithImage, tagIdx2WithImage, tagIdx3WithImage},
+		imageIdxWithGrandChildTag: {tagIdxWithGrandParent},
 	}
 	imagePerformers = linkMap{
 		imageIdxWithPerformer:          {performerIdxWithImage},
@@ -506,9 +511,10 @@ var (
 	}
 
 	galleryTags = linkMap{
-		galleryIdxWithTag:       {tagIdxWithGallery},
-		galleryIdxWithTwoTags:   {tagIdx1WithGallery, tagIdx2WithGallery},
-		galleryIdxWithThreeTags: {tagIdx1WithGallery, tagIdx2WithGallery, tagIdx3WithGallery},
+		galleryIdxWithTag:           {tagIdxWithGallery},
+		galleryIdxWithTwoTags:       {tagIdx1WithGallery, tagIdx2WithGallery},
+		galleryIdxWithThreeTags:     {tagIdx1WithGallery, tagIdx2WithGallery, tagIdx3WithGallery},
+		galleryIdxWithGrandChildTag: {tagIdxWithGrandParent},
 	}
 )
 
@@ -518,9 +524,10 @@ var (
 	}
 
 	groupTags = linkMap{
-		groupIdxWithTag:       {tagIdxWithGroup},
-		groupIdxWithTwoTags:   {tagIdx1WithGroup, tagIdx2WithGroup},
-		groupIdxWithThreeTags: {tagIdx1WithGroup, tagIdx2WithGroup, tagIdx3WithGroup},
+		groupIdxWithTag:           {tagIdxWithGroup},
+		groupIdxWithTwoTags:       {tagIdx1WithGroup, tagIdx2WithGroup},
+		groupIdxWithThreeTags:     {tagIdx1WithGroup, tagIdx2WithGroup, tagIdx3WithGroup},
+		groupIdxWithGrandChildTag: {tagIdxWithGrandParent},
 	}
 )
 

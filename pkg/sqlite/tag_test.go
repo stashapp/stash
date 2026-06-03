@@ -589,8 +589,8 @@ func TestTagQueryCounts(t *testing.T) {
 				Modifier: models.CriterionModifierEquals,
 				Depth:    ptr(1),
 			}},
-			includeIdxs: []int{tagIdxWithScene, tagIdxWithParentTag, tagIdxWithChildTag},
-			excludeIdxs: []int{tagIdxWithGrandParent, tagIdx1WithNothing, tagIdx1WithScene, tagIdx2WithScene, tagIdx3WithScene},
+			includeIdxs: []int{tagIdxWithScene, tagIdxWithParentTag, tagIdxWithChildTag, tagIdxWithParentAndChild, tagIdxWithGrandParent},
+			excludeIdxs: []int{tagIdx1WithNothing, tagIdx1WithScene, tagIdx2WithScene, tagIdx3WithScene},
 		},
 		{
 			name:        "marker_count_equals_2",
@@ -633,6 +633,116 @@ func TestTagQueryCounts(t *testing.T) {
 			buildFilter: models.TagFilterType{ChildCount: &models.IntCriterionInput{Value: 1, Modifier: models.CriterionModifierEquals}},
 			includeIdxs: []int{tagIdxWithChildTag, tagIdxWithGrandChild, tagIdxWithParentAndChild},
 			excludeIdxs: []int{tagIdx1WithNothing, tagIdx2WithNothing},
+		},
+		{
+			name: "scene_count_equals_1_depth_-1",
+			buildFilter: models.TagFilterType{SceneCount: &models.HierarchicalCountInput{
+				Value:    1,
+				Modifier: models.CriterionModifierEquals,
+				Depth:    ptr(-1),
+			}},
+			includeIdxs: []int{tagIdxWithScene, tagIdxWithChildTag, tagIdxWithParentTag, tagIdxWithGrandChild, tagIdxWithParentAndChild, tagIdxWithGrandParent},
+			excludeIdxs: []int{tagIdx1WithScene, tagIdx2WithScene, tagIdx3WithScene},
+		},
+		{
+			name: "image_count_equals_1_depth_1",
+			buildFilter: models.TagFilterType{ImageCount: &models.HierarchicalCountInput{
+				Value:    1,
+				Modifier: models.CriterionModifierEquals,
+				Depth:    ptr(1),
+			}},
+			includeIdxs: []int{tagIdxWithImage, tagIdx3WithImage, tagIdxWithParentAndChild, tagIdxWithGrandParent},
+			excludeIdxs: []int{tagIdx1WithImage, tagIdx2WithImage},
+		},
+		{
+			name: "image_count_equals_1_depth_-1",
+			buildFilter: models.TagFilterType{ImageCount: &models.HierarchicalCountInput{
+				Value:    1,
+				Modifier: models.CriterionModifierEquals,
+				Depth:    ptr(-1),
+			}},
+			includeIdxs: []int{tagIdxWithImage, tagIdx3WithImage, tagIdxWithGrandChild, tagIdxWithParentAndChild, tagIdxWithGrandParent},
+			excludeIdxs: []int{tagIdx1WithImage, tagIdx2WithImage},
+		},
+		{
+			name: "gallery_count_equals_1_depth_1",
+			buildFilter: models.TagFilterType{GalleryCount: &models.HierarchicalCountInput{
+				Value:    1,
+				Modifier: models.CriterionModifierEquals,
+				Depth:    ptr(1),
+			}},
+			includeIdxs: []int{tagIdxWithGallery, tagIdx3WithGallery, tagIdxWithParentAndChild, tagIdxWithGrandParent},
+			excludeIdxs: []int{tagIdx1WithGallery, tagIdx2WithGallery},
+		},
+		{
+			name: "gallery_count_equals_1_depth_-1",
+			buildFilter: models.TagFilterType{GalleryCount: &models.HierarchicalCountInput{
+				Value:    1,
+				Modifier: models.CriterionModifierEquals,
+				Depth:    ptr(-1),
+			}},
+			includeIdxs: []int{tagIdxWithGallery, tagIdx3WithGallery, tagIdxWithGrandChild, tagIdxWithParentAndChild, tagIdxWithGrandParent},
+			excludeIdxs: []int{tagIdx1WithGallery, tagIdx2WithGallery},
+		},
+		{
+			name: "performer_count_equals_1_depth_1",
+			buildFilter: models.TagFilterType{PerformerCount: &models.HierarchicalCountInput{
+				Value:    1,
+				Modifier: models.CriterionModifierEquals,
+				Depth:    ptr(1),
+			}},
+			includeIdxs: []int{tagIdxWithPerformer, tagIdx1WithPerformer, tagIdxWithGrandChild, tagIdxWithParentAndChild},
+			excludeIdxs: []int{tagIdx2WithPerformer},
+		},
+		{
+			name: "performer_count_equals_1_depth_-1",
+			buildFilter: models.TagFilterType{PerformerCount: &models.HierarchicalCountInput{
+				Value:    1,
+				Modifier: models.CriterionModifierEquals,
+				Depth:    ptr(-1),
+			}},
+			includeIdxs: []int{tagIdxWithPerformer, tagIdx1WithPerformer, tagIdxWithGrandChild, tagIdxWithParentAndChild},
+			excludeIdxs: []int{tagIdx2WithPerformer},
+		},
+		{
+			name: "marker_count_equals_1_depth_1",
+			buildFilter: models.TagFilterType{MarkerCount: &models.HierarchicalCountInput{
+				Value:    1,
+				Modifier: models.CriterionModifierEquals,
+				Depth:    ptr(1),
+			}},
+			includeIdxs: []int{tagIdxWithParentAndChild, tagIdxWithGrandParent},
+			excludeIdxs: []int{tagIdxWithPrimaryMarkers, tagIdxWithMarkers, tagIdx2WithMarkers},
+		},
+		{
+			name: "marker_count_equals_1_depth_-1",
+			buildFilter: models.TagFilterType{MarkerCount: &models.HierarchicalCountInput{
+				Value:    1,
+				Modifier: models.CriterionModifierEquals,
+				Depth:    ptr(-1),
+			}},
+			includeIdxs: []int{tagIdxWithGrandChild, tagIdxWithParentAndChild, tagIdxWithGrandParent},
+			excludeIdxs: []int{tagIdxWithPrimaryMarkers, tagIdxWithMarkers, tagIdx2WithMarkers},
+		},
+		{
+			name: "group_count_equals_1_depth_1",
+			buildFilter: models.TagFilterType{GroupCount: &models.HierarchicalCountInput{
+				Value:    1,
+				Modifier: models.CriterionModifierEquals,
+				Depth:    ptr(1),
+			}},
+			includeIdxs: []int{tagIdxWithGroup, tagIdx3WithGroup, tagIdxWithParentAndChild, tagIdxWithGrandParent},
+			excludeIdxs: []int{tagIdx1WithGroup, tagIdx2WithGroup},
+		},
+		{
+			name: "group_count_equals_1_depth_-1",
+			buildFilter: models.TagFilterType{GroupCount: &models.HierarchicalCountInput{
+				Value:    1,
+				Modifier: models.CriterionModifierEquals,
+				Depth:    ptr(-1),
+			}},
+			includeIdxs: []int{tagIdxWithGroup, tagIdx3WithGroup, tagIdxWithGrandChild, tagIdxWithParentAndChild, tagIdxWithGrandParent},
+			excludeIdxs: []int{tagIdx1WithGroup, tagIdx2WithGroup},
 		},
 	}
 

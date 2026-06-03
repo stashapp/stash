@@ -222,19 +222,28 @@ func (qb *tagFilterHandler) isMissingCriterionHandler(isMissing *string) criteri
 // depth < 0 includes all descendant levels (unlimited recursion).
 // depth >= 0 limits the recursion to that many levels from the root tag.
 func (qb *tagFilterHandler) addHierarchicalCountCTE(f *filterBuilder, cteAlias string, depth int) {
-	var depthCondition string
-	if depth >= 0 {
-		depthCondition = fmt.Sprintf(" WHERE depth < %d", depth)
+	if depth < 0 {
+		// unlimited recursion — no depth tracking needed
+		f.addRecursiveWith(fmt.Sprintf(
+			`%[1]s(root_id, descendant_id) AS (
+				SELECT id, id FROM tags
+				UNION ALL
+				SELECT td.root_id, tr.child_id
+				FROM tags_relations tr
+				INNER JOIN %[1]s td ON td.descendant_id = tr.parent_id
+			)`, cteAlias))
+	} else {
+		// depth-limited: track recursion level as a CTE column
+		f.addRecursiveWith(fmt.Sprintf(
+			`%[1]s(root_id, descendant_id, depth) AS (
+				SELECT id, id, 0 FROM tags
+				UNION ALL
+				SELECT td.root_id, tr.child_id, td.depth + 1
+				FROM tags_relations tr
+				INNER JOIN %[1]s td ON td.descendant_id = tr.parent_id
+				WHERE td.depth < %[2]d
+			)`, cteAlias, depth))
 	}
-
-	f.addRecursiveWith(fmt.Sprintf(
-		`%[1]s(root_id, descendant_id) AS (
-			SELECT id, id FROM tags
-			UNION ALL
-			SELECT td.root_id, tr.child_id
-			FROM tags_relations tr
-			INNER JOIN %[1]s td ON td.descendant_id = tr.parent_id%[2]s
-		)`, cteAlias, depthCondition))
 }
 
 func (qb *tagFilterHandler) hierarchicalCountHandler(input *models.HierarchicalCountInput, joinTable, entityIDCol string) criterionHandlerFunc {
