@@ -28,6 +28,8 @@
 - [ ] I have made corresponding changes to the documentation (if applicable).
 
 ## AI Usage Disclosure
+<!-- Mark [x] to indicate completion. -->
+- [ ] I have used AI tools to assist with this pull request, and I have disclosed the tools and how I used them below.
 <!-- If you used AI to assist with this pull request, please disclose what tools you used and how you used them. -->
 
 
