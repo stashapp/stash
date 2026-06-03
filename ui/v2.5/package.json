@@ -14,6 +14,7 @@
     "lint": "pnpm run lint:js && pnpm run lint:css",
     "lint:css": "stylelint --cache \"src/**/*.scss\"",
     "lint:js": "biome check src/",
+    "lint:js:fix": "biome lint --write src/",
     "check": "tsc --noEmit",
     "stylelint": "stylelint",
     "format": "biome format --write src/ ../../graphql/",
