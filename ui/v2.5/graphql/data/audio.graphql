@@ -8,10 +8,6 @@ fragment AudioData on Audio {
   rating100
   o_counter
   organized
-  captions {
-    language_code
-    caption_type
-  }
   created_at
   updated_at
   resume_time
@@ -28,7 +24,6 @@ fragment AudioData on Audio {
 
   paths {
     stream
-    caption
   }
 
   studio {

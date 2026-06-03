@@ -149,13 +149,6 @@ type AudioUpdateInput struct {
 	CustomFields     *CustomFieldsInput
 }
 
-type AudioDestroyInput struct {
-	ID               string `json:"id"`
-	DeleteFile       *bool  `json:"delete_file"`
-	DeleteGenerated  *bool  `json:"delete_generated"`
-	DestroyFileEntry *bool  `json:"destroy_file_entry"`
-}
-
 type AudiosDestroyInput struct {
 	Ids              []string `json:"ids"`
 	DeleteFile       *bool    `json:"delete_file"`

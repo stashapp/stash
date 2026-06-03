@@ -387,61 +387,6 @@ func (r *mutationResolver) BulkAudioUpdate(ctx context.Context, input BulkAudioU
 	return newRet, nil
 }
 
-func (r *mutationResolver) AudioDestroy(ctx context.Context, input models.AudioDestroyInput) (bool, error) {
-	audioID, err := strconv.Atoi(input.ID)
-	if err != nil {
-		return false, fmt.Errorf("converting id: %w", err)
-	}
-
-	fileNamingAlgo := manager.GetInstance().Config.GetAudioFileNamingAlgorithm()
-	trashPath := manager.GetInstance().Config.GetDeleteTrashPath()
-
-	var s *models.Audio
-	fileDeleter := &audio.FileDeleter{
-		Deleter:        file.NewDeleterWithTrash(trashPath),
-		FileNamingAlgo: fileNamingAlgo,
-		Paths:          manager.GetInstance().Paths,
-	}
-
-	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
-	deleteFile := utils.IsTrue(input.DeleteFile)
-	destroyFileEntry := utils.IsTrue(input.DestroyFileEntry)
-
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.Audio
-		var err error
-		s, err = qb.Find(ctx, audioID)
-		if err != nil {
-			return err
-		}
-
-		if s == nil {
-			return fmt.Errorf("audio with id %d not found", audioID)
-		}
-
-		// kill any running encoders
-		manager.KillRunningStreamsAudio(s, fileNamingAlgo)
-
-		return r.audioService.Destroy(ctx, s, fileDeleter, deleteGenerated, deleteFile, destroyFileEntry)
-	}); err != nil {
-		fileDeleter.Rollback()
-		return false, err
-	}
-
-	// perform the post-commit actions
-	fileDeleter.Commit()
-
-	// call post hook after performing the other actions
-	r.hookExecutor.ExecutePostHooks(ctx, s.ID, hook.AudioDestroyPost, plugin.AudioDestroyInput{
-		AudioDestroyInput: input,
-		Checksum:          s.Checksum,
-		OSHash:            s.OSHash,
-		Path:              s.Path,
-	}, nil)
-
-	return true, nil
-}
-
 func (r *mutationResolver) AudiosDestroy(ctx context.Context, input models.AudiosDestroyInput) (bool, error) {
 	audioIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {

@@ -108,32 +108,10 @@ func (r *audioResolver) Paths(ctx context.Context, obj *models.Audio) (*AudioPat
 	config := manager.GetInstance().Config
 	builder := urlbuilders.NewAudioURLBuilder(baseURL, obj)
 	streamPath := builder.GetStreamURL(config.GetAPIKey()).String()
-	captionBasePath := builder.GetCaptionURL()
 
 	return &AudioPathsType{
-		Stream:  &streamPath,
-		Caption: &captionBasePath,
+		Stream: &streamPath,
 	}, nil
-}
-
-// TODO(audio|AudioCaption): need to update IF AudioCaption required
-func (r *audioResolver) Captions(ctx context.Context, obj *models.Audio) (ret []*models.VideoCaption, err error) {
-	primaryFile, err := r.getPrimaryFile(ctx, obj)
-	if err != nil {
-		return nil, err
-	}
-	if primaryFile == nil {
-		return nil, nil
-	}
-
-	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.File.GetCaptions(ctx, primaryFile.Base().ID)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	return ret, err
 }
 
 func (r *audioResolver) Studio(ctx context.Context, obj *models.Audio) (ret *models.Studio, err error) {

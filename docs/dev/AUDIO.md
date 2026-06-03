@@ -23,7 +23,7 @@ The `Audio` datatype is similar to `Scene` but stores audio-only media (i.e. Aud
     - O History
     - Play History
     - Groups
-    - Captions
+    - ~~Captions~~ [REMOVED PER PR COMMENT - can be added back later]
 - Audio File metadata:
     - duration
     - audio codec
@@ -33,9 +33,9 @@ The `Audio` datatype is similar to `Scene` but stores audio-only media (i.e. Aud
 ### Open Questions
 
 - Should Audio's have `cover` photo?
+    - ANSWER: ___
 - Should Legacy/Deprecate features be copied over?
-    - Since Audio's is NEW, it doesn't have to support deprecated features/naming/etc
-    - I suggest removing them if easy to do, and for the more complicated ones to defer to a separate ticket
+    - ANSWER: do not copy over deprecated features
 - What should be done for `sortByOCounter`/`sortByPlayCount`?
     - These assume SCENES
     - I see 3 options

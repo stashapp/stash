@@ -354,14 +354,8 @@ type Mutation {
   audioUpdate(input: AudioUpdateInput!): Audio
   audioMerge(input: AudioMergeInput!): Audio
   bulkAudioUpdate(input: BulkAudioUpdateInput!): [Audio!]
-  audioDestroy(input: AudioDestroyInput!): Boolean!
   audiosDestroy(input: AudiosDestroyInput!): Boolean!
   audiosUpdate(input: [AudioUpdateInput!]!): [Audio]
-
-  "Increments the o-counter for a audio. Returns the new value"
-  audioIncrementO(id: ID!): Int! @deprecated(reason: "Use audioAddO instead")
-  "Decrements the o-counter for a audio. Returns the new value"
-  audioDecrementO(id: ID!): Int! @deprecated(reason: "Use audioRemoveO instead")
 
   "Increments the o-counter for a audio. Uses the current time if none provided."
   audioAddO(id: ID!, times: [Timestamp!]): HistoryMutationResult!
@@ -381,9 +375,6 @@ type Mutation {
     reset_duration: Boolean
   ): Boolean!
 
-  "Increments the play count for the audio. Returns the new play count value."
-  audioIncrementPlayCount(id: ID!): Int!
-    @deprecated(reason: "Use audioAddPlay instead")
 
   "Increments the play count for the audio. Uses the current time if none provided."
   audioAddPlay(id: ID!, times: [Timestamp!]): HistoryMutationResult!

@@ -1,6 +1,5 @@
 type AudioPathsType {
   stream: String # Resolver
-  caption: String # Resolver
 }
 
 type AudioGroup {
@@ -8,11 +7,6 @@ type AudioGroup {
   audio_index: Int
 }
 
-# TODO(audio|AudioCaption): need to update IF AudioCaption required
-# type AudioCaption {
-#   language_code: String!
-#   caption_type: String!
-# }
 
 type Audio {
   id: ID!
@@ -25,18 +19,15 @@ type Audio {
   rating100: Int
   organized: Boolean!
   o_counter: Int
-  # TODO(audio|AudioCaption): need to update IF AudioCaption required
-  # captions: [AudioCaption!]
-  captions: [VideoCaption!]
   created_at: Time!
   updated_at: Time!
   "The last time play count was updated"
   last_played_at: Time
-  "The time index a audio was left at"
+  "The time index an audio was left at"
   resume_time: Float
-  "The total time a audio has spent playing"
+  "The total time an audio has spent playing"
   play_duration: Float
-  "The number ot times a audio has been played"
+  "The number of times an audio has been played"
   play_count: Int
 
   "Times a audio was played"
@@ -87,7 +78,6 @@ input AudioCreateInput {
 }
 
 input AudioUpdateInput {
-  clientMutationId: String
   id: ID!
   title: String
   code: String
@@ -113,7 +103,6 @@ input AudioUpdateInput {
 }
 
 input BulkAudioUpdateInput {
-  clientMutationId: String
   ids: [ID!]
   title: String
   code: String
@@ -131,14 +120,6 @@ input BulkAudioUpdateInput {
   custom_fields: CustomFieldsInput
 }
 
-input AudioDestroyInput {
-  id: ID!
-  delete_file: Boolean
-  delete_generated: Boolean
-  "If true, delete the file entry from the database if the file is not assigned to any other objects"
-  destroy_file_entry: Boolean
-}
-
 input AudiosDestroyInput {
   ids: [ID!]!
   delete_file: Boolean
@@ -154,32 +135,6 @@ type FindAudiosResultType {
   "Total file size in bytes"
   filesize: Float!
   audios: [Audio!]!
-}
-
-input AudioParserInput {
-  ignoreWords: [String!]
-  whitespaceCharacters: String
-  capitalizeTitle: Boolean
-  ignoreOrganized: Boolean
-}
-
-type AudioParserResult {
-  audio: Audio!
-  title: String
-  code: String
-  details: String
-  url: String
-  date: String
-  # rating expressed as 1-100
-  rating100: Int
-  studio_id: ID
-  performer_ids: [ID!]
-  tag_ids: [ID!]
-}
-
-type AudioParserResultType {
-  count: Int!
-  results: [AudioParserResult!]!
 }
 
 input AudioHashInput {
