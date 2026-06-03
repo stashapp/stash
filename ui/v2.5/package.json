@@ -16,8 +16,8 @@
     "lint:js": "biome check src/",
     "check": "tsc --noEmit",
     "stylelint": "stylelint",
-    "format": "biome format --write . ../../graphql",
-    "format-check": "biome format --check . ../../graphql",
+    "format": "biome format --write src/ ../../graphql/",
+    "format-check": "biome format src/ ../../graphql/",
     "gqlgen": "gql-gen --config codegen.ts",
     "extract": "NODE_ENV=development extract-messages -l=en,de -o src/locale -d en --flat false 'src/**/!(*.test).tsx'"
   },
