@@ -78,12 +78,7 @@ func (i *Importer) audioJSONToAudio(audioJSON jsonschema.Audio) models.Audio {
 		PerformerIDs: models.NewRelatedIDs([]int{}),
 		TagIDs:       models.NewRelatedIDs([]int{}),
 		Groups:       models.NewRelatedGroupsAudio([]models.GroupsAudios{}),
-	}
-
-	if len(audioJSON.URLs) > 0 {
-		newAudio.URLs = models.NewRelatedStrings(audioJSON.URLs)
-	} else if audioJSON.URL != "" {
-		newAudio.URLs = models.NewRelatedStrings([]string{audioJSON.URL})
+		URLs:         models.NewRelatedStrings(audioJSON.URLs),
 	}
 
 	if audioJSON.Date != "" {
@@ -105,44 +100,22 @@ func (i *Importer) audioJSONToAudio(audioJSON jsonschema.Audio) models.Audio {
 	return newAudio
 }
 
-func getHistory(historyJSON []json.JSONTime, count int, last json.JSONTime, createdAt json.JSONTime) []time.Time {
+func getHistory(historyJSON []json.JSONTime) []time.Time {
 	var ret []time.Time
 
-	if len(historyJSON) > 0 {
-		for _, d := range historyJSON {
-			ret = append(ret, d.GetTime())
-		}
-	} else if count > 0 {
-		createdAt := createdAt.GetTime()
-		for j := 0; j < count; j++ {
-			t := createdAt
-			if j+1 == count && !last.IsZero() {
-				// last one, use last play date
-				t = last.GetTime()
-			}
-			ret = append(ret, t)
-		}
+	for _, d := range historyJSON {
+		ret = append(ret, d.GetTime())
 	}
 
 	return ret
 }
 
 func (i *Importer) populateViewHistory() {
-	i.viewHistory = getHistory(
-		i.Input.PlayHistory,
-		i.Input.PlayCount,
-		i.Input.LastPlayedAt,
-		i.Input.CreatedAt,
-	)
+	i.viewHistory = getHistory(i.Input.PlayHistory)
 }
 
 func (i *Importer) populateOHistory() {
-	i.oHistory = getHistory(
-		i.Input.OHistory,
-		i.Input.OCounter,
-		i.Input.CreatedAt, // no last o count date
-		i.Input.CreatedAt,
-	)
+	i.oHistory = getHistory(i.Input.OHistory)
 }
 
 func (i *Importer) populateFiles(ctx context.Context) error {

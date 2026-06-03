@@ -88,7 +88,6 @@ func (r *audioQueryRow) resolve() *models.Audio {
 		StudioID:  nullIntPtr(r.StudioID),
 
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
-		OSHash:        r.PrimaryFileOshash.String,
 		Checksum:      r.PrimaryFileChecksum.String,
 
 		CreatedAt: r.CreatedAt.Timestamp,

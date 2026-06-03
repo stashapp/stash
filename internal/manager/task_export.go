@@ -764,7 +764,7 @@ func (t *ExportTask) exportAudio(ctx context.Context, wg *sync.WaitGroup, jobCha
 		}
 
 		basename := filepath.Base(s.Path)
-		hash := s.OSHash
+		hash := s.Checksum
 
 		fn := newAudioJSON.Filename(s.ID, basename, hash)
 
