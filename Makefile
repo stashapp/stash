@@ -443,7 +443,7 @@ remove-compiler-container:
 	docker rm -f -v build
 
 .PHONY: install
-install: build-release
+install: | build-release
 ifdef IS_WIN_SHELL
 	@if not exist "$(PREFIX)" mkdir $(PREFIX)
 	@copy "dist\\stash-win.exe" "$(PREFIX)\\stash-win.exe"
