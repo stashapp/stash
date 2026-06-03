@@ -8,6 +8,7 @@
       "../../graphql/**",
       "!src/core/generated-graphql.ts",
       "!src/pluginApi.d.ts",
+      "!src/@types/videojs-vr.d.ts",
       "!src/locales/*.json"
     ]
   },
@@ -22,8 +23,16 @@
       "types": "recommended"
     },
     "rules": {
-      "recommended": false,
-      "style": { "noNestedTernary": "off", "useBlockStatements": "off" },
+      "a11y": "off",
+      "complexity": {
+        "noUselessFragments": "off"
+      },
+      "style": { 
+        "noNestedTernary": "off", 
+        "noNonNullAssertion": "off",
+        "useBlockStatements": "off",
+        "useTemplate": "off" 
+      },
       "correctness": {
         "useExhaustiveDependencies": "error",
         "useJsxKeyInIterable": "off"
