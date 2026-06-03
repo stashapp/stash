@@ -108,16 +108,7 @@ Need help or want to get involved? Start with the documentation, then reach out 
 
 # Architecture
 
-## Backend
-
-- Go
-- GraphQL API
-- SQLite
-
-## Frontend
-
-- React
-- TypeScript
+You can find an overview of Stash's architecture in the [ARCHITECTURE.md](docs/ARCHITECTURE.md) document.
 
 # For Developers
 
