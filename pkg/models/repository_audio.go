@@ -17,6 +17,7 @@ type AudioGetter interface {
 // AudioFinder provides methods to find audios.
 type AudioFinder interface {
 	AudioGetter
+	IDsFromFileIDsLoader
 	FindByFingerprints(ctx context.Context, fp []Fingerprint) ([]*Audio, error)
 	FindByChecksum(ctx context.Context, checksum string) ([]*Audio, error)
 	FindByOSHash(ctx context.Context, oshash string) ([]*Audio, error)

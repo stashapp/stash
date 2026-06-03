@@ -42,13 +42,13 @@ func (qb *audioFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 		return
 	}
 
+	f.handleCriterion(ctx, qb.criterionHandler())
+
 	sf := audioFilter.SubFilter()
 	if sf != nil {
 		sub := &audioFilterHandler{sf}
 		handleSubFilter(ctx, sub, f, audioFilter.OperatorFilter)
 	}
-
-	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
 func (qb *audioFilterHandler) criterionHandler() criterionHandler {

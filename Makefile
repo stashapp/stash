@@ -52,8 +52,14 @@ ifndef COMPILER_IMAGE
   COMPILER_IMAGE := ghcr.io/stashapp/compiler:latest
 endif
 
+# cannot really parallelise the release target
+# generate requires pre-ui, ui requires generate and build-release requires ui, so they must be run sequentially
 .PHONY: release
-release: pre-ui generate ui build-release
+release: 
+	$(MAKE) pre-ui
+	$(MAKE) generate
+	$(MAKE) ui
+	$(MAKE) build-release
 
 # targets to set various build flags
 # use combinations on the make command-line to configure a build, e.g.:
@@ -97,7 +103,7 @@ flags-static-windows:
 .PHONY: build-info
 build-info:
 ifndef BUILD_DATE
-	$(eval BUILD_DATE := $(shell go run scripts/getDate.go))
+	$(eval BUILD_DATE := $(shell GOOS=$$(go env GOHOSTOS) GOARCH=$$(go env GOHOSTARCH) go run scripts/getDate.go))
 endif
 ifndef GITHASH
 	$(eval GITHASH := $(shell git rev-parse --short HEAD))
@@ -281,8 +287,8 @@ endif
 generate: generate-backend generate-ui
 
 .PHONY: generate-ui
-generate-ui: pre-ui
-	cd ui/v2.5 && npm run gqlgen
+generate-ui:
+	cd ui/v2.5 && pnpm run gqlgen
 
 .PHONY: generate-backend
 generate-backend: touch-ui
@@ -369,11 +375,11 @@ ifdef STASH_SOURCEMAPS
 endif
 
 .PHONY: ui
-ui: pre-ui generate ui-only generate-login-locale
+ui: ui-only generate-login-locale
 
 .PHONY: ui-only
-ui-only: ui-env generate ui
-	cd ui/v2.5 && npm run build
+ui-only: ui-env
+	cd ui/v2.5 && pnpm run build
 
 .PHONY: zip-ui
 zip-ui:
@@ -382,23 +388,23 @@ zip-ui:
 
 .PHONY: ui-start
 ui-start: ui-env
-	cd ui/v2.5 && npm run start -- --host
+	cd ui/v2.5 && pnpm run start -- --host
 
 .PHONY: fmt-ui
 fmt-ui:
-	cd ui/v2.5 && npm run format
+	cd ui/v2.5 && pnpm run format
 
 # runs all of the frontend PR-acceptance steps
 .PHONY: validate-ui
-validate-ui: pre-ui generate
-	cd ui/v2.5 && npm run validate
+validate-ui:
+	cd ui/v2.5 && pnpm run validate
 
 # these targets run the same steps as fmt-ui and validate-ui, but only on files that have changed
 fmt-ui-quick:
 	cd ui/v2.5 && \
 	files=$$(git diff --name-only --relative --diff-filter d . ../../graphql); \
 	if [ -n "$$files" ]; then \
-	  npm run prettier -- --write $$files; \
+	  pnpm run prettier -- --write $$files; \
 	fi
 
 # does not run tsc checks, as they are slow
@@ -407,9 +413,9 @@ validate-ui-quick:
 	tsfiles=$$(git diff --name-only --relative --diff-filter d src | grep -e "\.tsx\?\$$"); \
 	scssfiles=$$(git diff --name-only --relative --diff-filter d src | grep "\.scss"); \
 	prettyfiles=$$(git diff --name-only --relative --diff-filter d . ../../graphql); \
-	if [ -n "$$tsfiles" ]; then npm run eslint -- $$tsfiles; fi && \
-	if [ -n "$$scssfiles" ]; then npm run stylelint -- $$scssfiles; fi && \
-	if [ -n "$$prettyfiles" ]; then npm run prettier -- --check $$prettyfiles; fi
+	if [ -n "$$tsfiles" ]; then pnpm run eslint -- $$tsfiles; fi && \
+	if [ -n "$$scssfiles" ]; then pnpm run stylelint -- $$scssfiles; fi && \
+	if [ -n "$$prettyfiles" ]; then pnpm run prettier -- --check $$prettyfiles; fi
 
 # runs all of the backend PR-acceptance steps
 .PHONY: validate-backend
@@ -443,7 +449,7 @@ remove-compiler-container:
 	docker rm -f -v build
 
 .PHONY: install
-install: build-release
+install:
 ifdef IS_WIN_SHELL
 	@if not exist "$(PREFIX)" mkdir $(PREFIX)
 	@copy "dist\\stash-win.exe" "$(PREFIX)\\stash-win.exe"

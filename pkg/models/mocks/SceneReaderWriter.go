@@ -892,6 +892,29 @@ func (_m *SceneReaderWriter) GetManyFileIDs(ctx context.Context, ids []int) ([][
 	return r0, r1
 }
 
+// GetManyIDsByFileIDs provides a mock function with given fields: ctx, fileIDs
+func (_m *SceneReaderWriter) GetManyIDsByFileIDs(ctx context.Context, fileIDs []models.FileID) ([][]int, error) {
+	ret := _m.Called(ctx, fileIDs)
+
+	var r0 [][]int
+	if rf, ok := ret.Get(0).(func(context.Context, []models.FileID) [][]int); ok {
+		r0 = rf(ctx, fileIDs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([][]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []models.FileID) error); ok {
+		r1 = rf(ctx, fileIDs)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetManyLastViewed provides a mock function with given fields: ctx, ids
 func (_m *SceneReaderWriter) GetManyLastViewed(ctx context.Context, ids []int) ([]*time.Time, error) {
 	ret := _m.Called(ctx, ids)

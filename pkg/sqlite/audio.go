@@ -543,6 +543,38 @@ func (qb *AudioStore) FindByFileID(ctx context.Context, fileID models.FileID) ([
 	return ret, nil
 }
 
+func (qb *AudioStore) GetManyIDsByFileIDs(ctx context.Context, fileIDs []models.FileID) ([][]int, error) {
+	sq := dialect.From(audiosFilesJoinTable).Select(audiosFilesJoinTable.Col(galleryIDColumn), audiosFilesJoinTable.Col(fileIDColumn)).Where(
+		audiosFilesJoinTable.Col(fileIDColumn).In(fileIDs),
+	)
+
+	sql, args, err := sq.ToSQL()
+	if err != nil {
+		return nil, fmt.Errorf("building query: %w", err)
+	}
+
+	var results []struct {
+		AudioID int           `db:"audio_id"`
+		FileID  models.FileID `db:"file_id"`
+	}
+
+	if err := querySelect(ctx, sql, args, &results); err != nil {
+		return nil, fmt.Errorf("getting audios by file ids %v: %w", fileIDs, err)
+	}
+
+	retMap := make(map[models.FileID][]int)
+	for _, r := range results {
+		retMap[r.FileID] = append(retMap[r.FileID], r.AudioID)
+	}
+
+	ret := make([][]int, len(fileIDs))
+	for i, id := range fileIDs {
+		ret[i] = retMap[id]
+	}
+
+	return ret, nil
+}
+
 func (qb *AudioStore) FindByPrimaryFileID(ctx context.Context, fileID models.FileID) ([]*models.Audio, error) {
 	sq := dialect.From(audiosFilesJoinTable).Select(audiosFilesJoinTable.Col(audioIDColumn)).Where(
 		audiosFilesJoinTable.Col(fileIDColumn).Eq(fileID),

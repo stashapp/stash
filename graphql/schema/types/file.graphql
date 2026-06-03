@@ -93,6 +93,8 @@ type VideoFile implements BaseFile {
   frame_rate: Float!
   bit_rate: Int!
 
+  scenes: [Scene!]!
+
   created_at: Time!
   updated_at: Time!
 }
@@ -117,6 +119,8 @@ type ImageFile implements BaseFile {
   format: String!
   width: Int!
   height: Int!
+
+  images: [Image!]!
 
   created_at: Time!
   updated_at: Time!
@@ -167,6 +171,8 @@ type GalleryFile implements BaseFile {
 
   fingerprint(type: String!): String
   fingerprints: [Fingerprint!]!
+
+  galleries: [Gallery!]!
 
   created_at: Time!
   updated_at: Time!

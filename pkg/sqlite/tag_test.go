@@ -83,18 +83,15 @@ func TestTagFindByName(t *testing.T) {
 
 		assert.Equal(t, tagNames[tagIdxWithScene], tag.Name)
 
-		name = tagNames[tagIdxWithDupName] // find a tag by name nocase
+		name = strings.ToUpper(tagNames[tagIdx2WithNothing]) // find a tag by name nocase
 
 		tag, err = tqb.FindByName(ctx, name, true)
 
 		if err != nil {
 			t.Errorf("Error finding tags: %s", err.Error())
 		}
-		// tagIdxWithDupName and tagIdxWithScene should have similar names ( only diff should be Name vs NaMe)
 		//tag.Name should match with tagIdxWithScene since its ID is before tagIdxWithDupName
-		assert.Equal(t, tagNames[tagIdxWithScene], tag.Name)
-		//tag.Name should match with tagIdxWithDupName if the check is not case sensitive
-		assert.Equal(t, strings.ToLower(tagNames[tagIdxWithDupName]), strings.ToLower(tag.Name))
+		assert.Equal(t, tagNames[tagIdx2WithNothing], tag.Name)
 
 		return nil
 	})
@@ -150,10 +147,9 @@ func TestTagQueryForAutoTag(t *testing.T) {
 			t.Errorf("Error finding tags: %s", err.Error())
 		}
 
-		assert.Len(t, tags, 2)
+		assert.Len(t, tags, 1)
 		lcName := tagNames[tagIdx1WithScene]
 		assert.Equal(t, strings.ToLower(lcName), strings.ToLower(tags[0].Name))
-		assert.Equal(t, strings.ToLower(lcName), strings.ToLower(tags[1].Name))
 
 		// find by alias
 		name = getTagStringValue(tagIdx1WithScene, "Alias")
@@ -189,9 +185,8 @@ func TestTagFindByNames(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error finding tags: %s", err.Error())
 		}
-		assert.Len(t, tags, 2) // tagIdxWithScene and tagIdxWithDupName
+		assert.Len(t, tags, 1) // tagIdxWithScene
 		assert.Equal(t, strings.ToLower(tagNames[tagIdxWithScene]), strings.ToLower(tags[0].Name))
-		assert.Equal(t, strings.ToLower(tagNames[tagIdxWithScene]), strings.ToLower(tags[1].Name))
 
 		names = append(names, tagNames[tagIdx1WithScene]) // find tags by names ( 2 names )
 
@@ -207,11 +202,9 @@ func TestTagFindByNames(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error finding tags: %s", err.Error())
 		}
-		assert.Len(t, tags, 4) // tagIdxWithScene and tagIdxWithDupName , tagIdx1WithScene and tagIdx1WithDupName
+		assert.Len(t, tags, 2) // tagIdxWithScene and tagIdx1WithScene
 		assert.Equal(t, tagNames[tagIdxWithScene], tags[0].Name)
 		assert.Equal(t, tagNames[tagIdx1WithScene], tags[1].Name)
-		assert.Equal(t, tagNames[tagIdx1WithDupName], tags[2].Name)
-		assert.Equal(t, tagNames[tagIdxWithDupName], tags[3].Name)
 
 		return nil
 	})
@@ -492,6 +485,27 @@ func TestTagQuery(t *testing.T) {
 			},
 			[]int{tagIdxWithPerformer, tagIdx1WithPerformer},
 			nil,
+			false,
+		},
+		{
+			"match name or alias",
+			nil,
+			&models.TagFilterType{
+				OperatorFilter: models.OperatorFilter[models.TagFilterType]{
+					Or: &models.TagFilterType{
+						Aliases: &models.StringCriterionInput{
+							Value:    getTagStringValue(tagIdxWithChildTag, "Alias"),
+							Modifier: models.CriterionModifierEquals,
+						},
+					},
+				},
+				Name: &models.StringCriterionInput{
+					Value:    getTagStringValue(tagIdxWithScene, "Name"),
+					Modifier: models.CriterionModifierEquals,
+				},
+			},
+			[]int{tagIdxWithScene, tagIdxWithChildTag},
+			[]int{tagIdx2WithNothing},
 			false,
 		},
 	}

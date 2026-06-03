@@ -105,6 +105,9 @@ export interface IUIConfig {
 
   taskDefaults?: Record<string, {}>;
 
+  // if true the auto tag confirmation warning is skipped
+  disableAutoTagWarning?: boolean;
+
   defaultFilters?: DefaultFilters;
 
   taggerConfig?: ITaggerConfig;
