@@ -25,11 +25,11 @@
       "recommended": false,
       "style": { "noNestedTernary": "off", "useBlockStatements": "off" },
       "correctness": {
-        "useExhaustiveDependencies": "off",
+        "useExhaustiveDependencies": "error",
         "useJsxKeyInIterable": "off"
       },
       "suspicious": {
-        "noExplicitAny": "off",
+        "noExplicitAny": "error",
         "noArrayIndexKey": "off"
       }
     }
