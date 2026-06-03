@@ -27,8 +27,6 @@ type AudioService interface {
 	Destroy(ctx context.Context, audio *models.Audio, fileDeleter *audio.FileDeleter, deleteGenerated, deleteFile, destroyFileEntry bool) error
 
 	FindByIDs(ctx context.Context, ids []int, load ...audio.LoadRelationshipOption) ([]*models.Audio, error)
-	// TODO(audio): is this only used for stashbox?
-	// audioFingerprintGetter
 }
 
 type ImageService interface {

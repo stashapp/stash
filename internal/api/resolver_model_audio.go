@@ -91,14 +91,6 @@ func (r *audioResolver) Files(ctx context.Context, obj *models.Audio) ([]*AudioF
 	return ret, nil
 }
 
-func (r *audioResolver) Rating(ctx context.Context, obj *models.Audio) (*int, error) {
-	if obj.Rating != nil {
-		rating := models.Rating100To5(*obj.Rating)
-		return &rating, nil
-	}
-	return nil, nil
-}
-
 func (r *audioResolver) Rating100(ctx context.Context, obj *models.Audio) (*int, error) {
 	return obj.Rating, nil
 }

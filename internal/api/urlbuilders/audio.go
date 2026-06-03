@@ -36,7 +36,3 @@ func (b AudioURLBuilder) GetStreamURL(apiKey string) *url.URL {
 	}
 	return u
 }
-
-func (b AudioURLBuilder) GetCaptionURL() string {
-	return b.BaseURL + "/audio/" + b.AudioID + "/caption"
-}

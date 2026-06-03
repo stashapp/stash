@@ -30,35 +30,22 @@ type Audio struct {
 	Code   string `json:"code,omitempty"`
 	Studio string `json:"studio,omitempty"`
 
-	// deprecated - for import only
-	URL string `json:"url,omitempty"`
-
 	URLs      []string `json:"urls,omitempty"`
 	Date      string   `json:"date,omitempty"`
 	Rating    int      `json:"rating,omitempty"`
 	Organized bool     `json:"organized,omitempty"`
 
-	// deprecated - for import only
-	OCounter int `json:"o_counter,omitempty"`
-
-	Details    string       `json:"details,omitempty"`
-	Galleries  []GalleryRef `json:"galleries,omitempty"`
-	Performers []string     `json:"performers,omitempty"`
-	Groups     []AudioGroup `json:"movies,omitempty"`
-	Tags       []string     `json:"tags,omitempty"`
-	// Markers    []AudioMarker `json:"markers,omitempty"`
-	Files     []string      `json:"files,omitempty"`
-	Cover     string        `json:"cover,omitempty"`
-	CreatedAt json.JSONTime `json:"created_at,omitempty"`
-	UpdatedAt json.JSONTime `json:"updated_at,omitempty"`
-
-	// deprecated - for import only
-	LastPlayedAt json.JSONTime `json:"last_played_at,omitempty"`
+	Details    string        `json:"details,omitempty"`
+	Galleries  []GalleryRef  `json:"galleries,omitempty"`
+	Performers []string      `json:"performers,omitempty"`
+	Groups     []AudioGroup  `json:"movies,omitempty"`
+	Tags       []string      `json:"tags,omitempty"`
+	Files      []string      `json:"files,omitempty"`
+	Cover      string        `json:"cover,omitempty"`
+	CreatedAt  json.JSONTime `json:"created_at,omitempty"`
+	UpdatedAt  json.JSONTime `json:"updated_at,omitempty"`
 
 	ResumeTime float64 `json:"resume_time,omitempty"`
-
-	// deprecated - for import only
-	PlayCount int `json:"play_count,omitempty"`
 
 	PlayHistory []json.JSONTime `json:"play_history,omitempty"`
 	OHistory    []json.JSONTime `json:"o_history,omitempty"`

@@ -2,7 +2,6 @@ package audio
 
 import (
 	"os"
-	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
@@ -10,14 +9,10 @@ import (
 )
 
 func MigrateHash(p *paths.Paths, oldHash string, newHash string) {
-	oldPath := filepath.Join(p.Generated.Markers, oldHash)
-	newPath := filepath.Join(p.Generated.Markers, newHash)
-	migrateAudioFiles(oldPath, newPath)
-
 	audioPaths := p.Audio
 
-	oldPath = audioPaths.GetTranscodePath(oldHash)
-	newPath = audioPaths.GetTranscodePath(newHash)
+	oldPath := audioPaths.GetTranscodePath(oldHash)
+	newPath := audioPaths.GetTranscodePath(newHash)
 	migrateAudioFiles(oldPath, newPath)
 }
 

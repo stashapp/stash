@@ -443,7 +443,6 @@ func (r *mutationResolver) AudiosDestroy(ctx context.Context, input models.Audio
 		r.hookExecutor.ExecutePostHooks(ctx, audio.ID, hook.AudioDestroyPost, plugin.AudiosDestroyInput{
 			AudiosDestroyInput: input,
 			Checksum:           audio.Checksum,
-			OSHash:             audio.OSHash,
 			Path:               audio.Path,
 		}, nil)
 	}

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/stashapp/stash/pkg/file/audio"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
@@ -18,7 +17,7 @@ var (
 
 	// fingerprint types to match with
 	// only try to match by data fingerprints, _not_ perceptual fingerprints
-	matchableFingerprintTypes = []string{models.FingerprintTypeOshash, models.FingerprintTypeMD5}
+	matchableFingerprintTypes = []string{models.FingerprintTypeMD5}
 )
 
 type ScanCreatorUpdater interface {
@@ -43,27 +42,13 @@ type ScanGenerator interface {
 type ScanHandler struct {
 	CreatorUpdater ScanCreatorUpdater
 
-	// TODO(audio): this PR has no generation
-	// ScanGenerator  ScanGenerator
-	CaptionUpdater audio.CaptionUpdater
-	PluginCache    *plugin.Cache
-
-	FileNamingAlgorithm models.HashAlgorithm
-	Paths               *paths.Paths
+	PluginCache *plugin.Cache
+	Paths       *paths.Paths
 }
 
 func (h *ScanHandler) validate() error {
 	if h.CreatorUpdater == nil {
 		return errors.New("internal error:CreatorUpdater is required")
-	}
-	// if h.ScanGenerator == nil {
-	// 	return errors.New("ScanGenerator is required")
-	// }
-	if h.CaptionUpdater == nil {
-		return errors.New("internal error:CaptionUpdater is required")
-	}
-	if !h.FileNamingAlgorithm.IsValid() {
-		return errors.New("internal error:FileNamingAlgorithm is required")
 	}
 	if h.Paths == nil {
 		return errors.New("internal error:Paths is required")
@@ -80,12 +65,6 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 	AudioFile, ok := f.(*models.AudioFile)
 	if !ok {
 		return ErrNotAudioFile
-	}
-
-	if oldFile != nil {
-		if err := audio.CleanCaptions(ctx, AudioFile, nil, h.CaptionUpdater); err != nil {
-			return fmt.Errorf("cleaning captions: %w", err)
-		}
 	}
 
 	// try to match the file to a audio
@@ -118,29 +97,17 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 		}
 
 		h.PluginCache.RegisterPostHooks(ctx, newAudio.ID, hook.AudioCreatePost, nil, nil)
-
-		// existing = []*models.Audio{&newAudio}
 	}
 
 	if oldFile != nil {
 		// migrate hashes from the old file to the new
-		oldHash := GetHash(oldFile, h.FileNamingAlgorithm)
-		newHash := GetHash(f, h.FileNamingAlgorithm)
+		oldHash := GetHash(oldFile, models.HashAlgorithmMd5)
+		newHash := GetHash(f, models.HashAlgorithmMd5)
 
 		if oldHash != "" && newHash != "" && oldHash != newHash {
 			MigrateHash(h.Paths, oldHash, newHash)
 		}
 	}
-
-	// do this after the commit so that cover generation doesn't hold up the transaction
-	// txn.AddPostCommitHook(ctx, func(ctx context.Context) {
-	// 	for _, s := range existing {
-	// 		if err := h.ScanGenerator.Generate(ctx, s, AudioFile); err != nil {
-	// 			// just log if cover generation fails. We can try again on rescan
-	// 			logger.Errorf("Error generating content for %s: %v", AudioFile.Path, err)
-	// 		}
-	// 	}
-	// })
 
 	return nil
 }

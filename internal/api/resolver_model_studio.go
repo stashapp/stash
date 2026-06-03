@@ -5,6 +5,7 @@ import (
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
+	"github.com/stashapp/stash/pkg/audio"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/group"
 	"github.com/stashapp/stash/pkg/image"
@@ -86,6 +87,17 @@ func (r *studioResolver) Tags(ctx context.Context, obj *models.Studio) (ret []*m
 func (r *studioResolver) SceneCount(ctx context.Context, obj *models.Studio, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = scene.CountByStudioID(ctx, r.repository.Scene, obj.ID, depth)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (r *studioResolver) AudioCount(ctx context.Context, obj *models.Studio, depth *int) (ret int, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = audio.CountByStudioID(ctx, r.repository.Audio, obj.ID, depth)
 		return err
 	}); err != nil {
 		return 0, err

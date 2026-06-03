@@ -25,8 +25,6 @@ type Audio struct {
 	PrimaryFileID *FileID
 	// transient - path of primary file - empty if no files
 	Path string
-	// transient - oshash of primary file - empty if no files
-	OSHash string
 	// transient - checksum of primary file - empty if no files
 	Checksum string
 
@@ -222,23 +220,5 @@ func (s Audio) DisplayName() string {
 // GetHash returns the hash of the audio, based on the hash algorithm provided. If
 // hash algorithm is MD5, then Checksum is returned. Otherwise, OSHash is returned.
 func (s Audio) GetHash(hashAlgorithm HashAlgorithm) string {
-	switch hashAlgorithm {
-	case HashAlgorithmMd5:
-		return s.Checksum
-	case HashAlgorithmOshash:
-		return s.OSHash
-	}
-
-	return ""
+	return s.Checksum
 }
-
-// TODO(audio): don't know if we need this, using VideoCaption for now due to `pkg/models/repository_file.go` and `FileReader` using
-// type AudioCaption struct {
-// 	LanguageCode string `json:"language_code"`
-// 	Filename     string `json:"filename"`
-// 	CaptionType  string `json:"caption_type"`
-// }
-
-// func (c AudioCaption) Path(filePath string) string {
-// 	return filepath.Join(filepath.Dir(filePath), c.Filename)
-// }

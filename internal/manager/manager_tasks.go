@@ -29,11 +29,6 @@ func useAsVideo(pathname string) bool {
 }
 
 func useAsAudio(pathname string) bool {
-	stash := config.StashConfigs.GetStashFromDirPath(instance.Config.GetStashPaths(), pathname)
-	if instance.Config.IsCreateImageClipsFromVideos() && stash != nil && stash.ExcludeVideo {
-		// TODO(audio): figure out this IF condition
-		return isImage(pathname) || isVideo(pathname)
-	}
 	return isAudio(pathname)
 }
 

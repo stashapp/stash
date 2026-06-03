@@ -73,7 +73,6 @@ type Query {
   "A function which queries Audio objects"
   findAudios(
     audio_filter: AudioFilterType
-    audio_ids: [Int!] @deprecated(reason: "use ids")
     ids: [ID!]
     filter: FindFilterType
   ): FindAudiosResultType!

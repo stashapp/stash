@@ -64,8 +64,7 @@ func (c *fingerprintCalculator) CalculateFingerprints(f *models.BaseFile, o file
 	var ret []models.Fingerprint
 	calculateMD5 := true
 
-	// TODO(audio): should Audio's also use OSHash instead of md5 for default (if so, then will need to update Audios)
-	if useAsVideo(f.Path) || useAsAudio(f.Path) {
+	if useAsVideo(f.Path) {
 		var (
 			fp  *models.Fingerprint
 			err error

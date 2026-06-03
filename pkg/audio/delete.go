@@ -2,10 +2,8 @@ package audio
 
 import (
 	"context"
-	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
@@ -26,15 +24,6 @@ func (d *FileDeleter) MarkGeneratedFiles(audio *models.Audio) error {
 
 	if audioHash == "" {
 		return nil
-	}
-
-	markersFolder := filepath.Join(d.Paths.Generated.Markers, audioHash)
-
-	exists, _ := fsutil.FileExists(markersFolder)
-	if exists {
-		if err := d.DirsWithoutTrash([]string{markersFolder}); err != nil {
-			return err
-		}
 	}
 
 	var files []string

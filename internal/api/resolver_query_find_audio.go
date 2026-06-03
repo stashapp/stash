@@ -43,15 +43,13 @@ func (r *queryResolver) FindAudio(ctx context.Context, id *string, checksum *str
 func (r *queryResolver) FindAudios(
 	ctx context.Context,
 	audioFilter *models.AudioFilterType,
-	audioIDs []int,
 	ids []string,
 	filter *models.FindFilterType,
 ) (ret *FindAudiosResultType, err error) {
-	if len(ids) > 0 {
-		audioIDs, err = handleIDList(ids, "ids")
-		if err != nil {
-			return nil, err
-		}
+	var audioIDs []int
+	audioIDs, err = handleIDList(ids, "ids")
+	if err != nil {
+		return nil, err
 	}
 
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
