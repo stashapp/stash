@@ -27,6 +27,8 @@ import (
 
 const scrapeDefaultSleep = time.Second * 2
 
+var proxyAuthRE = regexp.MustCompile(`^(https?:\/\/)(([\P{Cc}]+):([\P{Cc}]+)@)?(([a-zA-Z0-9][a-zA-Z0-9.-]*)(:[0-9]{1,5})?)`)
+
 func loadURL(ctx context.Context, loadURL string, client *http.Client, def Definition, globalConfig GlobalConfig) (io.Reader, error) {
 	driverOptions := def.DriverOptions
 	if driverOptions != nil {
@@ -376,8 +378,7 @@ func proxyUsesAuth(proxyUrl string) bool {
 	if proxyUrl == "" {
 		return false
 	}
-	reg := regexp.MustCompile(`^(https?:\/\/)(([\P{Cc}]+):([\P{Cc}]+)@)?(([a-zA-Z0-9][a-zA-Z0-9.-]*)(:[0-9]{1,5})?)`)
-	matches := reg.FindAllStringSubmatch(proxyUrl, -1)
+	matches := proxyAuthRE.FindAllStringSubmatch(proxyUrl, -1)
 	if matches != nil {
 		split := matches[0]
 		return len(split) == 0 || (len(split) > 5 && split[3] != "")
@@ -390,8 +391,7 @@ func splitProxyAuth(proxyUrl string) (string, string, string) {
 	if proxyUrl == "" {
 		return "", "", ""
 	}
-	reg := regexp.MustCompile(`^(https?:\/\/)(([\P{Cc}]+):([\P{Cc}]+)@)?(([a-zA-Z0-9][a-zA-Z0-9.-]*)(:[0-9]{1,5})?)`)
-	matches := reg.FindAllStringSubmatch(proxyUrl, -1)
+	matches := proxyAuthRE.FindAllStringSubmatch(proxyUrl, -1)
 
 	if matches != nil && len(matches[0]) > 5 {
 		split := matches[0]
