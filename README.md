@@ -1,13 +1,14 @@
 # Stash
 
 [![Build](https://github.com/stashapp/stash/actions/workflows/build.yml/badge.svg?branch=develop&event=push)](https://github.com/stashapp/stash/actions/workflows/build.yml)
-[![Docker pulls](https://img.shields.io/docker/pulls/stashapp/stash.svg)](https://hub.docker.com/r/stashapp/stash 'DockerHub')
+[![Docker pulls](https://img.shields.io/docker/pulls/stashapp/stash?logo=docker)](https://hub.docker.com/r/stashapp/stash 'DockerHub')
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/stashapp?logo=github)](https://github.com/sponsors/stashapp)
 [![Open Collective backers](https://img.shields.io/opencollective/backers/stashapp?logo=opencollective)](https://opencollective.com/stashapp)
 [![Go Report Card](https://goreportcard.com/badge/github.com/stashapp/stash)](https://goreportcard.com/report/github.com/stashapp/stash)
 [![Discord](https://img.shields.io/discord/559159668438728723.svg?logo=discord)](https://discord.gg/2TsNFKt)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/stashapp/stash?logo=github)](https://github.com/stashapp/stash/releases/latest)
-[![GitHub issues by-label](https://img.shields.io/github/issues-raw/stashapp/stash/bounty)](https://github.com/stashapp/stash/labels/bounty)
+[![Codeberg Translate](https://img.shields.io/weblate/progress/stash?server=https%3A%2F%2Ftranslate.codeberg.org&logo=weblate)](https://translate.codeberg.org/engage/stash/)
+[![GitHub issues by-label](https://img.shields.io/github/issues-raw/stashapp/stash/bounty?logo=github)](https://github.com/stashapp/stash/labels/bounty)
 
 <h3>Stash is a self-hosted webapp written in Go which organizes and serves your diverse content collection, catering to both your SFW and NSFW needs.</h3>
 
@@ -20,9 +21,9 @@
 
 You can [watch a SFW demo video](https://vimeo.com/545323354) to see it in action.
 
-For further information you can consult the [documentation](https://docs.stashapp.cc) or access the in-app manual from within the application (also available at [docs.stashapp.cc/in-app-manual](https://docs.stashapp.cc/in-app-manual)).
+For further information see [Support & Resources](#support--resources) section.
 
-# Installing Stash
+## Installing Stash
 
 > [!tip]
 Step-by-step instructions are available at [docs.stashapp.cc/installation](https://docs.stashapp.cc/installation/).
@@ -45,7 +46,7 @@ Step-by-step instructions are available at [docs.stashapp.cc/installation](https
 
 Download links for other platforms and architectures are available on the [Releases](https://github.com/stashapp/stash/releases) page.
 
-## First Run
+### First Run
 
 #### Windows/macOS Users: Security Prompt
 
@@ -58,9 +59,9 @@ On Windows or macOS, running the app might present a security prompt since the a
 
 Stash requires FFmpeg. If you don't have it installed, Stash will prompt you to download a copy during setup. It is recommended that Linux users install `ffmpeg` from their distro's package manager.
 
-# Usage
+## Usage
 
-## Quickstart Guide
+### Quickstart Guide
 
 Stash is a web-based application. Once the application is running, the interface is available (by default) from `http://localhost:9999`.
 
@@ -74,44 +75,45 @@ Stash can pull metadata (performers, tags, descriptions, studios, and more) dire
 
 <sub>[StashDB](http://stashdb.org) is the canonical instance of our open source metadata API, [stash-box](https://github.com/stashapp/stash-box).</sub>
 
-# Translation
-
-[![Translate](https://translate.codeberg.org/widget/stash/stash/svg-badge.svg)](https://translate.codeberg.org/engage/stash/)
-
-Stash is available in 32 languages (so far!) and it could be in your language too. We use Weblate to coordinate community translations. If you want to help us translate Stash, you can make an account at [Codeberg's Weblate](https://translate.codeberg.org/projects/stash/stash/) to contribute to new or existing languages. Thanks!
-
-The badge below shows the current translation status of Stash across all supported languages:
-
-[![Translation status](https://translate.codeberg.org/widget/stash/stash/multi-auto.svg)](https://translate.codeberg.org/engage/stash/)
-
-# Support & Resources
+## Support & Resources
 
 Need help or want to get involved? Start with the documentation, then reach out to the community if you need further assistance.
 
 ### Documentation
+
 - [Official documentation](https://docs.stashapp.cc) - official guides guides and troubleshooting.
 - [In-app manual](https://docs.stashapp.cc/in-app-manual) press <kbd>Shift</kbd> + <kbd>?</kbd> in the app or view the manual online.
 - [FAQ](https://discourse.stashapp.cc/c/support/faq/28) - common questions and answers.
 - [Community wiki](https://discourse.stashapp.cc/tags/c/community-wiki/22/stash) - guides, how-to’s and tips.
   
-### Community & discussion
+### Community & Discussion
+
 - [Community forum](https://discourse.stashapp.cc) - community support, feature requests and discussions.
 - [Discord](https://discord.gg/2TsNFKt) - real-time chat and community support.
 - [GitHub discussions](https://github.com/stashapp/stash/discussions) - community support and feature discussions.
 - [Lemmy community](https://discuss.online/c/stashapp) - board-style community space.
 
-### Community scrapers & plugins
+### Community Scrapers & Plugins
+
 - [Metadata sources](https://docs.stashapp.cc/metadata-sources/)
 - [Plugins](https://docs.stashapp.cc/plugins/)
 - [Themes](https://docs.stashapp.cc/themes/)
 - [Other projects](https://docs.stashapp.cc/other-projects/)
 
-# Architecture
+## Architecture
 
 You can find an overview of Stash's architecture in the [ARCHITECTURE.md](docs/ARCHITECTURE.md) document.
 
-# For Developers
+## Contributing
 
-Pull requests are welcome! 
+We welcome contributions and help from all humans who want to improve the project.
 
-See [Development](docs/DEVELOPMENT.md) and [Contributing](docs/CONTRIBUTING.md) for information on working with the codebase, getting a local development setup, and contributing changes.
+Before contributing, please read the [Contributing](docs/CONTRIBUTING.md) document to understand our guidelines and processes for contributing to the project.
+
+You can learn about setting up a local development environment in the [Development](docs/DEVELOPMENT.md) document. 
+
+## Translation
+
+The widget below shows the current translation status of Stash across all supported languages. If you want to help us translate Stash, you can make an account at [Codeberg Translate](https://translate.codeberg.org/projects/stash/stash/) to contribute to new or existing languages. Thanks!
+
+[![Translation status](https://translate.codeberg.org/widget/stash/stash/multi-auto.svg)](https://translate.codeberg.org/engage/stash/)
