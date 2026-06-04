@@ -135,24 +135,30 @@ export const WallItem = <T extends WallItemType>({
   const previews = useMemo(() => {
     switch (type) {
       case "scene":
-        const scene = data as GQL.SlimSceneDataFragment;
-        return {
-          video: scene.paths.preview ?? undefined,
-          animation: scene.paths.webp ?? undefined,
-          image: scene.paths.screenshot ?? undefined,
-        };
+        {
+          const scene = data as GQL.SlimSceneDataFragment;
+          return {
+            video: scene.paths.preview ?? undefined,
+            animation: scene.paths.webp ?? undefined,
+            image: scene.paths.screenshot ?? undefined,
+          };
+        }
       case "sceneMarker":
-        const sceneMarker = data as GQL.SceneMarkerDataFragment;
-        return {
-          video: sceneMarker.stream,
-          animation: sceneMarker.preview,
-          image: sceneMarker.screenshot,
-        };
+        {
+          const sceneMarker = data as GQL.SceneMarkerDataFragment;
+          return {
+            video: sceneMarker.stream,
+            animation: sceneMarker.preview,
+            image: sceneMarker.screenshot,
+          };
+        }
       case "image":
-        const image = data as GQL.SlimImageDataFragment;
-        return {
-          image: image.paths.thumbnail ?? undefined,
-        };
+        {
+          const image = data as GQL.SlimImageDataFragment;
+          return {
+            image: image.paths.thumbnail ?? undefined,
+          };
+        }
       default:
         // this is unreachable, inference fails for some reason
         return type as never;
@@ -161,16 +167,22 @@ export const WallItem = <T extends WallItemType>({
   const linkSrc = useMemo(() => {
     switch (type) {
       case "scene":
-        const scene = data as GQL.SlimSceneDataFragment;
-        return sceneQueue
-          ? sceneQueue.makeLink(scene.id, { sceneIndex: index })
-          : `/scenes/${scene.id}`;
+        {
+          const scene = data as GQL.SlimSceneDataFragment;
+          return sceneQueue
+            ? sceneQueue.makeLink(scene.id, { sceneIndex: index })
+            : `/scenes/${scene.id}`;
+        }
       case "sceneMarker":
-        const sceneMarker = data as GQL.SceneMarkerDataFragment;
-        return NavUtils.makeSceneMarkerUrl(sceneMarker);
+        {
+          const sceneMarker = data as GQL.SceneMarkerDataFragment;
+          return NavUtils.makeSceneMarkerUrl(sceneMarker);
+        }
       case "image":
-        const image = data as GQL.SlimImageDataFragment;
-        return `/images/${image.id}`;
+        {
+          const image = data as GQL.SlimImageDataFragment;
+          return `/images/${image.id}`;
+        }
       default:
         return type;
     }
@@ -178,19 +190,23 @@ export const WallItem = <T extends WallItemType>({
   const title = useMemo(() => {
     switch (type) {
       case "scene":
-        const scene = data as GQL.SlimSceneDataFragment;
-        return objectTitle(scene);
+        {
+          const scene = data as GQL.SlimSceneDataFragment;
+          return objectTitle(scene);
+        }
       case "sceneMarker":
-        const sceneMarker = data as GQL.SceneMarkerDataFragment;
-        const newTitle = markerTitle(sceneMarker);
-        const seconds = TextUtils.formatTimestampRange(
-          sceneMarker.seconds,
-          sceneMarker.end_seconds ?? undefined
-        );
-        if (newTitle) {
-          return `${newTitle} - ${seconds}`;
-        } else {
-          return seconds;
+        {
+          const sceneMarker = data as GQL.SceneMarkerDataFragment;
+          const newTitle = markerTitle(sceneMarker);
+          const seconds = TextUtils.formatTimestampRange(
+            sceneMarker.seconds,
+            sceneMarker.end_seconds ?? undefined
+          );
+          if (newTitle) {
+            return `${newTitle} - ${seconds}`;
+          } else {
+            return seconds;
+          }
         }
       case "image":
         return "";

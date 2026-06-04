@@ -235,20 +235,24 @@ const ContentRow: React.FC<IFilterRowProps> = (props: IFilterRowProps) => {
   function title() {
     switch (props.content.__typename) {
       case "SavedFilter":
-        const savedFilterId = String(props.content.savedFilterId);
-        const savedFilter = props.allSavedFilters.find(
-          (f) => f.id === savedFilterId
-        );
-        if (!savedFilter) return "";
-        return filterTitle(intl, savedFilter);
-      case "CustomFilter":
-        const asCustomFilter = props.content as ICustomFilter;
-        if (asCustomFilter.message)
-          return intl.formatMessage(
-            { id: asCustomFilter.message.id },
-            asCustomFilter.message.values
+        {
+          const savedFilterId = String(props.content.savedFilterId);
+          const savedFilter = props.allSavedFilters.find(
+            (f) => f.id === savedFilterId
           );
-        return asCustomFilter.title ?? "";
+          if (!savedFilter) return "";
+          return filterTitle(intl, savedFilter);
+        }
+      case "CustomFilter":
+        {
+          const asCustomFilter = props.content as ICustomFilter;
+          if (asCustomFilter.message)
+            return intl.formatMessage(
+              { id: asCustomFilter.message.id },
+              asCustomFilter.message.values
+            );
+          return asCustomFilter.title ?? "";
+        }
     }
   }
 

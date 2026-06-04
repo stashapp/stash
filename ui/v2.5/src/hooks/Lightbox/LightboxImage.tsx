@@ -398,14 +398,16 @@ export const LightboxImage: React.FC<IProps> = ({
 
     switch (getScrollMode(ev)) {
       case GQL.ImageLightboxScrollMode.Zoom:
-        let percent: number;
-        if (infinite) {
-          percent = 1 - ev.deltaY / ZOOM_FACTOR;
-        } else {
-          percent = ev.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
+        {
+          let percent: number;
+          if (infinite) {
+            percent = 1 - ev.deltaY / ZOOM_FACTOR;
+          } else {
+            percent = ev.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
+          }
+          setZoom(zoom * percent);
+          break;
         }
-        setZoom(zoom * percent);
-        break;
       case GQL.ImageLightboxScrollMode.PanY:
         onImageScrollPanY(ev, infinite);
         break;
