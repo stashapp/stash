@@ -83,10 +83,6 @@
         "noShadowRestrictedNames": "off",
         "noConfusingVoidType": "off",
         "noTsIgnore": "off"
-      },
-      "performance": {
-        // remove the following after fixing
-        "noAccumulatingSpread": "off"
       }
     }
   },
