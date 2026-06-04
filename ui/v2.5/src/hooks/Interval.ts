@@ -17,7 +17,7 @@ const useInterval = (
   }, [callback]);
 
   useEffect(() => {
-    let validDelay;
+    let validDelay: number | null;
     if (delay !== null) {
       validDelay = delay >= MIN_VALID_INTERVAL ? delay : MIN_VALID_INTERVAL;
     } else {

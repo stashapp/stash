@@ -25,7 +25,7 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
   const { stream } = paths;
   const title = objectTitle(scene);
 
-  let url;
+  let url: string | undefined;
   const streamURL = new URL(stream);
   if (isAndroid) {
     const scheme = streamURL.protocol.slice(0, -1);

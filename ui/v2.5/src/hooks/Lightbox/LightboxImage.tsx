@@ -163,7 +163,7 @@ export const LightboxImage: React.FC<IProps> = ({
 
   const minMaxY = useCallback(
     (appliedZoom: number) => {
-      let minY, maxY: number;
+      let minY: number, maxY: number;
       const inBounds = appliedZoom * imageHeight <= boxHeight;
 
       // NOTE: I don't even know how these work, but they do

@@ -154,7 +154,7 @@ export class Interactive {
       return;
     }
 
-    var funscriptUrl;
+    let funscriptUrl = "";
 
     if (this._useStashHostedFunscript) {
       funscriptUrl = funscriptPath.replace("/funscript", "/interactive_csv");

@@ -86,7 +86,7 @@ function runInstead(
 export function PatchFunction<T extends Function>(name: string, fn: T) {
   return new Proxy(fn, {
     apply(target, ctx, args) {
-      let result;
+      let result: unknown;
 
       for (const beforeFn of beforeFns[name] || []) {
         args = beforeFn.apply(ctx, args);

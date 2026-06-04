@@ -73,8 +73,7 @@
       "suspicious": {
         "noArrayIndexKey": "off",
         // remove the following after fixing
-        "noExplicitAny": "off",
-        "noImplicitAnyLet": "off"
+        "noExplicitAny": "off"
       }
     }
   },

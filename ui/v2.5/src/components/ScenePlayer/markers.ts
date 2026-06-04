@@ -415,7 +415,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     const q = v * (1 - f * s);
     const t = v * (1 - (1 - f) * s);
 
-    let r, g, b;
+    let r: number, g: number, b: number;
     switch (i % 6) {
       case 0:
         r = v;

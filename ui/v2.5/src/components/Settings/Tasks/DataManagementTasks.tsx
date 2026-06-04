@@ -63,7 +63,7 @@ const CleanDialog: React.FC<ICleanDialog> = ({
     }
   }
 
-  let msg;
+  let msg: React.ReactNode;
   if (dryRun) {
     msg = (
       <p>{intl.formatMessage({ id: "actions.tasks.dry_mode_selected" })}</p>
@@ -183,7 +183,7 @@ const BackupDialog: React.FC<{
   const [download, setDownload] = useState(false);
   const [includeBlobs, setIncludeBlobs] = useState(includeBlobsDefault);
 
-  let msg;
+  let msg: React.ReactNode;
   if (!includeBlobs) {
     msg = intl.formatMessage(
       { id: "config.tasks.backup_database.sqlite" },
