@@ -71,6 +71,7 @@
         "noEmptyPattern": "off"
       },
       "suspicious": {
+        // this is used extensively, and there's no obvious fix
         "noArrayIndexKey": "off"
       }
     }
