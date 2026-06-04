@@ -173,7 +173,6 @@ export class ListFilterModel {
 
           this.criteria.push(criterion);
         } catch (err) {
-          // eslint-disable-next-line no-console
           console.error("Failed to parse encoded criterion:", err);
         }
       }

@@ -418,7 +418,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
       const vjs = videojs(videoEl, options);
 
-      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+      /* XXbiome-ignore lint/suspicious/noExplicitAny: intentional*/
       const settings = (vjs as any).textTrackSettings;
       settings.setValues({
         backgroundColor: "#000",
@@ -442,7 +442,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       // showAbLoopControls is necessary to re-init the player when the config changes
       // Note: interfaceConfig?.autostartVideo is intentionally excluded to prevent
       // player re-initialization when toggling autostart (which would interrupt playback)
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+      // XXbiome-ignore lint/correctness/useExhaustiveDependencies: intentional
     }, [uiConfig?.showAbLoopControls, uiConfig?.enableChromecast]);
 
     useEffect(() => {

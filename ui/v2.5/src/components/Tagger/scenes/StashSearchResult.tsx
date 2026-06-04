@@ -903,9 +903,9 @@ export const SceneSearchResults: React.FC<ISceneSearchResults> = ({
   return (
     <ul className="pl-0 mt-3 mb-0">
       {scenes.map((s, i) => (
-        // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions, react/no-array-index-key
+        // XXbiome-ignore jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions, react/no-array-index-key: intentional
         <li
-          // eslint-disable-next-line react/no-array-index-key
+          // XXbiome-ignore react/no-array-index-key: intentional
           key={i}
           onClick={() => setSelectedResult(i)}
           className={getClassName(i)}

@@ -217,7 +217,7 @@ export const StashBoxSetting: React.FC<IStashBoxSetting> = ({
       ) : undefined}
 
       {value.map((b, index) => (
-        // eslint-disable-next-line react/no-array-index-key
+        // XXbiome-ignore react/no-array-index-key: intentional
         <div key={index} className="setting">
           <div>
             <h3>{b.name ?? `#${index}`}</h3>

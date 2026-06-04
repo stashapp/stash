@@ -257,7 +257,6 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
 videojs.registerComponent("SourceMenuButton", SourceMenuButton);
 videojs.registerPlugin("sourceSelector", SourceSelectorPlugin);
 
-/* eslint-disable @typescript-eslint/naming-convention */
 declare module "video.js" {
   interface VideoJsPlayer {
     sourceSelector: () => SourceSelectorPlugin;
