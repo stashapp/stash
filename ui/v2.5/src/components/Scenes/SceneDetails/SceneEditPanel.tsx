@@ -689,7 +689,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     const date = (() => {
       try {
         return schema.validateSyncAt("date", formik.values);
-      } catch (e) {
+      } catch (_e) {
         return undefined;
       }
     })();
