@@ -126,7 +126,7 @@ export const URLsField: React.FC<IURLsField> = ({
 
   const renderUrls = () => {
     return urls.map((url, i) => {
-      if (!url) return;
+      if (!url) return null;
 
       const children = truncate ? <TruncatedText text={url} /> : url;
 

@@ -76,8 +76,7 @@
         "noExplicitAny": "off",
         "noImplicitAnyLet": "off",
         "noDoubleEquals": "off",
-        "noTemplateCurlyInString": "off",
-        "useIterableCallbackReturn": "off"
+        "noTemplateCurlyInString": "off"
       }
     }
   },

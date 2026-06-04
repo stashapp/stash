@@ -215,7 +215,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
               ss.stash_box_endpoint === s.source.stash_box_endpoint
           );
 
-          if (!found) return;
+          if (!found) return undefined;
 
           const ret: IScraperSource = {
             ...found,

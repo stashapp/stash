@@ -259,9 +259,9 @@ export const MainNavbar: React.FC = () => {
     Mousetrap.bind("?", () => openManual());
     Mousetrap.bind("g z", () => goto("/settings"));
 
-    menuItems.forEach((item) =>
+    menuItems.forEach((item) => {
       Mousetrap.bind(item.hotkey, () => goto(item.href))
-    );
+    });
 
     if (newPath) {
       Mousetrap.bind("n", () => history.push(String(newPath)));
@@ -270,7 +270,7 @@ export const MainNavbar: React.FC = () => {
     return () => {
       Mousetrap.unbind("?");
       Mousetrap.unbind("g z");
-      menuItems.forEach((item) => Mousetrap.unbind(item.hotkey));
+      menuItems.forEach((item) => { Mousetrap.unbind(item.hotkey) });
 
       if (newPath) {
         Mousetrap.unbind("n");
