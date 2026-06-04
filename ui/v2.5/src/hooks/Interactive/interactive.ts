@@ -159,7 +159,7 @@ export class Interactive {
     if (this._useStashHostedFunscript) {
       funscriptUrl = funscriptPath.replace("/funscript", "/interactive_csv");
       if (typeof apiKey !== "undefined" && apiKey !== "") {
-        var url = new URL(funscriptUrl);
+        let url = new URL(funscriptUrl);
         url.searchParams.append("apikey", apiKey);
         funscriptUrl = url.toString();
       }

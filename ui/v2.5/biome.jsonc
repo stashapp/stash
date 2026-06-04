@@ -61,8 +61,7 @@
       "correctness": {
         "useJsxKeyInIterable": "off",
         // remove the following after fixing
-        "useExhaustiveDependencies": "off",
-        "noInnerDeclarations": "off"
+        "useExhaustiveDependencies": "off"
       },
       "suspicious": {
         // this is used extensively, and there's no obvious fix

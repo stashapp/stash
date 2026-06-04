@@ -434,9 +434,9 @@ const domainFromURL = (urlString?: string, url?: URL) => {
   if (url) {
     return url.hostname;
   } else if (urlString) {
-    var urlDomain = "";
+    let urlDomain = "";
     try {
-      var sanitizedUrl = sanitiseURL(urlString);
+      let sanitizedUrl = sanitiseURL(urlString);
       if (sanitizedUrl) {
         urlString = sanitizedUrl;
       }
