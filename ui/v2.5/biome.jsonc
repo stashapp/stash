@@ -67,8 +67,7 @@
         "noUnusedPrivateClassMembers": "off",
         "noUnusedFunctionParameters": "off",
         "useParseIntRadix": "off",
-        "noUnusedVariables": "off",
-        "noEmptyPattern": "off"
+        "noUnusedVariables": "off"
       },
       "suspicious": {
         // this is used extensively, and there's no obvious fix
