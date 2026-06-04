@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import videojs, { VideoJsPlayer } from "video.js";
 
 interface ControlOptions extends videojs.ComponentOptions {

@@ -56,7 +56,6 @@ videojs.registerComponent("BigButtonGroup", BigButtonGroup);
 videojs.registerComponent("BigPlayPauseButton", BigPlayPauseButton);
 videojs.registerPlugin("bigButtons", BigButtonsPlugin);
 
-/* eslint-disable @typescript-eslint/naming-convention */
 declare module "video.js" {
   interface VideoJsPlayer {
     bigButtons: () => BigButtonsPlugin;

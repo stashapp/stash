@@ -332,7 +332,6 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
             <th className="w-25">
               <FormattedMessage id="config.tasks.identify.create_missing" />
             </th>
-            {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
             <th className="w-25" />
           </tr>
         </thead>

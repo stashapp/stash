@@ -23,7 +23,7 @@ const Stash: React.FC<IStashProps> = ({
   onEdit,
   onDelete,
 }) => {
-  // eslint-disable-next-line
+  // XXbiome-ignore
   const handleInput = (key: string, value: any) => {
     const newObj = {
       ...stash,

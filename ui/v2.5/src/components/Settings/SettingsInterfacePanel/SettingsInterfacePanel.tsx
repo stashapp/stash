@@ -171,7 +171,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
       if (!v) return;
       try {
         // creates a function from the string to validate it but does not execute it
-        // eslint-disable-next-line @typescript-eslint/no-implied-eval
+        // XXbiome-ignore lint/nursery/noImpliedEval: intentional
         new Function(v);
       } catch (e) {
         throw new Error(

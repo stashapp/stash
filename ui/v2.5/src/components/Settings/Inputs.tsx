@@ -521,7 +521,7 @@ export const StringListSetting: React.FC<IStringListSetting> = PatchComponent(
         renderValue={(value) => (
           <div>
             {value?.map((v, i) => (
-              // eslint-disable-next-line react/no-array-index-key
+              // XXbiome-ignore react/no-array-index-key: intentional
               <div key={i}>{v}</div>
             ))}
           </div>

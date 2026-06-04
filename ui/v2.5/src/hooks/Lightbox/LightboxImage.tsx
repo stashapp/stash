@@ -560,7 +560,7 @@ export const LightboxImage: React.FC<IProps> = ({
           }}
         >
           <source srcSet={src} media="(min-width: 800px)" />
-          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+          {/* XXbiome-ignore jsx-a11y/no-noninteractive-element-interactions */}
           <ImageView
             loop={isVideo}
             src={src}
