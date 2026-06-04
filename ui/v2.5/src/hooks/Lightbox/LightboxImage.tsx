@@ -552,7 +552,12 @@ export const LightboxImage: React.FC<IProps> = ({
       onWheel={(e) => onContainerScroll(e)}
     >
       {defaultZoom ? (
-        <picture
+        /* The transform is applied to this wrapper rather than the <img>
+           to work around a Safari rendering bug: `transform: scale` on
+           an <img> with very large intrinsic dimensions distorts the
+           image's aspect ratio. See #5087. */
+        <div
+          className={`${CLASSNAME_IMAGE}-wrapper`}
           style={{
             transform: `translate(${positionX}px, ${positionY}px) scale(${
               defaultZoom * zoom
@@ -577,7 +582,7 @@ export const LightboxImage: React.FC<IProps> = ({
             onPointerUp={onPointerUp}
             onPointerMove={onPointerMove}
           />
-        </picture>
+        </div>
       ) : undefined}
     </div>
   );
