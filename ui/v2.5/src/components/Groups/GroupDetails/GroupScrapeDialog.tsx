@@ -48,7 +48,7 @@ export const GroupScrapeDialog: React.FC<IGroupScrapeDialogProps> = ({
     new ScrapeResult<string>(
       TextUtils.secondsToTimestamp(group.duration || 0),
       // convert seconds to string if it's a number
-      scraped.duration && !isNaN(+scraped.duration)
+      scraped.duration && !Number.isNaN(Number(scraped.duration))
         ? TextUtils.secondsToTimestamp(parseInt(scraped.duration, 10))
         : scraped.duration
     )

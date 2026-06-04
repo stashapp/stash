@@ -180,7 +180,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
     if (Math.abs(newPosition - position.current) < 1) return;
 
     const delta = Math.abs(time - prevTime.current);
-    if (isNaN(delta)) {
+    if (Number.isNaN(delta)) {
       // Don't use a transition on initial time change or after resize
       clearTransition();
     } else if (delta <= 1) {

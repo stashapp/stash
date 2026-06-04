@@ -202,13 +202,13 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
 
     // Try to parse as pure number (minutes)
     const minutesOnly = parseFloat(trimmed);
-    if (!isNaN(minutesOnly) && trimmed.indexOf(":") === -1) {
+    if (!Number.isNaN(minutesOnly) && trimmed.indexOf(":") === -1) {
       return Math.round(minutesOnly * 60);
     }
 
     // Parse HH:MM:SS or MM:SS format
     const parts = trimmed.split(":").map((p) => parseInt(p));
-    if (parts.some(isNaN)) {
+    if (parts.some(Number.isNaN)) {
       return null;
     }
 

@@ -27,7 +27,7 @@ export const PhashFilter: React.FC<IPhashFilterProps> = ({
 
   function distanceChanged(event: React.ChangeEvent<HTMLInputElement>) {
     let distance = parseInt(event.target.value);
-    if (distance < 0 || isNaN(distance)) {
+    if (distance < 0 || Number.isNaN(distance)) {
       distance = 0;
     }
 
