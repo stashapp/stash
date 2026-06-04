@@ -130,7 +130,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     marker: IMarker,
     layer: number,
     duration: number,
-    seekBar: Element,
+    _seekBar: Element,
     parent: Element
   ) {
     if (!marker.end_seconds) return;

@@ -93,8 +93,8 @@ export const GroupSubGroupsPanel: React.FC<IGroupSubGroupsPanel> =
       const filterHook = useContainingGroupFilterHook(group);
 
       async function removeSubGroups(
-        result: GQL.FindGroupsQueryResult,
-        filter: ListFilterModel,
+        _result: GQL.FindGroupsQueryResult,
+        _filter: ListFilterModel,
         selectedIds: Set<string>
       ) {
         try {

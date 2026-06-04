@@ -64,8 +64,7 @@
         "useExhaustiveDependencies": "off",
         "noInnerDeclarations": "off",
         "noSwitchDeclarations": "off",
-        "noUnusedPrivateClassMembers": "off",
-        "noUnusedFunctionParameters": "off"
+        "noUnusedPrivateClassMembers": "off"
       },
       "suspicious": {
         // this is used extensively, and there's no obvious fix

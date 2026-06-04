@@ -191,7 +191,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
   const [createStudio] = useStudioCreate();
   const updateStudio = useUpdateStudio();
 
-  function handleSaveError(studioID: string, name: string, message: string) {
+  function handleSaveError(studioID: string, _name: string, message: string) {
     setError({
       ...error,
       [studioID]: {

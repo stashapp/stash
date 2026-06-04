@@ -171,7 +171,7 @@ export const StashBoxSetting: React.FC<IStashBoxSetting> = ({
   }
 
   function onDelete(index: number) {
-    onChange(value.filter((v, i) => i !== index));
+    onChange(value.filter((_v, i) => i !== index));
   }
 
   function onNew() {

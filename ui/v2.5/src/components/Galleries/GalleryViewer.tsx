@@ -46,7 +46,7 @@ export const GalleryViewer: React.FC<IProps> = ({ galleryId }) => {
 
   const showLightbox = useLightbox(lightboxState);
   const showLightboxOnClick: PhotoClickHandler = useCallback(
-    (event, { index }) => {
+    (_event, { index }) => {
       showLightbox({ initialIndex: index });
     },
     [showLightbox]

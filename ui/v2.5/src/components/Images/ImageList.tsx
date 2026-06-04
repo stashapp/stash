@@ -129,7 +129,7 @@ const ImageWall: React.FC<IImageWallProps> = ({
   });
 
   const showLightboxOnClick = useCallback(
-    (event, { index }) => {
+    (_event, { index }) => {
       handleImageOpen(index);
     },
     [handleImageOpen]

@@ -360,7 +360,7 @@ export const FrontPageConfig: React.FC<IFrontPageConfigProps> = ({
   }
 
   function deleteSavedFilter(index: number) {
-    setCurrentContent(currentContent.filter((f, i) => i !== index));
+    setCurrentContent(currentContent.filter((_f, i) => i !== index));
   }
 
   return (

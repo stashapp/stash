@@ -126,7 +126,7 @@ export const RatingStars = PatchComponent(
       return "unset";
     }
 
-    function getTooltip(thisStar: number, current: RatingFraction | undefined) {
+    function getTooltip(_thisStar: number, current: RatingFraction | undefined) {
       if (disabled) {
         if (rating) {
           // always return current rating for disabled control
@@ -244,7 +244,7 @@ export const RatingStars = PatchComponent(
 
     return (
       <div className={`rating-stars ${precisionClassName}`}>
-        {Array.from(Array(max)).map((value, index) =>
+        {Array.from(Array(max)).map((_value, index) =>
           renderRatingButton(index + 1)
         )}
         <span className="star-rating-number">{maybeGetStarRatingNumber()}</span>

@@ -106,7 +106,7 @@ const StashConfiguration: React.FC<IStashConfigurationProps> = ({
   }
 
   function onDelete(index: number) {
-    setStashes(stashes.filter((v, i) => i !== index));
+    setStashes(stashes.filter((_v, i) => i !== index));
   }
 
   function onNew() {
