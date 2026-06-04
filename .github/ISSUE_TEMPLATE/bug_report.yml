@@ -4,8 +4,7 @@ labels: ["bug report"]
 body:
   - type: markdown
     attributes:
-      value: |
-        Thanks for taking the time to fill out this bug report!
+      value: Thanks for taking the time to fill out this bug report! Make sure to read [Contributing](../docs/CONTRIBUTING.md) document before submitting.
   - type: checkboxes
     id: confirm-troubleshooting
     attributes:
