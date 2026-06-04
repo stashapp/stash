@@ -243,11 +243,11 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
   removeTextTrack(track: HTMLTrackElement) {
     this.player.removeRemoteTextTrack(track);
     let index = this.manualTextTracks.indexOf(track);
-    if (index != -1) {
+    if (index !== -1) {
       this.manualTextTracks.splice(index, 1);
     }
     index = this.cleanupTextTracks.indexOf(track);
-    if (index != -1) {
+    if (index !== -1) {
       this.cleanupTextTracks.splice(index, 1);
     }
   }

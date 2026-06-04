@@ -667,7 +667,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
           }
 
           label = label + " (" + caption.caption_type + ")";
-          const setAsDefault = !hasDefault && languageCode == lang;
+          const setAsDefault = !hasDefault && languageCode === lang;
           if (setAsDefault) {
             hasDefault = true;
           }
@@ -962,7 +962,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
         return;
       }
-      if (event.key == " ") {
+      if (event.key === " ") {
         event.preventDefault();
         event.stopPropagation();
         if (player.paused()) {

@@ -489,12 +489,12 @@ export const LightboxComponent: React.FC<IProps> = ({
   }
 
   const navItems = images.map((image, i) =>
-    React.createElement(image.paths.preview != "" ? "video" : "img", {
-      loop: image.paths.preview != "",
-      autoPlay: image.paths.preview != "",
-      playsInline: image.paths.preview != "",
+    React.createElement(image.paths.preview !== "" ? "video" : "img", {
+      loop: image.paths.preview !== "",
+      autoPlay: image.paths.preview !== "",
+      playsInline: image.paths.preview !== "",
       src:
-        image.paths.preview != ""
+        image.paths.preview !== ""
           ? image.paths.preview ?? ""
           : image.paths.thumbnail ?? "",
       alt: "",

@@ -372,7 +372,7 @@ function stringEqualsCriterion(option: ModifierCriterionOption, value: string) {
 }
 
 const makeDirectorScenesUrl = (director: string) => {
-  if (director.length == 0) return "#";
+  if (director.length === 0) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Scenes, undefined);
   filter.criteria.push(
     stringEqualsCriterion(createStringCriterionOption("director"), director)
@@ -381,7 +381,7 @@ const makeDirectorScenesUrl = (director: string) => {
 };
 
 const makeDirectorGroupsUrl = (director: string) => {
-  if (director.length == 0) return "#";
+  if (director.length === 0) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Groups, undefined);
   filter.criteria.push(
     stringEqualsCriterion(createStringCriterionOption("director"), director)
@@ -390,7 +390,7 @@ const makeDirectorGroupsUrl = (director: string) => {
 };
 
 const makePhotographerGalleriesUrl = (photographer: string) => {
-  if (photographer.length == 0) return "#";
+  if (photographer.length === 0) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Galleries, undefined);
   filter.criteria.push(
     stringEqualsCriterion(
@@ -402,7 +402,7 @@ const makePhotographerGalleriesUrl = (photographer: string) => {
 };
 
 const makePhotographerImagesUrl = (photographer: string) => {
-  if (photographer.length == 0) return "#";
+  if (photographer.length === 0) return "#";
   const filter = new ListFilterModel(GQL.FilterMode.Images, undefined);
   filter.criteria.push(
     stringEqualsCriterion(

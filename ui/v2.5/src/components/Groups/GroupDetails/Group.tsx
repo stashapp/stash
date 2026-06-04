@@ -65,8 +65,8 @@ const GroupTabs: React.FC<{
   } = group;
 
   const populatedDefaultTab = useMemo(() => {
-    if (sceneCount == 0) {
-      if (performerCount != 0) {
+    if (sceneCount === 0) {
+      if (performerCount !== 0) {
         return "performers";
       } else if (groupCount !== 0) {
         return "subgroups";

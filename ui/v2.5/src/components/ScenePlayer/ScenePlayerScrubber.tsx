@@ -136,7 +136,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
   useEffect(() => {
     const onResize = (entries: ResizeObserverEntry[]) => {
       const newWidth = entries[0].target.clientWidth;
-      if (_width.current != newWidth) {
+      if (_width.current !== newWidth) {
         // set prevTime to NaN to not use a transition when updating the slider position
         prevTime.current = NaN;
         _width.current = newWidth;

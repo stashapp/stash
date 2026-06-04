@@ -126,7 +126,7 @@ export const SceneDuplicateChecker: React.FC = () => {
     ];
 
     const filteredSizes = pageSizes.filter((s, i) => {
-      return scenes.length > s || i == 0 || scenes.length > pageSizes[i - 1];
+      return scenes.length > s || i === 0 || scenes.length > pageSizes[i - 1];
     });
 
     return filteredSizes.map((size) => {

@@ -43,7 +43,7 @@ export const RatingStars = PatchComponent(
     function newToggleFraction() {
       if (precision !== 1) {
         if (fraction !== precision) {
-          if (fraction == 0) {
+          if (fraction === 0) {
             return 1 - precision;
           }
 
@@ -232,7 +232,7 @@ export const RatingStars = PatchComponent(
       const ratingFraction = getCurrentSelectedRating();
       if (
         !ratingFraction ||
-        (ratingFraction.rating == 0 && ratingFraction.fraction == 0)
+        (ratingFraction.rating === 0 && ratingFraction.fraction === 0)
       ) {
         return "";
       }

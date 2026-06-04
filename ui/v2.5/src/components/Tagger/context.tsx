@@ -188,7 +188,7 @@ export const TaggerContext: React.FC = ({ children }) => {
     // First, see if we have a saved endpoint.
     if (config.selectedEndpoint) {
       let source = sources.find(
-        (s) => s.sourceInput.stash_box_endpoint == config.selectedEndpoint
+        (s) => s.sourceInput.stash_box_endpoint === config.selectedEndpoint
       );
       if (source) {
         setCurrentSource(source);

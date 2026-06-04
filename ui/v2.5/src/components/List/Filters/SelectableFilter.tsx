@@ -197,10 +197,10 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
     );
   }, [modifier, queryResults, selected, excluded]);
 
-  const includingOnly = modifier == CriterionModifier.Equals;
+  const includingOnly = modifier === CriterionModifier.Equals;
   const excludingOnly =
-    modifier == CriterionModifier.Excludes ||
-    modifier == CriterionModifier.NotEquals;
+    modifier === CriterionModifier.Excludes ||
+    modifier === CriterionModifier.NotEquals;
 
   const modifierValues = useMemo(() => {
     return {

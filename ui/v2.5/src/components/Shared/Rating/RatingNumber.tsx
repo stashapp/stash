@@ -79,10 +79,10 @@ export const RatingNumber = PatchComponent(
         return;
       }
 
-      if (match[2] && !(match[2] == "0" && match[1] == "1")) {
+      if (match[2] && !(match[2] === "0" && match[1] === "1")) {
         match[2] = "";
       }
-      if (match[4] == null || match[4] == "") {
+      if (match[4] === null || match[4] === "") {
         match[4] = "0";
       }
 

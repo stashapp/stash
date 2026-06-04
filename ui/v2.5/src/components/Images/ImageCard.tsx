@@ -176,7 +176,7 @@ const ImageCardImage = PatchComponent(
     }
 
     const source =
-      props.image.paths.preview != ""
+      props.image.paths.preview !== ""
         ? props.image.paths.preview ?? ""
         : props.image.paths.thumbnail ?? "";
     const video = source.includes("preview");

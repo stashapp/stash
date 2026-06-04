@@ -102,7 +102,7 @@ export const showWhenSingleSelection = <T extends QueryResult>(
   filter: ListFilterModel,
   selectedIds: Set<string>
 ) => {
-  return selectedIds.size == 1;
+  return selectedIds.size === 1;
 };
 
 export const showWhenNoneSelected = <T extends QueryResult>(
