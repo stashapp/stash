@@ -45,6 +45,7 @@ import { FavoriteIcon } from "src/components/Shared/FavoriteIcon";
 import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
 import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
 import { goBackOrReplace } from "src/utils/history";
+import { PatchComponent } from "src/patch";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -286,305 +287,308 @@ const TagTabs: React.FC<{
   );
 };
 
-const TagPage: React.FC<IProps> = ({ tag, tabKey }) => {
-  const history = useHistory();
-  const Toast = useToast();
-  const intl = useIntl();
+const TagPage: React.FC<IProps> = PatchComponent(
+  "TagPage",
+  ({ tag, tabKey }) => {
+    const history = useHistory();
+    const Toast = useToast();
+    const intl = useIntl();
 
-  // Configuration settings
-  const { configuration } = useConfigurationContext();
-  const uiConfig = configuration?.ui;
-  const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
-  const enableBackgroundImage = uiConfig?.enableTagBackgroundImage ?? false;
-  const showAllDetails = uiConfig?.showAllDetails ?? true;
-  const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
+    // Configuration settings
+    const { configuration } = useConfigurationContext();
+    const uiConfig = configuration?.ui;
+    const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
+    const enableBackgroundImage = uiConfig?.enableTagBackgroundImage ?? false;
+    const showAllDetails = uiConfig?.showAllDetails ?? true;
+    const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
 
-  const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
-  const loadStickyHeader = useLoadStickyHeader();
+    const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
+    const loadStickyHeader = useLoadStickyHeader();
 
-  // Editing state
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
-  const [isMerging, setIsMerging] = useState<boolean>(false);
+    // Editing state
+    const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+    const [isMerging, setIsMerging] = useState<boolean>(false);
 
-  // Editing tag state
-  const [image, setImage] = useState<string | null>();
-  const [encodingImage, setEncodingImage] = useState<boolean>(false);
+    // Editing tag state
+    const [image, setImage] = useState<string | null>();
+    const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
-  const [updateTag] = useTagUpdate();
-  const [deleteTag] = useTagDestroy({ id: tag.id });
+    const [updateTag] = useTagUpdate();
+    const [deleteTag] = useTagDestroy({ id: tag.id });
 
-  const showAllCounts = uiConfig?.showChildTagContent;
+    const showAllCounts = uiConfig?.showChildTagContent;
 
-  const tagImage = useMemo(() => {
-    let existingImage = tag.image_path;
-    if (isEditing) {
-      if (image === null && existingImage) {
-        const tagImageURL = new URL(existingImage);
-        tagImageURL.searchParams.set("default", "true");
-        return tagImageURL.toString();
-      } else if (image) {
-        return image;
-      }
-    }
-
-    return existingImage;
-  }, [isEditing, tag.image_path, image]);
-
-  function setFavorite(v: boolean) {
-    if (tag.id) {
-      updateTag({
-        variables: {
-          input: {
-            id: tag.id,
-            favorite: v,
-          },
-        },
-      });
-    }
-  }
-
-  // set up hotkeys
-  useEffect(() => {
-    Mousetrap.bind("e", () => toggleEditing());
-    Mousetrap.bind("d d", () => {
-      setIsDeleteAlertOpen(true);
-    });
-    Mousetrap.bind(",", () => setCollapsed(!collapsed));
-    Mousetrap.bind("f", () => setFavorite(!tag.favorite));
-
-    return () => {
+    const tagImage = useMemo(() => {
+      let existingImage = tag.image_path;
       if (isEditing) {
-        Mousetrap.unbind("s s");
+        if (image === null && existingImage) {
+          const tagImageURL = new URL(existingImage);
+          tagImageURL.searchParams.set("default", "true");
+          return tagImageURL.toString();
+        } else if (image) {
+          return image;
+        }
       }
 
-      Mousetrap.unbind("e");
-      Mousetrap.unbind("d d");
-      Mousetrap.unbind(",");
-      Mousetrap.unbind("f");
-    };
-  });
+      return existingImage;
+    }, [isEditing, tag.image_path, image]);
 
-  async function onSave(input: GQL.TagCreateInput) {
-    const oldRelations = {
-      parents: tag.parents ?? [],
-      children: tag.children ?? [],
-    };
-    const result = await updateTag({
-      variables: {
-        input: {
-          id: tag.id,
-          ...input,
-        },
-      },
-    });
-    if (result.data?.tagUpdate) {
-      toggleEditing(false);
-      const updated = result.data.tagUpdate;
-      tagRelationHook(updated, oldRelations, {
-        parents: updated.parents,
-        children: updated.children,
+    function setFavorite(v: boolean) {
+      if (tag.id) {
+        updateTag({
+          variables: {
+            input: {
+              id: tag.id,
+              favorite: v,
+            },
+          },
+        });
+      }
+    }
+
+    // set up hotkeys
+    useEffect(() => {
+      Mousetrap.bind("e", () => toggleEditing());
+      Mousetrap.bind("d d", () => {
+        setIsDeleteAlertOpen(true);
       });
-      Toast.success(
-        intl.formatMessage(
-          { id: "toast.updated_entity" },
-          { entity: intl.formatMessage({ id: "tag" }).toLocaleLowerCase() }
-        )
-      );
-    }
-  }
+      Mousetrap.bind(",", () => setCollapsed(!collapsed));
+      Mousetrap.bind("f", () => setFavorite(!tag.favorite));
 
-  async function onAutoTag() {
-    if (!tag.id) return;
-    try {
-      await mutateMetadataAutoTag({ tags: [tag.id] });
-      Toast.success(intl.formatMessage({ id: "toast.started_auto_tagging" }));
-    } catch (e) {
-      Toast.error(e);
-    }
-  }
+      return () => {
+        if (isEditing) {
+          Mousetrap.unbind("s s");
+        }
 
-  async function onDelete() {
-    try {
+        Mousetrap.unbind("e");
+        Mousetrap.unbind("d d");
+        Mousetrap.unbind(",");
+        Mousetrap.unbind("f");
+      };
+    });
+
+    async function onSave(input: GQL.TagCreateInput) {
       const oldRelations = {
         parents: tag.parents ?? [],
         children: tag.children ?? [],
       };
-      await deleteTag();
-      tagRelationHook(tag as GQL.TagDataFragment, oldRelations, {
-        parents: [],
-        children: [],
+      const result = await updateTag({
+        variables: {
+          input: {
+            id: tag.id,
+            ...input,
+          },
+        },
       });
-    } catch (e) {
-      Toast.error(e);
-      return;
+      if (result.data?.tagUpdate) {
+        toggleEditing(false);
+        const updated = result.data.tagUpdate;
+        tagRelationHook(updated, oldRelations, {
+          parents: updated.parents,
+          children: updated.children,
+        });
+        Toast.success(
+          intl.formatMessage(
+            { id: "toast.updated_entity" },
+            { entity: intl.formatMessage({ id: "tag" }).toLocaleLowerCase() }
+          )
+        );
+      }
     }
 
-    goBackOrReplace(history, "/tags");
-  }
-
-  function renderDeleteAlert() {
-    return (
-      <ModalComponent
-        show={isDeleteAlertOpen}
-        icon={faTrashAlt}
-        accept={{
-          text: intl.formatMessage({ id: "actions.delete" }),
-          variant: "danger",
-          onClick: onDelete,
-        }}
-        cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
-      >
-        <p>
-          <FormattedMessage
-            id="dialogs.delete_confirm"
-            values={{
-              entityName:
-                tag.name ??
-                intl.formatMessage({ id: "tag" }).toLocaleLowerCase(),
-            }}
-          />
-        </p>
-      </ModalComponent>
-    );
-  }
-
-  function toggleEditing(value?: boolean) {
-    if (value !== undefined) {
-      setIsEditing(value);
-    } else {
-      setIsEditing((e) => !e);
+    async function onAutoTag() {
+      if (!tag.id) return;
+      try {
+        await mutateMetadataAutoTag({ tags: [tag.id] });
+        Toast.success(intl.formatMessage({ id: "toast.started_auto_tagging" }));
+      } catch (e) {
+        Toast.error(e);
+      }
     }
-    setImage(undefined);
-  }
 
-  function renderMergeButton() {
-    return (
-      <Button variant="secondary" onClick={() => setIsMerging(true)}>
-        <FormattedMessage id="actions.merge" />
-        ...
-      </Button>
-    );
-  }
+    async function onDelete() {
+      try {
+        const oldRelations = {
+          parents: tag.parents ?? [],
+          children: tag.children ?? [],
+        };
+        await deleteTag();
+        tagRelationHook(tag as GQL.TagDataFragment, oldRelations, {
+          parents: [],
+          children: [],
+        });
+      } catch (e) {
+        Toast.error(e);
+        return;
+      }
 
-  function renderMergeDialog() {
-    if (!tag.id) return;
-    return (
-      <TagMergeModal
-        show={isMerging}
-        onClose={(mergedId) => {
-          setIsMerging(false);
-          if (mergedId !== undefined && mergedId !== tag.id) {
-            // By default, the merge destination is the current tag, but
-            // the user can change it, in which case we need to redirect.
-            history.replace(`/tags/${mergedId}`);
-          }
-        }}
-        tags={[tag]}
-      />
-    );
-  }
+      goBackOrReplace(history, "/tags");
+    }
 
-  const headerClassName = cx("detail-header", {
-    edit: isEditing,
-    collapsed,
-    "full-width": !collapsed && !compactExpandedDetails,
-  });
+    function renderDeleteAlert() {
+      return (
+        <ModalComponent
+          show={isDeleteAlertOpen}
+          icon={faTrashAlt}
+          accept={{
+            text: intl.formatMessage({ id: "actions.delete" }),
+            variant: "danger",
+            onClick: onDelete,
+          }}
+          cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
+        >
+          <p>
+            <FormattedMessage
+              id="dialogs.delete_confirm"
+              values={{
+                entityName:
+                  tag.name ??
+                  intl.formatMessage({ id: "tag" }).toLocaleLowerCase(),
+              }}
+            />
+          </p>
+        </ModalComponent>
+      );
+    }
 
-  return (
-    <div id="tag-page" className="row">
-      <Helmet>
-        <title>{tag.name}</title>
-      </Helmet>
+    function toggleEditing(value?: boolean) {
+      if (value !== undefined) {
+        setIsEditing(value);
+      } else {
+        setIsEditing((e) => !e);
+      }
+      setImage(undefined);
+    }
 
-      <div className={headerClassName}>
-        <BackgroundImage
-          imagePath={tag.image_path ?? undefined}
-          show={enableBackgroundImage && !isEditing}
+    function renderMergeButton() {
+      return (
+        <Button variant="secondary" onClick={() => setIsMerging(true)}>
+          <FormattedMessage id="actions.merge" />
+          ...
+        </Button>
+      );
+    }
+
+    function renderMergeDialog() {
+      if (!tag.id) return;
+      return (
+        <TagMergeModal
+          show={isMerging}
+          onClose={(mergedId) => {
+            setIsMerging(false);
+            if (mergedId !== undefined && mergedId !== tag.id) {
+              // By default, the merge destination is the current tag, but
+              // the user can change it, in which case we need to redirect.
+              history.replace(`/tags/${mergedId}`);
+            }
+          }}
+          tags={[tag]}
         />
-        <div className="detail-container">
-          <HeaderImage encodingImage={encodingImage}>
-            {tagImage && (
-              <DetailImage className="logo" alt={tag.name} src={tagImage} />
-            )}
-          </HeaderImage>
-          <div className="row">
-            <div className="tag-head col">
-              <DetailTitle name={tag.name} classNamePrefix="tag">
+      );
+    }
+
+    const headerClassName = cx("detail-header", {
+      edit: isEditing,
+      collapsed,
+      "full-width": !collapsed && !compactExpandedDetails,
+    });
+
+    return (
+      <div id="tag-page" className="row">
+        <Helmet>
+          <title>{tag.name}</title>
+        </Helmet>
+
+        <div className={headerClassName}>
+          <BackgroundImage
+            imagePath={tag.image_path ?? undefined}
+            show={enableBackgroundImage && !isEditing}
+          />
+          <div className="detail-container">
+            <HeaderImage encodingImage={encodingImage}>
+              {tagImage && (
+                <DetailImage className="logo" alt={tag.name} src={tagImage} />
+              )}
+            </HeaderImage>
+            <div className="row">
+              <div className="tag-head col">
+                <DetailTitle name={tag.name} classNamePrefix="tag">
+                  {!isEditing && (
+                    <ExpandCollapseButton
+                      collapsed={collapsed}
+                      setCollapsed={(v) => setCollapsed(v)}
+                    />
+                  )}
+                  <span className="name-icons">
+                    <FavoriteIcon
+                      favorite={tag.favorite}
+                      onToggleFavorite={(v) => setFavorite(v)}
+                    />
+                  </span>
+                </DetailTitle>
+
+                <AliasList aliases={tag.aliases} />
                 {!isEditing && (
-                  <ExpandCollapseButton
-                    collapsed={collapsed}
-                    setCollapsed={(v) => setCollapsed(v)}
+                  <TagDetailsPanel
+                    tag={tag}
+                    fullWidth={!collapsed && !compactExpandedDetails}
                   />
                 )}
-                <span className="name-icons">
-                  <FavoriteIcon
-                    favorite={tag.favorite}
-                    onToggleFavorite={(v) => setFavorite(v)}
+                {isEditing ? (
+                  <TagEditPanel
+                    tag={tag}
+                    onSubmit={onSave}
+                    onCancel={() => toggleEditing()}
+                    onDelete={onDelete}
+                    setImage={setImage}
+                    setEncodingImage={setEncodingImage}
                   />
-                </span>
-              </DetailTitle>
+                ) : (
+                  <DetailsEditNavbar
+                    objectName={tag.name}
+                    isNew={false}
+                    isEditing={isEditing}
+                    onToggleEdit={() => toggleEditing()}
+                    onSave={() => {}}
+                    onImageChange={() => {}}
+                    onClearImage={() => {}}
+                    onAutoTag={onAutoTag}
+                    autoTagDisabled={tag.ignore_auto_tag}
+                    onDelete={onDelete}
+                    classNames="mb-2"
+                    customButtons={renderMergeButton()}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
 
-              <AliasList aliases={tag.aliases} />
+        {!isEditing && loadStickyHeader && (
+          <CompressedTagDetailsPanel tag={tag} />
+        )}
+
+        <div className="detail-body">
+          <div className="tag-body">
+            <div className="tag-tabs">
               {!isEditing && (
-                <TagDetailsPanel
+                <TagTabs
+                  tabKey={tabKey}
                   tag={tag}
-                  fullWidth={!collapsed && !compactExpandedDetails}
-                />
-              )}
-              {isEditing ? (
-                <TagEditPanel
-                  tag={tag}
-                  onSubmit={onSave}
-                  onCancel={() => toggleEditing()}
-                  onDelete={onDelete}
-                  setImage={setImage}
-                  setEncodingImage={setEncodingImage}
-                />
-              ) : (
-                <DetailsEditNavbar
-                  objectName={tag.name}
-                  isNew={false}
-                  isEditing={isEditing}
-                  onToggleEdit={() => toggleEditing()}
-                  onSave={() => {}}
-                  onImageChange={() => {}}
-                  onClearImage={() => {}}
-                  onAutoTag={onAutoTag}
-                  autoTagDisabled={tag.ignore_auto_tag}
-                  onDelete={onDelete}
-                  classNames="mb-2"
-                  customButtons={renderMergeButton()}
+                  abbreviateCounter={abbreviateCounter}
+                  showAllCounts={showAllCounts}
                 />
               )}
             </div>
           </div>
         </div>
+        {renderDeleteAlert()}
+        {renderMergeDialog()}
       </div>
-
-      {!isEditing && loadStickyHeader && (
-        <CompressedTagDetailsPanel tag={tag} />
-      )}
-
-      <div className="detail-body">
-        <div className="tag-body">
-          <div className="tag-tabs">
-            {!isEditing && (
-              <TagTabs
-                tabKey={tabKey}
-                tag={tag}
-                abbreviateCounter={abbreviateCounter}
-                showAllCounts={showAllCounts}
-              />
-            )}
-          </div>
-        </div>
-      </div>
-      {renderDeleteAlert()}
-      {renderMergeDialog()}
-    </div>
-  );
-};
+    );
+  }
+);
 
 const TagLoader: React.FC<RouteComponentProps<ITagParams>> = ({
   location,
