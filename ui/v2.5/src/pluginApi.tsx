@@ -8,7 +8,7 @@ import * as GQL from "src/core/generated-graphql";
 import * as StashService from "src/core/StashService";
 import * as Apollo from "@apollo/client";
 import * as Bootstrap from "react-bootstrap";
-import * as Intl from "react-intl";
+import * as ReactIntl from "react-intl";
 import * as FontAwesomeSolid from "@fortawesome/free-solid-svg-icons";
 import * as FontAwesomeRegular from "@fortawesome/free-regular-svg-icons";
 import * as FontAwesomeBrands from "@fortawesome/free-brands-svg-icons";
@@ -74,7 +74,7 @@ export const PluginApi = {
     ReactRouterDOM,
     Bootstrap,
     Apollo,
-    Intl,
+    Intl: ReactIntl,
     FontAwesomeRegular,
     FontAwesomeSolid,
     FontAwesomeBrands,

@@ -219,12 +219,12 @@ export class ListFilterModel {
 
   private static translateJSON(jsonString: string, decoding: boolean) {
     let inString = false;
-    let escape = false;
+    let isEscaped = false;
     return [...jsonString]
       .map((c) => {
-        if (escape) {
+        if (isEscaped) {
           // this character has been escaped, skip
-          escape = false;
+          isEscaped = false;
           return c;
         }
 
@@ -232,7 +232,7 @@ export class ListFilterModel {
           case "\\":
             // escape the next character if in a string
             if (inString) {
-              escape = true;
+              isEscaped = true;
             }
             break;
           case '"':

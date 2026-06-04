@@ -79,8 +79,7 @@
         "noTemplateCurlyInString": "off",
         "useIterableCallbackReturn": "off",
         "noGlobalIsNan": "off",
-        "noNonNullAssertedOptionalChain": "off",
-        "noShadowRestrictedNames": "off"
+        "noNonNullAssertedOptionalChain": "off"
       }
     }
   },
