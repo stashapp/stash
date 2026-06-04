@@ -81,8 +81,7 @@
         "noGlobalIsNan": "off",
         "noNonNullAssertedOptionalChain": "off",
         "noShadowRestrictedNames": "off",
-        "noConfusingVoidType": "off",
-        "noTsIgnore": "off"
+        "noConfusingVoidType": "off"
       }
     }
   },

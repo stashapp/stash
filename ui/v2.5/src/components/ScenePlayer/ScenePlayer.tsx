@@ -43,9 +43,9 @@ import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
 import { languageMap } from "src/utils/caption";
 import { VIDEO_PLAYER_ID } from "./util";
 
-// @ts-ignore
+// @ts-expect-error
 import airplay from "@silvermine/videojs-airplay";
-// @ts-ignore
+// @ts-expect-error
 import chromecast from "@silvermine/videojs-chromecast";
 import abLoopPlugin from "videojs-abloop";
 import ScreenUtils from "src/utils/screen";
