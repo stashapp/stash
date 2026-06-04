@@ -388,7 +388,7 @@ zip-ui:
 
 .PHONY: ui-start
 ui-start: ui-env
-	cd ui/v2.5 && pnpm run start -- --host
+	cd ui/v2.5 && pnpm run start --host
 
 .PHONY: fmt-ui
 fmt-ui:
@@ -404,7 +404,7 @@ fmt-ui-quick:
 	cd ui/v2.5 && \
 	files=$$(git diff --name-only --relative --diff-filter d . ../../graphql); \
 	if [ -n "$$files" ]; then \
-	  pnpm run biome -- format --write $$files; \
+	  pnpm exec biome format --write $$files; \
 	fi
 
 # does not run tsc checks, as they are slow
@@ -413,9 +413,9 @@ validate-ui-quick:
 	tsfiles=$$(git diff --name-only --relative --diff-filter d src | grep -e "\.tsx\?\$$"); \
 	scssfiles=$$(git diff --name-only --relative --diff-filter d src | grep "\.scss"); \
 	prettyfiles=$$(git diff --name-only --relative --diff-filter d . ../../graphql); \
-	if [ -n "$$tsfiles" ]; then pnpm run biome -- check $$tsfiles; fi && \
-	if [ -n "$$scssfiles" ]; then pnpm run stylelint -- $$scssfiles; fi && \
-	if [ -n "$$prettyfiles" ]; then pnpm run biome -- format --check $$prettyfiles; fi
+	if [ -n "$$tsfiles" ]; then pnpm exec biome check $$tsfiles; fi && \
+	if [ -n "$$scssfiles" ]; then pnpm exec stylelint $$scssfiles; fi && \
+	if [ -n "$$prettyfiles" ]; then pnpm exec biome format $$prettyfiles; fi
 
 # runs all of the backend PR-acceptance steps
 .PHONY: validate-backend
