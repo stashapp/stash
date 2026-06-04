@@ -397,7 +397,7 @@ export const MainNavbar: React.FC = () => {
           {!!newPath && (
             <div className="mr-2">
               <Link to={newPath}>
-                <Button variant="primary">
+                <Button variant="primary" data-action="new">
                   <FormattedMessage id="new" defaultMessage="New" />
                 </Button>
               </Link>

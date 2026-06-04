@@ -938,12 +938,14 @@ export const SceneDuplicateChecker: React.FC = () => {
                         <Button
                           className="edit-button"
                           variant="danger"
+                          data-action="delete"
                           onClick={() => handleDeleteScene(scene)}
                         >
                           <FormattedMessage id="actions.delete" />
                         </Button>
                         <Button
                           className="edit-button"
+                          data-action="merge"
                           onClick={() => onMergeClicked(group, scene)}
                         >
                           <FormattedMessage id="actions.merge" />
