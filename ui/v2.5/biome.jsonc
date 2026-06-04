@@ -63,8 +63,7 @@
         // remove the following after fixing
         "useExhaustiveDependencies": "off",
         "noInnerDeclarations": "off",
-        "noSwitchDeclarations": "off",
-        "noUnusedPrivateClassMembers": "off"
+        "noSwitchDeclarations": "off"
       },
       "suspicious": {
         // this is used extensively, and there's no obvious fix

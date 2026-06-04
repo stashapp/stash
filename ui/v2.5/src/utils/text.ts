@@ -91,9 +91,9 @@ class DurationUnit {
   ];
 
   private constructor(
-    private readonly singular: string,
-    private readonly plural: string,
-    private readonly shortString: string,
+    public readonly singular: string,
+    public readonly plural: string,
+    public readonly shortString: string,
     public secs: number
   ) {}
 
