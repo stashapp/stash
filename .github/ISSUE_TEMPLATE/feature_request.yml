@@ -4,7 +4,7 @@ labels: ["feature request"]
 body:
   - type: markdown
     attributes:
-      value: Thank you for taking the time to submit a feature request! Make sure to read [Contributing](../docs/CONTRIBUTING.md) document before submitting.
+      value: Thank you for taking the time to submit a feature request! Make sure to read [Contributing](https://github.com/stashapp/stash/blob/develop/docs/CONTRIBUTING.md) document before submitting.
   - type: textarea
     id: description
     attributes:
