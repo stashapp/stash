@@ -149,8 +149,8 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
     aspectRatioRange.default
   );
 
-  function getVideoElement(playerVideoContainer: any) {
-    let videoElements = playerVideoContainer.getElementsByTagName("canvas");
+  function getVideoElement(playerVideoContainer: HTMLElement) {
+    let videoElements: HTMLCollectionOf<HTMLElement> = playerVideoContainer.getElementsByTagName("canvas");
 
     if (videoElements.length === 0) {
       videoElements = playerVideoContainer.getElementsByTagName("video");

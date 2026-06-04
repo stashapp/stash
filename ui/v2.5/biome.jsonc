@@ -71,9 +71,7 @@
         "noEmptyPattern": "off"
       },
       "suspicious": {
-        "noArrayIndexKey": "off",
-        // remove the following after fixing
-        "noExplicitAny": "off"
+        "noArrayIndexKey": "off"
       }
     }
   },

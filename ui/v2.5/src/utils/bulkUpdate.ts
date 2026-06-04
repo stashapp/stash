@@ -160,8 +160,8 @@ export function getAggregateState<T, U>(
   return newValue;
 }
 
-function setProperty<T, K extends keyof T>(obj: T, key: K, value: any) {
-  obj[key] = value;
+function setProperty<T, K extends keyof T>(obj: T, key: K, value: unknown) {
+  obj[key] = value as T[K];
 }
 
 function getProperty<T, K extends keyof T>(obj: T, key: K) {

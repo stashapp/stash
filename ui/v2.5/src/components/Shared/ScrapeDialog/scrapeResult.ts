@@ -2,7 +2,7 @@ import lodashIsEqual from "lodash-es/isEqual";
 import clone from "lodash-es/clone";
 import { IHasStoredID } from "src/utils/data";
 
-/* XXbiome-ignore lint/suspicious/noExplicitAny: intentional */
+// biome-ignore lint/suspicious/noExplicitAny: don't know how to type this
 export type CustomFieldScrapeResults = Map<string, ZeroableScrapeResult<any>>;
 
 export class ScrapeResult<T> {

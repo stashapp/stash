@@ -24,7 +24,7 @@ const Stash: React.FC<IStashProps> = ({
   onDelete,
 }) => {
   // XXbiome-ignore
-  const handleInput = (key: string, value: any) => {
+  const handleInput = (key: string, value: unknown) => {
     const newObj = {
       ...stash,
       [key]: value,

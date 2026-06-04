@@ -418,7 +418,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
       const vjs = videojs(videoEl, options);
 
-      /* XXbiome-ignore lint/suspicious/noExplicitAny: intentional*/
+      /* biome-ignore lint/suspicious/noExplicitAny: intentional */
       const settings = (vjs as any).textTrackSettings;
       settings.setValues({
         backgroundColor: "#000",
