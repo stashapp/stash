@@ -207,7 +207,7 @@ export const SidebarDurationFilter: React.FC<ISidebarFilter> = ({
     }
 
     // Parse HH:MM:SS or MM:SS format
-    const parts = trimmed.split(":").map((p) => parseInt(p));
+    const parts = trimmed.split(":").map((p) => parseInt(p, 10));
     if (parts.some(Number.isNaN)) {
       return null;
     }

@@ -136,7 +136,7 @@ export const StashBoxModal: React.FC<IStashBoxModal> = ({ value, close }) => {
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setValue({
                   ...v!,
-                  max_requests_per_minute: parseInt(e.currentTarget.value),
+                  max_requests_per_minute: parseInt(e.currentTarget.value, 10),
                 })
               }
             />

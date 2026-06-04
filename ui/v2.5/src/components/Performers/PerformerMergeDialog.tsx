@@ -783,8 +783,8 @@ export const PerformerMergeModal: React.FC<IPerformerMergeModalProps> = ({
   }, [performers]);
 
   async function loadPerformers() {
-    const performerIDs = sourcePerformers.map((s) => parseInt(s.id));
-    performerIDs.push(parseInt(destPerformer[0].id));
+    const performerIDs = sourcePerformers.map((s) => parseInt(s.id, 10));
+    performerIDs.push(parseInt(destPerformer[0].id, 10));
     const query = await queryFindPerformersByID(performerIDs);
     const { performers: loadedPerformers } = query.data.findPerformers;
 

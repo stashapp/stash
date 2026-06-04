@@ -65,8 +65,7 @@
         "noInnerDeclarations": "off",
         "noSwitchDeclarations": "off",
         "noUnusedPrivateClassMembers": "off",
-        "noUnusedFunctionParameters": "off",
-        "useParseIntRadix": "off"
+        "noUnusedFunctionParameters": "off"
       },
       "suspicious": {
         // this is used extensively, and there's no obvious fix

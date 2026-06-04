@@ -745,8 +745,8 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
   }, [scenes]);
 
   async function loadScenes() {
-    const sceneIDs = sourceScenes.map((s) => parseInt(s.id));
-    sceneIDs.push(parseInt(destScene[0].id));
+    const sceneIDs = sourceScenes.map((s) => parseInt(s.id, 10));
+    sceneIDs.push(parseInt(destScene[0].id, 10));
     const query = await queryFindFullScenesByID(sceneIDs);
     const { scenes: loadedScenes } = query.data.findScenes;
 

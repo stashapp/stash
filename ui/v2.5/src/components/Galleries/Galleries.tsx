@@ -20,7 +20,7 @@ const GalleryImage: React.FC<RouteComponentProps<IGalleryImageParams>> = ({
 }) => {
   const { id, index: indexStr } = match.params;
 
-  let index = parseInt(indexStr);
+  let index = parseInt(indexStr, 10);
   if (Number.isNaN(index)) {
     index = 0;
   }

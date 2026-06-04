@@ -147,7 +147,7 @@ const AddContentModal: React.FC<IAddSavedFilterModalProps> = ({
         <Form.Control
           as="select"
           value={premadeFilterIndex}
-          onChange={(e) => setPremadeFilterIndex(parseInt(e.target.value))}
+          onChange={(e) => setPremadeFilterIndex(parseInt(e.target.value, 10))}
           className="btn-secondary"
         >
           {premadeFilterOptions.map((c, i) => (
@@ -191,7 +191,7 @@ const AddContentModal: React.FC<IAddSavedFilterModalProps> = ({
       case "front_page.types.saved_filter":
         onClose({
           __typename: "SavedFilter",
-          savedFilterId: parseInt(savedFilter!),
+          savedFilterId: parseInt(savedFilter!, 10),
         });
         return;
     }
