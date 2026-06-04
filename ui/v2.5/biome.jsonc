@@ -75,8 +75,7 @@
         // remove the following after fixing
         "noExplicitAny": "off",
         "noImplicitAnyLet": "off",
-        "noDoubleEquals": "off",
-        "noTemplateCurlyInString": "off"
+        "noDoubleEquals": "off"
       }
     }
   },

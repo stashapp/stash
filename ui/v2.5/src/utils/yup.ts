@@ -120,6 +120,7 @@ export function getDateError(
   if (validateDateString(value ?? "")) return undefined;
   return intl
     .formatMessage({ id: "validation.date_invalid_form" })
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: required for intl
     .replace("${path}", intl.formatMessage({ id: "date" }));
 }
 
