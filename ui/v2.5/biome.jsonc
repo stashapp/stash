@@ -80,8 +80,7 @@
         "useIterableCallbackReturn": "off",
         "noGlobalIsNan": "off",
         "noNonNullAssertedOptionalChain": "off",
-        "noShadowRestrictedNames": "off",
-        "noConfusingVoidType": "off"
+        "noShadowRestrictedNames": "off"
       }
     }
   },

@@ -361,7 +361,7 @@ interface IModalSetting<T> extends ISetting {
   ) => JSX.Element;
   renderValue?: (v: T | undefined) => JSX.Element;
   modalProps?: ModalProps;
-  validateChange?: (v: T) => void | undefined;
+  validateChange?: (v: T) => void;
 }
 
 export const _ModalSetting = <T extends {}>(props: IModalSetting<T>) => {
