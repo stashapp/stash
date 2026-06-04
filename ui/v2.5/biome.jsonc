@@ -78,8 +78,7 @@
         "noDoubleEquals": "off",
         "noTemplateCurlyInString": "off",
         "useIterableCallbackReturn": "off",
-        "noGlobalIsNan": "off",
-        "noNonNullAssertedOptionalChain": "off"
+        "noGlobalIsNan": "off"
       }
     }
   },

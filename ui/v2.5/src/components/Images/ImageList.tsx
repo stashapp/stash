@@ -196,8 +196,8 @@ const ImageWall: React.FC<IImageWallProps> = ({
           photos={photos}
           renderImage={renderImage}
           onClick={showLightboxOnClick}
-          margin={uiConfig?.imageWallOptions?.margin!}
-          direction={uiConfig?.imageWallOptions?.direction!}
+          margin={uiConfig?.imageWallOptions?.margin}
+          direction={uiConfig?.imageWallOptions?.direction}
           columns={columns}
           targetRowHeight={targetRowHeight}
         />
