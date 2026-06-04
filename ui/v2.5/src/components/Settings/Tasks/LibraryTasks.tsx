@@ -8,6 +8,7 @@ import {
 } from "src/core/StashService";
 import { withoutTypename } from "src/utils/data";
 import { useConfigurationContext } from "src/hooks/Config";
+import { useAutoTagTrigger } from "src/hooks/useAutoTagTrigger";
 import { IdentifyDialog } from "../../Dialogs/IdentifyDialog/IdentifyDialog";
 import * as GQL from "src/core/generated-graphql";
 import { DirectorySelectionDialog } from "./DirectorySelectionDialog";
@@ -195,6 +196,12 @@ export const LibraryTasks: React.FC = () => {
     });
   }
 
+  const onAutoTagClick = useAutoTagTrigger(
+    () => runAutoTag(),
+    () => setDialogOpen({ autoTagAlert: true }),
+    ui.disableAutoTagWarning
+  );
+
   function renderScanDialog() {
     if (!dialogOpen.scan) {
       return;
@@ -304,7 +311,7 @@ export const LibraryTasks: React.FC = () => {
     setDialogOpen({ generate: false });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // XXbiome-ignore @typescript-eslint/no-unused-vars
   async function runGenerate(paths?: string[]) {
     try {
       await mutateMetadataGenerate({
@@ -449,7 +456,7 @@ export const LibraryTasks: React.FC = () => {
                 variant="secondary"
                 type="submit"
                 className="mr-2"
-                onClick={() => setDialogOpen({ autoTagAlert: true })}
+                onClick={onAutoTagClick}
               >
                 <FormattedMessage id="actions.auto_tag" />…
               </Button>
@@ -467,6 +474,13 @@ export const LibraryTasks: React.FC = () => {
           <AutoTagOptions
             options={autoTagOptions}
             setOptions={onSetAutoTagOptions}
+          />
+          <BooleanSetting
+            id="disable_auto_tag_warning"
+            headingID="config.tasks.auto_tag.disable_warning.heading"
+            subHeadingID="config.tasks.auto_tag.disable_warning.description"
+            checked={ui.disableAutoTagWarning ?? undefined}
+            onChange={(v) => saveUI({ disableAutoTagWarning: v })}
           />
         </SettingGroup>
       </SettingSection>

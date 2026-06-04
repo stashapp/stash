@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import videojs, { VideoJsPlayer } from "video.js";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import "@blaineam/videojs-vr";
 // separate type import, otherwise typescript elides the above import
 // and the plugin does not get initialized
@@ -177,7 +175,6 @@ class VRMenuPlugin extends videojs.getPlugin("plugin") {
 videojs.registerComponent("VRMenuButton", VRMenuButton);
 videojs.registerPlugin("vrMenu", VRMenuPlugin);
 
-/* eslint-disable @typescript-eslint/naming-convention */
 declare module "video.js" {
   interface VideoJsPlayer {
     vrMenu: () => VRMenuPlugin;

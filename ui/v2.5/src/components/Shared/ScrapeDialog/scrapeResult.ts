@@ -2,7 +2,7 @@ import lodashIsEqual from "lodash-es/isEqual";
 import clone from "lodash-es/clone";
 import { IHasStoredID } from "src/utils/data";
 
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+/* XXbiome-ignore lint/suspicious/noExplicitAny: intentional */
 export type CustomFieldScrapeResults = Map<string, ZeroableScrapeResult<any>>;
 
 export class ScrapeResult<T> {

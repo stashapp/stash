@@ -48,3 +48,7 @@ Performers or Tags that have Ignore Auto tag flag added to them will be skipped 
 - **Auto tag:** You can run the Auto tag task on your entire library from the Tasks page.
 - **Selective auto tag:** You can run the Auto tag task on specific directories from the Tasks page.
 - **Individual pages:** You can run Auto tag tasks for specific Performers, Studios, and Tags from their respective pages.
+
+### Disable the confirmation warning
+
+A confirmation warning is shown before the auto tag task runs. If you use auto tag frequently, you can disable this warning by ticking the **Don't show this warning again** checkbox on the warning dialog, or by enabling **Settings** > **Tasks** > **Auto tag** > **Disable auto-tag warning**.

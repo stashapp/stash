@@ -1,0 +1,102 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.4.16/schema.json",
+  "json": {
+    "parser": {
+      "allowComments": true
+    }
+  },
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "ignoreUnknown": false,
+    "includes": [
+      "**",
+      "../../graphql/**",
+      "!src/core/generated-graphql.ts",
+      "!src/pluginApi.d.ts",
+      "!src/@types/videojs-vr.d.ts",
+      "!src/locales/*.json"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    // included so that it doesn't complain about no matching files
+    // remove this to enable formatting
+    "includes": ["index.tsx"],
+    "indentStyle": "space"
+  },
+  "linter": {
+    "enabled": true,
+    "domains": {
+      "react": "recommended",
+      "types": "recommended"
+    },
+    "rules": {
+      "a11y": "off",
+      "complexity": {
+        "noUselessFragments": "off",
+        // remove the following after fixing
+        "useArrowFunction": "off",
+        "useOptionalChain": "off",
+        "noBannedTypes": "off",
+        "useIndexOf": "off",
+        "useFlatMap": "off",
+        "noUselessUndefinedInitialization": "off",
+        "noExtraBooleanCast": "off",
+        "noUselessRename": "off",
+        "noArguments": "off",
+        "noUselessEscapeInRegex": "off",
+        "useDateNow": "off",
+        "noUselessSwitchCase": "off"
+      },
+      "style": {
+        "noNestedTernary": "off",
+        "noNonNullAssertion": "off",
+        "useBlockStatements": "off",
+        "useTemplate": "off",
+        // remove the following after fixing
+        "useImportType": "off",
+        "useConst": "off",
+        "useShorthandFunctionType": "off"
+      },
+      "correctness": {
+        "useJsxKeyInIterable": "off",
+        // remove the following after fixing
+        "useExhaustiveDependencies": "off",
+        "noInnerDeclarations": "off",
+        "noSwitchDeclarations": "off",
+        "noUnusedPrivateClassMembers": "off",
+        "noUnusedFunctionParameters": "off",
+        "useParseIntRadix": "off",
+        "noUnusedVariables": "off",
+        "noEmptyPattern": "off"
+      },
+      "suspicious": {
+        "noArrayIndexKey": "off",
+        // remove the following after fixing
+        "noExplicitAny": "off",
+        "noImplicitAnyLet": "off",
+        "noDoubleEquals": "off",
+        "noTemplateCurlyInString": "off",
+        "useIterableCallbackReturn": "off",
+        "noGlobalIsNan": "off",
+        "noNonNullAssertedOptionalChain": "off",
+        "noShadowRestrictedNames": "off",
+        "noConfusingVoidType": "off",
+        "noTsIgnore": "off"
+      },
+      "performance": {
+        // remove the following after fixing
+        "noAccumulatingSpread": "off"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double"
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": { "source": { "organizeImports": "off" } }
+  }
+}

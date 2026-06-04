@@ -40,7 +40,6 @@ export const localeCountries = {
   vi: () => import("i18n-iso-countries/langs/vi.json"),
   zh: () => import("i18n-iso-countries/langs/zh.json"),
   tw: () => import("src/locales/countryNames/zh-TW.json"),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as { [key: string]: any };
 
 export const getLocaleCode = (code: string) => {
@@ -97,7 +96,6 @@ export const localeLoader = {
   viVN: () => import("./vi-VN.json"),
   zhCN: () => import("./zh-CN.json"),
   zhTW: () => import("./zh-TW.json"),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as { [key: string]: any };
 
 export default localeLoader;

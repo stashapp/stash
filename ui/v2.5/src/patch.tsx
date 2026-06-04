@@ -53,7 +53,7 @@ export function RegisterComponent<T extends Function>(
   return fn;
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* biome-ignore-start lint/suspicious/noExplicitAny: intentional*/
 function runInstead(
   fns: Function[],
   targetFn: Function,
@@ -80,7 +80,7 @@ function runInstead(
 
   return fns[0].apply(thisArg, argArray.concat(next()));
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
+/* biome-ignore-end lint/suspicious/noExplicitAny: intentional*/
 
 // patches a function to implement the before/instead/after functionality
 export function PatchFunction<T extends Function>(name: string, fn: T) {

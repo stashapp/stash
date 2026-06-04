@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable react-hooks/exhaustive-deps */
+/* XXbiome-ignore-start lint/suspicious/noExplicitAny: intentional*/
+/* XXbiome-ignore-start react-hooks/exhaustive-deps: intentional */
 import { DebouncedFunc, DebounceSettings, throttle } from "lodash-es";
 import { useCallback, useRef } from "react";
 

@@ -35,7 +35,7 @@ export function useInitialState<T>(
 
 // useMemoOnce is a hook that returns a value once the ready flag is set to true.
 // The value is only set once, and will not be updated once it has been set.
-/* eslint-disable react-hooks/exhaustive-deps */
+/* XXbiome-ignore-start react-hooks/exhaustive-deps: intentional */
 export function useMemoOnce<T>(
   fn: () => [T, boolean],
   deps: React.DependencyList
@@ -55,7 +55,7 @@ export function useMemoOnce<T>(
 
   return storedValue;
 }
-/* eslint-enable react-hooks/exhaustive-deps */
+/* XXbiome-ignore-end lint/correctness/useExhaustiveDependencies: intentional */
 
 // useCompare is a hook that returns true if the value has changed since the last render.
 export function useCompare<T>(val: T) {

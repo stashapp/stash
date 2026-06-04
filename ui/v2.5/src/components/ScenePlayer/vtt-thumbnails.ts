@@ -385,7 +385,6 @@ class VTTThumbnailsPlugin extends videojs.getPlugin("plugin") {
 // Register the plugin with video.js.
 videojs.registerPlugin("vttThumbnails", VTTThumbnailsPlugin);
 
-/* eslint-disable @typescript-eslint/naming-convention */
 declare module "video.js" {
   interface VideoJsPlayer {
     vttThumbnails: () => VTTThumbnailsPlugin;
