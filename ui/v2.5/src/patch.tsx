@@ -1,7 +1,7 @@
 // biome-ignore-all lint/complexity/noBannedTypes: intentionally using Function type
 import React from "react";
 
-export let components: Record<string, Function> = {};
+export const components: Record<string, Function> = {};
 
 const beforeFns: Record<string, Function[]> = {};
 const insteadFns: Record<string, Function[]> = {};

@@ -88,7 +88,7 @@ export const GroupSelect: React.FC<
     }
 
     const query = await queryFindGroupsForSelect(filter);
-    let ret = query.data.findGroups.groups.filter((group) => {
+    const ret = query.data.findGroups.groups.filter((group) => {
       // HACK - we should probably exclude these in the backend query, but
       // this will do in the short-term
       return !exclude.includes(group.id.toString());

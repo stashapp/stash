@@ -436,7 +436,7 @@ const domainFromURL = (urlString?: string, url?: URL) => {
   } else if (urlString) {
     let urlDomain = "";
     try {
-      let sanitizedUrl = sanitiseURL(urlString);
+      const sanitizedUrl = sanitiseURL(urlString);
       if (sanitizedUrl) {
         urlString = sanitizedUrl;
       }

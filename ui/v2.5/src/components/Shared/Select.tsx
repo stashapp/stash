@@ -121,9 +121,9 @@ const LimitedSelectMenu = <T extends boolean>(
     if (Array.isArray(props.children)) {
       // limit the number of select options showing in the select dropdowns
       // always showing the 'Create "..."' option when it exists
-      let creationOptionIndex = (props.children as React.ReactNode[]).findIndex(
+      const creationOptionIndex = (props.children as React.ReactNode[]).findIndex(
         (child: React.ReactNode) => {
-          let maybeCreatableOption = child as React.ReactElement<
+          const maybeCreatableOption = child as React.ReactElement<
             OptionProps<
               Option & { __isNew__: boolean },
               T,

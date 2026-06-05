@@ -160,7 +160,7 @@ export const PageSizeSelector: React.FC<{
 
     setCustomPageSizeShowing(false);
 
-    let pp = parseInt(val, 10);
+    const pp = parseInt(val, 10);
     if (Number.isNaN(pp) || pp <= 0) {
       return;
     }

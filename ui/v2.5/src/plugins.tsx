@@ -15,12 +15,12 @@ type PluginList = NonNullable<Required<PluginsQuery["plugins"]>>;
 function sortPlugins(plugins: PluginList) {
   type Node = { id: string; afters: string[] };
 
-  let nodes: Record<string, Node> = {};
-  let sorted: PluginList = [];
-  let visited: Record<string, boolean> = {};
+  const nodes: Record<string, Node> = {};
+  const sorted: PluginList = [];
+  const visited: Record<string, boolean> = {};
 
   plugins.forEach((v) => {
-    let from = v.id;
+    const from = v.id;
 
     if (!nodes[from]) nodes[from] = { id: from, afters: [] };
 
@@ -31,7 +31,7 @@ function sortPlugins(plugins: PluginList) {
   });
 
   function visit(idstr: string, ancestors: string[] = []) {
-    let node = nodes[idstr];
+    const node = nodes[idstr];
     const { id } = node;
 
     if (visited[idstr]) return;

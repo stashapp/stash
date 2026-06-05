@@ -196,7 +196,7 @@ export const RatingStars = PatchComponent(
         return "star-fill-100";
       }
 
-      let w = current.fraction * 100;
+      const w = current.fraction * 100;
       return `star-fill-${w}`;
     }
 

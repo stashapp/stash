@@ -202,7 +202,7 @@ const GroupPage: React.FC<IProps> = PatchComponent(
     }, [group.front_image_path, group.back_image_path, isDefaultImage]);
 
     const activeFrontImage = useMemo(() => {
-      let existingImage = group.front_image_path;
+      const existingImage = group.front_image_path;
       if (isEditing) {
         if (frontImage === null && existingImage) {
           const imageURL = new URL(existingImage);
@@ -217,7 +217,7 @@ const GroupPage: React.FC<IProps> = PatchComponent(
     }, [isEditing, group.front_image_path, frontImage]);
 
     const activeBackImage = useMemo(() => {
-      let existingImage = group.back_image_path;
+      const existingImage = group.back_image_path;
       if (isEditing) {
         if (backImage === null) {
           return undefined;

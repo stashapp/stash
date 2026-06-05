@@ -248,7 +248,7 @@ export const MainNavbar: React.FC = () => {
   const pathname = location.pathname.replace(/\/$/, "");
   let newPath = newPathsList.includes(pathname) ? `${pathname}/new` : null;
   if (newPath !== null) {
-    let queryParam = new URLSearchParams(location.search).get("q");
+    const queryParam = new URLSearchParams(location.search).get("q");
     if (queryParam) {
       newPath += "?q=" + encodeURIComponent(queryParam);
     }

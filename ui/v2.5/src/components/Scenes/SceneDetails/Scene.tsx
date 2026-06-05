@@ -777,7 +777,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     [queryParams]
   );
   const queryContinue = useMemo(() => {
-    let cont = queryParams.get("continue");
+    const cont = queryParams.get("continue");
     if (cont) {
       return cont === "true";
     } else {

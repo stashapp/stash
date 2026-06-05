@@ -320,7 +320,7 @@ const TagPage: React.FC<IProps> = PatchComponent(
     const showAllCounts = uiConfig?.showChildTagContent;
 
     const tagImage = useMemo(() => {
-      let existingImage = tag.image_path;
+      const existingImage = tag.image_path;
       if (isEditing) {
         if (image === null && existingImage) {
           const tagImageURL = new URL(existingImage);

@@ -275,7 +275,7 @@ export const CustomFieldsInput: React.FC<ICustomFieldsInput> = PatchComponent(
       newField: string,
       value: unknown
     ) {
-      let newValues = cloneDeep(values);
+      const newValues = cloneDeep(values);
       delete newValues[currentField];
       if (newField !== "") {
         newValues[newField] = value;

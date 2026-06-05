@@ -659,7 +659,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         const languageCode = getDefaultLanguageCode();
         let hasDefault = false;
 
-        for (let caption of scene.captions) {
+        for (const caption of scene.captions) {
           const lang = caption.language_code;
           let label = lang;
           if (languageMap.has(lang)) {

@@ -489,7 +489,7 @@ export const FilteredSceneList = PatchComponent(
     const playFirst = usePlayFirst();
 
     function onCreateNew() {
-      let queryParam = new URLSearchParams(location.search).get("q");
+      const queryParam = new URLSearchParams(location.search).get("q");
       let newPath = "/scenes/new";
       if (queryParam) {
         newPath += "?q=" + encodeURIComponent(queryParam);

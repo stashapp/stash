@@ -101,7 +101,7 @@ const ImageWall: React.FC<IImageWallProps> = ({
 
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  let photos: {
+  const photos: {
     src: string;
     srcSet?: string | string[] | undefined;
     sizes?: string | string[] | undefined;
@@ -112,7 +112,7 @@ const ImageWall: React.FC<IImageWallProps> = ({
   }[] = [];
 
   images.forEach((image, index) => {
-    let imageData = {
+    const imageData = {
       src:
         image.paths.preview !== ""
           ? image.paths.preview!
@@ -136,8 +136,8 @@ const ImageWall: React.FC<IImageWallProps> = ({
   );
 
   function columns(containerWidth: number) {
-    let preferredSize = zoomWidths[zoomIndex];
-    let columnCount = containerWidth / preferredSize;
+    const preferredSize = zoomWidths[zoomIndex];
+    const columnCount = containerWidth / preferredSize;
     return Math.round(columnCount);
   }
 

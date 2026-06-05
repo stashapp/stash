@@ -178,7 +178,7 @@ export abstract class ModifierCriterion<
   }
 
   public toQueryParams(): Record<string, unknown> {
-    let encodedCriterion: Record<string, unknown> = {
+    const encodedCriterion: Record<string, unknown> = {
       type: this.criterionOption.type,
       modifier: this.modifier,
     };

@@ -123,9 +123,9 @@ export const LightboxImage: React.FC<IProps> = ({
 
     function toggleVideoPlay() {
       if (container.current) {
-        let openVideo = container.current.getElementsByTagName("video");
+        const openVideo = container.current.getElementsByTagName("video");
         if (openVideo.length > 0) {
-          let rect = openVideo[0].getBoundingClientRect();
+          const rect = openVideo[0].getBoundingClientRect();
           if (Math.abs(rect.x) < document.body.clientWidth / 2) {
             openVideo[0].play();
           } else {

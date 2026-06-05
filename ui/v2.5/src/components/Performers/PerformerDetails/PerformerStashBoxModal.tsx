@@ -80,7 +80,7 @@ const PerformerSearchResultDetails: React.FC<
     }
   }
 
-  let age = calculateAge();
+  const age = calculateAge();
 
   return (
     <div className="performer-result">

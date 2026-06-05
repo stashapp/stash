@@ -63,7 +63,7 @@ export const RatingNumber = PatchComponent(
 
       const setRating = editing ? setValueStage : props.onSetRating;
 
-      let val = e.target.value;
+      const val = e.target.value;
       if (!useValidation.current) {
         e.target.value = Number(val).toFixed(1);
         const tempVal = Number(val) * 10;
@@ -94,7 +94,7 @@ export const RatingNumber = PatchComponent(
           value = "10.0";
         }
         e.target.value = Number(value).toFixed(1);
-        let tempVal = Number(value) * 10;
+        const tempVal = Number(value) * 10;
         setRating(tempVal || null);
 
         let cursorPosition = 0;

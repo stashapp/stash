@@ -46,8 +46,8 @@ export const calculateCardWidth = (
 ) => {
   const containerPadding = 30;
   const cardMargin = 10;
-  let maxUsableWidth = containerWidth - containerPadding;
-  let maxElementsOnRow = Math.ceil(maxUsableWidth / preferredWidth);
+  const maxUsableWidth = containerWidth - containerPadding;
+  const maxElementsOnRow = Math.ceil(maxUsableWidth / preferredWidth);
   return maxUsableWidth / maxElementsOnRow - cardMargin;
 };
 
@@ -67,7 +67,7 @@ export const useContainerDimensions = <T extends HTMLElement = HTMLDivElement>(
 
   const debouncedSetDimension = useDebounce((entry: ResizeObserverEntry) => {
     const { inlineSize: width, blockSize: height } = entry.contentBoxSize[0];
-    let difference = Math.abs(dimension.width - width);
+    const difference = Math.abs(dimension.width - width);
     // Only adjust when width changed by a significant margin. This addresses the cornercase that sees
     // the dimensions toggle back and forward when the window is adjusted perfectly such that overflow
     // is trigger then immediable disabled because of a resize event then continues this loop endlessly.
@@ -104,9 +104,9 @@ export function useCardWidth(
       return zoomWidths[zoomIndex];
     }
 
-    let zoomValue = zoomIndex;
+    const zoomValue = zoomIndex;
     const preferredCardWidth = zoomWidths[zoomValue];
-    let fittedCardWidth = calculateCardWidth(
+    const fittedCardWidth = calculateCardWidth(
       containerWidth,
       preferredCardWidth!
     );

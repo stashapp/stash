@@ -120,7 +120,7 @@ const _StudioSelect: React.FC<
 
     const { object } = optionProps.data;
 
-    let { name } = object;
+    const { name } = object;
 
     // if name does not match the input value but an alias does, show the alias
     const { inputValue } = optionProps.selectProps;

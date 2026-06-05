@@ -367,7 +367,7 @@ export const ObjectsFilter = <
   const [, setInputFocus] = inputFocus;
 
   function onSelect(value: ILabeledId, newExclude: boolean) {
-    let newCriterion: T = cloneDeep(criterion);
+    const newCriterion: T = cloneDeep(criterion);
 
     if (newExclude) {
       if (newCriterion.value.excluded) {
@@ -397,7 +397,7 @@ export const ObjectsFilter = <
     (value: ILabeledId) => {
       if (!criterion) return;
 
-      let newCriterion: T = cloneDeep(criterion);
+      const newCriterion: T = cloneDeep(criterion);
 
       newCriterion.value.items = criterion.value.items.filter(
         (v) => v.id !== value.id
@@ -416,7 +416,7 @@ export const ObjectsFilter = <
 
   const onSetModifier = useCallback(
     (modifier: CriterionModifier) => {
-      let newCriterion: T = criterion.clone();
+      const newCriterion: T = criterion.clone();
       newCriterion.modifier = modifier;
       setCriterion(newCriterion);
     },
@@ -517,7 +517,7 @@ export const HierarchicalObjectsFilter = <
   });
 
   function onDepthChanged(depth: number) {
-    let newCriterion: T = cloneDeep(criterion);
+    const newCriterion: T = cloneDeep(criterion);
     newCriterion.value.depth = depth;
     setCriterion(newCriterion);
   }
