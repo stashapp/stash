@@ -600,6 +600,10 @@ func indexesToIDPtrs[T any](ids []T, indexes []int) []*T {
 	return ret
 }
 
+func intPtr(i int) *int {
+	return &i
+}
+
 func indexToIDPtr[T any](ids []T, idx int) *T {
 	if idx < 0 {
 		return nil

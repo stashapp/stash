@@ -1439,7 +1439,8 @@ SELECT GROUP_CONCAT(DISTINCT scene_id) as ids
 FROM (` + sqlStr + `)
 WHERE phash IS NOT NULL
     AND (durationDiff <= ?
-    OR ? < 0)
+    OR ? < 0)  -- Always TRUE if the parameter is negative.
+               -- That will disable the durationDiff checking.
 GROUP BY phash
 HAVING COUNT(phash) > 1
 	AND COUNT(DISTINCT scene_id) > 1
