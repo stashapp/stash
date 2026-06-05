@@ -13,6 +13,7 @@ export function useThrottle<T extends (...args: any) => any>(
   return useCallback(
     throttle(
       function (this: any) {
+        // biome-ignore lint/complexity/noArguments: not sure how to re-implement this without using arguments
         return func.current.apply(this, arguments as any);
       },
       wait,

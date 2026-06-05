@@ -42,8 +42,7 @@
         "useFlatMap": "off",
         "noUselessUndefinedInitialization": "off",
         "noExtraBooleanCast": "off",
-        "noUselessRename": "off",
-        "noArguments": "off"
+        "noUselessRename": "off"
       },
       "style": {
         "noNestedTernary": "off",
