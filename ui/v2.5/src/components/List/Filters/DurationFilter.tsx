@@ -24,6 +24,13 @@ export const DurationFilter: React.FC<IDurationFilterProps> = ({
   }
 
   function renderTop() {
+    if (
+      criterion.modifier === CriterionModifier.IsNull ||
+      criterion.modifier === CriterionModifier.NotNull
+    ) {
+      return;
+    }
+
     let placeholder: string;
     if (
       criterion.modifier === CriterionModifier.GreaterThan ||

@@ -785,6 +785,8 @@ export class MandatoryNumberCriterionOption extends ModifierCriterionOption {
         CriterionModifier.NotEquals,
         CriterionModifier.GreaterThan,
         CriterionModifier.LessThan,
+        CriterionModifier.IsNull,
+        CriterionModifier.NotNull,
         CriterionModifier.Between,
         CriterionModifier.NotBetween,
       ],
