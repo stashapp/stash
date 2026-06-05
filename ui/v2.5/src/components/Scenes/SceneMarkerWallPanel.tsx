@@ -32,6 +32,7 @@ function wallItemTitle(sceneMarker: GQL.SceneMarkerDataFragment) {
 interface IMarkerPhoto {
   marker: GQL.SceneMarkerDataFragment;
   link: string;
+  mediaType: "image" | "video";
   onError?: (photo: PhotoProps<IMarkerPhoto>) => void;
 }
 
@@ -85,7 +86,7 @@ export const MarkerWallItem: React.FC<
     }
   }
 
-  const video = props.photo.src.includes("stream");
+  const video = props.photo.mediaType === "video";
   const ImagePreview = video ? "video" : "img";
 
   const { marker } = props.photo;
@@ -166,15 +167,55 @@ interface IMarkerWallProps {
 // HACK: typescript doesn't allow Gallery to accept a parameter for some reason
 const MarkerGallery = Gallery as unknown as GalleryI<IMarkerPhoto>;
 
-function getFirstValidSrc(srcSet: string[], invalidSrcSet: string[]) {
-  if (!srcSet.length) {
-    return "";
+interface IPreviewSource {
+  src?: string | null;
+  mediaType: "image" | "video";
+}
+
+interface ISelectedPreviewSource {
+  src: string;
+  mediaType: "image" | "video";
+}
+
+function getFirstValidPreviewSource(
+  srcSet: readonly IPreviewSource[],
+  invalidSrcSet: string[]
+): ISelectedPreviewSource {
+  const validSrcSet = srcSet.filter((s) => s.src);
+
+  if (!validSrcSet.length) {
+    return { src: "", mediaType: "image" };
   }
 
-  return (
-    srcSet.find((src) => !invalidSrcSet.includes(src)) ??
-    ([...srcSet].pop() as string)
-  );
+  const selected =
+    validSrcSet.find(({ src }) => !invalidSrcSet.includes(src!)) ??
+    ([...validSrcSet].pop() as IPreviewSource);
+
+  return {
+    src: selected.src!,
+    mediaType: selected.mediaType,
+  };
+}
+
+function getMarkerPreviewSources(
+  marker: GQL.SceneMarkerDataFragment,
+  previewType?: string | null
+) {
+  if (previewType === "image") {
+    return [{ src: marker.screenshot, mediaType: "image" }] as const;
+  }
+
+  if (previewType === "animation") {
+    return [
+      { src: marker.preview, mediaType: "image" },
+      { src: marker.screenshot, mediaType: "image" },
+    ] as const;
+  }
+
+  return [
+    { src: marker.stream, mediaType: "video" },
+    { src: marker.screenshot, mediaType: "image" },
+  ] as const;
 }
 
 interface IFile {
@@ -210,6 +251,8 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({
   selecting,
 }) => {
   const history = useHistory();
+  const { configuration } = useConfigurationContext();
+  const previewType = configuration?.interface.wallPlayback;
 
   const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -242,8 +285,8 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({
 
       return {
         marker: m,
-        src: getFirstValidSrc(
-          [m.stream, m.preview, m.screenshot],
+        ...getFirstValidPreviewSource(
+          getMarkerPreviewSources(m, previewType),
           erroredImgs[m.id] || []
         ),
         link: NavUtils.makeSceneMarkerUrl(m),
@@ -256,7 +299,7 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({
         onError: (photo: PhotoProps<IMarkerPhoto>) => handleError(m.id, photo),
       };
     });
-  }, [markers, erroredImgs, handleError]);
+  }, [markers, previewType, erroredImgs, handleError]);
 
   const onClick = useCallback(
     (_event, { index }) => {
