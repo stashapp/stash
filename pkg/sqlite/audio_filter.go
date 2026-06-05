@@ -60,18 +60,6 @@ func (qb *audioFilterHandler) criterionHandler() criterionHandler {
 		stringCriterionHandler(audioFilter.Title, "audios.title"),
 		stringCriterionHandler(audioFilter.Code, "audios.code"),
 		stringCriterionHandler(audioFilter.Details, "audios.details"),
-		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
-			if audioFilter.Oshash != nil {
-				joinType := joinTypeInner
-				if audioFilter.Oshash.Modifier == models.CriterionModifierIsNull {
-					joinType = joinTypeLeft
-				}
-				qb.addAudioFilesTable(f, joinType)
-				f.addJoin(joinType, fingerprintTable, "fingerprints_oshash", "audios_files.file_id = fingerprints_oshash.file_id AND fingerprints_oshash.type = 'oshash'")
-			}
-
-			stringCriterionHandler(audioFilter.Oshash, "fingerprints_oshash.fingerprint")(ctx, f)
-		}),
 
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if audioFilter.Checksum != nil {
@@ -98,15 +86,13 @@ func (qb *audioFilterHandler) criterionHandler() criterionHandler {
 		qb.isMissingCriterionHandler(audioFilter.IsMissing),
 		qb.urlsCriterionHandler(audioFilter.URL),
 
-		qb.captionCriterionHandler(audioFilter.Captions),
-
 		floatIntCriterionHandler(audioFilter.ResumeTime, "audios.resume_time", nil),
 		floatIntCriterionHandler(audioFilter.PlayDuration, "audios.play_duration", nil),
 		qb.playCountCriterionHandler(audioFilter.PlayCount),
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if audioFilter.LastPlayedAt != nil {
 				f.addLeftJoin(
-					fmt.Sprintf("(SELECT %s, MAX(%s) as last_played_at FROM %s GROUP BY %s)", audioIDColumn, audioViewDateColumn, audiosViewDatesTable, audioIDColumn),
+					fmt.Sprintf("(SELECT %s, MAX(%s) as last_played_at FROM %s GROUP BY %s)", audioIDColumn, audioPlayDateColumn, audiosPlayDatesTable, audioIDColumn),
 					"audio_last_view",
 					fmt.Sprintf("audio_last_view.%s = audios.id", audioIDColumn),
 				)
@@ -204,7 +190,7 @@ func (qb *audioFilterHandler) addFoldersTable(f *filterBuilder, joinType joinTyp
 func (qb *audioFilterHandler) playCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
 		primaryTable: audioTable,
-		joinTable:    audiosViewDatesTable,
+		joinTable:    audiosPlayDatesTable,
 		primaryFK:    audioIDColumn,
 	}
 
@@ -292,31 +278,6 @@ func (qb *audioFilterHandler) urlsCriterionHandler(url *models.StringCriterionIn
 	}
 
 	return h.handler(url)
-}
-
-func (qb *audioFilterHandler) captionCriterionHandler(captions *models.StringCriterionInput) criterionHandlerFunc {
-	h := stringListCriterionHandlerBuilder{
-		primaryTable: audioTable,
-		primaryFK:    audioIDColumn,
-		joinTable:    videoCaptionsTable,
-		stringColumn: captionCodeColumn,
-		addJoinTable: func(f *filterBuilder, joinType joinType) {
-			qb.addAudioFilesTable(f, joinTypeLeft)
-			f.addJoin(joinType, videoCaptionsTable, "", "video_captions.file_id = audios_files.file_id")
-		},
-		excludeHandler: func(f *filterBuilder, criterion *models.StringCriterionInput) {
-			excludeClause := `audios.id NOT IN (
-				SELECT audios_files.audio_id from audios_files 
-				INNER JOIN video_captions on video_captions.file_id = audios_files.file_id 
-				WHERE video_captions.language_code LIKE ?
-			)`
-			f.addWhere(excludeClause, criterion.Value)
-
-			// TODO - should we also exclude null values?
-		},
-	}
-
-	return h.handler(captions)
 }
 
 func (qb *audioFilterHandler) tagsCriterionHandler(tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {

@@ -20,7 +20,6 @@ type AudioFinder interface {
 	models.AudioGetter
 
 	FindByChecksum(ctx context.Context, checksum string) ([]*models.Audio, error)
-	FindByOSHash(ctx context.Context, oshash string) ([]*models.Audio, error)
 }
 
 type audioRoutes struct {

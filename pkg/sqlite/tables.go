@@ -301,10 +301,10 @@ var (
 
 	audiosViewTableMgr = &viewHistoryTable{
 		table: table{
-			table:    goqu.T(audiosViewDatesTable),
-			idColumn: goqu.T(audiosViewDatesTable).Col(audioIDColumn),
+			table:    goqu.T(audiosPlayDatesTable),
+			idColumn: goqu.T(audiosPlayDatesTable).Col(audioIDColumn),
 		},
-		dateColumn: goqu.T(audiosViewDatesTable).Col(audioViewDateColumn),
+		dateColumn: goqu.T(audiosPlayDatesTable).Col(audioPlayDateColumn),
 	}
 
 	audiosOTableMgr = &viewHistoryTable{

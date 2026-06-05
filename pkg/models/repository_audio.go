@@ -20,7 +20,6 @@ type AudioFinder interface {
 	IDsFromFileIDsLoader
 	FindByFingerprints(ctx context.Context, fp []Fingerprint) ([]*Audio, error)
 	FindByChecksum(ctx context.Context, checksum string) ([]*Audio, error)
-	FindByOSHash(ctx context.Context, oshash string) ([]*Audio, error)
 	FindByPath(ctx context.Context, path string) ([]*Audio, error)
 	FindByFileID(ctx context.Context, fileID FileID) ([]*Audio, error)
 	FindByPrimaryFileID(ctx context.Context, fileID FileID) ([]*Audio, error)
@@ -39,8 +38,6 @@ type AudioCounter interface {
 	Count(ctx context.Context) (int, error)
 	CountByPerformerID(ctx context.Context, performerID int) (int, error)
 	CountByFileID(ctx context.Context, fileID FileID) (int, error)
-	CountMissingChecksum(ctx context.Context) (int, error)
-	CountMissingOSHash(ctx context.Context) (int, error)
 	OCountByPerformerID(ctx context.Context, performerID int) (int, error)
 	OCountByGroupID(ctx context.Context, groupID int) (int, error)
 	OCountByStudioID(ctx context.Context, studioID int) (int, error)
@@ -84,7 +81,6 @@ type AudioReader interface {
 	CustomFieldsReader
 
 	All(ctx context.Context) ([]*Audio, error)
-	Wall(ctx context.Context, q *string) ([]*Audio, error)
 	Size(ctx context.Context) (float64, error)
 	Duration(ctx context.Context) (float64, error)
 	PlayDuration(ctx context.Context) (float64, error)

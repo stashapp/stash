@@ -157,10 +157,15 @@ func (r *studioResolver) MovieCount(ctx context.Context, obj *models.Studio, dep
 
 func (r *studioResolver) OCounter(ctx context.Context, obj *models.Studio) (ret *int, err error) {
 	var res_scene int
+	var res_audio int
 	var res_image int
 	var res int
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		res_scene, err = r.repository.Scene.OCountByStudioID(ctx, obj.ID)
+		if err != nil {
+			return err
+		}
+		res_audio, err = r.repository.Audio.OCountByStudioID(ctx, obj.ID)
 		if err != nil {
 			return err
 		}
@@ -169,7 +174,7 @@ func (r *studioResolver) OCounter(ctx context.Context, obj *models.Studio) (ret 
 	}); err != nil {
 		return nil, err
 	}
-	res = res_scene + res_image
+	res = res_scene + res_audio + res_image
 	return &res, nil
 }
 

@@ -197,48 +197,6 @@ func (_m *AudioReaderWriter) CountByPerformerID(ctx context.Context, performerID
 	return r0, r1
 }
 
-// CountMissingChecksum provides a mock function with given fields: ctx
-func (_m *AudioReaderWriter) CountMissingChecksum(ctx context.Context) (int, error) {
-	ret := _m.Called(ctx)
-
-	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context) int); ok {
-		r0 = rf(ctx)
-	} else {
-		r0 = ret.Get(0).(int)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// CountMissingOSHash provides a mock function with given fields: ctx
-func (_m *AudioReaderWriter) CountMissingOSHash(ctx context.Context) (int, error) {
-	ret := _m.Called(ctx)
-
-	var r0 int
-	if rf, ok := ret.Get(0).(func(context.Context) int); ok {
-		r0 = rf(ctx)
-	} else {
-		r0 = ret.Get(0).(int)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // CountUniqueViews provides a mock function with given fields: ctx
 func (_m *AudioReaderWriter) CountUniqueViews(ctx context.Context) (int, error) {
 	ret := _m.Called(ctx)
@@ -551,29 +509,6 @@ func (_m *AudioReaderWriter) FindByIDs(ctx context.Context, ids []int) ([]*model
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
 		r1 = rf(ctx, ids)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// FindByOSHash provides a mock function with given fields: ctx, oshash
-func (_m *AudioReaderWriter) FindByOSHash(ctx context.Context, oshash string) ([]*models.Audio, error) {
-	ret := _m.Called(ctx, oshash)
-
-	var r0 []*models.Audio
-	if rf, ok := ret.Get(0).(func(context.Context, string) []*models.Audio); ok {
-		r0 = rf(ctx, oshash)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Audio)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, oshash)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1383,29 +1318,6 @@ func (_m *AudioReaderWriter) UpdatePartial(ctx context.Context, id int, updatedA
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int, models.AudioPartial) error); ok {
 		r1 = rf(ctx, id, updatedAudio)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Wall provides a mock function with given fields: ctx, q
-func (_m *AudioReaderWriter) Wall(ctx context.Context, q *string) ([]*models.Audio, error) {
-	ret := _m.Called(ctx, q)
-
-	var r0 []*models.Audio
-	if rf, ok := ret.Get(0).(func(context.Context, *string) []*models.Audio); ok {
-		r0 = rf(ctx, q)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Audio)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *string) error); ok {
-		r1 = rf(ctx, q)
 	} else {
 		r1 = ret.Error(1)
 	}

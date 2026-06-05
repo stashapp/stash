@@ -28,8 +28,8 @@ const (
 	groupsAudiosTable     = "groups_audios"
 	audiosURLsTable       = "audio_urls"
 	audioURLColumn        = "url"
-	audiosViewDatesTable  = "audios_view_dates"
-	audioViewDateColumn   = "view_date"
+	audiosPlayDatesTable  = "audios_play_dates"
+	audioPlayDateColumn   = "play_date"
 	audiosODatesTable     = "audios_o_dates"
 	audioODateColumn      = "o_date"
 )
@@ -631,15 +631,6 @@ func (qb *AudioStore) FindByChecksum(ctx context.Context, checksum string) ([]*m
 	})
 }
 
-func (qb *AudioStore) FindByOSHash(ctx context.Context, oshash string) ([]*models.Audio, error) {
-	return qb.FindByFingerprints(ctx, []models.Fingerprint{
-		{
-			Type:        models.FingerprintTypeOshash,
-			Fingerprint: oshash,
-		},
-	})
-}
-
 func (qb *AudioStore) FindByPath(ctx context.Context, p string) ([]*models.Audio, error) {
 	filesTable := fileTableMgr.table
 	foldersTable := folderTableMgr.table
@@ -831,41 +822,6 @@ func (qb *AudioStore) CountByStudioID(ctx context.Context, studioID int) (int, e
 
 	q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col(studioIDColumn).Eq(studioID))
 	return count(ctx, q)
-}
-
-func (qb *AudioStore) countMissingFingerprints(ctx context.Context, fpType string) (int, error) {
-	fpTable := fingerprintTableMgr.table.As("fingerprints_temp")
-
-	q := dialect.From(audiosFilesJoinTable).LeftJoin(
-		fpTable,
-		goqu.On(
-			audiosFilesJoinTable.Col(fileIDColumn).Eq(fpTable.Col(fileIDColumn)),
-			fpTable.Col("type").Eq(fpType),
-		),
-	).Select(goqu.COUNT(goqu.DISTINCT(audiosFilesJoinTable.Col(audioIDColumn)))).Where(fpTable.Col("fingerprint").IsNull())
-
-	return count(ctx, q)
-}
-
-// CountMissingChecksum returns the number of audios missing a checksum value.
-func (qb *AudioStore) CountMissingChecksum(ctx context.Context) (int, error) {
-	return qb.countMissingFingerprints(ctx, "md5")
-}
-
-// CountMissingOSHash returns the number of audios missing an oshash value.
-func (qb *AudioStore) CountMissingOSHash(ctx context.Context) (int, error) {
-	return qb.countMissingFingerprints(ctx, "oshash")
-}
-
-func (qb *AudioStore) Wall(ctx context.Context, q *string) ([]*models.Audio, error) {
-	s := ""
-	if q != nil {
-		s = *q
-	}
-
-	table := qb.table()
-	qq := qb.selectDataset().Prepared(true).Where(table.Col("details").Like("%" + s + "%")).Order(goqu.L("RANDOM()").Asc()).Limit(80)
-	return qb.getMany(ctx, qq)
 }
 
 func (qb *AudioStore) All(ctx context.Context) ([]*models.Audio, error) {
@@ -1138,9 +1094,9 @@ func (qb *AudioStore) setAudioSort(query *queryBuilder, findFilter *models.FindF
 		addFolderTable()
 		query.sortAndPagination += " ORDER BY COALESCE(audios.title, files.basename) COLLATE NATURAL_CI " + direction + ", folders.path COLLATE NATURAL_CI " + direction
 	case "play_count":
-		query.sortAndPagination += getCountSort(audioTable, audiosViewDatesTable, audioIDColumn, direction)
+		query.sortAndPagination += getCountSort(audioTable, audiosPlayDatesTable, audioIDColumn, direction)
 	case "last_played_at":
-		query.sortAndPagination += fmt.Sprintf(" ORDER BY (SELECT MAX(view_date) FROM %s AS sort WHERE sort.%s = %s.id) %s", audiosViewDatesTable, audioIDColumn, audioTable, getSortDirection(direction))
+		query.sortAndPagination += fmt.Sprintf(" ORDER BY (SELECT MAX(play_date) FROM %s AS sort WHERE sort.%s = %s.id) %s", audiosPlayDatesTable, audioIDColumn, audioTable, getSortDirection(direction))
 	case "last_o_at":
 		query.sortAndPagination += fmt.Sprintf(" ORDER BY (SELECT MAX(o_date) FROM %s AS sort WHERE sort.%s = %s.id) %s", audiosODatesTable, audioIDColumn, audioTable, getSortDirection(direction))
 	case "o_counter":

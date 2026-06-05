@@ -6,15 +6,15 @@ CREATE TABLE "audios" (
     `title` varchar(255),
     `details` text,
     `date` date,
+    "date_precision" TINYINT,
     `rating` tinyint,
     `studio_id` integer,
     `organized` boolean not null default '0',
-    `created_at` datetime not null,
-    `updated_at` datetime not null,
     `code` text,
     `resume_time` float not null default 0,
     `play_duration` float not null default 0,
-    "date_precision" TINYINT,
+    `created_at` datetime not null,
+    `updated_at` datetime not null,
     foreign key(`studio_id`) references `studios`(`id`) on delete
     SET NULL
 );
@@ -40,14 +40,14 @@ CREATE TABLE "audios_tags" (
 );
 CREATE INDEX `index_audios_tags_on_tag_id` on `audios_tags` (`tag_id`);
 --------------------------------------------
--- audios_view_dates definition
+-- audios_play_dates definition
 --
-CREATE TABLE "audios_view_dates" (
+CREATE TABLE "audios_play_dates" (
     `audio_id` integer not null,
-    `view_date` datetime not null,
+    `play_date` datetime not null,
     foreign key(`audio_id`) references `audios`(`id`) on delete CASCADE
 );
-CREATE INDEX `index_audios_view_dates` ON `audios_view_dates` (`audio_id`);
+CREATE INDEX `index_audios_play_dates` ON `audios_play_dates` (`audio_id`);
 --------------------------------------------
 -- groups_audios definition
 --
