@@ -220,6 +220,7 @@ func Initialize() (*Server, error) {
 	r.Mount("/tag", server.getTagRoutes())
 	r.Mount("/downloads", server.getDownloadsRoutes())
 	r.Mount("/plugin", server.getPluginRoutes())
+	r.Mount("/deovr", server.getDeoVRRoutes())
 
 	r.HandleFunc("/css", cssHandler(cfg))
 	r.HandleFunc("/javascript", javascriptHandler(cfg))
@@ -417,6 +418,15 @@ func (s *Server) getDownloadsRoutes() chi.Router {
 func (s *Server) getPluginRoutes() chi.Router {
 	return pluginRoutes{
 		pluginCache: s.manager.PluginCache,
+	}.Routes()
+}
+
+func (s *Server) getDeoVRRoutes() chi.Router {
+	repo := s.manager.Repository
+	return deovrRoutes{
+		routes:        routes{txnManager: repo.TxnManager},
+		sceneQueryer:  repo.Scene,
+		sceneFinder:   repo.Scene,
 	}.Routes()
 }
 
