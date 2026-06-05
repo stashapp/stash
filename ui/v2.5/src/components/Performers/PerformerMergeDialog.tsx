@@ -299,7 +299,7 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
     setURLs(
       new ScrapeResult(
         dest.urls ?? [],
-        uniq(all.map((s) => s.urls ?? []).flat())
+        uniq(all.flatMap((s) => s.urls ?? []))
       )
     );
     setGender(
@@ -330,15 +330,14 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
     setTags(
       new ObjectListScrapeResult<GQL.ScrapedTag>(
         sortStoredIdObjects(dest.tags.map(idToStoredID)),
-        uniqIDStoredIDs(all.map((s) => s.tags.map(idToStoredID)).flat())
+        uniqIDStoredIDs(all.flatMap((s) => s.tags.map(idToStoredID)))
       )
     );
     setStashIDs(
       new ScrapeResult(
         dest.stash_ids,
         all
-          .map((s) => s.stash_ids)
-          .flat()
+          .flatMap((s) => s.stash_ids)
           .filter((s, index, a) => {
             // remove entries with duplicate endpoints
             return index === a.findIndex((ss) => ss.endpoint === s.endpoint);

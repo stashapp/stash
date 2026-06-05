@@ -195,7 +195,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     setCode(
       new ScrapeResult(dest.code, sources.find((s) => s.code)?.code, !dest.code)
     );
-    setURL(new ScrapeResult(dest.urls, uniq(all.map((s) => s.urls).flat())));
+    setURL(new ScrapeResult(dest.urls, uniq(all.flatMap((s) => s.urls))));
     setDate(
       new ScrapeResult(dest.date, sources.find((s) => s.date)?.date, !dest.date)
     );
@@ -218,13 +218,13 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     setPerformers(
       new ObjectListScrapeResult<GQL.ScrapedPerformer>(
         sortStoredIdObjects(dest.performers.map(idToStoredID)),
-        uniqIDStoredIDs(all.map((s) => s.performers.map(idToStoredID)).flat())
+        uniqIDStoredIDs(all.flatMap((s) => s.performers.map(idToStoredID)))
       )
     );
     setTags(
       new ObjectListScrapeResult<GQL.ScrapedTag>(
         sortStoredIdObjects(dest.tags.map(idToStoredID)),
-        uniqIDStoredIDs(all.map((s) => s.tags.map(idToStoredID)).flat())
+        uniqIDStoredIDs(all.flatMap((s) => s.tags.map(idToStoredID)))
       )
     );
     setDetails(
@@ -238,14 +238,14 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     setGroups(
       new ObjectListScrapeResult<GQL.ScrapedGroup>(
         sortStoredIdObjects(dest.groups.map(groupToStoredID)),
-        uniqIDStoredIDs(all.map((s) => s.groups.map(groupToStoredID)).flat())
+        uniqIDStoredIDs(all.flatMap((s) => s.groups.map(groupToStoredID)))
       )
     );
 
     setGalleries(
       new ScrapeResult(
         dest.galleries.map((p) => p.id),
-        uniq(all.map((s) => s.galleries.map((p) => p.id)).flat())
+        uniq(all.flatMap((s) => s.galleries.map((p) => p.id)))
       )
     );
 
@@ -289,8 +289,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       new ScrapeResult(
         dest.stash_ids,
         all
-          .map((s) => s.stash_ids)
-          .flat()
+          .flatMap((s) => s.stash_ids)
           .filter((s, index, a) => {
             // remove entries with duplicate endpoints
             return index === a.findIndex((ss) => ss.endpoint === s.endpoint);
@@ -636,8 +635,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
         groups: groups.getNewValue()?.map((m) => {
           // find the equivalent group in the original scenes
           const found = all
-            .map((s) => s.groups)
-            .flat()
+            .flatMap((s) => s.groups)
             .find((mm) => mm.group.id === m.stored_id);
           return {
             group_id: m.stored_id!,

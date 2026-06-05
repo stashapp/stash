@@ -38,8 +38,7 @@
         "useArrowFunction": "off",
         "useOptionalChain": "off",
         "noBannedTypes": "off",
-        "useIndexOf": "off",
-        "useFlatMap": "off"
+        "useIndexOf": "off"
       },
       "style": {
         "noNestedTernary": "off",

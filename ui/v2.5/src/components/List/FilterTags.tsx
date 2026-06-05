@@ -308,7 +308,7 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
 
   const className = "wrap-tags filter-tags";
 
-  const filterTags = criteria.map((c) => getFilterTags(c)).flat();
+  const filterTags = criteria.flatMap((c) => getFilterTags(c));
 
   if (searchTerm && searchTerm.length > 0) {
     filterTags.unshift(

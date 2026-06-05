@@ -176,8 +176,7 @@ const TagMergeDetails: React.FC<ITagMergeDetailsProps> = ({
       new ScrapeResult(
         dest.stash_ids,
         all
-          .map((s) => s.stash_ids)
-          .flat()
+          .flatMap((s) => s.stash_ids)
           .filter((s, index, a) => {
             // remove entries with duplicate endpoints
             return index === a.findIndex((ss) => ss.endpoint === s.endpoint);

@@ -85,8 +85,8 @@ function useLoadPlugins(disableCustomizations?: boolean) {
       uniq(
         sortedPlugins
           ?.filter((plugin) => plugin.enabled && plugin.paths.javascript)
-          .map((plugin) => plugin.paths.javascript!)
-          .flat() ?? []
+          .flatMap((plugin) => plugin.paths.javascript!)
+          ?? []
       ),
       !!sortedPlugins && !pluginsLoading && !pluginsError,
     ];
@@ -100,8 +100,8 @@ function useLoadPlugins(disableCustomizations?: boolean) {
       uniq(
         sortedPlugins
           ?.filter((plugin) => plugin.enabled && plugin.paths.css)
-          .map((plugin) => plugin.paths.css!)
-          .flat() ?? []
+          .flatMap((plugin) => plugin.paths.css!)
+          ?? []
       ),
       !!sortedPlugins && !pluginsLoading && !pluginsError,
     ];
