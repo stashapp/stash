@@ -65,8 +65,8 @@ const GroupTabs: React.FC<{
   } = group;
 
   const populatedDefaultTab = useMemo(() => {
-    if (sceneCount == 0) {
-      if (performerCount != 0) {
+    if (sceneCount === 0) {
+      if (performerCount !== 0) {
         return "performers";
       } else if (groupCount !== 0) {
         return "subgroups";
@@ -176,7 +176,7 @@ const GroupPage: React.FC<IProps> = PatchComponent(
     );
 
     const isDefaultImage =
-      group.front_image_path && group.front_image_path.includes("default=true");
+      group.front_image_path?.includes("default=true");
 
     const lightboxImages = useMemo(() => {
       const covers = [];
@@ -202,7 +202,7 @@ const GroupPage: React.FC<IProps> = PatchComponent(
     }, [group.front_image_path, group.back_image_path, isDefaultImage]);
 
     const activeFrontImage = useMemo(() => {
-      let existingImage = group.front_image_path;
+      const existingImage = group.front_image_path;
       if (isEditing) {
         if (frontImage === null && existingImage) {
           const imageURL = new URL(existingImage);
@@ -217,7 +217,7 @@ const GroupPage: React.FC<IProps> = PatchComponent(
     }, [isEditing, group.front_image_path, frontImage]);
 
     const activeBackImage = useMemo(() => {
-      let existingImage = group.back_image_path;
+      const existingImage = group.back_image_path;
       if (isEditing) {
         if (backImage === null) {
           return undefined;

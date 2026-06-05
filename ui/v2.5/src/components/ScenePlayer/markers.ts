@@ -87,8 +87,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
 
     // Set background color based on tag (if available)
     if (
-      marker.primaryTag &&
-      marker.primaryTag.name &&
+      marker.primaryTag?.name &&
       this.tagColors[marker.primaryTag.name]
     ) {
       markerSet.dot.style.backgroundColor =
@@ -130,7 +129,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     marker: IMarker,
     layer: number,
     duration: number,
-    seekBar: Element,
+    _seekBar: Element,
     parent: Element
   ) {
     if (!marker.end_seconds) return;
@@ -164,8 +163,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
 
     // Set background color based on tag (if available)
     if (
-      marker.primaryTag &&
-      marker.primaryTag.name &&
+      marker.primaryTag?.name &&
       this.tagColors[marker.primaryTag.name]
     ) {
       rangeDiv.style.backgroundColor = this.tagColors[marker.primaryTag.name];
@@ -415,7 +413,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     const q = v * (1 - f * s);
     const t = v * (1 - (1 - f) * s);
 
-    let r, g, b;
+    let r: number, g: number, b: number;
     switch (i % 6) {
       case 0:
         r = v;

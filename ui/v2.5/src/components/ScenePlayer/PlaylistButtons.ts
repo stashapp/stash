@@ -100,7 +100,7 @@ declare module "video.js" {
     skipButtons: () => SkipButtonPlugin;
   }
   interface VideoJsPlayerPluginOptions {
-    skipButtons?: {};
+    skipButtons?: object;
   }
 }
 

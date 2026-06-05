@@ -203,7 +203,7 @@ interface IDialogSetting<T> extends ISetting {
   buttonText?: string;
   buttonTextID?: string;
   value?: T;
-  renderValue?: (v: T | undefined) => JSX.Element;
+  renderValue?: (v: T | undefined) => React.ReactNode;
   onChange: () => void;
 }
 const _ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
@@ -359,9 +359,9 @@ interface IModalSetting<T> extends ISetting {
     setValue: (v?: T) => void,
     error?: string
   ) => JSX.Element;
-  renderValue?: (v: T | undefined) => JSX.Element;
+  renderValue?: (v: T | undefined) => React.ReactNode;
   modalProps?: ModalProps;
-  validateChange?: (v: T) => void | undefined;
+  validateChange?: (v: T) => void;
 }
 
 export const _ModalSetting = <T extends {}>(props: IModalSetting<T>) => {

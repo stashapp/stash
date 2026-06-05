@@ -99,7 +99,7 @@ export const GalleryFileInfoPanel: React.FC<IGalleryFileInfoPanelProps> = (
     }
 
     if (props.gallery.files.length === 0) {
-      return <></>;
+      return null;
     }
 
     if (props.gallery.files.length === 1) {

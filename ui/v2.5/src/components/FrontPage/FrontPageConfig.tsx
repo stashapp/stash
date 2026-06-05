@@ -147,7 +147,7 @@ const AddContentModal: React.FC<IAddSavedFilterModalProps> = ({
         <Form.Control
           as="select"
           value={premadeFilterIndex}
-          onChange={(e) => setPremadeFilterIndex(parseInt(e.target.value))}
+          onChange={(e) => setPremadeFilterIndex(parseInt(e.target.value, 10))}
           className="btn-secondary"
         >
           {premadeFilterOptions.map((c, i) => (
@@ -191,7 +191,7 @@ const AddContentModal: React.FC<IAddSavedFilterModalProps> = ({
       case "front_page.types.saved_filter":
         onClose({
           __typename: "SavedFilter",
-          savedFilterId: parseInt(savedFilter!),
+          savedFilterId: parseInt(savedFilter!, 10),
         });
         return;
     }
@@ -235,20 +235,24 @@ const ContentRow: React.FC<IFilterRowProps> = (props: IFilterRowProps) => {
   function title() {
     switch (props.content.__typename) {
       case "SavedFilter":
-        const savedFilterId = String(props.content.savedFilterId);
-        const savedFilter = props.allSavedFilters.find(
-          (f) => f.id === savedFilterId
-        );
-        if (!savedFilter) return "";
-        return filterTitle(intl, savedFilter);
-      case "CustomFilter":
-        const asCustomFilter = props.content as ICustomFilter;
-        if (asCustomFilter.message)
-          return intl.formatMessage(
-            { id: asCustomFilter.message.id },
-            asCustomFilter.message.values
+        {
+          const savedFilterId = String(props.content.savedFilterId);
+          const savedFilter = props.allSavedFilters.find(
+            (f) => f.id === savedFilterId
           );
-        return asCustomFilter.title ?? "";
+          if (!savedFilter) return "";
+          return filterTitle(intl, savedFilter);
+        }
+      case "CustomFilter":
+        {
+          const asCustomFilter = props.content as ICustomFilter;
+          if (asCustomFilter.message)
+            return intl.formatMessage(
+              { id: asCustomFilter.message.id },
+              asCustomFilter.message.values
+            );
+          return asCustomFilter.title ?? "";
+        }
     }
   }
 
@@ -360,7 +364,7 @@ export const FrontPageConfig: React.FC<IFrontPageConfigProps> = ({
   }
 
   function deleteSavedFilter(index: number) {
-    setCurrentContent(currentContent.filter((f, i) => i !== index));
+    setCurrentContent(currentContent.filter((_f, i) => i !== index));
   }
 
   return (

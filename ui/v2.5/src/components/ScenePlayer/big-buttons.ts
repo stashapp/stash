@@ -61,7 +61,7 @@ declare module "video.js" {
     bigButtons: () => BigButtonsPlugin;
   }
   interface VideoJsPlayerPluginOptions {
-    bigButtons?: {};
+    bigButtons?: object;
   }
 }
 

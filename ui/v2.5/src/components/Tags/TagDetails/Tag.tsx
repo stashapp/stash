@@ -100,18 +100,18 @@ const TagTabs: React.FC<{
 
   const populatedDefaultTab = useMemo(() => {
     let ret: TabKey = "scenes";
-    if (sceneCount == 0) {
-      if (imageCount != 0) {
+    if (sceneCount === 0) {
+      if (imageCount !== 0) {
         ret = "images";
-      } else if (galleryCount != 0) {
+      } else if (galleryCount !== 0) {
         ret = "galleries";
-      } else if (groupCount != 0) {
+      } else if (groupCount !== 0) {
         ret = "groups";
-      } else if (sceneMarkerCount != 0) {
+      } else if (sceneMarkerCount !== 0) {
         ret = "markers";
-      } else if (performerCount != 0) {
+      } else if (performerCount !== 0) {
         ret = "performers";
-      } else if (studioCount != 0) {
+      } else if (studioCount !== 0) {
         ret = "studios";
       }
     }
@@ -320,7 +320,7 @@ const TagPage: React.FC<IProps> = PatchComponent(
     const showAllCounts = uiConfig?.showChildTagContent;
 
     const tagImage = useMemo(() => {
-      let existingImage = tag.image_path;
+      const existingImage = tag.image_path;
       if (isEditing) {
         if (image === null && existingImage) {
           const tagImageURL = new URL(existingImage);

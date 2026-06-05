@@ -223,10 +223,10 @@ export function useSelectionState(props: {
     }));
   }, [criterion.value.excluded]);
 
-  const includingOnly = modifier == CriterionModifier.Equals;
+  const includingOnly = modifier === CriterionModifier.Equals;
   const excludingOnly =
-    modifier == CriterionModifier.Excludes ||
-    modifier == CriterionModifier.NotEquals;
+    modifier === CriterionModifier.Excludes ||
+    modifier === CriterionModifier.NotEquals;
 
   const onSelect = useCallback(
     (v: Option, exclude: boolean) => {
@@ -508,7 +508,7 @@ export function useLabeledIdFilterState(props: {
   };
 }
 
-export function makeQueryVariables(query: string, extraProps: {}) {
+export function makeQueryVariables(query: string, extraProps: object) {
   return {
     filter: {
       q: query,

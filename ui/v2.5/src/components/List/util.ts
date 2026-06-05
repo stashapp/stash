@@ -66,7 +66,7 @@ export function useFilterURL(
 
     // the query has changed, update filter if necessary
     setFilter((prevFilter) => {
-      let newFilter = prevFilter.empty();
+      const newFilter = prevFilter.empty();
       newFilter.configureFromQueryString(location.search);
       if (!isEqual(newFilter, prevFilter)) {
         // filter may have changed if random seed was set, update the URL

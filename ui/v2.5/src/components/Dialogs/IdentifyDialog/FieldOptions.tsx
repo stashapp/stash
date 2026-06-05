@@ -238,11 +238,9 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
             </Button>
           </>
         ) : (
-          <>
-            <Button className="minimal" onClick={() => editField()}>
-              <Icon icon={faPencilAlt} />
-            </Button>
-          </>
+          <Button className="minimal" onClick={() => editField()}>
+            <Icon icon={faPencilAlt} />
+          </Button>
         )}
       </td>
     </tr>
@@ -312,7 +310,7 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
   }
 
   if (!localFieldOptions) {
-    return <></>;
+    return null;
   }
 
   return (

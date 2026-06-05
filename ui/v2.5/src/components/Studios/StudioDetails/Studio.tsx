@@ -100,16 +100,16 @@ const StudioTabs: React.FC<{
 
   const populatedDefaultTab = useMemo(() => {
     let ret: TabKey = "scenes";
-    if (sceneCount == 0) {
-      if (galleryCount != 0) {
+    if (sceneCount === 0) {
+      if (galleryCount !== 0) {
         ret = "galleries";
-      } else if (imageCount != 0) {
+      } else if (imageCount !== 0) {
         ret = "images";
-      } else if (performerCount != 0) {
+      } else if (performerCount !== 0) {
         ret = "performers";
-      } else if (groupCount != 0) {
+      } else if (groupCount !== 0) {
         ret = "groups";
-      } else if (studio.child_studios.length != 0) {
+      } else if (studio.child_studios.length !== 0) {
         ret = "childstudios";
       }
     }

@@ -101,6 +101,7 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
     }
   }
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally triggering on criterion change
   useEffect(() => {
     // scrolling to the current criterion doesn't work well when the
     // dialog is already open, so limit to when we click on the

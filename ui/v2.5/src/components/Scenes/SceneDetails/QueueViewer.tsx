@@ -49,6 +49,9 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
 
   const currentIndex = scenes.findIndex((s) => s.id === currentID);
 
+  // HACK - this isn't a great way to handle loading state. Requires a larger refactor.
+  // TODO - refactor this
+  // biome-ignore lint/correctness/useExhaustiveDependencies: explicitly want to set loading to false when scenes change
   useEffect(() => {
     setLessLoading(false);
     setMoreLoading(false);
@@ -99,7 +102,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
               <span className="queue-scene-studio">{scene?.studio?.name}</span>
               <span className="queue-scene-performers">
                 {scene?.performers
-                  ?.map(function (performer) {
+                  ?.map((performer) => {
                     return performer.name;
                   })
                   .join(", ")}

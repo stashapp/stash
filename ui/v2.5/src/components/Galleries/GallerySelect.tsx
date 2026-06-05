@@ -95,7 +95,7 @@ const _GallerySelect: React.FC<
     }
 
     const query = await queryFindGalleriesForSelect(filter);
-    let ret = query.data.findGalleries.galleries.filter((gallery) => {
+    const ret = query.data.findGalleries.galleries.filter((gallery) => {
       // HACK - we should probably exclude these in the backend query, but
       // this will do in the short-term
       return !exclude.includes(gallery.id.toString());
@@ -296,14 +296,14 @@ const _GalleryIDSelect: React.FC<
     onSelectValues?.(items);
   }
 
-  async function loadObjectsByID(idsToLoad: string[]): Promise<Gallery[]> {
-    const query = await queryFindGalleriesByIDForSelect(idsToLoad);
-    const { galleries: loadedGalleries } = query.data.findGalleries;
-
-    return loadedGalleries;
-  }
-
   useEffect(() => {
+    async function loadObjectsByID(idsToLoad: string[]): Promise<Gallery[]> {
+      const query = await queryFindGalleriesByIDForSelect(idsToLoad);
+      const { galleries: loadedGalleries } = query.data.findGalleries;
+  
+      return loadedGalleries;
+    }
+
     if (!idsChanged) {
       return;
     }

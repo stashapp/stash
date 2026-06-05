@@ -19,13 +19,13 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
 
   const { paths } = scene;
 
-  if (!paths || !paths.stream || (!isAndroid && !isAppleDevice))
+  if (!paths?.stream || (!isAndroid && !isAppleDevice))
     return <span />;
 
   const { stream } = paths;
   const title = objectTitle(scene);
 
-  let url;
+  let url: string | undefined;
   const streamURL = new URL(stream);
   if (isAndroid) {
     const scheme = streamURL.protocol.slice(0, -1);

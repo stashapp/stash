@@ -85,8 +85,18 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const [studio, setStudio] = useState<Studio | null>(null);
 
   const Scrapers = useListSceneScrapers();
-  const [fragmentScrapers, setFragmentScrapers] = useState<GQL.Scraper[]>([]);
-  const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
+
+  const fragmentScrapers: GQL.Scraper[] = useMemo(() => {
+    return Scrapers?.data?.listScrapers?.filter((s) =>
+      s.scene?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
+    ) ?? [];
+  }, [Scrapers.data?.listScrapers]);
+
+  const queryableScrapers: GQL.Scraper[] = useMemo(() => {
+    return Scrapers?.data?.listScrapers?.filter((s) =>
+      s.scene?.supported_scrapes.includes(GQL.ScrapeType.Name)
+    ) ?? [];
+  }, [Scrapers.data?.listScrapers]);
 
   const [scraper, setScraper] = useState<GQL.ScraperSourceInput>();
   const [isScraperQueryModalOpen, setIsScraperQueryModalOpen] =
@@ -259,20 +269,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }
   });
 
-  useEffect(() => {
-    const toFilter = Scrapers?.data?.listScrapers ?? [];
-
-    const newFragmentScrapers = toFilter.filter((s) =>
-      s.scene?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
-    );
-    const newQueryableScrapers = toFilter.filter((s) =>
-      s.scene?.supported_scrapes.includes(GQL.ScrapeType.Name)
-    );
-
-    setFragmentScrapers(newFragmentScrapers);
-    setQueryableScrapers(newQueryableScrapers);
-  }, [Scrapers, stashConfig]);
-
   function onSetGroups(items: Group[]) {
     setGroups(items);
 
@@ -330,7 +326,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     setIsLoading(true);
     try {
       const result = await queryScrapeScene(s, scene.id!);
-      if (!result.data || !result.data.scrapeSingleScene?.length) {
+      if (!result.data?.scrapeSingleScene?.length) {
         Toast.success("No scenes found");
         return;
       }
@@ -361,7 +357,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       };
 
       const result = await queryScrapeSceneQueryFragment(s, input);
-      if (!result.data || !result.data.scrapeSingleScene?.length) {
+      if (!result.data?.scrapeSingleScene?.length) {
         Toast.success("No scenes found");
         return;
       }
@@ -488,7 +484,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       formik.setFieldValue("urls", updatedScene.urls);
     }
 
-    if (updatedScene.studio && updatedScene.studio.stored_id) {
+    if (updatedScene.studio?.stored_id) {
       onSetStudio({
         id: updatedScene.studio.stored_id,
         name: updatedScene.studio.name ?? "",
@@ -576,7 +572,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     setIsLoading(true);
     try {
       const result = await queryScrapeSceneURL(url);
-      if (!result.data || !result.data.scrapeSceneURL) {
+      if (!result.data?.scrapeSceneURL) {
         return;
       }
       setScrapedScene(result.data.scrapeSceneURL);
@@ -689,7 +685,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     const date = (() => {
       try {
         return schema.validateSyncAt("date", formik.values);
-      } catch (e) {
+      } catch (_e) {
         return undefined;
       }
     })();

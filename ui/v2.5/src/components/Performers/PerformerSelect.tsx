@@ -139,7 +139,7 @@ const _PerformerSelect: React.FC<
 
     const { object } = optionProps.data;
 
-    let { name } = object;
+    const { name } = object;
 
     // if name does not match the input value but an alias does, show the alias
     const { inputValue } = optionProps.selectProps;
@@ -366,15 +366,15 @@ const _PerformerIDSelect: React.FC<IFilterProps & IFilterIDProps<Performer>> = (
     setValues(items);
     onSelectValues?.(items);
   }
-
-  async function loadObjectsByID(idsToLoad: string[]): Promise<Performer[]> {
-    const query = await queryFindPerformersByIDForSelect(idsToLoad);
-    const { performers: loadedPerformers } = query.data.findPerformers;
-
-    return loadedPerformers;
-  }
-
+  
   useEffect(() => {
+    async function loadObjectsByID(idsToLoad: string[]): Promise<Performer[]> {
+      const query = await queryFindPerformersByIDForSelect(idsToLoad);
+      const { performers: loadedPerformers } = query.data.findPerformers;
+  
+      return loadedPerformers;
+    }
+
     if (!idsChanged) {
       return;
     }

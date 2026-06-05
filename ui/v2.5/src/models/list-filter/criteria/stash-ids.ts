@@ -116,7 +116,7 @@ export class StashIDCriterion extends ModifierCriterion<IStashIDValue> {
 
   public toQueryParams(): Record<string, unknown> {
     super.toQueryParams();
-    let encodedCriterion;
+    let encodedCriterion: Record<string, unknown>;
     if (
       (this.modifier === CriterionModifier.IsNull ||
         this.modifier === CriterionModifier.NotNull) &&

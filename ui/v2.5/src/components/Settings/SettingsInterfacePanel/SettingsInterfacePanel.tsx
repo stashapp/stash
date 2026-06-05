@@ -855,7 +855,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
               />
             )}
             renderValue={() => {
-              return <></>;
+              return null;
             }}
           />
         </SettingSection>
@@ -892,7 +892,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
               </>
             )}
             renderValue={() => {
-              return <></>;
+              return null;
             }}
           />
         </SettingSection>
@@ -929,7 +929,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
               </>
             )}
             renderValue={() => {
-              return <></>;
+              return null;
             }}
           />
         </SettingSection>

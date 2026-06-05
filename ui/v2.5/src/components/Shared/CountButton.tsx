@@ -43,7 +43,7 @@ export const CountButton: React.FC<ICountButtonProps> = ({
         className="minimal count-value"
         variant="secondary"
         onClick={() => (onValueClicked ?? onIncrement)?.()}
-        title={!!onValueClicked ? countTitle : undefined}
+        title={onValueClicked ? countTitle : undefined}
       >
         <span>{value}</span>
       </Button>

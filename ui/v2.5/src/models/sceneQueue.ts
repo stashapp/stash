@@ -108,7 +108,7 @@ export class SceneQueue {
   }
 
   public makeLink(sceneID: string, options: IPlaySceneOptions) {
-    let params = [
+    const params = [
       this.makeQueryParameters(options.sceneIndex, options.newPage),
     ];
     if (options.autoPlay) {

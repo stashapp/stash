@@ -211,7 +211,7 @@ export const FilterSelectComponent = <
 
   const getNewOptionData =
     creatable && getNamedObject
-      ? (inputValue: string, optionLabel: React.ReactNode) => {
+      ? (_inputValue: string, optionLabel: React.ReactNode) => {
           return {
             value: "",
             object: getNamedObject("", optionLabel as string),
@@ -223,7 +223,7 @@ export const FilterSelectComponent = <
     creatable && isValidNewOption
       ? (
           inputValue: string,
-          value: Options<Option<T>>,
+          _value: Options<Option<T>>,
           options: OptionsOrGroups<Option<T>, GroupBase<Option<T>>>
         ) => {
           return isValidNewOption(

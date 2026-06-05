@@ -64,7 +64,7 @@ const getDurationStatus = (
 
   const matchCount = durations.filter((duration) => duration <= 5).length;
 
-  let match;
+  let match: JSX.Element | undefined;
   if (matchCount > 0)
     match = (
       <FormattedMessage
@@ -142,12 +142,13 @@ const getFingerprintStatus = (
     )
   );
 
-  const allPhashes = stashScene.files.reduce(
-    (pv: Pick<GQL.Fingerprint, "type" | "value">[], cv) => {
-      return [...pv, ...cv.fingerprints.filter((f) => f.type === "phash")];
-    },
-    []
-  );
+  const allPhashes: Pick<GQL.Fingerprint, "type" | "value">[] = [];
+
+  for (const file of stashScene.files) {
+    allPhashes.push(
+      ...file.fingerprints.filter((f) => f.type === "phash")
+    );
+  }
 
   const phashMatches = matchPhashes(allPhashes, scene.fingerprints ?? []);
 
@@ -347,7 +348,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       return remoteField;
     }
 
-    let imgData;
+    let imgData: string | undefined;
     if (!excludedFields.cover_image && config.setCoverImage) {
       const imgurl = scene.image;
       if (imgurl) {

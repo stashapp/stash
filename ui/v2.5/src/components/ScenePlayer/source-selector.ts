@@ -116,7 +116,7 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
     this.menu = new SourceMenuButton(player);
 
     this.menu.on("sourceselected", (_, source: ISource) => {
-      this.selectedIndex = this.sources.findIndex((src) => src === source);
+      this.selectedIndex = this.sources.indexOf(source);
       if (this.selectedIndex === -1) return;
 
       this.manuallySelected = true;
@@ -243,11 +243,11 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
   removeTextTrack(track: HTMLTrackElement) {
     this.player.removeRemoteTextTrack(track);
     let index = this.manualTextTracks.indexOf(track);
-    if (index != -1) {
+    if (index !== -1) {
       this.manualTextTracks.splice(index, 1);
     }
     index = this.cleanupTextTracks.indexOf(track);
-    if (index != -1) {
+    if (index !== -1) {
       this.cleanupTextTracks.splice(index, 1);
     }
   }
@@ -262,7 +262,7 @@ declare module "video.js" {
     sourceSelector: () => SourceSelectorPlugin;
   }
   interface VideoJsPlayerPluginOptions {
-    sourceSelector?: {};
+    sourceSelector?: object;
   }
 }
 

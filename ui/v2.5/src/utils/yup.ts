@@ -16,7 +16,7 @@ export function yupRequiredStringArray(intl: IntlShape) {
     .test({
       name: "blank",
       test(value) {
-        if (!value || !value.length) return true;
+        if (!value?.length) return true;
 
         const blanks: number[] = [];
         for (let i = 0; i < value.length; i++) {
@@ -120,6 +120,7 @@ export function getDateError(
   if (validateDateString(value ?? "")) return undefined;
   return intl
     .formatMessage({ id: "validation.date_invalid_form" })
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: required for intl
     .replace("${path}", intl.formatMessage({ id: "date" }));
 }
 
@@ -165,7 +166,7 @@ export function yupInputNumber() {
 export function yupFormikValidate<T>(
   schema: yup.AnySchema
 ): (values: T) => Promise<FormikErrors<T>> {
-  return async function (values) {
+  return async (values) => {
     try {
       await schema.validate(values, { abortEarly: false });
     } catch (err) {

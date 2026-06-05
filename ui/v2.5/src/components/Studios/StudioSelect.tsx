@@ -120,7 +120,7 @@ const _StudioSelect: React.FC<
 
     const { object } = optionProps.data;
 
-    let { name } = object;
+    const { name } = object;
 
     // if name does not match the input value but an alias does, show the alias
     const { inputValue } = optionProps.selectProps;
@@ -264,14 +264,14 @@ const _StudioIDSelect: React.FC<IFilterProps & IFilterIDProps<Studio>> = (
     onSelectValues?.(items);
   }
 
-  async function loadObjectsByID(idsToLoad: string[]): Promise<Studio[]> {
-    const query = await queryFindStudiosByIDForSelect(idsToLoad);
-    const { studios: loadedStudios } = query.data.findStudios;
-
-    return loadedStudios;
-  }
-
   useEffect(() => {
+    async function loadObjectsByID(idsToLoad: string[]): Promise<Studio[]> {
+      const query = await queryFindStudiosByIDForSelect(idsToLoad);
+      const { studios: loadedStudios } = query.data.findStudios;
+  
+      return loadedStudios;
+    }
+
     if (!idsChanged) {
       return;
     }

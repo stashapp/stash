@@ -32,61 +32,17 @@
     },
     "rules": {
       "a11y": "off",
-      "complexity": {
-        "noUselessFragments": "off",
-        // remove the following after fixing
-        "useArrowFunction": "off",
-        "useOptionalChain": "off",
-        "noBannedTypes": "off",
-        "useIndexOf": "off",
-        "useFlatMap": "off",
-        "noUselessUndefinedInitialization": "off",
-        "noExtraBooleanCast": "off",
-        "noUselessRename": "off",
-        "noArguments": "off",
-        "noUselessEscapeInRegex": "off",
-        "useDateNow": "off",
-        "noUselessSwitchCase": "off"
-      },
       "style": {
-        "noNestedTernary": "off",
+        // used where the type is known to be non-null, but the compiler can't figure it out
         "noNonNullAssertion": "off",
-        "useBlockStatements": "off",
+        // preferable, but not something we want to enforce right now
         "useTemplate": "off",
         // remove the following after fixing
-        "useImportType": "off",
-        "useConst": "off",
-        "useShorthandFunctionType": "off"
-      },
-      "correctness": {
-        "useJsxKeyInIterable": "off",
-        // remove the following after fixing
-        "useExhaustiveDependencies": "off",
-        "noInnerDeclarations": "off",
-        "noSwitchDeclarations": "off",
-        "noUnusedPrivateClassMembers": "off",
-        "noUnusedFunctionParameters": "off",
-        "useParseIntRadix": "off",
-        "noUnusedVariables": "off",
-        "noEmptyPattern": "off"
+        "useImportType": "off"
       },
       "suspicious": {
-        "noArrayIndexKey": "off",
-        // remove the following after fixing
-        "noExplicitAny": "off",
-        "noImplicitAnyLet": "off",
-        "noDoubleEquals": "off",
-        "noTemplateCurlyInString": "off",
-        "useIterableCallbackReturn": "off",
-        "noGlobalIsNan": "off",
-        "noNonNullAssertedOptionalChain": "off",
-        "noShadowRestrictedNames": "off",
-        "noConfusingVoidType": "off",
-        "noTsIgnore": "off"
-      },
-      "performance": {
-        // remove the following after fixing
-        "noAccumulatingSpread": "off"
+        // this is used extensively, and there's no obvious fix
+        "noArrayIndexKey": "off"
       }
     }
   },

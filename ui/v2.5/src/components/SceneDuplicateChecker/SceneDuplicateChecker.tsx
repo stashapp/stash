@@ -50,6 +50,17 @@ const CLASSNAME = "duplicate-checker";
 
 const defaultDurationDiff = "1";
 
+function getGroupTotalSize(group: GQL.SlimSceneDataFragment[]) {
+  // Sum all file sizes across all scenes in the group
+  return group.reduce((groupTotal, scene) => {
+    const sceneTotal = scene.files.reduce(
+      (fileTotal, file) => fileTotal + file.size,
+      0
+    );
+    return groupTotal + sceneTotal;
+  }, 0);
+};
+
 export const SceneDuplicateChecker: React.FC = () => {
   const intl = useIntl();
   const history = useHistory();
@@ -78,17 +89,6 @@ export const SceneDuplicateChecker: React.FC = () => {
       duration_diff: durationDiff,
     },
   });
-
-  const getGroupTotalSize = (group: GQL.SlimSceneDataFragment[]) => {
-    // Sum all file sizes across all scenes in the group
-    return group.reduce((groupTotal, scene) => {
-      const sceneTotal = scene.files.reduce(
-        (fileTotal, file) => fileTotal + file.size,
-        0
-      );
-      return groupTotal + sceneTotal;
-    }, 0);
-  };
 
   const scenes = useMemo(() => {
     const groups = data?.findDuplicateScenes ?? [];
@@ -126,7 +126,7 @@ export const SceneDuplicateChecker: React.FC = () => {
     ];
 
     const filteredSizes = pageSizes.filter((s, i) => {
-      return scenes.length > s || i == 0 || scenes.length > pageSizes[i - 1];
+      return scenes.length > s || i === 0 || scenes.length > pageSizes[i - 1];
     });
 
     return filteredSizes.map((size) => {
@@ -218,7 +218,7 @@ export const SceneDuplicateChecker: React.FC = () => {
     compareScenes: GQL.SlimSceneDataFragment[]
   ) => {
     let selectedFile: GQL.VideoFileDataFragment;
-    let oldestTimestamp: Date | undefined = undefined;
+    let oldestTimestamp: Date | undefined;
 
     // Loop through all files
     for (const file of compareScenes.flatMap((s) => s.files)) {
@@ -524,18 +524,16 @@ export const SceneDuplicateChecker: React.FC = () => {
       scene.organized
     ) {
       return (
-        <>
-          <ButtonGroup className="flex-wrap">
-            {maybeRenderTagPopoverButton(scene)}
-            {maybeRenderPerformerPopoverButton(scene)}
-            {maybeRenderGroupPopoverButton(scene)}
-            {maybeRenderSceneMarkerPopoverButton(scene)}
-            {maybeRenderOCounter(scene)}
-            {maybeRenderGallery(scene)}
-            {maybeRenderFileCount(scene)}
-            {maybeRenderOrganized(scene)}
-          </ButtonGroup>
-        </>
+        <ButtonGroup className="flex-wrap">
+          {maybeRenderTagPopoverButton(scene)}
+          {maybeRenderPerformerPopoverButton(scene)}
+          {maybeRenderGroupPopoverButton(scene)}
+          {maybeRenderSceneMarkerPopoverButton(scene)}
+          {maybeRenderOCounter(scene)}
+          {maybeRenderGallery(scene)}
+          {maybeRenderFileCount(scene)}
+          {maybeRenderOrganized(scene)}
+        </ButtonGroup>
       );
     }
   }

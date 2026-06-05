@@ -171,7 +171,7 @@ export const LibraryTasks: React.FC = () => {
     }
   }, [configuration, configRead, taskDefaults, loading]);
 
-  function configureDefaults(partial: Record<string, {}>) {
+  function configureDefaults(partial: Record<string, object>) {
     saveUI({ taskDefaults: { ...partial } });
   }
 

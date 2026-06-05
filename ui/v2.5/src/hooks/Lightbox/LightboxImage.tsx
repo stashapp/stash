@@ -123,9 +123,9 @@ export const LightboxImage: React.FC<IProps> = ({
 
     function toggleVideoPlay() {
       if (container.current) {
-        let openVideo = container.current.getElementsByTagName("video");
+        const openVideo = container.current.getElementsByTagName("video");
         if (openVideo.length > 0) {
-          let rect = openVideo[0].getBoundingClientRect();
+          const rect = openVideo[0].getBoundingClientRect();
           if (Math.abs(rect.x) < document.body.clientWidth / 2) {
             openVideo[0].play();
           } else {
@@ -163,7 +163,7 @@ export const LightboxImage: React.FC<IProps> = ({
 
   const minMaxY = useCallback(
     (appliedZoom: number) => {
-      let minY, maxY: number;
+      let minY: number, maxY: number;
       const inBounds = appliedZoom * imageHeight <= boxHeight;
 
       // NOTE: I don't even know how these work, but they do
@@ -278,7 +278,6 @@ export const LightboxImage: React.FC<IProps> = ({
     zoom,
     defaultZoom,
     resetPosition,
-    resetPositionRef,
     calculateInitialPosition,
   ]);
 
@@ -398,14 +397,16 @@ export const LightboxImage: React.FC<IProps> = ({
 
     switch (getScrollMode(ev)) {
       case GQL.ImageLightboxScrollMode.Zoom:
-        let percent: number;
-        if (infinite) {
-          percent = 1 - ev.deltaY / ZOOM_FACTOR;
-        } else {
-          percent = ev.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
+        {
+          let percent: number;
+          if (infinite) {
+            percent = 1 - ev.deltaY / ZOOM_FACTOR;
+          } else {
+            percent = ev.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
+          }
+          setZoom(zoom * percent);
+          break;
         }
-        setZoom(zoom * percent);
-        break;
       case GQL.ImageLightboxScrollMode.PanY:
         onImageScrollPanY(ev, infinite);
         break;
