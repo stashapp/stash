@@ -35,8 +35,7 @@
       "complexity": {
         "noUselessFragments": "off",
         // remove the following after fixing
-        "useArrowFunction": "off",
-        "useOptionalChain": "off"
+        "useArrowFunction": "off"
       },
       "style": {
         "noNestedTernary": "off",

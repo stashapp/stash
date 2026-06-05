@@ -326,7 +326,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     setIsLoading(true);
     try {
       const result = await queryScrapeScene(s, scene.id!);
-      if (!result.data || !result.data.scrapeSingleScene?.length) {
+      if (!result.data?.scrapeSingleScene?.length) {
         Toast.success("No scenes found");
         return;
       }
@@ -357,7 +357,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       };
 
       const result = await queryScrapeSceneQueryFragment(s, input);
-      if (!result.data || !result.data.scrapeSingleScene?.length) {
+      if (!result.data?.scrapeSingleScene?.length) {
         Toast.success("No scenes found");
         return;
       }
@@ -484,7 +484,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       formik.setFieldValue("urls", updatedScene.urls);
     }
 
-    if (updatedScene.studio && updatedScene.studio.stored_id) {
+    if (updatedScene.studio?.stored_id) {
       onSetStudio({
         id: updatedScene.studio.stored_id,
         name: updatedScene.studio.name ?? "",
@@ -572,7 +572,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     setIsLoading(true);
     try {
       const result = await queryScrapeSceneURL(url);
-      if (!result.data || !result.data.scrapeSceneURL) {
+      if (!result.data?.scrapeSceneURL) {
         return;
       }
       setScrapedScene(result.data.scrapeSceneURL);

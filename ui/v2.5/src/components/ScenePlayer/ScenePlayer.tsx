@@ -973,7 +973,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     }
 
     const isPortrait =
-      file && file.height && file.width && file.height > file.width;
+      file?.height && file?.width && file.height > file.width;
 
     return (
       <div

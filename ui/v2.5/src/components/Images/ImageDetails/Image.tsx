@@ -80,7 +80,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
   }
 
   async function onRescan() {
-    if (!image || !image.visual_files.length) {
+    if (!image?.visual_files.length) {
       return;
     }
 

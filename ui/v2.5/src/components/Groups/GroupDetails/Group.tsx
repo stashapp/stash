@@ -176,7 +176,7 @@ const GroupPage: React.FC<IProps> = PatchComponent(
     );
 
     const isDefaultImage =
-      group.front_image_path && group.front_image_path.includes("default=true");
+      group.front_image_path?.includes("default=true");
 
     const lightboxImages = useMemo(() => {
       const covers = [];

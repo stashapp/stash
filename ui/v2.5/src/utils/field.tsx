@@ -117,7 +117,7 @@ export const URLsField: React.FC<IURLsField> = ({
   target = "_blank",
   internal,
 }) => {
-  if (!urls || !urls.length) {
+  if (!urls?.length) {
     return null;
   }
 

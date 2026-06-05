@@ -33,7 +33,7 @@ export const ExportDialog: React.FC<IExportDialogProps> = (
       });
 
       // download the result
-      if (ret.data && ret.data.exportObjects) {
+      if (ret.data?.exportObjects) {
         const link = ret.data.exportObjects;
         downloadFile(link);
       }

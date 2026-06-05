@@ -16,7 +16,7 @@ export function yupRequiredStringArray(intl: IntlShape) {
     .test({
       name: "blank",
       test(value) {
-        if (!value || !value.length) return true;
+        if (!value?.length) return true;
 
         const blanks: number[] = [];
         for (let i = 0; i < value.length; i++) {

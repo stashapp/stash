@@ -352,7 +352,7 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
     const { className } = e.target as Element;
-    if (className && className.includes && className.includes(CLASSNAME_IMAGE))
+    if (className?.includes?.(CLASSNAME_IMAGE))
       close();
   };
 

@@ -220,7 +220,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
   }
 
   const parentStudioCreateText = () => {
-    if (studio.parent && studio.parent.stored_id) {
+    if (studio.parent?.stored_id) {
       return "actions.assign_stashid_to_parent_studio";
     }
     return "actions.create_parent_studio";

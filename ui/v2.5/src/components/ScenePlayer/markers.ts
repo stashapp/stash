@@ -87,8 +87,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
 
     // Set background color based on tag (if available)
     if (
-      marker.primaryTag &&
-      marker.primaryTag.name &&
+      marker.primaryTag?.name &&
       this.tagColors[marker.primaryTag.name]
     ) {
       markerSet.dot.style.backgroundColor =
@@ -164,8 +163,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
 
     // Set background color based on tag (if available)
     if (
-      marker.primaryTag &&
-      marker.primaryTag.name &&
+      marker.primaryTag?.name &&
       this.tagColors[marker.primaryTag.name]
     ) {
       rangeDiv.style.backgroundColor = this.tagColors[marker.primaryTag.name];

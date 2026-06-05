@@ -482,7 +482,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
       });
 
       // download the result
-      if (download && ret.data && ret.data.backupDatabase) {
+      if (download && ret.data?.backupDatabase) {
         const link = ret.data.backupDatabase;
         downloadFile(link);
       }
@@ -519,7 +519,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
       });
 
       // download the result
-      if (download && ret.data && ret.data.anonymiseDatabase) {
+      if (download && ret.data?.anonymiseDatabase) {
         const link = ret.data.anonymiseDatabase;
         downloadFile(link);
       }
