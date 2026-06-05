@@ -19,9 +19,6 @@
   },
   "formatter": {
     "enabled": true,
-    // included so that it doesn't complain about no matching files
-    // remove this to enable formatting
-    "includes": ["index.tsx"],
     "indentStyle": "space"
   },
   "linter": {
@@ -48,7 +45,9 @@
   },
   "javascript": {
     "formatter": {
-      "quoteStyle": "double"
+      "quoteStyle": "double",
+      // fewer changes making this all vs none
+      "trailingCommas": "all"
     }
   },
   "assist": {
