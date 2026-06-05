@@ -37,8 +37,16 @@ RUN make flags-release flags-pie stash
 
 # Final Runnable Image
 FROM alpine:latest
-RUN apk add --no-cache ca-certificates vips-tools ffmpeg
+ARG UID=1000
+ARG GID=1000
+RUN apk add --no-cache ca-certificates vips-tools ffmpeg shadow && \
+    groupadd -g ${GID} stash && \
+    useradd -u ${UID} -g stash -m -s /bin/sh stash && \
+    apk del shadow
 COPY --from=backend /stash/stash /usr/bin/
-ENV STASH_CONFIG_FILE=/root/.stash/config.yml
+RUN mkdir -p /home/stash/.stash /home/stash/.stash/plugins /home/stash/.stash/scrapers && \
+    chown -R stash:stash /home/stash/.stash
+ENV STASH_CONFIG_FILE=/home/stash/.stash/config.yml
+USER stash
 EXPOSE 9999
 ENTRYPOINT ["stash"]

@@ -10,11 +10,17 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm/v6" ];   then BIN=stash-linux-arm32v6; \
     mv $BIN /stash
 
 FROM --platform=$TARGETPLATFORM alpine:latest AS app
+RUN apk add --no-cache shadow && \
+    groupadd -g 1000 stash && \
+    useradd -u 1000 -g stash -m -s /bin/sh stash && \
+    apk del shadow
 COPY --from=binary /stash /usr/bin/
+RUN mkdir -p /home/stash/.stash && chown -R stash:stash /home/stash/.stash
 
 RUN apk add --no-cache ca-certificates python3 py3-requests py3-requests-toolbelt py3-lxml py3-pip ffmpeg tzdata vips vips-tools vips-heif \
     && pip install --break-system-packages mechanicalsoup cloudscraper stashapp-tools
-ENV STASH_CONFIG_FILE=/root/.stash/config.yml
+ENV STASH_CONFIG_FILE=/home/stash/.stash/config.yml
+USER stash
 
 # Basic build-time metadata as defined at https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
 LABEL org.opencontainers.image.title="Stash" \
