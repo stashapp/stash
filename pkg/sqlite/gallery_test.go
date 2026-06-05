@@ -1504,6 +1504,7 @@ func galleryQueryQ(ctx context.Context, t *testing.T, q string, expectedGalleryI
 
 	// no Q should return all results
 	filter.Q = nil
+	filter.PerPage = ptr(-1)
 	galleries, _, err = qb.Query(ctx, nil, &filter)
 	if err != nil {
 		t.Errorf("Error querying gallery: %s", err.Error())
