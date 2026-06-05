@@ -31,8 +31,8 @@ interface IGroupScrapeDialogProps {
 
 export const GroupScrapeDialog: React.FC<IGroupScrapeDialogProps> = ({
   group,
-  groupStudio: groupStudio,
-  groupTags: groupTags,
+  groupStudio,
+  groupTags,
   scraped,
   onClose,
 }) => {

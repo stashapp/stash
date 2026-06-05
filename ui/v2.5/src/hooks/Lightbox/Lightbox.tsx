@@ -106,7 +106,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   slideshowEnabled = false,
   page,
   pages,
-  pageSize: pageSize = 40,
+  pageSize = 40,
   pageCallback,
   chapters = [],
   hide,

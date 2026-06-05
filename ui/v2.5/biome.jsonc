@@ -41,8 +41,7 @@
         "useIndexOf": "off",
         "useFlatMap": "off",
         "noUselessUndefinedInitialization": "off",
-        "noExtraBooleanCast": "off",
-        "noUselessRename": "off"
+        "noExtraBooleanCast": "off"
       },
       "style": {
         "noNestedTernary": "off",
