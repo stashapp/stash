@@ -80,7 +80,7 @@ async function uploadCsv(
   filename?: string
 ): Promise<CsvUploadResponse> {
   const url = "https://www.handyfeeling.com/api/sync/upload?local=true";
-  if (!filename) filename = "script_" + new Date().valueOf() + ".csv";
+  if (!filename) filename = "script_" + Date.now() + ".csv";
   const formData = new FormData();
   formData.append("syncFile", csv, filename);
   const response = await fetch(url, {
