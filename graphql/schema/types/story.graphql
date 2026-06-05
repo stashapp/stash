@@ -17,6 +17,7 @@ type Story {
 
   front_image_path: String
   back_image_path: String
+  audio_url: String
 }
 
 input StoryCreateInput {
@@ -27,6 +28,7 @@ input StoryCreateInput {
   language: String
   tag_line: String
   details: String
+  audio_url: String
   rating100: Int
   studio_id: ID
   tag_ids: [ID!]
@@ -46,6 +48,7 @@ input StoryUpdateInput {
   language: String
   tag_line: String
   details: String
+  audio_url: String
   rating100: Int
   studio_id: ID
   tag_ids: [ID!]
