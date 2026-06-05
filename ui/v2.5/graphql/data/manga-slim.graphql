@@ -1,0 +1,22 @@
+fragment SlimMangaData on Manga {
+  id
+  title
+  url
+  date
+  details
+  rating100
+  organized
+  studio {
+    ...SlimStudioData
+  }
+  tags {
+    ...SlimTagData
+  }
+  performers {
+    ...SlimPerformerData
+  }
+  cover_image_path
+  image_count
+  created_at
+  updated_at
+}

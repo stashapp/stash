@@ -1,0 +1,38 @@
+fragment SlimMangaData on Manga {
+  id
+  title
+  url
+  date
+  details
+  rating100
+  organized
+  studio {
+    id
+    name
+    image_path
+  }
+  tags {
+    id
+    name
+  }
+  performers {
+    id
+    name
+    image_path
+  }
+  paths {
+    cover
+  }
+  created_at
+  updated_at
+}
+
+fragment MangaData on Manga {
+  ...SlimMangaData
+  urls
+  stash_ids {
+    stash_id
+    endpoint
+  }
+  custom_fields
+}
