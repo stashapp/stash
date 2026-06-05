@@ -1,6 +1,5 @@
 import React, {
   MutableRefObject,
-  PropsWithChildren,
   useMemo,
   useRef,
   useState,
@@ -154,7 +153,7 @@ const DragHandle: React.FC<{
   );
 };
 
-const Controls: React.FC<PropsWithChildren<{}>> = ({ children }) => {
+const Controls: React.FC = ({ children }) => {
   return <div className="card-controls">{children}</div>;
 };
 

@@ -14,7 +14,7 @@ import { ToastProvider } from "src/hooks/Toast";
 import { LightboxProvider } from "src/hooks/Lightbox/context";
 import { initPolyfills } from "src/polyfills";
 
-import locales, { registerCountry } from "src/locales";
+import locales, { NestedMessage, registerCountry } from "src/locales";
 import {
   useConfiguration,
   useConfigureUI,
@@ -101,9 +101,9 @@ function languageMessageString(language: string) {
   return language.replace(/-/, "");
 }
 
-const AppContainer: React.FC<React.PropsWithChildren<{}>> = PatchFunction(
+const AppContainer: React.FC<React.PropsWithChildren<unknown>> = PatchFunction(
   "App",
-  (props: React.PropsWithChildren<{}>) => {
+  (props: React.PropsWithChildren<unknown>) => {
     return <>{props.children}</>;
   }
 ) as React.FC;
@@ -147,8 +147,8 @@ export const App: React.FC = () => {
   const intlLanguage = translateLanguageLocale(language);
 
   // use en-GB as default messages if any messages aren't found in the chosen language
-  const [messages, setMessages] = useState<{}>();
-  const [customMessages, setCustomMessages] = useState<{}>();
+  const [messages, setMessages] = useState<Record<string, string>>();
+  const [customMessages, setCustomMessages] = useState<NestedMessage>();
 
   useEffect(() => {
     (async () => {

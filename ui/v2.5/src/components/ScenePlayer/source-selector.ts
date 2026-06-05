@@ -262,7 +262,7 @@ declare module "video.js" {
     sourceSelector: () => SourceSelectorPlugin;
   }
   interface VideoJsPlayerPluginOptions {
-    sourceSelector?: {};
+    sourceSelector?: object;
   }
 }
 

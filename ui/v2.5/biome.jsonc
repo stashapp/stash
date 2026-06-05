@@ -36,8 +36,7 @@
         "noUselessFragments": "off",
         // remove the following after fixing
         "useArrowFunction": "off",
-        "useOptionalChain": "off",
-        "noBannedTypes": "off"
+        "useOptionalChain": "off"
       },
       "style": {
         "noNestedTernary": "off",

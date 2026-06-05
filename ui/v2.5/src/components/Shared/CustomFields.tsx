@@ -190,7 +190,7 @@ interface ICustomFieldsInput {
   setError: (error?: string) => void;
 }
 
-export function formatCustomFieldInput(isNew: boolean, input: {}) {
+export function formatCustomFieldInput(isNew: boolean, input: object) {
   if (isNew) {
     return input;
   } else {

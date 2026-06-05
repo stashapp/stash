@@ -226,7 +226,7 @@ export function useSidebarState(view?: View) {
       history.replace({
         ...history.location,
         state: {
-          ...(history.location.state as {}),
+          ...(history.location.state as object),
           sectionOpen: newSectionOpen,
         },
       });

@@ -133,7 +133,7 @@ declare module "video.js" {
     trackActivity: () => TrackActivityPlugin;
   }
   interface VideoJsPlayerPluginOptions {
-    trackActivity?: {};
+    trackActivity?: object;
   }
 }
 

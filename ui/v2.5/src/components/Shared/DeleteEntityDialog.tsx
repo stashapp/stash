@@ -13,7 +13,7 @@ interface IDeletionEntity {
 
 type DestroyMutation = (input: {
   ids: string[];
-}) => [() => Promise<FetchResult>, {}];
+}) => [() => Promise<FetchResult>, unknown];
 
 interface IDeleteEntityDialogProps {
   selected: IDeletionEntity[];

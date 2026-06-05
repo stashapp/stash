@@ -46,7 +46,7 @@ export interface ISettingsContextState {
   saveScraping: (input: Partial<GQL.ConfigScrapingInput>) => void;
   saveDLNA: (input: Partial<GQL.ConfigDlnaInput>) => void;
   saveUI: (input: Partial<IUIConfig>) => void;
-  savePluginSettings: (pluginID: string, input: {}) => void;
+  savePluginSettings: (pluginID: string, input: Record<string, unknown>) => void;
   setAdvancedMode: (value: boolean) => void;
 
   refetch: () => void;
@@ -135,7 +135,7 @@ export const SettingsContext: React.FC = ({ children }) => {
   const [updateDLNAConfig] = useConfigureDLNA();
 
   const [ui, setUI] = useState<IUIConfig>({});
-  const [pendingUI, setPendingUI] = useState<{}>();
+  const [pendingUI, setPendingUI] = useState<IUIConfig>();
   const [updateUIConfig] = useConfigureUI();
 
   const [plugins, setPlugins] = useState<PluginConfigs>({});

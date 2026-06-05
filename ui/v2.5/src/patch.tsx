@@ -1,3 +1,4 @@
+// biome-ignore-all lint/complexity/noBannedTypes: intentionally using Function type
 import React from "react";
 
 export let components: Record<string, Function> = {};
@@ -53,7 +54,7 @@ export function RegisterComponent<T extends Function>(
   return fn;
 }
 
-/* biome-ignore-start lint/suspicious/noExplicitAny: intentional*/
+// biome-ignore-start lint/suspicious/noExplicitAny: intentional
 function runInstead(
   fns: Function[],
   targetFn: Function,
@@ -80,7 +81,7 @@ function runInstead(
 
   return fns[0].apply(thisArg, argArray.concat(next()));
 }
-/* biome-ignore-end lint/suspicious/noExplicitAny: intentional*/
+// biome-ignore-end lint/suspicious/noExplicitAny: intentional
 
 // patches a function to implement the before/instead/after functionality
 export function PatchFunction<T extends Function>(name: string, fn: T) {
@@ -117,7 +118,7 @@ export function PatchComponent<T>(
 }
 
 // patches a component and registers it in the pluginapi components object
-export function PatchContainerComponent<T = {}>(
+export function PatchContainerComponent<T = unknown>(
   component: string
 ): React.FC<React.PropsWithChildren<T>> {
   const fn: React.FC<React.PropsWithChildren<T>> = (

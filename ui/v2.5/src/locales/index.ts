@@ -1,6 +1,6 @@
 import Countries, { LocaleData } from "i18n-iso-countries";
 
-type NestedMessage = { [key: string]: NestedMessage | string };
+export type NestedMessage = { [key: string]: NestedMessage | string };
 
 export const localeCountries = {
   af: () => import("i18n-iso-countries/langs/af.json"),

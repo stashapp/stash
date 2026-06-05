@@ -508,7 +508,7 @@ export function useLabeledIdFilterState(props: {
   };
 }
 
-export function makeQueryVariables(query: string, extraProps: {}) {
+export function makeQueryVariables(query: string, extraProps: object) {
   return {
     filter: {
       q: query,
