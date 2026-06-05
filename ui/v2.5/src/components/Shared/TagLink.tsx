@@ -82,7 +82,7 @@ export const PerformerLink: React.FC<IPerformerLinkProps> = ({
         return NavUtils.makePerformerImagesUrl(performer);
       case "scene_marker":
         return NavUtils.makePerformerSceneMarkersUrl(performer);
-      case "scene":
+      // case "scene":
       default:
         return NavUtils.makePerformerScenesUrl(performer);
     }

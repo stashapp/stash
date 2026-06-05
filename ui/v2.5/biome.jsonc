@@ -45,8 +45,7 @@
         "noUselessRename": "off",
         "noArguments": "off",
         "noUselessEscapeInRegex": "off",
-        "useDateNow": "off",
-        "noUselessSwitchCase": "off"
+        "useDateNow": "off"
       },
       "style": {
         "noNestedTernary": "off",
