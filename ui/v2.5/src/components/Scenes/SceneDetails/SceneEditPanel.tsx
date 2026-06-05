@@ -85,8 +85,18 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const [studio, setStudio] = useState<Studio | null>(null);
 
   const Scrapers = useListSceneScrapers();
-  const [fragmentScrapers, setFragmentScrapers] = useState<GQL.Scraper[]>([]);
-  const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
+
+  const fragmentScrapers: GQL.Scraper[] = useMemo(() => {
+    return Scrapers?.data?.listScrapers?.filter((s) =>
+      s.scene?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
+    ) ?? [];
+  }, [Scrapers.data?.listScrapers]);
+
+  const queryableScrapers: GQL.Scraper[] = useMemo(() => {
+    return Scrapers?.data?.listScrapers?.filter((s) =>
+      s.scene?.supported_scrapes.includes(GQL.ScrapeType.Name)
+    ) ?? [];
+  }, [Scrapers.data?.listScrapers]);
 
   const [scraper, setScraper] = useState<GQL.ScraperSourceInput>();
   const [isScraperQueryModalOpen, setIsScraperQueryModalOpen] =
@@ -258,20 +268,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
       };
     }
   });
-
-  useEffect(() => {
-    const toFilter = Scrapers?.data?.listScrapers ?? [];
-
-    const newFragmentScrapers = toFilter.filter((s) =>
-      s.scene?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
-    );
-    const newQueryableScrapers = toFilter.filter((s) =>
-      s.scene?.supported_scrapes.includes(GQL.ScrapeType.Name)
-    );
-
-    setFragmentScrapers(newFragmentScrapers);
-    setQueryableScrapers(newQueryableScrapers);
-  }, [Scrapers, stashConfig]);
 
   function onSetGroups(items: Group[]) {
     setGroups(items);

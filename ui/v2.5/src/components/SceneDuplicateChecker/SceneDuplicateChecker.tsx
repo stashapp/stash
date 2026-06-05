@@ -50,6 +50,17 @@ const CLASSNAME = "duplicate-checker";
 
 const defaultDurationDiff = "1";
 
+function getGroupTotalSize(group: GQL.SlimSceneDataFragment[]) {
+  // Sum all file sizes across all scenes in the group
+  return group.reduce((groupTotal, scene) => {
+    const sceneTotal = scene.files.reduce(
+      (fileTotal, file) => fileTotal + file.size,
+      0
+    );
+    return groupTotal + sceneTotal;
+  }, 0);
+};
+
 export const SceneDuplicateChecker: React.FC = () => {
   const intl = useIntl();
   const history = useHistory();
@@ -78,17 +89,6 @@ export const SceneDuplicateChecker: React.FC = () => {
       duration_diff: durationDiff,
     },
   });
-
-  const getGroupTotalSize = (group: GQL.SlimSceneDataFragment[]) => {
-    // Sum all file sizes across all scenes in the group
-    return group.reduce((groupTotal, scene) => {
-      const sceneTotal = scene.files.reduce(
-        (fileTotal, file) => fileTotal + file.size,
-        0
-      );
-      return groupTotal + sceneTotal;
-    }, 0);
-  };
 
   const scenes = useMemo(() => {
     const groups = data?.findDuplicateScenes ?? [];

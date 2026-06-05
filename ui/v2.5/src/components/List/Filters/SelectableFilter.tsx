@@ -354,7 +354,7 @@ export const ObjectsFilter = <
       setDisplayQuery(input);
       debouncedSetQuery(input);
     },
-    [debouncedSetQuery, setDisplayQuery]
+    [debouncedSetQuery]
   );
 
   const [queryResults, setQueryResults] = useState<ILabeledId[]>([]);

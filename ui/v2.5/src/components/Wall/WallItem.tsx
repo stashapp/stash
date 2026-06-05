@@ -2,7 +2,6 @@ import React, {
   useRef,
   useState,
   useEffect,
-  useCallback,
   MouseEvent,
   useMemo,
 } from "react";
@@ -221,19 +220,20 @@ export const WallItem = <T extends WallItemType>({
     }
   }, [type, data]);
 
-  const setInactive = () => setActive(false);
-  const toggleActive = useCallback((e: TransitionEvent) => {
-    if (e.propertyName === "transform" && e.elapsedTime === 0) {
-      // Get the current scale of the wall-item. If it's smaller than 1.1 the item is being scaled up, otherwise down.
-      const matrixScale = getComputedStyle(itemEl.current!).transform.match(
-        /-?\d+\.?\d+|\d+/g
-      )?.[0];
-      const scale = Number.parseFloat(matrixScale ?? "2") || 2;
-      setActive((value) => scale <= 1.1 && !value);
-    }
-  }, []);
-
   useEffect(() => {
+    const setInactive = () => setActive(false);
+
+    function toggleActive(e: TransitionEvent) {
+      if (e.propertyName === "transform" && e.elapsedTime === 0) {
+        // Get the current scale of the wall-item. If it's smaller than 1.1 the item is being scaled up, otherwise down.
+        const matrixScale = getComputedStyle(itemEl.current!).transform.match(
+          /-?\d+\.?\d+|\d+/g
+        )?.[0];
+        const scale = Number.parseFloat(matrixScale ?? "2") || 2;
+        setActive((value) => scale <= 1.1 && !value);
+      }
+    }
+
     const item = itemEl.current!;
     item.addEventListener("transitioncancel", setInactive);
     item.addEventListener("transitionstart", toggleActive);
@@ -241,7 +241,7 @@ export const WallItem = <T extends WallItemType>({
       item.removeEventListener("transitioncancel", setInactive);
       item.removeEventListener("transitionstart", toggleActive);
     };
-  }, [toggleActive]);
+  }, []);
 
   const onClick = (e: MouseEvent) => {
     clickHandler?.(e, data);

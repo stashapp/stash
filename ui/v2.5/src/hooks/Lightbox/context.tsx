@@ -51,7 +51,7 @@ export const LightboxProvider: React.FC = ({ children }) => {
         ...state,
       }));
     },
-    [setLightboxState]
+    []
   );
 
   const onHide = () => {

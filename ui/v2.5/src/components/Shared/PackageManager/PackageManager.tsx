@@ -366,7 +366,7 @@ export const InstalledPackages: React.FC<{
 
       return prev;
     });
-  }, [checkedPackages, packages]);
+  }, [packages]);
 
   function confirmUninstall() {
     onUninstallPackages(filteredPackages);

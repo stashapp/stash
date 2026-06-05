@@ -209,6 +209,8 @@ const breakpointZoomHeights = [
   { minWidth: 1400, heights: [160, 240, 300, 480] },
 ];
 
+type FailedSrcMap = Record<string, string[]>; // id to list of failed srcs
+
 const SceneWall: React.FC<ISceneWallProps> = ({
   scenes,
   sceneQueue,
@@ -224,14 +226,21 @@ const SceneWall: React.FC<ISceneWallProps> = ({
   const margin = 3;
   const direction = "row";
 
-  const [erroredImgs, setErroredImgs] = useState<string[]>([]);
-
-  const handleError = useCallback((photo: PhotoProps<IScenePhoto>) => {
-    setErroredImgs((prev) => [...prev, photo.src]);
+  const [erroredImgs, setErroredImgs] = useState<FailedSrcMap>({});
+  
+  const handleError = useCallback((id: string, photo: PhotoProps<IScenePhoto>) => {
+    setErroredImgs((prev) => ({
+      ...prev,
+      [id]: [...(prev[id] || []), photo.src],
+    }));
   }, []);
 
   useEffect(() => {
-    setErroredImgs([]);
+    const ret: FailedSrcMap = {};
+    scenes.forEach((m) => {
+      ret[m.id] = [];
+    });
+    setErroredImgs(ret);
   }, [scenes]);
 
   const photos: PhotoProps<IScenePhoto>[] = useMemo(() => {
@@ -241,7 +250,7 @@ const SceneWall: React.FC<ISceneWallProps> = ({
       return {
         scene: s,
         src:
-          s.paths.preview && !erroredImgs.includes(s.paths.preview)
+          s.paths.preview && !erroredImgs[s.id]?.includes(s.paths.preview)
             ? s.paths.preview!
             : s.paths.screenshot!,
         link: sceneQueue
@@ -253,7 +262,7 @@ const SceneWall: React.FC<ISceneWallProps> = ({
         key: s.id,
         loading: "lazy",
         alt: objectTitle(s),
-        onError: handleError,
+        onError: (photo: PhotoProps<IScenePhoto>) => handleError(s.id, photo),
       };
     });
   }, [scenes, sceneQueue, erroredImgs, handleError]);

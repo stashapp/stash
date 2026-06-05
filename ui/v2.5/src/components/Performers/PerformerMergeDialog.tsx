@@ -27,7 +27,7 @@ import {
   ScrapedTextAreaRow,
 } from "../Shared/ScrapeDialog/ScrapeDialogRow";
 import { ModalComponent } from "../Shared/Modal";
-import { sortStoredIdObjects, uniqIDStoredIDs } from "src/utils/data";
+import { idToStoredID, sortStoredIdObjects, uniqIDStoredIDs } from "src/utils/data";
 import {
   CustomFieldScrapeResults,
   ObjectListScrapeResult,
@@ -143,13 +143,6 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
   const [customFields, setCustomFields] = useState<CustomFieldScrapeResults>(
     new Map()
   );
-
-  function idToStoredID(o: { id: string; name: string }) {
-    return {
-      stored_id: o.id,
-      name: o.name,
-    };
-  }
 
   // calculate the values for everything
   // uses the first set value for single value fields, and combines all

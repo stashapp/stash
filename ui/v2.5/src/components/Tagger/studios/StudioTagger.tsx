@@ -182,6 +182,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
   };
 
   // clear tagged studios when source is changed
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally only resetting when selectedEndpoint changes
   useEffect(() => {
     setTaggedStudios({});
     setSearchResults({});

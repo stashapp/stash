@@ -278,7 +278,6 @@ export const LightboxImage: React.FC<IProps> = ({
     zoom,
     defaultZoom,
     resetPosition,
-    resetPositionRef,
     calculateInitialPosition,
   ]);
 

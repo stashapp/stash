@@ -296,14 +296,14 @@ const _GalleryIDSelect: React.FC<
     onSelectValues?.(items);
   }
 
-  async function loadObjectsByID(idsToLoad: string[]): Promise<Gallery[]> {
-    const query = await queryFindGalleriesByIDForSelect(idsToLoad);
-    const { galleries: loadedGalleries } = query.data.findGalleries;
-
-    return loadedGalleries;
-  }
-
   useEffect(() => {
+    async function loadObjectsByID(idsToLoad: string[]): Promise<Gallery[]> {
+      const query = await queryFindGalleriesByIDForSelect(idsToLoad);
+      const { galleries: loadedGalleries } = query.data.findGalleries;
+  
+      return loadedGalleries;
+    }
+
     if (!idsChanged) {
       return;
     }

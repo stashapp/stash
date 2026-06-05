@@ -38,12 +38,12 @@ function useLoadComponents(toLoad: (() => Promise<unknown>)[]) {
   const [loading, setLoading] = React.useState(true);
   const [componentList] = React.useState(toLoad);
 
-  async function load(c: (() => Promise<unknown>)[]) {
-    await loadComponents(c);
-    setLoading(false);
-  }
-
   React.useEffect(() => {
+    async function load(c: (() => Promise<unknown>)[]) {
+      await loadComponents(c);
+      setLoading(false);
+    }
+    
     setLoading(true);
     load(componentList);
   }, [componentList]);

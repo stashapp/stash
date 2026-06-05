@@ -37,11 +37,12 @@ export const ToastProvider: React.FC = ({ children }) => {
   const [hiding, setHiding] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
-  function expand() {
-    setExpanded(true);
-  }
-
+  
   const toastItem = useMemo(() => {
+    function expand() {
+      setExpanded(true);
+    }
+    
     if (!toast || expanded) return null;
 
     return (

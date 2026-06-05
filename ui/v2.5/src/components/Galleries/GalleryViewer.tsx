@@ -21,7 +21,7 @@ export const GalleryViewer: React.FC<IProps> = ({ galleryId }) => {
       per_page: pageSize,
       sort: "path",
     };
-  }, [pageSize]);
+  }, []);
 
   const { data, loading } = useFindImagesQuery({
     variables: {

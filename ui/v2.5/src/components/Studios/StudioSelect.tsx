@@ -264,14 +264,14 @@ const _StudioIDSelect: React.FC<IFilterProps & IFilterIDProps<Studio>> = (
     onSelectValues?.(items);
   }
 
-  async function loadObjectsByID(idsToLoad: string[]): Promise<Studio[]> {
-    const query = await queryFindStudiosByIDForSelect(idsToLoad);
-    const { studios: loadedStudios } = query.data.findStudios;
-
-    return loadedStudios;
-  }
-
   useEffect(() => {
+    async function loadObjectsByID(idsToLoad: string[]): Promise<Studio[]> {
+      const query = await queryFindStudiosByIDForSelect(idsToLoad);
+      const { studios: loadedStudios } = query.data.findStudios;
+  
+      return loadedStudios;
+    }
+
     if (!idsChanged) {
       return;
     }

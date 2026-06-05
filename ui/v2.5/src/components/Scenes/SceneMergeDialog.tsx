@@ -26,7 +26,7 @@ import { ScrapeDialog } from "../Shared/ScrapeDialog/ScrapeDialog";
 import { clone, uniq } from "lodash-es";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ModalComponent } from "../Shared/Modal";
-import { sortStoredIdObjects, uniqIDStoredIDs } from "src/utils/data";
+import { idToStoredID, sortStoredIdObjects, uniqIDStoredIDs } from "src/utils/data";
 import {
   CustomFieldScrapeResults,
   ObjectListScrapeResult,
@@ -53,6 +53,13 @@ interface ISceneMergeDetailsProps {
   sources: GQL.SceneDataFragment[];
   dest: GQL.SceneDataFragment;
   onClose: (options?: MergeOptions) => void;
+}
+
+function groupToStoredID(o: { group: { id: string; name: string } }) {
+  return {
+    stored_id: o.group.id,
+    name: o.group.name,
+  };
 }
 
 const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
@@ -90,20 +97,6 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
   const [playDuration, setPlayDuration] = useState(
     new ScrapeResult<number>(dest.play_duration)
   );
-
-  function idToStoredID(o: { id: string; name: string }) {
-    return {
-      stored_id: o.id,
-      name: o.name,
-    };
-  }
-
-  function groupToStoredID(o: { group: { id: string; name: string } }) {
-    return {
-      stored_id: o.group.id,
-      name: o.group.name,
-    };
-  }
 
   const [studio, setStudio] = useState<ScrapeResult<GQL.ScrapedStudio>>(
     new ScrapeResult<GQL.ScrapedStudio>(

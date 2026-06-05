@@ -233,7 +233,7 @@ export const App: React.FC = () => {
       // redirect to migrate page
       history.replace("/migrate");
     }
-  }, [systemStatusData, setupMatch, history, location]);
+  }, [systemStatusData, history, location.pathname]);
 
   function maybeRenderNavbar() {
     // don't render navbar for setup views

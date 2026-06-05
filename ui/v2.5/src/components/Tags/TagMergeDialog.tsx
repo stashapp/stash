@@ -15,7 +15,7 @@ import {
   ObjectListScrapeResult,
   ScrapeResult,
 } from "../Shared/ScrapeDialog/scrapeResult";
-import { sortStoredIdObjects } from "src/utils/data";
+import { idToStoredID, sortStoredIdObjects } from "src/utils/data";
 import ImageUtils from "src/utils/image";
 import { uniq } from "lodash-es";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
@@ -92,13 +92,6 @@ const TagMergeDetails: React.FC<ITagMergeDetailsProps> = ({
   const [customFields, setCustomFields] = useState<CustomFieldScrapeResults>(
     new Map()
   );
-
-  function idToStoredID(o: { id: string; name: string }) {
-    return {
-      stored_id: o.id,
-      name: o.name,
-    };
-  }
 
   // calculate the values for everything
   // uses the first set value for single value fields, and combines all

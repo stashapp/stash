@@ -200,6 +200,8 @@ const breakpointZoomHeights = [
   { minWidth: 1400, heights: [160, 240, 300, 480] },
 ];
 
+type FailedSrcMap = Record<string, string[]>; // markerID to list of failed srcs
+
 const MarkerWall: React.FC<IMarkerWallProps> = ({
   markers,
   zoomIndex,
@@ -214,14 +216,21 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({
   const margin = 3;
   const direction = "row";
 
-  const [erroredImgs, setErroredImgs] = useState<string[]>([]);
+  const [erroredImgs, setErroredImgs] = useState<FailedSrcMap>({});
 
-  const handleError = useCallback((photo: PhotoProps<IMarkerPhoto>) => {
-    setErroredImgs((prev) => [...prev, photo.src]);
+  const handleError = useCallback((markerID: string, photo: PhotoProps<IMarkerPhoto>) => {
+    setErroredImgs((prev) => ({
+      ...prev,
+      [markerID]: [...(prev[markerID] || []), photo.src],
+    }));
   }, []);
 
   useEffect(() => {
-    setErroredImgs([]);
+    const ret: FailedSrcMap = {};
+    markers.forEach((m) => {
+      ret[m.id] = [];
+    });
+    setErroredImgs(ret);
   }, [markers]);
 
   const photos: PhotoProps<IMarkerPhoto>[] = useMemo(() => {
@@ -230,7 +239,7 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({
 
       return {
         marker: m,
-        src: getFirstValidSrc([m.stream, m.preview, m.screenshot], erroredImgs),
+        src: getFirstValidSrc([m.stream, m.preview, m.screenshot], erroredImgs[m.id] || []),
         link: NavUtils.makeSceneMarkerUrl(m),
         width,
         height,
@@ -238,7 +247,7 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({
         key: m.id,
         loading: "lazy",
         alt: objectTitle(m),
-        onError: handleError,
+        onError: (photo: PhotoProps<IMarkerPhoto>) => handleError(m.id, photo),
       };
     });
   }, [markers, erroredImgs, handleError]);

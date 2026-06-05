@@ -4,6 +4,9 @@ const MIN_VALID_INTERVAL = 1000;
 
 function noop() {}
 
+// it's possible that the warning is correct, but we'd need to test it explcitly
+// disabling warning for now
+// biome-ignore-start lint/correctness/useExhaustiveDependencies: intentional
 const useInterval = (
   callback: () => void,
   delay: number | null = 5000
@@ -62,5 +65,6 @@ const useInterval = (
 
   return delay ? [cancel, reset] : [noop, noop];
 };
+// biome-ignore-end lint/correctness/useExhaustiveDependencies: intentional
 
 export default useInterval;

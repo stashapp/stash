@@ -834,23 +834,23 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     };
   }, []);
 
-  async function getQueueFilterScenes(filter: ListFilterModel) {
-    const query = await queryFindScenes(filter);
-    const { scenes, count } = query.data.findScenes;
-    setQueueScenes(scenes);
-    setQueueTotal(count);
-    setQueueStart((filter.currentPage - 1) * filter.itemsPerPage + 1);
-  }
-
-  async function getQueueScenes(sceneIDs: number[]) {
-    const query = await queryFindScenesByID(sceneIDs);
-    const { scenes, count } = query.data.findScenes;
-    setQueueScenes(scenes);
-    setQueueTotal(count);
-    setQueueStart(1);
-  }
-
   useEffect(() => {
+    async function getQueueFilterScenes(filter: ListFilterModel) {
+      const query = await queryFindScenes(filter);
+      const { scenes, count } = query.data.findScenes;
+      setQueueScenes(scenes);
+      setQueueTotal(count);
+      setQueueStart((filter.currentPage - 1) * filter.itemsPerPage + 1);
+    }
+  
+    async function getQueueScenes(sceneIDs: number[]) {
+      const query = await queryFindScenesByID(sceneIDs);
+      const { scenes, count } = query.data.findScenes;
+      setQueueScenes(scenes);
+      setQueueTotal(count);
+      setQueueStart(1);
+    }
+
     if (sceneQueue.query) {
       getQueueFilterScenes(sceneQueue.query);
     } else if (sceneQueue.sceneIDs) {

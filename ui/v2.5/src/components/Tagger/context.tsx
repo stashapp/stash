@@ -200,6 +200,7 @@ export const TaggerContext: React.FC = ({ children }) => {
   }, [sources, currentSource, config]);
 
   // clear the search results when the source changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally only resetting when currentSource changes
   useEffect(() => {
     setSearchResults({});
   }, [currentSource]);

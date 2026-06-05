@@ -221,7 +221,7 @@ export const MainNavbar: React.FC = () => {
         setExpanded(false);
       }
     },
-    [setExpanded]
+    []
   );
 
   useEffect(() => {
@@ -292,7 +292,7 @@ export const MainNavbar: React.FC = () => {
     }
   }
 
-  const handleDismiss = useCallback(() => setExpanded(false), [setExpanded]);
+  const handleDismiss = useCallback(() => setExpanded(false), []);
 
   function renderUtilityButtons() {
     return (

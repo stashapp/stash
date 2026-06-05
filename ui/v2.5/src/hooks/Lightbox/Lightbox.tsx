@@ -291,6 +291,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
   }, [index, images.length]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional reset on images change
   useEffect(() => {
     // reset images loaded counter for new images
     setImagesLoaded(0);
@@ -324,7 +325,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       document.body.style.overflow = "hidden";
       Mousetrap.pause();
     }
-  }, [initialIndex, isVisible, setIndex, index]);
+  }, [initialIndex, isVisible, index]);
 
   const toggleSlideshow = useCallback(() => {
     if (slideshowInterval) {
@@ -384,7 +385,6 @@ export const LightboxComponent: React.FC<IProps> = ({
       images,
       pageCallback,
       isSwitchingPage,
-      resetIntervalCallback,
       index,
       disableAnimation,
       setInstant,
@@ -418,10 +418,8 @@ export const LightboxComponent: React.FC<IProps> = ({
     },
     [
       images,
-      setIndex,
       pageCallback,
       isSwitchingPage,
-      resetIntervalCallback,
       index,
       disableAnimation,
       setInstant,
@@ -446,12 +444,6 @@ export const LightboxComponent: React.FC<IProps> = ({
     },
     [setInstant, handleLeft, handleRight, close]
   );
-  const handleFullScreenChange = () => {
-    if (clearIntervalCallback.current) {
-      clearIntervalCallback.current();
-    }
-    setFullscreen(document.fullscreenElement !== null);
-  };
 
   const [clearCallback, resetCallback] = useInterval(
     () => {
@@ -464,6 +456,13 @@ export const LightboxComponent: React.FC<IProps> = ({
   clearIntervalCallback.current = clearCallback;
 
   useEffect(() => {
+    const handleFullScreenChange = () => {
+      if (clearIntervalCallback.current) {
+        clearIntervalCallback.current();
+      }
+      setFullscreen(document.fullscreenElement !== null);
+    };
+
     if (isVisible) {
       document.addEventListener("keydown", handleKey);
       document.addEventListener("fullscreenchange", handleFullScreenChange);

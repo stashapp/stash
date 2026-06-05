@@ -1,5 +1,5 @@
 /* biome-ignore-all lint/suspicious/noExplicitAny: don't know how to change this to be properly typed */
-/* XXbiome-ignore-start react-hooks/exhaustive-deps: intentional */
+/* biome-ignore-all lint/correctness/useExhaustiveDependencies: seems like a false positive for function arguments */
 import { DebouncedFunc, DebounceSettings, throttle } from "lodash-es";
 import { useCallback, useRef } from "react";
 

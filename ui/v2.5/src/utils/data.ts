@@ -86,3 +86,10 @@ export function uniqIDStoredIDs<T extends IHasStoredID>(objs: T[]) {
     return objs.findIndex((oo) => oo.stored_id === o.stored_id) === i;
   });
 }
+
+export function idToStoredID(o: { id: string; name: string }) {
+  return {
+    stored_id: o.id,
+    name: o.name,
+  };
+}

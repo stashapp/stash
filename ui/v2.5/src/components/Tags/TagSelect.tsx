@@ -290,14 +290,14 @@ const _TagIDSelect: React.FC<IFilterProps & IFilterIDProps<Tag>> = (props) => {
     onSelectValues?.(items);
   }
 
-  async function loadObjectsByID(idsToLoad: string[]): Promise<Tag[]> {
-    const query = await queryFindTagsByIDForSelect(idsToLoad);
-    const { tags: loadedTags } = query.data.findTags;
-
-    return loadedTags;
-  }
-
   useEffect(() => {
+    async function loadObjectsByID(idsToLoad: string[]): Promise<Tag[]> {
+      const query = await queryFindTagsByIDForSelect(idsToLoad);
+      const { tags: loadedTags } = query.data.findTags;
+  
+      return loadedTags;
+    }
+
     if (!idsChanged) {
       return;
     }

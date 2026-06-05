@@ -349,6 +349,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   };
 
   // clear tagged performers when source is changed
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally only resetting when selectedEndpoint changes
   useEffect(() => {
     setTaggedPerformers({});
     setSearchResults({});

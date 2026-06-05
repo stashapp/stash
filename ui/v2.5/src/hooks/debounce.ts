@@ -1,8 +1,8 @@
 /* biome-ignore-all lint/suspicious/noExplicitAny: don't know how to change this to be properly typed */
-/* XXbiome-ignore-start react-hooks/exhaustive-deps */
 import { debounce, DebouncedFunc, DebounceSettings } from "lodash-es";
 import { useCallback, useRef, useState } from "react";
 
+// biome-ignore-start lint/correctness/useExhaustiveDependencies: false positive on function arguments
 export function useDebounce<T extends (...args: any) => any>(
   fn: T,
   wait?: number,
@@ -21,6 +21,7 @@ export function useDebounce<T extends (...args: any) => any>(
     [wait, options?.leading, options?.trailing, options?.maxWait]
   );
 }
+// biome-ignore-end lint/correctness/useExhaustiveDependencies: false positive on function arguments
 
 export function useDebouncedState<T>(
   initialValue: T,
@@ -35,7 +36,7 @@ export function useDebouncedState<T>(
       setDisplayedState(input);
       debouncedSetValue(input);
     },
-    [debouncedSetValue, setDisplayedState]
+    [debouncedSetValue]
   );
 
   const setInstant = useCallback(

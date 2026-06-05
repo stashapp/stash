@@ -466,7 +466,8 @@ export const FilteredSceneList = PatchComponent(
         Mousetrap.unbind("e");
         Mousetrap.unbind("d d");
       };
-    }, [onSelectAll, onSelectNone, hasSelection, onEdit, onDelete]);
+    }, [hasSelection, onEdit, onDelete]);
+
     useZoomKeybinds({
       zoomIndex: filter.zoomIndex,
       onChangeZoom: (zoom) => setFilter(filter.setZoom(zoom)),
