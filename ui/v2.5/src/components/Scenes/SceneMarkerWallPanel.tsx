@@ -73,7 +73,7 @@ export const MarkerWallItem: React.FC<
     divStyle.top = props.top;
   }
 
-  const handleClick = function (event: React.MouseEvent) {
+  function handleClick(event: React.MouseEvent) {
     if (props.selecting && props.onSelectedChanged) {
       props.onSelectedChanged(!props.selected, event.shiftKey);
       event.preventDefault();

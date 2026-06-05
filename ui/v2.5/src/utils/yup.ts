@@ -166,7 +166,7 @@ export function yupInputNumber() {
 export function yupFormikValidate<T>(
   schema: yup.AnySchema
 ): (values: T) => Promise<FormikErrors<T>> {
-  return async function (values) {
+  return async (values) => {
     try {
       await schema.validate(values, { abortEarly: false });
     } catch (err) {

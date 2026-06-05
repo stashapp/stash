@@ -467,7 +467,7 @@ export function handleUnsavedChanges(
   basepath: string,
   id?: string
 ) {
-  return function (location: { pathname: string }) {
+  return (location: { pathname: string }) => {
     // #2291 - don't prompt if we're navigating within the gallery being edited
     if (id !== undefined && location.pathname === `/${basepath}/${id}`) {
       return true;

@@ -38,7 +38,7 @@ function sortPlugins(plugins: PluginList) {
 
     ancestors.push(id);
     visited[idstr] = true;
-    node.afters.forEach(function (afterID) {
+    node.afters.forEach((afterID) => {
       if (ancestors.indexOf(afterID) >= 0)
         throw new Error("closed chain : " + afterID + " is in " + id);
       visit(afterID.toString(), ancestors.slice());

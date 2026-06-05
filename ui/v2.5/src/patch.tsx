@@ -73,7 +73,7 @@ function runInstead(
 
     const thisTarget = fns[i++];
     return new Proxy(thisTarget, {
-      apply: function (target, ctx, args) {
+      apply: (target, ctx, args) => {
         return target.apply(ctx, args.concat(next()));
       },
     });

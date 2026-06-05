@@ -52,7 +52,7 @@ function useLoadComponents(toLoad: (() => Promise<unknown>)[]) {
 }
 
 function registerRoute(path: string, component: React.FC) {
-  before("PluginRoutes", function (props: React.PropsWithChildren<unknown>) {
+  before("PluginRoutes", (props: React.PropsWithChildren<unknown>) => {
     return [
       {
         children: (

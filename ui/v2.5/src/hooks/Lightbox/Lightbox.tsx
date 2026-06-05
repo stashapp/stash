@@ -553,7 +553,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       : imageNumber;
 
     let chapterTitle = "";
-    chapters.forEach(function (chapter) {
+    chapters.forEach((chapter) => {
       if (chapter.image_index > globalIndex) {
         return;
       }

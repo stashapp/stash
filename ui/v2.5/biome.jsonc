@@ -33,9 +33,7 @@
     "rules": {
       "a11y": "off",
       "complexity": {
-        "noUselessFragments": "off",
-        // remove the following after fixing
-        "useArrowFunction": "off"
+        "noUselessFragments": "off"
       },
       "style": {
         "noNestedTernary": "off",
