@@ -239,7 +239,7 @@ const TagModal: React.FC<ITagModalProps> = ({
     // handle exclusions
     excludeFields(tagData, excluded);
 
-    let parentData: GQL.TagCreateInput | undefined = undefined;
+    let parentData: GQL.TagCreateInput | undefined;
 
     // Categories don't have stash IDs, so we only create new parent tags
     if (

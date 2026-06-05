@@ -223,7 +223,7 @@ export const CustomFieldsInput: React.FC<ICustomFieldsInput> = PatchComponent(
 
     function onSetNewField(v: ICustomField) {
       // validate the field name
-      let newError = undefined;
+      let newError: string | undefined;
       if (v.field.length > maxFieldNameLength) {
         newError = intl.formatMessage({
           id: "errors.custom_fields.field_name_length",

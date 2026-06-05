@@ -218,7 +218,7 @@ export const SceneDuplicateChecker: React.FC = () => {
     compareScenes: GQL.SlimSceneDataFragment[]
   ) => {
     let selectedFile: GQL.VideoFileDataFragment;
-    let oldestTimestamp: Date | undefined = undefined;
+    let oldestTimestamp: Date | undefined;
 
     // Loop through all files
     for (const file of compareScenes.flatMap((s) => s.files)) {

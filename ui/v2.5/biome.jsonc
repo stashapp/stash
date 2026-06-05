@@ -39,8 +39,7 @@
         "useOptionalChain": "off",
         "noBannedTypes": "off",
         "useIndexOf": "off",
-        "useFlatMap": "off",
-        "noUselessUndefinedInitialization": "off"
+        "useFlatMap": "off"
       },
       "style": {
         "noNestedTernary": "off",

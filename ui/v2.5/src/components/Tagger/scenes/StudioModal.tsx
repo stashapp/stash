@@ -262,7 +262,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
     // handle exclusions
     excludeFields(studioData, excluded);
 
-    let parentData: GQL.StudioCreateInput | undefined = undefined;
+    let parentData: GQL.StudioCreateInput | undefined;
 
     if (createParentStudio && sendParentStudio) {
       if (!studio.parent?.name) {
