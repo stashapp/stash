@@ -1121,6 +1121,11 @@ func (qb *SceneStore) queryGroupedFields(ctx context.Context, options models.Sce
 		aggregateQuery.addColumn("SUM(temp.size) as size")
 	}
 
+	// #5503 - select the file id so equal-sized/duration files aren't collapsed by DISTINCT
+	if options.TotalDuration || options.TotalSize {
+		query.addColumn(scenesFilesTable + ".file_id")
+	}
+
 	const includeSortPagination = false
 	aggregateQuery.from = fmt.Sprintf("(%s) as temp", query.toSQL(includeSortPagination))
 
