@@ -122,6 +122,13 @@ type Query {
     ids: [ID!]
   ): FindGalleriesResultType!
 
+  findStory(id: ID!): Story
+  findStories(
+    story_filter: StoryFilterType
+    filter: FindFilterType
+    ids: [ID!]
+  ): FindStoriesResultType!
+
   findTag(id: ID!): Tag
   findTags(
     tag_filter: TagFilterType
@@ -263,6 +270,7 @@ type Query {
     @deprecated(reason: "Use findSceneMarkers instead")
   allImages: [Image!]! @deprecated(reason: "Use findImages instead")
   allGalleries: [Gallery!]! @deprecated(reason: "Use findGalleries instead")
+  allStories: [Story!]! @deprecated(reason: "Use findStories instead")
 
   allPerformers: [Performer!]!
   allTags: [Tag!]! @deprecated(reason: "Use findTags instead")
@@ -367,6 +375,11 @@ type Mutation {
   galleryChapterCreate(input: GalleryChapterCreateInput!): GalleryChapter
   galleryChapterUpdate(input: GalleryChapterUpdateInput!): GalleryChapter
   galleryChapterDestroy(id: ID!): Boolean!
+
+  storyCreate(input: StoryCreateInput!): Story
+  storyUpdate(input: StoryUpdateInput!): Story
+  bulkStoryUpdate(input: BulkStoryUpdateInput!): [Story!]
+  storyDestroy(input: StoryDestroyInput!): Boolean!
 
   performerCreate(input: PerformerCreateInput!): Performer
   performerUpdate(input: PerformerUpdateInput!): Performer

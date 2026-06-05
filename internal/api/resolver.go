@@ -87,6 +87,9 @@ func (r *Resolver) Subscription() SubscriptionResolver {
 func (r *Resolver) Tag() TagResolver {
 	return &tagResolver{r}
 }
+func (r *Resolver) Story() StoryResolver {
+	return &storyResolver{r}
+}
 func (r *Resolver) GalleryFile() GalleryFileResolver {
 	return &galleryFileResolver{r}
 }
@@ -129,6 +132,7 @@ type groupResolver struct{ *Resolver }
 type movieResolver struct{ *groupResolver }
 
 type tagResolver struct{ *Resolver }
+type storyResolver struct{ *Resolver }
 type galleryFileResolver struct{ *Resolver }
 type videoFileResolver struct{ *Resolver }
 type imageFileResolver struct{ *Resolver }

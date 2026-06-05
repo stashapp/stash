@@ -1,0 +1,79 @@
+type Story {
+  id: ID!
+  title: String
+  author: String
+  url: String
+  date: String
+  language: String
+  tag_line: String
+  details: String
+  rating100: Int
+  created_at: Time!
+  updated_at: Time!
+
+  studio: Studio
+  tags: [Tag!]!
+  performers: [Performer!]!
+
+  front_image_path: String
+  back_image_path: String
+}
+
+input StoryCreateInput {
+  title: String!
+  author: String
+  url: String
+  date: String
+  language: String
+  tag_line: String
+  details: String
+  rating100: Int
+  studio_id: ID
+  tag_ids: [ID!]
+  performer_ids: [ID!]
+  "This should be a URL or a base64 encoded data URL"
+  front_image: String
+  "This should be a URL or a base64 encoded data URL"
+  back_image: String
+}
+
+input StoryUpdateInput {
+  id: ID!
+  title: String
+  author: String
+  url: String
+  date: String
+  language: String
+  tag_line: String
+  details: String
+  rating100: Int
+  studio_id: ID
+  tag_ids: [ID!]
+  performer_ids: [ID!]
+  "This should be a URL or a base64 encoded data URL"
+  front_image: String
+  "This should be a URL or a base64 encoded data URL"
+  back_image: String
+}
+
+input BulkStoryUpdateInput {
+  ids: [ID!]
+  url: String
+  date: String
+  language: String
+  tag_line: String
+  details: String
+  rating100: Int
+  studio_id: ID
+  tag_ids: BulkUpdateIds
+  performer_ids: BulkUpdateIds
+}
+
+input StoryDestroyInput {
+  ids: [ID!]!
+}
+
+type FindStoriesResultType {
+  count: Int!
+  stories: [Story!]!
+}
