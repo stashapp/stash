@@ -371,6 +371,9 @@ type Mutation {
   performerCreate(input: PerformerCreateInput!): Performer
   performerUpdate(input: PerformerUpdateInput!): Performer
   performerDestroy(input: PerformerDestroyInput!): Boolean!
+  performerImageCreate(input: PerformerImageCreateInput!): PerformerImage
+  performerImageDestroy(performer_id: ID!, checksum: String!): Boolean!
+  performerImagesReorder(input: PerformerImagesReorderInput!): Boolean!
   performersDestroy(ids: [ID!]!): Boolean!
   bulkPerformerUpdate(input: BulkPerformerUpdateInput!): [Performer!]
   performerMerge(input: PerformerMergeInput!): Performer!

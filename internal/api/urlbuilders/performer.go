@@ -27,3 +27,7 @@ func (b PerformerURLBuilder) GetPerformerImageURL(hasImage bool) string {
 	}
 	return url
 }
+
+func (b PerformerURLBuilder) GetPerformerImageURLByChecksum(checksum string) string {
+	return b.BaseURL + "/performer/" + b.PerformerID + "/image/" + checksum + "?t=" + b.UpdatedAt
+}

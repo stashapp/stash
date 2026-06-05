@@ -144,4 +144,8 @@ models:
     fields:
       career_length:
         resolver: true
+  PerformerImage:
+    fields:
+      image_path:
+        resolver: true
   

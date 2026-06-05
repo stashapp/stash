@@ -157,6 +157,19 @@ func (r *performerResolver) ImagePath(ctx context.Context, obj *models.Performer
 	return &imagePath, nil
 }
 
+func (r *performerResolver) Images(ctx context.Context, obj *models.Performer) ([]*models.PerformerImage, error) {
+	var images []*models.PerformerImage
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		var err error
+		images, err = r.repository.Performer.GetImages(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return images, nil
+}
+
 func (r *performerResolver) Tags(ctx context.Context, obj *models.Performer) (ret []*models.Tag, err error) {
 	if !obj.TagIDs.Loaded() {
 		if err := r.withReadTxn(ctx, func(ctx context.Context) error {

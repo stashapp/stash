@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -26,7 +27,10 @@ const (
 	performerURLsTable = "performer_urls"
 	performerURLColumn = "url"
 
-	performerImageBlobColumn = "image_blob"
+	performerImageBlobColumn   = "image_blob"
+	performerImagesTable       = "performer_images"
+	performerImageSortColumn   = "sort_order"
+	performerImageCreatedColumn = "created_at"
 )
 
 type performerRow struct {
@@ -898,6 +902,126 @@ func (qb *PerformerStore) UpdateImage(ctx context.Context, performerID int, imag
 
 func (qb *PerformerStore) destroyImage(ctx context.Context, performerID int) error {
 	return qb.blobJoinQueryBuilder.DestroyImage(ctx, performerID, performerImageBlobColumn)
+}
+
+// GetImages returns all images for a performer, ordered by sort_order
+func (qb *PerformerStore) GetImages(ctx context.Context, performerID int) ([]*models.PerformerImage, error) {
+	query := fmt.Sprintf(`
+SELECT id, performer_id, image_blob, sort_order, created_at
+FROM %s
+WHERE performer_id = ?
+ORDER BY sort_order ASC, created_at ASC
+`, performerImagesTable)
+
+	rows, err := dbWrapper.Query(ctx, query, performerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var images []*models.PerformerImage
+	for rows.Next() {
+		var img models.PerformerImage
+		var createdAt Timestamp
+		if err := rows.Scan(&img.ID, &img.PerformerID, &img.ImageBlob, &img.SortOrder, &createdAt); err != nil {
+			return nil, err
+		}
+		img.CreatedAt = createdAt.Timestamp
+		images = append(images, &img)
+	}
+
+	if images == nil {
+		images = []*models.PerformerImage{}
+	}
+
+	return images, nil
+}
+
+// GetImageBlob returns the blob data for a given checksum
+func (qb *PerformerStore) GetImageBlob(ctx context.Context, imageChecksum string) ([]byte, error) {
+	rows, _, err := qb.blobStore.readSQL(ctx, "SELECT blobs.checksum, blobs.blob FROM blobs WHERE blobs.checksum = ?", imageChecksum)
+	return rows, err
+}
+
+// AddImage adds a new image to a performer
+func (qb *PerformerStore) AddImage(ctx context.Context, performerID int, image []byte) (*models.PerformerImage, error) {
+	if len(image) == 0 {
+		return nil, errors.New("image data is empty")
+	}
+
+	// Get the current max sort_order
+	var maxSort null.Int
+	err := qb.repository.querySimple(ctx, fmt.Sprintf("SELECT MAX(sort_order) FROM %s WHERE performer_id = ?", performerImagesTable), []interface{}{performerID}, &maxSort)
+	if err != nil {
+		return nil, err
+	}
+
+	nextSort := 0
+	if maxSort.Valid {
+		nextSort = int(maxSort.Int64) + 1
+	}
+
+	// Write the blob
+	checksum, err := qb.blobStore.Write(ctx, image)
+	if err != nil {
+		return nil, err
+	}
+
+	// Insert into performer_images
+	now := Timestamp{Timestamp: qb.blobStore.timestamp()}
+	if _, err := dbWrapper.Exec(ctx,
+		fmt.Sprintf("INSERT INTO %s (performer_id, image_blob, sort_order, created_at) VALUES (?, ?, ?, ?)", performerImagesTable),
+		performerID, checksum, nextSort, now,
+	); err != nil {
+		return nil, err
+	}
+
+	// Return the new image
+	return &models.PerformerImage{
+		PerformerID: performerID,
+		ImageBlob:   checksum,
+		SortOrder:   nextSort,
+		CreatedAt:   now.Timestamp,
+	}, nil
+}
+
+// RemoveImage removes an image from a performer by checksum
+func (qb *PerformerStore) RemoveImage(ctx context.Context, imageChecksum string) error {
+	_, err := dbWrapper.Exec(ctx,
+		fmt.Sprintf("DELETE FROM %s WHERE image_blob = ?", performerImagesTable),
+		imageChecksum,
+	)
+	if err != nil {
+		return err
+	}
+
+	// Delete the blob data
+	return qb.blobStore.Delete(ctx, imageChecksum)
+}
+
+// ReorderImages reorders images for a performer
+func (qb *PerformerStore) ReorderImages(ctx context.Context, performerID int, checksums []string) error {
+	tx, err := dbWrapper.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	for i, cs := range checksums {
+		_, err := tx.ExecContext(ctx,
+			fmt.Sprintf("UPDATE %s SET sort_order = ? WHERE performer_id = ? AND image_blob = ?", performerImagesTable),
+			i, performerID, cs,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit()
+}
+
+func (qb *PerformerStore) timestamp() time.Time {
+	return time.Now()
 }
 
 func (qb *PerformerStore) GetAliases(ctx context.Context, performerID int) ([]string, error) {

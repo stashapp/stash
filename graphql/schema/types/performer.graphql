@@ -41,6 +41,7 @@ type Performer {
   ignore_auto_tag: Boolean!
 
   image_path: String # Resolver
+  images: [PerformerImage!]! # Resolver
   scene_count: Int! # Resolver
   image_count: Int! # Resolver
   gallery_count: Int! # Resolver
@@ -202,4 +203,23 @@ input PerformerMergeInput {
   destination: ID!
   # values defined here will override values in the destination
   values: PerformerUpdateInput
+}
+
+type PerformerImage {
+  id: ID!
+  performer_id: ID!
+  image_path: String!
+  sort_order: Int!
+  created_at: Time!
+}
+
+input PerformerImageCreateInput {
+  performer_id: ID!
+  "This should be a URL or a base64 encoded data URL"
+  image: String!
+}
+
+input PerformerImagesReorderInput {
+  performer_id: ID!
+  checksums: [String!]!
 }

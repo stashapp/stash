@@ -704,3 +704,59 @@ func (r *mutationResolver) PerformerMerge(ctx context.Context, input PerformerMe
 
 	return dest, nil
 }
+
+func (r *mutationResolver) PerformerImageCreate(ctx context.Context, input models.PerformerImageCreateInput) (*models.PerformerImage, error) {
+	performerID, err := strconv.Atoi(input.PerformerID)
+	if err != nil {
+		return nil, fmt.Errorf("converting performer id: %w", err)
+	}
+
+	imageData, err := utils.ProcessImageInput(ctx, input.Image)
+	if err != nil {
+		return nil, fmt.Errorf("processing image: %w", err)
+	}
+
+	var ret *models.PerformerImage
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		var err error
+		ret, err = r.repository.Performer.AddImage(ctx, performerID, imageData)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (r *mutationResolver) PerformerImageDestroy(ctx context.Context, performerIDStr string, checksum string) (bool, error) {
+	if _, err := strconv.Atoi(performerIDStr); err != nil {
+		return false, fmt.Errorf("converting performer id: %w", err)
+	}
+
+	if checksum == "" {
+		return false, fmt.Errorf("checksum is required")
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		return r.repository.Performer.RemoveImage(ctx, checksum)
+	}); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *mutationResolver) PerformerImagesReorder(ctx context.Context, input models.PerformerImagesReorderInput) (bool, error) {
+	performerID, err := strconv.Atoi(input.PerformerID)
+	if err != nil {
+		return false, fmt.Errorf("converting performer id: %w", err)
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		return r.repository.Performer.ReorderImages(ctx, performerID, input.Checksums)
+	}); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}

@@ -295,3 +295,13 @@ type PerformerUpdateInput struct {
 
 	CustomFields CustomFieldsInput `json:"custom_fields"`
 }
+
+type PerformerImageCreateInput struct {
+	PerformerID string `json:"performer_id"`
+	Image       string `json:"image"`
+}
+
+type PerformerImagesReorderInput struct {
+	PerformerID string   `json:"performer_id"`
+	Checksums   []string `json:"checksums"`
+}

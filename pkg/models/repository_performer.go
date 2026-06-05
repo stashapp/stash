@@ -85,6 +85,13 @@ type PerformerReader interface {
 	All(ctx context.Context) ([]*Performer, error)
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
 	HasImage(ctx context.Context, performerID int) (bool, error)
+
+	// Multi-image support
+	GetImages(ctx context.Context, performerID int) ([]*PerformerImage, error)
+	GetImageBlob(ctx context.Context, imageChecksum string) ([]byte, error)
+	AddImage(ctx context.Context, performerID int, image []byte) (*PerformerImage, error)
+	RemoveImage(ctx context.Context, imageChecksum string) error
+	ReorderImages(ctx context.Context, performerID int, checksums []string) error
 }
 
 // PerformerWriter provides all methods to modify performers.

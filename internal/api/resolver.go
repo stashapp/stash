@@ -119,6 +119,7 @@ type subscriptionResolver struct{ *Resolver }
 type galleryResolver struct{ *Resolver }
 type galleryChapterResolver struct{ *Resolver }
 type performerResolver struct{ *Resolver }
+type performerImageResolver struct{ *Resolver }
 type sceneResolver struct{ *Resolver }
 type sceneMarkerResolver struct{ *Resolver }
 type imageResolver struct{ *Resolver }
