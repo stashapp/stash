@@ -275,12 +275,12 @@ const _GroupIDSelect: React.FC<IFilterProps & IFilterIDProps<Group>> = (
     setValues(items);
     onSelectValues?.(items);
   }
-  
+
   useEffect(() => {
     async function loadObjectsByID(idsToLoad: string[]): Promise<Group[]> {
       const query = await queryFindGroupsByIDForSelect(idsToLoad);
       const { groups: loadedGroups } = query.data.findGroups;
-  
+
       return loadedGroups;
     }
 

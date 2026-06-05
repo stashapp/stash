@@ -46,8 +46,8 @@
   "javascript": {
     "formatter": {
       "quoteStyle": "double",
-      // fewer changes making this all vs none
-      "trailingCommas": "all"
+      // es5 requires the least amount of changes and (imo) looks better than "all"
+      "trailingCommas": "es5"
     }
   },
   "assist": {

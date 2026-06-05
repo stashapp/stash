@@ -274,12 +274,7 @@ export const LightboxImage: React.FC<IProps> = ({
       setPositionX(x);
       setPositionY(y);
     }
-  }, [
-    zoom,
-    defaultZoom,
-    resetPosition,
-    calculateInitialPosition,
-  ]);
+  }, [zoom, defaultZoom, resetPosition, calculateInitialPosition]);
 
   function getScrollMode(ev: React.WheelEvent) {
     if (ev.shiftKey) {
@@ -396,17 +391,16 @@ export const LightboxImage: React.FC<IProps> = ({
         Math.abs(firstDeltaY) < SCROLL_INFINITE_THRESHOLD);
 
     switch (getScrollMode(ev)) {
-      case GQL.ImageLightboxScrollMode.Zoom:
-        {
-          let percent: number;
-          if (infinite) {
-            percent = 1 - ev.deltaY / ZOOM_FACTOR;
-          } else {
-            percent = ev.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
-          }
-          setZoom(zoom * percent);
-          break;
+      case GQL.ImageLightboxScrollMode.Zoom: {
+        let percent: number;
+        if (infinite) {
+          percent = 1 - ev.deltaY / ZOOM_FACTOR;
+        } else {
+          percent = ev.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
         }
+        setZoom(zoom * percent);
+        break;
+      }
       case GQL.ImageLightboxScrollMode.PanY:
         onImageScrollPanY(ev, infinite);
         break;

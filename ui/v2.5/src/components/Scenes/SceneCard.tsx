@@ -494,7 +494,7 @@ export const SceneCard = PatchComponent(
         duration={file?.duration ?? undefined}
         interactiveHeatmap={
           props.scene.interactive_speed
-            ? props.scene.paths.interactive_heatmap ?? undefined
+            ? (props.scene.paths.interactive_heatmap ?? undefined)
             : undefined
         }
         image={<SceneCardImage {...props} />}

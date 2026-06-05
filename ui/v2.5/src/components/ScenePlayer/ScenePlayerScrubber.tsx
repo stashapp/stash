@@ -169,7 +169,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
       const slider = sliderEl.current!;
       slider.style.transition = "500ms linear";
     }
-    
+
     if (!scrubWidth || !width) return;
 
     const duration = Number(file.duration);
@@ -192,7 +192,15 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = ({
     prevTime.current = time;
 
     setPosition(newPosition, false);
-  }, [file.duration, setPosition, time, width, scrubWidth, clearTransition, setEaseOutTransition]);
+  }, [
+    file.duration,
+    setPosition,
+    time,
+    width,
+    scrubWidth,
+    clearTransition,
+    setEaseOutTransition,
+  ]);
 
   const onMouseUp = useCallback(
     (event: MouseEvent) => {

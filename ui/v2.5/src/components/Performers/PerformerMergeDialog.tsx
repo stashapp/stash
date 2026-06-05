@@ -27,7 +27,11 @@ import {
   ScrapedTextAreaRow,
 } from "../Shared/ScrapeDialog/ScrapeDialogRow";
 import { ModalComponent } from "../Shared/Modal";
-import { idToStoredID, sortStoredIdObjects, uniqIDStoredIDs } from "src/utils/data";
+import {
+  idToStoredID,
+  sortStoredIdObjects,
+  uniqIDStoredIDs,
+} from "src/utils/data";
 import {
   CustomFieldScrapeResults,
   ObjectListScrapeResult,
@@ -297,10 +301,7 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
       )
     );
     setURLs(
-      new ScrapeResult(
-        dest.urls ?? [],
-        uniq(all.flatMap((s) => s.urls ?? []))
-      )
+      new ScrapeResult(dest.urls ?? [], uniq(all.flatMap((s) => s.urls ?? [])))
     );
     setGender(
       new ScrapeResult(

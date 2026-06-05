@@ -126,7 +126,10 @@ export const RatingStars = PatchComponent(
       return "unset";
     }
 
-    function getTooltip(_thisStar: number, current: RatingFraction | undefined) {
+    function getTooltip(
+      _thisStar: number,
+      current: RatingFraction | undefined
+    ) {
       if (disabled) {
         if (rating) {
           // always return current rating for disabled control

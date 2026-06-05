@@ -842,7 +842,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
       setQueueTotal(count);
       setQueueStart((filter.currentPage - 1) * filter.itemsPerPage + 1);
     }
-  
+
     async function getQueueScenes(sceneIDs: number[]) {
       const query = await queryFindScenesByID(sceneIDs);
       const { scenes, count } = query.data.findScenes;

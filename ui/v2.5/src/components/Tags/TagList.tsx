@@ -322,7 +322,7 @@ export const FilteredTagList = PatchComponent(
                 t,
                 { parents: t.parents ?? [], children: t.children ?? [] },
                 { parents: [], children: [] }
-              )
+              );
             });
           }}
         />

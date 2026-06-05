@@ -352,8 +352,7 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
     const { className } = e.target as Element;
-    if (className?.includes?.(CLASSNAME_IMAGE))
-      close();
+    if (className?.includes?.(CLASSNAME_IMAGE)) close();
   };
 
   const handleLeft = useCallback(
@@ -381,14 +380,7 @@ export const LightboxComponent: React.FC<IProps> = ({
         resetIntervalCallback.current();
       }
     },
-    [
-      images,
-      pageCallback,
-      isSwitchingPage,
-      index,
-      disableAnimation,
-      setInstant,
-    ]
+    [images, pageCallback, isSwitchingPage, index, disableAnimation, setInstant]
   );
 
   const handleRight = useCallback(
@@ -416,14 +408,7 @@ export const LightboxComponent: React.FC<IProps> = ({
         resetIntervalCallback.current();
       }
     },
-    [
-      images,
-      pageCallback,
-      isSwitchingPage,
-      index,
-      disableAnimation,
-      setInstant,
-    ]
+    [images, pageCallback, isSwitchingPage, index, disableAnimation, setInstant]
   );
 
   const firstScroll = useRef<number | null>(null);
@@ -494,8 +479,8 @@ export const LightboxComponent: React.FC<IProps> = ({
       playsInline: image.paths.preview !== "",
       src:
         image.paths.preview !== ""
-          ? image.paths.preview ?? ""
-          : image.paths.thumbnail ?? "",
+          ? (image.paths.preview ?? "")
+          : (image.paths.thumbnail ?? ""),
       alt: "",
       className: cx(CLASSNAME_NAVIMAGE, {
         [CLASSNAME_NAVSELECTED]: i === index,

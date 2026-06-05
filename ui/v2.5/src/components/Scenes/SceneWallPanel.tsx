@@ -80,7 +80,7 @@ export const SceneWallItem: React.FC<
     if (props.onClick) {
       props.onClick(event, { index: props.index });
     }
-  };
+  }
 
   const video = props.photo.src.includes("preview");
   const previewProps = {
@@ -227,13 +227,16 @@ const SceneWall: React.FC<ISceneWallProps> = ({
   const direction = "row";
 
   const [erroredImgs, setErroredImgs] = useState<FailedSrcMap>({});
-  
-  const handleError = useCallback((id: string, photo: PhotoProps<IScenePhoto>) => {
-    setErroredImgs((prev) => ({
-      ...prev,
-      [id]: [...(prev[id] || []), photo.src],
-    }));
-  }, []);
+
+  const handleError = useCallback(
+    (id: string, photo: PhotoProps<IScenePhoto>) => {
+      setErroredImgs((prev) => ({
+        ...prev,
+        [id]: [...(prev[id] || []), photo.src],
+      }));
+    },
+    []
+  );
 
   useEffect(() => {
     const ret: FailedSrcMap = {};

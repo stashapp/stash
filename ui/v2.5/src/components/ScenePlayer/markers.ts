@@ -86,10 +86,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     markerSet.dot.toggleAttribute("marker-tooltip-shown", true);
 
     // Set background color based on tag (if available)
-    if (
-      marker.primaryTag?.name &&
-      this.tagColors[marker.primaryTag.name]
-    ) {
+    if (marker.primaryTag?.name && this.tagColors[marker.primaryTag.name]) {
       markerSet.dot.style.backgroundColor =
         this.tagColors[marker.primaryTag.name];
     }
@@ -162,10 +159,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     rangeDiv.style.display = "none"; // Initially hidden
 
     // Set background color based on tag (if available)
-    if (
-      marker.primaryTag?.name &&
-      this.tagColors[marker.primaryTag.name]
-    ) {
+    if (marker.primaryTag?.name && this.tagColors[marker.primaryTag.name]) {
       rangeDiv.style.backgroundColor = this.tagColors[marker.primaryTag.name];
     }
 

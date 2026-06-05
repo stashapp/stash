@@ -85,8 +85,7 @@ function useLoadPlugins(disableCustomizations?: boolean) {
       uniq(
         sortedPlugins
           ?.filter((plugin) => plugin.enabled && plugin.paths.javascript)
-          .flatMap((plugin) => plugin.paths.javascript!)
-          ?? []
+          .flatMap((plugin) => plugin.paths.javascript!) ?? []
       ),
       !!sortedPlugins && !pluginsLoading && !pluginsError,
     ];
@@ -100,8 +99,7 @@ function useLoadPlugins(disableCustomizations?: boolean) {
       uniq(
         sortedPlugins
           ?.filter((plugin) => plugin.enabled && plugin.paths.css)
-          .flatMap((plugin) => plugin.paths.css!)
-          ?? []
+          .flatMap((plugin) => plugin.paths.css!) ?? []
       ),
       !!sortedPlugins && !pluginsLoading && !pluginsError,
     ];
@@ -143,7 +141,6 @@ export const PluginsLoader: React.FC<
   return <>{children}</>;
 };
 
-export const PluginRoutes: React.FC =
-  PatchFunction("PluginRoutes", (props) => {
-    return <>{props.children}</>;
-  }) as React.FC;
+export const PluginRoutes: React.FC = PatchFunction("PluginRoutes", (props) => {
+  return <>{props.children}</>;
+}) as React.FC;

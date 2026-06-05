@@ -296,7 +296,7 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
             />
           </li>
         ))}
-        {showModifierValues && (
+        {showModifierValues &&
           Object.entries(availableModifierValues).map(([key, value]) => {
             if (!value) {
               return null;
@@ -313,8 +313,7 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
                 modifier
               />
             );
-          })
-        )}
+          })}
         {objects.map((p) => (
           <UnselectedItem
             key={p.id}
@@ -336,7 +335,7 @@ interface IObjectsFilter<T extends ModifierCriterion<ILabeledValueListValue>> {
 }
 
 export const ObjectsFilter = <
-  T extends ModifierCriterion<ILabeledValueListValue | IHierarchicalLabelValue>
+  T extends ModifierCriterion<ILabeledValueListValue | IHierarchicalLabelValue>,
 >({
   criterion,
   setCriterion,
@@ -502,7 +501,7 @@ interface IHierarchicalObjectsFilter<T extends IHierarchicalLabeledIdCriterion>
   extends IObjectsFilter<T> {}
 
 export const HierarchicalObjectsFilter = <
-  T extends IHierarchicalLabeledIdCriterion
+  T extends IHierarchicalLabeledIdCriterion,
 >(
   props: IHierarchicalObjectsFilter<T>
 ) => {
@@ -537,8 +536,8 @@ export const HierarchicalObjectsFilter = <
       criterion.criterionOption.type === "studios"
         ? "include_sub_studios"
         : criterion.criterionOption.type === "children"
-        ? "include_parent_tags"
-        : "include_sub_tags";
+          ? "include_parent_tags"
+          : "include_sub_tags";
     return {
       id: optionType,
     };

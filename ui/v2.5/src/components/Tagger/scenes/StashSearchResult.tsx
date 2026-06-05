@@ -145,9 +145,7 @@ const getFingerprintStatus = (
   const allPhashes: Pick<GQL.Fingerprint, "type" | "value">[] = [];
 
   for (const file of stashScene.files) {
-    allPhashes.push(
-      ...file.fingerprints.filter((f) => f.type === "phash")
-    );
+    allPhashes.push(...file.fingerprints.filter((f) => f.type === "phash"));
   }
 
   const phashMatches = matchPhashes(allPhashes, scene.fingerprints ?? []);

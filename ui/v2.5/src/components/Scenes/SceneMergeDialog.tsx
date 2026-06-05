@@ -26,7 +26,11 @@ import { ScrapeDialog } from "../Shared/ScrapeDialog/ScrapeDialog";
 import { clone, uniq } from "lodash-es";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { ModalComponent } from "../Shared/Modal";
-import { idToStoredID, sortStoredIdObjects, uniqIDStoredIDs } from "src/utils/data";
+import {
+  idToStoredID,
+  sortStoredIdObjects,
+  uniqIDStoredIDs,
+} from "src/utils/data";
 import {
   CustomFieldScrapeResults,
   ObjectListScrapeResult,

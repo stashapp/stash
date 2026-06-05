@@ -443,7 +443,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       // Note: interfaceConfig?.autostartVideo is intentionally excluded to prevent
       // player re-initialization when toggling autostart (which would interrupt playback)
       // XXbiome-ignore lint/correctness/useExhaustiveDependencies: intentional
-    }, [uiConfig?.showAbLoopControls, uiConfig?.enableChromecast, interfaceConfig?.autostartVideo]);
+    }, [
+      uiConfig?.showAbLoopControls,
+      uiConfig?.enableChromecast,
+      interfaceConfig?.autostartVideo,
+    ]);
 
     useEffect(() => {
       const player = getPlayer();
@@ -972,8 +976,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       }
     }
 
-    const isPortrait =
-      file?.height && file?.width && file.height > file.width;
+    const isPortrait = file?.height && file?.width && file.height > file.width;
 
     return (
       <div

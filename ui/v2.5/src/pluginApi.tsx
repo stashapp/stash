@@ -43,7 +43,7 @@ function useLoadComponents(toLoad: (() => Promise<unknown>)[]) {
       await loadComponents(c);
       setLoading(false);
     }
-    
+
     setLoading(true);
     load(componentList);
   }, [componentList]);

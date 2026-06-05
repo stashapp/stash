@@ -18,7 +18,9 @@ export interface IInteractiveClientProviderOptions {
 }
 
 // convert this to interface if more methods are added
-export type IInteractiveClientProvider = (options: IInteractiveClientProviderOptions) => IInteractiveClient;
+export type IInteractiveClientProvider = (
+  options: IInteractiveClientProviderOptions
+) => IInteractiveClient;
 
 /**
  * Interface that is used for InteractiveProvider

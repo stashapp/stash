@@ -59,7 +59,7 @@ function getGroupTotalSize(group: GQL.SlimSceneDataFragment[]) {
     );
     return groupTotal + sceneTotal;
   }, 0);
-};
+}
 
 export const SceneDuplicateChecker: React.FC = () => {
   const intl = useIntl();

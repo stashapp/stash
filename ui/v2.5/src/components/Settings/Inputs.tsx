@@ -234,8 +234,8 @@ const _ChangeButtonSetting = <T extends {}>(props: IDialogSetting<T>) => {
           {headingID
             ? intl.formatMessage({ id: headingID })
             : heading
-            ? heading
-            : undefined}
+              ? heading
+              : undefined}
         </h3>
 
         <div className="value">
