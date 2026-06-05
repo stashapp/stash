@@ -116,7 +116,7 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
     this.menu = new SourceMenuButton(player);
 
     this.menu.on("sourceselected", (_, source: ISource) => {
-      this.selectedIndex = this.sources.findIndex((src) => src === source);
+      this.selectedIndex = this.sources.indexOf(source);
       if (this.selectedIndex === -1) return;
 
       this.manuallySelected = true;

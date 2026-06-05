@@ -37,8 +37,7 @@
         // remove the following after fixing
         "useArrowFunction": "off",
         "useOptionalChain": "off",
-        "noBannedTypes": "off",
-        "useIndexOf": "off"
+        "noBannedTypes": "off"
       },
       "style": {
         "noNestedTernary": "off",

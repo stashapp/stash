@@ -110,7 +110,7 @@ export function sortByRelevance<T extends ISortable>(
     }
 
     const words = getNameWords(o);
-    const wordIndex = words.findIndex((w) => w === query);
+    const wordIndex = words.indexOf(query);
     setCache(o, { wordIndex });
 
     return wordIndex;
@@ -124,7 +124,7 @@ export function sortByRelevance<T extends ISortable>(
     }
 
     const aliasWords = getAliasWords(o);
-    const aliasWordIndex = aliasWords.findIndex((w) => w === query);
+    const aliasWordIndex = aliasWords.indexOf(query);
     setCache(o, { aliasWordIndex });
 
     return aliasWordIndex;
