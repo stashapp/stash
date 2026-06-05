@@ -49,6 +49,9 @@ func (r *Resolver) scraperCache() *scraper.Cache {
 func (r *Resolver) Gallery() GalleryResolver {
 	return &galleryResolver{r}
 }
+func (r *Resolver) Manga() MangaResolver {
+	return &mangaResolver{r}
+}
 func (r *Resolver) GalleryChapter() GalleryChapterResolver {
 	return &galleryChapterResolver{r}
 }
@@ -118,6 +121,7 @@ type subscriptionResolver struct{ *Resolver }
 
 type galleryResolver struct{ *Resolver }
 type galleryChapterResolver struct{ *Resolver }
+type mangaResolver struct{ *Resolver }
 type performerResolver struct{ *Resolver }
 type performerImageResolver struct{ *Resolver }
 type sceneResolver struct{ *Resolver }

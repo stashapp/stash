@@ -122,6 +122,13 @@ type Query {
     ids: [ID!]
   ): FindGalleriesResultType!
 
+  findManga(id: ID!): Manga
+  findMangas(
+    manga_filter: MangaFilterType
+    filter: FindFilterType
+    ids: [ID!]
+  ): FindMangasResultType!
+
   findTag(id: ID!): Tag
   findTags(
     tag_filter: TagFilterType
@@ -264,6 +271,8 @@ type Query {
   allImages: [Image!]! @deprecated(reason: "Use findImages instead")
   allGalleries: [Gallery!]! @deprecated(reason: "Use findGalleries instead")
 
+  allMangas: [Manga!]! @deprecated(reason: "Use findMangas instead")
+
   allPerformers: [Performer!]!
   allTags: [Tag!]! @deprecated(reason: "Use findTags instead")
   allStudios: [Studio!]! @deprecated(reason: "Use findStudios instead")
@@ -367,6 +376,12 @@ type Mutation {
   galleryChapterCreate(input: GalleryChapterCreateInput!): GalleryChapter
   galleryChapterUpdate(input: GalleryChapterUpdateInput!): GalleryChapter
   galleryChapterDestroy(id: ID!): Boolean!
+
+  mangaCreate(input: MangaCreateInput!): Manga
+  mangaUpdate(input: MangaUpdateInput!): Manga
+  bulkMangaUpdate(input: BulkMangaUpdateInput!): [Manga!]
+  mangaDestroy(input: MangaDestroyInput!): Boolean!
+  mangasUpdate(input: [MangaUpdateInput!]!): [Manga]
 
   performerCreate(input: PerformerCreateInput!): Performer
   performerUpdate(input: PerformerUpdateInput!): Performer

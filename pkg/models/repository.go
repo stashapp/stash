@@ -19,6 +19,7 @@ type Repository struct {
 	Folder         FolderReaderWriter
 	Gallery        GalleryReaderWriter
 	GalleryChapter GalleryChapterReaderWriter
+	Manga          MangaReaderWriter
 	Image          ImageReaderWriter
 	Group          GroupReaderWriter
 	Performer      PerformerReaderWriter

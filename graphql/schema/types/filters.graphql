@@ -521,6 +521,8 @@ input StudioFilterType {
   galleries_filter: GalleryFilterType
   "Filter by related groups that meet this criteria"
   groups_filter: GroupFilterType
+  "Filter by related mangas that meet this criteria"
+  mangas_filter: MangaFilterType
   "Filter by creation time"
   created_at: TimestampCriterionInput
   "Filter by last update time"
@@ -605,6 +607,52 @@ input GalleryFilterType {
   folders_filter: FolderFilterType
   "Filter by parent folder of the zip or folder the gallery is in"
   parent_folder: HierarchicalMultiCriterionInput
+
+  custom_fields: [CustomFieldCriterionInput!]
+}
+
+input MangaFilterType {
+  AND: MangaFilterType
+  OR: MangaFilterType
+  NOT: MangaFilterType
+
+  id: IntCriterionInput
+  title: StringCriterionInput
+  details: StringCriterionInput
+
+  # rating expressed as 1-100
+  rating100: IntCriterionInput
+  "Filter by organized"
+  organized: Boolean
+  "Filter to only include mangas with this studio"
+  studios: HierarchicalMultiCriterionInput
+  "Filter to only include mangas with these tags"
+  tags: HierarchicalMultiCriterionInput
+  "Filter by tag count"
+  tag_count: IntCriterionInput
+  "Filter to only include mangas with these performers"
+  performers: MultiCriterionInput
+  "Filter by performer count"
+  performer_count: IntCriterionInput
+  "Filter mangas that have performers that have been favorited"
+  performer_favorite: Boolean
+  "Filter mangas by performer age at time of manga"
+  performer_age: IntCriterionInput
+  "Filter by url"
+  url: StringCriterionInput
+  "Filter by date"
+  date: DateCriterionInput
+  "Filter by creation time"
+  created_at: TimestampCriterionInput
+  "Filter by last update time"
+  updated_at: TimestampCriterionInput
+
+  "Filter by related performers that meet this criteria"
+  performers_filter: PerformerFilterType
+  "Filter by related studios that meet this criteria"
+  studios_filter: StudioFilterType
+  "Filter by related tags that meet this criteria"
+  tags_filter: TagFilterType
 
   custom_fields: [CustomFieldCriterionInput!]
 }
@@ -972,6 +1020,7 @@ enum FilterMode {
   GROUPS
   TAGS
   IMAGES
+  MANGAS
 }
 
 type SavedFilter {

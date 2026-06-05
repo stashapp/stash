@@ -23,6 +23,10 @@ var (
 	galleriesURLsJoinTable       = goqu.T(galleriesURLsTable)
 	galleriesCustomFieldsTable   = goqu.T("gallery_custom_fields")
 
+	mangasTagsJoinTable       = goqu.T(mangasTagsTable)
+	performersMangasJoinTable = goqu.T(performersMangasTable)
+	mangasURLsJoinTable       = goqu.T(mangasURLsTable)
+
 	scenesFilesJoinTable      = goqu.T(scenesFilesTable)
 	scenesTagsJoinTable       = goqu.T(scenesTagsTable)
 	scenesPerformersJoinTable = goqu.T(performersScenesTable)
@@ -156,6 +160,39 @@ var (
 			idColumn: galleriesURLsJoinTable.Col(galleryIDColumn),
 		},
 		valueColumn: galleriesURLsJoinTable.Col(galleriesURLColumn),
+	}
+)
+
+var (
+	mangaTableMgr = &table{
+		table:    goqu.T(mangaTable),
+		idColumn: goqu.T(mangaTable).Col(idColumn),
+	}
+
+	mangasTagsTableMgr = &joinTable{
+		table: table{
+			table:    mangasTagsJoinTable,
+			idColumn: mangasTagsJoinTable.Col(mangaIDColumn),
+		},
+		fkColumn:     mangasTagsJoinTable.Col(tagIDColumn),
+		foreignTable: tagTableMgr,
+		orderBy:      tagTableSort,
+	}
+
+	mangasPerformersTableMgr = &joinTable{
+		table: table{
+			table:    performersMangasJoinTable,
+			idColumn: performersMangasJoinTable.Col(mangaIDColumn),
+		},
+		fkColumn: performersMangasJoinTable.Col(performerIDColumn),
+	}
+
+	mangasURLsTableMgr = &orderedValueTable[string]{
+		table: table{
+			table:    mangasURLsJoinTable,
+			idColumn: mangasURLsJoinTable.Col(mangaIDColumn),
+		},
+		valueColumn: mangasURLsJoinTable.Col(mangasURLColumn),
 	}
 )
 

@@ -1,0 +1,76 @@
+type MangaPathsType {
+  cover: String!
+}
+
+"Manga type"
+type Manga {
+  id: ID!
+  title: String
+  url: String
+  date: String
+  details: String
+  # rating expressed as 1-100
+  rating100: Int
+  organized: Boolean!
+  created_at: Time!
+  updated_at: Time!
+
+  studio: Studio
+  tags: [Tag!]!
+  performers: [Performer!]!
+
+  cover: String
+
+  paths: MangaPathsType! # Resolver
+}
+
+input MangaCreateInput {
+  title: String!
+  url: String
+  date: String
+  details: String
+  # rating expressed as 1-100
+  rating100: Int
+  organized: Boolean
+  studio_id: ID
+  tag_ids: [ID!]
+  performer_ids: [ID!]
+}
+
+input MangaUpdateInput {
+  clientMutationId: String
+  id: ID!
+  title: String
+  url: String
+  date: String
+  details: String
+  # rating expressed as 1-100
+  rating100: Int
+  organized: Boolean
+  studio_id: ID
+  tag_ids: [ID!]
+  performer_ids: [ID!]
+}
+
+input BulkMangaUpdateInput {
+  clientMutationId: String
+  ids: [ID!]
+  url: String
+  date: String
+  details: String
+  # rating expressed as 1-100
+  rating100: Int
+  organized: Boolean
+  studio_id: ID
+  tag_ids: BulkUpdateIds
+  performer_ids: BulkUpdateIds
+}
+
+input MangaDestroyInput {
+  ids: [ID!]!
+}
+
+type FindMangasResultType {
+  count: Int!
+  mangas: [Manga!]!
+}

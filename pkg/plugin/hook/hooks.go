@@ -26,6 +26,10 @@ const (
 	GalleryChapterUpdatePost  TriggerEnum = "GalleryChapter.Update.Post"
 	GalleryChapterDestroyPost TriggerEnum = "GalleryChapter.Destroy.Post"
 
+	MangaCreatePost  TriggerEnum = "Manga.Create.Post"
+	MangaUpdatePost  TriggerEnum = "Manga.Update.Post"
+	MangaDestroyPost TriggerEnum = "Manga.Destroy.Post"
+
 	// deprecated - use Group hooks instead
 	// for now, both movie and group hooks will be executed
 	MovieCreatePost  TriggerEnum = "Movie.Create.Post"
@@ -71,6 +75,10 @@ var AllHookTriggerEnum = []TriggerEnum{
 	GalleryChapterUpdatePost,
 	GalleryChapterDestroyPost,
 
+	MangaCreatePost,
+	MangaUpdatePost,
+	MangaDestroyPost,
+
 	MovieCreatePost,
 	MovieUpdatePost,
 	MovieDestroyPost,
@@ -111,6 +119,10 @@ func (e TriggerEnum) IsValid() bool {
 		GalleryChapterCreatePost,
 		GalleryChapterUpdatePost,
 		GalleryChapterDestroyPost,
+
+		MangaCreatePost,
+		MangaUpdatePost,
+		MangaDestroyPost,
 
 		MovieCreatePost,
 		MovieUpdatePost,

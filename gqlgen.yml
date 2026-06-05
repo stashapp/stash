@@ -140,6 +140,22 @@ models:
     fields:
       plugins:
         resolver: true
+  Manga:
+    fields:
+      tags:
+        resolver: true
+      performers:
+        resolver: true
+      paths:
+        resolver: true
+      date:
+        resolver: true
+      rating100:
+        resolver: true
+      url:
+        resolver: true
+      studio:
+        resolver: true
   Performer:
     fields:
       career_length:
