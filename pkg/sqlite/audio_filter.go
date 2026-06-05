@@ -67,7 +67,7 @@ func (qb *audioFilterHandler) criterionHandler() criterionHandler {
 				if audioFilter.Checksum.Modifier == models.CriterionModifierIsNull {
 					joinType = joinTypeLeft
 				}
-				qb.addAudioFilesTable(f, joinType)
+				qb.addAudiosFilesTable(f, joinType)
 				f.addJoin(joinType, fingerprintTable, "fingerprints_md5", "audios_files.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'")
 			}
 
@@ -173,18 +173,23 @@ func (qb *audioFilterHandler) criterionHandler() criterionHandler {
 	}
 }
 
-func (qb *audioFilterHandler) addAudioFilesTable(f *filterBuilder, joinType joinType) {
+func (qb *audioFilterHandler) addAudiosFilesTable(f *filterBuilder, joinType joinType) {
 	f.addJoin(joinType, audiosFilesTable, "", "audios_files.audio_id = audios.id")
 }
 
 func (qb *audioFilterHandler) addFilesTable(f *filterBuilder, joinType joinType) {
-	qb.addAudioFilesTable(f, joinType)
+	qb.addAudiosFilesTable(f, joinType)
 	f.addJoin(joinType, fileTable, "", "audios_files.file_id = files.id")
 }
 
 func (qb *audioFilterHandler) addFoldersTable(f *filterBuilder, joinType joinType) {
 	qb.addFilesTable(f, joinType)
 	f.addJoin(joinType, folderTable, "", "files.parent_folder_id = folders.id")
+}
+
+func (qb *audioFilterHandler) addAudioFilesTable(f *filterBuilder, joinType joinType) {
+	qb.addAudiosFilesTable(f, joinType)
+	f.addJoin(joinType, audioFileTable, "", "audio_files.file_id = audios_files.file_id")
 }
 
 func (qb *audioFilterHandler) playCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {

@@ -868,7 +868,7 @@ func (qb *AudioStore) makeQuery(ctx context.Context, audioFilter *models.AudioFi
 		)
 
 		filepathColumn := "folders.path || '" + string(filepath.Separator) + "' || files.basename"
-		searchColumns := []string{"audios.title", "audios.details", filepathColumn, "files_fingerprints.fingerprint", "audio_markers.title"}
+		searchColumns := []string{"audios.title", "audios.details", filepathColumn, "files_fingerprints.fingerprint"}
 		query.parseQueryString(searchColumns, *q)
 	}
 

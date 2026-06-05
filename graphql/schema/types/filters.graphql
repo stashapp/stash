@@ -880,14 +880,18 @@ input FileFilterType {
   hashes: [FingerprintFilterInput!]
 
   video_file_filter: VideoFileFilterInput
+  audio_file_filter: AudioFileFilterInput
   image_file_filter: ImageFileFilterInput
 
   scene_count: IntCriterionInput
+  audio_count: IntCriterionInput
   image_count: IntCriterionInput
   gallery_count: IntCriterionInput
 
   "Filter by related scenes that meet this criteria"
   scenes_filter: SceneFilterType
+  "Filter by related audios that meet this criteria"
+  audios_filter: AudioFilterType
   "Filter by related images that meet this criteria"
   images_filter: ImageFilterType
   "Filter by related galleries that meet this criteria"

@@ -79,7 +79,6 @@ type AudioPartial struct {
 	PlayDuration OptionalFloat64
 
 	URLs          *UpdateStrings
-	GalleryIDs    *UpdateIDs
 	TagIDs        *UpdateIDs
 	PerformerIDs  *UpdateIDs
 	GroupIDs      *UpdateGroupIDsAudio
