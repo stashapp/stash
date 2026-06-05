@@ -377,8 +377,8 @@ export class ListFilterModel {
             ? "asc"
             : undefined
           : this.sortDirection === SortDirectionEnum.Desc
-          ? "desc"
-          : undefined,
+            ? "desc"
+            : undefined,
       disp:
         this.displayMode !== DEFAULT_PARAMS.displayMode
           ? String(this.displayMode)

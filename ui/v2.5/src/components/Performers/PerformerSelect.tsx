@@ -366,12 +366,12 @@ const _PerformerIDSelect: React.FC<IFilterProps & IFilterIDProps<Performer>> = (
     setValues(items);
     onSelectValues?.(items);
   }
-  
+
   useEffect(() => {
     async function loadObjectsByID(idsToLoad: string[]): Promise<Performer[]> {
       const query = await queryFindPerformersByIDForSelect(idsToLoad);
       const { performers: loadedPerformers } = query.data.findPerformers;
-  
+
       return loadedPerformers;
     }
 

@@ -150,7 +150,8 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
   );
 
   function getVideoElement(playerVideoContainer: HTMLElement) {
-    let videoElements: HTMLCollectionOf<HTMLElement> = playerVideoContainer.getElementsByTagName("canvas");
+    let videoElements: HTMLCollectionOf<HTMLElement> =
+      playerVideoContainer.getElementsByTagName("canvas");
 
     if (videoElements.length === 0) {
       videoElements = playerVideoContainer.getElementsByTagName("video");

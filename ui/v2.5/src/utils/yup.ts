@@ -118,10 +118,12 @@ export function getDateError(
   intl: IntlShape
 ) {
   if (validateDateString(value ?? "")) return undefined;
-  return intl
-    .formatMessage({ id: "validation.date_invalid_form" })
-    // biome-ignore lint/suspicious/noTemplateCurlyInString: required for intl
-    .replace("${path}", intl.formatMessage({ id: "date" }));
+  return (
+    intl
+      .formatMessage({ id: "validation.date_invalid_form" })
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: required for intl
+      .replace("${path}", intl.formatMessage({ id: "date" }))
+  );
 }
 
 export function yupDateString(intl: IntlShape) {

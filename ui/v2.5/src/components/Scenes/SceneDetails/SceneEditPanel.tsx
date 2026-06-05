@@ -87,15 +87,19 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const Scrapers = useListSceneScrapers();
 
   const fragmentScrapers: GQL.Scraper[] = useMemo(() => {
-    return Scrapers?.data?.listScrapers?.filter((s) =>
-      s.scene?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
-    ) ?? [];
+    return (
+      Scrapers?.data?.listScrapers?.filter((s) =>
+        s.scene?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
+      ) ?? []
+    );
   }, [Scrapers.data?.listScrapers]);
 
   const queryableScrapers: GQL.Scraper[] = useMemo(() => {
-    return Scrapers?.data?.listScrapers?.filter((s) =>
-      s.scene?.supported_scrapes.includes(GQL.ScrapeType.Name)
-    ) ?? [];
+    return (
+      Scrapers?.data?.listScrapers?.filter((s) =>
+        s.scene?.supported_scrapes.includes(GQL.ScrapeType.Name)
+      ) ?? []
+    );
   }, [Scrapers.data?.listScrapers]);
 
   const [scraper, setScraper] = useState<GQL.ScraperSourceInput>();

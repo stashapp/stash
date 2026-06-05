@@ -136,9 +136,7 @@ const CustomFieldInput: React.FC<{
                 placeholder={intl.formatMessage({
                   id: "custom_fields.field",
                 })}
-                onChange={(event) =>
-                  setCurrentField(event.currentTarget.value)
-                }
+                onChange={(event) => setCurrentField(event.currentTarget.value)}
                 onBlur={onBlur}
               />
             ) : (

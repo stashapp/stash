@@ -121,7 +121,7 @@ export const SidebarSection: React.FC<
   const openState =
     !contextState || !sectionID
       ? undefined
-      : contextState.sectionOpen[sectionID] ?? undefined;
+      : (contextState.sectionOpen[sectionID] ?? undefined);
 
   function onOpenInternal(open: boolean) {
     if (contextState && sectionID) {

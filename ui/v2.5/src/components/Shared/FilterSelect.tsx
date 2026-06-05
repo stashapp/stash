@@ -133,7 +133,7 @@ export interface IFilterComponentProps<T> extends IFilterProps {
 
 export const FilterSelectComponent = <
   T extends IHasID,
-  IsMulti extends boolean
+  IsMulti extends boolean,
 >(
   props: IFilterValueProps<T> &
     IFilterComponentProps<T> &
@@ -158,7 +158,7 @@ export const FilterSelectComponent = <
           ({
             object: value,
             value: value.id,
-          } as Option<T>)
+          }) as Option<T>
       ) as unknown as OnChangeValue<Option<T>, IsMulti>;
     }
 

@@ -46,7 +46,10 @@ export interface ISettingsContextState {
   saveScraping: (input: Partial<GQL.ConfigScrapingInput>) => void;
   saveDLNA: (input: Partial<GQL.ConfigDlnaInput>) => void;
   saveUI: (input: Partial<IUIConfig>) => void;
-  savePluginSettings: (pluginID: string, input: Record<string, unknown>) => void;
+  savePluginSettings: (
+    pluginID: string,
+    input: Record<string, unknown>
+  ) => void;
   setAdvancedMode: (value: boolean) => void;
 
   refetch: () => void;

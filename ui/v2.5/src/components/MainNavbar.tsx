@@ -211,18 +211,15 @@ export const MainNavbar: React.FC = () => {
   const navbarRef = useRef<HTMLElement | null>(null);
   const intl = useIntl();
 
-  const maybeCollapse = useCallback(
-    (event: Event) => {
-      if (
-        navbarRef.current &&
-        event.target instanceof Node &&
-        !navbarRef.current.contains(event.target)
-      ) {
-        setExpanded(false);
-      }
-    },
-    []
-  );
+  const maybeCollapse = useCallback((event: Event) => {
+    if (
+      navbarRef.current &&
+      event.target instanceof Node &&
+      !navbarRef.current.contains(event.target)
+    ) {
+      setExpanded(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (expanded) {
@@ -260,7 +257,7 @@ export const MainNavbar: React.FC = () => {
     Mousetrap.bind("g z", () => goto("/settings"));
 
     menuItems.forEach((item) => {
-      Mousetrap.bind(item.hotkey, () => goto(item.href))
+      Mousetrap.bind(item.hotkey, () => goto(item.href));
     });
 
     if (newPath) {
@@ -270,7 +267,9 @@ export const MainNavbar: React.FC = () => {
     return () => {
       Mousetrap.unbind("?");
       Mousetrap.unbind("g z");
-      menuItems.forEach((item) => { Mousetrap.unbind(item.hotkey) });
+      menuItems.forEach((item) => {
+        Mousetrap.unbind(item.hotkey);
+      });
 
       if (newPath) {
         Mousetrap.unbind("n");

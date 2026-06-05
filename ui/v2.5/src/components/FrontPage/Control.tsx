@@ -155,7 +155,7 @@ const CustomFilterResults: React.FC<ICustomFilterProps> = ({
         { id: customFilter.message.id },
         customFilter.message.values
       )
-    : customFilter.title ?? "";
+    : (customFilter.title ?? "");
 
   return (
     <RecommendationRow

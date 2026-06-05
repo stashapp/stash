@@ -83,7 +83,7 @@ export const MarkerWallItem: React.FC<
     if (props.onClick) {
       props.onClick(event, { index: props.index });
     }
-  };
+  }
 
   const video = props.photo.src.includes("stream");
   const ImagePreview = video ? "video" : "img";
@@ -218,12 +218,15 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({
 
   const [erroredImgs, setErroredImgs] = useState<FailedSrcMap>({});
 
-  const handleError = useCallback((markerID: string, photo: PhotoProps<IMarkerPhoto>) => {
-    setErroredImgs((prev) => ({
-      ...prev,
-      [markerID]: [...(prev[markerID] || []), photo.src],
-    }));
-  }, []);
+  const handleError = useCallback(
+    (markerID: string, photo: PhotoProps<IMarkerPhoto>) => {
+      setErroredImgs((prev) => ({
+        ...prev,
+        [markerID]: [...(prev[markerID] || []), photo.src],
+      }));
+    },
+    []
+  );
 
   useEffect(() => {
     const ret: FailedSrcMap = {};
@@ -239,7 +242,10 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({
 
       return {
         marker: m,
-        src: getFirstValidSrc([m.stream, m.preview, m.screenshot], erroredImgs[m.id] || []),
+        src: getFirstValidSrc(
+          [m.stream, m.preview, m.screenshot],
+          erroredImgs[m.id] || []
+        ),
         link: NavUtils.makeSceneMarkerUrl(m),
         width,
         height,

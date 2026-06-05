@@ -19,7 +19,7 @@ import { useConfigurationContext } from "src/hooks/Config";
 interface IFilteredItemList<
   T extends QueryResult,
   E extends IHasID = IHasID,
-  M = unknown
+  M = unknown,
 > {
   filterStateProps: IFilterStateHook;
   queryResultProps: IQueryResultHook<T, E, M>;
@@ -29,7 +29,7 @@ interface IFilteredItemList<
 export function useFilteredItemList<
   T extends QueryResult,
   E extends IHasID = IHasID,
-  M = unknown
+  M = unknown,
 >(props: IFilteredItemList<T, E, M>) {
   const { configuration: config } = useConfigurationContext();
 

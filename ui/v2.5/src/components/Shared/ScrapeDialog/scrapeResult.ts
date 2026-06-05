@@ -98,7 +98,7 @@ function storedIDsEqual<T extends IHasStoredID>(
 }
 
 export class ObjectListScrapeResult<
-  T extends IHasStoredID
+  T extends IHasStoredID,
 > extends ScrapeResult<T[]> {
   public constructor(
     originalValue?: T[] | null,
@@ -110,7 +110,7 @@ export class ObjectListScrapeResult<
 }
 
 export class ObjectScrapeResult<
-  T extends IHasStoredID
+  T extends IHasStoredID,
 > extends ScrapeResult<T> {
   public constructor(
     originalValue?: T | null,

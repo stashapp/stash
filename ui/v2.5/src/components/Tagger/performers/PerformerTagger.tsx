@@ -358,7 +358,11 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
 
   const updatePerformer = useUpdatePerformer();
 
-  function handleSaveError(performerID: string, _name: string, message: string) {
+  function handleSaveError(
+    performerID: string,
+    _name: string,
+    message: string
+  ) {
     setError({
       ...error,
       [performerID]: {
