@@ -43,8 +43,7 @@
         "noUselessUndefinedInitialization": "off",
         "noExtraBooleanCast": "off",
         "noUselessRename": "off",
-        "noArguments": "off",
-        "noUselessEscapeInRegex": "off"
+        "noArguments": "off"
       },
       "style": {
         "noNestedTernary": "off",
