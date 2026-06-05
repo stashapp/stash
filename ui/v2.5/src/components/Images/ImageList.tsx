@@ -331,7 +331,7 @@ const ImageList: React.FC<IImageListImages> = PatchComponent(
     }
 
     // should not happen
-    return <></>;
+    return null;
   }
 );
 

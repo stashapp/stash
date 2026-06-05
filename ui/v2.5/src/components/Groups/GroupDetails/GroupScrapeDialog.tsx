@@ -123,7 +123,7 @@ export const GroupScrapeDialog: React.FC<IGroupScrapeDialogProps> = ({
     newTags.length === 0
   ) {
     onClose();
-    return <></>;
+    return null;
   }
 
   function makeNewScrapedItem(): GQL.ScrapedGroup {

@@ -524,18 +524,16 @@ export const SceneDuplicateChecker: React.FC = () => {
       scene.organized
     ) {
       return (
-        <>
-          <ButtonGroup className="flex-wrap">
-            {maybeRenderTagPopoverButton(scene)}
-            {maybeRenderPerformerPopoverButton(scene)}
-            {maybeRenderGroupPopoverButton(scene)}
-            {maybeRenderSceneMarkerPopoverButton(scene)}
-            {maybeRenderOCounter(scene)}
-            {maybeRenderGallery(scene)}
-            {maybeRenderFileCount(scene)}
-            {maybeRenderOrganized(scene)}
-          </ButtonGroup>
-        </>
+        <ButtonGroup className="flex-wrap">
+          {maybeRenderTagPopoverButton(scene)}
+          {maybeRenderPerformerPopoverButton(scene)}
+          {maybeRenderGroupPopoverButton(scene)}
+          {maybeRenderSceneMarkerPopoverButton(scene)}
+          {maybeRenderOCounter(scene)}
+          {maybeRenderGallery(scene)}
+          {maybeRenderFileCount(scene)}
+          {maybeRenderOrganized(scene)}
+        </ButtonGroup>
       );
     }
   }

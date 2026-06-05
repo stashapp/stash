@@ -49,7 +49,7 @@ const CustomField: React.FC<{ field: string; value: unknown }> = ({
       id={id}
       label={field}
       labelTitle={field}
-      value={<TruncatedText lineCount={5} text={<>{valueStr}</>} />}
+      value={<TruncatedText lineCount={5} text={valueStr} />}
       fullWidth={true}
       showEmpty
     />
@@ -128,21 +128,19 @@ const CustomFieldInput: React.FC<{
         >
           <Col className="custom-fields-field">
             {isNew ? (
-              <>
-                <Form.Control
-                  ref={fieldRef}
-                  className="input-control"
-                  type="text"
-                  value={currentField ?? ""}
-                  placeholder={intl.formatMessage({
-                    id: "custom_fields.field",
-                  })}
-                  onChange={(event) =>
-                    setCurrentField(event.currentTarget.value)
-                  }
-                  onBlur={onBlur}
-                />
-              </>
+              <Form.Control
+                ref={fieldRef}
+                className="input-control"
+                type="text"
+                value={currentField ?? ""}
+                placeholder={intl.formatMessage({
+                  id: "custom_fields.field",
+                })}
+                onChange={(event) =>
+                  setCurrentField(event.currentTarget.value)
+                }
+                onBlur={onBlur}
+              />
             ) : (
               <Form.Label title={currentField}>{currentField}</Form.Label>
             )}

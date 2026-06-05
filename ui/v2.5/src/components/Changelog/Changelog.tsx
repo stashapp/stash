@@ -53,7 +53,7 @@ const Changelog: React.FC = () => {
     buildDate = buildTime.substring(0, buildTime.indexOf(" "));
   }
 
-  if (loading) return <></>;
+  if (loading) return null;
 
   const openState = data?.versions ?? {};
 

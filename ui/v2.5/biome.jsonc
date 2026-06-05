@@ -32,9 +32,6 @@
     },
     "rules": {
       "a11y": "off",
-      "complexity": {
-        "noUselessFragments": "off"
-      },
       "style": {
         "noNestedTernary": "off",
         "noNonNullAssertion": "off",

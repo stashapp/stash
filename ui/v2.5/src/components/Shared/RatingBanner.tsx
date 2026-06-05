@@ -36,6 +36,6 @@ export const RatingBanner: React.FC<IProps> = ({ rating }) => {
       <FormattedMessage id="rating" />: {convertedRating}
     </div>
   ) : (
-    <></>
+    null
   );
 };

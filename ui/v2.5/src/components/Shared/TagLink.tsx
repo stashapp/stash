@@ -279,6 +279,7 @@ export const TagLink: React.FC<ITagLinkProps> = PatchComponent(
 
     const tooltip = useMemo(() => {
       if (!hierarchyTooltipID) {
+        // biome-ignore lint/complexity/noUselessFragments: tooltip requires a single child, so we need to return an empty fragment if there's no tooltip
         return <></>;
       }
 

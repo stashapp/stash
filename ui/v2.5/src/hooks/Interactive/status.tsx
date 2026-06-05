@@ -31,7 +31,7 @@ export const SceneInteractiveStatus: React.FC = () => {
   }
 
   if (state === ConnectionState.Missing) {
-    return <></>;
+    return null;
   }
 
   return (

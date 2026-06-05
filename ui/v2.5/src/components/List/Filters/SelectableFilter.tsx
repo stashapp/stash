@@ -297,25 +297,23 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
           </li>
         ))}
         {showModifierValues && (
-          <>
-            {Object.entries(availableModifierValues).map(([key, value]) => {
-              if (!value) {
-                return null;
-              }
+          Object.entries(availableModifierValues).map(([key, value]) => {
+            if (!value) {
+              return null;
+            }
 
-              return (
-                <UnselectedItem
-                  key={key}
-                  onSelect={() => onModifierValueSelect(key as SpecialValue)}
-                  label={`(${intl.formatMessage({
-                    id: `criterion_modifier_values.${key}`,
-                  })})`}
-                  canExclude={false}
-                  modifier
-                />
-              );
-            })}
-          </>
+            return (
+              <UnselectedItem
+                key={key}
+                onSelect={() => onModifierValueSelect(key as SpecialValue)}
+                label={`(${intl.formatMessage({
+                  id: `criterion_modifier_values.${key}`,
+                })})`}
+                canExclude={false}
+                modifier
+              />
+            );
+          })
         )}
         {objects.map((p) => (
           <UnselectedItem

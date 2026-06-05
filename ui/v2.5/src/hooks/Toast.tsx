@@ -102,13 +102,11 @@ export const ToastProvider: React.FC = ({ children }) => {
           header={<FormattedMessage id="errors.header" />}
           icon={faTriangleExclamation}
           footerButtons={
-            <>
-              {!!navigator.clipboard && (
-                <Button variant="secondary" onClick={() => copyToClipboard()}>
-                  <FormattedMessage id="actions.copy_to_clipboard" />
-                </Button>
-              )}
-            </>
+            !!navigator.clipboard && (
+              <Button variant="secondary" onClick={() => copyToClipboard()}>
+                <FormattedMessage id="actions.copy_to_clipboard" />
+              </Button>
+            )
           }
         >
           {toast?.content}

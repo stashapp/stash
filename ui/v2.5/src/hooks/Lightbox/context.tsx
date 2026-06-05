@@ -66,7 +66,7 @@ export const LightboxProvider: React.FC = ({ children }) => {
       value={{ lightboxState, setLightboxState: setPartialState }}
     >
       {children}
-      <Suspense fallback={<></>}>
+      <Suspense fallback={null}>
         {lightboxState.isVisible && (
           <LightboxComponent {...lightboxState} hide={onHide} />
         )}

@@ -998,7 +998,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   }
 
   if (!isVisible) {
-    return <></>;
+    return null;
   }
 
   return (

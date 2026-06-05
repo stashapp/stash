@@ -73,5 +73,5 @@ export const GroupScenesPanel: React.FC<IGroupScenesPanel> = ({
       />
     );
   }
-  return <></>;
+  return null;
 };

@@ -259,12 +259,10 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
   }
 
   return (
-    <>
-      <ButtonGroup>
-        {operationButtons}
-        {moreDropdown}
-      </ButtonGroup>
-    </>
+    <ButtonGroup>
+      {operationButtons}
+      {moreDropdown}
+    </ButtonGroup>
   );
 };
 

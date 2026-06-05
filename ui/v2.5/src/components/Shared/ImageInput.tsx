@@ -132,37 +132,35 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
     const popover = (
       <Popover id="set-image-popover">
         <Popover.Content>
-          <>
+          <div>
+            <Form.Label className="image-input">
+              <Button variant="secondary">
+                <Icon icon={faFile} className="fa-fw" />
+                <span>{intl.formatMessage({ id: "actions.from_file" })}</span>
+              </Button>
+              <Form.Control
+                type="file"
+                onChange={onImageChange}
+                accept={acceptExtensions(acceptSVG)}
+              />
+            </Form.Label>
+          </div>
+          <div>
+            <Button className="minimal" onClick={showDialog}>
+              <Icon icon={faLink} className="fa-fw" />
+              <span>{intl.formatMessage({ id: "actions.from_url" })}</span>
+            </Button>
+          </div>
+          {window.isSecureContext && (
             <div>
-              <Form.Label className="image-input">
-                <Button variant="secondary">
-                  <Icon icon={faFile} className="fa-fw" />
-                  <span>{intl.formatMessage({ id: "actions.from_file" })}</span>
-                </Button>
-                <Form.Control
-                  type="file"
-                  onChange={onImageChange}
-                  accept={acceptExtensions(acceptSVG)}
-                />
-              </Form.Label>
-            </div>
-            <div>
-              <Button className="minimal" onClick={showDialog}>
-                <Icon icon={faLink} className="fa-fw" />
-                <span>{intl.formatMessage({ id: "actions.from_url" })}</span>
+              <Button className="minimal" onClick={onPasteClipboard}>
+                <Icon icon={faClipboard} className="fa-fw" />
+                <span>
+                  {intl.formatMessage({ id: "actions.from_clipboard" })}
+                </span>
               </Button>
             </div>
-            {window.isSecureContext && (
-              <div>
-                <Button className="minimal" onClick={onPasteClipboard}>
-                  <Icon icon={faClipboard} className="fa-fw" />
-                  <span>
-                    {intl.formatMessage({ id: "actions.from_clipboard" })}
-                  </span>
-                </Button>
-              </div>
-            )}
-          </>
+          )}
         </Popover.Content>
       </Popover>
     );
