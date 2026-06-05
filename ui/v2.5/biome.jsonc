@@ -40,8 +40,7 @@
         "noBannedTypes": "off",
         "useIndexOf": "off",
         "useFlatMap": "off",
-        "noUselessUndefinedInitialization": "off",
-        "noExtraBooleanCast": "off"
+        "noUselessUndefinedInitialization": "off"
       },
       "style": {
         "noNestedTernary": "off",

@@ -81,7 +81,7 @@ export const ToastProvider: React.FC = ({ children }) => {
   function copyToClipboard() {
     const { content } = toast ?? {};
 
-    if (!!content && typeof content === "string" && navigator.clipboard) {
+    if (content && typeof content === "string" && navigator.clipboard) {
       navigator.clipboard.writeText(content);
     }
   }

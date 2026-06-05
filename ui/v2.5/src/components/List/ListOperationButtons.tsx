@@ -325,7 +325,7 @@ export const ListOperations: React.FC<{
     }
 
     const playButton =
-      !!items && onPlay ? (
+      items && onPlay ? (
         <Button
           className="play-button"
           variant="secondary"

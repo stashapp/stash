@@ -214,7 +214,7 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
       if (parentInput) {
         try {
           // cannot update parent tags, since there may be many
-          if (!!input.parent_ids?.length) {
+          if (input.parent_ids?.length) {
             // ignore
           } else {
             const parentRes = await createTag({
