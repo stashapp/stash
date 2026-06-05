@@ -33,9 +33,9 @@
     "rules": {
       "a11y": "off",
       "style": {
-        "noNestedTernary": "off",
+        // used where the type is known to be non-null, but the compiler can't figure it out
         "noNonNullAssertion": "off",
-        "useBlockStatements": "off",
+        // preferable, but not something we want to enforce right now
         "useTemplate": "off",
         // remove the following after fixing
         "useImportType": "off"
