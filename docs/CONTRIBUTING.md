@@ -2,7 +2,7 @@
 
 ## AI Usage Policy
 
-Please see our [AI Usage Policy](docs/AI_POLICY.md) for guidelines on the use of AI in contributions to this project.
+Please see our [AI Usage Policy](/docs/AI_POLICY.md) for guidelines on the use of AI in contributions to this project.
 
 ## Issues
 
