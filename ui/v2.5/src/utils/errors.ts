@@ -4,7 +4,7 @@ export const apolloError = (error: unknown) =>
   error instanceof ApolloError ? error.message : "";
 
 export function errorToString(error: unknown) {
-  let message;
+  let message = "";
   if (error instanceof Error) {
     message = error.message;
   }

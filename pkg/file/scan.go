@@ -348,6 +348,7 @@ type ScanFileResult struct {
 	Renamed            bool
 	Updated            bool
 	FingerprintChanged bool
+	HandlerRequired    bool
 }
 
 func (r ScanFileResult) IsUnchanged() bool {
@@ -911,7 +912,8 @@ func (s *Scanner) onUnchangedFile(ctx context.Context, f ScannedFile, existing m
 	// if this file is a zip file, then we need to rescan the contents
 	// as well. We do this by indicating that the file is updated.
 	return &ScanFileResult{
-		File:    existing,
-		Updated: true,
+		File:            existing,
+		Updated:         true,
+		HandlerRequired: true,
 	}, nil
 }

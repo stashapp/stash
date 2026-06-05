@@ -349,6 +349,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
   };
 
   // clear tagged performers when source is changed
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally only resetting when selectedEndpoint changes
   useEffect(() => {
     setTaggedPerformers({});
     setSearchResults({});
@@ -357,7 +358,11 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
 
   const updatePerformer = useUpdatePerformer();
 
-  function handleSaveError(performerID: string, name: string, message: string) {
+  function handleSaveError(
+    performerID: string,
+    _name: string,
+    message: string
+  ) {
     setError({
       ...error,
       [performerID]: {
@@ -410,7 +415,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
         return s.endpoint === selectedEndpoint.endpoint;
       });
 
-      let mainContent;
+      let mainContent: JSX.Element | undefined;
       if (!isTagged && stashID !== undefined) {
         mainContent = (
           <div className="text-left">
@@ -469,7 +474,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
         );
       }
 
-      let subContent;
+      let subContent: JSX.Element | undefined;
       if (stashID !== undefined) {
         const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
         const link = base ? (
@@ -531,7 +536,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
         );
       }
 
-      let searchResult;
+      let searchResult: JSX.Element | undefined;
       if (searchResults[performer.id]?.length > 0 && !isTagged) {
         searchResult = (
           <StashSearchResult
