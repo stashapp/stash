@@ -244,6 +244,7 @@ const GroupPage: React.FC<IProps> = PatchComponent(
       return () => {
         Mousetrap.unbind("e");
         Mousetrap.unbind("d d");
+        Mousetrap.unbind(",");
       };
     });
 
