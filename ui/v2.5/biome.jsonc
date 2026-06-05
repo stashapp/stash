@@ -55,8 +55,7 @@
         "useTemplate": "off",
         // remove the following after fixing
         "useImportType": "off",
-        "useConst": "off",
-        "useShorthandFunctionType": "off"
+        "useConst": "off"
       },
       "suspicious": {
         // this is used extensively, and there's no obvious fix
