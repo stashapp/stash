@@ -843,6 +843,14 @@ func (s *Scanner) removeOutdatedFingerprints(existing models.File, fp models.Fin
 		return
 	}
 
+	b := existing.Base()
+
+	// oshash has changed - drop phash in case file contents are different
+	if b.Fingerprints.For(models.FingerprintTypePhash) != nil {
+		logger.Infof("Removing outdated phash from %s", b.Path)
+		b.Fingerprints = b.Fingerprints.Remove(models.FingerprintTypePhash)
+	}
+
 	md5 := fp.For(models.FingerprintTypeMD5)
 
 	if md5 != nil {
@@ -851,8 +859,7 @@ func (s *Scanner) removeOutdatedFingerprints(existing models.File, fp models.Fin
 	}
 
 	// oshash has changed, MD5 is missing - remove MD5 from the existing fingerprints
-	logger.Infof("Removing outdated checksum from %s", existing.Base().Path)
-	b := existing.Base()
+	logger.Infof("Removing outdated checksum from %s", b.Path)
 	b.Fingerprints = b.Fingerprints.Remove(models.FingerprintTypeMD5)
 }
 
