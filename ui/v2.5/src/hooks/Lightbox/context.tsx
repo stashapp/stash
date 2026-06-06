@@ -1,4 +1,10 @@
-import React, { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { lazyComponent } from "src/utils/lazyComponent";
 import { ILightboxImage, IChapter } from "./types";
 
@@ -53,7 +59,7 @@ export const LightboxProvider: React.FC = ({ children }) => {
       // Push history entry when lightbox opens so back button closes it
       // instead of navigating away from the current page
       if (state.isVisible && !currentState.isVisible) {
-        history.pushState({ lightbox: true }, '');
+        history.pushState({ lightbox: true }, "");
       }
       return { ...currentState, ...state };
     });
