@@ -1,4 +1,4 @@
-import React, { Suspense, useCallback, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { lazyComponent } from "src/utils/lazyComponent";
 import { ILightboxImage, IChapter } from "./types";
 
@@ -44,19 +44,44 @@ export const LightboxProvider: React.FC = ({ children }) => {
     slideshowEnabled: false,
   });
 
+  // Use ref for onClose to avoid stale closures in callbacks
+  const onCloseRef = useRef<(() => void) | undefined>();
+  onCloseRef.current = lightboxState.onClose;
+
   const setPartialState = useCallback((state: Partial<IState>) => {
-    setLightboxState((currentState: IState) => ({
-      ...currentState,
-      ...state,
-    }));
+    setLightboxState((currentState: IState) => {
+      // Push history entry when lightbox opens so back button closes it
+      // instead of navigating away from the current page
+      if (state.isVisible && !currentState.isVisible) {
+        history.pushState({ lightbox: true }, '');
+      }
+      return { ...currentState, ...state };
+    });
   }, []);
 
-  const onHide = () => {
-    setLightboxState({ ...lightboxState, isVisible: false });
-    if (lightboxState.onClose) {
-      lightboxState.onClose();
-    }
-  };
+  const onHide = useCallback(() => {
+    // User-initiated close (close button, escape, etc.) — navigate back
+    // which will trigger popstate and handle the actual state update
+    history.back();
+  }, []);
+
+  // Close lightbox on browser back/forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      setLightboxState((currentState: IState) => {
+        if (currentState.isVisible) {
+          return { ...currentState, isVisible: false };
+        }
+        return currentState;
+      });
+      onCloseRef.current?.();
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
 
   return (
     <LightboxContext.Provider
