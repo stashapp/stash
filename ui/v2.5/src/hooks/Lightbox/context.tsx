@@ -74,13 +74,17 @@ export const LightboxProvider: React.FC = ({ children }) => {
   // Close lightbox on browser back/forward navigation
   useEffect(() => {
     const handlePopState = () => {
+      let wasVisible = false;
       setLightboxState((currentState: IState) => {
         if (currentState.isVisible) {
+          wasVisible = true;
           return { ...currentState, isVisible: false };
         }
         return currentState;
       });
-      onCloseRef.current?.();
+      if (wasVisible) {
+        onCloseRef.current?.();
+      }
     };
 
     window.addEventListener("popstate", handlePopState);
