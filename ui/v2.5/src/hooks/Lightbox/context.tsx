@@ -55,14 +55,15 @@ export const LightboxProvider: React.FC = ({ children }) => {
   onCloseRef.current = lightboxState.onClose;
 
   const setPartialState = useCallback((state: Partial<IState>) => {
+    let shouldPushHistory = false;
     setLightboxState((currentState: IState) => {
-      // Push history entry when lightbox opens so back button closes it
-      // instead of navigating away from the current page
-      if (state.isVisible && !currentState.isVisible) {
-        history.pushState({ lightbox: true }, "");
-      }
+      shouldPushHistory = state.isVisible === true && !currentState.isVisible;
       return { ...currentState, ...state };
     });
+    // Push history entry after state update to keep updater pure
+    if (shouldPushHistory) {
+      history.pushState({ lightbox: true }, '');
+    }
   }, []);
 
   const onHide = useCallback(() => {
