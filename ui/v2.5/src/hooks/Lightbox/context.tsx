@@ -62,7 +62,7 @@ export const LightboxProvider: React.FC = ({ children }) => {
     });
     // Push history entry after state update to keep updater pure
     if (shouldPushHistory) {
-      history.pushState({ lightbox: true }, '');
+      history.pushState({ lightbox: true }, "");
     }
   }, []);
 
