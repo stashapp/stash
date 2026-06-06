@@ -1005,7 +1005,8 @@
         "merge": {
             "source": "Kaynak",
             "destination": "Hedef",
-            "empty_results": "Hedef alan değerleri değişmeyecektir."
+            "empty_results": "Hedef alan değerleri değişmeyecektir.",
+            "combined": "Birleştirilmiş"
         },
         "dont_show_until_updated": "Sonraki güncellemeye kadar gösterme",
         "clear_o_history_confirm": "O geçmişini temizlemek istediğinize emin misiniz?",
