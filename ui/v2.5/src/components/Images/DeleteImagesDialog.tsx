@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Form } from "react-bootstrap";
 import { useImagesDestroy } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
@@ -52,6 +52,17 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
 
   // Network state
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const onDeleteRef = useRef(onDelete);
+  onDeleteRef.current = onDelete;
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && !isDeleting) onDeleteRef.current();
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [isDeleting]);
 
   function getImagesDeleteInput(): GQL.ImagesDestroyInput {
     return {
