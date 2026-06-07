@@ -8,8 +8,13 @@ import { useConfigurationContext } from "src/hooks/Config";
 import { FormattedMessage, useIntl } from "react-intl";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 
+interface IImageForDeletion {
+  id: string;
+  visual_files: { path: string }[];
+}
+
 interface IDeleteImageDialogProps {
-  selected: GQL.SlimImageDataFragment[];
+  selected: IImageForDeletion[];
   onClose: (confirmed: boolean) => void;
 }
 
