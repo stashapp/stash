@@ -23,8 +23,8 @@
 ## Checklist
 <!-- Mark [x] to indicate completion. -->
 
-- [ ] I have read and understood the [Contributing](docs/CONTRIBUTING.md) document.
-- [ ] I have read and understood the [AI Usage Policy](docs/AI_POLICY.md) document.
+- [ ] I have read and understood the [Contributing](https://github.com/stashapp/stash/blob/develop/docs/CONTRIBUTING.md) document.
+- [ ] I have read and understood the [AI Usage Policy](https://github.com/stashapp/stash/blob/develop/docs/AI_POLICY.md) document.
 - [ ] I have made corresponding changes to the documentation (if applicable).
 
 ## AI Usage Disclosure
