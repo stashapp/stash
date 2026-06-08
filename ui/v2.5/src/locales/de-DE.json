@@ -247,7 +247,7 @@
             "build_time": "Zeitpunkt des Builds:",
             "check_for_new_version": "Suche nach Updates",
             "latest_version": "Aktuellste Version",
-            "latest_version_build_hash": "Neuester Build Hash:",
+            "latest_version_build_hash": "Aktuellster Build Hash:",
             "new_version_notice": "[NEU]",
             "release_date": "Veröffentlichungsdatum:",
             "stash_home": "Besuche Stash auf {url}",
@@ -935,11 +935,11 @@
         "export_title": "Export",
         "imagewall": {
             "direction": {
-                "column": "Spalten",
+                "column": "Spalte",
                 "description": "Spalten- oder Reihenlayout.",
-                "row": "Zeilen"
+                "row": "Zeile"
             },
-            "margin_desc": "Anzahl der Marge (in Pixeln) um jedes Bild."
+            "margin_desc": "Außenabstand (in Pixeln) um jedes Bild."
         },
         "lightbox": {
             "delay": "Verzögerung (Sek)",
@@ -953,7 +953,7 @@
             "page_header": "Seite {page} / {total}",
             "reset_zoom_on_nav": "Zoomstufe beim Bildwechsel zurücksetzen",
             "scale_up": {
-                "description": "Skaliere kleinere Bilder auf Bildschirmgröße",
+                "description": "Skaliere kleinere Bilder auf Bildschirmgröße.",
                 "label": "Skalieren, um zu passen"
             },
             "scroll_mode": {
@@ -1029,7 +1029,9 @@
         "stashid_exists_warning": "Die existierende Stash ID für diese Stash-Box wird ersetzt.",
         "studios_found": "{count} Studios gefunden",
         "scrape_results_missing": "fehlend",
-        "delete_alert_to_trash": "Folgendes {count, plural, one {{singularEntity}} other {{pluralEntity}}} wird in den Papierkorb verschoben:"
+        "delete_alert_to_trash": "Folgendes {count, plural, one {{singularEntity}} other {{pluralEntity}}} wird in den Papierkorb verschoben:",
+        "dont_show_again": "Diese Warning nicht erneut anzeigen",
+        "edit_entity_count_title": "{count} {count, plural, one {{singularEntity}} other {{pluralEntity}}} bearbeiten"
     },
     "dimensions": "Maße",
     "director": "Regisseur",
