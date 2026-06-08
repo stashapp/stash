@@ -495,7 +495,11 @@
             "anonymising_database": "匿名化資料庫中",
             "auto_tag": {
                 "auto_tagging_all_paths": "為所有路徑自動套用標籤中",
-                "auto_tagging_paths": "為以下路徑自動套用標籤中"
+                "auto_tagging_paths": "為以下路徑自動套用標籤中",
+                "disable_warning": {
+                    "description": "停用執行「自動標記」前的確認提示。",
+                    "heading": "關閉「自動標記」警示"
+                }
             },
             "auto_tag_based_on_filenames": "根據檔案名稱自動標記內容。",
             "auto_tagging": "自動套用標籤",
@@ -1070,7 +1074,8 @@
         "stashid_exists_warning": "此 stash-box 現有的 stash id 將會被取代。",
         "studios_found": "已找到 {count} 個工作室",
         "tags_found": "已找到 {count} 個標籤",
-        "scrape_results_missing": "缺失"
+        "scrape_results_missing": "缺失",
+        "dont_show_again": "不要再顯示此警示"
     },
     "dimensions": "解析度",
     "director": "導演",
