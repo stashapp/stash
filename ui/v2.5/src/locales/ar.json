@@ -509,7 +509,11 @@
             "anonymising_database": "قاعدة بيانات إخفاء الهوية",
             "auto_tag": {
                 "auto_tagging_all_paths": "وضع علامات تلقائية على جميع المسارات",
-                "auto_tagging_paths": "وضع علامات تلقائية على المسارات التالية"
+                "auto_tagging_paths": "وضع علامات تلقائية على المسارات التالية",
+                "disable_warning": {
+                    "description": "قم بتعطيل تحذير التأكيد الذي يظهر قبل تشغيل الوسم التلقائي.",
+                    "heading": "تعطيل تحذير الوسوم التلقائي"
+                }
             },
             "auto_tag_based_on_filenames": "يتم وضع علامات تلقائية على المحتوى بناءً على مسارات الملفات.",
             "auto_tagging": "الوسم التلقائي",
@@ -1091,7 +1095,8 @@
         "scrape_results_scraped": "تم استخراج البيانات",
         "set_default_filter_confirm": "هل أنت متأكد من رغبتك في تعيين هذا الفلتر كإعداد افتراضي؟",
         "set_image_url_title": "رابط الصورة",
-        "unsaved_changes": "تغييرات غير محفوظة. هل أنت متأكد من رغبتك في المغادرة؟"
+        "unsaved_changes": "تغييرات غير محفوظة. هل أنت متأكد من رغبتك في المغادرة؟",
+        "dont_show_again": "لا تعرض هذا التحذير مرة أخرى"
     },
     "countables": {
         "files": "{count, plural, one {File} other {Files}}",
@@ -1714,5 +1719,6 @@
     "weight": "الوزن",
     "weight_kg": "الوزن (كجم)",
     "years_old": "سنوات",
-    "zip_file_count": "عدد الملفات المضغوطة"
+    "zip_file_count": "عدد الملفات المضغوطة",
+    "related_studios": "متعلق ب"
 }
