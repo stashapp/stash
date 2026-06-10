@@ -501,7 +501,11 @@
             "anonymising_database": "数据库匿名化",
             "auto_tag": {
                 "auto_tagging_all_paths": "自动标签所有路径",
-                "auto_tagging_paths": "自动标签以下路径"
+                "auto_tagging_paths": "自动标签以下路径",
+                "disable_warning": {
+                    "description": "禁用运行自动标记前显示的确认警告。",
+                    "heading": "禁用自动标记警告"
+                }
             },
             "auto_tag_based_on_filenames": "根据文件路径自动添加标签。",
             "auto_tagging": "自动标签",
@@ -1078,7 +1082,8 @@
         "studios_found": "找到{count} 个工作室",
         "tags_found": "找到{count} 个标签",
         "scrape_results_missing": "丢失",
-        "edit_entity_count_title": "编辑{count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}"
+        "edit_entity_count_title": "编辑{count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "dont_show_again": "不要再显示此警告"
     },
     "dimensions": "大小",
     "director": "导演",
@@ -1298,7 +1303,10 @@
         "update_performer": "更新演员资料",
         "update_performers": "更新演员们资料",
         "updating_untagged_performers_description": "更新尚未标记的演员，会尝试搜寻没有stashid的演员并更新其元数据。",
-        "performer_names_or_stashids_separated_by_comma": "用逗号分隔的演员名称或Stash编号"
+        "performer_names_or_stashids_separated_by_comma": "用逗号分隔的演员名称或Stash编号",
+        "configure_fields": "配置字段",
+        "field_options": "字段选项",
+        "field_options_description": "选择每个字段的更新方式：覆盖替换现有数据，合并添加到现有数据，跳过保持不变。"
     },
     "performer_tags": "演员标签",
     "performers": "演员",
