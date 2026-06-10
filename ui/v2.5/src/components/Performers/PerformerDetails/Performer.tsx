@@ -82,12 +82,12 @@ const PerformerTabs: React.FC<{
 }> = ({ tabKey, performer, abbreviateCounter }) => {
   const populatedDefaultTab = useMemo(() => {
     let ret: TabKey = "scenes";
-    if (performer.scene_count == 0) {
-      if (performer.gallery_count != 0) {
+    if (performer.scene_count === 0) {
+      if (performer.gallery_count !== 0) {
         ret = "galleries";
-      } else if (performer.image_count != 0) {
+      } else if (performer.image_count !== 0) {
         ret = "images";
-      } else if (performer.group_count != 0) {
+      } else if (performer.group_count !== 0) {
         ret = "groups";
       }
     }
@@ -113,6 +113,10 @@ const PerformerTabs: React.FC<{
       Mousetrap.unbind("m");
     };
   });
+
+  // #6798 - if Tabs renders while tabKey is undefined, it doesn't render correctly
+  // when it is subsequently set to a valid value.
+  if (!tabKey) return null;
 
   return (
     <Tabs

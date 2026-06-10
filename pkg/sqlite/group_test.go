@@ -76,7 +76,7 @@ func Test_GroupStore_Create(t *testing.T) {
 				Director: director,
 				Synopsis: synopsis,
 				URLs:     models.NewRelatedStrings([]string{url}),
-				TagIDs:   models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGroup]}),
+				TagIDs:   models.NewRelatedIDs([]int{tagIDs[tagIdx1WithGroup], tagIDs[tagIdx1WithNothing]}),
 				ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
 					{GroupID: groupIDs[groupIdxWithScene], Description: containingGroupDescription},
 				}),
@@ -199,7 +199,7 @@ func Test_groupQueryBuilder_Update(t *testing.T) {
 				Director: director,
 				Synopsis: synopsis,
 				URLs:     models.NewRelatedStrings([]string{url}),
-				TagIDs:   models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGroup]}),
+				TagIDs:   models.NewRelatedIDs([]int{tagIDs[tagIdx1WithGroup], tagIDs[tagIdx1WithNothing]}),
 				ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
 					{GroupID: groupIDs[groupIdxWithScene], Description: containingGroupDescription},
 				}),
@@ -376,7 +376,7 @@ func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 				CreatedAt: models.NewOptionalTime(createdAt),
 				UpdatedAt: models.NewOptionalTime(updatedAt),
 				TagIDs: &models.UpdateIDs{
-					IDs:  []int{tagIDs[tagIdx1WithGroup], tagIDs[tagIdx1WithDupName]},
+					IDs:  []int{tagIDs[tagIdx1WithGroup], tagIDs[tagIdx1WithNothing]},
 					Mode: models.RelationshipUpdateModeSet,
 				},
 				ContainingGroups: &models.UpdateGroupDescriptions{
@@ -407,7 +407,7 @@ func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 				StudioID:  &studioIDs[studioIdxWithGroup],
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
-				TagIDs:    models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGroup]}),
+				TagIDs:    models.NewRelatedIDs([]int{tagIDs[tagIdx1WithGroup], tagIDs[tagIdx1WithNothing]}),
 				ContainingGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
 					{GroupID: groupIDs[groupIdxWithStudio], Description: containingGroupDescription},
 					{GroupID: groupIDs[groupIdxWithThreeTags], Description: containingGroupDescription},

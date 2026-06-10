@@ -49,13 +49,13 @@ func (qb *fileFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 		return
 	}
 
+	f.handleCriterion(ctx, qb.criterionHandler())
+
 	sf := fileFilter.SubFilter()
 	if sf != nil {
 		sub := &fileFilterHandler{sf, qb.isRelated}
 		handleSubFilter(ctx, sub, f, fileFilter.OperatorFilter)
 	}
-
-	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
 func (qb *fileFilterHandler) criterionHandler() criterionHandler {

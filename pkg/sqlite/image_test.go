@@ -93,7 +93,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 					CreatedAt:    createdAt,
 					UpdatedAt:    updatedAt,
 					GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
-					TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithImage]}),
+					TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithNothing]}),
 					PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
 				},
 				CustomFields: testCustomFields,
@@ -122,7 +122,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 					CreatedAt:     createdAt,
 					UpdatedAt:     updatedAt,
 					GalleryIDs:    models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
-					TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithImage]}),
+					TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithNothing]}),
 					PerformerIDs:  models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
 				},
 			},
@@ -271,7 +271,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithImage]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithNothing]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
 			},
 			false,
@@ -467,7 +467,7 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 					Mode: models.RelationshipUpdateModeSet,
 				},
 				TagIDs: &models.UpdateIDs{
-					IDs:  []int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]},
+					IDs:  []int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithNothing]},
 					Mode: models.RelationshipUpdateModeSet,
 				},
 				PerformerIDs: &models.UpdateIDs{
@@ -493,7 +493,7 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithImage]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithNothing]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
 			},
 			false,
@@ -593,7 +593,7 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			imageIDs[imageIdxWithTwoTags],
 			models.ImagePartial{
 				TagIDs: &models.UpdateIDs{
-					IDs:  []int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGallery]},
+					IDs:  []int{tagIDs[tagIdx1WithGallery], tagIDs[tagIdx1WithNothing]},
 					Mode: models.RelationshipUpdateModeAdd,
 				},
 			},
@@ -601,7 +601,7 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				TagIDs: models.NewRelatedIDs(append(
 					[]int{
 						tagIDs[tagIdx1WithGallery],
-						tagIDs[tagIdx1WithDupName],
+						tagIDs[tagIdx1WithNothing],
 					},
 					indexesToIDs(tagIDs, imageTags[imageIdxWithTwoTags])...,
 				)),

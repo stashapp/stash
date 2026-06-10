@@ -182,7 +182,7 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
   }, [truncateOnOverflow, debounceResetCutoff]);
 
   // we need to check this on every render, and the call to setCutoff _should_ be safe
-  /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  /* XXbiome-ignore useExhaustiveDependencies: intentional */
   useLayoutEffect(() => {
     if (!truncateOnOverflow) {
       setCutoff(undefined);
@@ -308,7 +308,7 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
 
   const className = "wrap-tags filter-tags";
 
-  const filterTags = criteria.map((c) => getFilterTags(c)).flat();
+  const filterTags = criteria.flatMap((c) => getFilterTags(c));
 
   if (searchTerm && searchTerm.length > 0) {
     filterTags.unshift(

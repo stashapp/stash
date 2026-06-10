@@ -214,12 +214,12 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   }
 
   async function onScrapeClicked(s: GQL.ScraperSourceInput) {
-    if (!gallery || !gallery.id) return;
+    if (!gallery?.id) return;
 
     setIsLoading(true);
     try {
       const result = await queryScrapeGallery(s.scraper_id!, gallery.id);
-      if (!result.data || !result.data.scrapeSingleGallery?.length) {
+      if (!result.data?.scrapeSingleGallery?.length) {
         Toast.success("No galleries found");
         return;
       }
@@ -342,7 +342,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     setIsLoading(true);
     try {
       const result = await queryScrapeGalleryURL(url);
-      if (!result || !result.data || !result.data.scrapeGalleryURL) {
+      if (!result.data?.scrapeGalleryURL) {
         return;
       }
       setScrapedGallery(result.data.scrapeGalleryURL);
@@ -420,7 +420,7 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     const date = (() => {
       try {
         return schema.validateSyncAt("date", formik.values);
-      } catch (e) {
+      } catch (_e) {
         return undefined;
       }
     })();
