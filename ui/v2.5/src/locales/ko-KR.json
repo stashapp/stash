@@ -501,7 +501,11 @@
             "anonymising_database": "데이터베이스 익명화 중",
             "auto_tag": {
                 "auto_tagging_all_paths": "모든 경로 자동 태깅 중",
-                "auto_tagging_paths": "다음 경로 자동 태깅 중"
+                "auto_tagging_paths": "다음 경로 자동 태깅 중",
+                "disable_warning": {
+                    "description": "자동 태그를 실행하기 전에 표시된 확인 경고를 비활성화합니다.",
+                    "heading": "자동 태그 경고 비활성화"
+                }
             },
             "auto_tag_based_on_filenames": "파일 경로를 통해 컨텐츠에 자동으로 태깅합니다.",
             "auto_tagging": "자동 태깅",
@@ -1078,7 +1082,8 @@
         "studios_found": "{count}개 스튜디오 발견됨",
         "tags_found": "{count}개 태그 발견됨",
         "scrape_results_missing": "없음",
-        "edit_entity_count_title": "{count}개의 {count, plural, one {{singularEntity}} other {{pluralEntity}}} 수정"
+        "edit_entity_count_title": "{count}개의 {count, plural, one {{singularEntity}} other {{pluralEntity}}} 수정",
+        "dont_show_again": "이 경고를 다시 보지 않기"
     },
     "dimensions": "해상도",
     "director": "감독",
