@@ -2121,7 +2121,12 @@ export const useTagUpdate = () =>
       const tag = result.data?.tagUpdate;
       if (!tag) return;
 
-      evictTypeFields(cache, tagMutationImpactedTypeFields);
+      const obj = { __typename: "Tag", id: tag.id };
+      evictTypeFields(
+        cache,
+        tagMutationImpactedTypeFields,
+        cache.identify(obj) // don't evict this tag
+      );
 
       evictQueries(cache, tagMutationImpactedQueries);
     },

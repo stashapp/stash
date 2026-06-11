@@ -122,7 +122,7 @@ const TagCardOverlays: React.FC<IProps> = PatchComponent(
     }
 
     function maybeRenderRatingBanner() {
-      if (!tag.rating) {
+      if (tag.rating == null) {
         return;
       }
       return <RatingBanner rating={tag.rating} />;

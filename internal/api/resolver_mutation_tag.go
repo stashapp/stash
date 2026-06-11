@@ -231,7 +231,7 @@ func (r *mutationResolver) BulkTagUpdate(ctx context.Context, input BulkTagUpdat
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	// Populate scene from the input
+	// Populate tag from the input
 	updatedTag := models.NewTagPartial()
 
 	updatedTag.Description = translator.optionalString(input.Description, "description")
