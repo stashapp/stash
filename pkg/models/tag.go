@@ -17,21 +17,21 @@ type TagFilterType struct {
 	// Filter to only include tags missing this property
 	IsMissing *string `json:"is_missing"`
 	// Filter by number of scenes with this tag
-	SceneCount *IntCriterionInput `json:"scene_count"`
+	SceneCount *HierarchicalCountInput `json:"scene_count"`
 	// Filter by number of images with this tag
-	ImageCount *IntCriterionInput `json:"image_count"`
+	ImageCount *HierarchicalCountInput `json:"image_count"`
 	// Filter by number of galleries with this tag
-	GalleryCount *IntCriterionInput `json:"gallery_count"`
+	GalleryCount *HierarchicalCountInput `json:"gallery_count"`
 	// Filter by number of performers with this tag
-	PerformerCount *IntCriterionInput `json:"performer_count"`
+	PerformerCount *HierarchicalCountInput `json:"performer_count"`
 	// Filter by number of studios with this tag
-	StudioCount *IntCriterionInput `json:"studio_count"`
+	StudioCount *HierarchicalCountInput `json:"studio_count"`
 	// Filter by number of groups with this tag
-	GroupCount *IntCriterionInput `json:"group_count"`
+	GroupCount *HierarchicalCountInput `json:"group_count"`
 	// Filter by number of movies with this tag
-	MovieCount *IntCriterionInput `json:"movie_count"`
+	MovieCount *HierarchicalCountInput `json:"movie_count"`
 	// Filter by number of markers with this tag
-	MarkerCount *IntCriterionInput `json:"marker_count"`
+	MarkerCount *HierarchicalCountInput `json:"marker_count"`
 	// Filter by parent tags
 	Parents *HierarchicalMultiCriterionInput `json:"parents"`
 	// Filter by child tags

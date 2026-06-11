@@ -2094,6 +2094,62 @@ func sceneQueryQ(ctx context.Context, t *testing.T, sqb models.SceneReader, q st
 	assert.Len(t, scenes, totalScenes)
 }
 
+// #5503 - total size/duration must include secondary files of equal size/duration
+func TestSceneQueryTotalSizeMultipleFiles(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		sqb := db.Scene
+		fqb := db.File
+
+		const fileSize = int64(1234)
+		const fileDuration = float64(100)
+
+		makeFile := func(basename string) models.FileID {
+			f := &models.VideoFile{
+				BaseFile: &models.BaseFile{
+					Path:           getFilePath(folderIdxWithSceneFiles, basename),
+					Basename:       basename,
+					ParentFolderID: folderIDs[folderIdxWithSceneFiles],
+					Size:           fileSize,
+				},
+				Duration: fileDuration,
+			}
+			if err := fqb.Create(ctx, f); err != nil {
+				t.Fatalf("creating file: %v", err)
+			}
+			return f.ID
+		}
+
+		f1 := makeFile("multifile-scene-1.mp4")
+		f2 := makeFile("multifile-scene-2.mp4")
+
+		scene := &models.Scene{Title: "multifile scene"}
+		if err := sqb.Create(ctx, scene, []models.FileID{f1, f2}); err != nil {
+			t.Fatalf("creating scene: %v", err)
+		}
+
+		result, err := sqb.Query(ctx, models.SceneQueryOptions{
+			QueryOptions: models.QueryOptions{Count: true},
+			SceneFilter: &models.SceneFilterType{
+				ID: &models.IntCriterionInput{
+					Modifier: models.CriterionModifierEquals,
+					Value:    scene.ID,
+				},
+			},
+			TotalDuration: true,
+			TotalSize:     true,
+		})
+		if err != nil {
+			t.Fatalf("querying scene: %v", err)
+		}
+
+		assert.Equal(t, 1, result.Count)
+		assert.Equal(t, float64(fileSize*2), result.TotalSize)
+		assert.Equal(t, fileDuration*2, result.TotalDuration)
+
+		return nil
+	})
+}
+
 func TestSceneQuery(t *testing.T) {
 	var (
 		endpoint = sceneStashID(sceneIdxWithGallery).Endpoint
@@ -4162,7 +4218,10 @@ func TestSceneQueryPhashDuplicated(t *testing.T) {
 
 		duplicated = false
 
-		scenes = queryScene(ctx, t, sqb, &sceneFilter, nil)
+		findFilter := models.FindFilterType{
+			PerPage: ptr(-1),
+		}
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		// -1 for missing phash
 		assert.Len(t, scenes, totalScenes-(dupeScenePhashes*2)-1)
 

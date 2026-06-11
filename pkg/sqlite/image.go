@@ -950,6 +950,11 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 		aggregateQuery.addColumn("SUM(temp.size) as size")
 	}
 
+	// #5503 - select the file id so equal-sized/megapixel files aren't collapsed by DISTINCT
+	if options.Megapixels || options.TotalSize {
+		query.addColumn(imagesFilesTable + ".file_id")
+	}
+
 	const includeSortPagination = false
 	aggregateQuery.from = fmt.Sprintf("(%s) as temp", query.toSQL(includeSortPagination))
 
