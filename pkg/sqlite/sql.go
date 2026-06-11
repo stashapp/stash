@@ -89,22 +89,6 @@ func getSortDirection(direction string) string {
 	}
 }
 
-func isNaturalSort(sort string) bool {
-	switch sort {
-	case "name", "title", "description":
-		return true
-	default:
-		return false
-	}
-}
-
-func isCoalesceSort(column, sort string) string {
-	if sort == "description" {
-		return coalesce(column)
-	}
-	return column
-}
-
 func getSort(sort string, direction string, tableName string) string {
 	direction = getSortDirection(direction)
 
@@ -132,8 +116,11 @@ func getSort(sort string, direction string, tableName string) string {
 		if strings.Contains(sort, ".") {
 			colName = sort
 		}
-		if isNaturalSort(sort) {
-			return " ORDER BY " + isCoalesceSort(colName, sort) + " COLLATE NATURAL_CI " + direction
+		if strings.Compare(sort, "name") == 0 {
+			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction
+		}
+		if strings.Compare(sort, "title") == 0 {
+			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction
 		}
 
 		return " ORDER BY " + colName + " " + direction
