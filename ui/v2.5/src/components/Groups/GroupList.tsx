@@ -152,7 +152,10 @@ interface IGroupListContext {
 }
 
 interface IGroupList extends IGroupListContext {
+  defaultSort?: string;
   fromGroupId?: string;
+  // specifies the sort by value that allows reordering
+  manualSortBy?: string;
   onMove?: (srcIds: string[], targetId: string, after: boolean) => void;
   otherOperations?: IItemListOperation<GQL.FindGroupsQueryResult>[];
 }
@@ -203,9 +206,11 @@ export const FilteredGroupList = PatchComponent(
     const searchFocus = useFocus();
 
     const {
+      defaultSort,
       filterHook,
       view,
       alterQuery,
+      manualSortBy,
       onMove,
       fromGroupId,
       otherOperations: providedOperations = [],
@@ -224,6 +229,7 @@ export const FilteredGroupList = PatchComponent(
       useFilteredItemList({
         filterStateProps: {
           filterMode: GQL.FilterMode.Groups,
+          defaultSort,
           view,
           useURL: alterQuery,
         },
@@ -372,6 +378,8 @@ export const FilteredGroupList = PatchComponent(
     // render
     if (sidebarStateLoading) return null;
 
+    const canMove = manualSortBy && onMove && filter.sortBy === manualSortBy;
+
     const operations = (
       <ListOperations
         items={items.length}
@@ -426,7 +434,7 @@ export const FilteredGroupList = PatchComponent(
             selectedIds={selectedIds}
             onSelectChange={onSelectChange}
             fromGroupId={fromGroupId}
-            onMove={onMove}
+            onMove={canMove ? onMove : undefined}
           />
         </LoadedContent>
 

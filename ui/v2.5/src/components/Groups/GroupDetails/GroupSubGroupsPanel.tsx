@@ -148,6 +148,8 @@ export const GroupSubGroupsPanel: React.FC<IGroupSubGroupsPanel> =
         <>
           {modal}
           <FilteredGroupList
+            defaultSort="sub_group_order"
+            manualSortBy="sub_group_order"
             filterHook={filterHook}
             alterQuery={active}
             fromGroupId={group.id}
