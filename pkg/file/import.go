@@ -2,13 +2,13 @@ package file
 
 import (
 	"context"
+	gojson "encoding/json"
 	"errors"
 	"fmt"
-	"math"
 	"path/filepath"
+	"strings"
 	"time"
 
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/utils"
@@ -95,6 +95,31 @@ func (i *Importer) fileJSONToFile(ctx context.Context, fileJSON jsonschema.DirEn
 	return nil, errors.New("unknown file type")
 }
 
+func unmarshalFingerprintValue(fp gojson.RawMessage) (interface{}, error) {
+	// try to unmarshal as string first
+	var str string
+	if err := gojson.Unmarshal(fp, &str); err == nil {
+		return str, nil
+	}
+
+	// if that fails, try to unmarshal as number
+	var num gojson.Number
+	if err := gojson.Unmarshal(fp, &num); err == nil {
+		// reject floating point values
+		if strings.Contains(num.String(), ".") {
+			return nil, fmt.Errorf("floating point fingerprint values are not supported: %s", num.String())
+		}
+
+		ret, err := num.Int64()
+		if err != nil {
+			return nil, fmt.Errorf("error parsing fingerprint number: %v", err)
+		}
+		return ret, nil
+	}
+
+	return nil, fmt.Errorf("unable to unmarshal fingerprint value: %s", string(fp))
+}
+
 func (i *Importer) baseFileJSONToBaseFile(ctx context.Context, baseJSON *jsonschema.BaseFile) (*models.BaseFile, error) {
 	baseFile := models.BaseFile{
 		DirEntry: models.DirEntry{
@@ -107,29 +132,27 @@ func (i *Importer) baseFileJSONToBaseFile(ctx context.Context, baseJSON *jsonsch
 	}
 
 	for _, fp := range baseJSON.Fingerprints {
-		fingerprintValue := fp.Fingerprint
-		// Handle phash: convert hex string to int64, or warn on numeric values
+		fingerprintValue, err := unmarshalFingerprintValue(fp.Fingerprint)
+		if err != nil {
+			return nil, fmt.Errorf("error unmarshaling fingerprint value for type %q: %v", fp.Type, err)
+		}
+
+		// Handle phash: convert hex string to int64, or use legacy int64 values
 		if fp.Type == models.FingerprintTypePhash {
-			switch v := fp.Fingerprint.(type) {
+			switch v := fingerprintValue.(type) {
 			case string:
 				// New format: hex string
 				phash, err := utils.StringToPhash(v)
 				if err != nil {
-					logger.Warnf("Error parsing phash hex string %q: %v", v, err)
+					return nil, fmt.Errorf("error parsing phash hex string %q: %v", v, err)
 				} else {
 					fingerprintValue = phash
 				}
-			case float64:
-				// Old format: float64 number - may have precision loss
-				// float64 can only represent integers exactly up to 2^53 (~9e15)
-				// phashes are uint64 values up to 2^64-1 (~1.8e19)
-				if v > math.MaxInt64 || v < math.MinInt64 {
-					logger.Warnf("Phash value %v is out of int64 range, skipping", v)
-					continue
-				}
-				intVal := int64(v)
-				logger.Warnf("Importing phash as float64 %v - may have precision loss. Consider re-exporting from a newer version.", v)
-				fingerprintValue = intVal
+			case int64:
+				// Old format: int64 number
+				// nothing to do
+			default:
+				return nil, fmt.Errorf("unexpected type for phash fingerprint: %T", v)
 			}
 		}
 		baseFile.Fingerprints = append(baseFile.Fingerprints, models.Fingerprint{
