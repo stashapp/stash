@@ -1264,7 +1264,10 @@
         "update_performer": "Actualizar actriz/actor",
         "update_performers": "Actualizar actrices/actores",
         "updating_untagged_performers_description": "Actualizar a los artistas sin etiqueta intentará emparejar a cualquier artista que carezca de un stashid y actualizar los metadatos.",
-        "performer_names_or_stashids_separated_by_comma": "Nombres de actores o StashIDs separados por comas"
+        "performer_names_or_stashids_separated_by_comma": "Nombres de actores o StashIDs separados por comas",
+        "configure_fields": "Configurar campos",
+        "field_options": "Opciones del campo",
+        "field_options_description": "Elige cómo se actualiza cada campo: sobrescribir reemplaza los datos existentes, combinar agrega datos y omitir lo deja sin cambios."
     },
     "performer_tags": "Etiquetas de actriz/actor",
     "performers": "Actrices/Actores",
@@ -1720,5 +1723,6 @@
     "empty_value": "vacío",
     "refer_to": "Consulte {enlace}.",
     "scenes_size": "Tamaño de la escena",
-    "related_studios": "Relacionado"
+    "related_studios": "Relacionado",
+    "sub_group_description": "Descripción del subgrupo"
 }
