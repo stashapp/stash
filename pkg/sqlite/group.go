@@ -535,11 +535,12 @@ func (qb *GroupStore) setGroupSort(query *queryBuilder, findFilter *models.FindF
 		}
 	case "sub_group_description":
 		// as above, we need to handle parent groups differently here
+		const clause = " ORDER BY COALESCE(%s.description, '') COLLATE NATURAL_CI %s"
 		if query.hasJoin("groups_parents") {
-			query.sortAndPagination += getSort("description", direction, "groups_parents")
+			query.sortAndPagination += fmt.Sprintf(clause, "groups_parents", direction)
 		} else {
 			query.joinSort(groupRelationsTable, "", "groups.id = groups_relations.sub_id")
-			query.sortAndPagination += getSort("description", direction, groupRelationsTable)
+			query.sortAndPagination += fmt.Sprintf(clause, groupRelationsTable, direction)
 		}
 	case "tag_count":
 		query.sortAndPagination += getCountSort(groupTable, groupsTagsTable, groupIDColumn, direction)
