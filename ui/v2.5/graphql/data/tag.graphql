@@ -6,6 +6,7 @@ fragment TagData on Tag {
   aliases
   ignore_auto_tag
   favorite
+  rating
   stash_ids {
     endpoint
     stash_id
@@ -43,6 +44,7 @@ fragment SelectTagData on Tag {
   name
   sort_name
   favorite
+  rating
   description
   aliases
   image_path
@@ -69,6 +71,7 @@ fragment TagListData on Tag {
   aliases
   ignore_auto_tag
   favorite
+  rating
   stash_ids {
     endpoint
     stash_id

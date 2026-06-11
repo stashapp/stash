@@ -41,6 +41,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 	newTag.Favorite = translator.bool(input.Favorite)
 	newTag.Description = translator.string(input.Description)
 	newTag.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
+	newTag.Rating = input.Rating
 
 	var stashIDInputs models.StashIDInputs
 	for _, sid := range input.StashIds {
@@ -110,6 +111,7 @@ func tagPartialFromInput(input TagUpdateInput, translator changesetTranslator) (
 	updatedTag.Favorite = translator.optionalBool(input.Favorite, "favorite")
 	updatedTag.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
 	updatedTag.Description = translator.optionalString(input.Description, "description")
+	updatedTag.Rating100 = translator.optionalInt(input.Rating, "rating")
 
 	updatedTag.Aliases = translator.updateStrings(input.Aliases, "aliases")
 
@@ -235,6 +237,7 @@ func (r *mutationResolver) BulkTagUpdate(ctx context.Context, input BulkTagUpdat
 	updatedTag.Description = translator.optionalString(input.Description, "description")
 	updatedTag.Favorite = translator.optionalBool(input.Favorite, "favorite")
 	updatedTag.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
+	updatedTag.Rating100 = translator.optionalInt(input.Rating, "rating")
 
 	updatedTag.Aliases = translator.updateStringsBulk(input.Aliases, "aliases")
 

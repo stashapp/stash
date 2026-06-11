@@ -12,6 +12,7 @@ import { useTagUpdate } from "src/core/StashService";
 import { useTableColumns } from "src/hooks/useTableColumns";
 import cx from "classnames";
 import { IColumn, ListTable } from "../List/ListTable";
+import { RatingSystem } from "../Shared/Rating/RatingSystem";
 
 interface ITagListTableProps {
   tags: GQL.TagListDataFragment[];
@@ -35,6 +36,19 @@ export const TagListTable: React.FC<ITagListTableProps> = (
           input: {
             id: tagId,
             favorite: v,
+          },
+        },
+      });
+    }
+  }
+
+  function setRating(v: number | null, tagId: string) {
+    if (tagId) {
+      updateTag({
+        variables: {
+          input: {
+            id: tagId,
+            rating: v,
           },
         },
       });
@@ -76,6 +90,14 @@ export const TagListTable: React.FC<ITagListTableProps> = (
     >
       <Icon icon={faHeart} />
     </Button>
+  );
+
+  const RatingCell = (tag: GQL.TagListDataFragment) => (
+    <RatingSystem
+      value={tag.rating}
+      onSetRating={(value) => setRating(value, tag.id)}
+      clickToRate
+    />
   );
 
   const SceneCountCell = (tag: GQL.TagListDataFragment) => (
@@ -147,6 +169,12 @@ export const TagListTable: React.FC<ITagListTableProps> = (
       label: intl.formatMessage({ id: "favourite" }),
       defaultShow: true,
       render: FavoriteCell,
+    },
+    {
+      value: "rating",
+      label: intl.formatMessage({ id: "rating" }),
+      defaultShow: true,
+      render: RatingCell,
     },
     {
       value: "scene_count",

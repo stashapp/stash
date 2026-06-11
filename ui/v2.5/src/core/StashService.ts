@@ -2083,6 +2083,7 @@ const tagMutationImpactedTypeFields = {
 };
 
 const tagMutationImpactedQueries = [
+  GQL.FindTagDocument, // tag details
   GQL.FindGroupsDocument, // filter by tags
   GQL.FindSceneMarkersDocument, // filter by tags
   GQL.FindScenesDocument, // filter by tags
@@ -2120,12 +2121,7 @@ export const useTagUpdate = () =>
       const tag = result.data?.tagUpdate;
       if (!tag) return;
 
-      const obj = { __typename: "Tag", id: tag.id };
-      evictTypeFields(
-        cache,
-        tagMutationImpactedTypeFields,
-        cache.identify(obj) // don't evict this tag
-      );
+      evictTypeFields(cache, tagMutationImpactedTypeFields);
 
       evictQueries(cache, tagMutationImpactedQueries);
     },
