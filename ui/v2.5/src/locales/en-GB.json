@@ -509,7 +509,11 @@
       "anonymising_database": "Anonymising database",
       "auto_tag": {
         "auto_tagging_all_paths": "Auto tagging all paths",
-        "auto_tagging_paths": "Auto tagging the following paths"
+        "auto_tagging_paths": "Auto tagging the following paths",
+        "disable_warning": {
+          "description": "Disable the confirmation warning shown before running auto tag.",
+          "heading": "Disable auto tag warning"
+        }
       },
       "auto_tag_based_on_filenames": "Auto tag content based on file paths.",
       "auto_tag_confirm": "This will attempt to match your content against existing metadata.",
@@ -525,7 +529,7 @@
         "include_blobs_desc": "Disable to only backup the SQLite database file.",
         "sqlite": "Backup file will be a copy of the SQLite database file, with the filename {filename_format}",
         "to_directory": "To {directory}",
-        "warning_blobs": "Blob files will not be included in the backup. This means that to succesfully restore from the backup, the blob files must be present in the blob storage location.",
+        "warning_blobs": "Blob files will not be included in the backup. This means that to successfully restore from the backup, the blob files must be present in the blob storage location.",
         "zip": "SQLite database file and blob files will be zipped into a single file, with the filename {filename_format}"
       },
       "cleanup_desc": "Check for missing files and remove them from the database. This is a destructive action.",
@@ -1002,6 +1006,7 @@
     "delete_object_desc": "Are you sure you want to delete {count, plural, one {this {singularEntity}} other {these {pluralEntity}}}?",
     "delete_object_overflow": "…and {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Delete {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "dont_show_again": "Don't show this warning again",
     "dont_show_until_updated": "Don't show until next update",
     "edit_entity_title": "Edit {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "edit_entity_count_title": "Edit {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -1373,8 +1378,11 @@
     "any_names_entered_will_be_queried": "Any names entered will be queried from the remote Stash-Box instance and added if found. Only exact matches will be considered a match.",
     "batch_add_performers": "Batch Add Performers",
     "batch_update_performers": "Batch Update Performers",
+    "configure_fields": "Configure Fields",
     "current_page": "Current page",
     "failed_to_save_performer": "Failed to save performer \"{performer}\"",
+    "field_options": "Field Options",
+    "field_options_description": "Choose how each field is updated: overwrite replaces existing data, merge adds to it, skip leaves it unchanged.",
     "name_already_exists": "Name already exists",
     "network_error": "Network Error",
     "no_results_found": "No results found.",
@@ -1612,6 +1620,7 @@
   "sub_group_count": "Sub-Group Count",
   "sub_group_of": "Sub-group of {parent}",
   "sub_group_order": "Sub-Group Order",
+  "sub_group_description": "Sub-Group Description",
   "sub_groups": "Sub-Groups",
   "sub_tag_count": "Sub-Tag Count",
   "sub_tag_of": "Sub-tag of {parent}",

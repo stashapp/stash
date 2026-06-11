@@ -1,9 +1,7 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 
 declare module "@blaineam/videojs-vr" {
   import videojs from "video.js";
   // we don't want to depend on THREE.js directly, these are just typedefs for videojs-vr
-  // eslint-disable-next-line import/no-extraneous-dependencies
   import * as THREE from "three";
 
   declare function videojsVR(options?: videojsVR.Options): videojsVR.Plugin;

@@ -5,5 +5,5 @@ export function isVideo(o: {
   __typename?: string;
   video_codec?: Maybe<string>;
 }) {
-  return o.__typename == "VideoFile" && o.video_codec != "gif";
+  return o.__typename === "VideoFile" && o.video_codec !== "gif";
 }

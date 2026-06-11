@@ -66,7 +66,7 @@ export const URLListInput: React.FC<IURLListProps> = (
       inputComponent={StringInput}
       appendComponent={(props) => {
         if (!onScrapeClick || !urlScrapable) {
-          return <></>;
+          return null;
         }
 
         return (

@@ -198,7 +198,7 @@ const QueryField: React.FC<{
       setDisplayQuery(input);
       debouncedSetQuery(input);
     },
-    [debouncedSetQuery, setDisplayQuery]
+    [debouncedSetQuery]
   );
 
   return (

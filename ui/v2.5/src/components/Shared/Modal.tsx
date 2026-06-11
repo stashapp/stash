@@ -87,13 +87,13 @@ export const ModalComponent: React.FC<IModal> = ({
           {isRunning ? (
             <Spinner animation="border" role="status" size="sm" />
           ) : (
-            accept?.text ?? (
+            (accept?.text ?? (
               <FormattedMessage
                 id="actions.close"
                 defaultMessage="Close"
                 description="Closes the current modal."
               />
-            )
+            ))
           )}
         </Button>
       </div>

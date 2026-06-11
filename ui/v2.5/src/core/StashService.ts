@@ -1092,7 +1092,7 @@ export const useSceneDecrementPlayCount = () =>
 
 export const useSceneResetPlayCount = () =>
   GQL.useSceneResetPlayCountMutation({
-    update(cache, result, { variables }) {
+    update(cache, _result, { variables }) {
       if (!variables) return;
 
       let lastPlayCount = 0;
