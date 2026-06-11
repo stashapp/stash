@@ -41,41 +41,6 @@ const (
 	sceneCoverBlobColumn = "cover_blob"
 )
 
-var findExactDuplicateQuery = `
-SELECT GROUP_CONCAT(DISTINCT scene_id) as ids
-FROM (
-	SELECT scenes.id as scene_id
-		, video_files.duration as file_duration
-		, files.size as file_size
-		, files_fingerprints.fingerprint as phash
-		, abs(max(video_files.duration) OVER (PARTITION by files_fingerprints.fingerprint) - video_files.duration) as durationDiff
-	FROM scenes
-	INNER JOIN scenes_files ON (scenes.id = scenes_files.scene_id)
-	INNER JOIN files ON (scenes_files.file_id = files.id)
-	INNER JOIN files_fingerprints ON (scenes_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'phash')
-	INNER JOIN video_files ON (files.id == video_files.file_id)
-)
-WHERE durationDiff <= ?1
-    OR ?1 < 0   --  Always TRUE if the parameter is negative.
-                --  That will disable the durationDiff checking.
-GROUP BY phash
-HAVING COUNT(phash) > 1
-	AND COUNT(DISTINCT scene_id) > 1
-ORDER BY SUM(file_size) DESC;
-`
-
-var findAllPhashesQuery = `
-SELECT scenes.id as id
-    , files_fingerprints.fingerprint as phash
-    , video_files.duration as duration
-FROM scenes
-INNER JOIN scenes_files ON (scenes.id = scenes_files.scene_id)
-INNER JOIN files ON (scenes_files.file_id = files.id)
-INNER JOIN files_fingerprints ON (scenes_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'phash')
-INNER JOIN video_files ON (files.id == video_files.file_id)
-ORDER BY files.size DESC;
-`
-
 type sceneRow struct {
 	ID            int         `db:"id" goqu:"skipinsert"`
 	Title         zero.String `db:"title"`
@@ -647,6 +612,38 @@ func (qb *SceneStore) FindByFileID(ctx context.Context, fileID models.FileID) ([
 	ret, err := qb.findBySubquery(ctx, sq)
 	if err != nil {
 		return nil, fmt.Errorf("getting scenes by file id %d: %w", fileID, err)
+	}
+
+	return ret, nil
+}
+
+func (qb *SceneStore) GetManyIDsByFileIDs(ctx context.Context, fileIDs []models.FileID) ([][]int, error) {
+	sq := dialect.From(scenesFilesJoinTable).Select(scenesFilesJoinTable.Col(sceneIDColumn), scenesFilesJoinTable.Col(fileIDColumn)).Where(
+		scenesFilesJoinTable.Col(fileIDColumn).In(fileIDs),
+	)
+
+	sql, args, err := sq.ToSQL()
+	if err != nil {
+		return nil, fmt.Errorf("building query: %w", err)
+	}
+
+	var results []struct {
+		SceneID int           `db:"scene_id"`
+		FileID  models.FileID `db:"file_id"`
+	}
+
+	if err := querySelect(ctx, sql, args, &results); err != nil {
+		return nil, fmt.Errorf("getting scenes by file ids %v: %w", fileIDs, err)
+	}
+
+	retMap := make(map[models.FileID][]int)
+	for _, r := range results {
+		retMap[r.FileID] = append(retMap[r.FileID], r.SceneID)
+	}
+
+	ret := make([][]int, len(fileIDs))
+	for i, id := range fileIDs {
+		ret[i] = retMap[id]
 	}
 
 	return ret, nil
@@ -1430,11 +1427,61 @@ func (qb *SceneStore) GetStashIDs(ctx context.Context, sceneID int) ([]models.St
 	return sceneRepository.stashIDs.get(ctx, sceneID)
 }
 
-func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*models.Scene, error) {
+func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int, durationDiff float64, filter *models.SceneFilterType) ([][]*models.Scene, error) {
 	var dupeIds [][]int
+
+	query, err := qb.makeQuery(ctx, filter, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Add necessary joins for duplicate checking
+	query.addJoins(
+		join{
+			table:    scenesFilesTable,
+			onClause: "scenes.id = scenes_files.scene_id",
+		},
+		join{
+			table:    fileTable,
+			onClause: "scenes_files.file_id = files.id",
+		},
+		join{
+			table:    fingerprintTable,
+			onClause: "scenes_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'phash'",
+		},
+		join{
+			table:    videoFileTable,
+			onClause: "files.id = video_files.file_id",
+		},
+	)
+
 	if distance == 0 {
+		query.columns = []string{
+			"scenes.id as scene_id",
+			"video_files.duration as file_duration",
+			"files.size as file_size",
+			"files_fingerprints.fingerprint as phash",
+			"abs(max(video_files.duration) OVER (PARTITION by files_fingerprints.fingerprint) - video_files.duration) as durationDiff",
+		}
+
+		sqlStr := query.toSQL(false)
+
+		finalQuery := `
+SELECT GROUP_CONCAT(DISTINCT scene_id) as ids
+FROM (` + sqlStr + `)
+WHERE phash IS NOT NULL
+    AND (durationDiff <= ?
+    OR ? < 0)  -- Always TRUE if the parameter is negative.
+               -- That will disable the durationDiff checking.
+GROUP BY phash
+HAVING COUNT(phash) > 1
+	AND COUNT(DISTINCT scene_id) > 1
+ORDER BY SUM(file_size) DESC;
+`
+
 		var ids []string
-		if err := dbWrapper.Select(ctx, &ids, findExactDuplicateQuery, durationDiff); err != nil {
+		args := append(query.allArgs(), durationDiff, durationDiff)
+		if err := dbWrapper.Select(ctx, &ids, finalQuery, args...); err != nil {
 			return nil, err
 		}
 
@@ -1452,9 +1499,19 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int, duration
 			}
 		}
 	} else {
+		query.columns = []string{
+			"scenes.id as id",
+			"files_fingerprints.fingerprint as phash",
+			"video_files.duration as duration",
+		}
+		query.addWhere("files_fingerprints.fingerprint IS NOT NULL")
+		query.sortAndPagination = " ORDER BY files.size DESC"
+
+		sqlStr := query.toSQL(true)
+
 		var hashes []*utils.Phash
 
-		if err := sceneRepository.queryFunc(ctx, findAllPhashesQuery, nil, false, func(rows *sqlx.Rows) error {
+		if err := sceneRepository.queryFunc(ctx, sqlStr, query.allArgs(), false, func(rows *sqlx.Rows) error {
 			phash := utils.Phash{
 				Bucket:   -1,
 				Duration: -1,

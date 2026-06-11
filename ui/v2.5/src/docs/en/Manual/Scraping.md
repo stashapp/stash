@@ -27,7 +27,7 @@ Stash provides the following built-in scrapers:
 | Scraper | Description |
 |---|--|
 | Freeones | `search` Performer scraper for freeones.xxx. |
-| Auto Tag | Scene `fragment` scraper that matches existing performers, studio and tags using the filename. |
+| Auto Tag | Scene, gallery and image `fragment` scrapers that matches existing performers, studio and tags using the filename. |
 
 ## Managing scrapers
 

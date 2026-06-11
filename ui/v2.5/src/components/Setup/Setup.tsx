@@ -845,7 +845,7 @@ const ErrorStep: React.FC<{ error: string; goBack: () => void }> = ({
   );
 };
 
-const SuccessStep: React.FC<{}> = () => {
+const SuccessStep: React.FC = () => {
   const intl = useIntl();
   const history = useHistory();
 

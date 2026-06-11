@@ -160,7 +160,7 @@ export const PageSizeSelector: React.FC<{
 
     setCustomPageSizeShowing(false);
 
-    let pp = parseInt(val, 10);
+    const pp = parseInt(val, 10);
     if (Number.isNaN(pp) || pp <= 0) {
       return;
     }
@@ -253,7 +253,7 @@ export const SortBySelect: React.FC<{
   const currentSortByMessageID = currentSortBy
     ? !sfwContentMode
       ? currentSortBy.messageID
-      : currentSortBy.sfwMessageID ?? currentSortBy.messageID
+      : (currentSortBy.sfwMessageID ?? currentSortBy.messageID)
     : "";
 
   function renderSortByOptions() {
@@ -261,7 +261,7 @@ export const SortBySelect: React.FC<{
       .map((o) => {
         const messageID = !sfwContentMode
           ? o.messageID
-          : o.sfwMessageID ?? o.messageID;
+          : (o.sfwMessageID ?? o.messageID);
         return {
           message: intl.formatMessage({ id: messageID }),
           value: o.value,

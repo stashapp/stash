@@ -26,14 +26,14 @@ export const BulkUpdateTextInput: React.FC<IBulkUpdateTextInputProps> = ({
 }) => {
   const intl = useIntl();
 
-  const value = props.value === null ? "" : props.value ?? undefined;
+  const value = props.value === null ? "" : (props.value ?? undefined);
   const unset = value === undefined;
 
   const placeholderValue = unset
     ? `<${intl.formatMessage({ id: "existing_value" })}>`
     : value === ""
-    ? `<${intl.formatMessage({ id: "empty_value" })}>`
-    : undefined;
+      ? `<${intl.formatMessage({ id: "empty_value" })}>`
+      : undefined;
 
   return (
     <InputGroup className="bulk-update-text-input">

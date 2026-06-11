@@ -219,16 +219,14 @@ export const SidebarOptionFilter: React.FC<ISidebarFilter> = ({
   }
 
   return (
-    <>
-      <SidebarListFilter
-        title={title}
-        candidates={options}
-        onSelect={onSelect}
-        onUnselect={onUnselect}
-        selected={selected}
-        singleValue
-        sectionID={sectionID}
-      />
-    </>
+    <SidebarListFilter
+      title={title}
+      candidates={options}
+      onSelect={onSelect}
+      onUnselect={onUnselect}
+      selected={selected}
+      singleValue
+      sectionID={sectionID}
+    />
   );
 };

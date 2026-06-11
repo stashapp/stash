@@ -664,13 +664,13 @@ func (_m *SceneReaderWriter) FindByPrimaryFileID(ctx context.Context, fileID mod
 	return r0, r1
 }
 
-// FindDuplicates provides a mock function with given fields: ctx, distance, durationDiff
-func (_m *SceneReaderWriter) FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*models.Scene, error) {
-	ret := _m.Called(ctx, distance, durationDiff)
+// FindDuplicates provides a mock function with given fields: ctx, distance, durationDiff, filter
+func (_m *SceneReaderWriter) FindDuplicates(ctx context.Context, distance int, durationDiff float64, filter *models.SceneFilterType) ([][]*models.Scene, error) {
+	ret := _m.Called(ctx, distance, durationDiff, filter)
 
 	var r0 [][]*models.Scene
-	if rf, ok := ret.Get(0).(func(context.Context, int, float64) [][]*models.Scene); ok {
-		r0 = rf(ctx, distance, durationDiff)
+	if rf, ok := ret.Get(0).(func(context.Context, int, float64, *models.SceneFilterType) [][]*models.Scene); ok {
+		r0 = rf(ctx, distance, durationDiff, filter)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([][]*models.Scene)
@@ -678,8 +678,8 @@ func (_m *SceneReaderWriter) FindDuplicates(ctx context.Context, distance int, d
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int, float64) error); ok {
-		r1 = rf(ctx, distance, durationDiff)
+	if rf, ok := ret.Get(1).(func(context.Context, int, float64, *models.SceneFilterType) error); ok {
+		r1 = rf(ctx, distance, durationDiff, filter)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -885,6 +885,29 @@ func (_m *SceneReaderWriter) GetManyFileIDs(ctx context.Context, ids []int) ([][
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
 		r1 = rf(ctx, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetManyIDsByFileIDs provides a mock function with given fields: ctx, fileIDs
+func (_m *SceneReaderWriter) GetManyIDsByFileIDs(ctx context.Context, fileIDs []models.FileID) ([][]int, error) {
+	ret := _m.Called(ctx, fileIDs)
+
+	var r0 [][]int
+	if rf, ok := ret.Get(0).(func(context.Context, []models.FileID) [][]int); ok {
+		r0 = rf(ctx, fileIDs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([][]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []models.FileID) error); ok {
+		r1 = rf(ctx, fileIDs)
 	} else {
 		r1 = ret.Error(1)
 	}
