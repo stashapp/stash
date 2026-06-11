@@ -993,9 +993,7 @@ export const LightboxComponent: React.FC<IProps> = ({
                   </Link>
                   {currentImage.id !== undefined && (
                     <Button
-                      variant="danger"
-                      size="sm"
-                      className="delete-button btn-danger-minimal"
+                      className="minimal"
                       onClick={() => setIsDeleteDialogOpen(true)}
                       title={intl.formatMessage({ id: "actions.delete" })}
                     >
