@@ -4162,7 +4162,10 @@ func TestSceneQueryPhashDuplicated(t *testing.T) {
 
 		duplicated = false
 
-		scenes = queryScene(ctx, t, sqb, &sceneFilter, nil)
+		findFilter := models.FindFilterType{
+			PerPage: ptr(-1),
+		}
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		// -1 for missing phash
 		assert.Len(t, scenes, totalScenes-(dupeScenePhashes*2)-1)
 
