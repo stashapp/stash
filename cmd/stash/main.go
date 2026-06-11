@@ -74,8 +74,8 @@ func main() {
 			exitError(err)
 			return
 		}
-		defer pprof.StopCPUProfile()
 		defer f.Close()
+		defer pprof.StopCPUProfile()
 	}
 
 	// initialise desktop.IsDesktop here so that it doesn't get affected by

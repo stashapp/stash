@@ -135,7 +135,7 @@ build: stash
 
 # builds dynamically-linked PIE release binaries
 .PHONY: build-release
-build-release: generate-backend flags-release flags-pie build
+build-release: flags-release flags-pie build
 
 # compile and bundle into Stash.app
 # for when on macOS itself
