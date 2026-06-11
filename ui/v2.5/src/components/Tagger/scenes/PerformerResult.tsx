@@ -185,20 +185,23 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         >
           <FormattedMessage id="actions.skip" />
         </Button>
-        <TaggerPerformerPopover
-          performerID={selectedPerformer?.id}
-          scrapedPerformer={performer}
-          endpoint={endpoint}
-          includeMatchExtras
-        >
-          <PerformerSelect
-            values={selectedPerformer ? [selectedPerformer] : []}
-            onSelect={handleSelect}
-            active={selectedSource === "existing"}
-            isClearable={false}
-            ageFromDate={ageFromDate}
-          />
-        </TaggerPerformerPopover>
+        <PerformerSelect
+          values={selectedPerformer ? [selectedPerformer] : []}
+          onSelect={handleSelect}
+          active={selectedSource === "existing"}
+          isClearable={false}
+          ageFromDate={ageFromDate}
+          valueHoverWrapper={(label, selected) => (
+            <TaggerPerformerPopover
+              performerID={selected.id}
+              scrapedPerformer={performer}
+              endpoint={endpoint}
+              includeMatchExtras
+            >
+              {label}
+            </TaggerPerformerPopover>
+          )}
+        />
         {endpoint && onLink && (
           <LinkButton disabled={selectedID === undefined} onLink={onLink} />
         )}

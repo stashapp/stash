@@ -82,6 +82,10 @@ const _PerformerSelect: React.FC<
       hoverPlacementLabel?: Placement;
       hoverPlacementOptions?: Placement;
       excludeIds?: string[];
+      valueHoverWrapper?: (
+        children: React.ReactNode,
+        performer: Performer
+      ) => React.ReactNode;
     }
 > = (props) => {
   const [createPerformer] = usePerformerCreate();
@@ -258,16 +262,20 @@ const _PerformerSelect: React.FC<
 
     const { object } = optionProps.data;
 
+    const label = (
+      <span className="performer-select-value">
+        {object.name}
+        {object.disambiguation && (
+          <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
+        )}
+      </span>
+    );
+
     thisOptionProps = {
       ...optionProps,
-      children: (
-        <span className="performer-select-value">
-          {object.name}
-          {object.disambiguation && (
-            <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
-          )}
-        </span>
-      ),
+      children: props.valueHoverWrapper
+        ? props.valueHoverWrapper(label, object)
+        : label,
     };
 
     return <reactSelectComponents.SingleValue {...thisOptionProps} />;
