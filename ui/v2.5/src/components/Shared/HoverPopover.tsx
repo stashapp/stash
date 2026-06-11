@@ -72,6 +72,7 @@ export const HoverPopover: React.FC<IHoverPopover> = PatchComponent(
             show={show}
             placement={placement}
             target={target?.current ?? triggerRef.current}
+            container={document.body}
           >
             <Popover
               onMouseEnter={handleMouseEnter}
