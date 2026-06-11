@@ -286,8 +286,8 @@ export const TaggerPerformerPopover: React.FC<
         ) : null
       }
       placement={placement}
-      enterDelay={1000}
-      leaveDelay={500}
+      enterDelay={500}
+      leaveDelay={100}
       triggerClassName={triggerClassName}
       onOpen={() => {
         setIsOpened(true);
