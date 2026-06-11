@@ -10,8 +10,6 @@ import { Placement } from "react-bootstrap/esm/Overlay";
 interface IPeromerPopoverCardProps {
   id?: string;
   cardContent?: React.ReactNode;
-  loading?: boolean;
-  loadingText?: string;
   cardExtras?: React.ReactNode;
 }
 
@@ -46,25 +44,12 @@ const PerformerPopoverCardByID: React.FC<{
 export const PerformerPopoverCard: React.FC<IPeromerPopoverCardProps> = ({
   id,
   cardContent,
-  loading,
-  loadingText = "",
   cardExtras,
 }) => {
   if (cardContent) {
     return (
       <>
         {cardContent}
-        {cardExtras}
-      </>
-    );
-  }
-
-  if (loading) {
-    return (
-      <>
-        <div className="tag-popover-card performer-preview-popover p-3">
-          {loadingText}
-        </div>
         {cardExtras}
       </>
     );
@@ -77,8 +62,6 @@ export const PerformerPopoverCard: React.FC<IPeromerPopoverCardProps> = ({
 interface IPeroformerPopoverProps {
   id?: string;
   cardContent?: React.ReactNode;
-  loading?: boolean;
-  loadingText?: string;
   cardExtras?: React.ReactNode;
   hide?: boolean;
   placement?: Placement;
@@ -93,8 +76,6 @@ interface IPeroformerPopoverProps {
 export const PerformerPopover: React.FC<IPeroformerPopoverProps> = ({
   id,
   cardContent,
-  loading,
-  loadingText,
   cardExtras,
   hide,
   children,
@@ -127,8 +108,6 @@ export const PerformerPopover: React.FC<IPeroformerPopoverProps> = ({
         <PerformerPopoverCard
           id={id}
           cardContent={cardContent}
-          loading={loading}
-          loadingText={loadingText}
           cardExtras={cardExtras}
         />
       }
