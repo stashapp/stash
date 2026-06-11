@@ -67,23 +67,21 @@ export const HoverPopover: React.FC<IHoverPopover> = PatchComponent(
         >
           {children}
         </div>
-        {triggerRef.current && (
-          <Overlay
-            show={show}
-            placement={placement}
-            target={target?.current ?? triggerRef.current}
-            container={document.body}
+        <Overlay
+          show={show}
+          placement={placement}
+          target={target ?? triggerRef}
+          container={document.body}
+        >
+          <Popover
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            id="popover"
+            className="hover-popover-content"
           >
-            <Popover
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-              id="popover"
-              className="hover-popover-content"
-            >
-              {content}
-            </Popover>
-          </Overlay>
-        )}
+            {content}
+          </Popover>
+        </Overlay>
       </>
     );
   }

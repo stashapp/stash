@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
+  InputProps,
   OptionProps,
   components as reactSelectComponents,
   MultiValueGenericProps,
@@ -281,6 +282,25 @@ const _PerformerSelect: React.FC<
     return <reactSelectComponents.SingleValue {...thisOptionProps} />;
   };
 
+  // When a hover wrapper is used on the value label, let mouse events reach it
+  // by disabling pointer events on the invisible search input while the menu is closed.
+  const PerformerHoverInput: React.FC<InputProps<Option, boolean>> = (
+    inputProps
+  ) => {
+    const { style, selectProps, ...rest } = inputProps;
+
+    return (
+      <reactSelectComponents.Input
+        {...rest}
+        selectProps={selectProps}
+        style={{
+          ...style,
+          pointerEvents: selectProps.menuIsOpen ? style?.pointerEvents : "none",
+        }}
+      />
+    );
+  };
+
   const onCreate = async (name: string) => {
     const result = await createPerformer({
       variables: { input: { name } },
@@ -338,6 +358,9 @@ const _PerformerSelect: React.FC<
         Option: PerformerOption,
         MultiValueLabel: PerformerMultiValueLabel,
         SingleValue: PerformerValueLabel,
+        ...(props.valueHoverWrapper
+          ? { Input: PerformerHoverInput }
+          : undefined),
       }}
       isMulti={props.isMulti ?? false}
       creatable={props.creatable ?? defaultCreatable}
