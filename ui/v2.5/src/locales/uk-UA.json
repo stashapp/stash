@@ -477,7 +477,11 @@
             "auto_tag_based_on_filenames": "Автоматично тегувати контент на основі шляхів до файлів.",
             "auto_tag": {
                 "auto_tagging_paths": "Автотегування наступних шляхів",
-                "auto_tagging_all_paths": "Автотегування всіх шляхів"
+                "auto_tagging_all_paths": "Автотегування всіх шляхів",
+                "disable_warning": {
+                    "heading": "Вимкнути автоматичне тегування",
+                    "description": "Вимкнути попередження про підтвердження, яке відображається перед запуском автоматичного тегу."
+                }
             },
             "auto_tagging": "Автотегування",
             "backing_up_database": "Резервне копіювання бази даних",
@@ -1152,7 +1156,10 @@
         "untagged_performers": "Нетеговані виконавці",
         "performer_successfully_tagged": "Виконавця успішно теговано:",
         "performer_already_tagged": "Виконавець вже має тег",
-        "performer_names_or_stashids_separated_by_comma": "Імена виконавців або StashID, розділені комою"
+        "performer_names_or_stashids_separated_by_comma": "Імена виконавців або StashID, розділені комою",
+        "field_options_description": "Виберіть спосіб оновлення кожного поля: перезапис замінює існуючі дані, об’єднання додає до них дані, пропуск залишає їх без змін.",
+        "configure_fields": "Налаштувати поля",
+        "field_options": "Параметри поля"
     },
     "resolution": "Роздільна здатність",
     "scene": "Сцена",
@@ -1303,7 +1310,8 @@
         "scrape_results_missing": "Відсутні",
         "scrape_results_scraped": "Отримані",
         "set_default_filter_confirm": "Ви впевнені, що хочете встановити цей фільтр як типовий?",
-        "edit_entity_count_title": "Редагувати {count} {count, plural, one {{singularEntity}} інший {{pluralEntity}}}"
+        "edit_entity_count_title": "Редагувати {count} {count, plural, one {{singularEntity}} інший {{pluralEntity}}}",
+        "dont_show_again": "Не показувати це попередження більше"
     },
     "setup": {
         "errors": {
@@ -1694,7 +1702,8 @@
             "create_parent_desc": "Створити відсутні головні теги з категорій stash-box або прив'язати наявні головні теги за точним збігом назви",
             "create_parent_label": "Створити головні теги"
         },
-        "create_or_tag_parent_tags": "Створити відсутні або прив'язати наявні головні теги"
+        "create_or_tag_parent_tags": "Створити відсутні або прив'язати наявні головні теги",
+        "parent_tag_no_remote_site_id_warning": "Головний тег не має ідентифікатора віддаленого сайту та не буде пов'язаний з екземпляром stash-box."
     },
     "tagger": {
         "config": {
@@ -1713,5 +1722,7 @@
     "parent_folder": "Основна папка",
     "empty_value": "порожній",
     "scenes_size": "Розмір сцени",
-    "refer_to": "Будь ласка, дивіться {link}."
+    "refer_to": "Будь ласка, дивіться {link}.",
+    "related_studios": "Пов'язані",
+    "sub_group_description": "Опис підгрупи"
 }
