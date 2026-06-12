@@ -28,6 +28,7 @@ fragment StudioData on Studio {
   performer_count_all: performer_count(depth: -1)
   group_count
   group_count_all: group_count(depth: -1)
+  scene_marker_count
   stash_ids {
     stash_id
     endpoint
