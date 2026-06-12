@@ -54,6 +54,7 @@ interface IPerformerResultProps {
   onLink?: () => Promise<void>;
   endpoint?: string;
   ageFromDate?: string | null;
+  warnOnPotentialMismatches?: boolean;
 }
 
 const PerformerResult: React.FC<IPerformerResultProps> = ({
@@ -64,6 +65,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
   onLink,
   endpoint,
   ageFromDate,
+  warnOnPotentialMismatches = true,
 }) => {
   const { data: performerData, loading: stashLoading } =
     GQL.useFindPerformerQuery({
@@ -161,13 +163,14 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
   }
 
   const selectedSource = !selectedID ? "skip" : "existing";
-  const collisionMessageIds = selectedLocalPerformer
-    ? getPerformerCollisionMessageIds(
-        performer,
-        selectedLocalPerformer,
-        endpoint
-      )
-    : [];
+  const collisionMessageIds =
+    warnOnPotentialMismatches && selectedLocalPerformer
+      ? getPerformerCollisionMessageIds(
+          performer,
+          selectedLocalPerformer,
+          endpoint
+        )
+      : [];
 
   const safeBuildPerformerScraperLink = (id: string | null | undefined) => {
     return stashboxPerformerPrefix && id

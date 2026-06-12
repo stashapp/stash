@@ -35,6 +35,7 @@ export const initialConfig: ITaggerConfig = {
   fingerprintQueue: {},
   excludedPerformerFields: DEFAULT_EXCLUDED_PERFORMER_FIELDS,
   markSceneAsOrganizedOnSave: false,
+  warnOnPotentialMismatches: true,
   excludedStudioFields: DEFAULT_EXCLUDED_STUDIO_FIELDS,
   excludedTagFields: DEFAULT_EXCLUDED_TAG_FIELDS,
   createParentStudios: true,
@@ -54,6 +55,7 @@ export interface ITaggerConfig {
   fingerprintQueue: Record<string, string[]>;
   excludedPerformerFields?: string[];
   markSceneAsOrganizedOnSave?: boolean;
+  warnOnPotentialMismatches?: boolean;
   excludedStudioFields?: string[];
   excludedTagFields?: string[];
   createParentStudios: boolean;
