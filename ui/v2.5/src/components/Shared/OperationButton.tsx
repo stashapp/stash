@@ -9,10 +9,7 @@ interface IOperationButton extends ButtonProps {
   setLoading?: (v: boolean) => void;
 }
 
-export const OperationButton = React.forwardRef<
-  HTMLButtonElement,
-  IOperationButton
->(function OperationButton(props, ref) {
+export const OperationButton: React.FC<IOperationButton> = (props) => {
   const [internalLoading, setInternalLoading] = useState(false);
   const mounted = useRef(false);
 
@@ -47,7 +44,7 @@ export const OperationButton = React.forwardRef<
   }
 
   return (
-    <Button ref={ref} onClick={handleClick} {...withoutExtras}>
+    <Button onClick={handleClick} {...withoutExtras}>
       {loading && (
         <span className="mr-2">
           <LoadingIndicator message="" inline small />
@@ -56,4 +53,4 @@ export const OperationButton = React.forwardRef<
       {(!loading || !hideChildrenWhenLoading) && props.children}
     </Button>
   );
-});
+};

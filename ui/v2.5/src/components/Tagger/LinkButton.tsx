@@ -16,7 +16,7 @@ export const LinkButton: React.FC<{
   collisionMessageIds?: string[];
 }> = ({ disabled, onLink, collisionMessageIds = [] }) => {
   const intl = useIntl();
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const wrapperRef = useRef<HTMLSpanElement>(null);
   const [showPopover, setShowPopover] = useState(false);
   const enterTimer = useRef<number>();
   const leaveTimer = useRef<number>();
@@ -25,6 +25,11 @@ export const LinkButton: React.FC<{
   );
 
   const hasCollision = collisionMessageIds.length > 0;
+
+  const getOverlayTarget = useCallback(
+    () => wrapperRef.current?.querySelector("button") ?? null,
+    []
+  );
 
   const handleMouseEnter = useCallback(() => {
     if (!hasCollision) return;
@@ -54,52 +59,57 @@ export const LinkButton: React.FC<{
     []
   );
 
+  const linkButton = (
+    <OperationButton
+      variant="secondary"
+      disabled={disabled}
+      operation={onLink}
+      hideChildrenWhenLoading
+      title={intl.formatMessage({ id: "component_tagger.verb_link_existing" })}
+      onMouseEnter={hasCollision ? handleMouseEnter : undefined}
+      onMouseLeave={hasCollision ? handleMouseLeave : undefined}
+    >
+      <Icon
+        icon={hasCollision ? faTriangleExclamation : faLink}
+        className={hasCollision ? "text-warning" : undefined}
+      />
+    </OperationButton>
+  );
+
+  if (!hasCollision) {
+    return linkButton;
+  }
+
   return (
     <>
-      <OperationButton
-        ref={buttonRef}
-        variant="secondary"
-        disabled={disabled}
-        operation={onLink}
-        hideChildrenWhenLoading
-        title={intl.formatMessage({ id: "component_tagger.verb_link_existing" })}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
-        <Icon
-          icon={hasCollision ? faTriangleExclamation : faLink}
-          className={hasCollision ? "text-warning" : undefined}
-        />
-      </OperationButton>
-      {hasCollision && (
-        <Overlay
-          show={showPopover}
-          placement="bottom-end"
-          target={buttonRef}
-          container={document.body}
-          popperConfig={{
-            modifiers: [
-              {
-                name: "offset",
-                options: {
-                  offset: [0, 6],
-                },
+      <span ref={wrapperRef} style={{ display: "contents" }}>
+        {linkButton}
+      </span>
+      <Overlay
+        show={showPopover}
+        placement="bottom-end"
+        target={getOverlayTarget}
+        container={document.body}
+        popperConfig={{
+          modifiers: [
+            {
+              name: "offset",
+              options: {
+                offset: [0, 6],
               },
-            ],
-          }}
+            },
+          ],
+        }}
+      >
+        <Popover
+          id={popoverId.current}
+          className="hover-popover-content"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
         >
-          <Popover
-            id={popoverId.current}
-            className="hover-popover-content"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            <PerformerCollisionPopoverContent
-              messageIds={collisionMessageIds}
-            />
-          </Popover>
-        </Overlay>
-      )}
+          <PerformerCollisionPopoverContent messageIds={collisionMessageIds} />
+        </Popover>
+      </Overlay>
     </>
   );
 };
