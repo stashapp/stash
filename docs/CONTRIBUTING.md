@@ -25,6 +25,10 @@ By submitting a pull request, you agree that you have read and understood and th
 
 You also agree to license your contribution under the [AGPL](/LICENSE.md) license, and that all of your previous contributions to the project are also licensed under the AGPL.
 
+## Bounties
+
+Pull requests for bounties must be discussed with maintainers before submitting a pull request to ensure it fits with the overall design vision of the project. Failure to do so may result in the pull request being rejected.
+
 ## Goals and Design Vision
 
 The goal of Stash is to be:
