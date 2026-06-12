@@ -20,7 +20,7 @@ All pull requests must use descriptive and concise titles and follow the provide
 - Pull requests must include code tests that sufficiently cover the changes made.
 - You must detail the manual testing done and describe the steps taken to sufficiently verify the changes.
 - You must be able to explain any line of code and design decision during the review process.
-- You may not have more than 3 open pull requests at a time. If you have more than 3 open pull requests, maintainers may ask you to close some of them before they will review any of them.
+- You may not have more than 3 open pull requests at a time, unless you have received explicit permission from a maintainer. If you have more than 3 open pull requests, maintainers may ask you to close some of them before they will review any of them.
 
 By submitting a pull request, you agree that you have read and understood and that you are in compliance with the guidelines outlined here, including the [AI Usage Policy](docs/AI_POLICY.md). 
 
