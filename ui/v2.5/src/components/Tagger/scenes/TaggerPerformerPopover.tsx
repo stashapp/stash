@@ -192,9 +192,7 @@ export const TaggerPerformerPopover: React.FC<
     <div className="tag-popover-card">
       <PerformerCard performer={localPerformer} zoomIndex={0} />
     </div>
-  ) : wantsLocalCard ? (
-    undefined
-  ) : scrapedPerformer ? (
+  ) : wantsLocalCard ? undefined : scrapedPerformer ? (
     <div className="tag-popover-card tagger-performer-popover-card">
       <ScrapedPerformerCard
         scrapedPerformer={scrapedPerformer}
