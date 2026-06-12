@@ -1,16 +1,12 @@
 import React, { useState } from "react";
 import * as GQL from "src/core/generated-graphql";
-import { OverlayProps } from "react-bootstrap";
 import { Placement } from "react-bootstrap/esm/Overlay";
 import { FormattedMessage } from "react-intl";
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { PerformerPopover } from "src/components/Performers/PerformerPopover";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { Icon } from "src/components/Shared/Icon";
-import {
-  PopoverCard,
-  WarningHoverPopover,
-} from "src/components/Shared/HoverPopover";
+import { PopoverCard } from "src/components/Shared/HoverPopover";
 import { ScrapedPerformerCard } from "./ScrapedPerformerCard";
 
 const normalizeValue = (value: unknown) =>
@@ -88,71 +84,23 @@ export const hasPerformerCollision = (
   endpoint?: string
 ) => getPerformerCollisionMessageIds(remote, local, endpoint).length > 0;
 
-const performerCollisionPopperConfig: OverlayProps["popperConfig"] = {
-  modifiers: [
-    {
-      name: "offset",
-      options: {
-        offset: [0, 6],
-      },
-    },
-    {
-      name: "sameWidth",
-      enabled: true,
-      phase: "beforeWrite",
-      requires: ["computeStyles"],
-      fn({ state }) {
-        state.styles.popper.width = `${state.rects.reference.width}px`;
-      },
-    },
-  ],
-};
-
-interface IPerformerCollisionWarningProps {
-  scrapedPerformer: GQL.ScrapedPerformer;
-  localPerformer: GQL.PerformerDataFragment;
-  endpoint?: string;
-  anchorRef: React.RefObject<HTMLElement>;
-}
-
-export const PerformerCollisionWarning: React.FC<
-  IPerformerCollisionWarningProps
-> = ({ scrapedPerformer, localPerformer, endpoint, anchorRef }) => {
-  const messageIds = getPerformerCollisionMessageIds(
-    scrapedPerformer,
-    localPerformer,
-    endpoint
-  );
-
-  if (messageIds.length === 0) {
-    return null;
-  }
-
-  return (
-    <span className="SceneTaggerIcon performer-collision-warning-trigger">
-      <WarningHoverPopover
-        placement="bottom-end"
-        target={anchorRef}
-        popperConfig={performerCollisionPopperConfig}
-        content={
-          <PopoverCard className="performer-collision-popover">
-            <div className="performer-collision-warnings">
-              {messageIds.map((messageId) => (
-                <div key={messageId} className="performer-collision-warning">
-                  <Icon
-                    className="text-warning performer-collision-warning-icon"
-                    icon={faTriangleExclamation}
-                  />
-                  <FormattedMessage id={messageId} />
-                </div>
-              ))}
-            </div>
-          </PopoverCard>
-        }
-      />
-    </span>
-  );
-};
+export const PerformerCollisionPopoverContent: React.FC<{
+  messageIds: string[];
+}> = ({ messageIds }) => (
+  <PopoverCard className="performer-collision-popover">
+    <div className="performer-collision-warnings">
+      {messageIds.map((messageId) => (
+        <div key={messageId} className="performer-collision-warning">
+          <Icon
+            className="text-warning performer-collision-warning-icon"
+            icon={faTriangleExclamation}
+          />
+          <FormattedMessage id={messageId} />
+        </div>
+      ))}
+    </div>
+  </PopoverCard>
+);
 
 interface ITaggerPerformerPopoverProps {
   performer?: GQL.PerformerDataFragment;
