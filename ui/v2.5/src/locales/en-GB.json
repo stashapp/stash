@@ -199,7 +199,7 @@
       },
       "mark_organized_desc": "Immediately mark the scene as Organized after the Save button is clicked.",
       "mark_organized_label": "Mark as Organized on save",
-      "warn_on_mismatches_desc": "Show a warning on the link button when the selected performer may not match the scraped performer.",
+      "warn_on_mismatches_desc": "Converts the link button to provide a warning when the selected performer may not match the scraped performer by birthdate, country, ethnicity, gender, or stash-id.",
       "warn_on_mismatches_label": "Warn on potential mismatches",
       "performer_genders": {
         "heading": "Performer genders",
