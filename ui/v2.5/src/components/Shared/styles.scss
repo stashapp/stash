@@ -237,6 +237,7 @@ button.collapse-button {
 .hover-popover-content {
   max-width: 32rem;
   text-align: center;
+  z-index: 2000;
 
   .popover-card {
     padding: 0.5rem;

@@ -1,16 +1,17 @@
 import React, { useState } from "react";
 import * as GQL from "src/core/generated-graphql";
+import { OverlayProps } from "react-bootstrap";
 import { Placement } from "react-bootstrap/esm/Overlay";
-import { IntlShape, useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
+import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { PerformerPopover } from "src/components/Performers/PerformerPopover";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
-import { useConfigurationContext } from "src/hooks/Config";
+import { Icon } from "src/components/Shared/Icon";
+import {
+  PopoverCard,
+  WarningHoverPopover,
+} from "src/components/Shared/HoverPopover";
 import { ScrapedPerformerCard } from "./ScrapedPerformerCard";
-
-interface IPerformerDeltaRow {
-  label: string;
-  value: string;
-}
 
 const normalizeValue = (value: unknown) =>
   (() => {
@@ -34,141 +35,123 @@ const toStringOrNull = (value: unknown) => {
   return text.length > 0 ? text : null;
 };
 
-const pushDeltaIfDifferent = (
-  rows: IPerformerDeltaRow[],
-  label: string,
-  remoteValue: unknown,
-  localValue: unknown
-) => {
+const valuesCollide = (remoteValue: unknown, localValue: unknown) => {
   const remoteText = toStringOrNull(remoteValue);
-  if (!remoteText) return;
+  if (!remoteText) return false;
 
-  if (normalizeValue(remoteText) === normalizeValue(localValue)) return;
-  rows.push({ label, value: remoteText });
+  return normalizeValue(remoteText) !== normalizeValue(localValue);
 };
 
-const buildPerformerDeltaRows = (
+const getMismatchedStashID = (
   remote: GQL.ScrapedPerformer,
   local: GQL.PerformerDataFragment,
-  intl: IntlShape
-): IPerformerDeltaRow[] => {
-  const rows: IPerformerDeltaRow[] = [];
+  endpoint?: string
+) => {
+  if (!endpoint || !remote.remote_site_id) return undefined;
 
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "birthdate" }),
-    remote.birthdate,
-    local.birthdate
+  return local.stash_ids.find(
+    (stashID) =>
+      stashID.endpoint === endpoint &&
+      stashID.stash_id !== remote.remote_site_id
   );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "death_date" }),
-    remote.death_date,
-    local.death_date
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "ethnicity" }),
-    remote.ethnicity,
-    local.ethnicity
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "hair_color" }),
-    remote.hair_color,
-    local.hair_color
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "eye_color" }),
-    remote.eye_color,
-    local.eye_color
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "height" }),
-    remote.height,
-    local.height_cm
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "weight" }),
-    remote.weight,
-    local.weight
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "penis_length" }),
-    remote.penis_length,
-    local.penis_length
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "circumcised" }),
-    remote.circumcised,
-    local.circumcised
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "measurements" }),
-    remote.measurements,
-    local.measurements
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "fake_tits" }),
-    remote.fake_tits,
-    local.fake_tits
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "tattoos" }),
-    remote.tattoos,
-    local.tattoos
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "piercings" }),
-    remote.piercings,
-    local.piercings
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "career_start" }),
-    remote.career_start,
-    local.career_start
-  );
-  pushDeltaIfDifferent(
-    rows,
-    intl.formatMessage({ id: "career_end" }),
-    remote.career_end,
-    local.career_end
-  );
+};
 
-  const remoteAliasesCount = remote.aliases
-    ? remote.aliases
-        .split(",")
-        .map((a) => a.trim())
-        .filter(Boolean).length
-    : 0;
-  const localAliasesCount = local.alias_list?.length ?? 0;
-  if (remoteAliasesCount > localAliasesCount) {
-    rows.push({
-      label: intl.formatMessage({ id: "aliases" }),
-      value: String(remoteAliasesCount),
-    });
+export const getPerformerCollisionMessageIds = (
+  remote: GQL.ScrapedPerformer,
+  local: GQL.PerformerDataFragment,
+  endpoint?: string
+): string[] => {
+  const messageIds: string[] = [];
+
+  if (getMismatchedStashID(remote, local, endpoint)) {
+    messageIds.push("tagger.performers.stash_mismatch");
+  }
+  if (valuesCollide(remote.birthdate, local.birthdate)) {
+    messageIds.push("tagger.performers.birthdate");
+  }
+  if (valuesCollide(remote.country, local.country)) {
+    messageIds.push("tagger.performers.country");
+  }
+  if (valuesCollide(remote.gender, local.gender)) {
+    messageIds.push("tagger.performers.gender");
+  }
+  if (valuesCollide(remote.ethnicity, local.ethnicity)) {
+    messageIds.push("tagger.performers.ethnicity");
   }
 
-  const remoteUrlsCount = remote.urls?.length ?? 0;
-  const localUrlsCount = local.urls?.length ?? 0;
-  if (remoteUrlsCount > localUrlsCount) {
-    rows.push({
-      label: intl.formatMessage({ id: "urls" }),
-      value: String(remoteUrlsCount),
-    });
+  return messageIds;
+};
+
+export const hasPerformerCollision = (
+  remote: GQL.ScrapedPerformer,
+  local: GQL.PerformerDataFragment,
+  endpoint?: string
+) => getPerformerCollisionMessageIds(remote, local, endpoint).length > 0;
+
+const performerCollisionPopperConfig: OverlayProps["popperConfig"] = {
+  modifiers: [
+    {
+      name: "offset",
+      options: {
+        offset: [0, 6],
+      },
+    },
+    {
+      name: "sameWidth",
+      enabled: true,
+      phase: "beforeWrite",
+      requires: ["computeStyles"],
+      fn({ state }) {
+        state.styles.popper.width = `${state.rects.reference.width}px`;
+      },
+    },
+  ],
+};
+
+interface IPerformerCollisionWarningProps {
+  scrapedPerformer: GQL.ScrapedPerformer;
+  localPerformer: GQL.PerformerDataFragment;
+  endpoint?: string;
+  anchorRef: React.RefObject<HTMLElement>;
+}
+
+export const PerformerCollisionWarning: React.FC<
+  IPerformerCollisionWarningProps
+> = ({ scrapedPerformer, localPerformer, endpoint, anchorRef }) => {
+  const messageIds = getPerformerCollisionMessageIds(
+    scrapedPerformer,
+    localPerformer,
+    endpoint
+  );
+
+  if (messageIds.length === 0) {
+    return null;
   }
 
-  return rows;
+  return (
+    <span className="SceneTaggerIcon performer-collision-warning-trigger">
+      <WarningHoverPopover
+        placement="bottom-end"
+        target={anchorRef}
+        popperConfig={performerCollisionPopperConfig}
+        content={
+          <PopoverCard className="performer-collision-popover">
+            <div className="performer-collision-warnings">
+              {messageIds.map((messageId) => (
+                <div key={messageId} className="performer-collision-warning">
+                  <Icon
+                    className="text-warning performer-collision-warning-icon"
+                    icon={faTriangleExclamation}
+                  />
+                  <FormattedMessage id={messageId} />
+                </div>
+              ))}
+            </div>
+          </PopoverCard>
+        }
+      />
+    </span>
+  );
 };
 
 interface ITaggerPerformerPopoverProps {
@@ -176,8 +159,6 @@ interface ITaggerPerformerPopoverProps {
   performerID?: string;
   scrapedPerformer?: GQL.ScrapedPerformer;
   endpoint?: string;
-  cardExtras?: React.ReactNode;
-  includeMatchExtras?: boolean;
   placement?: Placement;
   triggerClassName?: string;
   onOpen?: () => void;
@@ -191,16 +172,12 @@ export const TaggerPerformerPopover: React.FC<
   performerID,
   scrapedPerformer,
   endpoint,
-  cardExtras,
-  includeMatchExtras = false,
   placement = "bottom",
   triggerClassName = "d-inline-block",
   onOpen,
   onClose,
   children,
 }) => {
-  const intl = useIntl();
-  const { configuration: config } = useConfigurationContext();
   const [isOpened, setIsOpened] = useState(false);
 
   const { data: selectedPerformerData } = GQL.useFindPerformerQuery({
@@ -209,10 +186,14 @@ export const TaggerPerformerPopover: React.FC<
   });
   const localPerformer = performer ?? selectedPerformerData?.findPerformer;
 
+  const wantsLocalCard = !!(performerID || performer);
+
   const cardContent = localPerformer ? (
-    <div className="tag-popover-card tagger-performer-popover-card">
+    <div className="tag-popover-card">
       <PerformerCard performer={localPerformer} zoomIndex={0} />
     </div>
+  ) : wantsLocalCard ? (
+    undefined
   ) : scrapedPerformer ? (
     <div className="tag-popover-card tagger-performer-popover-card">
       <ScrapedPerformerCard
@@ -223,68 +204,10 @@ export const TaggerPerformerPopover: React.FC<
     </div>
   ) : undefined;
 
-  const warningStashID =
-    includeMatchExtras &&
-    endpoint &&
-    scrapedPerformer?.remote_site_id &&
-    localPerformer
-      ? localPerformer.stash_ids.find(
-          (stashID) =>
-            stashID.endpoint === endpoint &&
-            stashID.stash_id !== scrapedPerformer.remote_site_id
-        )
-      : undefined;
-
-  const deltaRows =
-    includeMatchExtras && scrapedPerformer && localPerformer
-      ? buildPerformerDeltaRows(scrapedPerformer, localPerformer, intl)
-      : [];
-
-  const warningEndpointName = warningStashID
-    ? config?.general.stashBoxes.find(
-        (sb) => sb.endpoint === warningStashID.endpoint
-      )?.name ?? warningStashID.endpoint
-    : null;
-
-  const matchExtras =
-    warningStashID || deltaRows.length > 0 ? (
-      <div className="tagger-matched-performer-popover-extra">
-        {warningStashID && (
-          <div className="tagger-performer-stashid-warning">
-            <span className="stash-id-pill">
-              <span
-                className="tagger-performer-stashid-warning-chip"
-                title={warningStashID.stash_id}
-              >
-                {warningEndpointName}
-              </span>
-            </span>
-          </div>
-        )}
-        {deltaRows.length > 0 && (
-          <div className="tagger-performer-delta-rows mt-2">
-            {deltaRows.map((row) => (
-              <div key={row.label}>
-                <span>{row.label}:</span> <span>{row.value}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    ) : null;
-
   return (
     <PerformerPopover
       id={cardContent ? undefined : performerID}
       cardContent={cardContent}
-      cardExtras={
-        matchExtras || cardExtras ? (
-          <>
-            {matchExtras}
-            {cardExtras}
-          </>
-        ) : null
-      }
       placement={placement}
       enterDelay={500}
       leaveDelay={100}

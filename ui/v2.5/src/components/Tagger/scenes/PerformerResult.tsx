@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 
@@ -12,7 +12,10 @@ import { getStashboxBase } from "src/utils/stashbox";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { Link } from "react-router-dom";
 import { LinkButton } from "../LinkButton";
-import { TaggerPerformerPopover } from "./TaggerPerformerPopover";
+import {
+  PerformerCollisionWarning,
+  TaggerPerformerPopover,
+} from "./TaggerPerformerPopover";
 
 const PerformerLink: React.FC<{
   performer: GQL.ScrapedPerformer | Performer;
@@ -75,6 +78,13 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       stashID.stash_id === performer.remote_site_id
   );
   const [selectedPerformer, setSelectedPerformer] = useState<Performer>();
+  const controlsRef = useRef<HTMLDivElement>(null);
+
+  const { data: selectedPerformerData } = GQL.useFindPerformerQuery({
+    variables: { id: selectedID ?? "" },
+    skip: !selectedID,
+  });
+  const selectedLocalPerformer = selectedPerformerData?.findPerformer;
 
   const stashboxPerformerPrefix = endpoint
     ? `${getStashboxBase(endpoint)}performers/`
@@ -175,37 +185,52 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
           </TaggerPerformerPopover>
         </b>
       </div>
-      <ButtonGroup>
-        <Button variant="secondary" onClick={() => onCreate()}>
-          <FormattedMessage id="actions.create" />
-        </Button>
-        <Button
-          variant={selectedSource === "skip" ? "primary" : "secondary"}
-          onClick={() => handleSkip()}
-        >
-          <FormattedMessage id="actions.skip" />
-        </Button>
-        <PerformerSelect
-          values={selectedPerformer ? [selectedPerformer] : []}
-          onSelect={handleSelect}
-          active={selectedSource === "existing"}
-          isClearable={false}
-          ageFromDate={ageFromDate}
-          valueHoverWrapper={(label, selected) => (
-            <TaggerPerformerPopover
-              performerID={selected.id}
-              scrapedPerformer={performer}
-              endpoint={endpoint}
-              includeMatchExtras
-            >
-              {label}
-            </TaggerPerformerPopover>
+      <div className="performer-result-controls" ref={controlsRef}>
+        <ButtonGroup>
+          <Button variant="secondary" onClick={() => onCreate()}>
+            <FormattedMessage id="actions.create" />
+          </Button>
+          <Button
+            variant={selectedSource === "skip" ? "primary" : "secondary"}
+            onClick={() => handleSkip()}
+          >
+            <FormattedMessage id="actions.skip" />
+          </Button>
+          <PerformerSelect
+            values={selectedPerformer ? [selectedPerformer] : []}
+            onSelect={handleSelect}
+            active={selectedSource === "existing"}
+            isClearable={false}
+            ageFromDate={ageFromDate}
+            wrapValueContainer={(container, selected) => (
+              <TaggerPerformerPopover
+                performer={
+                  selectedLocalPerformer?.id === selected.id
+                    ? selectedLocalPerformer
+                    : undefined
+                }
+                performerID={selected.id}
+                scrapedPerformer={performer}
+                endpoint={endpoint}
+                triggerClassName="performer-select-value-hover-trigger"
+              >
+                {container}
+              </TaggerPerformerPopover>
+            )}
+          />
+          {endpoint && onLink && (
+            <LinkButton disabled={selectedID === undefined} onLink={onLink} />
           )}
-        />
-        {endpoint && onLink && (
-          <LinkButton disabled={selectedID === undefined} onLink={onLink} />
+        </ButtonGroup>
+        {selectedLocalPerformer && (
+          <PerformerCollisionWarning
+            scrapedPerformer={performer}
+            localPerformer={selectedLocalPerformer}
+            endpoint={endpoint}
+            anchorRef={controlsRef}
+          />
         )}
-      </ButtonGroup>
+      </div>
     </div>
   );
 };

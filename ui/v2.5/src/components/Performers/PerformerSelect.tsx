@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  InputProps,
   OptionProps,
+  ValueContainerProps,
   components as reactSelectComponents,
   MultiValueGenericProps,
   SingleValueProps,
@@ -83,7 +83,7 @@ const _PerformerSelect: React.FC<
       hoverPlacementLabel?: Placement;
       hoverPlacementOptions?: Placement;
       excludeIds?: string[];
-      valueHoverWrapper?: (
+      wrapValueContainer?: (
         children: React.ReactNode,
         performer: Performer
       ) => React.ReactNode;
@@ -263,42 +263,32 @@ const _PerformerSelect: React.FC<
 
     const { object } = optionProps.data;
 
-    const label = (
-      <span className="performer-select-value">
-        {object.name}
-        {object.disambiguation && (
-          <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
-        )}
-      </span>
-    );
-
     thisOptionProps = {
       ...optionProps,
-      children: props.valueHoverWrapper
-        ? props.valueHoverWrapper(label, object)
-        : label,
+      children: (
+        <span className="performer-select-value">
+          {object.name}
+          {object.disambiguation && (
+            <span className="performer-disambiguation">{` (${object.disambiguation})`}</span>
+          )}
+        </span>
+      ),
     };
 
     return <reactSelectComponents.SingleValue {...thisOptionProps} />;
   };
 
-  // When a hover wrapper is used on the value label, let mouse events reach it
-  // by disabling pointer events on the invisible search input while the menu is closed.
-  const PerformerHoverInput: React.FC<InputProps<Option, boolean>> = (
-    inputProps
+  const PerformerValueContainer = (
+    vcProps: ValueContainerProps<Option, boolean>
   ) => {
-    const { style, selectProps, ...rest } = inputProps;
+    const selected = vcProps.getValue()[0]?.object;
+    const container = <reactSelectComponents.ValueContainer {...vcProps} />;
 
-    return (
-      <reactSelectComponents.Input
-        {...rest}
-        selectProps={selectProps}
-        style={{
-          ...style,
-          pointerEvents: selectProps.menuIsOpen ? style?.pointerEvents : "none",
-        }}
-      />
-    );
+    if (!props.wrapValueContainer || !selected) {
+      return container;
+    }
+
+    return <>{props.wrapValueContainer(container, selected)}</>;
   };
 
   const onCreate = async (name: string) => {
@@ -358,8 +348,8 @@ const _PerformerSelect: React.FC<
         Option: PerformerOption,
         MultiValueLabel: PerformerMultiValueLabel,
         SingleValue: PerformerValueLabel,
-        ...(props.valueHoverWrapper
-          ? { Input: PerformerHoverInput }
+        ...(props.wrapValueContainer
+          ? { ValueContainer: PerformerValueContainer }
           : undefined),
       }}
       isMulti={props.isMulti ?? false}
