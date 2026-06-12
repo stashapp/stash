@@ -381,9 +381,11 @@ func (j *ScanJob) handleFile(ctx context.Context, f file.ScannedFile, progress *
 	// handle rename should have already handled the contents of the zip file
 	// so shouldn't need to scan it again.
 	// Only scan zip contents if the file is new, the fingerprint changed,
-	// or if a force rescan was requested.
+	// if a force rescan was requested, or if the handler was required because
+	// a related object (e.g. a deleted gallery) is missing and needs to be
+	// recreated from the contents.
 
-	if j.scanner.IsZipFile(f.Info.Name()) && (r.New || r.FingerprintChanged || j.scanner.Rescan) {
+	if j.scanner.IsZipFile(f.Info.Name()) && (r.New || r.FingerprintChanged || j.scanner.Rescan || r.HandlerRequired) {
 		ff := r.File
 		f.BaseFile = ff.Base()
 

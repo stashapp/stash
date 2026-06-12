@@ -320,14 +320,12 @@ const PerformerCardImage: React.FC<IPerformerCardProps> = PatchComponent(
   "PerformerCard.Image",
   ({ performer }) => {
     return (
-      <>
-        <img
-          loading="lazy"
-          className="performer-card-image"
-          alt={performer.name ?? ""}
-          src={performer.image_path ?? ""}
-        />
-      </>
+      <img
+        loading="lazy"
+        className="performer-card-image"
+        alt={performer.name ?? ""}
+        src={performer.image_path ?? ""}
+      />
     );
   }
 );

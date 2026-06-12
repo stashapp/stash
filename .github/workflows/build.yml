@@ -40,6 +40,16 @@ jobs:
       with:
         package_json_file: ui/v2.5/package.json
 
+    # ensure pnpm store path exists to fix post setup node.js error
+    # https://github.com/actions/setup-node/issues/1137#issuecomment-2508963254
+    - name: Ensure pnpm store path exists
+      run: |
+        PNPM_STORE_PATH="$( pnpm store path --silent )"
+        if [ ! -d "$PNPM_STORE_PATH" ]; then
+          echo "PNPM store directory does not exist, creating it."
+          mkdir -p "$PNPM_STORE_PATH"
+        fi
+
     - name: Setup Node.js
       uses: actions/setup-node@v6
       with:
@@ -171,7 +181,7 @@ jobs:
         path: .go-cache
         key: ${{ runner.os }}-go-cache-${{ matrix.platform }}-${{ hashFiles('go.mod', '**/go.sum') }}
 
-    # kept seperate to test timings
+    # kept separate to test timings
     - name: pull compiler image
       run: docker pull $COMPILER_IMAGE
 

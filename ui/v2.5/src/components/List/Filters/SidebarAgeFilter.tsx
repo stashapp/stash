@@ -169,8 +169,8 @@ export const SidebarAgeFilter: React.FC<ISidebarFilter> = ({
       return MAX_AGE;
     }
 
-    const age = parseInt(trimmed);
-    if (isNaN(age) || age < 18 || age > MAX_AGE) {
+    const age = parseInt(trimmed, 10);
+    if (Number.isNaN(age) || age < 18 || age > MAX_AGE) {
       return null;
     }
 

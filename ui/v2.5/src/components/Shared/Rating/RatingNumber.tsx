@@ -63,7 +63,7 @@ export const RatingNumber = PatchComponent(
 
       const setRating = editing ? setValueStage : props.onSetRating;
 
-      let val = e.target.value;
+      const val = e.target.value;
       if (!useValidation.current) {
         e.target.value = Number(val).toFixed(1);
         const tempVal = Number(val) * 10;
@@ -79,10 +79,10 @@ export const RatingNumber = PatchComponent(
         return;
       }
 
-      if (match[2] && !(match[2] == "0" && match[1] == "1")) {
+      if (match[2] && !(match[2] === "0" && match[1] === "1")) {
         match[2] = "";
       }
-      if (match[4] == null || match[4] == "") {
+      if (match[4] === null || match[4] === "") {
         match[4] = "0";
       }
 
@@ -94,7 +94,7 @@ export const RatingNumber = PatchComponent(
           value = "10.0";
         }
         e.target.value = Number(value).toFixed(1);
-        let tempVal = Number(value) * 10;
+        const tempVal = Number(value) * 10;
         setRating(tempVal || null);
 
         let cursorPosition = 0;

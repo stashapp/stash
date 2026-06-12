@@ -44,15 +44,12 @@ export const LightboxProvider: React.FC = ({ children }) => {
     slideshowEnabled: false,
   });
 
-  const setPartialState = useCallback(
-    (state: Partial<IState>) => {
-      setLightboxState((currentState: IState) => ({
-        ...currentState,
-        ...state,
-      }));
-    },
-    [setLightboxState]
-  );
+  const setPartialState = useCallback((state: Partial<IState>) => {
+    setLightboxState((currentState: IState) => ({
+      ...currentState,
+      ...state,
+    }));
+  }, []);
 
   const onHide = () => {
     setLightboxState({ ...lightboxState, isVisible: false });
@@ -66,7 +63,7 @@ export const LightboxProvider: React.FC = ({ children }) => {
       value={{ lightboxState, setLightboxState: setPartialState }}
     >
       {children}
-      <Suspense fallback={<></>}>
+      <Suspense fallback={null}>
         {lightboxState.isVisible && (
           <LightboxComponent {...lightboxState} hide={onHide} />
         )}

@@ -82,12 +82,12 @@ const PerformerTabs: React.FC<{
 }> = ({ tabKey, performer, abbreviateCounter }) => {
   const populatedDefaultTab = useMemo(() => {
     let ret: TabKey = "scenes";
-    if (performer.scene_count == 0) {
-      if (performer.gallery_count != 0) {
+    if (performer.scene_count === 0) {
+      if (performer.gallery_count !== 0) {
         ret = "galleries";
-      } else if (performer.image_count != 0) {
+      } else if (performer.image_count !== 0) {
         ret = "images";
-      } else if (performer.group_count != 0) {
+      } else if (performer.group_count !== 0) {
         ret = "groups";
       }
     }
