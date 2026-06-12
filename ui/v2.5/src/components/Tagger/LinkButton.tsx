@@ -1,7 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { Overlay, Popover } from "react-bootstrap";
-import { faLink, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import {
+  faLink,
+  faTriangleExclamation,
+} from "@fortawesome/free-solid-svg-icons";
 
 import { OperationButton } from "../Shared/OperationButton";
 import { Icon } from "../Shared/Icon";
