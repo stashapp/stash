@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { useHistory } from "react-router-dom";
 import cx from "classnames";
@@ -43,7 +43,7 @@ interface IScenePreviewProps {
   disabled?: boolean;
 }
 
-export const ScenePreview: React.FC<IScenePreviewProps> = ({
+export const ScenePreview: React.FC<IScenePreviewProps> = React.memo(({
   image,
   video,
   isPortrait,
@@ -100,7 +100,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
       />
     </div>
   );
-};
+});
 
 interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
@@ -133,7 +133,7 @@ const Description: React.FC<{
   );
 };
 
-const SceneCardPopovers = PatchComponent(
+const SceneCardPopovers = React.memo(PatchComponent(
   "SceneCard.Popovers",
   (props: ISceneCardProps) => {
     const file = useMemo(
@@ -323,9 +323,9 @@ const SceneCardPopovers = PatchComponent(
 
     return <>{maybeRenderPopoverButtonGroup()}</>;
   }
-);
+));
 
-const SceneCardDetails = PatchComponent(
+const SceneCardDetails = React.memo(PatchComponent(
   "SceneCard.Details",
   (props: ISceneCardProps) => {
     return (
@@ -342,9 +342,9 @@ const SceneCardDetails = PatchComponent(
       </div>
     );
   }
-);
+));
 
-const SceneCardOverlays = PatchComponent(
+const SceneCardOverlays = React.memo(PatchComponent(
   "SceneCard.Overlays",
   (props: ISceneCardProps) => {
     const ret = useMemo(() => {
@@ -355,13 +355,13 @@ const SceneCardOverlays = PatchComponent(
 
     return ret;
   }
-);
+));
 
 interface ISceneSpecsOverlay {
   scene: GQL.SlimSceneDataFragment;
 }
 
-export const SceneSpecsOverlay: React.FC<ISceneSpecsOverlay> = PatchComponent(
+export const SceneSpecsOverlay: React.FC<ISceneSpecsOverlay> = React.memo(PatchComponent(
   "SceneCard.SceneSpecs",
   ({ scene }) => {
     const file = scene.files?.[0];
@@ -388,9 +388,9 @@ export const SceneSpecsOverlay: React.FC<ISceneSpecsOverlay> = PatchComponent(
       </div>
     );
   }
-);
+));
 
-const SceneCardImage = PatchComponent(
+const SceneCardImage = React.memo(PatchComponent(
   "SceneCard.Image",
   (props: ISceneCardProps) => {
     const history = useHistory();
@@ -410,18 +410,21 @@ const SceneCardImage = PatchComponent(
       );
     }
 
-    function onScrubberClick(timestamp: number) {
-      if (props.selecting) return;
-      const link = props.queue
-        ? props.queue.makeLink(props.scene.id, {
-            sceneIndex: props.index,
-            continue: cont,
-            start: timestamp,
-          })
-        : `/scenes/${props.scene.id}?t=${timestamp}`;
+    const onScrubberClick = useCallback(
+      (timestamp: number) => {
+        if (props.selecting) return;
+        const link = props.queue
+          ? props.queue.makeLink(props.scene.id, {
+              sceneIndex: props.index,
+              continue: cont,
+              start: timestamp,
+            })
+          : `/scenes/${props.scene.id}?t=${timestamp}`;
 
-      history.push(link);
-    }
+        history.push(link);
+      },
+      [props.selecting, props.queue, props.scene.id, props.index, cont, history]
+    );
 
     function isPortrait() {
       const width = file?.width ? file.width : 0;
@@ -447,9 +450,9 @@ const SceneCardImage = PatchComponent(
       </>
     );
   }
-);
+));
 
-export const SceneCard = PatchComponent(
+export const SceneCard = React.memo(PatchComponent(
   "SceneCard",
   (props: ISceneCardProps) => {
     const { configuration } = useConfigurationContext();
@@ -509,4 +512,4 @@ export const SceneCard = PatchComponent(
       />
     );
   }
-);
+));

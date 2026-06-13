@@ -1,5 +1,5 @@
 import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { GridCard } from "../Shared/GridCard/GridCard";
 import { HoverPopover } from "../Shared/HoverPopover";
@@ -24,7 +24,7 @@ interface IGalleryPreviewProps {
   disabled?: boolean;
 }
 
-export const GalleryPreview: React.FC<IGalleryPreviewProps> = ({
+export const GalleryPreview: React.FC<IGalleryPreviewProps> = React.memo(({
   gallery,
   onScrubberClick,
   disabled,
@@ -55,7 +55,7 @@ export const GalleryPreview: React.FC<IGalleryPreviewProps> = ({
       )}
     </div>
   );
-};
+});
 
 interface IGalleryCardProps {
   gallery: GQL.SlimGalleryDataFragment;
@@ -66,7 +66,7 @@ interface IGalleryCardProps {
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
-const GalleryCardPopovers = PatchComponent(
+const GalleryCardPopovers = React.memo(PatchComponent(
   "GalleryCard.Popovers",
   (props: IGalleryCardProps) => {
     function maybeRenderScenePopoverButton() {
@@ -177,9 +177,9 @@ const GalleryCardPopovers = PatchComponent(
 
     return <>{maybeRenderPopoverButtonGroup()}</>;
   }
-);
+));
 
-const GalleryCardDetails = PatchComponent(
+const GalleryCardDetails = React.memo(PatchComponent(
   "GalleryCard.Details",
   (props: IGalleryCardProps) => {
     return (
@@ -193,9 +193,9 @@ const GalleryCardDetails = PatchComponent(
       </div>
     );
   }
-);
+));
 
-const GalleryCardOverlays = PatchComponent(
+const GalleryCardOverlays = React.memo(PatchComponent(
   "GalleryCard.Overlays",
   (props: IGalleryCardProps) => {
     const ret = useMemo(() => {
@@ -209,29 +209,34 @@ const GalleryCardOverlays = PatchComponent(
 
     return ret;
   }
-);
+));
 
-const GalleryCardImage = PatchComponent(
+const GalleryCardImage = React.memo(PatchComponent(
   "GalleryCard.Image",
   (props: IGalleryCardProps) => {
     const history = useHistory();
+
+    const onScrubberClick = useCallback(
+      (i: number) => {
+        history.push(`/galleries/${props.gallery.id}/images/${i}`);
+      },
+      [props.gallery.id, history]
+    );
 
     return (
       <>
         <GalleryPreview
           gallery={props.gallery}
-          onScrubberClick={(i) => {
-            history.push(`/galleries/${props.gallery.id}/images/${i}`);
-          }}
+          onScrubberClick={onScrubberClick}
           disabled={props.selecting}
         />
         <RatingBanner rating={props.gallery.rating100} />
       </>
     );
   }
-);
+));
 
-export const GalleryCard = PatchComponent(
+export const GalleryCard = React.memo(PatchComponent(
   "GalleryCard",
   (props: IGalleryCardProps) => {
     return (
@@ -251,4 +256,4 @@ export const GalleryCard = PatchComponent(
       />
     );
   }
-);
+));
