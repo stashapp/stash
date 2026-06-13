@@ -401,6 +401,8 @@
           }
         }
       },
+      "default_marker_preview_duration_desc": "Duration (seconds) for marker previews without an end time. Must be greater than 0.",
+      "default_marker_preview_duration_head": "Default marker preview duration",
       "funscript_heatmap_draw_range": "Include range in generated heatmaps",
       "funscript_heatmap_draw_range_desc": "Draw range of motion on the y-axis of the generated heatmap. Existing heatmaps will need to be regenerated after changing.",
       "gallery_cover_regex_desc": "Regexps used to identify an image as gallery cover.",

@@ -88,7 +88,7 @@ The generate task accepts the following options:
 | Previews | Generates video previews (mp4) which play when hovering over a scene. |
 | Animated image previews | *Accessible in Advanced mode* - Generates animated previews (webp). Only required if the Preview type is set to Animated image. Requires Generate previews to be enabled. |
 | Scene scrubber sprites | The set of images displayed below the video player for easy navigation. |
-| Marker previews | Generates 20 second video previews (mp4) which begin at the marker timecode. |
+| Marker previews | Generates video previews (mp4) which begin at the marker timecode. Markers with an explicit end time run for that interval (optionally capped by the *Max marker preview duration* setting); markers without one use the *Default marker preview duration* setting (20 seconds by default). Both are configurable under Settings → System → Preview Generation. |
 | Marker animated image previews | *Accessible in Advanced mode* - Also generate animated (webp) previews, only required when Scene/Marker Wall Preview type is set to Animated image. When browsing they use less CPU than the video previews, but are generated in addition to them and are larger files. |
 | Marker screenshots | Generates static JPG images for markers. Only required if Preview type is set to Static image. Requires marker previews to be enabled. | 
 | Transcodes | *Accessible in Advanced mode* - MP4 conversions of unsupported video formats. Allows direct streaming instead of live transcoding. |
