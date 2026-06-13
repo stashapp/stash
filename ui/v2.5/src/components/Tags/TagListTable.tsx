@@ -5,6 +5,7 @@ import { useIntl } from "react-intl";
 import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
+import { SortDirectionEnum } from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
 import NavUtils from "src/utils/navigation";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
@@ -19,13 +20,13 @@ interface ITagListTableProps {
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
   onSort?: (value: string) => void;
   sortBy?: string;
-  sortDirection?: string;
+  sortDirection?: SortDirectionEnum;
 }
 
 const TABLE_NAME = "tags";
 
 export const TagListTable: React.FC<ITagListTableProps> = (
-  props: ITagListTableProps
+  props: ITagListTableProps,
 ) => {
   const intl = useIntl();
 
@@ -199,7 +200,7 @@ export const TagListTable: React.FC<ITagListTableProps> = (
 
   const { selectedColumns, saveColumns } = useTableColumns(
     TABLE_NAME,
-    defaultColumns
+    defaultColumns,
   );
 
   const columnRenderFuncs: Record<
@@ -215,7 +216,7 @@ export const TagListTable: React.FC<ITagListTableProps> = (
   function renderCell(
     column: IColumn,
     tag: GQL.TagListDataFragment,
-    index: number
+    index: number,
   ) {
     const render = columnRenderFuncs[column.value];
 

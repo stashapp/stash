@@ -444,8 +444,11 @@ input[type="range"].zoom-slider {
   margin-right: 0.25rem;
   padding: 0.25em 0.6em;
   text-align: center;
-  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
-    border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  transition:
+    color 0.15s ease-in-out,
+    background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
   vertical-align: baseline;
   white-space: nowrap;
 
@@ -928,6 +931,7 @@ ul.selectable-list {
 
   .table thead th {
     border: none;
+    padding-bottom: 0;
     white-space: nowrap;
   }
 

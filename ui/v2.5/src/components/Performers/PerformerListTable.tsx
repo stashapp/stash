@@ -3,6 +3,7 @@ import { useIntl } from "react-intl";
 import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
+import { SortDirectionEnum } from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
 import NavUtils from "src/utils/navigation";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
@@ -27,13 +28,13 @@ interface IPerformerListTableProps {
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
   onSort?: (value: string) => void;
   sortBy?: string;
-  sortDirection?: string;
+  sortDirection?: SortDirectionEnum;
 }
 
 const TABLE_NAME = "performers";
 
 export const PerformerListTable: React.FC<IPerformerListTableProps> = (
-  props: IPerformerListTableProps
+  props: IPerformerListTableProps,
 ) => {
   const intl = useIntl();
 
@@ -136,7 +137,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     <Button
       className={cx(
         "minimal",
-        performer.favorite ? "favorite" : "not-favorite"
+        performer.favorite ? "favorite" : "not-favorite",
       )}
       onClick={() => setFavorite(!performer.favorite, performer.id)}
     >
@@ -223,7 +224,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     sortable?: boolean;
     render?: (
       scene: GQL.PerformerDataFragment,
-      index: number
+      index: number,
     ) => React.ReactNode;
   }
 
@@ -378,7 +379,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
 
   const { selectedColumns, saveColumns } = useTableColumns(
     TABLE_NAME,
-    defaultColumns
+    defaultColumns,
   );
 
   const columnRenderFuncs: Record<
@@ -394,7 +395,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   function renderCell(
     column: IColumn,
     performer: GQL.PerformerDataFragment,
-    index: number
+    index: number,
   ) {
     const render = columnRenderFuncs[column.value];
 

@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
+import { SortDirectionEnum } from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import { useIntl } from "react-intl";
 import { objectTitle } from "src/core/files";
@@ -16,13 +17,13 @@ interface IGalleryListTableProps {
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
   onSort?: (value: string) => void;
   sortBy?: string;
-  sortDirection?: string;
+  sortDirection?: SortDirectionEnum;
 }
 
 const TABLE_NAME = "galleries";
 
 export const GalleryListTable: React.FC<IGalleryListTableProps> = (
-  props: IGalleryListTableProps
+  props: IGalleryListTableProps,
 ) => {
   const intl = useIntl();
 
@@ -153,7 +154,7 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
     sortable?: boolean;
     render?: (
       gallery: GQL.SlimGalleryDataFragment,
-      index: number
+      index: number,
     ) => React.ReactNode;
   }
 
@@ -243,7 +244,7 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
 
   const { selectedColumns, saveColumns } = useTableColumns(
     TABLE_NAME,
-    defaultColumns
+    defaultColumns,
   );
 
   const columnRenderFuncs: Record<
@@ -259,7 +260,7 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
   function renderCell(
     column: IColumn,
     gallery: GQL.SlimGalleryDataFragment,
-    index: number
+    index: number,
   ) {
     const render = columnRenderFuncs[column.value];
 

@@ -2,6 +2,8 @@ import React, { useMemo } from "react";
 import { Table, Form } from "react-bootstrap";
 import { CheckBoxSelect } from "../Shared/Select";
 import cx from "classnames";
+import { SortDirectionEnum } from "src/core/generated-graphql";
+import { SortByIcon } from "./ListFilter";
 
 export interface IColumn {
   label: string;
@@ -50,11 +52,11 @@ interface IListTableProps<T> {
   renderCell: (column: IColumn, item: T, index: number) => React.ReactNode;
   onSort?: (value: string) => void;
   sortBy?: string;
-  sortDirection?: string;
+  sortDirection?: SortDirectionEnum;
 }
 
 export const ListTable = <T extends { id: string }>(
-  props: IListTableProps<T>
+  props: IListTableProps<T>,
 ) => {
   const {
     className,
@@ -72,7 +74,7 @@ export const ListTable = <T extends { id: string }>(
 
   const visibleColumns = useMemo(() => {
     return allColumns.filter(
-      (col) => col.mandatory || columns.includes(col.value)
+      (col) => col.mandatory || columns.includes(col.value),
     );
   }, [columns, allColumns]);
 
@@ -90,7 +92,7 @@ export const ListTable = <T extends { id: string }>(
                 onSelectChange(item.id, !selectedIds.has(item.id), shiftKey)
               }
               onClick={(
-                event: React.MouseEvent<HTMLInputElement, MouseEvent>
+                event: React.MouseEvent<HTMLInputElement, MouseEvent>,
               ) => {
                 shiftKey = event.shiftKey;
                 event.stopPropagation();
@@ -109,8 +111,6 @@ export const ListTable = <T extends { id: string }>(
   };
 
   const columnHeaders = useMemo(() => {
-    const arrow = sortDirection === "ASC" ? " \u25B2" : " \u25BC";
-
     return visibleColumns.map((column) => {
       const isSortable = column.sortable !== false && onSort;
       const isActive = sortBy === column.value;
@@ -122,8 +122,18 @@ export const ListTable = <T extends { id: string }>(
           onClick={isSortable ? () => onSort(column.value) : undefined}
           style={isSortable ? { cursor: "pointer" } : undefined}
         >
-          {column.label}
-          {isActive && arrow}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            {column.label}
+            {isActive && sortDirection && (
+              <SortByIcon sortDirection={sortDirection} />
+            )}
+          </div>
         </th>
       );
     });

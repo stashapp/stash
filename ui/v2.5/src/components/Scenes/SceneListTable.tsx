@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
+import { SortDirectionEnum } from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -20,13 +21,13 @@ interface ISceneListTableProps {
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
   onSort?: (value: string) => void;
   sortBy?: string;
-  sortDirection?: string;
+  sortDirection?: SortDirectionEnum;
 }
 
 const TABLE_NAME = "scenes";
 
 export const SceneListTable: React.FC<ISceneListTableProps> = (
-  props: ISceneListTableProps
+  props: ISceneListTableProps,
 ) => {
   const intl = useIntl();
 
@@ -255,7 +256,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
     sortable?: boolean;
     render?: (
       scene: GQL.SlimSceneDataFragment,
-      index: number
+      index: number,
     ) => React.ReactNode;
   }
 
@@ -391,7 +392,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
 
   const { selectedColumns, saveColumns } = useTableColumns(
     TABLE_NAME,
-    defaultColumns
+    defaultColumns,
   );
 
   const columnRenderFuncs: Record<
@@ -407,7 +408,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
   function renderCell(
     column: IColumn,
     scene: GQL.SlimSceneDataFragment,
-    index: number
+    index: number,
   ) {
     const render = columnRenderFuncs[column.value];
 
