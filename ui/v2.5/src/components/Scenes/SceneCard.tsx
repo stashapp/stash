@@ -66,7 +66,9 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
     });
 
     if (videoEl.current) observer.observe(videoEl.current);
-  });
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (videoEl?.current?.volume)
