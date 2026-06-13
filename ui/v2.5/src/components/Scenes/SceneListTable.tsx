@@ -27,7 +27,7 @@ interface ISceneListTableProps {
 const TABLE_NAME = "scenes";
 
 export const SceneListTable: React.FC<ISceneListTableProps> = (
-  props: ISceneListTableProps,
+  props: ISceneListTableProps
 ) => {
   const intl = useIntl();
 
@@ -256,7 +256,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
     sortable?: boolean;
     render?: (
       scene: GQL.SlimSceneDataFragment,
-      index: number,
+      index: number
     ) => React.ReactNode;
   }
 
@@ -392,7 +392,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
 
   const { selectedColumns, saveColumns } = useTableColumns(
     TABLE_NAME,
-    defaultColumns,
+    defaultColumns
   );
 
   const columnRenderFuncs: Record<
@@ -408,7 +408,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
   function renderCell(
     column: IColumn,
     scene: GQL.SlimSceneDataFragment,
-    index: number,
+    index: number
   ) {
     const render = columnRenderFuncs[column.value];
 

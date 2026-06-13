@@ -121,7 +121,7 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
           {studio.child_studios.length}{" "}
           {intl.formatMessage(
             { id: "studios" },
-            { count: studio.child_studios.length },
+            { count: studio.child_studios.length }
           )}
         </Link>
       ) : null;
@@ -210,7 +210,7 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
 
   const { selectedColumns, saveColumns } = useTableColumns(
     TABLE_NAME,
-    defaultColumns,
+    defaultColumns
   );
 
   const columnRenderFuncs: Record<
@@ -226,7 +226,7 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
   function renderCell(
     column: IColumn,
     studio: GQL.StudioDataFragment,
-    index: number,
+    index: number
   ) {
     const render = columnRenderFuncs[column.value];
     if (render) return render(studio, index);

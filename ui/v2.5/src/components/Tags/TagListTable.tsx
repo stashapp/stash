@@ -26,7 +26,7 @@ interface ITagListTableProps {
 const TABLE_NAME = "tags";
 
 export const TagListTable: React.FC<ITagListTableProps> = (
-  props: ITagListTableProps,
+  props: ITagListTableProps
 ) => {
   const intl = useIntl();
 
@@ -200,7 +200,7 @@ export const TagListTable: React.FC<ITagListTableProps> = (
 
   const { selectedColumns, saveColumns } = useTableColumns(
     TABLE_NAME,
-    defaultColumns,
+    defaultColumns
   );
 
   const columnRenderFuncs: Record<
@@ -216,7 +216,7 @@ export const TagListTable: React.FC<ITagListTableProps> = (
   function renderCell(
     column: IColumn,
     tag: GQL.TagListDataFragment,
-    index: number,
+    index: number
   ) {
     const render = columnRenderFuncs[column.value];
 

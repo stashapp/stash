@@ -37,7 +37,7 @@ import { useConfigurationContext } from "src/hooks/Config";
 
 export function useDebouncedSearchInput(
   filter: ListFilterModel,
-  setFilter: (filter: ListFilterModel) => void,
+  setFilter: (filter: ListFilterModel) => void
 ) {
   const callback = useCallback(
     (value: string) => {
@@ -46,7 +46,7 @@ export function useDebouncedSearchInput(
       newFilter.currentPage = 1;
       setFilter(newFilter);
     },
-    [filter, setFilter],
+    [filter, setFilter]
   );
 
   const onClear = useCallback(() => callback(""), [callback]);
@@ -74,7 +74,7 @@ export const SearchTermInput: React.FC<{
 
   const { searchCallback, onClear } = useDebouncedSearchInput(
     filter,
-    onFilterUpdate,
+    onFilterUpdate
   );
 
   useEffect(() => {
@@ -202,7 +202,7 @@ export const PageSizeSelector: React.FC<{
                 onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
                   if (e.key === "Enter") {
                     onChangePageSize(
-                      (perPageInput.current as HTMLInputElement)?.value ?? "",
+                      (perPageInput.current as HTMLInputElement)?.value ?? ""
                     );
                     e.preventDefault();
                   }
@@ -213,7 +213,7 @@ export const PageSizeSelector: React.FC<{
                   variant="primary"
                   onClick={() =>
                     onChangePageSize(
-                      (perPageInput.current as HTMLInputElement)?.value ?? "",
+                      (perPageInput.current as HTMLInputElement)?.value ?? ""
                     )
                   }
                 >

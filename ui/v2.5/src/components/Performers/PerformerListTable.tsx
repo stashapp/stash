@@ -34,7 +34,7 @@ interface IPerformerListTableProps {
 const TABLE_NAME = "performers";
 
 export const PerformerListTable: React.FC<IPerformerListTableProps> = (
-  props: IPerformerListTableProps,
+  props: IPerformerListTableProps
 ) => {
   const intl = useIntl();
 
@@ -137,7 +137,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     <Button
       className={cx(
         "minimal",
-        performer.favorite ? "favorite" : "not-favorite",
+        performer.favorite ? "favorite" : "not-favorite"
       )}
       onClick={() => setFavorite(!performer.favorite, performer.id)}
     >
@@ -224,7 +224,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     sortable?: boolean;
     render?: (
       scene: GQL.PerformerDataFragment,
-      index: number,
+      index: number
     ) => React.ReactNode;
   }
 
@@ -379,7 +379,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
 
   const { selectedColumns, saveColumns } = useTableColumns(
     TABLE_NAME,
-    defaultColumns,
+    defaultColumns
   );
 
   const columnRenderFuncs: Record<
@@ -395,7 +395,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   function renderCell(
     column: IColumn,
     performer: GQL.PerformerDataFragment,
-    index: number,
+    index: number
   ) {
     const render = columnRenderFuncs[column.value];
 

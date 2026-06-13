@@ -56,7 +56,7 @@ interface IListTableProps<T> {
 }
 
 export const ListTable = <T extends { id: string }>(
-  props: IListTableProps<T>,
+  props: IListTableProps<T>
 ) => {
   const {
     className,
@@ -74,7 +74,7 @@ export const ListTable = <T extends { id: string }>(
 
   const visibleColumns = useMemo(() => {
     return allColumns.filter(
-      (col) => col.mandatory || columns.includes(col.value),
+      (col) => col.mandatory || columns.includes(col.value)
     );
   }, [columns, allColumns]);
 
@@ -92,7 +92,7 @@ export const ListTable = <T extends { id: string }>(
                 onSelectChange(item.id, !selectedIds.has(item.id), shiftKey)
               }
               onClick={(
-                event: React.MouseEvent<HTMLInputElement, MouseEvent>,
+                event: React.MouseEvent<HTMLInputElement, MouseEvent>
               ) => {
                 shiftKey = event.shiftKey;
                 event.stopPropagation();

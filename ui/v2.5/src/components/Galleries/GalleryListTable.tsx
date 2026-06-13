@@ -23,7 +23,7 @@ interface IGalleryListTableProps {
 const TABLE_NAME = "galleries";
 
 export const GalleryListTable: React.FC<IGalleryListTableProps> = (
-  props: IGalleryListTableProps,
+  props: IGalleryListTableProps
 ) => {
   const intl = useIntl();
 
@@ -154,7 +154,7 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
     sortable?: boolean;
     render?: (
       gallery: GQL.SlimGalleryDataFragment,
-      index: number,
+      index: number
     ) => React.ReactNode;
   }
 
@@ -244,7 +244,7 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
 
   const { selectedColumns, saveColumns } = useTableColumns(
     TABLE_NAME,
-    defaultColumns,
+    defaultColumns
   );
 
   const columnRenderFuncs: Record<
@@ -260,7 +260,7 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
   function renderCell(
     column: IColumn,
     gallery: GQL.SlimGalleryDataFragment,
-    index: number,
+    index: number
   ) {
     const render = columnRenderFuncs[column.value];
 
