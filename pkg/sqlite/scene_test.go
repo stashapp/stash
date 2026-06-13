@@ -2157,7 +2157,8 @@ func TestSceneQuery(t *testing.T) {
 		stashID2 = sceneStashID(sceneIdxWithPerformer).StashID
 		stashIDs = []*string{&stashID, &stashID2}
 
-		depth = -1
+		depth       = -1
+		directDepth = 0
 	)
 
 	tests := []struct {
@@ -2326,6 +2327,24 @@ func TestSceneQuery(t *testing.T) {
 				},
 			},
 			nil,
+			nil,
+			false,
+		},
+		{
+			"with direct file parent folder",
+			nil,
+			&models.SceneFilterType{
+				FilesFilter: &models.FileFilterType{
+					ParentFolder: &models.HierarchicalMultiCriterionInput{
+						Value: []string{
+							strconv.Itoa(int(folderIDs[folderIdxWithSceneFiles])),
+						},
+						Modifier: models.CriterionModifierIncludes,
+						Depth:    &directDepth,
+					},
+				},
+			},
+			[]int{sceneIdxWithGroup},
 			nil,
 			false,
 		},
