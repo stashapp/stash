@@ -73,6 +73,9 @@ export interface IUIConfig {
   // if true the chromecast option will enabled
   enableChromecast?: boolean;
 
+  // if true the slideshow autostarts when opening a gallery's lightbox from the galleries page
+  autostartGallerySlideshow?: boolean;
+
   // if true the fullscreen mobile media auto-rotate option will be disabled
   disableMobileMediaAutoRotateEnabled?: boolean;
 

@@ -658,6 +658,10 @@
         "description": "Abbreviate counters in cards and details view pages, for example \"1831\" will get formated to \"1.8K\".",
         "heading": "Abbreviate counters"
       },
+      "autostart_gallery_slideshow": {
+        "description": "Automatically start the slideshow when opening a gallery's lightbox from the galleries page.",
+        "heading": "Auto-start gallery slideshow"
+      },
       "basic_settings": "Basic Settings",
       "custom_css": {
         "description": "Page must be reloaded for changes to take effect. There is no guarantee of compatibility between custom CSS and future releases of Stash.",
