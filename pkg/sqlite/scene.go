@@ -829,16 +829,17 @@ func (qb *SceneStore) OCountByStudioID(ctx context.Context, studioID int, depth 
 	if depth != 0 {
 		q := `
 		WITH RECURSIVE sub_studios AS (
-			SELECT id FROM studios WHERE id = ?
+			SELECT id, 0 AS level FROM studios WHERE id = ?
 			UNION ALL
-			SELECT s.id FROM studios s
+			SELECT s.id, ss.level + 1 FROM studios s
 			INNER JOIN sub_studios ss ON s.parent_id = ss.id
+			WHERE ss.level < ? OR ? < 0
 		)
 		SELECT COUNT(*) FROM scenes
 		INNER JOIN scenes_o_dates ON scenes.id = scenes_o_dates.scene_id
 		WHERE scenes.studio_id IN (SELECT id FROM sub_studios)`
 
-		rows, err := dbWrapper.QueryxContext(ctx, q, studioID)
+		rows, err := dbWrapper.QueryxContext(ctx, q, studioID, depth, depth)
 		if err != nil {
 			return 0, fmt.Errorf("querying scene o_count by studio: %w", err)
 		}
