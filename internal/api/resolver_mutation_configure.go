@@ -491,6 +491,7 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 	r.setConfigBool(config.ShowStudioAsText, input.ShowStudioAsText)
 	r.setConfigBool(config.AutostartVideoOnPlaySelected, input.AutostartVideoOnPlaySelected)
 	r.setConfigBool(config.ContinuePlaylistDefault, input.ContinuePlaylistDefault)
+	r.setConfigBool(config.LoopPlaylistDefault, input.LoopPlaylistDefault)
 
 	r.setConfigString(config.Language, input.Language)
 

@@ -401,6 +401,8 @@ input ConfigInterfaceInput {
   autostartVideoOnPlaySelected: Boolean
   "If true, next scene in playlist will be played at video end by default"
   continuePlaylistDefault: Boolean
+  "If true, queue wraps to the first scene after the last scene finishes by default"
+  loopPlaylistDefault: Boolean
 
   "If true, studio overlays will be shown as text instead of logo images"
   showStudioAsText: Boolean
@@ -478,6 +480,8 @@ type ConfigInterfaceResult {
   autostartVideoOnPlaySelected: Boolean
   "If true, next scene in playlist will be played at video end by default"
   continuePlaylistDefault: Boolean
+  "If true, queue wraps to the first scene after the last scene finishes by default"
+  loopPlaylistDefault: Boolean
 
   "If true, studio overlays will be shown as text instead of logo images"
   showStudioAsText: Boolean

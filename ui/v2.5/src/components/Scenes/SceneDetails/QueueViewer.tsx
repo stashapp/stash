@@ -19,8 +19,10 @@ export interface IPlaylistViewer {
   currentID?: string;
   start?: number;
   continue?: boolean;
+  loop?: boolean;
   hasMoreScenes: boolean;
   setContinue: (v: boolean) => void;
+  setLoop: (v: boolean) => void;
   onSceneClicked: (id: string) => void;
   onNext: () => void;
   onPrevious: () => void;
@@ -34,8 +36,10 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
   currentID,
   start = 0,
   continue: continuePlaylist = false,
+  loop: loopPlaylist = false,
   hasMoreScenes,
   setContinue,
+  setLoop,
   onNext,
   onPrevious,
   onRandom,
@@ -125,6 +129,14 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
             label={intl.formatMessage({ id: "actions.continue" })}
             onChange={() => {
               setContinue(!continuePlaylist);
+            }}
+          />
+          <Form.Check
+            id="loop-checkbox"
+            checked={loopPlaylist}
+            label={intl.formatMessage({ id: "actions.loop" })}
+            onChange={() => {
+              setLoop(!loopPlaylist);
             }}
           />
         </div>

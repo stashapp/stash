@@ -121,6 +121,7 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.SetInterface(DisableDropdownCreateMovie, i.GetDisableDropdownCreate().Movie)
 				i.SetInterface(AutostartVideoOnPlaySelected, i.GetAutostartVideoOnPlaySelected())
 				i.SetInterface(ContinuePlaylistDefault, i.GetContinuePlaylistDefault())
+				i.SetInterface(LoopPlaylistDefault, i.GetLoopPlaylistDefault())
 				i.SetInterface(PythonPath, i.GetPythonPath())
 				t.Logf("Worker %v iteration %v took %v", wk, l, time.Since(start))
 			}
