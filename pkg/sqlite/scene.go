@@ -844,10 +844,13 @@ func (qb *SceneStore) OCountByStudioID(ctx context.Context, studioID int, depth 
 			return 0, fmt.Errorf("querying scene o_count by studio: %w", err)
 		}
 		defer rows.Close()
-		if rows.Next() {
+		for rows.Next() {
 			if err := rows.Scan(&ret); err != nil {
 				return 0, fmt.Errorf("scanning scene o_count: %w", err)
 			}
+		}
+		if err := rows.Err(); err != nil {
+			return 0, fmt.Errorf("iterating scene o_count rows: %w", err)
 		}
 		return ret, nil
 	}

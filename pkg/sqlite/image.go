@@ -752,10 +752,13 @@ func (qb *ImageStore) OCountByStudioID(ctx context.Context, studioID int, depth 
 			return 0, fmt.Errorf("querying image o_count by studio: %w", err)
 		}
 		defer rows.Close()
-		if rows.Next() {
+		for rows.Next() {
 			if err := rows.Scan(&ret); err != nil {
 				return 0, fmt.Errorf("scanning image o_count: %w", err)
 			}
+		}
+		if err := rows.Err(); err != nil {
+			return 0, fmt.Errorf("iterating image o_count rows: %w", err)
 		}
 		return ret, nil
 	}
