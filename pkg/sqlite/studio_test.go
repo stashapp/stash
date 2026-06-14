@@ -2029,7 +2029,22 @@ func TestStudioQuerySortPerformerCount(t *testing.T) {
 
 		studios := queryStudios(ctx, t, nil, findFilter)
 		assert.True(t, len(studios) > 0)
-		// multiple studios have 1 performer each; just verify it returns without error
+		// studio with performers should appear before studio without
+		firstWithPerf := -1
+		lastWithoutPerf := -1
+		for i, s := range studios {
+			// sceneIdxWithStudioPerformer has performerIdxWithSceneStudio
+			if s.ID == studioIDs[studioIdxWithScenePerformer] && firstWithPerf == -1 {
+				firstWithPerf = i
+			}
+			if s.ID == studioIDs[studioIdxWithNothing] {
+				lastWithoutPerf = i
+			}
+		}
+		assert.Greater(t, firstWithPerf, -1)
+		assert.Greater(t, lastWithoutPerf, -1)
+		assert.Less(t, firstWithPerf, lastWithoutPerf)
+
 		return nil
 	})
 }
@@ -2045,6 +2060,20 @@ func TestStudioQuerySortPerformerCountAll(t *testing.T) {
 
 		studios := queryStudios(ctx, t, nil, findFilter)
 		assert.True(t, len(studios) > 0)
+		// studio with performers should appear before studio without
+		firstWithPerf := -1
+		lastWithoutPerf := -1
+		for i, s := range studios {
+			if s.ID == studioIDs[studioIdxWithScenePerformer] && firstWithPerf == -1 {
+				firstWithPerf = i
+			}
+			if s.ID == studioIDs[studioIdxWithNothing] {
+				lastWithoutPerf = i
+			}
+		}
+		assert.Greater(t, firstWithPerf, -1)
+		assert.Greater(t, lastWithoutPerf, -1)
+		assert.Less(t, firstWithPerf, lastWithoutPerf)
 
 		return nil
 	})

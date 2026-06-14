@@ -670,7 +670,7 @@ func (qb *StudioStore) sortByPerformerCount(direction string) string {
 func (qb *StudioStore) sortByPerformerCountAll(direction string) string {
 	return fmt.Sprintf(` ORDER BY (
 		WITH RECURSIVE sub_studios AS (
-			SELECT id FROM %[1]s WHERE id = %[1]s.id
+			SELECT s.id FROM %[1]s s WHERE s.id = %[1]s.id
 			UNION ALL
 			SELECT s.id FROM %[1]s s
 			INNER JOIN sub_studios ss ON s.parent_id = ss.id
