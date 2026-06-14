@@ -24,8 +24,10 @@ func getPerformerID(ctx context.Context, endpoint string, w PerformerCreator, p 
 
 		return &performerID, nil
 	} else if createMissing && p.Name != nil { // name is mandatory
-		// skip single name performers with no disambiguation
-		if skipSingleNamePerformers && !strings.Contains(*p.Name, " ") && (p.Disambiguation == nil || len(*p.Disambiguation) == 0) {
+		// skip single name performers with no disambiguation, unless they have a
+		// definitive remote ID (e.g. stashdb UUID) which makes them unambiguous
+		hasRemoteID := p.RemoteSiteID != nil && *p.RemoteSiteID != ""
+		if skipSingleNamePerformers && !hasRemoteID && !strings.Contains(*p.Name, " ") && (p.Disambiguation == nil || len(*p.Disambiguation) == 0) {
 			return nil, ErrSkipSingleNamePerformer
 		}
 		return createMissingPerformer(ctx, endpoint, w, p)
