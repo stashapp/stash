@@ -1309,7 +1309,10 @@
         "update_performer": "Mise à jour du performeur",
         "update_performers": "Mise à jour des performeurs",
         "updating_untagged_performers_description": "Une mise à jour des performeurs non étiquetés essaiera de faire correspondre tous les performeurs qui n'ont pas d'identifiant Stash et actualisera les métadonnées.",
-        "performer_names_or_stashids_separated_by_comma": "Noms des performeurs ou identifiants Stash séparés par des virgules"
+        "performer_names_or_stashids_separated_by_comma": "Noms des performeurs ou identifiants Stash séparés par des virgules",
+        "configure_fields": "Configurer les champs",
+        "field_options": "Options de champ",
+        "field_options_description": "Choisissez comment chaque champ doit être mis à jour : « écraser » remplace les données existantes, « fusionner » les ajoute, « ignorer » les laisse inchangées."
     },
     "performer_tags": "Étiquettes de performeur",
     "performers": "Performeurs",
@@ -1720,5 +1723,6 @@
     "empty_value": "vide",
     "scenes_size": "Taille de la scène",
     "refer_to": "Merci de consulter {link}.",
-    "related_studios": "En rapport"
+    "related_studios": "En rapport",
+    "sub_group_description": "Description du groupe affilié"
 }
