@@ -3,6 +3,7 @@ import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { useStudioUpdate } from "src/core/StashService";
 import { useTableColumns } from "src/hooks/useTableColumns";
+import { useConfigurationContext } from "src/hooks/Config";
 import { ListTable, IColumn } from "../List/ListTable";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import { Link } from "react-router-dom";
@@ -24,6 +25,8 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
 }) => {
   const intl = useIntl();
   const [updateStudio] = useStudioUpdate();
+  const { configuration } = useConfigurationContext();
+  const showChildContent = configuration?.ui?.showChildStudioContent ?? false;
 
   function setRating(v: number | null, studioId: string) {
     if (studioId) {
@@ -80,7 +83,9 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
 
   const SceneCountCell = (studio: GQL.StudioDataFragment) => (
     <Link to={NavUtils.makeStudioScenesUrl(studio)}>
-      <span>{studio.scene_count_all}</span>
+      <span>
+        {showChildContent ? studio.scene_count_all : studio.scene_count}
+      </span>
     </Link>
   );
 
@@ -98,12 +103,14 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
 
   const PerformerCountCell = (studio: GQL.StudioDataFragment) => (
     <Link to={NavUtils.makeStudioPerformersUrl(studio)}>
-      <span>{studio.performer_count_all}</span>
+      <span>
+        {showChildContent ? studio.performer_count_all : studio.performer_count}
+      </span>
     </Link>
   );
 
   const OCountCell = (studio: GQL.StudioDataFragment) => (
-    <span>{studio.o_counter_all}</span>
+    <span>{showChildContent ? studio.o_counter_all : studio.o_counter}</span>
   );
 
   const RelatedCell = (studio: GQL.StudioDataFragment) => {
