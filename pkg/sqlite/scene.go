@@ -823,10 +823,10 @@ func (qb *SceneStore) OCountByGroupID(ctx context.Context, groupID int) (int, er
 	return ret, nil
 }
 
-func (qb *SceneStore) OCountByStudioID(ctx context.Context, studioID int, depth *int) (int, error) {
+func (qb *SceneStore) OCountByStudioID(ctx context.Context, studioID int, depth int) (int, error) {
 	var ret int
 
-	if depth != nil && *depth != 0 {
+	if depth != 0 {
 		q := `
 		WITH RECURSIVE sub_studios AS (
 			SELECT id FROM studios WHERE id = ?
