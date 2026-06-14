@@ -26,6 +26,7 @@ type Studio {
   updated_at: Time!
   groups: [Group!]!
   movies: [Movie!]! @deprecated(reason: "use groups instead")
+  # o_counter with depth: Int (default 0, flat count). Pass depth: -1 for recursive count across all sub-studios.
   o_counter(depth: Int): Int! # Resolver
   custom_fields: Map!
 }
