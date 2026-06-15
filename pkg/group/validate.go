@@ -77,6 +77,8 @@ func validateName(n string) error {
 
 // only validate if aliases are not empty and trimmed
 // no requirement for uniqueness or difference from group name here
+// deduplication and exclusion are ensured at resolver level
+// import bypasses resolver though.
 func ValidateAliases(ctx context.Context, aliases []string) error {
 	for _, a := range aliases {
 		if err := validateName(a); err != nil {

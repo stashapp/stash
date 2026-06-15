@@ -5,10 +5,10 @@ CREATE TABLE `group_aliases` (
   foreign key(`group_id`) references `groups`(`id`) on delete CASCADE
 );
 
-CREATE INDEX `group_aliases_alias` on `group_aliases` (`alias`);
+CREATE INDEX `index_group_aliases_on_alias` on `group_aliases` (`alias`);
 
 -- copy data from group table where aliases is just a string
--- skip NULL/empty rows to avoid violating the NOT NULL constraints
+-- skip NULL rows to satisfy the NOT NULL constraint
 INSERT INTO `group_aliases` (
     `group_id`,
     `alias`
@@ -16,6 +16,6 @@ INSERT INTO `group_aliases` (
     `id`,
     `aliases`
 FROM `groups`
-WHERE `aliases` IS NOT NULL AND TRIM(`aliases`) != '';
+WHERE `aliases` IS NOT NULL;
 
 ALTER TABLE `groups` DROP COLUMN `aliases`;
