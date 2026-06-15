@@ -27,8 +27,8 @@ func newGroupResolver(t *testing.T) (*mocks.Database, *managermocks.GroupService
 }
 
 const (
-	groupID    = 10
-	groupIDStr = "10"
+	groupID    = 1
+	groupIDStr = "1"
 	groupName  = "MyGroup"
 
 	alias1       = "alias1"
@@ -37,8 +37,11 @@ const (
 	aliasOld2    = "aliasOld2"
 )
 
-// var because need to grab pointer in tests
-var groupNewName = "NewName"
+var (
+	// var because need to grab pointer in tests
+	groupNewName = "NewName"
+	groupData    = &models.Group{ID: groupID, Name: groupName}
+)
 
 func TestGroupCreate_AliasNormalization(t *testing.T) {
 	tests := []struct {
@@ -73,13 +76,18 @@ func TestGroupCreate_AliasNormalization(t *testing.T) {
 			ctx := testutil.WithGQLContext(context.Background(), nil)
 			db, svc, r := newGroupResolver(t)
 
+			// setup mocks
+			var gotInput *models.CreateGroupInput
 			svc.On("Create", mock.Anything, mock.Anything).
 				Run(func(args mock.Arguments) {
-					args.Get(1).(*models.CreateGroupInput).Group.ID = groupID
+					gotInput = args.Get(1).(*models.CreateGroupInput)
+					gotInput.Group.ID = groupID
 				}).
 				Return(nil).Once()
-			db.Group.On("Find", mock.Anything, groupID).Return(&models.Group{ID: groupID, Name: groupName}, nil).Once()
 
+			db.Group.On("Find", mock.Anything, groupID).Return(groupData, nil).Once()
+
+			// run the mutation
 			result, err := r.Mutation().GroupCreate(ctx, GroupCreateInput{
 				Name:    groupName,
 				Aliases: tt.aliases,
@@ -87,7 +95,7 @@ func TestGroupCreate_AliasNormalization(t *testing.T) {
 			assert.Nil(t, err)
 			assert.NotNil(t, result)
 
-			gotInput := svc.Calls[0].Arguments.Get(1).(*models.CreateGroupInput)
+			// validate that arguments are as expected
 			assert.Equal(t, tt.expected, gotInput.Group.Aliases.List())
 		})
 	}
@@ -153,13 +161,19 @@ func TestGroupUpdate_AliasNormalization(t *testing.T) {
 
 			db, svc, r := newGroupResolver(t)
 
-			existing := &models.Group{ID: groupID, Name: groupName}
-			db.Group.On("Find", mock.Anything, groupID).Return(existing, nil).Once()
+			// setup mocks
+			// Find runs twice in case of group update
+			db.Group.On("Find", mock.Anything, groupID).Return(groupData, nil).Twice()
 			db.Group.On("GetAliases", mock.Anything, groupID).Return(tt.existingAliases, nil).Once()
-			svc.On("UpdatePartial", mock.Anything, groupID, mock.Anything, mock.Anything, mock.Anything).
-				Return(existing, nil).Once()
-			db.Group.On("Find", mock.Anything, groupID).Return(existing, nil).Once()
 
+			var gotPartial models.GroupPartial
+			svc.On("UpdatePartial", mock.Anything, groupID, mock.Anything, mock.Anything, mock.Anything).
+				Run(func(args mock.Arguments) {
+					gotPartial = args.Get(2).(models.GroupPartial)
+				}).
+				Return(groupData, nil).Once()
+
+			// run the mutation
 			result, err := r.Mutation().GroupUpdate(ctx, GroupUpdateInput{
 				ID:      groupIDStr,
 				Name:    tt.newName,
@@ -168,7 +182,7 @@ func TestGroupUpdate_AliasNormalization(t *testing.T) {
 			assert.Nil(t, err)
 			assert.NotNil(t, result)
 
-			gotPartial := svc.Calls[0].Arguments.Get(2).(models.GroupPartial)
+			// validate that arguments are as expected
 			assert.Equal(t, &models.UpdateStrings{
 				Values: tt.expected,
 				Mode:   models.RelationshipUpdateModeSet,
