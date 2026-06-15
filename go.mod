@@ -55,7 +55,7 @@ require (
 	github.com/vearutop/statigz v1.4.0
 	github.com/vektah/dataloaden v0.3.0
 	github.com/vektah/gqlparser/v2 v2.5.27
-	github.com/vektra/mockery/v2 v2.10.0
+	github.com/vektra/mockery/v2 v2.21.6
 	github.com/xWTF/chardet v0.0.0-20230208095535-c780f2ac244e
 	github.com/zencoder/go-dash/v3 v3.0.2
 	golang.org/x/crypto v0.48.0
@@ -76,6 +76,7 @@ require (
 	github.com/antchfx/xpath v1.3.6 // indirect
 	github.com/asticode/go-astikit v0.20.0 // indirect
 	github.com/asticode/go-astits v1.8.0 // indirect
+	github.com/chigopher/pathlib v0.12.0 // indirect
 	github.com/chromedp/sysutil v1.1.0 // indirect
 	github.com/coder/websocket v1.8.12 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
