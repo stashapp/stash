@@ -210,7 +210,7 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	// Determine allowed genders for performer filtering
 	var allowedGenders []models.GenderEnum
 	if len(options.PerformerGenders) > 0 {
-		// New field takes precedence; empty slice treated as nil (no filter)
+		// New field takes precedence
 		allowedGenders = options.PerformerGenders
 	} else if options.IncludeMalePerformers != nil && !*options.IncludeMalePerformers {
 		// Legacy: if includeMalePerformers is false, include all genders except male
