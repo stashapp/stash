@@ -76,6 +76,9 @@ func (i *Importer) fileJSONToFile(ctx context.Context, fileJSON jsonschema.DirEn
 			BitRate:          ff.BitRate,
 			Interactive:      ff.Interactive,
 			InteractiveSpeed: ff.InteractiveSpeed,
+			Projection:       projectionPtr(ff.Projection),
+			StereoMode:       stereoModePtr(ff.StereoMode),
+			VRCorrections:    vrCorrectionsFromJSON(ff.VRCorrections),
 		}, nil
 	case *jsonschema.ImageFile:
 		baseFile, err := i.baseFileJSONToBaseFile(ctx, ff.BaseFile)
@@ -301,4 +304,33 @@ func (i *Importer) createFolder(ctx context.Context, parentFolder *models.Folder
 func (i *Importer) Update(ctx context.Context, id int) error {
 	// update not supported
 	return nil
+}
+
+func projectionPtr(s *string) *models.ProjectionEnum {
+	if s == nil {
+		return nil
+	}
+	p := models.ProjectionEnum(*s)
+	return &p
+}
+
+func stereoModePtr(s *string) *models.StereoModeEnum {
+	if s == nil {
+		return nil
+	}
+	m := models.StereoModeEnum(*s)
+	return &m
+}
+
+func vrCorrectionsFromJSON(jc *jsonschema.VRCorrections) *models.VRCorrections {
+	if jc == nil {
+		return nil
+	}
+	return &models.VRCorrections{
+		HorizontalOffset: jc.HorizontalOffset,
+		VerticalOffset:   jc.VerticalOffset,
+		Brightness:       jc.Brightness,
+		Contrast:         jc.Contrast,
+		Saturation:       jc.Saturation,
+	}
 }

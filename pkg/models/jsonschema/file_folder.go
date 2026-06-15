@@ -91,6 +91,19 @@ type VideoFile struct {
 
 	Interactive      bool `json:"interactive,omitempty"`
 	InteractiveSpeed *int `json:"interactive_speed,omitempty"`
+
+	Projection   *string         `json:"projection,omitempty"`
+	StereoMode   *string         `json:"stereo_mode,omitempty"`
+	VRCorrections *VRCorrections `json:"vr_corrections,omitempty"`
+}
+
+// VRCorrections mirrors models.VRCorrections for JSON import/export.
+type VRCorrections struct {
+	HorizontalOffset *float64 `json:"horizontal_offset,omitempty"`
+	VerticalOffset   *float64 `json:"vertical_offset,omitempty"`
+	Brightness       *int     `json:"brightness,omitempty"`
+	Contrast         *int     `json:"contrast,omitempty"`
+	Saturation       *int     `json:"saturation,omitempty"`
 }
 
 type ImageFile struct {

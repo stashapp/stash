@@ -287,8 +287,12 @@ type VideoFile struct {
 	FrameRate  float64 `json:"frame_rate"`
 	BitRate    int64   `json:"bitrate"`
 
-	Interactive      bool `json:"interactive"`
+	Interactive bool `json:"interactive"`
 	InteractiveSpeed *int `json:"interactive_speed"`
+
+	Projection *ProjectionEnum `json:"projection"`
+	StereoMode *StereoModeEnum `json:"stereo_mode"`
+	VRCorrections *VRCorrections `json:"vr_corrections"`
 }
 
 func (f VideoFile) GetWidth() int {

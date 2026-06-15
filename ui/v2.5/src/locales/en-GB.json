@@ -1300,7 +1300,9 @@
     "phash_meaning": "Perceptual Hash",
     "play_count": "Play Count",
     "play_duration": "Play Duration",
+    "projection": "Projection",
     "stream": "Stream",
+    "stereo_mode": "Stereo Mode",
     "video_codec": "Video Codec"
   },
   "megabits_per_second": "{value} mbps",
