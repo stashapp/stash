@@ -23,8 +23,8 @@ importers:
         specifier: ^3.1.1
         version: 3.1.1
       '@formatjs/intl-getcanonicallocales':
-        specifier: ^3.2.2
-        version: 3.2.2
+        specifier: ^3.2.10
+        version: 3.2.10
       '@formatjs/intl-locale':
         specifier: ^5.3.1
         version: 5.3.1
@@ -1013,6 +1013,9 @@ packages:
 
   '@formatjs/intl-displaynames@6.8.5':
     resolution: {integrity: sha512-85b+GdAKCsleS6cqVxf/Aw/uBd+20EM0wDpgaxzHo3RIR3bxF4xCJqH/Grbzx8CXurTgDDZHPdPdwJC+May41w==}
+
+  '@formatjs/intl-getcanonicallocales@3.2.10':
+    resolution: {integrity: sha512-iH9faynSJ7EO8h7VgMfkjGBMUvmmalyio2dTqB2tSSi8UZuWWfHmeQ/RT+Ztl/SUdrN5tm0SO3218uLQIkCGXw==}
 
   '@formatjs/intl-getcanonicallocales@3.2.2':
     resolution: {integrity: sha512-pjF2zC26yXXLv9FlPes6zzOme9MwgqyeWYu8r5bP7qEdoDcaGsuQO3mk6pQb57t9bxdbIwrAhZFy0hH760SeWw==}
@@ -5173,6 +5176,8 @@ snapshots:
       '@formatjs/ecma402-abstract': 2.2.4
       '@formatjs/intl-localematcher': 0.5.8
       tslib: 2.8.1
+
+  '@formatjs/intl-getcanonicallocales@3.2.10': {}
 
   '@formatjs/intl-getcanonicallocales@3.2.2': {}
 
