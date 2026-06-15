@@ -12,12 +12,12 @@ import (
 type ProjectionEnum string
 
 const (
-	ProjectionEnumFlat           ProjectionEnum = "FLAT"
+	ProjectionEnumFlat            ProjectionEnum = "FLAT"
 	ProjectionEnumEquirectangular ProjectionEnum = "EQUIRECTANGULAR"
-	ProjectionEnumFisheye        ProjectionEnum = "FISHEYE"
-	ProjectionEnumMKX200        ProjectionEnum = "MKX200"
-	ProjectionEnumRF52          ProjectionEnum = "RF52"
-	ProjectionEnumDome          ProjectionEnum = "DOME"
+	ProjectionEnumFisheye         ProjectionEnum = "FISHEYE"
+	ProjectionEnumMKX200          ProjectionEnum = "MKX200"
+	ProjectionEnumRF52            ProjectionEnum = "RF52"
+	ProjectionEnumDome            ProjectionEnum = "DOME"
 )
 
 var AllProjectionEnum = []ProjectionEnum{

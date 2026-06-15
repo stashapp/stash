@@ -3,8 +3,8 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
 	"path/filepath"
@@ -64,9 +64,9 @@ type videoFileRow struct {
 	BitRate          int64         `db:"bit_rate"`
 	Interactive      bool          `db:"interactive"`
 	InteractiveSpeed null.Int      `db:"interactive_speed"`
-	Projection     null.String `db:"projection"`
-	StereoMode     null.String `db:"stereo_mode"`
-	VRCorrections  null.String `db:"vr_corrections"`
+	Projection       null.String   `db:"projection"`
+	StereoMode       null.String   `db:"stereo_mode"`
+	VRCorrections    null.String   `db:"vr_corrections"`
 }
 
 func (f *videoFileRow) fromVideoFile(ff models.VideoFile) {
@@ -114,9 +114,9 @@ type videoFileQueryRow struct {
 	BitRate          null.Int    `db:"bit_rate"`
 	Interactive      null.Bool   `db:"interactive"`
 	InteractiveSpeed null.Int    `db:"interactive_speed"`
-	Projection     null.String `db:"projection"`
-	StereoMode     null.String `db:"stereo_mode"`
-	VRCorrections  null.String `db:"vr_corrections"`
+	Projection       null.String `db:"projection"`
+	StereoMode       null.String `db:"stereo_mode"`
+	VRCorrections    null.String `db:"vr_corrections"`
 }
 
 func (f *videoFileQueryRow) resolve() *models.VideoFile {
@@ -131,9 +131,9 @@ func (f *videoFileQueryRow) resolve() *models.VideoFile {
 		BitRate:          f.BitRate.Int64,
 		Interactive:      f.Interactive.Bool,
 		InteractiveSpeed: nullIntPtr(f.InteractiveSpeed),
-		Projection: projectionEnumFromNullString(f.Projection),
-		StereoMode: stereoModeEnumFromNullString(f.StereoMode),
-		VRCorrections: vrCorrectionsFromNullString(f.VRCorrections),
+		Projection:       projectionEnumFromNullString(f.Projection),
+		StereoMode:       stereoModeEnumFromNullString(f.StereoMode),
+		VRCorrections:    vrCorrectionsFromNullString(f.VRCorrections),
 	}
 }
 
@@ -461,31 +461,54 @@ func (qb *FileStore) updateOrCreateVideoFile(ctx context.Context, id models.File
 }
 
 func projectionEnumPtr(e *models.ProjectionEnum) *string {
-	if e == nil { return nil }
-	s := string(*e); return &s
+	if e == nil {
+		return nil
+	}
+	s := string(*e)
+	return &s
 }
 func projectionEnumFromNullString(s null.String) *models.ProjectionEnum {
-	if !s.Valid { return nil }
-	e := models.ProjectionEnum(s.String); return &e
+	if !s.Valid {
+		return nil
+	}
+	e := models.ProjectionEnum(s.String)
+	return &e
 }
 func stereoModeEnumPtr(e *models.StereoModeEnum) *string {
-	if e == nil { return nil }
-	s := string(*e); return &s
+	if e == nil {
+		return nil
+	}
+	s := string(*e)
+	return &s
 }
 func stereoModeEnumFromNullString(s null.String) *models.StereoModeEnum {
-	if !s.Valid { return nil }
-	e := models.StereoModeEnum(s.String); return &e
+	if !s.Valid {
+		return nil
+	}
+	e := models.StereoModeEnum(s.String)
+	return &e
 }
 func vrCorrectionsToNullString(vc *models.VRCorrections) null.String {
-	if vc == nil { return null.String{} }
-	b, _ := json.Marshal(vc); return null.StringFrom(string(b))
+	if vc == nil {
+		return null.String{}
+	}
+	b, err := json.Marshal(vc)
+	if err != nil {
+		return null.String{}
+	}
+	return null.StringFrom(string(b))
 }
 func vrCorrectionsFromNullString(s null.String) *models.VRCorrections {
-	if !s.Valid || s.String == "" { return nil }
+	if !s.Valid || s.String == "" {
+		return nil
+	}
 	var vc models.VRCorrections
-	if err := json.Unmarshal([]byte(s.String), &vc); err != nil { return nil }
+	if err := json.Unmarshal([]byte(s.String), &vc); err != nil {
+		return nil
+	}
 	return &vc
 }
+
 // ModifyVideoFileMetadata updates VR metadata fields; nil = no change.
 func (qb *FileStore) ModifyVideoFileMetadata(ctx context.Context, fileID models.FileID, projection *models.ProjectionEnum, stereoMode *models.StereoModeEnum, vrCorrections *models.VRCorrections) error {
 	var row videoFileRow

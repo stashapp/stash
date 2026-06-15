@@ -92,8 +92,8 @@ type VideoFile struct {
 	Interactive      bool `json:"interactive,omitempty"`
 	InteractiveSpeed *int `json:"interactive_speed,omitempty"`
 
-	Projection   *string         `json:"projection,omitempty"`
-	StereoMode   *string         `json:"stereo_mode,omitempty"`
+	Projection    *string        `json:"projection,omitempty"`
+	StereoMode    *string        `json:"stereo_mode,omitempty"`
 	VRCorrections *VRCorrections `json:"vr_corrections,omitempty"`
 }
 
