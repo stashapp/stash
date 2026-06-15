@@ -518,6 +518,7 @@ var groupSortOptions = sortOptions{
 	"rating",
 	"scenes_count",
 	"o_counter",
+	"sub_group_description",
 	"sub_group_order",
 	"tag_count",
 	"updated_at",
@@ -549,6 +550,15 @@ func (qb *GroupStore) setGroupSort(query *queryBuilder, findFilter *models.FindF
 			// the group has multiple parents and order indexes
 			query.joinSort(groupRelationsTable, "", "groups.id = groups_relations.sub_id")
 			query.sortAndPagination += getSort("order_index", direction, groupRelationsTable)
+		}
+	case "sub_group_description":
+		// as above, we need to handle parent groups differently here
+		const clause = " ORDER BY COALESCE(%s.description, '') COLLATE NATURAL_CI %s"
+		if query.hasJoin("groups_parents") {
+			query.sortAndPagination += fmt.Sprintf(clause, "groups_parents", direction)
+		} else {
+			query.joinSort(groupRelationsTable, "", "groups.id = groups_relations.sub_id")
+			query.sortAndPagination += fmt.Sprintf(clause, groupRelationsTable, direction)
 		}
 	case "tag_count":
 		query.sortAndPagination += getCountSort(groupTable, groupsTagsTable, groupIDColumn, direction)

@@ -84,6 +84,8 @@ const (
 	sceneIdxMissingPhash
 	sceneIdxWithPerformerParentTag
 	sceneIdxWithGroupWithParent
+	sceneIdxWithChildTag
+	sceneIdxWithGrandChildTag
 	// new indexes above
 	lastSceneIdx
 
@@ -115,6 +117,7 @@ const (
 	imageIdxWithPerformerTwoTags
 	imageIdxWithGrandChildStudio
 	imageIdxWithPerformerParentTag
+	imageIdxWithGrandChildTag
 	// new indexes above
 	totalImages
 )
@@ -167,6 +170,7 @@ const (
 	groupIdxWithGrandParent
 	groupIdxWithParentAndScene
 	groupIdxWithChildWithScene
+	groupIdxWithGrandChildTag
 	// groups with dup names start from the end
 	groupIdxWithDupName
 
@@ -199,6 +203,7 @@ const (
 	galleryIdxWithGrandChildStudio
 	galleryIdxWithoutFile
 	galleryIdxWithPerformerParentTag
+	galleryIdxWithGrandChildTag
 	// new indexes above
 	lastGalleryIdx
 
@@ -378,6 +383,8 @@ var (
 		sceneIdxWithThreeTags:     {tagIdx1WithScene, tagIdx2WithScene, tagIdx3WithScene},
 		sceneIdxWithMarkerAndTag:  {tagIdx3WithScene},
 		sceneIdxWithMarkerTwoTags: {tagIdx2WithScene, tagIdx3WithScene},
+		sceneIdxWithChildTag:      {tagIdxWithParentTag},
+		sceneIdxWithGrandChildTag: {tagIdxWithGrandParent},
 	}
 
 	scenePerformers = linkMap{
@@ -430,6 +437,7 @@ var (
 		{sceneIdxWithMarkers, tagIdxWithPrimaryMarkers, []int{tagIdxWithMarkers, tagIdx2WithMarkers}},
 		{sceneIdxWithMarkerAndTag, tagIdxWithPrimaryMarkers, nil},
 		{sceneIdxWithMarkerTwoTags, tagIdxWithPrimaryMarkers, nil},
+		{sceneIdxWithGrandChildTag, tagIdxWithGrandParent, nil},
 	}
 )
 
@@ -461,9 +469,10 @@ var (
 		imageIdxWithGrandChildStudio: studioIdxWithGrandParent,
 	}
 	imageTags = linkMap{
-		imageIdxWithTag:       {tagIdxWithImage},
-		imageIdxWithTwoTags:   {tagIdx1WithImage, tagIdx2WithImage},
-		imageIdxWithThreeTags: {tagIdx1WithImage, tagIdx2WithImage, tagIdx3WithImage},
+		imageIdxWithTag:           {tagIdxWithImage},
+		imageIdxWithTwoTags:       {tagIdx1WithImage, tagIdx2WithImage},
+		imageIdxWithThreeTags:     {tagIdx1WithImage, tagIdx2WithImage, tagIdx3WithImage},
+		imageIdxWithGrandChildTag: {tagIdxWithGrandParent},
 	}
 	imagePerformers = linkMap{
 		imageIdxWithPerformer:          {performerIdxWithImage},
@@ -502,9 +511,10 @@ var (
 	}
 
 	galleryTags = linkMap{
-		galleryIdxWithTag:       {tagIdxWithGallery},
-		galleryIdxWithTwoTags:   {tagIdx1WithGallery, tagIdx2WithGallery},
-		galleryIdxWithThreeTags: {tagIdx1WithGallery, tagIdx2WithGallery, tagIdx3WithGallery},
+		galleryIdxWithTag:           {tagIdxWithGallery},
+		galleryIdxWithTwoTags:       {tagIdx1WithGallery, tagIdx2WithGallery},
+		galleryIdxWithThreeTags:     {tagIdx1WithGallery, tagIdx2WithGallery, tagIdx3WithGallery},
+		galleryIdxWithGrandChildTag: {tagIdxWithGrandParent},
 	}
 )
 
@@ -514,9 +524,10 @@ var (
 	}
 
 	groupTags = linkMap{
-		groupIdxWithTag:       {tagIdxWithGroup},
-		groupIdxWithTwoTags:   {tagIdx1WithGroup, tagIdx2WithGroup},
-		groupIdxWithThreeTags: {tagIdx1WithGroup, tagIdx2WithGroup, tagIdx3WithGroup},
+		groupIdxWithTag:           {tagIdxWithGroup},
+		groupIdxWithTwoTags:       {tagIdx1WithGroup, tagIdx2WithGroup},
+		groupIdxWithThreeTags:     {tagIdx1WithGroup, tagIdx2WithGroup, tagIdx3WithGroup},
+		groupIdxWithGrandChildTag: {tagIdxWithGrandParent},
 	}
 )
 
@@ -588,6 +599,10 @@ func indexesToIDPtrs[T any](ids []T, indexes []int) []*T {
 	return ret
 }
 
+func intPtr(i int) *int {
+	return &i
+}
+
 func indexToIDPtr[T any](ids []T, idx int) *T {
 	if idx < 0 {
 		return nil
@@ -603,6 +618,10 @@ func indexFromID(ids []int, id int) int {
 	}
 
 	return -1
+}
+
+func ptr[T any](v T) *T {
+	return &v
 }
 
 var db *sqlite.Database

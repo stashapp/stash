@@ -1068,8 +1068,8 @@ ul.selectable-list {
   background-color: transparent;
   bottom: $navbar-height;
   margin: auto;
+  pointer-events: none;
   position: sticky;
-  width: fit-content;
   z-index: 10;
 
   @include media-breakpoint-up(sm) {
@@ -1080,6 +1080,7 @@ ul.selectable-list {
 .pagination-footer {
   margin: auto;
   padding: 0.5rem 1rem 0.75rem;
+  pointer-events: auto;
 
   width: fit-content;
 

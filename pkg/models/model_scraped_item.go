@@ -348,13 +348,17 @@ func (p *ScrapedPerformer) GetImage(ctx context.Context, excluded map[string]boo
 	return nil, nil
 }
 
-func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, existingStashIDs []StashID) PerformerPartial {
+func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, merge map[string]bool, existingStashIDs []StashID) PerformerPartial {
 	ret := NewPerformerPartial()
 
 	if p.Aliases != nil && !excluded["aliases"] {
+		mode := RelationshipUpdateModeSet
+		if merge["aliases"] {
+			mode = RelationshipUpdateModeAdd
+		}
 		ret.Aliases = &UpdateStrings{
 			Values: stringslice.FromString(*p.Aliases, ","),
-			Mode:   RelationshipUpdateModeSet,
+			Mode:   mode,
 		}
 	}
 	if p.Birthdate != nil && !excluded["birthdate"] {
@@ -430,12 +434,17 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 		ret.Tattoos = NewOptionalString(*p.Tattoos)
 	}
 
+	urlMode := RelationshipUpdateModeSet
+	if merge["urls"] {
+		urlMode = RelationshipUpdateModeAdd
+	}
+
 	// if URLs are provided, only use those
 	if len(p.URLs) > 0 {
 		if !excluded["urls"] {
 			ret.URLs = &UpdateStrings{
 				Values: p.URLs,
-				Mode:   RelationshipUpdateModeSet,
+				Mode:   urlMode,
 			}
 		}
 	} else {
@@ -453,7 +462,7 @@ func (p *ScrapedPerformer) ToPartial(endpoint string, excluded map[string]bool, 
 		if len(urls) > 0 {
 			ret.URLs = &UpdateStrings{
 				Values: urls,
-				Mode:   RelationshipUpdateModeSet,
+				Mode:   urlMode,
 			}
 		}
 	}

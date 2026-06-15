@@ -1630,6 +1630,67 @@ func queryImagesWithCount(ctx context.Context, sqb models.ImageReader, imageFilt
 	return images, result.Count, nil
 }
 
+// #5503 - total size/megapixels must include secondary files of equal size/dimensions
+func TestImageQueryTotalSizeMultipleFiles(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		iqb := db.Image
+		fqb := db.File
+
+		const fileSize = int64(1234)
+		const fileWidth = 1000
+		const fileHeight = 1000
+
+		makeFile := func(basename string) models.FileID {
+			f := &models.ImageFile{
+				BaseFile: &models.BaseFile{
+					Path:           getFilePath(folderIdxWithImageFiles, basename),
+					Basename:       basename,
+					ParentFolderID: folderIDs[folderIdxWithImageFiles],
+					Size:           fileSize,
+				},
+				Width:  fileWidth,
+				Height: fileHeight,
+			}
+			if err := fqb.Create(ctx, f); err != nil {
+				t.Fatalf("creating file: %v", err)
+			}
+			return f.ID
+		}
+
+		f1 := makeFile("multifile-image-1.jpg")
+		f2 := makeFile("multifile-image-2.jpg")
+
+		image := &models.Image{Title: "multifile image"}
+		if err := iqb.Create(ctx, &models.CreateImageInput{
+			Image:   image,
+			FileIDs: []models.FileID{f1, f2},
+		}); err != nil {
+			t.Fatalf("creating image: %v", err)
+		}
+
+		result, err := iqb.Query(ctx, models.ImageQueryOptions{
+			QueryOptions: models.QueryOptions{Count: true},
+			ImageFilter: &models.ImageFilterType{
+				ID: &models.IntCriterionInput{
+					Modifier: models.CriterionModifierEquals,
+					Value:    image.ID,
+				},
+			},
+			Megapixels: true,
+			TotalSize:  true,
+		})
+		if err != nil {
+			t.Fatalf("querying image: %v", err)
+		}
+
+		assert.Equal(t, 1, result.Count)
+		assert.Equal(t, float64(fileSize*2), result.TotalSize)
+		assert.Equal(t, float64(fileWidth*fileHeight*2)/1000000, result.Megapixels)
+
+		return nil
+	})
+}
+
 func imageQueryQ(ctx context.Context, t *testing.T, sqb models.ImageReader, q string, expectedImageIdx int) {
 	filter := models.FindFilterType{
 		Q: &q,

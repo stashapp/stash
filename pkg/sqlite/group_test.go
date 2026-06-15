@@ -1132,6 +1132,90 @@ func TestGroupQuerySortOrderIndex(t *testing.T) {
 	})
 }
 
+func TestGroupQuerySortSubGroupDescription(t *testing.T) {
+	runWithRollbackTxn(t, "sort subgroup description", func(t *testing.T, ctx context.Context) {
+		assert := assert.New(t)
+
+		cEmpty := models.Group{Name: "sort-desc-child-empty"}
+		c01 := models.Group{Name: "sort-desc-child-01"}
+		c2 := models.Group{Name: "sort-desc-child-2"}
+		c10 := models.Group{Name: "sort-desc-child-10"}
+		assert.NoError(db.Group.Create(ctx, &cEmpty))
+		assert.NoError(db.Group.Create(ctx, &c01))
+		assert.NoError(db.Group.Create(ctx, &c2))
+		assert.NoError(db.Group.Create(ctx, &c10))
+
+		parent := models.Group{
+			Name: "sort-desc-parent",
+			SubGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
+				{GroupID: cEmpty.ID, Description: ""},
+				{GroupID: c10.ID, Description: "10"},
+				{GroupID: c2.ID, Description: "2"},
+				{GroupID: c01.ID, Description: "01"},
+			}),
+		}
+		assert.NoError(db.Group.Create(ctx, &parent))
+
+		sortKey := "sub_group_description"
+		dirAsc := models.SortDirectionEnumAsc
+		findFilter := models.FindFilterType{
+			Sort:      &sortKey,
+			Direction: &dirAsc,
+		}
+		groupFilter := models.GroupFilterType{
+			ContainingGroups: &models.HierarchicalMultiCriterionInput{
+				Value:    []string{strconv.Itoa(parent.ID)},
+				Modifier: models.CriterionModifierIncludes,
+			},
+		}
+
+		groups, _, err := db.Group.Query(ctx, &groupFilter, &findFilter)
+		assert.NoError(err)
+		assert.Len(groups, 4)
+		assert.Equal(cEmpty.ID, groups[0].ID)
+		assert.Equal(c01.ID, groups[1].ID)
+		assert.Equal(c2.ID, groups[2].ID)
+		assert.Equal(c10.ID, groups[3].ID)
+
+		dirDesc := models.SortDirectionEnumDesc
+		findFilter.Direction = &dirDesc
+		groups, _, err = db.Group.Query(ctx, &groupFilter, &findFilter)
+		assert.NoError(err)
+		assert.Len(groups, 4)
+		assert.Equal(c10.ID, groups[0].ID)
+		assert.Equal(c2.ID, groups[1].ID)
+		assert.Equal(c01.ID, groups[2].ID)
+		assert.Equal(cEmpty.ID, groups[3].ID)
+
+		// Exercise the non-groups_parents code path by filtering on name only.
+		nameCriterion := models.StringCriterionInput{
+			Value:    "sort-desc-child-",
+			Modifier: models.CriterionModifierIncludes,
+		}
+		nameFilter := models.GroupFilterType{
+			Name: &nameCriterion,
+		}
+
+		findFilter.Direction = &dirAsc
+		groups, _, err = db.Group.Query(ctx, &nameFilter, &findFilter)
+		assert.NoError(err)
+		assert.Len(groups, 4)
+		assert.Equal(cEmpty.ID, groups[0].ID)
+		assert.Equal(c01.ID, groups[1].ID)
+		assert.Equal(c2.ID, groups[2].ID)
+		assert.Equal(c10.ID, groups[3].ID)
+
+		findFilter.Direction = &dirDesc
+		groups, _, err = db.Group.Query(ctx, &nameFilter, &findFilter)
+		assert.NoError(err)
+		assert.Len(groups, 4)
+		assert.Equal(c10.ID, groups[0].ID)
+		assert.Equal(c2.ID, groups[1].ID)
+		assert.Equal(c01.ID, groups[2].ID)
+		assert.Equal(cEmpty.ID, groups[3].ID)
+	})
+}
+
 func TestGroupUpdateFrontImage(t *testing.T) {
 	if err := withRollbackTxn(func(ctx context.Context) error {
 		qb := db.Group
