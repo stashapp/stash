@@ -140,8 +140,8 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0(react@17.0.2)
       react-router-bootstrap:
-        specifier: ^0.25.0
-        version: 0.25.0(react-router-dom@5.3.4(react@17.0.2))(react@17.0.2)
+        specifier: ^0.26.3
+        version: 0.26.3(react-router-dom@5.3.4(react@17.0.2))(react@17.0.2)
       react-router-dom:
         specifier: ^5.3.4
         version: 5.3.4(react@17.0.2)
@@ -3385,11 +3385,11 @@ packages:
     peerDependencies:
       react: '>=16.8'
 
-  react-router-bootstrap@0.25.0:
-    resolution: {integrity: sha512-/22eqxjn6Zv5fvY2rZHn57SKmjmJfK7xzJ6/G1OgxAjLtKVfWgV5sn41W2yiqzbtV5eE4/i4LeDLBGYTqx7jbA==}
+  react-router-bootstrap@0.26.3:
+    resolution: {integrity: sha512-cBgcWekti6lFRl/vXP8ZfKuA/0Qe7L5xBjQ6OwbGI30+NSAAH/YZGbO6whSeBWFILn6uTVOX939HDGhs+5WzOw==}
     peerDependencies:
-      react: '>=0.14.0'
-      react-router-dom: '>=4.0.0'
+      react: '>=16.13.1'
+      react-router-dom: '>=6.0.0'
 
   react-router-dom@5.3.4:
     resolution: {integrity: sha512-m4EqFMHv/Ih4kpcBCONHbkT68KoAeHN4p3lAGoNryfHi0dMy0kCzEZakiKRsvg5wHZ/JLrLW8o8KomWiz/qbYQ==}
@@ -7561,7 +7561,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  react-router-bootstrap@0.25.0(react-router-dom@5.3.4(react@17.0.2))(react@17.0.2):
+  react-router-bootstrap@0.26.3(react-router-dom@5.3.4(react@17.0.2))(react@17.0.2):
     dependencies:
       prop-types: 15.8.1
       react: 17.0.2
