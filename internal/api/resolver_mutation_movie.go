@@ -142,6 +142,11 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	if input.Aliases != nil {
 		aliases = []string{strings.TrimSpace(*input.Aliases)}
 	}
+
+	// movie is deprecated, so the below case is being ignored
+	// when the new alias is same as old group name and old group name
+	// is not being updated, the deduplication wont happen, and extra alias
+	// would be present, not a major correctness issue though.
 	if updatedGroup.Name.Ptr() != nil {
 		aliases = stringslice.UniqueExcludeFold(aliases, updatedGroup.Name.Value)
 	}
