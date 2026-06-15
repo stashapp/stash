@@ -592,7 +592,7 @@ func Test_getOptions(t *testing.T) {
 		},
 		{
 			// Empty source PerformerGenders with nil default means no filter (include all).
-			name: "empty PerformerGenders with nil default yields nil (no filter)",
+			name:           "empty PerformerGenders with nil default yields nil (no filter)",
 			defaultOptions: nil,
 			sourceOptions: &MetadataOptions{
 				PerformerGenders: []models.GenderEnum{},
