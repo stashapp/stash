@@ -530,6 +530,204 @@ func Test_getScenePartial(t *testing.T) {
 	}
 }
 
+func Test_getOptions(t *testing.T) {
+	boolTrue := true
+	boolFalse := false
+
+	tests := []struct {
+		name           string
+		defaultOptions *MetadataOptions
+		sourceOptions  *MetadataOptions
+		want           MetadataOptions
+	}{
+		{
+			name: "nil source options returns defaults unchanged",
+			defaultOptions: &MetadataOptions{
+				SetOrganized:     &boolTrue,
+				PerformerGenders: []models.GenderEnum{models.GenderEnumFemale},
+			},
+			sourceOptions: nil,
+			want: MetadataOptions{
+				SetOrganized:     &boolTrue,
+				PerformerGenders: []models.GenderEnum{models.GenderEnumFemale},
+			},
+		},
+		{
+			name: "nil PerformerGenders in source does not override default",
+			defaultOptions: &MetadataOptions{
+				PerformerGenders: []models.GenderEnum{models.GenderEnumFemale},
+			},
+			sourceOptions: &MetadataOptions{
+				PerformerGenders: nil,
+			},
+			want: MetadataOptions{
+				PerformerGenders: []models.GenderEnum{models.GenderEnumFemale},
+			},
+		},
+		{
+			// When the UI sends an empty performerGenders array (all genders allowed),
+			// it must not be treated as a filter that blocks all performers.
+			name: "empty PerformerGenders in source does not override default",
+			defaultOptions: &MetadataOptions{
+				PerformerGenders: []models.GenderEnum{models.GenderEnumFemale},
+			},
+			sourceOptions: &MetadataOptions{
+				PerformerGenders: []models.GenderEnum{},
+			},
+			want: MetadataOptions{
+				PerformerGenders: []models.GenderEnum{models.GenderEnumFemale},
+			},
+		},
+		{
+			name: "non-empty PerformerGenders in source overrides default",
+			defaultOptions: &MetadataOptions{
+				PerformerGenders: []models.GenderEnum{models.GenderEnumFemale},
+			},
+			sourceOptions: &MetadataOptions{
+				PerformerGenders: []models.GenderEnum{models.GenderEnumMale},
+			},
+			want: MetadataOptions{
+				PerformerGenders: []models.GenderEnum{models.GenderEnumMale},
+			},
+		},
+		{
+			// Empty source PerformerGenders with nil default means no filter (include all).
+			name: "empty PerformerGenders with nil default yields nil (no filter)",
+			defaultOptions: nil,
+			sourceOptions: &MetadataOptions{
+				PerformerGenders: []models.GenderEnum{},
+			},
+			want: MetadataOptions{},
+		},
+		{
+			name: "source overrides scalar fields",
+			defaultOptions: &MetadataOptions{
+				SetCoverImage: &boolTrue,
+				SetOrganized:  &boolTrue,
+			},
+			sourceOptions: &MetadataOptions{
+				SetCoverImage: &boolFalse,
+			},
+			want: MetadataOptions{
+				SetCoverImage: &boolFalse,
+				SetOrganized:  &boolTrue,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			identifier := SceneIdentifier{
+				DefaultOptions: tt.defaultOptions,
+			}
+			source := ScraperSource{Options: tt.sourceOptions}
+			got := identifier.getOptions(source)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_getSceneUpdater_performerGenders(t *testing.T) {
+	const (
+		femalePerformerID = 1
+		malePerformerID   = 2
+	)
+	femaleIDStr := strconv.Itoa(femalePerformerID)
+	maleIDStr := strconv.Itoa(malePerformerID)
+	female := models.GenderEnumFemale.String()
+	male := models.GenderEnumMale.String()
+	boolFalse := false
+
+	db := mocks.NewDatabase()
+
+	// Scene with no existing performers; all relationship fields pre-loaded so
+	// getSceneUpdater does not need to hit the database.
+	scene := &models.Scene{
+		ID:           1,
+		URLs:         models.NewRelatedStrings([]string{}),
+		PerformerIDs: models.NewRelatedIDs([]int{}),
+		TagIDs:       models.NewRelatedIDs([]int{}),
+		StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+	}
+
+	// Scraped scene with one female and one male performer, both already in the
+	// database (StoredID set). No studio, tags, cover or stash IDs, so no DB
+	// calls are needed beyond resolving the performer IDs.
+	scrapedScene := &models.ScrapedScene{
+		Performers: []*models.ScrapedPerformer{
+			{StoredID: &femaleIDStr, Gender: &female},
+			{StoredID: &maleIDStr, Gender: &male},
+		},
+	}
+
+	tests := []struct {
+		name                  string
+		performerGenders      []models.GenderEnum
+		includeMalePerformers *bool
+		wantPerformerIDs      []int
+	}{
+		{
+			// nil means "no filter configured" — all performers pass through.
+			name:             "nil PerformerGenders includes all genders",
+			performerGenders: nil,
+			wantPerformerIDs: []int{femalePerformerID, malePerformerID},
+		},
+		{
+			// An empty slice sent by the UI when no gender restriction is set must
+			// also mean "no filter". This was the root cause of the identify bug.
+			name:             "empty PerformerGenders includes all genders",
+			performerGenders: []models.GenderEnum{},
+			wantPerformerIDs: []int{femalePerformerID, malePerformerID},
+		},
+		{
+			name:             "female-only filter excludes male performer",
+			performerGenders: []models.GenderEnum{models.GenderEnumFemale},
+			wantPerformerIDs: []int{femalePerformerID},
+		},
+		{
+			name:             "male-only filter excludes female performer",
+			performerGenders: []models.GenderEnum{models.GenderEnumMale},
+			wantPerformerIDs: []int{malePerformerID},
+		},
+		{
+			// Legacy field: empty PerformerGenders falls back to IncludeMalePerformers.
+			name:                  "empty PerformerGenders falls back to IncludeMalePerformers=false",
+			performerGenders:      []models.GenderEnum{},
+			includeMalePerformers: &boolFalse,
+			wantPerformerIDs:      []int{femalePerformerID},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			opts := MetadataOptions{
+				SetCoverImage:         &boolFalse,
+				PerformerGenders:      tt.performerGenders,
+				IncludeMalePerformers: tt.includeMalePerformers,
+			}
+
+			identifier := SceneIdentifier{
+				TxnManager:         db,
+				SceneReaderUpdater: db.Scene,
+				StudioReaderWriter: db.Studio,
+				PerformerCreator:   db.Performer,
+				TagFinderCreator:   db.Tag,
+				DefaultOptions:     &opts,
+			}
+
+			result := &scrapeResult{
+				source: ScraperSource{},
+				result: scrapedScene,
+			}
+
+			updater, err := identifier.getSceneUpdater(testCtx, scene, result)
+			assert.NoError(t, err)
+			assert.NotNil(t, updater.Partial.PerformerIDs, "expected PerformerIDs to be set")
+			assert.ElementsMatch(t, tt.wantPerformerIDs, updater.Partial.PerformerIDs.IDs)
+		})
+	}
+}
+
 func Test_shouldSetSingleValueField(t *testing.T) {
 	const invalid = "invalid"
 
