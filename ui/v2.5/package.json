@@ -113,7 +113,7 @@
     "sass": "^1.101.0",
     "stylelint": "^17.6.0",
     "stylelint-order": "^8.1.1",
-    "terser": "^5.46.1",
+    "terser": "^5.48.0",
     "ts-node": "~10.9.2",
     "typescript": "~5.9.3",
     "vite": "^7.3.5",
