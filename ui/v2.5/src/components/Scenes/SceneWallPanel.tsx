@@ -22,11 +22,15 @@ import { useIntl } from "react-intl";
 import { useDragMoveSelect } from "../Shared/GridCard/dragMoveSelect";
 import cx from "classnames";
 import { defaultPreviewVolume } from "src/core/config";
+import {
+  getFirstValidPreviewSource,
+  PreviewMediaType,
+} from "src/utils/wallPreview";
 
 interface IScenePhoto {
   scene: GQL.SlimSceneDataFragment;
   link: string;
-  mediaType: "image" | "video";
+  mediaType: PreviewMediaType;
   onError?: (photo: PhotoProps<IScenePhoto>) => void;
 }
 
@@ -211,36 +215,6 @@ const breakpointZoomHeights = [
 ];
 
 type FailedSrcMap = Record<string, string[]>; // id to list of failed srcs
-
-interface IPreviewSource {
-  src?: string | null;
-  mediaType: "image" | "video";
-}
-
-interface ISelectedPreviewSource {
-  src: string;
-  mediaType: "image" | "video";
-}
-
-function getFirstValidPreviewSource(
-  srcSet: readonly IPreviewSource[],
-  invalidSrcSet: string[]
-): ISelectedPreviewSource {
-  const validSrcSet = srcSet.filter((s) => s.src);
-
-  if (!validSrcSet.length) {
-    return { src: "", mediaType: "image" };
-  }
-
-  const selected =
-    validSrcSet.find(({ src }) => !invalidSrcSet.includes(src!)) ??
-    ([...validSrcSet].pop() as IPreviewSource);
-
-  return {
-    src: selected.src!,
-    mediaType: selected.mediaType,
-  };
-}
 
 function getScenePreviewSources(
   scene: GQL.SlimSceneDataFragment,

@@ -15,6 +15,10 @@ import { useDragMoveSelect } from "../Shared/GridCard/dragMoveSelect";
 import cx from "classnames";
 import NavUtils from "src/utils/navigation";
 import { markerTitle } from "src/core/markers";
+import {
+  getFirstValidPreviewSource,
+  PreviewMediaType,
+} from "src/utils/wallPreview";
 
 function wallItemTitle(sceneMarker: GQL.SceneMarkerDataFragment) {
   const newTitle = markerTitle(sceneMarker);
@@ -32,7 +36,7 @@ function wallItemTitle(sceneMarker: GQL.SceneMarkerDataFragment) {
 interface IMarkerPhoto {
   marker: GQL.SceneMarkerDataFragment;
   link: string;
-  mediaType: "image" | "video";
+  mediaType: PreviewMediaType;
   onError?: (photo: PhotoProps<IMarkerPhoto>) => void;
 }
 
@@ -166,36 +170,6 @@ interface IMarkerWallProps {
 
 // HACK: typescript doesn't allow Gallery to accept a parameter for some reason
 const MarkerGallery = Gallery as unknown as GalleryI<IMarkerPhoto>;
-
-interface IPreviewSource {
-  src?: string | null;
-  mediaType: "image" | "video";
-}
-
-interface ISelectedPreviewSource {
-  src: string;
-  mediaType: "image" | "video";
-}
-
-function getFirstValidPreviewSource(
-  srcSet: readonly IPreviewSource[],
-  invalidSrcSet: string[]
-): ISelectedPreviewSource {
-  const validSrcSet = srcSet.filter((s) => s.src);
-
-  if (!validSrcSet.length) {
-    return { src: "", mediaType: "image" };
-  }
-
-  const selected =
-    validSrcSet.find(({ src }) => !invalidSrcSet.includes(src!)) ??
-    ([...validSrcSet].pop() as IPreviewSource);
-
-  return {
-    src: selected.src!,
-    mediaType: selected.mediaType,
-  };
-}
 
 function getMarkerPreviewSources(
   marker: GQL.SceneMarkerDataFragment,
