@@ -73,7 +73,7 @@ export const MarkerWallItem: React.FC<
     divStyle.top = props.top;
   }
 
-  const handleClick = function (event: React.MouseEvent) {
+  function handleClick(event: React.MouseEvent) {
     if (props.selecting && props.onSelectedChanged) {
       props.onSelectedChanged(!props.selected, event.shiftKey);
       event.preventDefault();
@@ -83,7 +83,7 @@ export const MarkerWallItem: React.FC<
     if (props.onClick) {
       props.onClick(event, { index: props.index });
     }
-  };
+  }
 
   const video = props.photo.src.includes("stream");
   const ImagePreview = video ? "video" : "img";
@@ -200,6 +200,8 @@ const breakpointZoomHeights = [
   { minWidth: 1400, heights: [160, 240, 300, 480] },
 ];
 
+type FailedSrcMap = Record<string, string[]>; // markerID to list of failed srcs
+
 const MarkerWall: React.FC<IMarkerWallProps> = ({
   markers,
   zoomIndex,
@@ -214,14 +216,24 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({
   const margin = 3;
   const direction = "row";
 
-  const [erroredImgs, setErroredImgs] = useState<string[]>([]);
+  const [erroredImgs, setErroredImgs] = useState<FailedSrcMap>({});
 
-  const handleError = useCallback((photo: PhotoProps<IMarkerPhoto>) => {
-    setErroredImgs((prev) => [...prev, photo.src]);
-  }, []);
+  const handleError = useCallback(
+    (markerID: string, photo: PhotoProps<IMarkerPhoto>) => {
+      setErroredImgs((prev) => ({
+        ...prev,
+        [markerID]: [...(prev[markerID] || []), photo.src],
+      }));
+    },
+    []
+  );
 
   useEffect(() => {
-    setErroredImgs([]);
+    const ret: FailedSrcMap = {};
+    markers.forEach((m) => {
+      ret[m.id] = [];
+    });
+    setErroredImgs(ret);
   }, [markers]);
 
   const photos: PhotoProps<IMarkerPhoto>[] = useMemo(() => {
@@ -230,7 +242,10 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({
 
       return {
         marker: m,
-        src: getFirstValidSrc([m.stream, m.preview, m.screenshot], erroredImgs),
+        src: getFirstValidSrc(
+          [m.stream, m.preview, m.screenshot],
+          erroredImgs[m.id] || []
+        ),
         link: NavUtils.makeSceneMarkerUrl(m),
         width,
         height,
@@ -238,21 +253,21 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({
         key: m.id,
         loading: "lazy",
         alt: objectTitle(m),
-        onError: handleError,
+        onError: (photo: PhotoProps<IMarkerPhoto>) => handleError(m.id, photo),
       };
     });
   }, [markers, erroredImgs, handleError]);
 
   const onClick = useCallback(
-    (event, { index }) => {
+    (_event, { index }) => {
       history.push(photos[index].link);
     },
     [history, photos]
   );
 
   function columns(containerWidth: number) {
-    let preferredSize = 300;
-    let columnCount = containerWidth / preferredSize;
+    const preferredSize = 300;
+    const columnCount = containerWidth / preferredSize;
     return Math.round(columnCount);
   }
 

@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -41,13 +42,13 @@ func (qb *tagFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 		return
 	}
 
+	f.handleCriterion(ctx, qb.criterionHandler())
+
 	sf := tagFilter.SubFilter()
 	if sf != nil {
 		sub := &tagFilterHandler{sf}
 		handleSubFilter(ctx, sub, f, tagFilter.OperatorFilter)
 	}
-
-	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
 var tagHierarchyHandler = hierarchicalRelationshipHandler{
@@ -217,80 +218,112 @@ func (qb *tagFilterHandler) isMissingCriterionHandler(isMissing *string) criteri
 	}
 }
 
-func (qb *tagFilterHandler) sceneCountCriterionHandler(sceneCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if sceneCount != nil {
-			f.addLeftJoin("scenes_tags", "", "scenes_tags.tag_id = tags.id")
-			clause, args := getIntCriterionWhereClause("count(distinct scenes_tags.scene_id)", *sceneCount)
-
-			f.addHaving(clause, args...)
-		}
+// addHierarchicalCountCTE adds a recursive CTE to walk the tag hierarchy.
+// depth < 0 includes all descendant levels (unlimited recursion).
+// depth >= 0 limits the recursion to that many levels from the root tag.
+func (qb *tagFilterHandler) addHierarchicalCountCTE(f *filterBuilder, cteAlias string, depth int) {
+	if depth < 0 {
+		// unlimited recursion — no depth tracking needed
+		f.addRecursiveWith(fmt.Sprintf(
+			`%[1]s(root_id, descendant_id) AS (
+				SELECT id, id FROM tags
+				UNION ALL
+				SELECT td.root_id, tr.child_id
+				FROM tags_relations tr
+				INNER JOIN %[1]s td ON td.descendant_id = tr.parent_id
+			)`, cteAlias))
+	} else {
+		// depth-limited: track recursion level as a CTE column
+		f.addRecursiveWith(fmt.Sprintf(
+			`%[1]s(root_id, descendant_id, depth) AS (
+				SELECT id, id, 0 FROM tags
+				UNION ALL
+				SELECT td.root_id, tr.child_id, td.depth + 1
+				FROM tags_relations tr
+				INNER JOIN %[1]s td ON td.descendant_id = tr.parent_id
+				WHERE td.depth < %[2]d
+			)`, cteAlias, depth))
 	}
 }
 
-func (qb *tagFilterHandler) imageCountCriterionHandler(imageCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if imageCount != nil {
-			f.addLeftJoin("images_tags", "", "images_tags.tag_id = tags.id")
-			clause, args := getIntCriterionWhereClause("count(distinct images_tags.image_id)", *imageCount)
+func (qb *tagFilterHandler) hierarchicalCountHandler(input *models.HierarchicalCountInput, joinTable, entityIDCol string) criterionHandlerFunc {
+	return qb.hierarchicalCountHandlerOnCol(input, joinTable, "tag_id", entityIDCol)
+}
 
-			f.addHaving(clause, args...)
+func (qb *tagFilterHandler) hierarchicalCountHandlerOnCol(input *models.HierarchicalCountInput, joinTable, tagCol, entityIDCol string) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if input == nil {
+			return
 		}
+
+		intInput := models.IntCriterionInput{
+			Value:    input.Value,
+			Value2:   input.Value2,
+			Modifier: input.Modifier,
+		}
+
+		if input.Depth != nil {
+			cteAlias := joinTable + "_desc"
+			qb.addHierarchicalCountCTE(f, cteAlias, *input.Depth)
+			f.addLeftJoin(cteAlias, "", fmt.Sprintf("%s.root_id = tags.id", cteAlias))
+			f.addLeftJoin(joinTable, "", fmt.Sprintf("%[1]s.%[2]s = %[3]s.descendant_id", joinTable, tagCol, cteAlias))
+		} else {
+			f.addLeftJoin(joinTable, "", fmt.Sprintf("%s.%s = tags.id", joinTable, tagCol))
+		}
+
+		clause, args := getIntCriterionWhereClause(fmt.Sprintf("count(distinct %s.%s)", joinTable, entityIDCol), intInput)
+		f.addHaving(clause, args...)
 	}
 }
 
-func (qb *tagFilterHandler) galleryCountCriterionHandler(galleryCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if galleryCount != nil {
-			f.addLeftJoin("galleries_tags", "", "galleries_tags.tag_id = tags.id")
-			clause, args := getIntCriterionWhereClause("count(distinct galleries_tags.gallery_id)", *galleryCount)
-
-			f.addHaving(clause, args...)
-		}
-	}
+func (qb *tagFilterHandler) sceneCountCriterionHandler(sceneCount *models.HierarchicalCountInput) criterionHandlerFunc {
+	return qb.hierarchicalCountHandler(sceneCount, "scenes_tags", "scene_id")
 }
 
-func (qb *tagFilterHandler) performerCountCriterionHandler(performerCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if performerCount != nil {
-			f.addLeftJoin("performers_tags", "", "performers_tags.tag_id = tags.id")
-			clause, args := getIntCriterionWhereClause("count(distinct performers_tags.performer_id)", *performerCount)
-
-			f.addHaving(clause, args...)
-		}
-	}
+func (qb *tagFilterHandler) imageCountCriterionHandler(imageCount *models.HierarchicalCountInput) criterionHandlerFunc {
+	return qb.hierarchicalCountHandler(imageCount, "images_tags", "image_id")
 }
 
-func (qb *tagFilterHandler) studioCountCriterionHandler(studioCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if studioCount != nil {
-			f.addLeftJoin("studios_tags", "", "studios_tags.tag_id = tags.id")
-			clause, args := getIntCriterionWhereClause("count(distinct studios_tags.studio_id)", *studioCount)
-
-			f.addHaving(clause, args...)
-		}
-	}
+func (qb *tagFilterHandler) galleryCountCriterionHandler(galleryCount *models.HierarchicalCountInput) criterionHandlerFunc {
+	return qb.hierarchicalCountHandler(galleryCount, "galleries_tags", "gallery_id")
 }
 
-func (qb *tagFilterHandler) groupCountCriterionHandler(groupCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if groupCount != nil {
-			f.addLeftJoin("groups_tags", "", "groups_tags.tag_id = tags.id")
-			clause, args := getIntCriterionWhereClause("count(distinct groups_tags.group_id)", *groupCount)
-
-			f.addHaving(clause, args...)
-		}
-	}
+func (qb *tagFilterHandler) performerCountCriterionHandler(performerCount *models.HierarchicalCountInput) criterionHandlerFunc {
+	return qb.hierarchicalCountHandler(performerCount, "performers_tags", "performer_id")
 }
 
-func (qb *tagFilterHandler) markerCountCriterionHandler(markerCount *models.IntCriterionInput) criterionHandlerFunc {
+func (qb *tagFilterHandler) studioCountCriterionHandler(studioCount *models.HierarchicalCountInput) criterionHandlerFunc {
+	return qb.hierarchicalCountHandler(studioCount, "studios_tags", "studio_id")
+}
+
+func (qb *tagFilterHandler) groupCountCriterionHandler(groupCount *models.HierarchicalCountInput) criterionHandlerFunc {
+	return qb.hierarchicalCountHandler(groupCount, "groups_tags", "group_id")
+}
+
+func (qb *tagFilterHandler) markerCountCriterionHandler(markerCount *models.HierarchicalCountInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
-		if markerCount != nil {
+		if markerCount == nil {
+			return
+		}
+
+		intInput := models.IntCriterionInput{
+			Value:    markerCount.Value,
+			Value2:   markerCount.Value2,
+			Modifier: markerCount.Modifier,
+		}
+
+		if markerCount.Depth != nil {
+			cteAlias := "scene_markers_desc"
+			qb.addHierarchicalCountCTE(f, cteAlias, *markerCount.Depth)
+			f.addLeftJoin(cteAlias, "", fmt.Sprintf("%s.root_id = tags.id", cteAlias))
+			f.addLeftJoin("scene_markers_tags", "", fmt.Sprintf("scene_markers_tags.tag_id = %s.descendant_id", cteAlias))
+			f.addLeftJoin("scene_markers", "", "scene_markers_tags.scene_marker_id = scene_markers.id OR scene_markers.primary_tag_id = "+cteAlias+".descendant_id")
+		} else {
 			f.addLeftJoin("scene_markers_tags", "", "scene_markers_tags.tag_id = tags.id")
 			f.addLeftJoin("scene_markers", "", "scene_markers_tags.scene_marker_id = scene_markers.id OR scene_markers.primary_tag_id = tags.id")
-			clause, args := getIntCriterionWhereClause("count(distinct scene_markers.id)", *markerCount)
-
-			f.addHaving(clause, args...)
 		}
+
+		clause, args := getIntCriterionWhereClause("count(distinct scene_markers.id)", intInput)
+		f.addHaving(clause, args...)
 	}
 }

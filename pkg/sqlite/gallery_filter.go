@@ -44,13 +44,13 @@ func (qb *galleryFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 		return
 	}
 
+	f.handleCriterion(ctx, qb.criterionHandler())
+
 	sf := galleryFilter.SubFilter()
 	if sf != nil {
 		sub := &galleryFilterHandler{sf}
 		handleSubFilter(ctx, sub, f, galleryFilter.OperatorFilter)
 	}
-
-	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
 func (qb *galleryFilterHandler) criterionHandler() criterionHandler {

@@ -43,7 +43,7 @@ export const RatingStars = PatchComponent(
     function newToggleFraction() {
       if (precision !== 1) {
         if (fraction !== precision) {
-          if (fraction == 0) {
+          if (fraction === 0) {
             return 1 - precision;
           }
 
@@ -126,7 +126,10 @@ export const RatingStars = PatchComponent(
       return "unset";
     }
 
-    function getTooltip(thisStar: number, current: RatingFraction | undefined) {
+    function getTooltip(
+      _thisStar: number,
+      current: RatingFraction | undefined
+    ) {
       if (disabled) {
         if (rating) {
           // always return current rating for disabled control
@@ -196,7 +199,7 @@ export const RatingStars = PatchComponent(
         return "star-fill-100";
       }
 
-      let w = current.fraction * 100;
+      const w = current.fraction * 100;
       return `star-fill-${w}`;
     }
 
@@ -232,7 +235,7 @@ export const RatingStars = PatchComponent(
       const ratingFraction = getCurrentSelectedRating();
       if (
         !ratingFraction ||
-        (ratingFraction.rating == 0 && ratingFraction.fraction == 0)
+        (ratingFraction.rating === 0 && ratingFraction.fraction === 0)
       ) {
         return "";
       }
@@ -244,7 +247,7 @@ export const RatingStars = PatchComponent(
 
     return (
       <div className={`rating-stars ${precisionClassName}`}>
-        {Array.from(Array(max)).map((value, index) =>
+        {Array.from(Array(max)).map((_value, index) =>
           renderRatingButton(index + 1)
         )}
         <span className="star-rating-number">{maybeGetStarRatingNumber()}</span>

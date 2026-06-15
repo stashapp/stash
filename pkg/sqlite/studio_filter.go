@@ -41,13 +41,13 @@ func (qb *studioFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 		return
 	}
 
+	f.handleCriterion(ctx, qb.criterionHandler())
+
 	sf := studioFilter.SubFilter()
 	if sf != nil {
 		sub := &studioFilterHandler{sf}
 		handleSubFilter(ctx, sub, f, studioFilter.OperatorFilter)
 	}
-
-	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
 func (qb *studioFilterHandler) criterionHandler() criterionHandler {

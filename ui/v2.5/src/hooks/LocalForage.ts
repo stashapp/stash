@@ -38,7 +38,7 @@ interface ILocalForage<T> {
 }
 
 const Loading: Record<string, boolean> = {};
-const Cache: Record<string, {}> = {};
+const Cache: Record<string, object> = {};
 
 /**
  * Read/write a JSON-serialisable value to IndexedDB via localforage.

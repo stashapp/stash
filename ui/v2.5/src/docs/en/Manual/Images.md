@@ -13,6 +13,8 @@ For best results, images in zip file should be stored without compression (copy,
 
 > **⚠️ Note:** AVIF files in ZIP archives are currently unsupported.
 
+> **ℹ️ Note:** JPEG XL (`.jxl`) is supported, including inside ZIP archives, and requires an FFmpeg built with `libjxl` (or [libvips](https://www.libvips.org/)). Perceptual hashes are not generated for JXL inside ZIP archives.
+
 If a filename of an image in the gallery zip file ends with `cover.jpg`, it will be treated like a cover and presented first in the gallery view page and as a gallery cover in the gallery list view. If more than one images match the name the first one found in natural sort order is selected.
 
 You can also manually select any image from a gallery as its cover. On the gallery details page, select the desired cover image, and then select **Set as Cover** in the ⋯ menu.

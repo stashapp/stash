@@ -99,6 +99,10 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
   sortable = true,
 }) => {
   const filterOptions = filter.options;
+  // Something in the popper layout for groups.sub-groups tab to double calculates the offset
+  // causing the dropdown to be misaligned. Portal to document.body to fix this.
+  const menuPortalTarget =
+    typeof document !== "undefined" ? document.body : undefined;
   const { setDisplayMode, setZoom } = useFilterOperations({
     filter,
     setFilter,
@@ -142,6 +146,7 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
                 filter={filter}
                 onSetFilter={setFilter}
                 view={view}
+                menuPortalTarget={menuPortalTarget}
               />
               <FilterButton
                 onClick={() => showEditFilter()}

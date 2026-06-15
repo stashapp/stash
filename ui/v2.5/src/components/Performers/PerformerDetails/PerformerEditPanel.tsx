@@ -447,7 +447,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     setIsLoading(true);
     try {
       const result = await queryScrapePerformerURL(url);
-      if (!result.data || !result.data.scrapePerformerURL) {
+      if (!result.data?.scrapePerformerURL) {
         return;
       }
 

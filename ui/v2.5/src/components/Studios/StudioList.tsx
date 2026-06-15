@@ -16,6 +16,7 @@ import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { StudioTagger } from "../Tagger/studios/StudioTagger";
 import { StudioCardGrid } from "./StudioCardGrid";
+import { StudioListTable } from "./StudioListTable";
 import { View } from "../List/views";
 import { EditStudiosDialog } from "./EditStudiosDialog";
 import {
@@ -72,7 +73,13 @@ const StudioList: React.FC<{
       );
     }
     if (filter.displayMode === DisplayMode.List) {
-      return <h1>TODO</h1>;
+      return (
+        <StudioListTable
+          studios={studios}
+          selectedIds={selectedIds}
+          onSelectChange={onSelectChange}
+        />
+      );
     }
     if (filter.displayMode === DisplayMode.Wall) {
       return <h1>TODO</h1>;

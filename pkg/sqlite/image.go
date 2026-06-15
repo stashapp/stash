@@ -576,6 +576,38 @@ func (qb *ImageStore) FindByFileID(ctx context.Context, fileID models.FileID) ([
 	return ret, nil
 }
 
+func (qb *ImageStore) GetManyIDsByFileIDs(ctx context.Context, fileIDs []models.FileID) ([][]int, error) {
+	sq := dialect.From(imagesFilesJoinTable).Select(imagesFilesJoinTable.Col(imageIDColumn), imagesFilesJoinTable.Col(fileIDColumn)).Where(
+		imagesFilesJoinTable.Col(fileIDColumn).In(fileIDs),
+	)
+
+	sql, args, err := sq.ToSQL()
+	if err != nil {
+		return nil, fmt.Errorf("building query: %w", err)
+	}
+
+	var results []struct {
+		ImageID int           `db:"image_id"`
+		FileID  models.FileID `db:"file_id"`
+	}
+
+	if err := querySelect(ctx, sql, args, &results); err != nil {
+		return nil, fmt.Errorf("getting images by file ids %v: %w", fileIDs, err)
+	}
+
+	retMap := make(map[models.FileID][]int)
+	for _, r := range results {
+		retMap[r.FileID] = append(retMap[r.FileID], r.ImageID)
+	}
+
+	ret := make([][]int, len(fileIDs))
+	for i, id := range fileIDs {
+		ret[i] = retMap[id]
+	}
+
+	return ret, nil
+}
+
 func (qb *ImageStore) CountByFileID(ctx context.Context, fileID models.FileID) (int, error) {
 	joinTable := imagesFilesJoinTable
 
@@ -916,6 +948,11 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 		)
 		query.addColumn("COALESCE(files.size, 0) as size")
 		aggregateQuery.addColumn("SUM(temp.size) as size")
+	}
+
+	// #5503 - select the file id so equal-sized/megapixel files aren't collapsed by DISTINCT
+	if options.Megapixels || options.TotalSize {
+		query.addColumn(imagesFilesTable + ".file_id")
 	}
 
 	const includeSortPagination = false
