@@ -103,7 +103,7 @@ export interface IUIConfig {
 
   advancedMode?: boolean;
 
-  taskDefaults?: Record<string, {}>;
+  taskDefaults?: Record<string, object>;
 
   // if true the auto tag confirmation warning is skipped
   disableAutoTagWarning?: boolean;

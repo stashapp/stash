@@ -633,28 +633,28 @@ input TagFilterType {
   is_missing: String
 
   "Filter by number of scenes with this tag"
-  scene_count: IntCriterionInput
+  scene_count: HierarchicalCountInput
 
   "Filter by number of images with this tag"
-  image_count: IntCriterionInput
+  image_count: HierarchicalCountInput
 
   "Filter by number of galleries with this tag"
-  gallery_count: IntCriterionInput
+  gallery_count: HierarchicalCountInput
 
   "Filter by number of performers with this tag"
-  performer_count: IntCriterionInput
+  performer_count: HierarchicalCountInput
 
   "Filter by number of studios with this tag"
-  studio_count: IntCriterionInput
+  studio_count: HierarchicalCountInput
 
   "Filter by number of movies with this tag"
-  movie_count: IntCriterionInput
+  movie_count: HierarchicalCountInput
 
   "Filter by number of group with this tag"
-  group_count: IntCriterionInput
+  group_count: HierarchicalCountInput
 
   "Filter by number of markers with this tag"
-  marker_count: IntCriterionInput
+  marker_count: HierarchicalCountInput
 
   "Filter by parent tags"
   parents: HierarchicalMultiCriterionInput
@@ -1006,6 +1006,14 @@ input IntCriterionInput {
   value: Int!
   value2: Int
   modifier: CriterionModifier!
+}
+
+input HierarchicalCountInput {
+  value: Int!
+  value2: Int
+  modifier: CriterionModifier!
+  "Number of descendant levels to include. Negative values include all descendants."
+  depth: Int
 }
 
 input FloatCriterionInput {

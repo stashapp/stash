@@ -3,6 +3,7 @@ package manager
 import (
 	"archive/zip"
 	"context"
+	gojson "encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -30,6 +31,7 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ExportTask struct {
@@ -508,9 +510,25 @@ func fileToJSON(f models.File) jsonschema.DirEntry {
 	}
 
 	for _, fp := range bf.Fingerprints {
+		fingerprintValue := fp.Fingerprint
+		// Convert phash to hex string
+		if fp.Type == models.FingerprintTypePhash {
+			if v, ok := fp.Fingerprint.(int64); ok {
+				fingerprintValue = utils.PhashToString(v)
+			}
+		}
+
+		// encode manually into json.RawMessage
+		fvEncoded, err := gojson.Marshal(fingerprintValue)
+		if err != nil {
+			// ignore - should not happen
+			logger.Warnf("[files] <%s> error encoding fingerprint %q value: %v", base.Filename(), fp.Type, err)
+			continue
+		}
+
 		base.Fingerprints = append(base.Fingerprints, jsonschema.Fingerprint{
 			Type:        fp.Type,
-			Fingerprint: fp.Fingerprint,
+			Fingerprint: gojson.RawMessage(fvEncoded),
 		})
 	}
 

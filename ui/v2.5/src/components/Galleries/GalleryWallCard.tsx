@@ -96,75 +96,71 @@ const GalleryWallCard: React.FC<IProps> = ({
   let shiftKey = false;
 
   return (
-    <>
-      <section
-        className={`${CLASSNAME} ${CLASSNAME}-${coverOrientation} wall-item`}
-        onClick={handleCardClick}
-        onKeyPress={() => showLightboxStart()}
-        role="button"
-        tabIndex={0}
-        {...dragProps}
-      >
-        {onSelectedChanged && (
-          <Form.Control
-            type="checkbox"
-            className="wall-item-check mousetrap"
-            checked={selected}
-            onChange={() => onSelectedChanged(!selected, shiftKey)}
-            onClick={(
-              event: React.MouseEvent<HTMLInputElement, MouseEvent>
-            ) => {
-              shiftKey = event.shiftKey;
-              event.stopPropagation();
-            }}
-          />
-        )}
-        <RatingSystem value={gallery.rating100} disabled withoutContext />
-        <img
-          loading="lazy"
-          src={imgSrc}
-          alt=""
-          className={cx(CLASSNAME_IMG, imgClassname)}
-          // set orientation based on cover only
-          onLoad={imgSrc === cover ? onCoverLoad : onNonCoverLoad}
+    <section
+      className={`${CLASSNAME} ${CLASSNAME}-${coverOrientation} wall-item`}
+      onClick={handleCardClick}
+      onKeyPress={() => showLightboxStart()}
+      role="button"
+      tabIndex={0}
+      {...dragProps}
+    >
+      {onSelectedChanged && (
+        <Form.Control
+          type="checkbox"
+          className="wall-item-check mousetrap"
+          checked={selected}
+          onChange={() => onSelectedChanged(!selected, shiftKey)}
+          onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
+            shiftKey = event.shiftKey;
+            event.stopPropagation();
+          }}
         />
-        <div className="lineargradient">
-          <footer className={CLASSNAME_FOOTER}>
-            <Link
-              to={`/galleries/${gallery.id}`}
-              onClick={(e) => {
-                if (selecting) {
-                  e.preventDefault();
-                  handleCardClick(e);
-                }
-                e.stopPropagation();
-              }}
-            >
-              {title && (
-                <TruncatedText
-                  text={title}
-                  lineCount={1}
-                  className={CLASSNAME_TITLE}
-                />
-              )}
-              <TruncatedText text={performers.join(", ")} />
-              <div>
-                {gallery.date && TextUtils.formatFuzzyDate(intl, gallery.date)}
-              </div>
-            </Link>
-          </footer>
-          <GalleryPreviewScrubber
-            previewPath={gallery.paths.preview}
-            defaultPath={cover ?? ""}
-            imageCount={gallery.image_count}
-            onClick={(i) => {
-              showLightbox(i);
+      )}
+      <RatingSystem value={gallery.rating100} disabled withoutContext />
+      <img
+        loading="lazy"
+        src={imgSrc}
+        alt=""
+        className={cx(CLASSNAME_IMG, imgClassname)}
+        // set orientation based on cover only
+        onLoad={imgSrc === cover ? onCoverLoad : onNonCoverLoad}
+      />
+      <div className="lineargradient">
+        <footer className={CLASSNAME_FOOTER}>
+          <Link
+            to={`/galleries/${gallery.id}`}
+            onClick={(e) => {
+              if (selecting) {
+                e.preventDefault();
+                handleCardClick(e);
+              }
+              e.stopPropagation();
             }}
-            onPathChanged={setImgSrc}
-          />
-        </div>
-      </section>
-    </>
+          >
+            {title && (
+              <TruncatedText
+                text={title}
+                lineCount={1}
+                className={CLASSNAME_TITLE}
+              />
+            )}
+            <TruncatedText text={performers.join(", ")} />
+            <div>
+              {gallery.date && TextUtils.formatFuzzyDate(intl, gallery.date)}
+            </div>
+          </Link>
+        </footer>
+        <GalleryPreviewScrubber
+          previewPath={gallery.paths.preview}
+          defaultPath={cover ?? ""}
+          imageCount={gallery.image_count}
+          onClick={(i) => {
+            showLightbox(i);
+          }}
+          onPathChanged={setImgSrc}
+        />
+      </div>
+    </section>
   );
 };
 

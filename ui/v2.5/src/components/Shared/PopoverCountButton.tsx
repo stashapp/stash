@@ -145,18 +145,16 @@ export const PopoverCountButton: React.FC<IProps> = ({
   }
 
   return (
-    <>
-      <OverlayTrigger
-        overlay={<Tooltip id={`${type}-count-tooltip`}>{getTitle()}</Tooltip>}
-        placement="bottom"
-      >
-        <Link className={className} to={url}>
-          <Button className="minimal">
-            <Icon icon={getIcon()} />
-            <Count count={count} />
-          </Button>
-        </Link>
-      </OverlayTrigger>
-    </>
+    <OverlayTrigger
+      overlay={<Tooltip id={`${type}-count-tooltip`}>{getTitle()}</Tooltip>}
+      placement="bottom"
+    >
+      <Link className={className} to={url}>
+        <Button className="minimal">
+          <Icon icon={getIcon()} />
+          <Count count={count} />
+        </Button>
+      </Link>
+    </OverlayTrigger>
   );
 };

@@ -23,7 +23,7 @@ interface ICustomFieldCriterionEditor {
 function getValue(v: string) {
   // if the value is numeric, convert it to a number
   const num = Number(v);
-  if (!isNaN(num)) {
+  if (!Number.isNaN(num)) {
     return num;
   } else {
     return v;

@@ -171,7 +171,7 @@ export const LibraryTasks: React.FC = () => {
     }
   }, [configuration, configRead, taskDefaults, loading]);
 
-  function configureDefaults(partial: Record<string, {}>) {
+  function configureDefaults(partial: Record<string, object>) {
     saveUI({ taskDefaults: { ...partial } });
   }
 
@@ -311,7 +311,7 @@ export const LibraryTasks: React.FC = () => {
     setDialogOpen({ generate: false });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // XXbiome-ignore @typescript-eslint/no-unused-vars
   async function runGenerate(paths?: string[]) {
     try {
       await mutateMetadataGenerate({

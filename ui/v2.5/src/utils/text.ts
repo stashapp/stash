@@ -91,9 +91,9 @@ class DurationUnit {
   ];
 
   private constructor(
-    private readonly singular: string,
-    private readonly plural: string,
-    private readonly shortString: string,
+    public readonly singular: string,
+    public readonly plural: string,
+    public readonly shortString: string,
     public secs: number
   ) {}
 
@@ -275,16 +275,16 @@ const stringToFuzzyDate = (dateString: string) => {
   const parts = dateString.split("-");
   // Invalid date string
   let year = Number(parts[0]);
-  if (isNaN(year)) year = new Date().getFullYear();
+  if (Number.isNaN(year)) year = new Date().getFullYear();
   let monthIndex = 0;
   if (parts.length > 1) {
     monthIndex = Math.max(0, Number(parts[1]) - 1);
-    if (monthIndex > 11 || isNaN(monthIndex)) monthIndex = 0;
+    if (monthIndex > 11 || Number.isNaN(monthIndex)) monthIndex = 0;
   }
   let day = 1;
   if (parts.length > 2) {
     day = Number(parts[2]);
-    if (day > 31 || isNaN(day)) day = 1;
+    if (day > 31 || Number.isNaN(day)) day = 1;
   }
 
   return new Date(year, monthIndex, day, 0, 0, 0, 0);
@@ -434,9 +434,9 @@ const domainFromURL = (urlString?: string, url?: URL) => {
   if (url) {
     return url.hostname;
   } else if (urlString) {
-    var urlDomain = "";
+    let urlDomain = "";
     try {
-      var sanitizedUrl = sanitiseURL(urlString);
+      const sanitizedUrl = sanitiseURL(urlString);
       if (sanitizedUrl) {
         urlString = sanitizedUrl;
       }
