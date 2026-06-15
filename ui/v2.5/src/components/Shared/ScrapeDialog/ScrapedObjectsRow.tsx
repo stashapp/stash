@@ -344,7 +344,6 @@ export const ScrapedGroupsRow: React.FC<
               items.map((p) => ({
                 ...p,
                 stored_id: p.id,
-                aliases: p.aliases,
               }))
             );
           }
