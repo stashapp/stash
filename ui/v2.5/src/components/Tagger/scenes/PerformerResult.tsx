@@ -231,10 +231,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
           <PerformerCollisionWarningButton messageIds={collisionMessageIds} />
         )}
         {endpoint && onLink && (
-          <LinkButton
-            disabled={selectedID === undefined}
-            onLink={onLink}
-          />
+          <LinkButton disabled={selectedID === undefined} onLink={onLink} />
         )}
       </ButtonGroup>
     </div>
