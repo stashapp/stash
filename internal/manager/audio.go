@@ -80,8 +80,6 @@ func GetAudioStreamPaths(audio *models.Audio, directStreamURL *url.URL, maxStrea
 		endpoints = append(endpoints, makeStreamEndpoint(directAudioEndpointType))
 	}
 
-	// TODO(audio): can we return no urls?
-
 	return endpoints, nil
 }
 

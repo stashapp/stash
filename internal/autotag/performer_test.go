@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/stashapp/stash/pkg/audio"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -108,6 +109,109 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 	}
 
 	err := tagger.PerformerScenes(testCtx, &performer, nil, db.Scene)
+
+	assert := assert.New(t)
+
+	assert.Nil(err)
+	db.AssertExpectations(t)
+}
+
+func TestPerformerAudios(t *testing.T) {
+	t.Parallel()
+
+	type test struct {
+		performerName string
+		expectedRegex string
+	}
+
+	performerNames := []test{
+		{
+			"performer name",
+			`(?i)(?:^|_|[^\p{L}\d])performer[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+		},
+		{
+			"performer + name",
+			`(?i)(?:^|_|[^\p{L}\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+		},
+	}
+
+	// trailing backslash tests only work where filepath separator is not backslash
+	if filepath.Separator != '\\' {
+		performerNames = append(performerNames, test{
+			`performer + name\`,
+			`(?i)(?:^|_|[^\p{L}\d])performer[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
+		})
+	}
+
+	for _, p := range performerNames {
+		testPerformerAudios(t, p.performerName, p.expectedRegex)
+	}
+}
+
+func testPerformerAudios(t *testing.T, performerName, expectedRegex string) {
+	db := mocks.NewDatabase()
+
+	const performerID = 2
+
+	var audios []*models.Audio
+	matchingPaths, falsePaths := generateTestPaths(performerName, "mp4")
+	for i, p := range append(matchingPaths, falsePaths...) {
+		audios = append(audios, &models.Audio{
+			ID:           i + 1,
+			Path:         p,
+			PerformerIDs: models.NewRelatedIDs([]int{}),
+		})
+	}
+
+	performer := models.Performer{
+		ID:      performerID,
+		Name:    performerName,
+		Aliases: models.NewRelatedStrings([]string{}),
+	}
+
+	organized := false
+	perPage := 1000
+	sort := "id"
+	direction := models.SortDirectionEnumAsc
+
+	expectedAudioFilter := &models.AudioFilterType{
+		Organized: &organized,
+		Path: &models.StringCriterionInput{
+			Value:    expectedRegex,
+			Modifier: models.CriterionModifierMatchesRegex,
+		},
+	}
+
+	expectedFindFilter := &models.FindFilterType{
+		PerPage:   &perPage,
+		Sort:      &sort,
+		Direction: &direction,
+	}
+
+	db.Audio.On("Query", mock.Anything, audio.QueryOptions(expectedAudioFilter, expectedFindFilter, false)).
+		Return(mocks.AudioQueryResult(audios, len(audios)), nil).Once()
+
+	for i := range matchingPaths {
+		audioID := i + 1
+
+		matchPartial := mock.MatchedBy(func(got models.AudioPartial) bool {
+			expected := models.AudioPartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			}
+
+			return audioPartialsEqual(got, expected)
+		})
+		db.Audio.On("UpdatePartial", mock.Anything, audioID, matchPartial).Return(nil, nil).Once()
+	}
+
+	tagger := Tagger{
+		TxnManager: db,
+	}
+
+	err := tagger.PerformerAudios(testCtx, &performer, nil, db.Audio)
 
 	assert := assert.New(t)
 

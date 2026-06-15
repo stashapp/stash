@@ -36,7 +36,6 @@ type ScenesDestroyInput struct {
 type AudiosDestroyInput struct {
 	models.AudiosDestroyInput
 	Checksum string `json:"checksum"`
-	OSHash   string `json:"oshash"`
 	Path     string `json:"path"`
 }
 

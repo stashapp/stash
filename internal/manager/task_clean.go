@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/audio"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/image"
@@ -271,6 +272,9 @@ func (h *cleanHandler) HandleFile(ctx context.Context, fileDeleter *file.Deleter
 	if err := h.handleRelatedScenes(ctx, fileDeleter, fileID); err != nil {
 		return err
 	}
+	if err := h.handleRelatedAudios(ctx, fileDeleter, fileID); err != nil {
+		return err
+	}
 	if err := h.handleRelatedGalleries(ctx, fileID); err != nil {
 		return err
 	}
@@ -335,6 +339,63 @@ func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *fil
 			scenePartial.PrimaryFileID = &newPrimaryID
 
 			if _, err := mgr.Repository.Scene.UpdatePartial(ctx, scene.ID, scenePartial); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (h *cleanHandler) handleRelatedAudios(ctx context.Context, fileDeleter *file.Deleter, fileID models.FileID) error {
+	mgr := GetInstance()
+	audioQB := mgr.Repository.Audio
+	audios, err := audioQB.FindByFileID(ctx, fileID)
+	if err != nil {
+		return err
+	}
+
+	fileNamingAlgo := mgr.Config.GetVideoFileNamingAlgorithm()
+
+	audioFileDeleter := &audio.FileDeleter{
+		Deleter:        fileDeleter,
+		FileNamingAlgo: fileNamingAlgo,
+		Paths:          mgr.Paths,
+	}
+
+	for _, audio := range audios {
+		if err := audio.LoadFiles(ctx, audioQB); err != nil {
+			return err
+		}
+
+		// only delete if the audio has no other files
+		if len(audio.Files.List()) <= 1 {
+			logger.Infof("Deleting audio %q since it has no other related files", audio.DisplayName())
+			const deleteGenerated = true
+			const deleteFile = false
+			const destroyFileEntry = false
+			if err := mgr.AudioService.Destroy(ctx, audio, audioFileDeleter, deleteGenerated, deleteFile, destroyFileEntry); err != nil {
+				return err
+			}
+
+			mgr.PluginCache.RegisterPostHooks(ctx, audio.ID, hook.AudioDestroyPost, plugin.AudiosDestroyInput{
+				Checksum: audio.Checksum,
+				Path:     audio.Path,
+			}, nil)
+		} else {
+			// set the primary file to a remaining file
+			var newPrimaryID models.FileID
+			for _, f := range audio.Files.List() {
+				if f.ID != fileID {
+					newPrimaryID = f.ID
+					break
+				}
+			}
+
+			audioPartial := models.NewAudioPartial()
+			audioPartial.PrimaryFileID = &newPrimaryID
+
+			if _, err := mgr.Repository.Audio.UpdatePartial(ctx, audio.ID, audioPartial); err != nil {
 				return err
 			}
 		}

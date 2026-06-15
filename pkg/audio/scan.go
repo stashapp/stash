@@ -99,15 +99,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 		h.PluginCache.RegisterPostHooks(ctx, newAudio.ID, hook.AudioCreatePost, nil, nil)
 	}
 
-	if oldFile != nil {
-		// migrate hashes from the old file to the new
-		oldHash := GetHash(oldFile, models.HashAlgorithmMd5)
-		newHash := GetHash(f, models.HashAlgorithmMd5)
-
-		if oldHash != "" && newHash != "" && oldHash != newHash {
-			// NOTE: No transcodes/generated files, no migration needed yet
-		}
-	}
+	// TODO(audio|transcodes): move all generated content from the old file to the new file
 
 	return nil
 }
