@@ -20,8 +20,8 @@ importers:
         specifier: '3.14'
         version: 3.14.0(@types/react@17.0.89)(graphql-ws@5.16.2(graphql@16.14.2))(graphql@16.14.2)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@blaineam/videojs-vr':
-        specifier: ^3.1.1
-        version: 3.1.1
+        specifier: ^3.3.0
+        version: 3.3.0
       '@formatjs/intl-getcanonicallocales':
         specifier: ^3.2.10
         version: 3.2.10
@@ -620,6 +620,10 @@ packages:
     resolution: {integrity: sha512-JiDShH45zKHWyGe4ZNVRrCjBz8Nh9TMmZG1kh4QTK8hCBTWBi8Da+i7s1fJw7/lYpM4ccepSNfqzZ/QvABBi5g==}
     engines: {node: '>=6.9.0'}
 
+  '@babel/runtime@7.29.7':
+    resolution: {integrity: sha512-Nq8OhGWiZIZGV6hLHoyAKLLcJihP/xFeBMGJoUrxTX2psI8dCifzLhZISFb+VWS3wFMRDmCGw5R+dOySCqPLhw==}
+    engines: {node: '>=6.9.0'}
+
   '@babel/template@7.28.6':
     resolution: {integrity: sha512-YA6Ma2KsCdGb+WC6UpBVFJGXL58MDA6oyONbjyF/+5sBgxY/dwkhLogbMT2GXXyU84/IhRw/2D1Os1B/giz+BQ==}
     engines: {node: '>=6.9.0'}
@@ -697,8 +701,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@blaineam/videojs-vr@3.1.1':
-    resolution: {integrity: sha512-3W69DgimXeU9RPa7l4x8+37GExWn/OlOVP+1QrrQ4R7yuqCuDD3slKPTNEFzITyHXN8XpVdEAwdH3oFeElYg+g==}
+  '@blaineam/videojs-vr@3.3.0':
+    resolution: {integrity: sha512-qa73wlk3YuBGfQIg/VxDa+V+MNdX3kqHKNnJu+nopBfZkmZG8ikEgeRxkGi7F6prBwe/fx9fDDPdHX9jwEUJcg==}
 
   '@cacheable/memory@2.0.8':
     resolution: {integrity: sha512-FvEb29x5wVwu/Kf93IWwsOOEuhHh6dYCJF3vcKLzXc0KXIW181AOzv6ceT4ZpBHDvAfG60eqb+ekmrnLHIy+jw==}
@@ -3966,8 +3970,8 @@ packages:
   thehandy@1.1.0:
     resolution: {integrity: sha512-ZifUw47kq6cKNiKLNgrnVPkBFbG+yR6tScgWy2INDnGT4XePhjRaQNni67rWn52nAOkotq9VyaK20OZoorHqTA==}
 
-  three@0.125.2:
-    resolution: {integrity: sha512-7rIRO23jVKWcAPFdW/HREU2NZMGWPBZ4XwEMt0Ak0jwLUKVJhcKM55eCBWyGZq/KiQbeo1IeuAoo/9l2dzhTXA==}
+  three@0.183.2:
+    resolution: {integrity: sha512-di3BsL2FEQ1PA7Hcvn4fyJOlxRRgFYBpMTcyOgkwJIaDOdJMebEFPA+t98EvjuljDx4hNulAGwF6KIjtwI5jgQ==}
 
   throttle-debounce@5.0.2:
     resolution: {integrity: sha512-B71/4oyj61iNH0KeCamLuE2rmKuTO5byTOSVwECM5FA7TiAiAW+UqTKZ9ERueC4qvgSttUhdmq1mXC3kJqGX7A==}
@@ -4826,6 +4830,8 @@ snapshots:
 
   '@babel/runtime@7.29.2': {}
 
+  '@babel/runtime@7.29.7': {}
+
   '@babel/template@7.28.6':
     dependencies:
       '@babel/code-frame': 7.29.0
@@ -4895,11 +4901,11 @@ snapshots:
   '@biomejs/cli-win32-x64@2.4.16':
     optional: true
 
-  '@blaineam/videojs-vr@3.1.1':
+  '@blaineam/videojs-vr@3.3.0':
     dependencies:
-      '@babel/runtime': 7.29.2
+      '@babel/runtime': 7.29.7
       global: 4.4.0
-      three: 0.125.2
+      three: 0.183.2
       video.js: 7.21.7
       webvr-polyfill: 0.10.12
 
@@ -8545,7 +8551,7 @@ snapshots:
 
   thehandy@1.1.0: {}
 
-  three@0.125.2: {}
+  three@0.183.2: {}
 
   throttle-debounce@5.0.2: {}
 
