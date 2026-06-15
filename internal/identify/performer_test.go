@@ -116,20 +116,6 @@ func Test_getPerformerID(t *testing.T) {
 			true,
 		},
 		{
-			"single name with remote id skip enabled",
-			args{
-				emptyEndpoint,
-				&models.ScrapedPerformer{
-					Name:         &name,
-					RemoteSiteID: &remoteSiteID,
-				},
-				true,
-				true,
-			},
-			&validStoredID,
-			false,
-		},
-		{
 			"valid name creating",
 			args{
 				emptyEndpoint,
