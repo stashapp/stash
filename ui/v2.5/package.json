@@ -90,7 +90,7 @@
     "@graphql-codegen/time": "^5.0.0",
     "@graphql-codegen/typescript": "^4.0.1",
     "@graphql-codegen/typescript-operations": "^4.0.1",
-    "@graphql-codegen/typescript-react-apollo": "^4.1.0",
+    "@graphql-codegen/typescript-react-apollo": "^4.4.2",
     "@types/apollo-upload-client": "^18.0.0",
     "@types/crypto-js": "^4.2.2",
     "@types/lodash-es": "^4.17.12",
