@@ -1306,7 +1306,10 @@
         "update_performer": "배우 업데이트",
         "update_performers": "배우 업데이트",
         "updating_untagged_performers_description": "'태깅되지 않은 배우 업데이트'를 통해, Stash ID가 없는 배우들에 대한 데이터를 찾아보고, 가능하다면 이를 이용해 배우를 업데이트합니다.",
-        "performer_names_or_stashids_separated_by_comma": "배우 이름 또는 Stash ID (쉼표(,)로 구분)"
+        "performer_names_or_stashids_separated_by_comma": "배우 이름 또는 Stash ID (쉼표(,)로 구분)",
+        "configure_fields": "설정 필드",
+        "field_options": "필드 옵션",
+        "field_options_description": "각 필드가 업데이트되는 방식을 선택합니다: 덮어쓰기는 기존 데이터 대체, 병합은 추가, 건너뛰기는 변경하지 않습니다."
     },
     "performer_tags": "배우 태그",
     "performers": "배우",
@@ -1720,5 +1723,6 @@
     "empty_value": "공백",
     "refer_to": "{link}를 참조해 주십시오.",
     "scenes_size": "영상 크기",
-    "related_studios": "연관됨"
+    "related_studios": "연관됨",
+    "sub_group_description": "서브그룹 설명"
 }
