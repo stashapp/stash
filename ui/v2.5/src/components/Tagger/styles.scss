@@ -107,6 +107,20 @@
   text-align: left;
 }
 
+.performer-collision-warning-button {
+  background-color: $warning;
+  border-color: $warning;
+  color: $text-color;
+
+  &:hover,
+  &:focus,
+  &:active {
+    background-color: darken($warning, 8%);
+    border-color: darken($warning, 8%);
+    color: $text-color;
+  }
+}
+
 .performer-collision-warnings {
   width: 100%;
 }

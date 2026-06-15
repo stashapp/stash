@@ -12,6 +12,7 @@ import { getStashboxBase } from "src/utils/stashbox";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { Link } from "react-router-dom";
 import { LinkButton } from "../LinkButton";
+import { PerformerCollisionWarningButton } from "../PerformerCollisionWarningButton";
 import {
   getPerformerCollisionMessageIds,
   TaggerPerformerPopover,
@@ -226,11 +227,13 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
             </TaggerPerformerPopover>
           )}
         />
+        {collisionMessageIds.length > 0 && (
+          <PerformerCollisionWarningButton messageIds={collisionMessageIds} />
+        )}
         {endpoint && onLink && (
           <LinkButton
             disabled={selectedID === undefined}
             onLink={onLink}
-            collisionMessageIds={collisionMessageIds}
           />
         )}
       </ButtonGroup>
