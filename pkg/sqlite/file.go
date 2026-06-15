@@ -24,8 +24,6 @@ const (
 	imageFileTable = "image_files"
 	fileIDColumn   = "file_id"
 
-	// TODO(audio|AudioCaption): need to update IF AudioCaption required
-	// audioCaptionsTable    = "audio_captions"
 	videoCaptionsTable    = "video_captions"
 	captionCodeColumn     = "language_code"
 	captionFilenameColumn = "filename"

@@ -159,11 +159,6 @@ const (
 	performerIdx2WithScene
 	performerIdx3WithScene
 	performerIdxWithTwoScenes
-	performerIdxWithAudio
-	performerIdx1WithAudio
-	performerIdx2WithAudio
-	performerIdx3WithAudio
-	performerIdxWithTwoAudios
 	performerIdxWithImage
 	performerIdxWithTwoImages
 	performerIdx1WithImage
@@ -178,12 +173,17 @@ const (
 	performerIdx2WithGallery
 	performerIdx3WithGallery
 	performerIdxWithSceneStudio
-	performerIdxWithAudioStudio
 	performerIdxWithImageStudio
 	performerIdxWithGalleryStudio
 	performerIdxWithTwoSceneStudio
-	performerIdxWithTwoAudioStudio
 	performerIdxWithParentTag
+	performerIdxWithAudio
+	performerIdx1WithAudio
+	performerIdx2WithAudio
+	performerIdx3WithAudio
+	performerIdxWithTwoAudios
+	performerIdxWithAudioStudio
+	performerIdxWithTwoAudioStudio
 	// new indexes above
 	// performers with dup names start from the end
 	performerIdx1WithDupName
@@ -197,7 +197,6 @@ const (
 
 const (
 	groupIdxWithScene = iota
-	groupIdxWithAudio
 	groupIdxWithStudio
 	groupIdxWithTag
 	groupIdxWithTwoTags
@@ -209,6 +208,7 @@ const (
 	groupIdxWithGrandParent
 	groupIdxWithParentAndScene
 	groupIdxWithChildWithScene
+	groupIdxWithAudio
 	groupIdxWithParentAndAudio
 	groupIdxWithChildWithAudio
 	// groups with dup names start from the end
@@ -220,7 +220,6 @@ const (
 
 const (
 	galleryIdxWithScene = iota
-	galleryIdxWithAudio
 	galleryIdxWithChapters
 	galleryIdxWithImage
 	galleryIdx1WithImage
@@ -258,10 +257,6 @@ const (
 	tagIdxWithPrimaryMarkers
 	tagIdxWithMarkers
 	tagIdxWithCoverImage
-	tagIdxWithAudio
-	tagIdx1WithAudio
-	tagIdx2WithAudio
-	tagIdx3WithAudio
 	tagIdxWithImage
 	tagIdx1WithImage
 	tagIdx2WithImage
@@ -286,6 +281,11 @@ const (
 	tagIdx1WithGroup
 	tagIdx2WithGroup
 	tagIdx3WithGroup
+	tagIdxWithAudio
+	tagIdx1WithAudio
+	tagIdx2WithAudio
+	tagIdx3WithAudio
+	// new indexes above
 	tagIdx1WithNothing
 	tagIdx2WithNothing
 	totalTags
@@ -294,8 +294,6 @@ const (
 const (
 	studioIdxWithScene = iota
 	studioIdxWithTwoScenes
-	studioIdxWithAudio
-	studioIdxWithTwoAudios
 	studioIdxWithGroup
 	studioIdxWithChildStudio
 	studioIdxWithParentStudio
@@ -304,13 +302,10 @@ const (
 	studioIdxWithGallery
 	studioIdxWithTwoGalleries
 	studioIdxWithScenePerformer
-	studioIdxWithAudioPerformer
 	studioIdxWithImagePerformer
 	studioIdxWithGalleryPerformer
 	studioIdx1WithTwoScenePerformer
 	studioIdx2WithTwoScenePerformer
-	studioIdx1WithTwoAudioPerformer
-	studioIdx2WithTwoAudioPerformer
 	studioIdxWithTag
 	studioIdx2WithTag
 	studioIdxWithTwoTags
@@ -319,6 +314,11 @@ const (
 	studioIdxWithParentAndChild
 	studioIdxWithGrandParent
 	studioIdxWithNothing
+	studioIdxWithAudio
+	studioIdxWithTwoAudios
+	studioIdxWithAudioPerformer
+	studioIdx1WithTwoAudioPerformer
+	studioIdx2WithTwoAudioPerformer
 	totalStudios
 )
 
@@ -525,10 +525,6 @@ var (
 		audioIdxWithPerformerParentTag:  {performerIdxWithParentTag},
 	}
 
-	audioGalleries = linkMap{
-		audioIdxWithGallery: {galleryIdxWithAudio},
-	}
-
 	audioGroups = linkMap{
 		audioIdxWithGroup:           {groupIdxWithAudio},
 		audioIdxWithGroupWithParent: {groupIdxWithParentAndAudio},
@@ -659,6 +655,7 @@ var (
 		{groupIdxWithGrandChild, groupIdxWithParentAndChild},
 		{groupIdxWithParentAndChild, groupIdxWithGrandParent},
 		{groupIdxWithChildWithScene, groupIdxWithParentAndScene},
+		{groupIdxWithChildWithAudio, groupIdxWithParentAndAudio},
 	}
 )
 
@@ -1948,7 +1945,7 @@ func createPerformers(ctx context.Context, n int, o int) error {
 			PenisLength:   getPerformerPenisLength(i),
 			Circumcised:   getPerformerCircumcised(i),
 			Rating:        getIntPtr(getRating(i)),
-			IgnoreAutoTag: getIgnoreAutoTag(i),
+			IgnoreAutoTag: getIgnoreAutoTag(index),
 			TagIDs:        models.NewRelatedIDs(tids),
 		}
 

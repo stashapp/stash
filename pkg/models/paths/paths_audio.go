@@ -1,11 +1,5 @@
 package paths
 
-import (
-	"path/filepath"
-
-	"github.com/stashapp/stash/pkg/fsutil"
-)
-
 type audioPaths struct {
 	generatedPaths
 }
@@ -17,15 +11,7 @@ func newAudioPaths(p Paths) *audioPaths {
 	return &sp
 }
 
-func (sp *audioPaths) GetTranscodePath(checksum string) string {
-	return filepath.Join(sp.Transcodes, checksum+".mp3")
-}
-
 func (sp *audioPaths) GetStreamPath(audioPath string, checksum string) string {
-	transcodePath := sp.GetTranscodePath(checksum)
-	transcodeExists, _ := fsutil.FileExists(transcodePath)
-	if transcodeExists {
-		return transcodePath
-	}
+	// No Transcodes at this time
 	return audioPath
 }

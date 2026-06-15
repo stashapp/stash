@@ -6,7 +6,6 @@ import (
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
-	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -86,20 +85,7 @@ func GetAudioStreamPaths(audio *models.Audio, directStreamURL *url.URL, maxStrea
 	return endpoints, nil
 }
 
-// HasAudioTranscode returns true if a transcoded video exists for the provided
-// audio. It will check using the OSHash of the audio first, then fall back
-// to the checksum.
+// There are no Audio transcodes at this time
 func HasAudioTranscode(audio *models.Audio, fileNamingAlgo models.HashAlgorithm) bool {
-	if audio == nil {
-		return false
-	}
-
-	audioHash := audio.GetHash(fileNamingAlgo)
-	if audioHash == "" {
-		return false
-	}
-
-	transcodePath := instance.Paths.Audio.GetTranscodePath(audioHash)
-	ret, _ := fsutil.FileExists(transcodePath)
-	return ret
+	return false
 }

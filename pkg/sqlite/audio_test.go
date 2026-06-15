@@ -3704,11 +3704,11 @@ func TestAudioQueryCustomFields(t *testing.T) {
 					{
 						Field:    "string",
 						Modifier: models.CriterionModifierMatchesRegex,
-						Value:    []any{".*17_custom"},
+						Value:    []any{".*" + getAudioStringValue(audioIdxWithPerformerTag, "custom")[6:]},
 					},
 				},
 			},
-			[]int{audioIdxWithTwoPerformerTag},
+			[]int{audioIdxWithPerformerTag},
 			nil,
 			false,
 		},
@@ -3731,19 +3731,19 @@ func TestAudioQueryCustomFields(t *testing.T) {
 			"not matches regex",
 			&models.AudioFilterType{
 				Title: &models.StringCriterionInput{
-					Value:    getAudioTitle(audioIdxWithTwoPerformerTag),
+					Value:    getAudioTitle(audioIdxWithPerformerTag),
 					Modifier: models.CriterionModifierEquals,
 				},
 				CustomFields: []models.CustomFieldCriterionInput{
 					{
 						Field:    "string",
 						Modifier: models.CriterionModifierNotMatchesRegex,
-						Value:    []any{".*17_custom"},
+						Value:    []any{".*" + getAudioStringValue(audioIdxWithPerformerTag, "custom")[6:]},
 					},
 				},
 			},
 			nil,
-			[]int{audioIdxWithTwoPerformerTag},
+			[]int{audioIdxWithPerformerTag},
 			false,
 		},
 		{

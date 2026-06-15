@@ -2526,7 +2526,7 @@ func TestPerformerQuerySortScenesCount(t *testing.T) {
 		assert.True(t, len(performers) > 0)
 		lastPerformer := performers[len(performers)-1]
 
-		assert.Equal(t, performerIDs[performerIdxWithTwoSceneStudio], lastPerformer.ID)
+		assert.Equal(t, performerIDs[performerIdxWithTwoTags], lastPerformer.ID)
 
 		return nil
 	})

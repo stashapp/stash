@@ -105,7 +105,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 		newHash := GetHash(f, models.HashAlgorithmMd5)
 
 		if oldHash != "" && newHash != "" && oldHash != newHash {
-			MigrateHash(h.Paths, oldHash, newHash)
+			// NOTE: No transcodes/generated files, no migration needed yet
 		}
 	}
 

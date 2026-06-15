@@ -1237,7 +1237,7 @@ func TestGroupQueryContainingGroups(t *testing.T) {
 				0,
 			},
 			"",
-			[]int{groupIdxWithParentAndChild, groupIdxWithParent, groupIdxWithGrandParent, groupIdxWithParentAndScene},
+			[]int{groupIdxWithParentAndChild, groupIdxWithParent, groupIdxWithGrandParent, groupIdxWithParentAndScene, groupIdxWithParentAndAudio},
 		},
 	}
 
@@ -1350,7 +1350,7 @@ func TestGroupQuerySubGroups(t *testing.T) {
 				0,
 			},
 			"",
-			[]int{groupIdxWithGrandChild, groupIdxWithChild, groupIdxWithParentAndChild, groupIdxWithChildWithScene},
+			[]int{groupIdxWithGrandChild, groupIdxWithChild, groupIdxWithParentAndChild, groupIdxWithChildWithScene, groupIdxWithChildWithAudio},
 		},
 	}
 
@@ -1405,7 +1405,7 @@ func TestGroupQueryContainingGroupCount(t *testing.T) {
 			1,
 			models.CriterionModifierEquals,
 			"",
-			[]int{groupIdxWithParent, groupIdxWithGrandParent, groupIdxWithParentAndChild, groupIdxWithParentAndScene},
+			[]int{groupIdxWithParent, groupIdxWithGrandParent, groupIdxWithParentAndChild, groupIdxWithParentAndScene, groupIdxWithParentAndAudio},
 		},
 		{
 			"not equals",
@@ -1426,7 +1426,7 @@ func TestGroupQueryContainingGroupCount(t *testing.T) {
 			0,
 			models.CriterionModifierGreaterThan,
 			"",
-			[]int{groupIdxWithParent, groupIdxWithGrandParent, groupIdxWithParentAndChild, groupIdxWithParentAndScene},
+			[]int{groupIdxWithParent, groupIdxWithGrandParent, groupIdxWithParentAndChild, groupIdxWithParentAndScene, groupIdxWithParentAndAudio},
 		},
 	}
 
@@ -1476,7 +1476,7 @@ func TestGroupQuerySubGroupCount(t *testing.T) {
 			1,
 			models.CriterionModifierEquals,
 			"",
-			[]int{groupIdxWithChild, groupIdxWithGrandChild, groupIdxWithParentAndChild, groupIdxWithChildWithScene},
+			[]int{groupIdxWithChild, groupIdxWithGrandChild, groupIdxWithParentAndChild, groupIdxWithChildWithScene, groupIdxWithChildWithAudio},
 		},
 		{
 			"not equals",
@@ -1497,7 +1497,7 @@ func TestGroupQuerySubGroupCount(t *testing.T) {
 			0,
 			models.CriterionModifierGreaterThan,
 			"",
-			[]int{groupIdxWithChild, groupIdxWithGrandChild, groupIdxWithParentAndChild, groupIdxWithChildWithScene},
+			[]int{groupIdxWithChild, groupIdxWithGrandChild, groupIdxWithParentAndChild, groupIdxWithChildWithScene, groupIdxWithChildWithAudio},
 		},
 	}
 
