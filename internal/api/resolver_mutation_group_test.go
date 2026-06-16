@@ -40,7 +40,9 @@ const (
 var (
 	// var because need to grab pointer in tests
 	groupNewName = "NewName"
-	groupData    = &models.Group{ID: groupID, Name: groupName}
+
+	// copied per-subtest so Aliases.Loaded() state isn't shared across test cases
+	groupData = models.Group{ID: groupID, Name: groupName}
 )
 
 func TestGroupCreate_AliasNormalization(t *testing.T) {
@@ -75,6 +77,7 @@ func TestGroupCreate_AliasNormalization(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := testutil.WithGQLContext(context.Background(), nil)
 			db, svc, r := newGroupResolver(t)
+			groupDataCopy := groupData
 
 			// setup mocks
 			var gotInput *models.CreateGroupInput
@@ -85,7 +88,7 @@ func TestGroupCreate_AliasNormalization(t *testing.T) {
 				}).
 				Return(nil).Once()
 
-			db.Group.On("Find", mock.Anything, groupID).Return(groupData, nil).Once()
+			db.Group.On("Find", mock.Anything, groupID).Return(&groupDataCopy, nil).Once()
 
 			// run the mutation
 			result, err := r.Mutation().GroupCreate(ctx, GroupCreateInput{
@@ -160,10 +163,11 @@ func TestGroupUpdate_AliasNormalization(t *testing.T) {
 			ctx := testutil.WithGQLContext(context.Background(), inputMap)
 
 			db, svc, r := newGroupResolver(t)
+			groupDataCopy := groupData
 
 			// setup mocks
 			// Find runs twice in case of group update
-			db.Group.On("Find", mock.Anything, groupID).Return(groupData, nil).Twice()
+			db.Group.On("Find", mock.Anything, groupID).Return(&groupDataCopy, nil).Twice()
 			db.Group.On("GetAliases", mock.Anything, groupID).Return(tt.existingAliases, nil).Once()
 
 			var gotPartial models.GroupPartial
@@ -171,7 +175,7 @@ func TestGroupUpdate_AliasNormalization(t *testing.T) {
 				Run(func(args mock.Arguments) {
 					gotPartial = args.Get(2).(models.GroupPartial)
 				}).
-				Return(groupData, nil).Once()
+				Return(&groupDataCopy, nil).Once()
 
 			// run the mutation
 			result, err := r.Mutation().GroupUpdate(ctx, GroupUpdateInput{
