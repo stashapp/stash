@@ -1,5 +1,5 @@
 import cloneDeep from "lodash-es/cloneDeep";
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
@@ -13,6 +13,7 @@ import { useFilteredItemList } from "../List/ItemList";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { PerformerTagger } from "../Tagger/performers/PerformerTagger";
+import { getActiveSortColumn } from "src/utils/data";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { IPerformerCardExtraCriteria } from "./PerformerCard";
@@ -226,15 +227,10 @@ const PerformerList: React.FC<{
     extraCriteria,
     onSort,
   }) => {
-    const reverseSortMap = useMemo(() => {
-      const rev: Record<string, string> = {};
-      Object.entries(performerColumnSortMap).forEach(([k, v]) => {
-        rev[v] = k;
-      });
-      return rev;
-    }, []);
-    const activeSortColumn =
-      reverseSortMap[filter.sortBy ?? ""] ?? filter.sortBy;
+    const activeSortColumn = getActiveSortColumn(
+      performerColumnSortMap,
+      filter.sortBy
+    );
 
     if (performers.length === 0 && filter.displayMode !== DisplayMode.Tagger) {
       return null;

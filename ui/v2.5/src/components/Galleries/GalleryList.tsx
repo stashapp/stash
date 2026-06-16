@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
@@ -12,6 +12,7 @@ import GalleryWallCard from "./GalleryWallCard";
 import { EditGalleriesDialog } from "./EditGalleriesDialog";
 import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
+import { getActiveSortColumn } from "src/utils/data";
 import { GenerateDialog } from "../Dialogs/GenerateDialog";
 import { GalleryListTable } from "./GalleryListTable";
 import { GalleryCardGrid } from "./GalleryCardGrid";
@@ -67,15 +68,10 @@ const GalleryList: React.FC<{
 }> = PatchComponent(
   "GalleryList",
   ({ galleries, filter, selectedIds, onSelectChange, onSort }) => {
-    const reverseSortMap = useMemo(() => {
-      const rev: Record<string, string> = {};
-      Object.entries(galleryColumnSortMap).forEach(([k, v]) => {
-        rev[v] = k;
-      });
-      return rev;
-    }, []);
-    const activeSortColumn =
-      reverseSortMap[filter.sortBy ?? ""] ?? filter.sortBy;
+    const activeSortColumn = getActiveSortColumn(
+      galleryColumnSortMap,
+      filter.sortBy
+    );
 
     if (galleries.length === 0) {
       return null;

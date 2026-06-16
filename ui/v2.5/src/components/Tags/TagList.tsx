@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect } from "react";
 import cloneDeep from "lodash-es/cloneDeep";
 import Mousetrap from "mousetrap";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -13,6 +13,7 @@ import {
   useTagsDestroy,
 } from "src/core/StashService";
 import { FormattedMessage, useIntl } from "react-intl";
+import { getActiveSortColumn } from "src/utils/data";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { tagRelationHook } from "../../core/tags";
@@ -66,15 +67,10 @@ const TagList: React.FC<{
 }> = PatchComponent(
   "TagList",
   ({ tags, filter, selectedIds, onSelectChange, onSort }) => {
-    const reverseSortMap = useMemo(() => {
-      const rev: Record<string, string> = {};
-      Object.entries(tagColumnSortMap).forEach(([k, v]) => {
-        rev[v] = k;
-      });
-      return rev;
-    }, []);
-    const activeSortColumn =
-      reverseSortMap[filter.sortBy ?? ""] ?? filter.sortBy;
+    const activeSortColumn = getActiveSortColumn(
+      tagColumnSortMap,
+      filter.sortBy
+    );
 
     if (tags.length === 0 && filter.displayMode !== DisplayMode.Tagger) {
       return null;

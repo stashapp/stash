@@ -11,6 +11,7 @@ import { Tagger } from "../Tagger/scenes/SceneTagger";
 import { IPlaySceneOptions, SceneQueue } from "src/models/sceneQueue";
 import { SceneWallPanel } from "./SceneWallPanel";
 import { SceneListTable } from "./SceneListTable";
+import { getActiveSortColumn } from "src/utils/data";
 import { EditScenesDialog } from "./EditScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
 import { GenerateDialog } from "../Dialogs/GenerateDialog";
@@ -112,6 +113,7 @@ function usePlaySelected(selectedIds: Set<string>) {
   const playScene = usePlayScene();
 
   const playSelected = useCallback(() => {
+    // populate queue and go to first scene
     const sceneIDs = Array.from(selectedIds.values());
     const queue = SceneQueue.fromSceneIDList(sceneIDs);
 
@@ -126,6 +128,7 @@ function usePlayFirst() {
 
   const playFirst = useCallback(
     (queue: SceneQueue, sceneID: string, index: number) => {
+      // populate queue and go to first scene
       playScene(queue, sceneID, { sceneIndex: index });
     },
     [playScene]
@@ -138,6 +141,7 @@ function usePlayRandom(filter: ListFilterModel, count: number) {
   const playScene = usePlayScene();
 
   const playRandom = useCallback(async () => {
+    // query for a random scene
     if (count === 0) {
       return;
     }
@@ -153,6 +157,7 @@ function usePlayRandom(filter: ListFilterModel, count: number) {
     const queryResults = await queryFindScenes(filterCopy);
     const scene = queryResults.data.findScenes.scenes[index];
     if (scene) {
+      // navigate to the image player page
       const queue = SceneQueue.fromListFilterModel(filterCopy);
       playScene(queue, scene.id, { sceneIndex: index });
     }
@@ -189,15 +194,10 @@ const SceneList: React.FC<{
 }> = PatchComponent(
   "SceneList",
   ({ scenes, filter, selectedIds, onSelectChange, fromGroupId, onSort }) => {
-    const reverseSortMap = useMemo(() => {
-      const rev: Record<string, string> = {};
-      Object.entries(sceneColumnSortMap).forEach(([k, v]) => {
-        rev[v] = k;
-      });
-      return rev;
-    }, []);
-    const activeSortColumn =
-      reverseSortMap[filter.sortBy ?? ""] ?? filter.sortBy;
+    const activeSortColumn = getActiveSortColumn(
+      sceneColumnSortMap,
+      filter.sortBy
+    );
 
     const queue = useMemo(
       () => SceneQueue.fromListFilterModel(filter),
