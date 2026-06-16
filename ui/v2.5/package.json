@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@ant-design/react-slick": "^1.0.0",
-    "@apollo/client": "3.14",
+    "@apollo/client": "~3.14.1",
     "@blaineam/videojs-vr": "^3.3.0",
     "@formatjs/intl-getcanonicallocales": "^3.2.10",
     "@formatjs/intl-locale": "^5.3.9",

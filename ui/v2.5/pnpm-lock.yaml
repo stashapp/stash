@@ -17,8 +17,8 @@ importers:
         specifier: ^1.0.0
         version: 1.1.2(react@17.0.2)
       '@apollo/client':
-        specifier: '3.14'
-        version: 3.14.0(@types/react@17.0.89)(graphql-ws@5.16.2(graphql@16.14.2))(graphql@16.14.2)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+        specifier: ~3.14.1
+        version: 3.14.1(@types/react@17.0.89)(graphql-ws@5.16.2(graphql@16.14.2))(graphql@16.14.2)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@blaineam/videojs-vr':
         specifier: ^3.3.0
         version: 3.3.0
@@ -63,7 +63,7 @@ importers:
         version: 5.3.3
       apollo-upload-client:
         specifier: '18'
-        version: 18.0.1(@apollo/client@3.14.0(@types/react@17.0.89)(graphql-ws@5.16.2(graphql@16.14.2))(graphql@16.14.2)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(graphql@16.14.2)
+        version: 18.0.1(@apollo/client@3.14.1(@types/react@17.0.89)(graphql-ws@5.16.2(graphql@16.14.2))(graphql@16.14.2)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(graphql@16.14.2)
       base64-blob:
         specifier: ^1.4.1
         version: 1.4.1
@@ -304,8 +304,8 @@ packages:
     peerDependencies:
       react: '>=16.9.0'
 
-  '@apollo/client@3.14.0':
-    resolution: {integrity: sha512-0YQKKRIxiMlIou+SekQqdCo0ZTHxOcES+K8vKB53cIDpwABNR0P0yRzPgsbgcj3zRJniD93S/ontsnZsCLZrxQ==}
+  '@apollo/client@3.14.1':
+    resolution: {integrity: sha512-SgGX6E23JsZhUdG2anxiyHvEvvN6CUaI4ZfMsndZFeuHPXL3H0IsaiNAhLITSISbeyeYd+CBd9oERXQDdjXWZw==}
     peerDependencies:
       graphql: ^15.0.0 || ^16.0.0
       graphql-ws: ^5.5.5 || ^6.0.3
@@ -4209,7 +4209,7 @@ snapshots:
       resize-observer-polyfill: 1.5.1
       throttle-debounce: 5.0.2
 
-  '@apollo/client@3.14.0(@types/react@17.0.89)(graphql-ws@5.16.2(graphql@16.14.2))(graphql@16.14.2)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)':
+  '@apollo/client@3.14.1(@types/react@17.0.89)(graphql-ws@5.16.2(graphql@16.14.2))(graphql@16.14.2)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)':
     dependencies:
       '@graphql-typed-document-node/core': 3.2.0(graphql@16.14.2)
       '@wry/caches': 1.0.1
@@ -5577,7 +5577,7 @@ snapshots:
 
   '@types/apollo-upload-client@18.0.1(@types/react@17.0.89)(graphql-ws@5.16.2(graphql@16.14.2))(react-dom@17.0.2(react@17.0.2))(react@17.0.2)':
     dependencies:
-      '@apollo/client': 3.14.0(@types/react@17.0.89)(graphql-ws@5.16.2(graphql@16.14.2))(graphql@16.14.2)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@apollo/client': 3.14.1(@types/react@17.0.89)(graphql-ws@5.16.2(graphql@16.14.2))(graphql@16.14.2)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@types/extract-files': 13.0.2
       graphql: 16.14.2
     transitivePeerDependencies:
@@ -5870,9 +5870,9 @@ snapshots:
     dependencies:
       color-convert: 2.0.1
 
-  apollo-upload-client@18.0.1(@apollo/client@3.14.0(@types/react@17.0.89)(graphql-ws@5.16.2(graphql@16.14.2))(graphql@16.14.2)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(graphql@16.14.2):
+  apollo-upload-client@18.0.1(@apollo/client@3.14.1(@types/react@17.0.89)(graphql-ws@5.16.2(graphql@16.14.2))(graphql@16.14.2)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(graphql@16.14.2):
     dependencies:
-      '@apollo/client': 3.14.0(@types/react@17.0.89)(graphql-ws@5.16.2(graphql@16.14.2))(graphql@16.14.2)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@apollo/client': 3.14.1(@types/react@17.0.89)(graphql-ws@5.16.2(graphql@16.14.2))(graphql@16.14.2)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       extract-files: 13.0.0
       graphql: 16.14.2
 
