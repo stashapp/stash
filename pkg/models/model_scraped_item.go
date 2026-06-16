@@ -621,6 +621,7 @@ func (m ScrapedMovie) ScrapedGroup() ScrapedGroup {
 		ret.URLs = []string{*m.URL}
 	}
 
+	// Movies are largely deprecated; these are just gluing fixes.
 	if m.Aliases != nil {
 		ret.Aliases = []string{*m.Aliases}
 	}
