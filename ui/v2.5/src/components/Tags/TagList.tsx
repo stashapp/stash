@@ -56,6 +56,7 @@ const tagColumnSortMap: Record<string, string> = {
   group_count: "groups_count",
   performer_count: "performers_count",
   studio_count: "studios_count",
+  favourite: "favorite",
 };
 
 const TagList: React.FC<{

@@ -1,13 +1,17 @@
 import React from "react";
 import { useIntl } from "react-intl";
+import { Button } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { SortDirectionEnum } from "src/core/generated-graphql";
 import { useStudioUpdate } from "src/core/StashService";
 import { useTableColumns } from "src/hooks/useTableColumns";
 import { ListTable, IColumn } from "../List/ListTable";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
+import { Icon } from "../Shared/Icon";
 import { Link } from "react-router-dom";
 import NavUtils from "src/utils/navigation";
+import { faHeart } from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
 import "./StudioListTable.scss";
 
 interface IStudioListTableProps {
@@ -39,6 +43,19 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
           input: {
             id: studioId,
             rating100: v,
+          },
+        },
+      });
+    }
+  }
+
+  function setFavorite(v: boolean, studioId: string) {
+    if (studioId) {
+      updateStudio({
+        variables: {
+          input: {
+            id: studioId,
+            favorite: v,
           },
         },
       });
@@ -109,6 +126,15 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
     </Link>
   );
 
+  const FavoriteCell = (studio: GQL.StudioDataFragment) => (
+    <Button
+      className={cx("minimal", studio.favorite ? "favorite" : "not-favorite")}
+      onClick={() => setFavorite(!studio.favorite, studio.id)}
+    >
+      <Icon icon={faHeart} />
+    </Button>
+  );
+
   const RelatedCell = (studio: GQL.StudioDataFragment) => {
     const parentLink = studio.parent_studio ? (
       <Link to={`/studios/${studio.parent_studio.id}`}>
@@ -170,6 +196,12 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
       label: intl.formatMessage({ id: "rating" }),
       defaultShow: true,
       render: RatingCell,
+    },
+    {
+      value: "favourite",
+      label: intl.formatMessage({ id: "favourite" }),
+      defaultShow: true,
+      render: FavoriteCell,
     },
     {
       value: "scene_count",

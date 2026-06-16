@@ -666,6 +666,7 @@ var studioSortOptions = sortOptions{
 	"images_count",
 	"latest_scene",
 	"name",
+	"favorite",
 	"scenes_count",
 	"scenes_duration",
 	"scenes_size",

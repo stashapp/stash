@@ -53,6 +53,7 @@ const studioColumnSortMap: Record<string, string> = {
   scene_count: "scenes_count",
   image_count: "images_count",
   gallery_count: "galleries_count",
+  favourite: "favorite",
 };
 
 const StudioList: React.FC<{

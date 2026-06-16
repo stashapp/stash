@@ -823,6 +823,7 @@ var performerSortOptions = sortOptions{
 	"play_count",
 	"random",
 	"rating",
+	"favorite",
 	"scenes_count",
 	"scenes_duration",
 	"scenes_size",

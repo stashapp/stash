@@ -279,7 +279,6 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
       value: "favourite",
       label: intl.formatMessage({ id: "favourite" }),
       defaultShow: true,
-      sortable: false,
       render: FavoriteCell,
     },
     {

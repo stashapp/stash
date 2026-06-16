@@ -200,6 +200,7 @@ const performerColumnSortMap: Record<string, string> = {
   gallery_count: "galleries_count",
   image_count: "images_count",
   age: "birthdate",
+  favourite: "favorite",
 };
 
 interface IPerformerList {
