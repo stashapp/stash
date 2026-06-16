@@ -73,7 +73,7 @@
     "resize-observer-polyfill": "^1.5.1",
     "slick-carousel": "^1.8.1",
     "thehandy": "^1.1.0",
-    "ua-parser-js": "^2.0.9",
+    "ua-parser-js": "^2.0.10",
     "universal-cookie": "^8.1.0",
     "video.js": "^7.21.7",
     "videojs-abloop": "^1.2.0",
