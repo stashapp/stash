@@ -193,6 +193,7 @@ export const FormatPenisLength = (penis_length?: number | null) => {
 
 const performerColumnSortMap: Record<string, string> = {
   height_cm: "height",
+  weight_kg: "weight",
   penis_length_cm: "penis_length",
   scene_count: "scenes_count",
   gallery_count: "galleries_count",
