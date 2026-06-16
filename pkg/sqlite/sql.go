@@ -99,7 +99,7 @@ func getSort(sort string, direction string, tableName string) string {
 		return " ORDER BY COUNT(distinct " + colName + ") " + direction
 	case strings.Compare(sort, "filesize") == 0:
 		colName := getColumn(tableName, "size")
-		return " ORDER BY " + colName + " IS NULL, " + colName + " " + direction
+		return " ORDER BY " + colName + " " + direction
 	case strings.HasPrefix(sort, randomSeedPrefix):
 		// seed as a parameter from the UI
 		seedStr := sort[len(randomSeedPrefix):]
@@ -117,13 +117,13 @@ func getSort(sort string, direction string, tableName string) string {
 			colName = sort
 		}
 		if strings.Compare(sort, "name") == 0 {
-			return " ORDER BY " + colName + " IS NULL, " + colName + " COLLATE NATURAL_CI " + direction
+			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction
 		}
 		if strings.Compare(sort, "title") == 0 {
-			return " ORDER BY " + colName + " IS NULL, " + colName + " COLLATE NATURAL_CI " + direction
+			return " ORDER BY " + colName + " COLLATE NATURAL_CI " + direction
 		}
 
-		return " ORDER BY " + colName + " IS NULL, " + colName + " " + direction
+		return " ORDER BY " + colName + " " + direction
 	}
 }
 
