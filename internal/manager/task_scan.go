@@ -337,10 +337,13 @@ func (j *ScanJob) handleFile(ctx context.Context, f file.ScannedFile, progress *
 		return err
 	}
 
+	videoFile, _ := r.File.(*models.VideoFile)
+	if videoFile != nil && !r.IsUnchanged() {
+		j.extractEmbeddedCaptions(ctx, videoFile)
+	}
+
 	// if this is a new video file, match it with any unmatched caption files
 	if r.New && len(j.unmatchedCaptionFiles.Get()) > 0 {
-		videoFile, _ := r.File.(*models.VideoFile)
-
 		if videoFile != nil {
 			// try to match any unmatched caption files to this video file
 			for _, captionPath := range j.unmatchedCaptionFiles.Get() {
@@ -365,8 +368,6 @@ func (j *ScanJob) handleFile(ctx context.Context, f file.ScannedFile, progress *
 	// clean captions - scene handler handles this as well, but
 	// unchanged files aren't processed by the scene handler
 	if r.IsUnchanged() {
-		videoFile, _ := r.File.(*models.VideoFile)
-
 		if videoFile != nil {
 			txnMgr := j.scanner.Repository.TxnManager
 			fileRepo := j.scanner.Repository.File
@@ -402,6 +403,18 @@ func (j *ScanJob) handleFile(ctx context.Context, f file.ScannedFile, progress *
 	}
 
 	return nil
+}
+
+func (j *ScanJob) extractEmbeddedCaptions(ctx context.Context, videoFile *models.VideoFile) {
+	if err := video.ExtractEmbeddedCaptions(
+		ctx,
+		videoFile,
+		GetInstance().FFMpeg,
+		j.scanner.Repository.TxnManager,
+		j.scanner.Repository.File,
+	); err != nil {
+		logger.Errorf("Error extracting embedded captions: %v", err)
+	}
 }
 
 func (j *ScanJob) scanZipFile(ctx context.Context, f file.ScannedFile, progress *job.Progress) error {

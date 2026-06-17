@@ -44,17 +44,35 @@ func (d *Decorator) Decorate(ctx context.Context, fs models.FS, f models.File) (
 	}
 
 	return &models.VideoFile{
-		BaseFile:    base,
-		Format:      string(container),
-		VideoCodec:  videoFile.VideoCodec,
-		AudioCodec:  videoFile.AudioCodec,
-		Width:       videoFile.Width,
-		Height:      videoFile.Height,
-		Duration:    videoFile.FileDuration,
-		FrameRate:   videoFile.FrameRate,
-		BitRate:     videoFile.Bitrate,
-		Interactive: interactive,
+		BaseFile:        base,
+		Format:          string(container),
+		VideoCodec:      videoFile.VideoCodec,
+		AudioCodec:      videoFile.AudioCodec,
+		Width:           videoFile.Width,
+		Height:          videoFile.Height,
+		Duration:        videoFile.FileDuration,
+		FrameRate:       videoFile.FrameRate,
+		BitRate:         videoFile.Bitrate,
+		Interactive:     interactive,
+		SubtitleStreams: getSubtitleStreams(videoFile.JSON.Streams),
 	}, nil
+}
+
+func getSubtitleStreams(streams []ffmpeg.FFProbeStream) []models.VideoSubtitleStream {
+	var ret []models.VideoSubtitleStream
+	for _, stream := range streams {
+		if stream.CodecType != "subtitle" {
+			continue
+		}
+
+		ret = append(ret, models.VideoSubtitleStream{
+			Index:        stream.Index,
+			CodecName:    stream.CodecName,
+			LanguageCode: stream.Tags.Language,
+		})
+	}
+
+	return ret
 }
 
 func (d *Decorator) IsMissingMetadata(ctx context.Context, fs models.FS, f models.File) bool {

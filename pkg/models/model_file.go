@@ -289,6 +289,16 @@ type VideoFile struct {
 
 	Interactive      bool `json:"interactive"`
 	InteractiveSpeed *int `json:"interactive_speed"`
+
+	// transient - populated during scan for embedded caption extraction
+	SubtitleStreams []VideoSubtitleStream `json:"-"`
+}
+
+// VideoSubtitleStream contains scan-time metadata for an embedded subtitle stream.
+type VideoSubtitleStream struct {
+	Index        int
+	CodecName    string
+	LanguageCode string
 }
 
 func (f VideoFile) GetWidth() int {
