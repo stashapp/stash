@@ -182,9 +182,7 @@ input FileSetFingerprintsInput {
 type VRCorrections {
 	horizontal_offset: Float
 	vertical_offset: Float
-	brightness: Int
-	contrast: Int
-	saturation: Int
+	alpha_mode: String
 }
 
 input FileSetVRMetadataInput {
@@ -197,9 +195,7 @@ input FileSetVRMetadataInput {
 input VRCorrectionsInput {
 	horizontal_offset: Float
 	vertical_offset: Float
-	brightness: Int
-	contrast: Int
-	saturation: Int
+	alpha_mode: String
 }
 
 type FindFilesResultType {

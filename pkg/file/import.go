@@ -329,8 +329,6 @@ func vrCorrectionsFromJSON(jc *jsonschema.VRCorrections) *models.VRCorrections {
 	return &models.VRCorrections{
 		HorizontalOffset: jc.HorizontalOffset,
 		VerticalOffset:   jc.VerticalOffset,
-		Brightness:       jc.Brightness,
-		Contrast:         jc.Contrast,
-		Saturation:       jc.Saturation,
+		AlphaMode:        jc.AlphaMode,
 	}
 }

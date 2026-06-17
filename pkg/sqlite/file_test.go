@@ -619,9 +619,7 @@ func TestFileStore_ModifyVRMetadata(t *testing.T) {
 	stereo := models.StereoModeEnumSBS
 	hOff := -0.5
 	vOff := 0.25
-	bright := 50
-	contrast := -10
-	sat := 5
+	alpha := "yes"
 
 	tests := []struct {
 		name        string
@@ -636,9 +634,7 @@ func TestFileStore_ModifyVRMetadata(t *testing.T) {
 			&models.VRCorrections{
 				HorizontalOffset: &hOff,
 				VerticalOffset:   &vOff,
-				Brightness:       &bright,
-				Contrast:         &contrast,
-				Saturation:       &sat,
+				AlphaMode:        &alpha,
 			},
 		},
 		{

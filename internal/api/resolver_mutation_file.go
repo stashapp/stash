@@ -355,9 +355,7 @@ func (r *mutationResolver) FileSetVRMetadata(ctx context.Context, input FileSetV
 		vrCorrections = &models.VRCorrections{
 			HorizontalOffset: input.VrCorrections.HorizontalOffset,
 			VerticalOffset:   input.VrCorrections.VerticalOffset,
-			Brightness:       input.VrCorrections.Brightness,
-			Contrast:         input.VrCorrections.Contrast,
-			Saturation:       input.VrCorrections.Saturation,
+			AlphaMode:        input.VrCorrections.AlphaMode,
 		}
 	}
 

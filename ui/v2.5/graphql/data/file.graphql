@@ -21,9 +21,7 @@ fragment VideoFileData on VideoFile {
   vr_corrections {
     horizontal_offset
     vertical_offset
-    brightness
-    contrast
-    saturation
+    alpha_mode
   }
   fingerprints {
     type
@@ -95,9 +93,7 @@ fragment VisualFileData on VisualFile {
     vr_corrections {
       horizontal_offset
       vertical_offset
-      brightness
-      contrast
-      saturation
+      alpha_mode
     }
     fingerprints {
       type

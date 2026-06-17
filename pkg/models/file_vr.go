@@ -18,6 +18,8 @@ const (
 	ProjectionEnumMKX200          ProjectionEnum = "MKX200"
 	ProjectionEnumRF52            ProjectionEnum = "RF52"
 	ProjectionEnumDome            ProjectionEnum = "DOME"
+	ProjectionEnumCubemap         ProjectionEnum = "CUBEMAP"
+	ProjectionEnumRectilinear     ProjectionEnum = "RECTILINEAR"
 )
 
 var AllProjectionEnum = []ProjectionEnum{
@@ -27,12 +29,15 @@ var AllProjectionEnum = []ProjectionEnum{
 	ProjectionEnumMKX200,
 	ProjectionEnumRF52,
 	ProjectionEnumDome,
+	ProjectionEnumCubemap,
+	ProjectionEnumRectilinear,
 }
 
 func (e ProjectionEnum) IsValid() bool {
 	switch e {
 	case ProjectionEnumFlat, ProjectionEnumEquirectangular, ProjectionEnumFisheye,
-		ProjectionEnumMKX200, ProjectionEnumRF52, ProjectionEnumDome:
+		ProjectionEnumMKX200, ProjectionEnumRF52, ProjectionEnumDome,
+		ProjectionEnumCubemap, ProjectionEnumRectilinear:
 		return true
 	}
 	return false
@@ -63,10 +68,12 @@ func (e ProjectionEnum) MarshalGQL(w io.Writer) {
 type StereoModeEnum string
 
 const (
-	StereoModeEnumMono StereoModeEnum = "MONO"
-	StereoModeEnumSBS  StereoModeEnum = "SBS"
-	StereoModeEnumTB   StereoModeEnum = "TB"
-	StereoModeEnumCUV  StereoModeEnum = "CUV"
+	StereoModeEnumMono              StereoModeEnum = "MONO"
+	StereoModeEnumSBS               StereoModeEnum = "SBS"
+	StereoModeEnumTB                StereoModeEnum = "TB"
+	StereoModeEnumCUV               StereoModeEnum = "CUV"
+	StereoModeEnumAlternatingFrames StereoModeEnum = "AF"
+	StereoModeEnumInterleavedRows   StereoModeEnum = "INTERLEAVED_ROWS"
 )
 
 var AllStereoModeEnum = []StereoModeEnum{
@@ -74,11 +81,14 @@ var AllStereoModeEnum = []StereoModeEnum{
 	StereoModeEnumSBS,
 	StereoModeEnumTB,
 	StereoModeEnumCUV,
+	StereoModeEnumAlternatingFrames,
+	StereoModeEnumInterleavedRows,
 }
 
 func (e StereoModeEnum) IsValid() bool {
 	switch e {
-	case StereoModeEnumMono, StereoModeEnumSBS, StereoModeEnumTB, StereoModeEnumCUV:
+	case StereoModeEnumMono, StereoModeEnumSBS, StereoModeEnumTB, StereoModeEnumCUV,
+		StereoModeEnumAlternatingFrames, StereoModeEnumInterleavedRows:
 		return true
 	}
 	return false
@@ -107,10 +117,9 @@ func (e StereoModeEnum) MarshalGQL(w io.Writer) {
 // VRCorrections holds optional per-video corrections commonly
 // applied when projecting stereoscopic or 360-degree content.
 // All fields are optional; nil means "unset".
+// AlphaMode follows DeoVR's alpha channel specification.
 type VRCorrections struct {
 	HorizontalOffset *float64 `json:"horizontal_offset"`
 	VerticalOffset   *float64 `json:"vertical_offset"`
-	Brightness       *int     `json:"brightness"`
-	Contrast         *int     `json:"contrast"`
-	Saturation       *int     `json:"saturation"`
+	AlphaMode        *string  `json:"alpha_mode"`
 }
