@@ -1723,5 +1723,6 @@
     "empty_value": "空的",
     "refer_to": "请看 {link}。",
     "scenes_size": "场景大小",
-    "related_studios": "相关"
+    "related_studios": "相关",
+    "sub_group_description": "子集合介绍"
 }
