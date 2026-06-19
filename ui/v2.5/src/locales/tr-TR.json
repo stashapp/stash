@@ -525,7 +525,8 @@
                 "skip_multiple_matches_tooltip": "Bu etkinleştirilmezse ve birden fazla sonuç döndürülürse, eşleşmesi için rastgele bir sonuç seçilecektir",
                 "performer_genders": "Oyuncu cinsiyetleri",
                 "tag_skipped_performers": "Atlanan oyuncuları şununla etiketle",
-                "tag_skipped_matches": "Atlanan eşleşmeleri şununla etiketle"
+                "tag_skipped_matches": "Atlanan eşleşmeleri şununla etiketle",
+                "performer_genders_desc": "Tanımlamaya seçili cinsiyetlere sahip oyuncular dahil edilecektir."
             },
             "import_from_exported_json": "Üstveri dizinindeki dışa aktarılan JSON'dan içe aktarır. Mevcut veritabanını siler.",
             "incremental_import": "Sağlanan bir dışa aktarma zip dosyasından artımlı içe aktarır.",
