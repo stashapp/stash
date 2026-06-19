@@ -76,7 +76,10 @@ function offsetMiddleware(player: VideoJsPlayer) {
       tech.trigger("timeupdate");
       tech.trigger("pause");
       tech.trigger("seeking");
-      tech.play();
+      tech.play().catch(() => {
+        // auto-play failed due to browser restrictions
+        seeking = 0;
+      });
     },
     loadDelay,
     { leading: true }

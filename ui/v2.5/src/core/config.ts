@@ -88,6 +88,10 @@ export interface IUIConfig {
 
   showAbLoopControls?: boolean;
 
+  // resolution and stream type automatically selected when streaming a scene.
+  defaultStreamingResolution?: string;
+  defaultStreamType?: string;
+
   // maximum number of items to shown in the dropdown list - defaults to 200
   // upper limit of 1000
   maxOptionsShown?: number;

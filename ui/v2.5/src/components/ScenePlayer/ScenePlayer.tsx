@@ -639,10 +639,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
               src: stream.url,
               type: stream.mime_type ?? undefined,
               label: stream.label ?? undefined,
+              streamType: stream.stream_type ?? undefined,
+              resolution: stream.resolution ?? undefined,
               offset: !isDirect(src),
               duration,
             };
-          })
+          }),
+          uiConfig?.defaultStreamType,
+          uiConfig?.defaultStreamingResolution
       );
 
       function getDefaultLanguageCode() {
@@ -733,6 +737,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       interfaceConfig?.autostartVideo,
       uiConfig?.alwaysStartFromBeginning,
       uiConfig?.disableMobileMediaAutoRotateEnabled,
+      uiConfig?.defaultStreamType,
+      uiConfig?.defaultStreamingResolution,
       _initialTimestamp,
     ]);
 

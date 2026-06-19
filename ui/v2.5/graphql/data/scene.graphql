@@ -78,6 +78,8 @@ fragment SceneData on Scene {
     url
     mime_type
     label
+    stream_type
+    resolution
   }
 
   custom_fields
