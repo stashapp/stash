@@ -487,7 +487,10 @@
             "added_job_to_queue": "Operace {operation_name} byla přidána do fronty úloh",
             "auto_tag": {
                 "auto_tagging_all_paths": "Autotagování všech cest",
-                "auto_tagging_paths": "Autotagování následujících cest"
+                "auto_tagging_paths": "Autotagování následujících cest",
+                "disable_warning": {
+                    "description": "Zakažte potvrzovací varování zobrazené před spuštěním automatického označování."
+                }
             },
             "auto_tag_based_on_filenames": "Autotagování obsahu dle názvu souborů.",
             "auto_tagging": "Autotagování",
