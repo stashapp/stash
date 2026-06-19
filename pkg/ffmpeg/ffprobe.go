@@ -85,9 +85,10 @@ func ResolveFFProbe(path string, fallbackPath string) string {
 
 // VideoFile represents the ffprobe output for a video file.
 type VideoFile struct {
-	JSON        FFProbeJSON
-	AudioStream *FFProbeStream
-	VideoStream *FFProbeStream
+	JSON            FFProbeJSON
+	AudioStream     *FFProbeStream
+	VideoStream     *FFProbeStream
+	SubtitleStreams  []*FFProbeStream
 
 	Path      string
 	Title     string
@@ -343,6 +344,8 @@ func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
 		}
 	}
 
+	result.SubtitleStreams = result.getSubtitleStreams()
+
 	return result, nil
 }
 
@@ -363,6 +366,17 @@ func isRotated(s *FFProbeStream) bool {
 	}
 
 	return false
+}
+
+func (v *VideoFile) getSubtitleStreams() []*FFProbeStream {
+	var result []*FFProbeStream
+	for i := range v.JSON.Streams {
+		s := &v.JSON.Streams[i]
+		if s.CodecType == "subtitle" && s.Disposition.AttachedPic == 0 {
+			result = append(result, s)
+		}
+	}
+	return result
 }
 
 func (v *VideoFile) getAudioStream() *FFProbeStream {

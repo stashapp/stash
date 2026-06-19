@@ -362,6 +362,24 @@ func (j *ScanJob) handleFile(ctx context.Context, f file.ScannedFile, progress *
 		}
 	}
 
+	// extract embedded subtitle streams for new or changed video files
+	if r.New || r.FingerprintChanged {
+		if videoFile, ok := r.File.(*models.VideoFile); ok {
+			mgr := GetInstance()
+			if mgr.FFProbe != nil && mgr.FFMpeg != nil {
+				if probed, err := mgr.FFProbe.NewVideoFile(videoFile.Path); err == nil && len(probed.SubtitleStreams) > 0 {
+					txnMgr := j.scanner.Repository.TxnManager
+					fileRepo := j.scanner.Repository.File
+					if txnErr := txn.WithTxn(ctx, txnMgr, func(ctx context.Context) error {
+						return video.ExtractEmbeddedCaptions(ctx, videoFile.Path, probed.SubtitleStreams, mgr.FFMpeg.Path(), videoFile.ID, fileRepo)
+					}); txnErr != nil {
+						logger.Errorf("Error extracting embedded captions for %s: %v", videoFile.Path, txnErr)
+					}
+				}
+			}
+		}
+	}
+
 	// clean captions - scene handler handles this as well, but
 	// unchanged files aren't processed by the scene handler
 	if r.IsUnchanged() {
