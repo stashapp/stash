@@ -46,9 +46,6 @@ func TestLoadConfigWithDefaults(t *testing.T) {
 	if cfg.LogStdout {
 		t.Fatal("LogStdout should default to false")
 	}
-	if cfg.CoverFallback.GenerateWithFFmpeg {
-		t.Fatal("CoverFallback.GenerateWithFFmpeg should default to false")
-	}
 	if cfg.Blobs.Storage != "database" {
 		t.Fatalf("Blobs.Storage = %q, want database", cfg.Blobs.Storage)
 	}
@@ -84,25 +81,26 @@ ffplay_args = ["-autoexit", "-fs"]
 	}
 }
 
-func TestLoadConfigCanEnableFFmpegCoverFallback(t *testing.T) {
+func TestLoadConfigIgnoresRemovedCoverFetchSettings(t *testing.T) {
 	configPath := filepath.Join(t.TempDir(), "config.toml")
 	err := os.WriteFile(configPath, []byte(`
 database_path = "/tmp/stash.sqlite"
+ffmpeg_path = "/usr/bin/ffmpeg"
 
 [cover_fallback]
 generate_with_ffmpeg = true
+
+[stash_box]
+endpoint = "https://stashdb.org/graphql"
+api_key = "secret"
+max_requests_per_minute = 240
 `), 0o600)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	cfg, err := Load(configPath)
-	if err != nil {
+	if _, err := Load(configPath); err != nil {
 		t.Fatal(err)
-	}
-
-	if !cfg.CoverFallback.GenerateWithFFmpeg {
-		t.Fatal("CoverFallback.GenerateWithFFmpeg should be true")
 	}
 }
 

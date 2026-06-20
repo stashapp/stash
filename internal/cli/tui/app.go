@@ -3,13 +3,13 @@ package tui
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -22,11 +22,9 @@ import (
 	"github.com/stashapp/stash/internal/cli/browse"
 	"github.com/stashapp/stash/internal/cli/command"
 	"github.com/stashapp/stash/internal/cli/cover"
-	"github.com/stashapp/stash/internal/cli/coverfetch"
-	"github.com/stashapp/stash/internal/cli/covergen"
-	"github.com/stashapp/stash/internal/cli/edit"
 	"github.com/stashapp/stash/internal/cli/scanner"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type Browser interface {
@@ -34,19 +32,13 @@ type Browser interface {
 }
 
 type Editor interface {
-	Apply(context.Context, int, edit.Update) error
+	SetSceneRating(context.Context, int, int) error
+	DeleteScene(context.Context, int) error
+	SetPerformerRating(context.Context, int, int) error
 }
 
 type CoverLoader interface {
 	Load(context.Context, cover.Request) (cover.Cover, error)
-}
-
-type CoverFetcher interface {
-	Fetch(context.Context, int) (coverfetch.Result, error)
-}
-
-type CoverGenerator interface {
-	Generate(context.Context, covergen.Request) (covergen.Result, error)
 }
 
 type Player interface {
@@ -67,37 +59,59 @@ const (
 var scanProgressInterval = time.Second
 
 type Model struct {
-	ctx       context.Context
-	browser   Browser
-	editor    Editor
-	covers    CoverLoader
-	fetcher   CoverFetcher
-	generator CoverGenerator
-	player    Player
-	scanner   Scanner
-	pic       picture.Model
+	ctx        context.Context
+	browser    Browser
+	editor     Editor
+	covers     CoverLoader
+	player     Player
+	scanner    Scanner
+	pic        picture.Model
+	gridPics   map[int]*gridCover
+	forceKitty bool
 
-	mode       ViewMode
-	query      browse.Query
-	result     browse.Result
-	cursor     int
-	input      string
-	status     string
-	scan       *scanState
-	coverFetch *coverFetchState
-	width      int
-	height     int
+	mode              ViewMode
+	query             browse.Query
+	result            browse.Result
+	cursor            int
+	gridStart         int
+	input             string
+	commandMode       bool
+	completionQuery   string
+	completionMatches []string
+	completionIndex   int
+	showDetails       bool
+	performerCursor   int
+	detailEditMode    string
+	detailEditInput   string
+	confirmDelete     bool
+	status            string
+	scan              *scanState
+	width             int
+	height            int
+}
+
+type gridCoverState int
+
+const (
+	gridCoverMissing gridCoverState = iota
+	gridCoverLoading
+	gridCoverReady
+	gridCoverEmpty
+	gridCoverFailed
+)
+
+type gridCover struct {
+	pic   picture.Model
+	state gridCoverState
 }
 
 type Deps struct {
-	Browser        Browser
-	Editor         Editor
-	Covers         CoverLoader
-	CoverFetcher   CoverFetcher
-	CoverGenerator CoverGenerator
-	Player         Player
-	Scanner        Scanner
-	ForceKitty     bool
+	Browser    Browser
+	Editor     Editor
+	Covers     CoverLoader
+	Player     Player
+	Scanner    Scanner
+	ForceKitty bool
 }
 
 func New(ctx context.Context, browser Browser, mode ViewMode, editors ...Editor) Model {
@@ -127,17 +141,17 @@ func NewWithDeps(ctx context.Context, deps Deps, mode ViewMode) Model {
 	logger.Infof("[stash-cli] tui graphics initialized: view_mode=%s force_kitty=%t render_mode=%s kitty=%s", mode, deps.ForceKitty, pictureModeString(pic.Mode()), kittyCapabilityString(picture.KittySupported()))
 
 	return Model{
-		ctx:       ctx,
-		browser:   deps.Browser,
-		editor:    deps.Editor,
-		covers:    deps.Covers,
-		fetcher:   deps.CoverFetcher,
-		generator: deps.CoverGenerator,
-		player:    deps.Player,
-		scanner:   deps.Scanner,
-		pic:       pic,
-		mode:      mode,
-		status:    "Type /help for commands",
+		ctx:        ctx,
+		browser:    deps.Browser,
+		editor:     deps.Editor,
+		covers:     deps.Covers,
+		player:     deps.Player,
+		scanner:    deps.Scanner,
+		pic:        pic,
+		gridPics:   map[int]*gridCover{},
+		forceKitty: deps.ForceKitty,
+		mode:       mode,
+		status:     "Press : for commands",
 		query: browse.Query{
 			Page:    1,
 			PerPage: 40,
@@ -159,9 +173,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		if cmd := m.resizePicture(); cmd != nil {
-			return m, cmd
-		}
+		m.gridStart = normalizeGridStart(m.gridStart, len(m.result.Items), gridColumns(m.width), visibleGridRows(m.height))
+		return m, tea.Batch(m.resizeGridPictures(), m.loadVisibleCovers())
 	case resultMsg:
 		if msg.err != nil {
 			m.status = msg.err.Error()
@@ -169,12 +182,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.result = msg.result
 		m.cursor = 0
+		m.gridStart = 0
 		if msg.status != "" {
 			m.status = msg.status
 		} else {
 			m.status = fmt.Sprintf("%d results", msg.result.Total)
 		}
-		return m, m.loadSelectedCover()
+		return m, m.loadVisibleCovers()
 	case appendResultMsg:
 		if msg.err != nil {
 			m.status = msg.err.Error()
@@ -187,8 +201,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.cursor >= 0 && msg.cursor < len(m.result.Items) {
 			m.cursor = msg.cursor
 		}
+		m.gridStart = m.gridStartForCursor(m.cursor)
 		m.status = fmt.Sprintf("%d results", m.result.Total)
-		return m, m.loadSelectedCover()
+		return m, m.loadVisibleCovers()
 	case statusMsg:
 		m.status = msg.status
 	case scanProgressMsg:
@@ -206,71 +221,29 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.scan = nil
 		m.status = formatScanStatus(msg.result)
 		return m, m.refresh()
-	case coverFetchProgressMsg:
-		if msg.fetch != nil && msg.fetch != m.coverFetch {
-			return m, nil
-		}
-		m.status = formatCoverFetchProgressStatus(msg.progress)
-		if msg.fetch != nil && !msg.fetch.done() {
-			return m, pollCoverFetchProgress(msg.fetch)
-		}
 	case tea.KeyPressMsg:
-		switch msg.String() {
-		case "ctrl+c", "esc":
-			return m, tea.Quit
-		case "up":
-			if m.cursor > 0 {
-				m.cursor--
-				return m, m.loadSelectedCover()
-			}
-		case "down":
-			if m.cursor < len(m.result.Items)-1 {
-				m.cursor++
-				return m, m.loadSelectedCover()
-			}
-			if len(m.result.Items) < m.result.Total {
-				return m, m.loadMoreResults()
-			}
-		case "backspace":
-			if len(m.input) > 0 {
-				m.input = m.input[:len(m.input)-1]
-			}
-		case "enter":
-			return m.executeInput()
-		default:
-			if text := msg.Key().Text; text != "" {
-				m.input += text
-			}
-		}
+		return m.handleKey(msg)
 	case coverMsg:
+		if msg.sceneID != 0 {
+			gridPic := m.gridPic(msg.sceneID)
+			if msg.err != nil {
+				gridPic.state = gridCoverFailed
+				m.status = msg.err.Error()
+				return m, nil
+			}
+			if msg.image == nil {
+				gridPic.state = gridCoverEmpty
+				return m, nil
+			}
+			gridPic.state = gridCoverReady
+			return m, m.ensureKitty(gridPic.pic.SetImage(msg.image))
+		}
 		if msg.err != nil {
 			m.status = msg.err.Error()
 			return m, nil
 		}
 		cmd := m.pic.SetImage(msg.image)
 		return m, m.ensureKitty(cmd)
-	case coverFetchedMsg:
-		if msg.err != nil {
-			m.status = msg.err.Error()
-			return m, nil
-		}
-		if msg.result.RemoteSiteID != "" {
-			m.status = "Official cover fetched: " + msg.result.RemoteSiteID
-		} else {
-			m.status = "Official cover fetched"
-		}
-		return m, m.loadSelectedCover()
-	case coverFetchAllMsg:
-		if msg.fetch != nil && msg.fetch != m.coverFetch {
-			return m, nil
-		}
-		m.coverFetch = nil
-		if msg.err != nil {
-			m.status = msg.err.Error()
-			return m, nil
-		}
-		m.status = formatCoverFetchResultStatus(msg.result)
-		return m, m.refreshWithStatus(m.status)
 	case playMsg:
 		if msg.err != nil {
 			m.status = msg.err.Error()
@@ -279,48 +252,38 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.status = "Played: " + msg.item.Title
 	}
 
-	return m, m.ensureKitty(m.pic.Update(msg))
+	return m, m.updatePictures(msg)
 }
 
 func (m Model) View() tea.View {
 	var b strings.Builder
 	title := lipgloss.NewStyle().Bold(true).Render("stash-cli")
-	fmt.Fprintf(&b, "%s  mode:%s\n", title, m.mode)
+	fmt.Fprintf(&b, "%s\n", title)
 	fmt.Fprintf(&b, "%s\n\n", m.status)
 
-	limit := m.height - 6
-	if limit <= 0 || limit > len(m.result.Items) {
-		limit = len(m.result.Items)
-	}
-	start := visibleStart(m.cursor, len(m.result.Items), limit)
-	var list strings.Builder
-	for i := start; i < start+limit && i < len(m.result.Items); i++ {
-		item := m.result.Items[i]
-		prefix := "  "
-		if i == m.cursor {
-			prefix = "> "
-		}
-		fmt.Fprintf(&list, "%s%s  %s  %s\n", prefix, item.Title, formatDuration(item.Duration), item.Date)
-	}
-
 	if len(m.result.Items) == 0 {
-		list.WriteString("No scenes to display\n")
-	}
-
-	if m.mode == ViewGrid && m.covers != nil {
-		previewWidth := m.width / 3
-		if previewWidth < 20 {
-			previewWidth = 20
-		}
-		b.WriteString(renderGridBody(m.pic.View().Content, previewWidth, list.String()))
+		b.WriteString("No scenes to display\n")
 	} else {
-		b.WriteString(list.String())
+		b.WriteString(m.renderSceneGrid())
+		if m.showDetails {
+			b.WriteString("\n")
+			b.WriteString(m.renderSelectedDetails())
+			b.WriteString("\n")
+		}
 	}
 
 	b.WriteString("\n")
-	b.WriteString(lipgloss.NewStyle().Faint(true).Render(command.Help()))
-	b.WriteString("\n:")
-	b.WriteString(m.input)
+	if m.commandMode {
+		if matches := m.commandCompletionMatches(); len(matches) > 0 {
+			b.WriteString(lipgloss.NewStyle().Faint(true).Render("matches: " + strings.Join(matches, " ")))
+			b.WriteString("\n")
+		}
+		b.WriteString(lipgloss.NewStyle().Faint(true).Render(command.Help()))
+		b.WriteString("\n:")
+		b.WriteString(m.input)
+	} else {
+		b.WriteString(lipgloss.NewStyle().Faint(true).Render("h/j/k/l browse, enter play, space details, : command, :q quit"))
+	}
 
 	view := tea.NewView(b.String())
 	view.AltScreen = true
@@ -364,11 +327,571 @@ func renderGridBody(preview string, previewWidth int, list string) string {
 	return b.String()
 }
 
+const (
+	gridTileWidth = 28
+	gridTileGap   = 2
+	gridCoverRows = 8
+	gridTileRows  = gridCoverRows + 5
+)
+
+func (m Model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	if m.commandMode {
+		return m.handleCommandKey(msg)
+	}
+	if m.showDetails {
+		return m.handleDetailsKey(msg)
+	}
+	return m.handleNormalKey(msg)
+}
+
+func (m Model) handleCommandKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "ctrl+c":
+		return m, tea.Quit
+	case "esc":
+		m.commandMode = false
+		m.input = ""
+		m.clearCompletion()
+		return m, nil
+	case "backspace":
+		if len(m.input) > 0 {
+			m.input = m.input[:len(m.input)-1]
+		}
+		m.clearCompletion()
+	case "tab":
+		m.applyCommandCompletion()
+	case "enter":
+		return m.executeInput()
+	default:
+		if text := msg.Key().Text; text != "" {
+			m.input += text
+			m.clearCompletion()
+		}
+	}
+
+	return m, nil
+}
+
+func (m *Model) clearCompletion() {
+	m.completionQuery = ""
+	m.completionMatches = nil
+	m.completionIndex = 0
+}
+
+func (m *Model) applyCommandCompletion() {
+	query := m.completionSeed()
+	if query == "" {
+		return
+	}
+
+	if m.completionQuery != query || len(m.completionMatches) == 0 {
+		m.completionQuery = query
+		m.completionMatches = fuzzyCommandMatches(query)
+		m.completionIndex = 0
+	} else if len(m.completionMatches) > 0 {
+		m.completionIndex = (m.completionIndex + 1) % len(m.completionMatches)
+	}
+
+	if len(m.completionMatches) == 0 {
+		return
+	}
+	m.input = m.completionMatches[m.completionIndex] + " "
+}
+
+func (m Model) commandCompletionMatches() []string {
+	if m.completionQuery != "" && len(m.completionMatches) > 0 {
+		return append([]string(nil), m.completionMatches...)
+	}
+	return fuzzyCommandMatches(m.completionSeed())
+}
+
+func (m Model) completionSeed() string {
+	if m.completionQuery != "" {
+		trimmed := strings.TrimSpace(m.input)
+		for _, match := range m.completionMatches {
+			if trimmed == match {
+				return m.completionQuery
+			}
+		}
+	}
+
+	input := strings.TrimSpace(m.input)
+	if input == "" || strings.Contains(input, " ") {
+		return ""
+	}
+	if strings.HasPrefix(input, "/") {
+		input = strings.TrimPrefix(input, "/")
+	}
+	return input
+}
+
+func fuzzyCommandMatches(query string) []string {
+	query = strings.ToLower(strings.TrimSpace(strings.TrimPrefix(query, "/")))
+	if query == "" {
+		return nil
+	}
+
+	var matches []string
+	for _, name := range command.CompletableCommands() {
+		if fuzzyMatch(query, name) {
+			matches = append(matches, "/"+name)
+		}
+	}
+	return matches
+}
+
+func fuzzyMatch(query, candidate string) bool {
+	if query == "" {
+		return true
+	}
+	candidate = strings.ToLower(candidate)
+	pos := 0
+	for _, r := range query {
+		found := false
+		for pos < len(candidate) {
+			if rune(candidate[pos]) == r {
+				pos++
+				found = true
+				break
+			}
+			pos++
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}
+
+func (m Model) handleNormalKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "ctrl+c":
+		return m, tea.Quit
+	case "esc":
+		m.showDetails = false
+	case ":":
+		m.commandMode = true
+		m.input = ""
+		m.clearCompletion()
+	case "enter":
+		return m.executePlay()
+	case " ", "space":
+		m.showDetails = !m.showDetails
+	case "up", "k":
+		return m.moveCursor(-gridColumns(m.width))
+	case "down", "j":
+		return m.moveCursor(gridColumns(m.width))
+	case "left", "h":
+		return m.moveCursor(-1)
+	case "right", "l":
+		return m.moveCursor(1)
+	}
+
+	return m, nil
+}
+
+func (m Model) handleDetailsKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	if m.detailEditMode != "" {
+		return m.handleDetailInputKey(msg)
+	}
+	if m.confirmDelete {
+		switch msg.String() {
+		case "y", "Y":
+			return m.executeDeleteSelectedScene()
+		case "n", "N", "esc", " ", "space":
+			m.confirmDelete = false
+			m.status = "Delete cancelled"
+			return m, nil
+		}
+	}
+
+	switch msg.String() {
+	case "ctrl+c":
+		return m, tea.Quit
+	case "esc", " ", "space":
+		m.showDetails = false
+		m.confirmDelete = false
+		m.detailEditMode = ""
+		m.detailEditInput = ""
+	case "j", "down":
+		m.movePerformerCursor(1)
+	case "k", "up":
+		m.movePerformerCursor(-1)
+	case "r":
+		m.detailEditMode = "scene-rating"
+		m.detailEditInput = ""
+		m.status = "Scene rating: enter 0-100"
+	case "R":
+		item, ok := m.selectedItem()
+		if !ok || len(item.Performers) == 0 {
+			m.status = "No performer selected"
+			return m, nil
+		}
+		m.detailEditMode = "performer-rating"
+		m.detailEditInput = ""
+		m.status = "Performer rating: enter 0-100"
+	case "d":
+		m.confirmDelete = true
+		m.status = "Delete scene? y/N"
+	}
+
+	return m, nil
+}
+
+func (m Model) handleDetailInputKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "esc":
+		m.detailEditMode = ""
+		m.detailEditInput = ""
+		m.status = "Edit cancelled"
+	case "backspace":
+		if len(m.detailEditInput) > 0 {
+			m.detailEditInput = m.detailEditInput[:len(m.detailEditInput)-1]
+		}
+	case "enter":
+		rating, err := strconv.Atoi(strings.TrimSpace(m.detailEditInput))
+		if err != nil || rating < 0 || rating > 100 {
+			m.status = "Rating must be between 0 and 100"
+			return m, nil
+		}
+		if m.detailEditMode == "scene-rating" {
+			return m.executeSetSceneRating(rating)
+		}
+		if m.detailEditMode == "performer-rating" {
+			return m.executeSetPerformerRating(rating)
+		}
+	default:
+		if text := msg.Key().Text; text != "" {
+			m.detailEditInput += text
+		}
+	}
+
+	return m, nil
+}
+
+func (m *Model) movePerformerCursor(delta int) {
+	item, ok := m.selectedItem()
+	if !ok || len(item.Performers) == 0 {
+		m.performerCursor = 0
+		return
+	}
+	next := m.performerCursor + delta
+	if next < 0 {
+		next = 0
+	}
+	if next >= len(item.Performers) {
+		next = len(item.Performers) - 1
+	}
+	m.performerCursor = next
+}
+
+func (m Model) moveCursor(delta int) (tea.Model, tea.Cmd) {
+	if delta == 0 || len(m.result.Items) == 0 {
+		return m, nil
+	}
+
+	next := m.cursor + delta
+	if next >= 0 && next < len(m.result.Items) {
+		m.cursor = next
+		m.gridStart = m.gridStartForCursor(next)
+		return m, m.loadVisibleCovers()
+	}
+	if delta > 0 && len(m.result.Items) < m.result.Total {
+		return m, m.loadMoreResults()
+	}
+
+	return m, nil
+}
+
+func gridColumns(width int) int {
+	if width <= 0 {
+		return 1
+	}
+	cols := (width + gridTileGap) / (gridTileWidth + gridTileGap)
+	if cols < 1 {
+		return 1
+	}
+	return cols
+}
+
+func visibleGridStart(cursor, total, cols, rows int) int {
+	if total <= 0 || cols <= 0 || rows <= 0 {
+		return 0
+	}
+	visible := cols * rows
+	if visible >= total {
+		return 0
+	}
+	cursorRow := cursor / cols
+	firstRow := 0
+	lastVisibleRow := rows - 1
+	if cursorRow > lastVisibleRow {
+		firstRow = cursorRow - lastVisibleRow
+	}
+	start := firstRow * cols
+	maxStart := total - visible
+	if start > maxStart {
+		start = maxStart
+	}
+	if start < 0 {
+		return 0
+	}
+	return start
+}
+
+func normalizeGridStart(start, total, cols, rows int) int {
+	if total <= 0 || cols <= 0 || rows <= 0 {
+		return 0
+	}
+	visible := cols * rows
+	if visible >= total {
+		return 0
+	}
+
+	start = (start / cols) * cols
+	lastRow := (total - 1) / cols
+	maxStart := (lastRow - rows + 1) * cols
+	if maxStart < 0 {
+		maxStart = 0
+	}
+	if start > maxStart {
+		return maxStart
+	}
+	if start < 0 {
+		return 0
+	}
+	return start
+}
+
+func (m Model) gridStartForCursor(cursor int) int {
+	cols := gridColumns(m.width)
+	rows := visibleGridRows(m.height)
+	start := normalizeGridStart(m.gridStart, len(m.result.Items), cols, rows)
+	visible := cols * rows
+	if cursor < start {
+		rowStart := (cursor / cols) * cols
+		return normalizeGridStart(rowStart-(rows-1)*cols, len(m.result.Items), cols, rows)
+	}
+	if cursor >= start+visible {
+		rowStart := (cursor / cols) * cols
+		return normalizeGridStart(rowStart, len(m.result.Items), cols, rows)
+	}
+	return start
+}
+
+func visibleGridRows(height int) int {
+	rows := (height - 7) / gridTileRows
+	if rows < 1 {
+		return 1
+	}
+	return rows
+}
+
+func compactText(s string, width int) string {
+	runes := []rune(strings.TrimSpace(s))
+	if width <= 0 || len(runes) <= width {
+		return string(runes)
+	}
+	if width <= 3 {
+		return string(runes[:width])
+	}
+	left := (width - 3) / 2
+	right := width - 3 - left
+	return string(runes[:left]) + "..." + string(runes[len(runes)-right:])
+}
+
+func (m Model) renderSceneGrid() string {
+	cols := gridColumns(m.width)
+	rows := visibleGridRows(m.height)
+	start := m.gridStartForCursor(m.cursor)
+	end := start + cols*rows
+	if end > len(m.result.Items) {
+		end = len(m.result.Items)
+	}
+
+	var b strings.Builder
+	for rowStart := start; rowStart < end; rowStart += cols {
+		rowEnd := rowStart + cols
+		if rowEnd > end {
+			rowEnd = end
+		}
+		var tiles []string
+		for i := rowStart; i < rowEnd; i++ {
+			tiles = append(tiles, m.renderSceneTile(i, m.result.Items[i]))
+		}
+		b.WriteString(lipgloss.JoinHorizontal(lipgloss.Top, tiles...))
+		b.WriteString("\n")
+	}
+
+	return b.String()
+}
+
+func (m Model) renderSceneTile(index int, item browse.SceneItem) string {
+	selected := index == m.cursor
+	border := lipgloss.NormalBorder()
+	style := lipgloss.NewStyle().
+		Width(gridTileWidth).
+		Height(gridTileRows).
+		Border(border).
+		Padding(0, 1)
+	if selected {
+		style = style.BorderForeground(lipgloss.Color("12")).Bold(true)
+	} else {
+		style = style.BorderForeground(lipgloss.Color("8"))
+	}
+
+	coverView := "[cover loading]"
+	if gridPic, ok := m.gridPics[item.ID]; ok {
+		switch gridPic.state {
+		case gridCoverReady:
+			coverView = fitBlock(gridPic.pic.View().Content, gridTileWidth-4, gridCoverRows)
+		case gridCoverEmpty:
+			coverView = "[no cover]"
+		case gridCoverFailed:
+			coverView = "[cover error]"
+		default:
+			coverView = "[cover loading]"
+		}
+	}
+
+	meta := compactText(item.Title, gridTileWidth-4)
+	performer := compactText(performerSummary(item.Performers), gridTileWidth-4)
+	details := strings.TrimSpace(strings.Join([]string{formatDuration(item.Duration), item.Date}, " "))
+	details = compactText(details, gridTileWidth-4)
+
+	return style.Render(strings.Join([]string{
+		fitBlock(coverView, gridTileWidth-4, gridCoverRows),
+		meta,
+		performer,
+		details,
+	}, "\n")) + strings.Repeat(" ", gridTileGap)
+}
+
+func performerSummary(performers []browse.PerformerItem) string {
+	if len(performers) == 0 {
+		return "No performers"
+	}
+	if len(performers) == 1 {
+		return performers[0].Name
+	}
+	return fmt.Sprintf("%s <%d omitted>", performers[0].Name, len(performers)-1)
+}
+
+func (m Model) renderSelectedDetails() string {
+	item, ok := m.selectedItem()
+	if !ok {
+		return ""
+	}
+
+	lines := []string{
+		"Title: " + item.Title,
+		"Path: " + item.Path,
+		"Rating: " + formatRating(item.Rating),
+	}
+	if item.Duration > 0 {
+		lines = append(lines, "Duration: "+formatDuration(item.Duration))
+	}
+	if item.Date != "" {
+		lines = append(lines, "Date: "+item.Date)
+	}
+	if item.Studio != "" {
+		lines = append(lines, "Studio: "+item.Studio)
+	}
+	lines = append(lines, m.renderPerformerDetails(item.Performers)...)
+	if len(item.Tags) > 0 {
+		lines = append(lines, "Tags: "+strings.Join(item.Tags, ", "))
+	}
+	lines = append(lines, "")
+	lines = append(lines, "Scene: r rating, d delete")
+	lines = append(lines, "Performers:")
+	lines = append(lines, m.renderPerformerDetails(item.Performers)...)
+	if m.detailEditMode != "" {
+		lines = append(lines, "Input: "+m.detailEditInput)
+	}
+	if m.confirmDelete {
+		lines = append(lines, "Delete scene? y/N")
+	}
+
+	width := m.width - 2
+	if width < 60 {
+		width = 60
+	}
+
+	return lipgloss.NewStyle().
+		Border(lipgloss.NormalBorder()).
+		BorderForeground(lipgloss.Color("8")).
+		Padding(0, 1).
+		Width(width).
+		Render(strings.Join(lines, "\n"))
+}
+
+func (m Model) renderPerformerDetails(performers []browse.PerformerItem) []string {
+	if len(performers) == 0 {
+		return []string{"  No performers"}
+	}
+	cursor := m.performerCursor
+	if cursor < 0 {
+		cursor = 0
+	}
+	if cursor >= len(performers) {
+		cursor = len(performers) - 1
+	}
+
+	lines := make([]string, 0, len(performers))
+	for i, performer := range performers {
+		prefix := "  "
+		if i == cursor {
+			prefix = "> "
+		}
+		lines = append(lines, fmt.Sprintf("%s%s rating:%s", prefix, performer.Name, formatRating(performer.Rating)))
+	}
+	return lines
+}
+
+func formatRating(rating *int) string {
+	if rating == nil {
+		return "--"
+	}
+	return strconv.Itoa(*rating)
+}
+
+func fitBlock(content string, width, height int) string {
+	lines := strings.Split(strings.TrimRight(content, "\n"), "\n")
+	if len(lines) == 1 && lines[0] == "" {
+		lines = nil
+	}
+	if height < 0 {
+		height = 0
+	}
+	var b strings.Builder
+	for i := 0; i < height; i++ {
+		line := ""
+		if i < len(lines) {
+			line = lines[i]
+			if !strings.Contains(line, "\x1b") {
+				line = compactText(line, width)
+			}
+		}
+		b.WriteString(line)
+		if pad := width - lipgloss.Width(line); pad > 0 {
+			b.WriteString(strings.Repeat(" ", pad))
+		}
+		if i != height-1 {
+			b.WriteByte('\n')
+		}
+	}
+	return b.String()
+}
+
 func (m Model) executeInput() (tea.Model, tea.Cmd) {
 	input := strings.TrimSpace(m.input)
 	m.input = ""
+	m.commandMode = false
 	if input == "" {
 		return m, nil
+	}
+	if input == "q" || input == "quit" {
+		return m, tea.Quit
 	}
 
 	cmd, err := command.Parse(input)
@@ -381,26 +904,29 @@ func (m Model) executeInput() (tea.Model, tea.Cmd) {
 	case "search":
 		m.query = browse.ParseQuery(strings.Join(cmd.Args, " "))
 		return m, m.refresh()
+	case "random":
+		return m.executeRandom(cmd.Args)
 	case "clear":
 		m.query = browse.Query{Page: 1, PerPage: 40}
 		return m, m.refresh()
 	case "view":
-		if len(cmd.Args) != 1 || (cmd.Args[0] != string(ViewGrid) && cmd.Args[0] != string(ViewList)) {
-			m.status = "Usage: /view grid or /view list"
+		if len(cmd.Args) != 1 || cmd.Args[0] != string(ViewGrid) {
+			m.status = "Usage: /view grid"
 			return m, nil
 		}
 		m.mode = ViewMode(cmd.Args[0])
 		m.status = "View mode changed"
+		return m, m.loadVisibleCovers()
 	case "scan":
 		return m.executeScan()
 	case "cover":
-		return m.executeCover(cmd.Args)
+		m.status = "Unknown command: cover"
 	case "open":
-		m.status = "/open is reserved; terminal playback is out of scope for the first version"
+		m.status = "Unknown command: open"
 	case "play":
-		return m.executePlay()
+		m.status = "Unknown command: play"
 	case "edit":
-		return m.executeEdit(cmd.Args)
+		m.status = "Unknown command: edit"
 	case "help":
 		m.status = command.Help()
 	case "quit", "q":
@@ -412,9 +938,113 @@ func (m Model) executeInput() (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+func (m Model) executeSetSceneRating(rating int) (tea.Model, tea.Cmd) {
+	if m.editor == nil {
+		m.status = "Editing is unavailable"
+		return m, nil
+	}
+	item, ok := m.selectedItem()
+	if !ok {
+		m.status = "No scene selected"
+		return m, nil
+	}
+	m.detailEditMode = ""
+	m.detailEditInput = ""
+	return m, func() tea.Msg {
+		if err := m.editor.SetSceneRating(m.ctx, item.ID, rating); err != nil {
+			return statusMsg{status: err.Error()}
+		}
+		result, err := m.browser.Search(m.ctx, m.query)
+		return resultMsg{result: result, err: err, status: "Scene rating updated"}
+	}
+}
+
+func (m Model) executeDeleteSelectedScene() (tea.Model, tea.Cmd) {
+	if m.editor == nil {
+		m.status = "Editing is unavailable"
+		return m, nil
+	}
+	item, ok := m.selectedItem()
+	if !ok {
+		m.status = "No scene selected"
+		return m, nil
+	}
+	m.confirmDelete = false
+	m.showDetails = false
+	return m, func() tea.Msg {
+		if err := m.editor.DeleteScene(m.ctx, item.ID); err != nil {
+			return statusMsg{status: err.Error()}
+		}
+		result, err := m.browser.Search(m.ctx, m.query)
+		return resultMsg{result: result, err: err, status: "Scene deleted"}
+	}
+}
+
+func (m Model) executeSetPerformerRating(rating int) (tea.Model, tea.Cmd) {
+	if m.editor == nil {
+		m.status = "Editing is unavailable"
+		return m, nil
+	}
+	item, ok := m.selectedItem()
+	if !ok || len(item.Performers) == 0 {
+		m.status = "No performer selected"
+		return m, nil
+	}
+	cursor := m.performerCursor
+	if cursor < 0 {
+		cursor = 0
+	}
+	if cursor >= len(item.Performers) {
+		cursor = len(item.Performers) - 1
+	}
+	performer := item.Performers[cursor]
+	m.detailEditMode = ""
+	m.detailEditInput = ""
+	return m, func() tea.Msg {
+		if err := m.editor.SetPerformerRating(m.ctx, performer.ID, rating); err != nil {
+			return statusMsg{status: err.Error()}
+		}
+		result, err := m.browser.Search(m.ctx, m.query)
+		return resultMsg{result: result, err: err, status: "Performer rating updated"}
+	}
+}
+
+func (m Model) executeRandom(args []string) (tea.Model, tea.Cmd) {
+	if len(args) > 1 {
+		m.status = "Usage: /random <n>"
+		return m, nil
+	}
+
+	limit := m.visibleGridCapacity()
+	if len(args) == 1 {
+		n, err := strconv.Atoi(args[0])
+		if err != nil || n <= 0 {
+			m.status = "Usage: /random <n>"
+			return m, nil
+		}
+		limit = n
+	}
+
+	m.query = browse.Query{
+		Page:      1,
+		PerPage:   limit,
+		Sort:      "random",
+		Direction: models.SortDirectionEnumAsc,
+	}
+	return m, m.refresh()
+}
+
+func (m Model) visibleGridCapacity() int {
+	capacity := gridColumns(m.width) * visibleGridRows(m.height)
+	if capacity < 1 {
+		return 1
+	}
+	return capacity
+}
+
 func (m Model) executePlay() (tea.Model, tea.Cmd) {
 	if m.player == nil {
-		m.status = "/play is unavailable: configure ffplay_path"
+		m.status = "Playback is unavailable: configure ffplay_path"
 		return m, nil
 	}
 	item, ok := m.selectedItem()
@@ -428,120 +1058,6 @@ func (m Model) executePlay() (tea.Model, tea.Cmd) {
 		err := m.player.Play(m.ctx, item)
 		return playMsg{item: item, err: err}
 	}
-}
-
-func (m Model) executeCover(args []string) (tea.Model, tea.Cmd) {
-	if len(args) != 1 || (args[0] != "fetch" && args[0] != "fetch-all") {
-		m.status = "Usage: /cover fetch or /cover fetch-all"
-		return m, nil
-	}
-	if m.fetcher == nil {
-		m.status = "/cover is unavailable: configure [stash_box].endpoint"
-		return m, nil
-	}
-	if args[0] == "fetch-all" {
-		return m.executeCoverFetchAll()
-	}
-
-	item, ok := m.selectedItem()
-	if !ok {
-		m.status = "No scene selected"
-		return m, nil
-	}
-
-	return m, func() tea.Msg {
-		result, err := m.fetcher.Fetch(m.ctx, item.ID)
-		return coverFetchedMsg{result: result, err: err}
-	}
-}
-
-func (m Model) executeCoverFetchAll() (tea.Model, tea.Cmd) {
-	if len(m.result.Items) == 0 {
-		m.status = "No scenes to fetch"
-		return m, nil
-	}
-	if m.coverFetch != nil {
-		m.status = formatCoverFetchProgressStatus(m.coverFetch.progress())
-		return m, nil
-	}
-
-	items := append([]browse.SceneItem(nil), m.result.Items...)
-	total := m.result.Total
-	if total < len(items) {
-		total = len(items)
-	}
-	fetch := newCoverFetchState(total)
-	query := m.query
-	m.coverFetch = fetch
-	m.status = formatCoverFetchProgressStatus(fetch.progress())
-	logger.Infof("[stash-cli] starting official cover fetch for %d scenes", total)
-	return m, tea.Batch(func() tea.Msg {
-		var err error
-		items, err = m.coverFetchItems(m.ctx, query, items, total)
-		if err != nil {
-			logger.Infof("[stash-cli] official cover fetch failed before fetching scenes: %v", err)
-			return coverFetchAllMsg{fetch: fetch, err: err}
-		}
-		for _, item := range items {
-			title := item.Title
-			logger.Infof("[stash-cli] fetching official cover: scene_id=%d title=%q", item.ID, title)
-			result, err := m.fetcher.Fetch(m.ctx, item.ID)
-			if err == nil {
-				logger.Infof("[stash-cli] official cover fetched: scene_id=%d title=%q remote_site_id=%q bytes=%d", item.ID, title, result.RemoteSiteID, result.Bytes)
-				fetch.incrementOK(title)
-				continue
-			}
-			if generated, genErr := m.generateCoverFallback(item); genErr == nil {
-				logger.Infof("[stash-cli] ffmpeg cover generated: scene_id=%d title=%q bytes=%d official_error=%v", item.ID, title, generated.Bytes, err)
-				fetch.incrementGenerated(title)
-				continue
-			} else if genErr != nil {
-				logger.Infof("[stash-cli] ffmpeg cover generation failed: scene_id=%d title=%q error=%v official_error=%v", item.ID, title, genErr, err)
-			}
-			if isCoverFetchSkip(err) {
-				logger.Infof("[stash-cli] official cover skipped: scene_id=%d title=%q error=%v", item.ID, title, err)
-				fetch.incrementSkipped(title)
-				continue
-			}
-			logger.Infof("[stash-cli] official cover failed: scene_id=%d title=%q error=%v", item.ID, title, err)
-			fetch.incrementFailed(title)
-		}
-		result := fetch.setDone()
-		logger.Infof("[stash-cli] official cover fetch complete: total=%d ok=%d generated=%d skipped=%d failed=%d", result.Total, result.OK, result.Generated, result.Skipped, result.Failed)
-		return coverFetchAllMsg{fetch: fetch, result: result}
-	}, pollCoverFetchProgress(fetch))
-}
-
-func (m Model) generateCoverFallback(item browse.SceneItem) (covergen.Result, error) {
-	if m.generator == nil {
-		return covergen.Result{}, fmt.Errorf("ffmpeg cover generator is not configured")
-	}
-	return m.generator.Generate(m.ctx, covergen.Request{
-		SceneID:  item.ID,
-		Path:     item.Path,
-		Duration: item.Duration,
-	})
-}
-
-func (m Model) coverFetchItems(ctx context.Context, query browse.Query, current []browse.SceneItem, total int) ([]browse.SceneItem, error) {
-	if total <= len(current) || m.browser == nil {
-		return current, nil
-	}
-
-	query.Page = 1
-	query.PerPage = total
-	result, err := m.browser.Search(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-	if len(result.Items) == 0 {
-		return current, nil
-	}
-	return append([]browse.SceneItem(nil), result.Items...), nil
-}
-
-func isCoverFetchSkip(err error) bool {
-	return err != nil && (errors.Is(err, coverfetch.ErrNoFingerprints) || errors.Is(err, coverfetch.ErrNoMatch) || errors.Is(err, coverfetch.ErrNoImage))
 }
 
 func (m Model) executeScan() (tea.Model, tea.Cmd) {
@@ -603,121 +1119,6 @@ func (s *scanState) done() bool {
 	return s.finished
 }
 
-type coverFetchProgress struct {
-	Total     int
-	Attempted int
-	OK        int
-	Generated int
-	Skipped   int
-	Failed    int
-	LastScene string
-}
-
-type coverFetchResult struct {
-	Total     int
-	OK        int
-	Generated int
-	Skipped   int
-	Failed    int
-}
-
-type coverFetchState struct {
-	mu       sync.Mutex
-	current  coverFetchProgress
-	finished bool
-	result   coverFetchResult
-}
-
-func newCoverFetchState(total int) *coverFetchState {
-	return &coverFetchState{current: coverFetchProgress{Total: total}}
-}
-
-func (s *coverFetchState) incrementOK(scene string) {
-	s.increment(scene, func(progress *coverFetchProgress) {
-		progress.OK++
-	})
-}
-
-func (s *coverFetchState) incrementGenerated(scene string) {
-	s.increment(scene, func(progress *coverFetchProgress) {
-		progress.Generated++
-	})
-}
-
-func (s *coverFetchState) incrementSkipped(scene string) {
-	s.increment(scene, func(progress *coverFetchProgress) {
-		progress.Skipped++
-	})
-}
-
-func (s *coverFetchState) incrementFailed(scene string) {
-	s.increment(scene, func(progress *coverFetchProgress) {
-		progress.Failed++
-	})
-}
-
-func (s *coverFetchState) increment(scene string, fn func(*coverFetchProgress)) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.current.Attempted++
-	s.current.LastScene = scene
-	fn(&s.current)
-}
-
-func (s *coverFetchState) setDone() coverFetchResult {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.result = coverFetchResult{
-		Total:     s.current.Total,
-		OK:        s.current.OK,
-		Generated: s.current.Generated,
-		Skipped:   s.current.Skipped,
-		Failed:    s.current.Failed,
-	}
-	s.finished = true
-	return s.result
-}
-
-func (s *coverFetchState) progress() coverFetchProgress {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return s.current
-}
-
-func (s *coverFetchState) done() bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return s.finished
-}
-
-func (m Model) executeEdit(args []string) (tea.Model, tea.Cmd) {
-	if m.editor == nil {
-		m.status = "/edit is unavailable"
-		return m, nil
-	}
-	if m.cursor < 0 || m.cursor >= len(m.result.Items) {
-		m.status = "No scene selected"
-		return m, nil
-	}
-
-	update, err := edit.ParseArgs(args)
-	if err != nil {
-		m.status = err.Error()
-		return m, nil
-	}
-
-	sceneID := m.result.Items[m.cursor].ID
-	query := m.query
-	return m, func() tea.Msg {
-		err := m.editor.Apply(m.ctx, sceneID, update)
-		if err != nil {
-			return statusMsg{status: err.Error()}
-		}
-		result, err := m.browser.Search(m.ctx, query)
-		return resultMsg{result: result, err: err, status: "Scene updated"}
-	}
-}
-
 type resultMsg struct {
 	result browse.Result
 	err    error
@@ -731,24 +1132,9 @@ type appendResultMsg struct {
 }
 
 type coverMsg struct {
-	image image.Image
-	err   error
-}
-
-type coverFetchedMsg struct {
-	result coverfetch.Result
-	err    error
-}
-
-type coverFetchAllMsg struct {
-	fetch  *coverFetchState
-	result coverFetchResult
-	err    error
-}
-
-type coverFetchProgressMsg struct {
-	fetch    *coverFetchState
-	progress coverFetchProgress
+	sceneID int
+	image   image.Image
+	err     error
 }
 
 type playMsg struct {
@@ -774,13 +1160,6 @@ func pollScanProgress(scan *scanState) tea.Cmd {
 	return func() tea.Msg {
 		time.Sleep(scanProgressInterval)
 		return scanProgressMsg{scan: scan, progress: scan.progress()}
-	}
-}
-
-func pollCoverFetchProgress(fetch *coverFetchState) tea.Cmd {
-	return func() tea.Msg {
-		time.Sleep(scanProgressInterval)
-		return coverFetchProgressMsg{fetch: fetch, progress: fetch.progress()}
 	}
 }
 
@@ -811,18 +1190,6 @@ func compactBasename(name string, maxLen int) string {
 
 func formatScanStatus(result scanner.Result) string {
 	return fmt.Sprintf("Scan complete: %d files, %d directories, %d errors", result.FilesScanned, result.Directories, len(result.Errors))
-}
-
-func formatCoverFetchProgressStatus(progress coverFetchProgress) string {
-	status := fmt.Sprintf("Fetching official covers... %d/%d, ok:%d generated:%d skipped:%d failed:%d", progress.Attempted, progress.Total, progress.OK, progress.Generated, progress.Skipped, progress.Failed)
-	if progress.LastScene != "" {
-		status += ", last: " + compactBasename(progress.LastScene, 12)
-	}
-	return status
-}
-
-func formatCoverFetchResultStatus(result coverFetchResult) string {
-	return fmt.Sprintf("Official covers fetched: %d ok, %d generated, %d skipped, %d failed", result.OK, result.Generated, result.Skipped, result.Failed)
 }
 
 func (m Model) refresh() tea.Cmd {
@@ -860,15 +1227,25 @@ func (m Model) selectedItem() (browse.SceneItem, bool) {
 	return m.result.Items[m.cursor], true
 }
 
-func (m Model) loadSelectedCover() tea.Cmd {
-	if m.mode != ViewGrid || m.covers == nil {
+func (m *Model) loadVisibleCovers() tea.Cmd {
+	if m.covers == nil {
 		return nil
 	}
-	item, ok := m.selectedItem()
-	if !ok {
-		return func() tea.Msg { return coverMsg{} }
+
+	var cmds []tea.Cmd
+	for _, item := range m.visibleItems() {
+		gridPic := m.gridPic(item.ID)
+		if gridPic.state != gridCoverMissing {
+			continue
+		}
+		gridPic.state = gridCoverLoading
+		cmds = append(cmds, m.loadCover(item))
 	}
 
+	return tea.Batch(cmds...)
+}
+
+func (m Model) loadCover(item browse.SceneItem) tea.Cmd {
 	return func() tea.Msg {
 		loaded, err := m.covers.Load(m.ctx, cover.Request{
 			SceneID:  item.ID,
@@ -876,36 +1253,88 @@ func (m Model) loadSelectedCover() tea.Cmd {
 			Duration: item.Duration,
 		})
 		if err != nil {
-			return coverMsg{err: err}
+			return coverMsg{sceneID: item.ID, err: err}
 		}
 		if len(loaded.Data) == 0 {
-			return coverMsg{}
+			return coverMsg{sceneID: item.ID}
 		}
 		img, _, err := image.Decode(bytes.NewReader(loaded.Data))
 		if err != nil {
-			return coverMsg{err: fmt.Errorf("decode cover: %w", err)}
+			return coverMsg{sceneID: item.ID, err: fmt.Errorf("decode cover: %w", err)}
 		}
 		bounds := img.Bounds()
-		logger.Infof("[stash-cli] loaded cover: scene_id=%d source=%s width=%d height=%d bytes=%d render_mode=%s kitty=%s", item.ID, loaded.Source, bounds.Dx(), bounds.Dy(), len(loaded.Data), pictureModeString(m.pic.Mode()), kittyCapabilityString(picture.KittySupported()))
-		return coverMsg{image: img}
+		logger.Infof("[stash-cli] loaded cover: scene_id=%d source=%s width=%d height=%d bytes=%d render_mode=%s kitty=%s", item.ID, loaded.Source, bounds.Dx(), bounds.Dy(), len(loaded.Data), pictureModeString(m.gridPicMode(item.ID)), kittyCapabilityString(picture.KittySupported()))
+		return coverMsg{sceneID: item.ID, image: img}
 	}
 }
 
-func (m *Model) resizePicture() tea.Cmd {
-	if m.width == 0 || m.height == 0 {
+func (m Model) visibleItems() []browse.SceneItem {
+	if len(m.result.Items) == 0 {
 		return nil
 	}
-
-	cols := m.width / 3
-	if cols < 20 {
-		cols = 20
+	cols := gridColumns(m.width)
+	rows := visibleGridRows(m.height)
+	start := m.gridStartForCursor(m.cursor)
+	end := start + cols*rows
+	if end > len(m.result.Items) {
+		end = len(m.result.Items)
 	}
-	rows := m.height - 8
-	if rows < 4 {
-		rows = 4
+	return m.result.Items[start:end]
+}
+
+func (m *Model) gridPic(sceneID int) *gridCover {
+	if m.gridPics == nil {
+		m.gridPics = map[int]*gridCover{}
+	}
+	if existing := m.gridPics[sceneID]; existing != nil {
+		return existing
 	}
 
-	return m.pic.SetSize(cols, rows)
+	pic := picture.NewWithConfig(picture.Config{
+		KittyID: 8000 + sceneID,
+		Fit:     picture.FitCover,
+		Anchor:  picture.AnchorCenter,
+	})
+	if m.forceKitty {
+		_ = pic.Toggle()
+	}
+	_ = pic.SetSize(gridTileWidth-4, gridCoverRows)
+	gridPic := &gridCover{pic: pic}
+	m.gridPics[sceneID] = gridPic
+	return gridPic
+}
+
+func (m *Model) resizeGridPictures() tea.Cmd {
+	var cmds []tea.Cmd
+	for _, gridPic := range m.gridPics {
+		if cmd := gridPic.pic.SetSize(gridTileWidth-4, gridCoverRows); cmd != nil {
+			cmds = append(cmds, m.ensureKitty(cmd))
+		}
+	}
+	return tea.Batch(cmds...)
+}
+
+func (m *Model) updatePictures(msg tea.Msg) tea.Cmd {
+	var cmds []tea.Cmd
+	if m.mode == ViewGrid && picture.KittySupported() == picture.KittyCapabilitySupported && m.pic.Mode() == picture.PictureGlyph {
+		cmds = append(cmds, m.pic.Toggle())
+	}
+	if cmd := m.pic.Update(msg); cmd != nil {
+		cmds = append(cmds, m.ensureKitty(cmd))
+	}
+	for _, gridPic := range m.gridPics {
+		if cmd := gridPic.pic.Update(msg); cmd != nil {
+			cmds = append(cmds, m.ensureKitty(cmd))
+		}
+	}
+	return tea.Batch(cmds...)
+}
+
+func (m Model) gridPicMode(sceneID int) picture.PictureMode {
+	if gridPic := m.gridPics[sceneID]; gridPic != nil {
+		return gridPic.pic.Mode()
+	}
+	return m.pic.Mode()
 }
 
 func (m *Model) ensureKitty(cmd tea.Cmd) tea.Cmd {

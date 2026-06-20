@@ -104,6 +104,43 @@ func (s *Service) Apply(ctx context.Context, sceneID int, update Update) error {
 	})
 }
 
+func (s *Service) SetSceneRating(ctx context.Context, sceneID int, rating int) error {
+	if err := validateRating(rating); err != nil {
+		return err
+	}
+	return s.repo.WithTxn(ctx, func(ctx context.Context) error {
+		partial := models.NewScenePartial()
+		partial.Rating = models.NewOptionalInt(rating)
+		if _, err := s.repo.Scene.UpdatePartial(ctx, sceneID, partial); err != nil {
+			return fmt.Errorf("update scene rating: %w", err)
+		}
+		return nil
+	})
+}
+
+func (s *Service) DeleteScene(ctx context.Context, sceneID int) error {
+	return s.repo.WithTxn(ctx, func(ctx context.Context) error {
+		if err := s.repo.Scene.Destroy(ctx, sceneID); err != nil {
+			return fmt.Errorf("delete scene: %w", err)
+		}
+		return nil
+	})
+}
+
+func (s *Service) SetPerformerRating(ctx context.Context, performerID int, rating int) error {
+	if err := validateRating(rating); err != nil {
+		return err
+	}
+	return s.repo.WithTxn(ctx, func(ctx context.Context) error {
+		partial := models.NewPerformerPartial()
+		partial.Rating = models.NewOptionalInt(rating)
+		if _, err := s.repo.Performer.UpdatePartial(ctx, performerID, partial); err != nil {
+			return fmt.Errorf("update performer rating: %w", err)
+		}
+		return nil
+	})
+}
+
 func BuildPartial(update Update) (models.ScenePartial, bool, error) {
 	if update.Favorite != nil {
 		return models.ScenePartial{}, false, ErrUnsupportedFavorite
@@ -125,8 +162,8 @@ func BuildPartial(update Update) (models.ScenePartial, bool, error) {
 		hasSceneFields = true
 	}
 	if update.Rating != nil {
-		if *update.Rating < 0 || *update.Rating > 100 {
-			return models.ScenePartial{}, false, fmt.Errorf("rating must be between 0 and 100")
+		if err := validateRating(*update.Rating); err != nil {
+			return models.ScenePartial{}, false, err
 		}
 		partial.Rating = models.NewOptionalInt(*update.Rating)
 		hasSceneFields = true
@@ -137,4 +174,11 @@ func BuildPartial(update Update) (models.ScenePartial, bool, error) {
 	}
 
 	return partial, hasSceneFields, nil
+}
+
+func validateRating(rating int) error {
+	if rating < 0 || rating > 100 {
+		return fmt.Errorf("rating must be between 0 and 100")
+	}
+	return nil
 }

@@ -25,37 +25,24 @@ var (
 )
 
 type Config struct {
-	DatabasePath  string        `toml:"database_path"`
-	MediaDirs     []string      `toml:"media_dirs"`
-	ScanOnStartup bool          `toml:"scan_on_startup"`
-	DisplayFields []string      `toml:"display_fields"`
-	GraphicsMode  string        `toml:"graphics_mode"`
-	CacheDir      string        `toml:"cache_dir"`
-	LogFile       string        `toml:"log_file"`
-	LogLevel      string        `toml:"log_level"`
-	LogStdout     bool          `toml:"log_stdout"`
-	FFmpegPath    string        `toml:"ffmpeg_path"`
-	FFprobePath   string        `toml:"ffprobe_path"`
-	FFplayPath    string        `toml:"ffplay_path"`
-	FFplayArgs    []string      `toml:"ffplay_args"`
-	CoverFallback CoverFallback `toml:"cover_fallback"`
-	Blobs         Blobs         `toml:"blobs"`
-	StashBox      StashBox      `toml:"stash_box"`
-}
-
-type CoverFallback struct {
-	GenerateWithFFmpeg bool `toml:"generate_with_ffmpeg"`
+	DatabasePath  string   `toml:"database_path"`
+	MediaDirs     []string `toml:"media_dirs"`
+	ScanOnStartup bool     `toml:"scan_on_startup"`
+	DisplayFields []string `toml:"display_fields"`
+	GraphicsMode  string   `toml:"graphics_mode"`
+	CacheDir      string   `toml:"cache_dir"`
+	LogFile       string   `toml:"log_file"`
+	LogLevel      string   `toml:"log_level"`
+	LogStdout     bool     `toml:"log_stdout"`
+	FFprobePath   string   `toml:"ffprobe_path"`
+	FFplayPath    string   `toml:"ffplay_path"`
+	FFplayArgs    []string `toml:"ffplay_args"`
+	Blobs         Blobs    `toml:"blobs"`
 }
 
 type Blobs struct {
 	Storage string `toml:"storage"`
 	Path    string `toml:"path"`
-}
-
-type StashBox struct {
-	Endpoint             string `toml:"endpoint"`
-	APIKey               string `toml:"api_key"`
-	MaxRequestsPerMinute int    `toml:"max_requests_per_minute"`
 }
 
 func Default() Config {
@@ -65,7 +52,6 @@ func Default() Config {
 		CacheDir:      defaultCacheDir(),
 		LogFile:       defaultLogFile(),
 		LogLevel:      "info",
-		FFmpegPath:    lookupPath("ffmpeg"),
 		FFprobePath:   lookupPath("ffprobe"),
 		FFplayPath:    lookupPathOrName("ffplay"),
 		FFplayArgs:    []string{"-autoexit", "-hide_banner", "-loglevel", "warning"},
@@ -167,8 +153,6 @@ func (c *Config) Normalize() error {
 		return fmt.Errorf("normalize blobs.path: %w", err)
 	}
 
-	c.StashBox.Endpoint = strings.TrimSpace(c.StashBox.Endpoint)
-	c.StashBox.APIKey = strings.TrimSpace(c.StashBox.APIKey)
 	c.FFplayPath = strings.TrimSpace(c.FFplayPath)
 	if len(c.FFplayArgs) == 0 {
 		c.FFplayArgs = []string{"-autoexit", "-hide_banner", "-loglevel", "warning"}
@@ -228,23 +212,14 @@ cache_dir = '~/.cache/stash-cli'
 log_file = '~/.local/state/stash-cli/stash-cli.log'
 log_level = 'info'
 log_stdout = false
-ffmpeg_path = 'ffmpeg'
 ffprobe_path = 'ffprobe'
 ffplay_path = 'ffplay'
 ffplay_args = ['-autoexit', '-hide_banner', '-loglevel', 'warning']
-
-[cover_fallback]
-generate_with_ffmpeg = false
 
 [blobs]
 # Match the Stash server config. Use filesystem when blobs_storage: FILESYSTEM.
 storage = 'database'
 path = ''
-
-[stash_box]
-endpoint = ''
-api_key = ''
-max_requests_per_minute = 240
 `
 }
 

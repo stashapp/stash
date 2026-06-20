@@ -13,6 +13,12 @@ type Command struct {
 
 var ErrNotCommand = errors.New("input is not a slash command")
 
+var completableCommands = []string{"search", "scan", "random", "clear", "help"}
+
+func CompletableCommands() []string {
+	return append([]string(nil), completableCommands...)
+}
+
 func Parse(input string) (Command, error) {
 	input = strings.TrimSpace(input)
 	if !strings.HasPrefix(input, "/") {
@@ -32,5 +38,5 @@ func Parse(input string) (Command, error) {
 }
 
 func Help() string {
-	return "/search <query>, /clear, /scan, /cover fetch|fetch-all, /view grid|list, /play, /open, /edit, /help, /quit"
+	return ":q, /search <query>, /random <n>, /clear, /scan, /help"
 }

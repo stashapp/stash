@@ -11,8 +11,6 @@ import (
 	"github.com/stashapp/stash/internal/cli/browse"
 	"github.com/stashapp/stash/internal/cli/config"
 	"github.com/stashapp/stash/internal/cli/cover"
-	"github.com/stashapp/stash/internal/cli/coverfetch"
-	"github.com/stashapp/stash/internal/cli/covergen"
 	"github.com/stashapp/stash/internal/cli/database"
 	"github.com/stashapp/stash/internal/cli/edit"
 	"github.com/stashapp/stash/internal/cli/player"
@@ -20,7 +18,6 @@ import (
 	"github.com/stashapp/stash/internal/cli/tui"
 	"github.com/stashapp/stash/internal/log"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/models"
 )
 
 func main() {
@@ -90,29 +87,13 @@ func main() {
 		return
 	}
 
-	var coverFetcher tui.CoverFetcher
-	if cfg.StashBox.Endpoint != "" {
-		coverFetcher = coverfetch.New(store.Repo, models.StashBox{
-			Endpoint:             cfg.StashBox.Endpoint,
-			APIKey:               cfg.StashBox.APIKey,
-			MaxRequestsPerMinute: cfg.StashBox.MaxRequestsPerMinute,
-		})
-	}
-
-	var coverGenerator tui.CoverGenerator
-	if cfg.CoverFallback.GenerateWithFFmpeg {
-		coverGenerator = covergen.New(store.Repo, cfg.FFmpegPath)
-	}
-
 	if err := tui.Run(context.Background(), tui.Deps{
-		Browser:        browse.New(store.Repo),
-		Editor:         edit.New(store.Repo),
-		Covers:         cover.New(store.Repo, cfg.CacheDir),
-		CoverFetcher:   coverFetcher,
-		CoverGenerator: coverGenerator,
-		Player:         player.New(store.Repo, cfg.FFplayPath, cfg.FFplayArgs),
-		Scanner:        s,
-		ForceKitty:     cfg.GraphicsMode == config.GraphicsKitty,
+		Browser:    browse.New(store.Repo),
+		Editor:     edit.New(store.Repo),
+		Covers:     cover.New(store.Repo, cfg.CacheDir),
+		Player:     player.New(store.Repo, cfg.FFplayPath, cfg.FFplayArgs),
+		Scanner:    s,
+		ForceKitty: cfg.GraphicsMode == config.GraphicsKitty,
 	}, mode); err != nil {
 		exitError(err)
 		return

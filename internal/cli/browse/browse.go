@@ -20,13 +20,22 @@ type Query struct {
 }
 
 type SceneItem struct {
-	ID        int
-	Title     string
-	Path      string
-	Duration  float64
-	Date      string
-	Rating    *int
-	Organized bool
+	ID         int
+	Title      string
+	Path       string
+	Duration   float64
+	Date       string
+	Studio     string
+	Performers []PerformerItem
+	Tags       []string
+	Rating     *int
+	Organized  bool
+}
+
+type PerformerItem struct {
+	ID     int
+	Name   string
+	Rating *int
 }
 
 type Result struct {
@@ -194,6 +203,34 @@ func (s *Service) sceneItem(ctx context.Context, scene *models.Scene) (SceneItem
 	if primary := scene.Files.Primary(); primary != nil {
 		item.Path = primary.Path
 		item.Duration = primary.Duration
+	}
+
+	studio, err := s.repo.Studio.FindBySceneID(ctx, scene.ID)
+	if err != nil {
+		return SceneItem{}, err
+	}
+	if studio != nil {
+		item.Studio = studio.Name
+	}
+
+	performers, err := s.repo.Performer.FindBySceneID(ctx, scene.ID)
+	if err != nil {
+		return SceneItem{}, err
+	}
+	for _, performer := range performers {
+		item.Performers = append(item.Performers, PerformerItem{
+			ID:     performer.ID,
+			Name:   performer.Name,
+			Rating: performer.Rating,
+		})
+	}
+
+	tags, err := s.repo.Tag.FindBySceneID(ctx, scene.ID)
+	if err != nil {
+		return SceneItem{}, err
+	}
+	for _, tag := range tags {
+		item.Tags = append(item.Tags, tag.Name)
 	}
 
 	return item, nil
