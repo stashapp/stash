@@ -6,6 +6,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"time"
@@ -235,25 +236,29 @@ func (db *Database) Close() error {
 }
 
 func (db *Database) open(disableForeignKeys bool, writable bool) (*sqlx.DB, error) {
-	// https://github.com/mattn/go-sqlite3
-	url := "file:" + db.dbPath + "?_journal=WAL&_sync=NORMAL&_busy_timeout=50"
+	values := url.Values{}
+	values.Add("_pragma", "busy_timeout(50)")
+
 	if !disableForeignKeys {
-		url += "&_fk=true"
+		values.Add("_pragma", "foreign_keys(1)")
 	}
 
 	if writable {
-		url += "&_txlock=immediate"
+		values.Set("_txlock", "immediate")
+		values.Add("_pragma", "journal_mode(WAL)")
+		values.Add("_pragma", "synchronous(NORMAL)")
 	} else {
-		url += "&mode=ro"
+		values.Set("mode", "ro")
 	}
 
 	// #5155 - set the cache size if the environment variable is set
 	// default is -2000 which is 2MB
 	if cacheSize := os.Getenv(cacheSizeEnv); cacheSize != "" {
-		url += "&_cache_size=" + cacheSize
+		values.Add("_pragma", "cache_size("+cacheSize+")")
 	}
 
-	conn, err := sqlx.Open(sqlite3Driver, url)
+	url := "file:" + db.dbPath + "?" + values.Encode()
+	conn, err := sqlx.Open(sqliteDriver, url)
 	if err != nil {
 		return nil, fmt.Errorf("db.Open(): %w", err)
 	}
@@ -343,7 +348,7 @@ func (db *Database) Reset() error {
 func (db *Database) Backup(backupPath string) (err error) {
 	thisDB := db.writeDB
 	if thisDB == nil {
-		thisDB, err = sqlx.Connect(sqlite3Driver, "file:"+db.dbPath+"?_fk=true")
+		thisDB, err = db.open(false, true)
 		if err != nil {
 			return fmt.Errorf("open database %s failed: %w", db.dbPath, err)
 		}

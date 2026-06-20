@@ -10,13 +10,14 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
-	"github.com/mattn/go-sqlite3"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/sqlite/blob"
 	"github.com/stashapp/stash/pkg/utils"
 	"gopkg.in/guregu/null.v4"
+	modernsqlite "modernc.org/sqlite"
+	sqlite3 "modernc.org/sqlite/lib"
 )
 
 const (
@@ -325,9 +326,9 @@ func (qb *BlobStore) Delete(ctx context.Context, checksum string) error {
 }
 
 func (qb *BlobStore) isConstraintError(err error) bool {
-	var sqliteError sqlite3.Error
+	var sqliteError *modernsqlite.Error
 	if errors.As(err, &sqliteError) {
-		return sqliteError.Code == sqlite3.ErrConstraint
+		return sqliteError.Code()&0xff == sqlite3.SQLITE_CONSTRAINT
 	}
 	return false
 }

@@ -27,12 +27,16 @@ LDFLAGS := $(LDFLAGS)
 ifdef OUTPUT
   STASH_OUTPUT := $(OUTPUT)
   PHASHER_OUTPUT := $(OUTPUT)
+  STASH_CLI_OUTPUT := $(OUTPUT)
 endif
 ifdef STASH_OUTPUT
   STASH_OUTPUT := -o $(STASH_OUTPUT)
 endif
 ifdef PHASHER_OUTPUT
   PHASHER_OUTPUT := -o $(PHASHER_OUTPUT)
+endif
+ifdef STASH_CLI_OUTPUT
+  STASH_CLI_OUTPUT := -o $(STASH_CLI_OUTPUT)
 endif
 
 # set GO_BUILD_FLAGS environment variable to any extra build flags required
@@ -131,6 +135,10 @@ stash: build-flags
 .PHONY: phasher
 phasher: build-flags
 	go build $(PHASHER_OUTPUT) $(BUILD_FLAGS) ./cmd/phasher
+
+.PHONY: stash-cli
+stash-cli: build-flags
+	go build $(STASH_CLI_OUTPUT) $(BUILD_FLAGS) ./cmd/stash-cli
 
 # builds dynamically-linked debug binaries
 .PHONY: build

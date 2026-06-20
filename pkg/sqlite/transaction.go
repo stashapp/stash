@@ -7,9 +7,10 @@ import (
 	"runtime/debug"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/mattn/go-sqlite3"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	modernsqlite "modernc.org/sqlite"
+	sqlite3 "modernc.org/sqlite/lib"
 )
 
 type key int
@@ -108,9 +109,9 @@ func getDBReader(ctx context.Context) (dbReader, error) {
 }
 
 func (db *Database) IsLocked(err error) bool {
-	var sqliteError sqlite3.Error
+	var sqliteError *modernsqlite.Error
 	if errors.As(err, &sqliteError) {
-		return sqliteError.Code == sqlite3.ErrBusy
+		return sqliteError.Code()&0xff == sqlite3.SQLITE_BUSY
 	}
 	return false
 }
