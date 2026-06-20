@@ -32,5 +32,5 @@ func Parse(input string) (Command, error) {
 }
 
 func Help() string {
-	return "/search <query>, /clear, /scan, /cover fetch|fetch-all, /view grid|list, /open, /edit, /help, /quit"
+	return "/search <query>, /clear, /scan, /cover fetch|fetch-all, /view grid|list, /play, /open, /edit, /help, /quit"
 }

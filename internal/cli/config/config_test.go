@@ -52,6 +52,36 @@ func TestLoadConfigWithDefaults(t *testing.T) {
 	if cfg.Blobs.Storage != "database" {
 		t.Fatalf("Blobs.Storage = %q, want database", cfg.Blobs.Storage)
 	}
+	if cfg.FFplayPath == "" {
+		t.Fatal("FFplayPath should have a default")
+	}
+	if got := strings.Join(cfg.FFplayArgs, ","); got != "-autoexit,-hide_banner,-loglevel,warning" {
+		t.Fatalf("FFplayArgs = %q, want default ffplay args", got)
+	}
+}
+
+func TestLoadConfigCanSetFFplayCommand(t *testing.T) {
+	configPath := filepath.Join(t.TempDir(), "config.toml")
+	err := os.WriteFile(configPath, []byte(`
+database_path = "/tmp/stash.sqlite"
+ffplay_path = "/usr/local/bin/ffplay"
+ffplay_args = ["-autoexit", "-fs"]
+`), 0o600)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cfg, err := Load(configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if cfg.FFplayPath != "/usr/local/bin/ffplay" {
+		t.Fatalf("FFplayPath = %q, want configured path", cfg.FFplayPath)
+	}
+	if got := strings.Join(cfg.FFplayArgs, ","); got != "-autoexit,-fs" {
+		t.Fatalf("FFplayArgs = %q, want configured args", got)
+	}
 }
 
 func TestLoadConfigCanEnableFFmpegCoverFallback(t *testing.T) {

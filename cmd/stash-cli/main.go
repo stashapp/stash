@@ -15,6 +15,7 @@ import (
 	"github.com/stashapp/stash/internal/cli/covergen"
 	"github.com/stashapp/stash/internal/cli/database"
 	"github.com/stashapp/stash/internal/cli/edit"
+	"github.com/stashapp/stash/internal/cli/player"
 	"github.com/stashapp/stash/internal/cli/scanner"
 	"github.com/stashapp/stash/internal/cli/tui"
 	"github.com/stashapp/stash/internal/log"
@@ -109,6 +110,7 @@ func main() {
 		Covers:         cover.New(store.Repo, cfg.CacheDir),
 		CoverFetcher:   coverFetcher,
 		CoverGenerator: coverGenerator,
+		Player:         player.New(store.Repo, cfg.FFplayPath, cfg.FFplayArgs),
 		Scanner:        s,
 		ForceKitty:     cfg.GraphicsMode == config.GraphicsKitty,
 	}, mode); err != nil {

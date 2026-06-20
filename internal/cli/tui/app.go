@@ -49,6 +49,10 @@ type CoverGenerator interface {
 	Generate(context.Context, covergen.Request) (covergen.Result, error)
 }
 
+type Player interface {
+	Play(context.Context, browse.SceneItem) error
+}
+
 type Scanner interface {
 	ScanWithProgress(context.Context, func(scanner.Progress)) scanner.Result
 }
@@ -69,6 +73,7 @@ type Model struct {
 	covers    CoverLoader
 	fetcher   CoverFetcher
 	generator CoverGenerator
+	player    Player
 	scanner   Scanner
 	pic       picture.Model
 
@@ -90,6 +95,7 @@ type Deps struct {
 	Covers         CoverLoader
 	CoverFetcher   CoverFetcher
 	CoverGenerator CoverGenerator
+	Player         Player
 	Scanner        Scanner
 	ForceKitty     bool
 }
@@ -127,6 +133,7 @@ func NewWithDeps(ctx context.Context, deps Deps, mode ViewMode) Model {
 		covers:    deps.Covers,
 		fetcher:   deps.CoverFetcher,
 		generator: deps.CoverGenerator,
+		player:    deps.Player,
 		scanner:   deps.Scanner,
 		pic:       pic,
 		mode:      mode,
@@ -264,6 +271,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.status = formatCoverFetchResultStatus(msg.result)
 		return m, m.refreshWithStatus(m.status)
+	case playMsg:
+		if msg.err != nil {
+			m.status = msg.err.Error()
+			return m, nil
+		}
+		m.status = "Played: " + msg.item.Title
 	}
 
 	return m, m.ensureKitty(m.pic.Update(msg))
@@ -384,6 +397,8 @@ func (m Model) executeInput() (tea.Model, tea.Cmd) {
 		return m.executeCover(cmd.Args)
 	case "open":
 		m.status = "/open is reserved; terminal playback is out of scope for the first version"
+	case "play":
+		return m.executePlay()
 	case "edit":
 		return m.executeEdit(cmd.Args)
 	case "help":
@@ -395,6 +410,24 @@ func (m Model) executeInput() (tea.Model, tea.Cmd) {
 	}
 
 	return m, nil
+}
+
+func (m Model) executePlay() (tea.Model, tea.Cmd) {
+	if m.player == nil {
+		m.status = "/play is unavailable: configure ffplay_path"
+		return m, nil
+	}
+	item, ok := m.selectedItem()
+	if !ok {
+		m.status = "No scene selected"
+		return m, nil
+	}
+
+	m.status = "Playing: " + item.Title
+	return m, func() tea.Msg {
+		err := m.player.Play(m.ctx, item)
+		return playMsg{item: item, err: err}
+	}
 }
 
 func (m Model) executeCover(args []string) (tea.Model, tea.Cmd) {
@@ -716,6 +749,11 @@ type coverFetchAllMsg struct {
 type coverFetchProgressMsg struct {
 	fetch    *coverFetchState
 	progress coverFetchProgress
+}
+
+type playMsg struct {
+	item browse.SceneItem
+	err  error
 }
 
 type statusMsg struct {

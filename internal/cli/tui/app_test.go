@@ -83,6 +83,16 @@ func (f *fakeCoverGenerator) Generate(_ context.Context, req covergen.Request) (
 	return covergen.Result{SceneID: req.SceneID, Bytes: 4}, nil
 }
 
+type fakePlayer struct {
+	items []browse.SceneItem
+	err   error
+}
+
+func (f *fakePlayer) Play(_ context.Context, item browse.SceneItem) error {
+	f.items = append(f.items, item)
+	return f.err
+}
+
 func TestSearchCommandUpdatesQuery(t *testing.T) {
 	browser := &fakeBrowser{}
 	model := New(context.Background(), browser, ViewList)
@@ -178,6 +188,59 @@ func TestCoverFetchCommandFetchesSelectedSceneCover(t *testing.T) {
 		t.Fatalf("sceneID = %d, want 42", fetcher.sceneID)
 	}
 	if m.status != "Official cover fetched: remote-scene" {
+		t.Fatalf("status = %q", m.status)
+	}
+}
+
+func TestPlayCommandPlaysSelectedScene(t *testing.T) {
+	player := &fakePlayer{}
+	model := NewWithDeps(context.Background(), Deps{
+		Browser: &fakeBrowser{},
+		Player:  player,
+	}, ViewList)
+	model.result = browse.Result{
+		Total: 1,
+		Items: []browse.SceneItem{{ID: 42, Title: "Scene", Path: "/tmp/scene.mp4"}},
+	}
+	model.input = "/play"
+
+	updated, cmd := model.executeInput()
+	if cmd == nil {
+		t.Fatal("expected play command")
+	}
+	msg := cmd()
+	next, _ := updated.Update(msg)
+	m := next.(Model)
+
+	if len(player.items) != 1 || player.items[0].ID != 42 || player.items[0].Path != "/tmp/scene.mp4" {
+		t.Fatalf("played items = %#v, want selected scene", player.items)
+	}
+	if m.status != "Played: Scene" {
+		t.Fatalf("status = %q", m.status)
+	}
+}
+
+func TestPlayCommandReportsPlayerErrors(t *testing.T) {
+	player := &fakePlayer{err: errors.New("ffplay failed")}
+	model := NewWithDeps(context.Background(), Deps{
+		Browser: &fakeBrowser{},
+		Player:  player,
+	}, ViewList)
+	model.result = browse.Result{
+		Total: 1,
+		Items: []browse.SceneItem{{ID: 42, Title: "Scene", Path: "/tmp/scene.mp4"}},
+	}
+	model.input = "/play"
+
+	updated, cmd := model.executeInput()
+	if cmd == nil {
+		t.Fatal("expected play command")
+	}
+	msg := cmd()
+	next, _ := updated.Update(msg)
+	m := next.(Model)
+
+	if m.status != "ffplay failed" {
 		t.Fatalf("status = %q", m.status)
 	}
 }

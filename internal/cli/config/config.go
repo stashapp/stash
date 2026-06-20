@@ -36,6 +36,8 @@ type Config struct {
 	LogStdout     bool          `toml:"log_stdout"`
 	FFmpegPath    string        `toml:"ffmpeg_path"`
 	FFprobePath   string        `toml:"ffprobe_path"`
+	FFplayPath    string        `toml:"ffplay_path"`
+	FFplayArgs    []string      `toml:"ffplay_args"`
 	CoverFallback CoverFallback `toml:"cover_fallback"`
 	Blobs         Blobs         `toml:"blobs"`
 	StashBox      StashBox      `toml:"stash_box"`
@@ -65,6 +67,8 @@ func Default() Config {
 		LogLevel:      "info",
 		FFmpegPath:    lookupPath("ffmpeg"),
 		FFprobePath:   lookupPath("ffprobe"),
+		FFplayPath:    lookupPathOrName("ffplay"),
+		FFplayArgs:    []string{"-autoexit", "-hide_banner", "-loglevel", "warning"},
 		Blobs: Blobs{
 			Storage: "database",
 		},
@@ -165,6 +169,10 @@ func (c *Config) Normalize() error {
 
 	c.StashBox.Endpoint = strings.TrimSpace(c.StashBox.Endpoint)
 	c.StashBox.APIKey = strings.TrimSpace(c.StashBox.APIKey)
+	c.FFplayPath = strings.TrimSpace(c.FFplayPath)
+	if len(c.FFplayArgs) == 0 {
+		c.FFplayArgs = []string{"-autoexit", "-hide_banner", "-loglevel", "warning"}
+	}
 
 	return nil
 }
@@ -222,6 +230,8 @@ log_level = 'info'
 log_stdout = false
 ffmpeg_path = 'ffmpeg'
 ffprobe_path = 'ffprobe'
+ffplay_path = 'ffplay'
+ffplay_args = ['-autoexit', '-hide_banner', '-loglevel', 'warning']
 
 [cover_fallback]
 generate_with_ffmpeg = false
@@ -286,4 +296,11 @@ func defaultLogFile() string {
 func lookupPath(name string) string {
 	path, _ := exec.LookPath(name)
 	return path
+}
+
+func lookupPathOrName(name string) string {
+	if path := lookupPath(name); path != "" {
+		return path
+	}
+	return name
 }

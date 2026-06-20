@@ -27,6 +27,8 @@ log_level = "info"
 log_stdout = false
 ffmpeg_path = "/usr/bin/ffmpeg"
 ffprobe_path = "/usr/bin/ffprobe"
+ffplay_path = "/usr/bin/ffplay"
+ffplay_args = ["-autoexit", "-hide_banner", "-loglevel", "warning"]
 
 [cover_fallback]
 generate_with_ffmpeg = false
@@ -61,6 +63,7 @@ TUI 底部输入栏支持：
 - `/scan`：按配置的 `media_dirs` 扫描本地或已挂载的远程目录。
 - `/cover fetch`：对当前选中的 scene 使用 stash-box fingerprints 抓取官方封面，并写入数据库。
 - `/cover fetch-all`：对当前搜索条件匹配的所有 scene 批量抓取官方封面，不限当前 40 条列表页；每秒刷新进度，完成后刷新列表。官方抓取先使用 fingerprint；fingerprint 未命中时会从文件名提取番号并做精确 code/title 匹配。默认不会生成本地封面；仅当 `[cover_fallback].generate_with_ffmpeg = true` 时，官方抓取失败后才会用 ffmpeg 生成封面并计入 generated。每条抓取结果和加载封面的源图尺寸会以 info 级别写入 `log_file`。
+- `/play`：使用 `ffplay_path` 播放当前选中的 scene primary file。`ffplay` 正常退出后，stash-cli 会给该 scene 增加一次 view history，用作播放次数记录。
 - `/view grid|list`：切换显示模式。
 - `/edit key=value ...`：编辑选中 scene，例如 `/edit title=Demo rating=80 organized=true watched=true`。
 - `/help`：显示命令列表。
