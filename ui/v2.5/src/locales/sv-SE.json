@@ -502,7 +502,11 @@
             "anonymising_database": "Anonymiserar databas",
             "auto_tag": {
                 "auto_tagging_all_paths": "Autotagga alla sökvägar",
-                "auto_tagging_paths": "Autotagga följande sökvägar"
+                "auto_tagging_paths": "Autotagga följande sökvägar",
+                "disable_warning": {
+                    "description": "Inaktivera bekräftelsevarningen som visas innan automatisk taggning körs.",
+                    "heading": "Inaktivera varning för automatisk taggning"
+                }
             },
             "auto_tag_based_on_filenames": "Tagga innehåll automatiskt baserat på sökvägar.",
             "auto_tagging": "Automatisk taggning",
@@ -1079,7 +1083,8 @@
         "studios_found": "{count} studior hittades",
         "tags_found": "{count} taggar hittades",
         "scrape_results_missing": "Saknat",
-        "edit_entity_count_title": "Redigera {count} {count, plural, en {{singularEntity}} annan {{pluralEntity}}}"
+        "edit_entity_count_title": "Redigera {count} {count, plural, en {{singularEntity}} annan {{pluralEntity}}}",
+        "dont_show_again": "Visa inte den här varningen igen"
     },
     "dimensions": "Mått",
     "director": "Regissör",
@@ -1304,7 +1309,10 @@
         "update_performer": "Uppdatera stjärna",
         "update_performers": "Uppdatera stjärnor",
         "updating_untagged_performers_description": "Uppdatering av ej taggade stjärnor kommer försöka att matcha alla stjärnor som saknar stashid och uppdatera metadatan.",
-        "performer_names_or_stashids_separated_by_comma": "Stjärnors namn eller StashID separerade med komma"
+        "performer_names_or_stashids_separated_by_comma": "Stjärnors namn eller StashID separerade med komma",
+        "configure_fields": "Konfigurera fält",
+        "field_options": "Fält alternativ",
+        "field_options_description": "Välj hur varje fält uppdateras: överskrivning ersätter befintlig data, sammanslagning lägger till data, hoppa över lämnar den oförändrad."
     },
     "performer_tags": "Stjärntagg",
     "performers": "Stjärnor",
@@ -1715,5 +1723,6 @@
     "scenes_size": "Scenstorlek",
     "sub_folder_depth": "Undermappsdjup (tomt för alla)",
     "sub_folders": "Undermappar",
-    "related_studios": "Relaterade"
+    "related_studios": "Relaterade",
+    "sub_group_description": "Beskrivning av undergrupp"
 }
