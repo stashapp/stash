@@ -314,14 +314,49 @@ func (c Client) FindPerformerByName(ctx context.Context, name string) (*models.S
 		return nil, err
 	}
 
-	var ret *models.ScrapedPerformer
-	for _, performer := range performers.SearchPerformer {
-		if strings.EqualFold(performer.Name, name) {
-			ret = performerFragmentToScrapedPerformer(*performer)
+	performer := findMatchingPerformerFragment(performers.SearchPerformer, name)
+	if performer == nil {
+		return nil, nil
+	}
+
+	return performerFragmentToScrapedPerformer(*performer), nil
+}
+
+func findMatchingPerformerFragment(performers []*graphql.PerformerFragment, name string) *graphql.PerformerFragment {
+	for _, performer := range performers {
+		if performer != nil && strings.EqualFold(performer.Name, name) {
+			return performer
 		}
 	}
 
-	return ret, nil
+	for _, performer := range performers {
+		if performer == nil {
+			continue
+		}
+
+		for _, alias := range performer.Aliases {
+			if strings.EqualFold(alias, name) {
+				return performer
+			}
+		}
+	}
+
+	var only *graphql.PerformerFragment
+	for _, performer := range performers {
+		if performer == nil {
+			continue
+		}
+		if only != nil {
+			return nil
+		}
+		only = performer
+	}
+
+	if only != nil {
+		return only
+	}
+
+	return nil
 }
 
 // SubmitPerformerDraft submits a performer draft to stash-box.

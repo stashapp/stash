@@ -165,7 +165,11 @@ func (t *stashBoxBatchPerformerTagTask) handleMergedPerformer(ctx context.Contex
 
 func (t *stashBoxBatchPerformerTagTask) processMatchedPerformer(ctx context.Context, p *models.ScrapedPerformer, excluded map[string]bool, merge map[string]bool) {
 	if t.performer != nil {
-		storedID, _ := strconv.Atoi(*p.StoredID)
+		storedID, err := performerStoredID(p, t.performer)
+		if err != nil {
+			logger.Errorf("Failed to update performer %s: %v", *p.Name, err)
+			return
+		}
 
 		image, err := p.GetImage(ctx, excluded)
 		if err != nil {
@@ -183,6 +187,7 @@ func (t *stashBoxBatchPerformerTagTask) processMatchedPerformer(ctx context.Cont
 			}
 
 			partial := p.ToPartial(t.box.Endpoint, excluded, merge, existingStashIDs)
+			preserveExistingPerformerName(&partial, p, t.performer)
 
 			// if we're setting the performer's aliases, and not the name, then filter out the name
 			// from the aliases to avoid duplicates
@@ -253,6 +258,38 @@ func (t *stashBoxBatchPerformerTagTask) processMatchedPerformer(ctx context.Cont
 			logger.Infof("Created performer %s", *p.Name)
 		}
 	}
+}
+
+func performerStoredID(p *models.ScrapedPerformer, existing *models.Performer) (int, error) {
+	if p.StoredID != nil {
+		return strconv.Atoi(*p.StoredID)
+	}
+
+	if existing != nil {
+		return existing.ID, nil
+	}
+
+	return 0, fmt.Errorf("scraped performer has no stored id")
+}
+
+func preserveExistingPerformerName(partial *models.PerformerPartial, scraped *models.ScrapedPerformer, existing *models.Performer) {
+	if partial == nil || scraped == nil || existing == nil || scraped.Name == nil {
+		return
+	}
+
+	remoteName := strings.TrimSpace(*scraped.Name)
+	if remoteName == "" || strings.EqualFold(remoteName, existing.Name) {
+		return
+	}
+
+	partial.Name = models.OptionalString{}
+	if partial.Aliases == nil {
+		partial.Aliases = &models.UpdateStrings{
+			Mode: models.RelationshipUpdateModeAdd,
+		}
+	}
+
+	partial.Aliases.Values = sliceutil.AppendUnique(partial.Aliases.Values, remoteName)
 }
 
 // stashBoxBatchStudioTagTask is used to tag or create studios from stash-box.

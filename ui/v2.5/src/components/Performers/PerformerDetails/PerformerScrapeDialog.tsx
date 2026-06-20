@@ -206,8 +206,41 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     return circumcisedToString(retEnum);
   }
 
+  function getPreservedName() {
+    const currentName = props.performer.name;
+    const scrapedName = props.scraped.name;
+
+    if (!currentName || !scrapedName || currentName === scrapedName) {
+      return scrapedName;
+    }
+
+    return currentName;
+  }
+
+  function getPreservedAliases() {
+    const currentAliases = props.performer.alias_list ?? [];
+    const scrapedAliases =
+      props.scraped.aliases
+        ?.split(",")
+        .map((a) => a.trim())
+        .filter((a) => a) ?? [];
+    const scrapedName = props.scraped.name?.trim();
+    const currentName = props.performer.name?.trim();
+
+    const aliasesToAdd =
+      scrapedName && currentName && scrapedName !== currentName
+        ? scrapedAliases.concat(scrapedName)
+        : scrapedAliases;
+
+    if (aliasesToAdd.length === 0) {
+      return props.scraped.aliases ?? undefined;
+    }
+
+    return uniq(currentAliases.concat(aliasesToAdd)).join(", ");
+  }
+
   const [name, setName] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.performer.name, props.scraped.name)
+    new ScrapeResult<string>(props.performer.name, getPreservedName())
   );
   const [disambiguation, setDisambiguation] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
@@ -218,7 +251,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   const [aliases, setAliases] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
       props.performer.alias_list?.join(", "),
-      props.scraped.aliases
+      getPreservedAliases()
     )
   );
   const [birthdate, setBirthdate] = useState<ScrapeResult<string>>(
