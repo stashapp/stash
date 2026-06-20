@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strings"
 	"testing"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/NimbleMarkets/ntcharts/v2/picture"
@@ -65,10 +66,11 @@ func (f *fakePlayer) Play(_ context.Context, item browse.SceneItem) error {
 }
 
 type fakeEditor struct {
-	sceneRatings     map[int]int
-	deletedScenes    []int
-	performerRatings map[int]int
-	err              error
+	sceneRatings      map[int]int
+	deletedScenes     []int
+	performerRatings  map[int]int
+	deletedPerformers []int
+	err               error
 }
 
 func (f *fakeEditor) SetSceneRating(_ context.Context, sceneID int, rating int) error {
@@ -92,10 +94,15 @@ func (f *fakeEditor) SetPerformerRating(_ context.Context, performerID int, rati
 	return f.err
 }
 
+func (f *fakeEditor) DeletePerformer(_ context.Context, performerID int) error {
+	f.deletedPerformers = append(f.deletedPerformers, performerID)
+	return f.err
+}
+
 func TestSearchCommandUpdatesQuery(t *testing.T) {
 	browser := &fakeBrowser{}
 	model := New(context.Background(), browser, ViewList)
-	model.input = "/search tag:demo alice"
+	model.input = "search tag:demo alice"
 
 	updated, cmd := model.executeInput()
 	if cmd == nil {
@@ -116,7 +123,7 @@ func TestSearchCommandUpdatesQuery(t *testing.T) {
 func TestRandomCommandUsesExplicitLimit(t *testing.T) {
 	browser := &fakeBrowser{}
 	model := New(context.Background(), browser, ViewGrid)
-	model.input = "/random 7"
+	model.input = "random 7"
 
 	updated, cmd := model.executeInput()
 	if cmd == nil {
@@ -139,7 +146,7 @@ func TestRandomCommandUsesVisibleGridCapacityByDefault(t *testing.T) {
 	model := New(context.Background(), browser, ViewGrid)
 	model.width = 90
 	model.height = 35
-	model.input = "/random"
+	model.input = "random"
 
 	updated, cmd := model.executeInput()
 	if cmd == nil {
@@ -159,7 +166,7 @@ func TestRandomCommandUsesVisibleGridCapacityByDefault(t *testing.T) {
 
 func TestRandomCommandRejectsInvalidLimit(t *testing.T) {
 	model := New(context.Background(), &fakeBrowser{}, ViewGrid)
-	model.input = "/random nope"
+	model.input = "random nope"
 
 	updated, cmd := model.executeInput()
 	m := updated.(Model)
@@ -167,25 +174,27 @@ func TestRandomCommandRejectsInvalidLimit(t *testing.T) {
 	if cmd != nil {
 		t.Fatal("expected no command")
 	}
-	if m.status != "Usage: /random <n>" {
+	if m.status != "Usage: random <n>" {
 		t.Fatalf("status = %q", m.status)
 	}
 }
 
 func TestHelpOmitsRemovedCommands(t *testing.T) {
 	help := command.Help()
-	for _, removed := range []string{"/cover", "/play", "/open", "/edit"} {
+	for _, removed := range []string{"/", "open", "edit"} {
 		if strings.Contains(help, removed) {
 			t.Fatalf("help contains removed command %q: %q", removed, help)
 		}
 	}
-	if !strings.Contains(help, "/random") {
-		t.Fatalf("help does not contain /random: %q", help)
+	if !strings.Contains(help, "random") {
+		t.Fatalf("help does not contain random: %q", help)
 	}
 }
 
 func TestDetailsPanelShowsPerformerRatings(t *testing.T) {
 	model := NewWithDeps(context.Background(), Deps{Browser: &fakeBrowser{}}, ViewGrid)
+	model.width = 90
+	model.height = 35
 	model.result = browse.Result{
 		Total: 1,
 		Items: []browse.SceneItem{{
@@ -210,7 +219,44 @@ func TestDetailsPanelShowsPerformerRatings(t *testing.T) {
 	}
 }
 
-func TestDetailsPanelSetsSceneRating(t *testing.T) {
+func TestSpaceShowsSceneInfoTextAreaInsteadOfGrid(t *testing.T) {
+	model := NewWithDeps(context.Background(), Deps{Browser: &fakeBrowser{}}, ViewGrid)
+	model.width = 90
+	model.height = 35
+	model.result = browse.Result{
+		Total: 1,
+		Items: []browse.SceneItem{{
+			ID:       42,
+			Title:    "Scene",
+			Path:     "/tmp/scene.mp4",
+			Duration: 65,
+			Rating:   ptrInt(60),
+		}},
+	}
+
+	next, _ := model.Update(tea.KeyPressMsg{Code: tea.KeySpace})
+	m := next.(Model)
+	view := m.View().Content
+
+	if !strings.Contains(view, "Title: Scene") || !strings.Contains(view, "Path: /tmp/scene.mp4") {
+		t.Fatalf("details text area missing scene info: %q", view)
+	}
+	if strings.Contains(view, "[cover loading]") {
+		t.Fatalf("details text area should replace the grid, not append below it: %q", view)
+	}
+	if !strings.Contains(view, "h/j/k/l browse") {
+		t.Fatalf("footer should stay visible and fixed: %q", view)
+	}
+
+	next, _ = m.Update(tea.KeyPressMsg{Code: tea.KeyEsc})
+	m = next.(Model)
+	view = m.View().Content
+	if !strings.Contains(view, "[cover loading]") {
+		t.Fatalf("esc should return to scene grid: %q", view)
+	}
+}
+
+func TestRatingCommandUpdatesSelectedScene(t *testing.T) {
 	editor := &fakeEditor{}
 	browser := &fakeBrowser{result: browse.Result{
 		Total: 1,
@@ -218,28 +264,88 @@ func TestDetailsPanelSetsSceneRating(t *testing.T) {
 	}}
 	model := NewWithDeps(context.Background(), Deps{Browser: browser, Editor: editor}, ViewGrid)
 	model.result = browser.result
+	model.input = "rating 77"
 
-	next, _ := model.Update(tea.KeyPressMsg{Code: tea.KeySpace})
-	next, _ = next.Update(tea.KeyPressMsg{Text: "r"})
-	next, _ = next.Update(tea.KeyPressMsg{Text: "8"})
-	next, _ = next.Update(tea.KeyPressMsg{Text: "5"})
-	updated, cmd := next.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
+	updated, cmd := model.executeInput()
 	if cmd == nil {
-		t.Fatal("expected scene rating command")
+		t.Fatal("expected rating command")
 	}
 	msg := cmd()
-	next, _ = updated.Update(msg)
+	next, _ := updated.Update(msg)
 	m := next.(Model)
 
-	if got := editor.sceneRatings[42]; got != 85 {
-		t.Fatalf("scene rating = %d, want 85", got)
+	if got := editor.sceneRatings[42]; got != 77 {
+		t.Fatalf("scene rating = %d, want 77", got)
 	}
 	if m.status != "Scene rating updated" {
 		t.Fatalf("status = %q", m.status)
 	}
 }
 
-func TestDetailsPanelDeletesSceneAfterConfirmation(t *testing.T) {
+func TestPerformersCommandShowsSelectedScenePerformersGrid(t *testing.T) {
+	model := NewWithDeps(context.Background(), Deps{Browser: &fakeBrowser{}}, ViewGrid)
+	model.width = 90
+	model.height = 35
+	model.result = browse.Result{
+		Total: 1,
+		Items: []browse.SceneItem{{
+			ID:    42,
+			Title: "Scene",
+			Performers: []browse.PerformerItem{
+				{ID: 7, Name: "Alice", Rating: ptrInt(80)},
+				{ID: 8, Name: "Bob"},
+			},
+		}},
+	}
+	model.input = "performers"
+
+	updated, cmd := model.executeInput()
+	if cmd != nil {
+		t.Fatal("expected no async command")
+	}
+	m := updated.(Model)
+	view := m.View().Content
+
+	if !m.inPerformerGrid() {
+		t.Fatal("expected performer grid")
+	}
+	for _, want := range []string{"Alice", "80", "Bob"} {
+		if !strings.Contains(view, want) {
+			t.Fatalf("performer grid missing %q: %q", want, view)
+		}
+	}
+}
+
+func TestBackCommandReturnsToSceneGrid(t *testing.T) {
+	model := NewWithDeps(context.Background(), Deps{Browser: &fakeBrowser{}}, ViewGrid)
+	model.result = browse.Result{
+		Total: 1,
+		Items: []browse.SceneItem{{
+			ID:         42,
+			Title:      "Scene",
+			Performers: []browse.PerformerItem{{ID: 7, Name: "Alice"}},
+		}},
+	}
+	model.input = "performers"
+	updated, _ := model.executeInput()
+	m := updated.(Model)
+	m.input = "back"
+
+	updated, cmd := m.executeInput()
+	if cmd != nil {
+		t.Fatal("expected no async command")
+	}
+	m = updated.(Model)
+
+	if m.inPerformerGrid() {
+		t.Fatal("expected scene grid")
+	}
+	if m.cursor != 0 || m.result.Items[0].Title != "Scene" {
+		t.Fatalf("scene grid not restored: cursor=%d result=%#v", m.cursor, m.result.Items)
+	}
+}
+
+func TestDeleteCommandDeletesSelectedScene(t *testing.T) {
 	editor := &fakeEditor{}
 	browser := &fakeBrowser{result: browse.Result{
 		Total: 1,
@@ -248,21 +354,26 @@ func TestDetailsPanelDeletesSceneAfterConfirmation(t *testing.T) {
 	model := NewWithDeps(context.Background(), Deps{Browser: browser, Editor: editor}, ViewGrid)
 	model.result = browse.Result{
 		Total: 2,
-		Items: []browse.SceneItem{
-			{ID: 42, Title: "Delete Me"},
-			{ID: 43, Title: "Next"},
-		},
+		Items: []browse.SceneItem{{ID: 42, Title: "Delete"}, {ID: 43, Title: "Next"}},
+	}
+	model.input = "delete"
+
+	updated, cmd := model.executeInput()
+	if cmd != nil {
+		t.Fatal("delete should wait for confirmation")
+	}
+	m := updated.(Model)
+	if !m.confirmDelete {
+		t.Fatal("expected delete confirmation")
 	}
 
-	next, _ := model.Update(tea.KeyPressMsg{Code: tea.KeySpace})
-	next, _ = next.Update(tea.KeyPressMsg{Text: "d"})
-	updated, cmd := next.Update(tea.KeyPressMsg{Text: "y"})
+	updated, cmd = m.Update(tea.KeyPressMsg{Text: "y"})
 	if cmd == nil {
 		t.Fatal("expected delete command")
 	}
 	msg := cmd()
-	next, _ = updated.Update(msg)
-	m := next.(Model)
+	next, _ := updated.Update(msg)
+	m = next.(Model)
 
 	if len(editor.deletedScenes) != 1 || editor.deletedScenes[0] != 42 {
 		t.Fatalf("deleted scenes = %#v, want [42]", editor.deletedScenes)
@@ -270,14 +381,12 @@ func TestDetailsPanelDeletesSceneAfterConfirmation(t *testing.T) {
 	if m.status != "Scene deleted" {
 		t.Fatalf("status = %q", m.status)
 	}
-	if m.showDetails {
-		t.Fatal("details should close after delete")
-	}
 }
 
-func TestDetailsPanelSetsPerformerRating(t *testing.T) {
+func TestPerformerGridRatingAndDeleteCommandsUseSelectedPerformer(t *testing.T) {
 	editor := &fakeEditor{}
-	browser := &fakeBrowser{result: browse.Result{
+	model := NewWithDeps(context.Background(), Deps{Browser: &fakeBrowser{}, Editor: editor}, ViewGrid)
+	model.result = browse.Result{
 		Total: 1,
 		Items: []browse.SceneItem{{
 			ID:    42,
@@ -287,34 +396,46 @@ func TestDetailsPanelSetsPerformerRating(t *testing.T) {
 				{ID: 8, Name: "Bob"},
 			},
 		}},
-	}}
-	model := NewWithDeps(context.Background(), Deps{Browser: browser, Editor: editor}, ViewGrid)
-	model.result = browser.result
+	}
+	model.input = "performers"
+	updated, _ := model.executeInput()
+	m := updated.(Model)
+	next, _ := m.Update(tea.KeyPressMsg{Text: "l"})
+	m = next.(Model)
+	m.input = "rating 90"
 
-	next, _ := model.Update(tea.KeyPressMsg{Code: tea.KeySpace})
-	next, _ = next.Update(tea.KeyPressMsg{Text: "j"})
-	next, _ = next.Update(tea.KeyPressMsg{Text: "R"})
-	next, _ = next.Update(tea.KeyPressMsg{Text: "9"})
-	next, _ = next.Update(tea.KeyPressMsg{Text: "0"})
-	updated, cmd := next.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
+	updated, cmd := m.executeInput()
 	if cmd == nil {
 		t.Fatal("expected performer rating command")
 	}
 	msg := cmd()
 	next, _ = updated.Update(msg)
-	m := next.(Model)
-
+	m = next.(Model)
 	if got := editor.performerRatings[8]; got != 90 {
 		t.Fatalf("performer rating = %d, want 90", got)
 	}
-	if m.status != "Performer rating updated" {
-		t.Fatalf("status = %q", m.status)
+
+	m.input = "delete"
+	updated, cmd = m.executeInput()
+	if cmd != nil {
+		t.Fatal("delete should wait for confirmation")
+	}
+	m = updated.(Model)
+	updated, cmd = m.Update(tea.KeyPressMsg{Text: "y"})
+	if cmd == nil {
+		t.Fatal("expected performer delete command")
+	}
+	msg = cmd()
+	next, _ = updated.Update(msg)
+	_ = next.(Model)
+	if len(editor.deletedPerformers) != 1 || editor.deletedPerformers[0] != 8 {
+		t.Fatalf("deleted performers = %#v, want [8]", editor.deletedPerformers)
 	}
 }
 
 func TestQuitCommand(t *testing.T) {
 	model := New(context.Background(), &fakeBrowser{}, ViewList)
-	model.input = "/quit"
+	model.input = "quit"
 
 	_, cmd := model.executeInput()
 	if cmd == nil {
@@ -335,7 +456,7 @@ func TestScanCommandRunsScannerAndRefreshesResults(t *testing.T) {
 		},
 	}
 	model := NewWithDeps(context.Background(), Deps{Browser: browser, Scanner: scanner}, ViewList)
-	model.input = "/scan"
+	model.input = "scan"
 
 	updated, cmd := model.executeInput()
 	if cmd == nil {
@@ -377,7 +498,7 @@ func TestNormalEnterPlaysSelectedScene(t *testing.T) {
 	if cmd == nil {
 		t.Fatal("expected play command")
 	}
-	msg := cmd()
+	msg := runPlayCommand(t, cmd)
 	next, _ := updated.Update(msg)
 	m := next.(Model)
 
@@ -404,7 +525,7 @@ func TestNormalEnterReportsPlayerErrors(t *testing.T) {
 	if cmd == nil {
 		t.Fatal("expected play command")
 	}
-	msg := cmd()
+	msg := runPlayCommand(t, cmd)
 	next, _ := updated.Update(msg)
 	m := next.(Model)
 
@@ -437,8 +558,8 @@ func TestCommandTabCompletesFuzzyMatch(t *testing.T) {
 	next, _ = next.Update(tea.KeyPressMsg{Code: tea.KeyTab})
 	m := next.(Model)
 
-	if m.input != "/random " {
-		t.Fatalf("input = %q, want /random ", m.input)
+	if m.input != "random " {
+		t.Fatalf("input = %q, want random ", m.input)
 	}
 }
 
@@ -449,14 +570,14 @@ func TestCommandTabCyclesMatches(t *testing.T) {
 	next, _ = next.Update(tea.KeyPressMsg{Text: "s"})
 	next, _ = next.Update(tea.KeyPressMsg{Code: tea.KeyTab})
 	m := next.(Model)
-	if m.input != "/search " {
-		t.Fatalf("first completion = %q, want /search ", m.input)
+	if m.input != "search " {
+		t.Fatalf("first completion = %q, want search ", m.input)
 	}
 
 	next, _ = m.Update(tea.KeyPressMsg{Code: tea.KeyTab})
 	m = next.(Model)
-	if m.input != "/scan " {
-		t.Fatalf("second completion = %q, want /scan ", m.input)
+	if m.input != "scan " {
+		t.Fatalf("second completion = %q, want scan ", m.input)
 	}
 }
 
@@ -468,7 +589,7 @@ func TestCommandCompletionMatchesRenderInFooter(t *testing.T) {
 	m := next.(Model)
 	view := m.View().Content
 
-	if !strings.Contains(view, "matches: /search /scan") {
+	if !strings.Contains(view, "matches: search scan") {
 		t.Fatalf("view does not show completion matches: %q", view)
 	}
 }
@@ -556,6 +677,80 @@ func TestCompactTextOmitsMiddle(t *testing.T) {
 	got := compactText("abcdefghijklmnopqrstuvwxyz.mp4", 12)
 	if got != "abcd...z.mp4" {
 		t.Fatalf("compactText = %q", got)
+	}
+}
+
+func TestFormatDurationUsesShortHourDisplay(t *testing.T) {
+	tests := []struct {
+		seconds float64
+		want    string
+	}{
+		{seconds: 0, want: "--"},
+		{seconds: 65, want: "0.0h"},
+		{seconds: 4320, want: "1.2h"},
+	}
+
+	for _, tt := range tests {
+		if got := formatDuration(tt.seconds); got != tt.want {
+			t.Fatalf("formatDuration(%v) = %q, want %q", tt.seconds, got, tt.want)
+		}
+	}
+}
+
+func TestFormatSceneSummaryUsesDurationAndYear(t *testing.T) {
+	tests := []struct {
+		name string
+		item browse.SceneItem
+		want string
+	}{
+		{name: "duration and full date", item: browse.SceneItem{Duration: 4320, Date: "2012-03-04"}, want: "1.2h/2012"},
+		{name: "duration only", item: browse.SceneItem{Duration: 4320}, want: "1.2h"},
+		{name: "year only", item: browse.SceneItem{Date: "2012-03-04"}, want: "--/2012"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := formatSceneSummary(tt.item); got != tt.want {
+				t.Fatalf("formatSceneSummary = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestDetailsPanelShowsYearInsteadOfFullDate(t *testing.T) {
+	model := NewWithDeps(context.Background(), Deps{Browser: &fakeBrowser{}}, ViewGrid)
+	model.result = browse.Result{
+		Total: 1,
+		Items: []browse.SceneItem{{
+			ID:       42,
+			Title:    "Scene",
+			Path:     "/tmp/scene.mp4",
+			Duration: 4320,
+			Date:     "2012-03-04",
+		}},
+	}
+
+	next, _ := model.Update(tea.KeyPressMsg{Code: tea.KeySpace})
+	m := next.(Model)
+	view := m.View().Content
+
+	if !strings.Contains(view, "Year: 2012") {
+		t.Fatalf("details should show scene year: %q", view)
+	}
+	if strings.Contains(view, "2012-03-04") || strings.Contains(view, "Date:") {
+		t.Fatalf("details should not show full scene date: %q", view)
+	}
+}
+
+func TestFormatPlayProgressStatusShowsLightProgressBar(t *testing.T) {
+	item := browse.SceneItem{Title: "Long Scene"}
+	got := formatPlayProgressStatus(item, 30*time.Minute, 2*time.Hour)
+
+	if !strings.Contains(got, "Playing: Long Scene") {
+		t.Fatalf("status missing title: %q", got)
+	}
+	if !strings.Contains(got, "[") || !strings.Contains(got, "]") || !strings.Contains(got, "25%") {
+		t.Fatalf("status missing progress bar and percent: %q", got)
 	}
 }
 
@@ -841,6 +1036,20 @@ func runScanCommand(t *testing.T, cmd tea.Cmd) tea.Msg {
 
 	t.Fatal("batch did not include scanMsg")
 	return nil
+}
+
+func runPlayCommand(t *testing.T, cmd tea.Cmd) tea.Msg {
+	t.Helper()
+
+	msg := cmd()
+	batch, ok := msg.(tea.BatchMsg)
+	if !ok {
+		return msg
+	}
+	if len(batch) == 0 {
+		t.Fatal("play batch was empty")
+	}
+	return batch[0]()
 }
 
 func TestScanProgressStatusShowsScannedCount(t *testing.T) {

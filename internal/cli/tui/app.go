@@ -35,6 +35,7 @@ type Editor interface {
 	SetSceneRating(context.Context, int, int) error
 	DeleteScene(context.Context, int) error
 	SetPerformerRating(context.Context, int, int) error
+	DeletePerformer(context.Context, int) error
 }
 
 type CoverLoader interface {
@@ -56,7 +57,17 @@ const (
 	ViewList ViewMode = "list"
 )
 
-var scanProgressInterval = time.Second
+var (
+	scanProgressInterval = time.Second
+	playProgressInterval = time.Second
+)
+
+type gridKind string
+
+const (
+	gridScenes     gridKind = "scenes"
+	gridPerformers gridKind = "performers"
+)
 
 type Model struct {
 	ctx        context.Context
@@ -70,8 +81,12 @@ type Model struct {
 	forceKitty bool
 
 	mode              ViewMode
+	grid              gridKind
 	query             browse.Query
 	result            browse.Result
+	performers        []browse.PerformerItem
+	sceneCursor       int
+	sceneGridStart    int
 	cursor            int
 	gridStart         int
 	input             string
@@ -81,11 +96,10 @@ type Model struct {
 	completionIndex   int
 	showDetails       bool
 	performerCursor   int
-	detailEditMode    string
-	detailEditInput   string
 	confirmDelete     bool
 	status            string
 	scan              *scanState
+	play              *playState
 	width             int
 	height            int
 }
@@ -151,6 +165,7 @@ func NewWithDeps(ctx context.Context, deps Deps, mode ViewMode) Model {
 		gridPics:   map[int]*gridCover{},
 		forceKitty: deps.ForceKitty,
 		mode:       mode,
+		grid:       gridScenes,
 		status:     "Press : for commands",
 		query: browse.Query{
 			Page:    1,
@@ -221,6 +236,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.scan = nil
 		m.status = formatScanStatus(msg.result)
 		return m, m.refresh()
+	case playProgressMsg:
+		if msg.play == nil || msg.play != m.play {
+			return m, nil
+		}
+		m.status = formatPlayProgressStatus(msg.play.item, msg.elapsed, msg.play.duration)
+		if !msg.play.done() {
+			return m, pollPlayProgress(msg.play)
+		}
 	case tea.KeyPressMsg:
 		return m.handleKey(msg)
 	case coverMsg:
@@ -245,6 +268,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmd := m.pic.SetImage(msg.image)
 		return m, m.ensureKitty(cmd)
 	case playMsg:
+		if msg.play != nil {
+			msg.play.setDone()
+		}
+		if msg.play != nil && msg.play != m.play {
+			return m, nil
+		}
+		m.play = nil
 		if msg.err != nil {
 			m.status = msg.err.Error()
 			return m, nil
@@ -261,15 +291,19 @@ func (m Model) View() tea.View {
 	fmt.Fprintf(&b, "%s\n", title)
 	fmt.Fprintf(&b, "%s\n\n", m.status)
 
-	if len(m.result.Items) == 0 {
+	if m.inPerformerGrid() {
+		if len(m.performers) == 0 {
+			b.WriteString("No performers to display\n")
+		} else {
+			b.WriteString(m.renderPerformerGrid())
+		}
+	} else if m.showDetails {
+		b.WriteString(m.renderSelectedDetails())
+		b.WriteString("\n")
+	} else if len(m.result.Items) == 0 {
 		b.WriteString("No scenes to display\n")
 	} else {
 		b.WriteString(m.renderSceneGrid())
-		if m.showDetails {
-			b.WriteString("\n")
-			b.WriteString(m.renderSelectedDetails())
-			b.WriteString("\n")
-		}
 	}
 
 	b.WriteString("\n")
@@ -337,6 +371,9 @@ const (
 func (m Model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	if m.commandMode {
 		return m.handleCommandKey(msg)
+	}
+	if m.confirmDelete {
+		return m.handleDeleteConfirmKey(msg)
 	}
 	if m.showDetails {
 		return m.handleDetailsKey(msg)
@@ -434,7 +471,7 @@ func fuzzyCommandMatches(query string) []string {
 	var matches []string
 	for _, name := range command.CompletableCommands() {
 		if fuzzyMatch(query, name) {
-			matches = append(matches, "/"+name)
+			matches = append(matches, name)
 		}
 	}
 	return matches
@@ -474,9 +511,14 @@ func (m Model) handleNormalKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		m.input = ""
 		m.clearCompletion()
 	case "enter":
+		if m.inPerformerGrid() {
+			return m, nil
+		}
 		return m.executePlay()
 	case " ", "space":
-		m.showDetails = !m.showDetails
+		if !m.inPerformerGrid() {
+			m.showDetails = !m.showDetails
+		}
 	case "up", "k":
 		return m.moveCursor(-gridColumns(m.width))
 	case "down", "j":
@@ -491,81 +533,31 @@ func (m Model) handleNormalKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) handleDetailsKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
-	if m.detailEditMode != "" {
-		return m.handleDetailInputKey(msg)
-	}
-	if m.confirmDelete {
-		switch msg.String() {
-		case "y", "Y":
-			return m.executeDeleteSelectedScene()
-		case "n", "N", "esc", " ", "space":
-			m.confirmDelete = false
-			m.status = "Delete cancelled"
-			return m, nil
-		}
-	}
-
 	switch msg.String() {
 	case "ctrl+c":
 		return m, tea.Quit
 	case "esc", " ", "space":
 		m.showDetails = false
-		m.confirmDelete = false
-		m.detailEditMode = ""
-		m.detailEditInput = ""
 	case "j", "down":
 		m.movePerformerCursor(1)
 	case "k", "up":
 		m.movePerformerCursor(-1)
-	case "r":
-		m.detailEditMode = "scene-rating"
-		m.detailEditInput = ""
-		m.status = "Scene rating: enter 0-100"
-	case "R":
-		item, ok := m.selectedItem()
-		if !ok || len(item.Performers) == 0 {
-			m.status = "No performer selected"
-			return m, nil
-		}
-		m.detailEditMode = "performer-rating"
-		m.detailEditInput = ""
-		m.status = "Performer rating: enter 0-100"
-	case "d":
-		m.confirmDelete = true
-		m.status = "Delete scene? y/N"
 	}
 
 	return m, nil
 }
 
-func (m Model) handleDetailInputKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+func (m Model) handleDeleteConfirmKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
-	case "esc":
-		m.detailEditMode = ""
-		m.detailEditInput = ""
-		m.status = "Edit cancelled"
-	case "backspace":
-		if len(m.detailEditInput) > 0 {
-			m.detailEditInput = m.detailEditInput[:len(m.detailEditInput)-1]
+	case "y", "Y":
+		if m.inPerformerGrid() {
+			return m.executeDeleteSelectedPerformer()
 		}
-	case "enter":
-		rating, err := strconv.Atoi(strings.TrimSpace(m.detailEditInput))
-		if err != nil || rating < 0 || rating > 100 {
-			m.status = "Rating must be between 0 and 100"
-			return m, nil
-		}
-		if m.detailEditMode == "scene-rating" {
-			return m.executeSetSceneRating(rating)
-		}
-		if m.detailEditMode == "performer-rating" {
-			return m.executeSetPerformerRating(rating)
-		}
-	default:
-		if text := msg.Key().Text; text != "" {
-			m.detailEditInput += text
-		}
+		return m.executeDeleteSelectedScene()
+	case "n", "N", "esc":
+		m.confirmDelete = false
+		m.status = "Delete cancelled"
 	}
-
 	return m, nil
 }
 
@@ -586,21 +578,36 @@ func (m *Model) movePerformerCursor(delta int) {
 }
 
 func (m Model) moveCursor(delta int) (tea.Model, tea.Cmd) {
-	if delta == 0 || len(m.result.Items) == 0 {
+	total := m.gridItemCount()
+	if delta == 0 || total == 0 {
 		return m, nil
 	}
 
 	next := m.cursor + delta
-	if next >= 0 && next < len(m.result.Items) {
+	if next >= 0 && next < total {
 		m.cursor = next
 		m.gridStart = m.gridStartForCursor(next)
+		if m.inPerformerGrid() {
+			return m, nil
+		}
 		return m, m.loadVisibleCovers()
 	}
-	if delta > 0 && len(m.result.Items) < m.result.Total {
+	if !m.inPerformerGrid() && delta > 0 && len(m.result.Items) < m.result.Total {
 		return m, m.loadMoreResults()
 	}
 
 	return m, nil
+}
+
+func (m Model) inPerformerGrid() bool {
+	return m.grid == gridPerformers
+}
+
+func (m Model) gridItemCount() int {
+	if m.inPerformerGrid() {
+		return len(m.performers)
+	}
+	return len(m.result.Items)
 }
 
 func gridColumns(width int) int {
@@ -666,15 +673,16 @@ func normalizeGridStart(start, total, cols, rows int) int {
 func (m Model) gridStartForCursor(cursor int) int {
 	cols := gridColumns(m.width)
 	rows := visibleGridRows(m.height)
-	start := normalizeGridStart(m.gridStart, len(m.result.Items), cols, rows)
+	total := m.gridItemCount()
+	start := normalizeGridStart(m.gridStart, total, cols, rows)
 	visible := cols * rows
 	if cursor < start {
 		rowStart := (cursor / cols) * cols
-		return normalizeGridStart(rowStart-(rows-1)*cols, len(m.result.Items), cols, rows)
+		return normalizeGridStart(rowStart-(rows-1)*cols, total, cols, rows)
 	}
 	if cursor >= start+visible {
 		rowStart := (cursor / cols) * cols
-		return normalizeGridStart(rowStart, len(m.result.Items), cols, rows)
+		return normalizeGridStart(rowStart, total, cols, rows)
 	}
 	return start
 }
@@ -756,14 +764,59 @@ func (m Model) renderSceneTile(index int, item browse.SceneItem) string {
 
 	meta := compactText(item.Title, gridTileWidth-4)
 	performer := compactText(performerSummary(item.Performers), gridTileWidth-4)
-	details := strings.TrimSpace(strings.Join([]string{formatDuration(item.Duration), item.Date}, " "))
-	details = compactText(details, gridTileWidth-4)
+	details := compactText(formatSceneSummary(item), gridTileWidth-4)
 
 	return style.Render(strings.Join([]string{
 		fitBlock(coverView, gridTileWidth-4, gridCoverRows),
 		meta,
 		performer,
 		details,
+	}, "\n")) + strings.Repeat(" ", gridTileGap)
+}
+
+func (m Model) renderPerformerGrid() string {
+	cols := gridColumns(m.width)
+	rows := visibleGridRows(m.height)
+	start := m.gridStartForCursor(m.cursor)
+	end := start + cols*rows
+	if end > len(m.performers) {
+		end = len(m.performers)
+	}
+
+	var b strings.Builder
+	for rowStart := start; rowStart < end; rowStart += cols {
+		rowEnd := rowStart + cols
+		if rowEnd > end {
+			rowEnd = end
+		}
+		var tiles []string
+		for i := rowStart; i < rowEnd; i++ {
+			tiles = append(tiles, m.renderPerformerTile(i, m.performers[i]))
+		}
+		b.WriteString(lipgloss.JoinHorizontal(lipgloss.Top, tiles...))
+		b.WriteString("\n")
+	}
+
+	return b.String()
+}
+
+func (m Model) renderPerformerTile(index int, item browse.PerformerItem) string {
+	selected := index == m.cursor
+	style := lipgloss.NewStyle().
+		Width(gridTileWidth).
+		Height(gridTileRows).
+		Border(lipgloss.NormalBorder()).
+		Padding(0, 1)
+	if selected {
+		style = style.BorderForeground(lipgloss.Color("12")).Bold(true)
+	} else {
+		style = style.BorderForeground(lipgloss.Color("8"))
+	}
+
+	return style.Render(strings.Join([]string{
+		fitBlock("[performer]", gridTileWidth-4, gridCoverRows),
+		compactText(item.Name, gridTileWidth-4),
+		"rating: " + formatRating(item.Rating),
 	}, "\n")) + strings.Repeat(" ", gridTileGap)
 }
 
@@ -791,23 +844,17 @@ func (m Model) renderSelectedDetails() string {
 	if item.Duration > 0 {
 		lines = append(lines, "Duration: "+formatDuration(item.Duration))
 	}
-	if item.Date != "" {
-		lines = append(lines, "Date: "+item.Date)
+	if year := sceneYear(item.Date); year != "" {
+		lines = append(lines, "Year: "+year)
 	}
 	if item.Studio != "" {
 		lines = append(lines, "Studio: "+item.Studio)
 	}
-	lines = append(lines, m.renderPerformerDetails(item.Performers)...)
 	if len(item.Tags) > 0 {
 		lines = append(lines, "Tags: "+strings.Join(item.Tags, ", "))
 	}
-	lines = append(lines, "")
-	lines = append(lines, "Scene: r rating, d delete")
 	lines = append(lines, "Performers:")
 	lines = append(lines, m.renderPerformerDetails(item.Performers)...)
-	if m.detailEditMode != "" {
-		lines = append(lines, "Input: "+m.detailEditInput)
-	}
 	if m.confirmDelete {
 		lines = append(lines, "Delete scene? y/N")
 	}
@@ -906,6 +953,14 @@ func (m Model) executeInput() (tea.Model, tea.Cmd) {
 		return m, m.refresh()
 	case "random":
 		return m.executeRandom(cmd.Args)
+	case "rating":
+		return m.executeRatingCommand(cmd.Args)
+	case "performers":
+		return m.executePerformersCommand(cmd.Args)
+	case "back":
+		return m.executeBackCommand(cmd.Args)
+	case "delete":
+		return m.executeDeleteCommand(cmd.Args)
 	case "clear":
 		m.query = browse.Query{Page: 1, PerPage: 40}
 		return m, m.refresh()
@@ -948,8 +1003,6 @@ func (m Model) executeSetSceneRating(rating int) (tea.Model, tea.Cmd) {
 		m.status = "No scene selected"
 		return m, nil
 	}
-	m.detailEditMode = ""
-	m.detailEditInput = ""
 	return m, func() tea.Msg {
 		if err := m.editor.SetSceneRating(m.ctx, item.ID, rating); err != nil {
 			return statusMsg{status: err.Error()}
@@ -957,6 +1010,87 @@ func (m Model) executeSetSceneRating(rating int) (tea.Model, tea.Cmd) {
 		result, err := m.browser.Search(m.ctx, m.query)
 		return resultMsg{result: result, err: err, status: "Scene rating updated"}
 	}
+}
+
+func (m Model) executeRatingCommand(args []string) (tea.Model, tea.Cmd) {
+	if len(args) != 1 {
+		m.status = "Usage: rating <score>"
+		return m, nil
+	}
+	rating, err := parseRatingArg(args[0])
+	if err != nil {
+		m.status = err.Error()
+		return m, nil
+	}
+	if m.inPerformerGrid() {
+		return m.executeSetPerformerRating(rating)
+	}
+	return m.executeSetSceneRating(rating)
+}
+
+func parseRatingArg(raw string) (int, error) {
+	rating, err := strconv.Atoi(strings.TrimSpace(raw))
+	if err != nil || rating < 0 || rating > 100 {
+		return 0, fmt.Errorf("Rating must be between 0 and 100")
+	}
+	return rating, nil
+}
+
+func (m Model) executePerformersCommand(args []string) (tea.Model, tea.Cmd) {
+	if len(args) != 0 {
+		m.status = "Usage: performers"
+		return m, nil
+	}
+	item, ok := m.selectedItem()
+	if !ok {
+		m.status = "No scene selected"
+		return m, nil
+	}
+	m.sceneCursor = m.cursor
+	m.sceneGridStart = m.gridStart
+	m.performers = append([]browse.PerformerItem(nil), item.Performers...)
+	m.grid = gridPerformers
+	m.cursor = 0
+	m.gridStart = 0
+	m.showDetails = false
+	m.confirmDelete = false
+	m.status = fmt.Sprintf("%d performers", len(m.performers))
+	return m, nil
+}
+
+func (m Model) executeBackCommand(args []string) (tea.Model, tea.Cmd) {
+	if len(args) != 0 {
+		m.status = "Usage: back"
+		return m, nil
+	}
+	if !m.inPerformerGrid() {
+		m.status = "Already in scene grid"
+		return m, nil
+	}
+	m.grid = gridScenes
+	m.performers = nil
+	m.cursor = m.sceneCursor
+	m.gridStart = m.sceneGridStart
+	m.status = fmt.Sprintf("%d results", m.result.Total)
+	return m, m.loadVisibleCovers()
+}
+
+func (m Model) executeDeleteCommand(args []string) (tea.Model, tea.Cmd) {
+	if len(args) != 0 {
+		m.status = "Usage: delete"
+		return m, nil
+	}
+	if m.gridItemCount() == 0 {
+		m.status = "Nothing selected"
+		return m, nil
+	}
+	m.confirmDelete = true
+	if m.inPerformerGrid() {
+		m.status = "Delete performer? y/N"
+	} else {
+		m.status = "Delete scene? y/N"
+	}
+	return m, nil
 }
 
 func (m Model) executeDeleteSelectedScene() (tea.Model, tea.Cmd) {
@@ -985,33 +1119,50 @@ func (m Model) executeSetPerformerRating(rating int) (tea.Model, tea.Cmd) {
 		m.status = "Editing is unavailable"
 		return m, nil
 	}
-	item, ok := m.selectedItem()
-	if !ok || len(item.Performers) == 0 {
+	performer, ok := m.selectedPerformer()
+	if !ok {
 		m.status = "No performer selected"
 		return m, nil
 	}
-	cursor := m.performerCursor
-	if cursor < 0 {
-		cursor = 0
+	if m.inPerformerGrid() {
+		m.performers[m.cursor].Rating = &rating
 	}
-	if cursor >= len(item.Performers) {
-		cursor = len(item.Performers) - 1
-	}
-	performer := item.Performers[cursor]
-	m.detailEditMode = ""
-	m.detailEditInput = ""
 	return m, func() tea.Msg {
 		if err := m.editor.SetPerformerRating(m.ctx, performer.ID, rating); err != nil {
 			return statusMsg{status: err.Error()}
 		}
-		result, err := m.browser.Search(m.ctx, m.query)
-		return resultMsg{result: result, err: err, status: "Performer rating updated"}
+		return statusMsg{status: "Performer rating updated"}
+	}
+}
+
+func (m Model) executeDeleteSelectedPerformer() (tea.Model, tea.Cmd) {
+	if m.editor == nil {
+		m.status = "Editing is unavailable"
+		return m, nil
+	}
+	performer, ok := m.selectedPerformer()
+	if !ok {
+		m.status = "No performer selected"
+		return m, nil
+	}
+	index := m.cursor
+	m.confirmDelete = false
+	m.performers = append(m.performers[:index], m.performers[index+1:]...)
+	if m.cursor >= len(m.performers) && m.cursor > 0 {
+		m.cursor--
+	}
+	m.gridStart = m.gridStartForCursor(m.cursor)
+	return m, func() tea.Msg {
+		if err := m.editor.DeletePerformer(m.ctx, performer.ID); err != nil {
+			return statusMsg{status: err.Error()}
+		}
+		return statusMsg{status: "Performer deleted"}
 	}
 }
 
 func (m Model) executeRandom(args []string) (tea.Model, tea.Cmd) {
 	if len(args) > 1 {
-		m.status = "Usage: /random <n>"
+		m.status = "Usage: random <n>"
 		return m, nil
 	}
 
@@ -1019,7 +1170,7 @@ func (m Model) executeRandom(args []string) (tea.Model, tea.Cmd) {
 	if len(args) == 1 {
 		n, err := strconv.Atoi(args[0])
 		if err != nil || n <= 0 {
-			m.status = "Usage: /random <n>"
+			m.status = "Usage: random <n>"
 			return m, nil
 		}
 		limit = n
@@ -1053,16 +1204,22 @@ func (m Model) executePlay() (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	m.status = "Playing: " + item.Title
-	return m, func() tea.Msg {
-		err := m.player.Play(m.ctx, item)
-		return playMsg{item: item, err: err}
+	play := &playState{
+		item:     item,
+		started:  time.Now(),
+		duration: durationFromSeconds(item.Duration),
 	}
+	m.play = play
+	m.status = formatPlayProgressStatus(item, 0, play.duration)
+	return m, tea.Batch(func() tea.Msg {
+		err := m.player.Play(m.ctx, item)
+		return playMsg{play: play, item: item, err: err}
+	}, pollPlayProgress(play))
 }
 
 func (m Model) executeScan() (tea.Model, tea.Cmd) {
 	if m.scanner == nil {
-		m.status = "/scan is unavailable: check media_dirs and ffprobe_path"
+		m.status = "scan is unavailable: check media_dirs and ffprobe_path"
 		return m, nil
 	}
 	if m.scan != nil {
@@ -1085,6 +1242,33 @@ type scanState struct {
 	current  scanner.Progress
 	finished bool
 	result   scanner.Result
+}
+
+type playState struct {
+	mu       sync.Mutex
+	item     browse.SceneItem
+	started  time.Time
+	duration time.Duration
+	finished bool
+}
+
+func (p *playState) setDone() {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.finished = true
+}
+
+func (p *playState) done() bool {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.finished
+}
+
+func (p *playState) elapsed() time.Duration {
+	if p.started.IsZero() {
+		return 0
+	}
+	return time.Since(p.started)
 }
 
 func (s *scanState) setProgress(progress scanner.Progress) {
@@ -1138,6 +1322,7 @@ type coverMsg struct {
 }
 
 type playMsg struct {
+	play *playState
 	item browse.SceneItem
 	err  error
 }
@@ -1156,10 +1341,22 @@ type scanProgressMsg struct {
 	progress scanner.Progress
 }
 
+type playProgressMsg struct {
+	play    *playState
+	elapsed time.Duration
+}
+
 func pollScanProgress(scan *scanState) tea.Cmd {
 	return func() tea.Msg {
 		time.Sleep(scanProgressInterval)
 		return scanProgressMsg{scan: scan, progress: scan.progress()}
+	}
+}
+
+func pollPlayProgress(play *playState) tea.Cmd {
+	return func() tea.Msg {
+		time.Sleep(playProgressInterval)
+		return playProgressMsg{play: play, elapsed: play.elapsed()}
 	}
 }
 
@@ -1227,8 +1424,22 @@ func (m Model) selectedItem() (browse.SceneItem, bool) {
 	return m.result.Items[m.cursor], true
 }
 
+func (m Model) selectedPerformer() (browse.PerformerItem, bool) {
+	if m.inPerformerGrid() {
+		if m.cursor < 0 || m.cursor >= len(m.performers) {
+			return browse.PerformerItem{}, false
+		}
+		return m.performers[m.cursor], true
+	}
+	item, ok := m.selectedItem()
+	if !ok || m.performerCursor < 0 || m.performerCursor >= len(item.Performers) {
+		return browse.PerformerItem{}, false
+	}
+	return item.Performers[m.performerCursor], true
+}
+
 func (m *Model) loadVisibleCovers() tea.Cmd {
-	if m.covers == nil {
+	if m.covers == nil || m.inPerformerGrid() {
 		return nil
 	}
 
@@ -1365,14 +1576,61 @@ func kittyCapabilityString(capability picture.KittyCapability) string {
 
 func formatDuration(seconds float64) string {
 	if seconds <= 0 {
-		return "--:--"
+		return "--"
 	}
-	total := int(seconds)
-	h := total / 3600
-	min := (total % 3600) / 60
-	sec := total % 60
-	if h > 0 {
-		return fmt.Sprintf("%d:%02d:%02d", h, min, sec)
+	return fmt.Sprintf("%.1fh", seconds/3600)
+}
+
+func formatSceneSummary(item browse.SceneItem) string {
+	duration := formatDuration(item.Duration)
+	year := sceneYear(item.Date)
+	if year == "" {
+		return duration
 	}
-	return fmt.Sprintf("%02d:%02d", min, sec)
+	return duration + "/" + year
+}
+
+func sceneYear(date string) string {
+	date = strings.TrimSpace(date)
+	if len(date) < 4 {
+		return ""
+	}
+	year := date[:4]
+	for _, ch := range year {
+		if ch < '0' || ch > '9' {
+			return ""
+		}
+	}
+	return year
+}
+
+func durationFromSeconds(seconds float64) time.Duration {
+	if seconds <= 0 {
+		return 0
+	}
+	return time.Duration(seconds * float64(time.Second))
+}
+
+func formatPlayProgressStatus(item browse.SceneItem, elapsed, duration time.Duration) string {
+	const width = 12
+	if elapsed < 0 {
+		elapsed = 0
+	}
+
+	filled := 0
+	percent := "--"
+	if duration > 0 {
+		if elapsed > duration {
+			elapsed = duration
+		}
+		ratio := float64(elapsed) / float64(duration)
+		filled = int(ratio * width)
+		if filled > width {
+			filled = width
+		}
+		percent = fmt.Sprintf("%d%%", int(ratio*100))
+	}
+
+	bar := strings.Repeat("=", filled) + strings.Repeat("-", width-filled)
+	return fmt.Sprintf("Playing: %s [%s] %s", item.Title, bar, percent)
 }

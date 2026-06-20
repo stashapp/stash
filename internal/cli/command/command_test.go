@@ -1,12 +1,9 @@
 package command
 
-import (
-	"errors"
-	"testing"
-)
+import "testing"
 
 func TestParse(t *testing.T) {
-	cmd, err := Parse("/search tag:demo alice")
+	cmd, err := Parse("search tag:demo alice")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -18,9 +15,9 @@ func TestParse(t *testing.T) {
 	}
 }
 
-func TestParseRejectsPlainInput(t *testing.T) {
-	_, err := Parse("search")
-	if !errors.Is(err, ErrNotCommand) {
-		t.Fatalf("error = %v, want ErrNotCommand", err)
+func TestParseRejectsEmptyInput(t *testing.T) {
+	_, err := Parse("")
+	if err == nil {
+		t.Fatal("expected empty command error")
 	}
 }

@@ -11,9 +11,9 @@ type Command struct {
 	Raw  string
 }
 
-var ErrNotCommand = errors.New("input is not a slash command")
+var ErrNotCommand = errors.New("input is not a command")
 
-var completableCommands = []string{"search", "scan", "random", "clear", "help"}
+var completableCommands = []string{"search", "scan", "random", "clear", "rating", "performers", "delete", "back", "help"}
 
 func CompletableCommands() []string {
 	return append([]string(nil), completableCommands...)
@@ -21,13 +21,13 @@ func CompletableCommands() []string {
 
 func Parse(input string) (Command, error) {
 	input = strings.TrimSpace(input)
-	if !strings.HasPrefix(input, "/") {
+	if input == "" {
 		return Command{}, ErrNotCommand
 	}
 
-	fields := strings.Fields(strings.TrimPrefix(input, "/"))
+	fields := strings.Fields(input)
 	if len(fields) == 0 {
-		return Command{}, errors.New("slash command cannot be empty")
+		return Command{}, errors.New("command cannot be empty")
 	}
 
 	return Command{
@@ -38,5 +38,5 @@ func Parse(input string) (Command, error) {
 }
 
 func Help() string {
-	return ":q, /search <query>, /random <n>, /clear, /scan, /help"
+	return ":q, search <query>, random <n>, rating <score>, performers, delete, back, clear, scan, help"
 }

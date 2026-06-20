@@ -127,6 +127,15 @@ func (s *Service) DeleteScene(ctx context.Context, sceneID int) error {
 	})
 }
 
+func (s *Service) DeletePerformer(ctx context.Context, performerID int) error {
+	return s.repo.WithTxn(ctx, func(ctx context.Context) error {
+		if err := s.repo.Performer.Destroy(ctx, performerID); err != nil {
+			return fmt.Errorf("delete performer: %w", err)
+		}
+		return nil
+	})
+}
+
 func (s *Service) SetPerformerRating(ctx context.Context, performerID int, rating int) error {
 	if err := validateRating(rating); err != nil {
 		return err
