@@ -533,12 +533,17 @@ export const LightboxComponent: React.FC<IProps> = ({
   const currentIndex = index === null ? initialIndex : index;
 
   useEffect(() => {
+    // Don't auto-close while images are still loading. Some entry points open
+    // the lightbox with an empty image list and isLoading=true, then populate
+    // it asynchronously. Only an empty list *after* loading means the last
+    // image was deleted.
+    if (isLoading) return;
     if (images.length === 0) {
       close();
     } else if (index !== null && index >= images.length) {
       setIndex(images.length - 1);
     }
-  }, [images.length, index, close]);
+  }, [images.length, index, close, isLoading]);
 
   function gotoPage(imageIndex: number) {
     const indexInPage = (imageIndex - 1) % pageSize;
