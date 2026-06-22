@@ -17,6 +17,7 @@ export const useLightbox = (
       page: state.page,
       pages: state.pages,
       pageSize: state.pageSize,
+      totalCount: state.totalCount,
       slideshowEnabled: state.slideshowEnabled,
       onClose: state.onClose,
     });
@@ -28,6 +29,7 @@ export const useLightbox = (
     state.page,
     state.pages,
     state.pageSize,
+    state.totalCount,
     state.slideshowEnabled,
     state.onClose,
   ]);
@@ -40,10 +42,18 @@ export const useLightbox = (
         page: props.page ?? state.page,
         pages: props.pages ?? state.pages,
         pageSize: props.pageSize ?? state.pageSize,
+        totalCount: props.totalCount ?? state.totalCount,
         chapters: chapters,
       });
     },
-    [setLightboxState, state.page, state.pages, state.pageSize, chapters]
+    [
+      setLightboxState,
+      state.page,
+      state.pages,
+      state.pageSize,
+      state.totalCount,
+      chapters,
+    ]
   );
   return show;
 };
@@ -83,7 +93,9 @@ export const useGalleriesLightbox = () => {
     if (!active.current) return;
     const images = data?.findImages?.images;
     if (!images) return;
-    setLightboxState({ images });
+    // totalCount drives the lightbox position counter; keep it in sync with the
+    // live query so it stays correct after edits that refetch (e.g. deletion).
+    setLightboxState({ images, totalCount: data?.findImages.count });
   }, [data, setLightboxState]);
 
   function loadPage(page: number) {
@@ -117,6 +129,7 @@ export const useGalleriesLightbox = () => {
         page,
         pages,
         pageSize,
+        totalCount,
         chapters: current.chapters,
         slideshowEnabled: current.slideshowEnabled,
         slideshowAutostart: current.slideshowAutostart,
