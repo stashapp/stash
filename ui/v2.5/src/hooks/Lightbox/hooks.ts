@@ -61,7 +61,7 @@ export const useGalleriesLightbox = () => {
   const { setLightboxState } = useLightboxContext();
 
   const pageSize = 40;
-  const [fetchImages] = GQL.useFindImagesLazyQuery();
+  const [fetchImages, { data }] = GQL.useFindImagesLazyQuery();
 
   // details of the gallery currently shown in the lightbox, used for paging
   const active = useRef<{
@@ -72,6 +72,19 @@ export const useGalleriesLightbox = () => {
     page: number;
     pages: number;
   }>();
+
+  // Keep the lightbox images in sync with the live query result. The lazy query
+  // stays subscribed after execution, so its data updates whenever the Apollo
+  // cache changes (e.g. rating an image from inside the lightbox evicts and
+  // refetches findImages). Push those updates into the lightbox state so edits
+  // are reflected immediately, mirroring useLightbox above. Without this the
+  // images are a one-shot snapshot taken at fetch time and never refresh.
+  useEffect(() => {
+    if (!active.current) return;
+    const images = data?.findImages?.images;
+    if (!images) return;
+    setLightboxState({ images });
+  }, [data, setLightboxState]);
 
   function loadPage(page: number) {
     const current = active.current;
