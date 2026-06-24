@@ -98,6 +98,11 @@
       width: auto;
     }
 
+    .delete-button,
+    button.delete-button:hover {
+      color: $danger;
+    }
+
     &-left {
       display: flex;
       flex-direction: column;
