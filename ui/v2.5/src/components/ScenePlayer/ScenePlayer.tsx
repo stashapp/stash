@@ -269,6 +269,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
     const started = useRef(false);
     const auto = useRef(false);
+    // durable autostart intent: unlike `auto`, this is not consumed by the
+    // one-shot play effect, so it survives source failover (e.g. transcode fallback)
+    const autostartIntent = useRef(false);
     const interactiveReady = useRef(false);
     const minimumPlayPercent = uiConfig?.minimumPlayPercent ?? 0;
     const trackActivity = uiConfig?.trackActivity ?? true;
@@ -714,6 +717,15 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         buttonEnabled ||
         (interfaceConfig?.autostartVideo ?? false) ||
         _initialTimestamp > 0;
+      autostartIntent.current = auto.current;
+
+      // let the source selector know whether playback is intended, so it doesn't
+      // auto-start during source failover/preload (e.g. transcode fallback in Safari).
+      // uses autostartIntent (not auto) because auto is cleared by the one-shot play
+      // effect before failover occurs; started covers mid-playback source swaps.
+      sourceSelector.setShouldAutoplay(
+        () => autostartIntent.current || started.current
+      );
 
       player.ready(() => {
         player.vttThumbnails().src(scene.paths.vtt ?? null);
