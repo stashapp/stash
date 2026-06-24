@@ -22,8 +22,10 @@ services:
       - STASH_CACHE=/cache/
       ## Adjust below to change default port (9999)
       - STASH_PORT=9999
+      ## Set your timezone, e.g. America/New_York or Europe/Berlin
+      ## see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+      - TZ=Etc/UTC
     volumes:
-      - /etc/localtime:/etc/localtime:ro
       ## Adjust below paths (the left part) to your liking.
       ## E.g. you can change ./config:/root/.stash to ./stash:/root/.stash
       ## The left part is the path on your host, the right part is the path in the stash container.
