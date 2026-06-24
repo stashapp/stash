@@ -177,18 +177,15 @@ export const SettingsPluginsPanel: React.FC = () => {
       const query = filter.toLowerCase();
       const visiblePlugins = (data?.plugins ?? [])
         .slice()
-        .sort((a, b) => {
-          // keep enabled plugins above disabled ones, then sort by name
-          if (a.enabled !== b.enabled) return a.enabled ? -1 : 1;
-          return a.name.localeCompare(b.name);
-        })
+        .sort((a, b) => a.name.localeCompare(b.name))
         .filter((plugin) => plugin.name.toLowerCase().includes(query));
 
       const elements = visiblePlugins.map((plugin) => (
         <SettingGroup
           key={plugin.id}
-          collapsible
-          collapsedDefault
+          // only collapsible if there are hooks or settings to show
+          collapsible={!!(plugin.hooks?.length || plugin.settings?.length)}
+          collapsedDefault={!!(plugin.hooks?.length || plugin.settings?.length)}
           settingProps={{
             heading: `${plugin.name} ${
               plugin.version ? `(${plugin.version})` : undefined
