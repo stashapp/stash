@@ -74,7 +74,6 @@ func (t *GenerateMarkersTask) generateSpecificMarker(ctx context.Context, marker
 
 	if err := t.generateMarker(videoFile, scene, marker); err != nil {
 		logger.Errorf("[generator] error generating marker files for scene (%d) marker (%d) at %s: %v", scene.ID, marker.ID, formatSeconds(float64(marker.Seconds)), err)
-		logErrorOutput(err)
 	}
 }
 
@@ -116,7 +115,6 @@ func (t *GenerateMarkersTask) generateSceneMarkers(ctx context.Context, scene *m
 
 		if err := t.generateMarker(videoFile, scene, sceneMarker); err != nil {
 			logger.Errorf("[generator] error generating marker files for scene (%d) marker (%d) at %s: %v", scene.ID, sceneMarker.ID, formatSeconds(float64(sceneMarker.Seconds)), err)
-			logErrorOutput(err)
 		}
 	}
 }
@@ -134,19 +132,22 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *models.VideoFile, scene 
 
 	if t.VideoPreview {
 		if err := g.MarkerPreviewVideo(context.TODO(), videoFile.Path, sceneHash, seconds, sceneMarker.EndSeconds, instance.Config.GetPreviewAudio()); err != nil {
-			return fmt.Errorf("failed to generate marker video : %w", err)
+			logger.Errorf("[generator] failed to generate marker video for scene (%d) marker (%d) at %s: %v", scene.ID, sceneMarker.ID, formatSeconds(float64(sceneMarker.Seconds)), err)
+			logErrorOutput(err)
 		}
 	}
 
 	if t.ImagePreview {
 		if err := g.SceneMarkerWebp(context.TODO(), videoFile.Path, sceneHash, seconds); err != nil {
-			return fmt.Errorf("failed to generate marker image: %w", err)
+			logger.Errorf("[generator] failed to generate marker image for scene (%d) marker (%d) at %s: %v", scene.ID, sceneMarker.ID, formatSeconds(float64(sceneMarker.Seconds)), err)
+			logErrorOutput(err)
 		}
 	}
 
 	if t.Screenshot {
 		if err := g.SceneMarkerScreenshot(context.TODO(), videoFile.Path, sceneHash, seconds, videoFile.Width); err != nil {
-			return fmt.Errorf("failed to generate marker screenshot: %w", err)
+			logger.Errorf("[generator] failed to generate marker screenshot for scene (%d) marker (%d) at %s: %v", scene.ID, sceneMarker.ID, formatSeconds(float64(sceneMarker.Seconds)), err)
+			logErrorOutput(err)
 		}
 	}
 
