@@ -196,9 +196,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
         <Setting
           heading={
-            <>
-              <FormattedMessage id="config.general.ffmpeg.download_ffmpeg.heading" />
-            </>
+            <FormattedMessage id="config.general.ffmpeg.download_ffmpeg.heading" />
           }
           subHeadingID="config.general.ffmpeg.download_ffmpeg.description"
         >
@@ -422,7 +420,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
             <VideoPreviewInput value={value ?? {}} setValue={setValue} />
           )}
           renderValue={() => {
-            return <></>;
+            return null;
           }}
         />
 

@@ -108,62 +108,60 @@ export const SettingsSecurityPanel: React.FC = () => {
   if (loading) return <LoadingIndicator />;
 
   return (
-    <>
-      <SettingSection headingID="config.general.auth.authentication">
-        <ModalSetting<AuthenticationSettingsInput>
-          id="authentication-settings"
-          headingID="config.general.auth.credentials.heading"
-          subHeadingID="config.general.auth.credentials.description"
-          value={{
-            username: general.username,
-            password: general.password,
-          }}
-          onChange={(v) => saveGeneral(v)}
-          renderField={(value, setValue) => (
-            <AuthenticationInput value={value ?? {}} setValue={setValue} />
-          )}
-          renderValue={(v) => {
-            if (v?.username && v?.password)
-              return <span>{v?.username ?? ""}</span>;
-            return <></>;
-          }}
-        />
+    <SettingSection headingID="config.general.auth.authentication">
+      <ModalSetting<AuthenticationSettingsInput>
+        id="authentication-settings"
+        headingID="config.general.auth.credentials.heading"
+        subHeadingID="config.general.auth.credentials.description"
+        value={{
+          username: general.username,
+          password: general.password,
+        }}
+        onChange={(v) => saveGeneral(v)}
+        renderField={(value, setValue) => (
+          <AuthenticationInput value={value ?? {}} setValue={setValue} />
+        )}
+        renderValue={(v) => {
+          if (v?.username && v?.password)
+            return <span>{v?.username ?? ""}</span>;
+          return null;
+        }}
+      />
 
-        <div className="setting" id="apikey">
-          <div>
-            <h3>{intl.formatMessage({ id: "config.general.auth.api_key" })}</h3>
+      <div className="setting" id="apikey">
+        <div>
+          <h3>{intl.formatMessage({ id: "config.general.auth.api_key" })}</h3>
 
-            <div className="value text-break">{apiKey}</div>
+          <div className="value text-break">{apiKey}</div>
 
-            <div className="sub-heading">
-              {intl.formatMessage({ id: "config.general.auth.api_key_desc" })}
-            </div>
-          </div>
-          <div>
-            <Button
-              disabled={!general.username || !general.password}
-              onClick={() => onGenerateAPIKey()}
-            >
-              {intl.formatMessage({
-                id: "config.general.auth.generate_api_key",
-              })}
-            </Button>
-            <Button variant="danger" onClick={() => onClearAPIKey()}>
-              {intl.formatMessage({
-                id: "config.general.auth.clear_api_key",
-              })}
-            </Button>
+          <div className="sub-heading">
+            {intl.formatMessage({ id: "config.general.auth.api_key_desc" })}
           </div>
         </div>
+        <div>
+          <Button
+            disabled={!general.username || !general.password}
+            onClick={() => onGenerateAPIKey()}
+          >
+            {intl.formatMessage({
+              id: "config.general.auth.generate_api_key",
+            })}
+          </Button>
+          <Button variant="danger" onClick={() => onClearAPIKey()}>
+            {intl.formatMessage({
+              id: "config.general.auth.clear_api_key",
+            })}
+          </Button>
+        </div>
+      </div>
 
-        <NumberSetting
-          id="maxSessionAge"
-          headingID="config.general.auth.maximum_session_age"
-          subHeadingID="config.general.auth.maximum_session_age_desc"
-          value={general.maxSessionAge ?? undefined}
-          onChange={(v) => saveGeneral({ maxSessionAge: v })}
-        />
-      </SettingSection>
-    </>
+      <NumberSetting
+        id="maxSessionAge"
+        headingID="config.general.auth.maximum_session_age"
+        subHeadingID="config.general.auth.maximum_session_age_desc"
+        value={general.maxSessionAge ?? undefined}
+        onChange={(v) => saveGeneral({ maxSessionAge: v })}
+      />
+    </SettingSection>
   );
 };

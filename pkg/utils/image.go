@@ -17,6 +17,8 @@ const imageGetTimeout = time.Second * 60
 
 const base64RE = `^data:.+\/(.+);base64,(.*)$`
 
+var base64Regex = regexp.MustCompile(base64RE)
+
 // ProcessImageInput transforms an image string either from a base64 encoded
 // string, or from a URL, and returns the image as a byte slice
 func ProcessImageInput(ctx context.Context, imageInput string) ([]byte, error) {
@@ -24,8 +26,7 @@ func ProcessImageInput(ctx context.Context, imageInput string) ([]byte, error) {
 		return []byte{}, nil
 	}
 
-	regex := regexp.MustCompile(base64RE)
-	if regex.MatchString(imageInput) {
+	if base64Regex.MatchString(imageInput) {
 		d, err := ProcessBase64Image(imageInput)
 		return d, err
 	}
@@ -63,12 +64,11 @@ func ReadImageFromURL(ctx context.Context, url string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
 		return nil, fmt.Errorf("http error %d", resp.StatusCode)
 	}
-
-	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -85,11 +85,10 @@ func ProcessBase64Image(imageString string) ([]byte, error) {
 		return nil, fmt.Errorf("empty image string")
 	}
 
-	regex := regexp.MustCompile(base64RE)
-	matches := regex.FindStringSubmatch(imageString)
+	matches := base64Regex.FindStringSubmatch(imageString)
 	var encodedString string
 	if len(matches) > 2 {
-		encodedString = regex.FindStringSubmatch(imageString)[2]
+		encodedString = matches[2]
 	} else {
 		encodedString = imageString
 	}

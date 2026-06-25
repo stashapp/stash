@@ -8,7 +8,7 @@ export const BackgroundImage: React.FC<{
 }> = PatchComponent("BackgroundImage", ({ imagePath, show, alt }) => {
   if (imagePath && show) {
     const imageURL = new URL(imagePath);
-    let isDefaultImage = imageURL.searchParams.get("default");
+    const isDefaultImage = imageURL.searchParams.get("default");
     if (!isDefaultImage) {
       return (
         <div className="background-image-container">

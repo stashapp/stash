@@ -52,7 +52,7 @@ import {
   CustomFieldsInput,
   formatCustomFieldInput,
 } from "src/components/Shared/CustomFields";
-import { cloneDeep } from "@apollo/client/utilities";
+import cloneDeep from "lodash-es/cloneDeep";
 
 const isScraper = (
   scraper: GQL.Scraper | GQL.StashBox
@@ -447,7 +447,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     setIsLoading(true);
     try {
       const result = await queryScrapePerformerURL(url);
-      if (!result.data || !result.data.scrapePerformerURL) {
+      if (!result.data?.scrapePerformerURL) {
         return;
       }
 

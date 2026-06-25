@@ -64,7 +64,7 @@ const getDurationStatus = (
 
   const matchCount = durations.filter((duration) => duration <= 5).length;
 
-  let match;
+  let match: JSX.Element | undefined;
   if (matchCount > 0)
     match = (
       <FormattedMessage
@@ -142,12 +142,11 @@ const getFingerprintStatus = (
     )
   );
 
-  const allPhashes = stashScene.files.reduce(
-    (pv: Pick<GQL.Fingerprint, "type" | "value">[], cv) => {
-      return [...pv, ...cv.fingerprints.filter((f) => f.type === "phash")];
-    },
-    []
-  );
+  const allPhashes: Pick<GQL.Fingerprint, "type" | "value">[] = [];
+
+  for (const file of stashScene.files) {
+    allPhashes.push(...file.fingerprints.filter((f) => f.type === "phash"));
+  }
 
   const phashMatches = matchPhashes(allPhashes, scene.fingerprints ?? []);
 
@@ -347,7 +346,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       return remoteField;
     }
 
-    let imgData;
+    let imgData: string | undefined;
     if (!excludedFields.cover_image && config.setCoverImage) {
       const imgurl = scene.image;
       if (imgurl) {
@@ -434,7 +433,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     t: GQL.ScrapedTag,
     createInput?: GQL.TagCreateInput
   ) {
-    const toCreate: GQL.TagCreateInput = createInput ?? { name: t.name };
+    const toCreate: GQL.TagCreateInput = createInput ?? {
+      name: t.name,
+      description: t.description ?? undefined,
+      aliases: t.alias_list?.filter((a) => a) ?? undefined,
+    };
 
     // If the tag has a remote_site_id and we have an endpoint, include the stash_id
     const endpoint = currentSource?.sourceInput.stash_box_endpoint;
@@ -899,9 +902,9 @@ export const SceneSearchResults: React.FC<ISceneSearchResults> = ({
   return (
     <ul className="pl-0 mt-3 mb-0">
       {scenes.map((s, i) => (
-        // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions, react/no-array-index-key
+        // XXbiome-ignore jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions, react/no-array-index-key: intentional
         <li
-          // eslint-disable-next-line react/no-array-index-key
+          // XXbiome-ignore react/no-array-index-key: intentional
           key={i}
           onClick={() => setSelectedResult(i)}
           className={getClassName(i)}

@@ -45,7 +45,11 @@ const sortByOptions = [
     },
   ]);
 
-const displayModeOptions = [DisplayMode.Grid, DisplayMode.Tagger];
+const displayModeOptions = [
+  DisplayMode.Grid,
+  DisplayMode.List,
+  DisplayMode.Tagger,
+];
 const criterionOptions = [
   FavoriteStudioCriterionOption,
   createMandatoryStringCriterionOption("name"),

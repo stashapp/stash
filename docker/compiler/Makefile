@@ -1,7 +1,7 @@
 host=ghcr.io
 user=stashapp
 repo=compiler
-version=13
+version=14
 
 VERSION_IMAGE = ${host}/${user}/${repo}:${version}
 LATEST_IMAGE = ${host}/${user}/${repo}:latest

@@ -11,6 +11,9 @@ import (
 	"runtime/pprof"
 	"syscall"
 
+	// fallback timezone database for systems without tzdata installed
+	_ "time/tzdata"
+
 	"github.com/spf13/pflag"
 
 	"github.com/stashapp/stash/internal/api"
@@ -148,7 +151,7 @@ func recoverPanic() {
 		exitCode = 1
 		logger.Errorf("panic: %v\n%s", err, debug.Stack())
 		if desktop.IsDesktop() {
-			desktop.FatalError(fmt.Errorf("Panic: %v", err))
+			desktop.FatalError(fmt.Errorf("panic: %v", err))
 		}
 	}
 }

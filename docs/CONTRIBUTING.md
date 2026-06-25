@@ -1,35 +1,53 @@
-## Goals and design vision
+# Contributing to Stash
 
-The goal of stash is to be:
-- an application for organising and viewing adult content - currently this is videos and images, in future this will be extended to include audio and text content
-  - organising includes scraping of metadata from websites and metadata repositories
-- free and open-source
-- portable and offline - can be run on a USB stick without needing to install dependencies (with the exception of ffmpeg)
-- minimal, but highly extensible. The core feature set should be the minimum required to achieve the primary goal, while being extensible enough to extend via plugins
-- easy to learn and use, with minimal technical knowledge required
+## AI Usage Policy
 
-The core stash system is not intended for:
-- managing downloading of content
-- managing content on external websites
-- publically sharing content
+Please see our [AI Usage Policy](/docs/AI_POLICY.md) for guidelines on the use of AI in contributions to this project.
+
+## Issues
+
+Bug reports and feature requests must use descriptive and concise titles and follow the provided templates. Please use the search function to make sure that you are not submitting duplicates, and that a similar report or request has not already been resolved or rejected.
+
+All issues must be written by humans. Fully AI-generated issues will be closed without comment.
+
+## Pull Requests
+
+All pull requests must use descriptive and concise titles and follow the provided templates. In addition, they must follow the the following guidelines:
+
+- You must link to an open issue that pull request addresses (see [GitHub documentation](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue) on how to do that).
+- Pull requests must be focused on a single issue or feature. Large, multi-purpose pull requests will be rejected.
+- Large features must be discussed with maintainers before submitting a pull request to ensure it fits with the overall design vision of the project. Failure to do so may result in the pull request being rejected.
+- Pull requests must include code tests that sufficiently cover the changes made.
+- You must detail the manual testing done and describe the steps taken to sufficiently verify the changes.
+- You must be able to explain any line of code and design decision during the review process.
+- You may not have more than 3 open pull requests at a time, unless you have received explicit permission from a maintainer. If you have more than 3 open pull requests, maintainers may ask you to close some of them before they will review any of them.
+
+By submitting a pull request, you agree that you have read and understood and that you are in compliance with the guidelines outlined here, including the [AI Usage Policy](docs/AI_POLICY.md). 
+
+You also agree to license your contribution under the [AGPL](/LICENSE.md) license, and that all of your previous contributions to the project are also licensed under the AGPL.
+
+## Bounties
+
+Pull requests for bounties must be discussed with maintainers before submitting a pull request to ensure it fits with the overall design vision of the project. Failure to do so may result in the pull request being rejected.
+
+## Goals and Design Vision
+
+The goal of Stash is to be:
+- An application for organising and viewing NSFW and SFW content - currently this is videos and images, in future this will be extended to include audio and text content
+  - Organising includes scraping of metadata from websites and metadata repositories
+- Free and open-source
+- Portable and offline - can be run on a USB stick without needing to install dependencies (with the exception of FFmpeg)
+- Minimal, but highly extensible. The core feature set should be the minimum required to achieve the primary goal, while being extensible enough to extend via plugins
+- Easy to learn and use, with minimal technical knowledge required
+
+The core Stash system is not intended for:
+- Managing downloading of content
+- Managing content on external websites
+- Publicly sharing content
 
 Other requirements:
-- support as many video and image formats as possible
-- interfaces with external systems (for example stash-box) should be made as generic as possible. 
+- Support as many video and image formats as possible
+- Interfaces with external systems (for example stash-box) should be made as generic as possible. 
 
 Design considerations:
-- features are easy to add and difficult to remove. Large superfluous features should be scrutinised and avoided where possible (eg DLNA, filename parser). Such features should be considered for third-party plugins instead.
-
-## Technical Debt
-Please be sure to consider how heavily your contribution impacts the maintainability of the project long term, sometimes less is more.  We don't want to merge collossal pull requests with hundreds of dependencies by a driveby contributor.
-
-## Contributor Checklist
-Please make sure that you've considered the following before you submit your Pull Requests as ready for merging.
-* I've run Code linters and [gofmt](https://golang.org/cmd/gofmt/) to make sure that my code is readable.
-* I have read through formerly submitted [pull requests](https://github.com/stashapp/stash/pulls) and [git issues](https://github.com/stashapp/stash/issues) to make sure that this contribution is required and isn't a duplicate. Also, so that I can manage to close any git Issues needing closed relating to this feature submission.
-* I  commented adequately on my code with the expectation in mind that anyone else should be able to look at this code I've submitted and know exactly what's happening and what the expectations are.
-
-### Legal Agreements
-* I acknowledge that if applicable to me, submitting and subsequent acceptance of this Pull Request I, the code contributor of this Pull Request, agree and acknowledge my understanding that the new code license has now been updated to [AGPL](/LICENSE.md). I agree that all code before this Pull Request, which I've previously submitted, is now to be re-licensed under the new license AGPL and no longer the former MIT license.
-
-**In case you were unable to follow any of the above include an explanation as to why not in your Pull Request.**
+- Features are easy to add and difficult to remove. Large superfluous features should be scrutinised and avoided where possible (e.g. DLNA, filename parser). Such features should be considered for third-party plugins instead.

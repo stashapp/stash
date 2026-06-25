@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	"sync"
 	// "github.com/sasha-s/go-deadlock" // if you have deadlock issues
@@ -42,6 +43,9 @@ const (
 	Username            = "username"
 	Password            = "password"
 	MaxSessionAge       = "max_session_age"
+
+	SignedURLExpiry        = "signed_url_expiry"
+	signedURLExpiryDefault = 60 * 60 * 4 // 4 hours in seconds
 
 	// SFWContentMode mode config key
 	SFWContentMode = "sfw_content_mode"
@@ -317,7 +321,7 @@ const (
 // slice default values
 var (
 	defaultVideoExtensions   = []string{"m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm", "f4v"}
-	defaultImageExtensions   = []string{"png", "jpg", "jpeg", "gif", "webp", "avif"}
+	defaultImageExtensions   = []string{"png", "jpg", "jpeg", "gif", "webp", "avif", "jxl"}
 	defaultGalleryExtensions = []string{"zip", "cbz"}
 	defaultMenuItems         = []string{"scenes", "images", "groups", "markers", "galleries", "performers", "studios", "tags"}
 )
@@ -1245,6 +1249,21 @@ func (i *Config) GetMaxSessionAge() int {
 	v := i.forKey(MaxSessionAge)
 	if v.Exists(MaxSessionAge) {
 		ret = v.Int(MaxSessionAge)
+	}
+
+	return ret
+}
+
+// GetSignedURLExpiry gets the expiry time for signed URLs, in seconds.
+// Defaults to 4 hours to accommodate long video playback sessions.
+func (i *Config) GetSignedURLExpiry() time.Duration {
+	i.RLock()
+	defer i.RUnlock()
+
+	ret := signedURLExpiryDefault * time.Second
+	v := i.forKey(SignedURLExpiry)
+	if v.Exists(SignedURLExpiry) {
+		ret = time.Duration(v.Int(SignedURLExpiry)) * time.Second
 	}
 
 	return ret
