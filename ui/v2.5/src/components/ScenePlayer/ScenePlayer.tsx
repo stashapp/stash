@@ -662,7 +662,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         return languageCode;
       }
 
-      if (scene.captions && scene.captions.length > 0) {
+      if (scene.paths.caption && scene.captions && scene.captions.length > 0) {
         const languageCode = getDefaultLanguageCode();
         let hasDefault = false;
 
@@ -678,9 +678,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
           if (setAsDefault) {
             hasDefault = true;
           }
+          const captionURL = new URL(scene.paths.caption, window.location.href);
+          captionURL.searchParams.set("lang", lang);
+          captionURL.searchParams.set("type", caption.caption_type);
+
           sourceSelector.addTextTrack(
             {
-              src: `${scene.paths.caption}?lang=${lang}&type=${caption.caption_type}`,
+              src: captionURL.toString(),
               kind: "captions",
               srclang: lang,
               label: label,
