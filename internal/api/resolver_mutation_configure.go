@@ -301,6 +301,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	r.setConfigInt(config.SpriteScreenshotSize, input.SpriteScreenshotSize)
 
 	r.setConfigBool(config.TranscodeHardwareAcceleration, input.TranscodeHardwareAcceleration)
+	r.setConfigBool(config.GenerationHardwareAcceleration, input.GenerationHardwareAcceleration)
 	if input.MaxTranscodeSize != nil {
 		c.SetString(config.MaxTranscodeSize, input.MaxTranscodeSize.String())
 	}

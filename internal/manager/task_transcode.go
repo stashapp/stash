@@ -73,7 +73,9 @@ func (t *GenerateTranscodeTask) Start(ctx context.Context) {
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 	transcodeSize := config.GetInstance().GetMaxTranscodeSize()
 
-	w, h := videoFile.TranscodeScale(transcodeSize.GetMaxResolution())
+	maxResolution := transcodeSize.GetMaxResolution()
+
+	w, h := videoFile.TranscodeScale(maxResolution)
 
 	// if scale is being set, then we can't use stream copy
 	scaleSet := w == 0 && h == 0
@@ -86,15 +88,14 @@ func (t *GenerateTranscodeTask) Start(ctx context.Context) {
 		}
 	} else {
 		options := generate.TranscodeOptions{
-			Width:  w,
-			Height: h,
+			MaxSize: maxResolution,
 		}
 
 		if audioCodec == ffmpeg.MissingUnsupported {
 			// ffmpeg fails if it tries to transcode an unsupported audio codec
-			err = t.g.TranscodeVideo(ctx, videoFile.Path, sceneHash, options)
+			err = t.g.TranscodeVideo(ctx, videoFile.Path, videoFile.Width, videoFile.Height, sceneHash, options)
 		} else {
-			err = t.g.Transcode(ctx, videoFile.Path, sceneHash, options)
+			err = t.g.Transcode(ctx, videoFile.Path, videoFile.Width, videoFile.Height, sceneHash, options)
 		}
 	}
 

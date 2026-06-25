@@ -81,6 +81,7 @@ func (rs imageRoutes) serveThumbnail(w http.ResponseWriter, r *http.Request, img
 			InputArgs:  manager.GetInstance().Config.GetTranscodeInputArgs(),
 			OutputArgs: manager.GetInstance().Config.GetTranscodeOutputArgs(),
 			Preset:     manager.GetInstance().Config.GetPreviewPreset().String(),
+			HWAccel:    manager.GetInstance().Config.GetGenerationHardwareAcceleration(),
 		}
 
 		encoder := image.NewThumbnailEncoder(manager.GetInstance().FFMpeg, manager.GetInstance().FFProbe, clipPreviewOptions)

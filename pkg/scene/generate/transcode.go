@@ -9,26 +9,29 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
+const transcodeCRF = 23
+
 type TranscodeOptions struct {
-	Width  int
-	Height int
+	// MaxSize is the maximum resolution of the smaller dimension.
+	// 0 means no scaling.
+	MaxSize int
 }
 
-func (g Generator) Transcode(ctx context.Context, input string, hash string, options TranscodeOptions) error {
-	lockCtx := g.LockManager.ReadLock(ctx, input)
+func (g Generator) Transcode(ctx context.Context, path string, width, height int, hash string, options TranscodeOptions) error {
+	lockCtx := g.LockManager.ReadLock(ctx, path)
 	defer lockCtx.Cancel()
 
-	return g.makeTranscode(lockCtx, hash, g.transcode(input, options))
+	return g.makeTranscode(lockCtx, hash, g.transcode(path, width, height, options))
 }
 
 // TranscodeVideo transcodes the video, and removes the audio.
 // In some videos where the audio codec is not supported by ffmpeg,
 // ffmpeg fails if you try to transcode the audio
-func (g Generator) TranscodeVideo(ctx context.Context, input string, hash string, options TranscodeOptions) error {
-	lockCtx := g.LockManager.ReadLock(ctx, input)
+func (g Generator) TranscodeVideo(ctx context.Context, path string, width, height int, hash string, options TranscodeOptions) error {
+	lockCtx := g.LockManager.ReadLock(ctx, path)
 	defer lockCtx.Cancel()
 
-	return g.makeTranscode(lockCtx, hash, g.transcodeVideo(input, options))
+	return g.makeTranscode(lockCtx, hash, g.transcodeVideo(path, width, height, options))
 }
 
 // TranscodeAudio will copy the video stream as is, and transcode audio.
@@ -64,30 +67,36 @@ func (g Generator) makeTranscode(lockCtx *fsutil.LockContext, hash string, gener
 	return nil
 }
 
-func (g Generator) transcode(input string, options TranscodeOptions) generateFn {
+func (g Generator) transcode(path string, width, height int, options TranscodeOptions) generateFn {
 	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
-		var videoArgs ffmpeg.Args
-		if options.Width != 0 && options.Height != 0 {
-			var videoFilter ffmpeg.VideoFilter
-			videoFilter = videoFilter.ScaleDimensions(options.Width, options.Height)
-			videoArgs = videoArgs.VideoFilter(videoFilter)
+		targetHeight := height
+		var videoFilter ffmpeg.VideoFilter
+		if options.MaxSize != 0 && options.MaxSize < min(width, height) {
+			if width >= height {
+				targetHeight = options.MaxSize
+			} else {
+				targetHeight = ffmpeg.ScaledHeight(width, height, options.MaxSize)
+			}
 		}
 
-		videoArgs = append(videoArgs,
-			"-pix_fmt", "yuv420p",
-			"-profile:v", "high",
-			"-level", "4.2",
-			"-preset", "superfast",
-			"-crf", "23",
-		)
+		codec, fullhw := g.DetermineCodecAndHW(lockCtx, path, width, height, targetHeight)
 
-		args := transcoder.Transcode(input, transcoder.TranscodeOptions{
+		if options.MaxSize != 0 {
+			videoFilter = g.Encoder.HWMaxResFilter(codec, width, height, targetHeight, fullhw)
+		}
+
+		videoArgs := codec.ExtraArgsHQ("superfast", transcodeCRF)
+		videoArgs = videoArgs.VideoFilter(videoFilter)
+
+		extraInputArgs := g.Encoder.HWDeviceInit(g.FFMpegConfig.GetTranscodeInputArgs(), codec, fullhw)
+
+		args := transcoder.Transcode(path, transcoder.TranscodeOptions{
 			OutputPath: tmpFn,
-			VideoCodec: ffmpeg.VideoCodecLibX264,
+			VideoCodec: codec,
 			VideoArgs:  videoArgs,
 			AudioCodec: ffmpeg.AudioCodecAAC,
 
-			ExtraInputArgs:  g.FFMpegConfig.GetTranscodeInputArgs(),
+			ExtraInputArgs:  extraInputArgs,
 			ExtraOutputArgs: g.FFMpegConfig.GetTranscodeOutputArgs(),
 		})
 
@@ -95,33 +104,39 @@ func (g Generator) transcode(input string, options TranscodeOptions) generateFn 
 	}
 }
 
-func (g Generator) transcodeVideo(input string, options TranscodeOptions) generateFn {
+func (g Generator) transcodeVideo(path string, width, height int, options TranscodeOptions) generateFn {
 	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
-		var videoArgs ffmpeg.Args
-		if options.Width != 0 && options.Height != 0 {
-			var videoFilter ffmpeg.VideoFilter
-			videoFilter = videoFilter.ScaleDimensions(options.Width, options.Height)
-			videoArgs = videoArgs.VideoFilter(videoFilter)
+		targetHeight := height
+		var videoFilter ffmpeg.VideoFilter
+		if options.MaxSize != 0 && options.MaxSize < min(width, height) {
+			if width >= height {
+				targetHeight = options.MaxSize
+			} else {
+				targetHeight = ffmpeg.ScaledHeight(width, height, options.MaxSize)
+			}
 		}
 
-		videoArgs = append(videoArgs,
-			"-pix_fmt", "yuv420p",
-			"-profile:v", "high",
-			"-level", "4.2",
-			"-preset", "superfast",
-			"-crf", "23",
-		)
+		codec, fullhw := g.DetermineCodecAndHW(lockCtx, path, width, height, targetHeight)
+
+		if options.MaxSize != 0 {
+			videoFilter = g.Encoder.HWMaxResFilter(codec, width, height, targetHeight, fullhw)
+		}
+
+		videoArgs := codec.ExtraArgsHQ("superfast", transcodeCRF)
+		videoArgs = videoArgs.VideoFilter(videoFilter)
 
 		var audioArgs ffmpeg.Args
 		audioArgs = audioArgs.SkipAudio()
 
-		args := transcoder.Transcode(input, transcoder.TranscodeOptions{
+		extraInputArgs := g.Encoder.HWDeviceInit(g.FFMpegConfig.GetTranscodeInputArgs(), codec, fullhw)
+
+		args := transcoder.Transcode(path, transcoder.TranscodeOptions{
 			OutputPath: tmpFn,
-			VideoCodec: ffmpeg.VideoCodecLibX264,
+			VideoCodec: codec,
 			VideoArgs:  videoArgs,
 			AudioArgs:  audioArgs,
 
-			ExtraInputArgs:  g.FFMpegConfig.GetTranscodeInputArgs(),
+			ExtraInputArgs:  extraInputArgs,
 			ExtraOutputArgs: g.FFMpegConfig.GetTranscodeOutputArgs(),
 		})
 

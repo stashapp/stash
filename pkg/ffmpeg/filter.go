@@ -36,51 +36,48 @@ func (f VideoFilter) ScaleMaxSize(maxDimensions int) VideoFilter {
 	return f.Append(fmt.Sprintf("scale=%v:%v:force_original_aspect_ratio=decrease", maxDimensions, maxDimensions))
 }
 
-// ScaleMax returns a VideoFilter scaling to maxSize. It will scale width if it is larger than height, otherwise it will scale height.
-func (f VideoFilter) ScaleMax(inputWidth, inputHeight, maxSize int) VideoFilter {
-	// get the smaller dimension of the input
-	videoSize := inputHeight
-	if inputWidth < videoSize {
-		videoSize = inputWidth
+// ScaledHeight returns the height a source would have if scaled to targetWidth
+// with preserved aspect ratio, rounded down to an even value. Returns 0 if the
+// source has no width (e.g. an audio-only file).
+func ScaledHeight(width, height, targetWidth int) int {
+	if width == 0 {
+		return 0
+	}
+	return (targetWidth * height / width) &^ 1
+}
+
+// ScaleMax scales to reqHeight (0 = source height), optionally clamped to a
+// maxWidth x maxHeight rect. Aspect ratio is preserved.
+func (f VideoFilter) ScaleMax(width, height, reqHeight, maxWidth, maxHeight int) VideoFilter {
+	// if a rect is given, clamp to whichever edge overshoots it by more
+	if maxWidth > 0 && maxHeight > 0 {
+		// projected dimensions at reqHeight (or source height if 0)
+		target := reqHeight
+		if target == 0 {
+			target = height
+		}
+		projectedWidth := target * width / height
+
+		if target > maxHeight || projectedWidth > maxWidth {
+			// cap the edge that exceeds its limit by more
+			if target-maxHeight > projectedWidth-maxWidth {
+				return f.ScaleDimensions(-2, maxHeight)
+			}
+			return f.ScaleDimensions(maxWidth, -2)
+		}
 	}
 
-	// if maxSize is larger than the video dimension, then no-op
-	if maxSize >= videoSize || maxSize == 0 {
+	// no-op if reqHeight is larger than the smaller dimension
+	if reqHeight == 0 || reqHeight >= min(width, height) {
 		return f
 	}
 
-	// we're setting either the width or height
-	// we'll set the smaller dimesion
-	if inputWidth > inputHeight {
+	// scale the smaller dimension to reqHeight
+	if width > height {
 		// set the height
-		return f.ScaleDimensions(-2, maxSize)
+		return f.ScaleDimensions(-2, reqHeight)
 	}
-
-	return f.ScaleDimensions(maxSize, -2)
-}
-
-// ScaleMaxLM scales an image to fit within specified maximum dimensions while maintaining its aspect ratio.
-func (f VideoFilter) ScaleMaxLM(width int, height int, reqHeight int, maxWidth int, maxHeight int) VideoFilter {
-	if maxWidth == 0 || maxHeight == 0 {
-		return f.ScaleMax(width, height, reqHeight)
-	}
-
-	aspectRatio := float64(width) / float64(height)
-	desiredHeight := reqHeight
-	if desiredHeight == 0 {
-		desiredHeight = height
-	}
-	desiredWidth := int(float64(desiredHeight) * aspectRatio)
-
-	if desiredHeight <= maxHeight && desiredWidth <= maxWidth {
-		return f.ScaleMax(width, height, reqHeight)
-	}
-
-	if float64(desiredHeight-maxHeight) > float64(desiredWidth-maxWidth) {
-		return f.ScaleDimensions(-2, maxHeight)
-	} else {
-		return f.ScaleDimensions(maxWidth, -2)
-	}
+	return f.ScaleDimensions(reqHeight, -2)
 }
 
 // Fps returns a VideoFilter setting the frames per second.

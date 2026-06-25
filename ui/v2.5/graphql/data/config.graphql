@@ -26,6 +26,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   previewExcludeEnd
   previewPreset
   transcodeHardwareAcceleration
+  generationHardwareAcceleration
   maxTranscodeSize
   maxStreamingTranscodeSize
   writeImageThumbnails
