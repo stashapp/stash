@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -159,8 +160,13 @@ func (s *Scanner) detectFolderMove(ctx context.Context, file ScannedFile) (*mode
 
 				// parent folder must be missing
 				_, err = file.FS.Lstat(pf.Path)
-				if err == nil {
-					// parent folder exists, not a candidate
+				if err == nil && fsutil.NormalizePath(pf.Path) != file.Path {
+					// #4425 - if the existing folder resolves to the same path as the
+					// scanned folder once normalized (e.g. an NFD path stored before
+					// NFC normalization was introduced), treat it as a move so the
+					// stored path is updated in place rather than leaving a duplicate
+					// folder. Otherwise the folder genuinely still exists and is not a
+					// candidate.
 					detector.reject(parentFolderID)
 					continue
 				}

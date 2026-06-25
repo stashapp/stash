@@ -10,6 +10,8 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+
+	"golang.org/x/text/unicode/norm"
 )
 
 // CopyFile copies the contents of the file at srcpath to a regular file at dstpath.
@@ -180,4 +182,34 @@ func GetExeName(base string) string {
 		return base + ".exe"
 	}
 	return base
+}
+
+// NormalizePath returns path with its Unicode representation normalized to NFC
+// (composed) form on macOS, where the filesystem reports filenames in NFD
+// (decomposed) form. On other platforms the path is returned unchanged.
+//
+// macOS decomposes characters such as "が" into "か" plus a combining mark,
+// which causes byte-wise database comparisons (used by search) to miss matches
+// against the composed form that users actually type. Normalizing to NFC keeps
+// stored paths consistent with user input.
+//
+// This is only applied on macOS because its filesystems are
+// normalization-insensitive: a file stored on disk in NFD form is still found
+// when accessed via its NFC path. Applying it on platforms with
+// normalization-sensitive filesystems (e.g. Linux) would prevent files with
+// NFD names on disk from being found.
+func NormalizePath(path string) string {
+	if runtime.GOOS == "darwin" {
+		return norm.NFC.String(path)
+	}
+	return path
+}
+
+// NormalizePaths returns a new slice with NormalizePath applied to each path.
+func NormalizePaths(paths []string) []string {
+	ret := make([]string, len(paths))
+	for i, p := range paths {
+		ret[i] = NormalizePath(p)
+	}
+	return ret
 }

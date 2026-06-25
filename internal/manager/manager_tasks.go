@@ -145,7 +145,9 @@ func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error
 		ZipFileExtensions:     cfg.GetGalleryExtensions(),
 		// ScanFilters is set in ScanJob.Execute
 		// HandlerRequiredFilters is set in ScanJob.Execute
-		RootPaths: cfg.GetStashPaths().Paths(),
+		// #4425 - normalize root paths so they match the NFC-normalized paths
+		// stored during scanning (see fsutil.NormalizePath).
+		RootPaths: fsutil.NormalizePaths(cfg.GetStashPaths().Paths()),
 		Rescan:    input.Rescan,
 	}
 

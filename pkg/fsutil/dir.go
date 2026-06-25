@@ -23,6 +23,12 @@ func DirExists(path string) (bool, error) {
 
 // IsPathInDir returns true if pathToCheck is within dir.
 func IsPathInDir(dir, pathToCheck string) bool {
+	// #4425 - normalize both paths so that containment checks are not broken by
+	// NFC/NFD differences on macOS, where the filesystem may report a path in a
+	// different normalization form than the one stored or configured.
+	dir = NormalizePath(dir)
+	pathToCheck = NormalizePath(pathToCheck)
+
 	rel, err := filepath.Rel(dir, pathToCheck)
 
 	if err == nil {

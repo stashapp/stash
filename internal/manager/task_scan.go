@@ -207,13 +207,24 @@ func (j *ScanJob) queueFileFunc(ctx context.Context, f models.FS, zipFile *file.
 			return err
 		}
 
+		// #4425 - macOS reports filenames in NFD (decomposed) form, which breaks
+		// byte-wise search comparisons against the NFC form that users type.
+		// Normalize the stored path to NFC so that search and display are
+		// consistent. Filtering and filesystem access above still use the
+		// original path. Entries inside zip files are matched byte-exact, so they
+		// are left unnormalized.
+		storedPath := path
+		if zipFile == nil {
+			storedPath = fsutil.NormalizePath(path)
+		}
+
 		ff := file.ScannedFile{
 			BaseFile: &models.BaseFile{
 				DirEntry: models.DirEntry{
 					ModTime: file.ModTime(info),
 				},
-				Path:     path,
-				Basename: filepath.Base(path),
+				Path:     storedPath,
+				Basename: filepath.Base(storedPath),
 				Size:     size,
 			},
 			FS:   f,

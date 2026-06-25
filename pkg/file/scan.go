@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
@@ -609,6 +610,14 @@ func (s *Scanner) handleRename(ctx context.Context, f models.File, fp []models.F
 		info, err := fs.Lstat(other.Base().Path)
 		switch {
 		case err != nil:
+			missing = append(missing, other)
+		case other.Base().Path != f.Base().Path && fsutil.NormalizePath(other.Base().Path) == fsutil.NormalizePath(f.Base().Path):
+			// #4425 - the existing entry points to the same file under a different
+			// Unicode normalization (e.g. an NFD path stored before NFC
+			// normalization was introduced). On a normalization-insensitive
+			// filesystem both forms resolve to the same file, so treat it as a move
+			// to update the stored path to the normalized form rather than creating
+			// a duplicate entry.
 			missing = append(missing, other)
 		case strings.EqualFold(f.Base().Path, other.Base().Path):
 			// #1426 - if file exists but is a case-insensitive match for the
