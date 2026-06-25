@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { FilteredImageList } from "src/components/Images/ImageList";
@@ -22,6 +22,44 @@ export const PerformerImagesPanel: React.FC<IPerformerImagesPanel> =
     const [updatePerformer] = usePerformerUpdate();
     const filterHook = usePerformerFilterHook(performer);
 
+    const handleSetAsPerformerImage = useCallback<
+      IItemListOperation<GQL.FindImagesQueryResult>["onClick"]
+    >(
+      async (result, _filter, selectedIds) => {
+        try {
+          const [selectedId] = Array.from(selectedIds);
+          const selectedImage = result.data?.findImages.images.find(
+            (image) => image.id === selectedId
+          );
+          const imagePath = selectedImage?.paths.image;
+
+          if (!imagePath) {
+            throw new Error("Selected image does not have an image path");
+          }
+
+          const imageData = await ImageUtils.imageToDataURL(imagePath);
+          await updatePerformer({
+            variables: {
+              input: {
+                id: performer.id,
+                image: imageData,
+              },
+            },
+          });
+
+          Toast.success(
+            intl.formatMessage(
+              { id: "toast.updated_entity" },
+              { entity: intl.formatMessage({ id: "performer" }) }
+            )
+          );
+        } catch (e) {
+          Toast.error(e);
+        }
+      },
+      [Toast, intl, performer.id, updatePerformer]
+    );
+
     const extraOperations = useMemo<
       IItemListOperation<GQL.FindImagesQueryResult>[]
     >(
@@ -32,41 +70,10 @@ export const PerformerImagesPanel: React.FC<IPerformerImagesPanel> =
           }),
           isDisplayed: (_result, _filter, selectedIds) =>
             selectedIds.size === 1,
-          onClick: async (result, _filter, selectedIds) => {
-            try {
-              const [selectedId] = Array.from(selectedIds);
-              const selectedImage = result.data?.findImages.images.find(
-                (image) => image.id === selectedId
-              );
-              const imagePath = selectedImage?.paths.image;
-
-              if (!imagePath) {
-                throw new Error("Selected image does not have an image path");
-              }
-
-              const imageData = await ImageUtils.imageToDataURL(imagePath);
-              await updatePerformer({
-                variables: {
-                  input: {
-                    id: performer.id,
-                    image: imageData,
-                  },
-                },
-              });
-
-              Toast.success(
-                intl.formatMessage(
-                  { id: "toast.updated_entity" },
-                  { entity: intl.formatMessage({ id: "performer" }) }
-                )
-              );
-            } catch (e) {
-              Toast.error(e);
-            }
-          },
+          onClick: handleSetAsPerformerImage,
         },
       ],
-      [Toast, intl, performer.id, updatePerformer]
+      [handleSetAsPerformerImage, intl]
     );
 
     return (
