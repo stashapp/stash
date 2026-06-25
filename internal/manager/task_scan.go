@@ -177,7 +177,8 @@ func (j *ScanJob) scanFile(ctx context.Context, path string) (models.File, error
 		return nil, fmt.Errorf("expected file but found directory: %s", path)
 	}
 
-	if !j.scanner.AcceptEntry(ctx, path, info) {
+	const zipFilePath = ""
+	if !j.scanner.AcceptEntry(ctx, path, info, zipFilePath) {
 		return nil, fmt.Errorf("file excluded from library")
 	}
 
