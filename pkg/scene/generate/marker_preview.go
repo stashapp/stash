@@ -33,11 +33,12 @@ func markerPreviewDuration(seconds float64, endSeconds *float64, maxDuration int
 	// user data, not an error: fall back to the default duration and warn.
 	if endSeconds != nil {
 		interval := *endSeconds - seconds
-		if interval <= 0 {
+		switch {
+		case interval <= 0:
 			logger.Warnf("[generator] marker at %.2fs has non-positive interval (end=%.2f); using default duration", seconds, *endSeconds)
-		} else if maxDuration <= 0 || interval <= float64(maxDuration) {
+		case maxDuration <= 0 || interval <= float64(maxDuration):
 			duration = interval
-		} else {
+		default:
 			duration = float64(maxDuration)
 		}
 	}
