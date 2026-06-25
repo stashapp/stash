@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
 type BaseFile interface {
@@ -46,11 +47,7 @@ func convertBaseFile(f models.File) BaseFile {
 }
 
 func convertBaseFiles(files []models.File) []BaseFile {
-	ret := make([]BaseFile, len(files))
-	for i, f := range files {
-		ret[i] = convertBaseFile(f)
-	}
-	return ret
+	return sliceutil.Map(files, convertBaseFile)
 }
 
 type GalleryFile struct {
