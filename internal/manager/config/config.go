@@ -123,6 +123,12 @@ const (
 	PreviewExcludeEnd        = "preview_exclude_end"
 	previewExcludeEndDefault = "0"
 
+	MaxMarkerPreviewDuration        = "max_marker_preview_duration"
+	maxMarkerPreviewDurationDefault = 0
+
+	DefaultMarkerPreviewDuration        = "default_marker_preview_duration"
+	defaultMarkerPreviewDurationDefault = 20
+
 	WriteImageThumbnails        = "write_image_thumbnails"
 	writeImageThumbnailsDefault = true
 
@@ -1083,6 +1089,21 @@ func (i *Config) GetTranscodeHardwareAcceleration() bool {
 	return i.getBool(TranscodeHardwareAcceleration)
 }
 
+// GetMaxMarkerPreviewDuration returns the ceiling in seconds applied to
+// generated marker preview videos when the marker has an explicit end time.
+// Any value <= 0 disables the ceiling, honoring the marker's end time verbatim.
+func (i *Config) GetMaxMarkerPreviewDuration() int {
+	return i.getInt(MaxMarkerPreviewDuration)
+}
+
+// GetDefaultMarkerPreviewDuration returns the duration in seconds used for
+// marker preview videos when the marker has no usable explicit end time
+// (nil end, or end <= start). Must be a positive value; the configure
+// mutation rejects non-positive input.
+func (i *Config) GetDefaultMarkerPreviewDuration() int {
+	return i.getInt(DefaultMarkerPreviewDuration)
+}
+
 func (i *Config) GetMaxTranscodeSize() models.StreamingResolutionEnum {
 	ret := i.getString(MaxTranscodeSize)
 
@@ -1937,6 +1958,8 @@ func (i *Config) setDefaultValues() {
 	i.setDefault(PreviewExcludeStart, previewExcludeStartDefault)
 	i.setDefault(PreviewExcludeEnd, previewExcludeEndDefault)
 	i.setDefault(PreviewAudio, previewAudioDefault)
+	i.setDefault(MaxMarkerPreviewDuration, maxMarkerPreviewDurationDefault)
+	i.setDefault(DefaultMarkerPreviewDuration, defaultMarkerPreviewDurationDefault)
 	i.setDefault(SoundOnPreview, false)
 
 	i.setDefault(UseCustomSpriteInterval, UseCustomSpriteIntervalDefault)
