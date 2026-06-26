@@ -187,7 +187,7 @@ jobs:
 
     - name: Start build container
       env:
-        official-build: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/develop') || (github.event_name == 'release' && github.ref != 'refs/tags/latest_develop') }}
+        official-build: ${{ github.repository == 'stashapp/stash' && ((github.event_name == 'push' && github.ref == 'refs/heads/develop') || (github.event_name == 'release' && github.ref != 'refs/tags/latest_develop')) }}
       run: |
         mkdir -p .go-cache
         docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated --env OFFICIAL_BUILD=${{ env.official-build }} --env UPDATE_REPO=${{ github.repository }} -w /stash $COMPILER_IMAGE tail -f /dev/null
