@@ -12,13 +12,18 @@ interface IGalleryCardGrid {
   selectedIds: Set<string>;
   zoomIndex: number;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
+  onPreview?: (
+    gallery: GQL.SlimGalleryDataFragment,
+    index: number,
+    ev?: React.MouseEvent
+  ) => void;
 }
 
 const zoomWidths = [280, 340, 480, 640];
 
 export const GalleryCardGrid: React.FC<IGalleryCardGrid> = PatchComponent(
   "GalleryCardGrid",
-  ({ galleries, selectedIds, zoomIndex, onSelectChange }) => {
+  ({ galleries, selectedIds, zoomIndex, onSelectChange, onPreview }) => {
     const [componentRef, { width: containerWidth }] = useContainerDimensions();
     const cardWidth = useCardWidth(containerWidth, zoomIndex, zoomWidths);
 
@@ -34,6 +39,11 @@ export const GalleryCardGrid: React.FC<IGalleryCardGrid> = PatchComponent(
             selected={selectedIds.has(gallery.id)}
             onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
               onSelectChange(gallery.id, selected, shiftKey)
+            }
+            onPreview={
+              selectedIds.size < 1 && onPreview
+                ? (index, ev) => onPreview(gallery, index, ev)
+                : undefined
             }
           />
         ))}
