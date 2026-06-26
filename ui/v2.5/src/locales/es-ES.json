@@ -159,7 +159,8 @@
         "exclude_lowercase": "excluir",
         "from_clipboard": "Desde el portapapeles",
         "selective_generate": "Generación selectiva",
-        "create_parent_tag": "Crear etiqueta principal"
+        "create_parent_tag": "Crear etiqueta principal",
+        "set_as_performer_image": "Establecer como imagen del intérprete"
     },
     "actions_name": "Acciones",
     "age": "Edad",
@@ -445,7 +446,11 @@
             "sprite_screenshot_size_desc": "Tamaño deseado de cada sprite en píxeles.",
             "sprite_screenshot_size_head": "Tamaño del sprite",
             "use_custom_sprite_interval_head": "Usar intervalo de sprites personalizado",
-            "use_custom_sprite_interval_desc": "Habilita el intervalo de sprites personalizado según la configuración siguiente."
+            "use_custom_sprite_interval_desc": "Habilita el intervalo de sprites personalizado según la configuración siguiente.",
+            "default_marker_preview_duration_desc": "Duración (en segundos) de las vistas previas de los marcadores que no tienen finalización. Debe ser mayor que 0.",
+            "default_marker_preview_duration_head": "Duración predeterminada de la vista previa del marcador",
+            "max_marker_preview_duration_desc": "Duración máxima (en segundos) de las vistas previas de los marcadores. El valor 0 desactiva el límite.",
+            "max_marker_preview_duration_head": "Duración máxima de la vista previa del marcador"
         },
         "library": {
             "exclusions": "Exclusiones",
@@ -902,6 +907,10 @@
                         "heading": "Volumen de vista previa"
                     }
                 }
+            },
+            "autostart_gallery_slideshow": {
+                "description": "Iniciar automáticamente la presentación de diapositivas al abrir la ventana emergente de una galería desde la página de galerías.",
+                "heading": "Iniciar automáticamente la presentación de diapositivas de la galería"
             }
         },
         "advanced_mode": "Modo avanzado",
@@ -1724,5 +1733,6 @@
     "refer_to": "Consulte {enlace}.",
     "scenes_size": "Tamaño de la escena",
     "related_studios": "Relacionado",
-    "sub_group_description": "Descripción del subgrupo"
+    "sub_group_description": "Descripción del subgrupo",
+    "scene_marker_count": "Recuento de marcadores de escena"
 }
