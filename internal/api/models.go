@@ -32,6 +32,7 @@ func convertBaseFile(f models.File) BaseFile {
 	if f == nil {
 		return nil
 	}
+
 	switch f := f.(type) {
 	case BaseFile:
 		return f
@@ -40,6 +41,7 @@ func convertBaseFile(f models.File) BaseFile {
 	case *models.ImageFile:
 		return &ImageFile{ImageFile: f}
 	case *models.BaseFile:
+		// assume gallery file if it's not a video or image file
 		return &GalleryFile{BaseFile: f}
 	default:
 		panic(fmt.Errorf("unknown file type %T", f))
