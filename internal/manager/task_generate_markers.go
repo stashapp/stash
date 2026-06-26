@@ -117,7 +117,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *models.VideoFile, scene 
 	g := t.generator
 
 	if t.VideoPreview {
-		if err := g.MarkerPreviewVideo(context.TODO(), videoFile.Path, sceneHash, seconds, sceneMarker.EndSeconds, instance.Config.GetPreviewAudio()); err != nil {
+		if err := g.MarkerPreviewVideo(context.TODO(), videoFile.Path, sceneHash, seconds, sceneMarker.EndSeconds, instance.Config.GetPreviewAudio(), instance.Config.GetMaxMarkerPreviewDuration(), instance.Config.GetDefaultMarkerPreviewDuration()); err != nil {
 			logger.Errorf("[generator] failed to generate marker video: %v", err)
 			logErrorOutput(err)
 		}

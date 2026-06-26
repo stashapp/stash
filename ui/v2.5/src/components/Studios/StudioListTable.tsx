@@ -84,6 +84,10 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
     </Link>
   );
 
+  const MarkerCountCell = (studio: GQL.StudioDataFragment) => (
+    <span>{studio.scene_marker_count}</span>
+  );
+
   const ImageCountCell = (studio: GQL.StudioDataFragment) => (
     <Link to={NavUtils.makeStudioImagesUrl(studio)}>
       <span>{studio.image_count}</span>
@@ -162,6 +166,12 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
       label: intl.formatMessage({ id: "scenes" }),
       defaultShow: true,
       render: SceneCountCell,
+    },
+    {
+      value: "scene_markers_count",
+      label: intl.formatMessage({ id: "scene_marker_count" }),
+      defaultShow: true,
+      render: MarkerCountCell,
     },
     {
       value: "image_count",

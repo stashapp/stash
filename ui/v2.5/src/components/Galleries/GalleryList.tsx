@@ -5,6 +5,8 @@ import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import { useFilteredItemList } from "../List/ItemList";
+import { useGalleriesLightbox } from "src/hooks/Lightbox/hooks";
+import { useConfigurationContext } from "src/hooks/Config";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { queryFindGalleries, useFindGalleries } from "src/core/StashService";
@@ -62,6 +64,22 @@ const GalleryList: React.FC<{
 }> = PatchComponent(
   "GalleryList",
   ({ galleries, filter, selectedIds, onSelectChange }) => {
+    const { configuration } = useConfigurationContext();
+    const showLightbox = useGalleriesLightbox();
+
+    const onPreview = useCallback(
+      (
+        gallery: GQL.SlimGalleryDataFragment,
+        index: number,
+        ev?: React.MouseEvent
+      ) => {
+        const autostart = configuration?.ui.autostartGallerySlideshow ?? false;
+        showLightbox(gallery, index, true, autostart);
+        ev?.preventDefault();
+      },
+      [showLightbox, configuration?.ui.autostartGallerySlideshow]
+    );
+
     if (galleries.length === 0) {
       return null;
     }
@@ -73,6 +91,7 @@ const GalleryList: React.FC<{
           selectedIds={selectedIds}
           zoomIndex={filter.zoomIndex}
           onSelectChange={onSelectChange}
+          onPreview={onPreview}
         />
       );
     }

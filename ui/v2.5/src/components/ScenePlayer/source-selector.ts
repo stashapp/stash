@@ -110,6 +110,10 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
   // don't auto play next source if user manually selected a source
   private manuallySelected = false;
 
+  // returns whether playback is currently intended (autostart or already playing).
+  // used to avoid auto-starting playback during source resolution/failover.
+  private shouldAutoplay: () => boolean = () => false;
+
   constructor(player: VideoJsPlayer) {
     super(player);
 
@@ -154,7 +158,9 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
         if (currentSrc === null) return;
 
         if (currentSrc.includes(".m3u8") || currentSrc.includes(".mpd")) {
-          player.play();
+          if (this.shouldAutoplay()) {
+            player.play();
+          }
         } else {
           player.error(MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
           return;
@@ -202,7 +208,9 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
         player.one("canplay", () => {
           player.currentTime(currentTime);
         });
-        player.play();
+        if (this.shouldAutoplay()) {
+          player.play();
+        }
       } else {
         console.log("No more sources in playlist");
       }
@@ -224,6 +232,10 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
 
     this.sources = sources;
     this.player.src(sources[0]);
+  }
+
+  setShouldAutoplay(fn: () => boolean) {
+    this.shouldAutoplay = fn;
   }
 
   get textTracks(): HTMLTrackElement[] {

@@ -18,7 +18,7 @@ require (
 	github.com/enetx/g v1.0.224
 	github.com/enetx/surf v1.0.199
 	github.com/feederbox826/gosx-notifier v0.2.2
-	github.com/go-chi/chi/v5 v5.2.2
+	github.com/go-chi/chi/v5 v5.2.4
 	github.com/go-chi/cors v1.2.1
 	github.com/go-chi/httplog v0.3.1
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4

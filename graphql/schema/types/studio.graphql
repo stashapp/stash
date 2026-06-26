@@ -16,6 +16,7 @@ type Studio {
   gallery_count(depth: Int): Int! # Resolver
   performer_count(depth: Int): Int! # Resolver
   group_count(depth: Int): Int! # Resolver
+  scene_marker_count(depth: Int): Int! # Resolver
   movie_count(depth: Int): Int! @deprecated(reason: "use group_count instead") # Resolver
   stash_ids: [StashID!]!
   # rating expressed as 1-100
