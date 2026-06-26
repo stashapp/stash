@@ -401,6 +401,8 @@
           }
         }
       },
+      "default_marker_preview_duration_desc": "Duration (seconds) for marker previews without an end time. Must be greater than 0.",
+      "default_marker_preview_duration_head": "Default marker preview duration",
       "funscript_heatmap_draw_range": "Include range in generated heatmaps",
       "funscript_heatmap_draw_range_desc": "Draw range of motion on the y-axis of the generated heatmap. Existing heatmaps will need to be regenerated after changing.",
       "gallery_cover_regex_desc": "Regexps used to identify an image as gallery cover.",
@@ -418,6 +420,8 @@
       "include_audio_desc": "Includes audio stream when generating previews.",
       "include_audio_head": "Include audio",
       "logging": "Logging",
+      "max_marker_preview_duration_desc": "Maximum duration (seconds) for marker previews. 0 disables the limit.",
+      "max_marker_preview_duration_head": "Max marker preview duration",
       "maximum_streaming_transcode_size_desc": "Maximum size for transcoded streams.",
       "maximum_streaming_transcode_size_head": "Maximum streaming transcode size",
       "maximum_transcode_size_desc": "Maximum size for generated transcodes.",

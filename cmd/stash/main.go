@@ -11,6 +11,9 @@ import (
 	"runtime/pprof"
 	"syscall"
 
+	// fallback timezone database for systems without tzdata installed
+	_ "time/tzdata"
+
 	"github.com/spf13/pflag"
 
 	"github.com/stashapp/stash/internal/api"

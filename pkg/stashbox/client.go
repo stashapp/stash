@@ -7,6 +7,7 @@ import (
 	"regexp"
 
 	"github.com/Yamashou/gqlgenc/clientv2"
+	"github.com/stashapp/stash/internal/build"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/stashbox/graphql"
@@ -52,6 +53,23 @@ func setApiKeyHeader(apiKey string) clientv2.RequestInterceptor {
 	}
 }
 
+func setUserAgentHeader() clientv2.RequestInterceptor {
+	version, githash, _ := build.Version()
+	v := version
+	if v == "" {
+		v = githash
+	}
+	if v == "" {
+		v = "unknown"
+	}
+	ua := "stash/" + v
+
+	return func(ctx context.Context, req *http.Request, gqlInfo *clientv2.GQLRequestInfo, res interface{}, next clientv2.RequestInterceptorFunc) error {
+		req.Header.Set("User-Agent", ua)
+		return next(ctx, req, gqlInfo, res)
+	}
+}
+
 func rateLimit(n int) clientv2.RequestInterceptor {
 	perSec := float64(n) / 60
 	limiter := rate.NewLimiter(rate.Limit(perSec), 1)
@@ -83,10 +101,11 @@ func NewClient(box models.StashBox, options ...ClientOption) *Client {
 	}
 
 	authHeader := setApiKeyHeader(box.APIKey)
+	userAgentHeader := setUserAgentHeader()
 	limitRequests := rateLimit(ret.maxRequestsPerMinute)
 
 	client := &graphql.Client{
-		Client: clientv2.NewClient(ret.httpClient, box.Endpoint, nil, authHeader, limitRequests),
+		Client: clientv2.NewClient(ret.httpClient, box.Endpoint, nil, authHeader, userAgentHeader, limitRequests),
 	}
 
 	ret.client = client

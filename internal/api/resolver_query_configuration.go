@@ -104,6 +104,8 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		PreviewAudio:                  config.GetPreviewAudio(),
 		PreviewSegments:               config.GetPreviewSegments(),
 		PreviewSegmentDuration:        config.GetPreviewSegmentDuration(),
+		MaxMarkerPreviewDuration:      config.GetMaxMarkerPreviewDuration(),
+		DefaultMarkerPreviewDuration:  config.GetDefaultMarkerPreviewDuration(),
 		PreviewExcludeStart:           config.GetPreviewExcludeStart(),
 		PreviewExcludeEnd:             config.GetPreviewExcludeEnd(),
 		PreviewPreset:                 config.GetPreviewPreset(),

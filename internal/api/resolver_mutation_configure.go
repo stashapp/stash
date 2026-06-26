@@ -289,6 +289,17 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	r.setConfigBool(config.PreviewAudio, input.PreviewAudio)
 	r.setConfigInt(config.PreviewSegments, input.PreviewSegments)
 	r.setConfigFloat(config.PreviewSegmentDuration, input.PreviewSegmentDuration)
+	// Validate both marker-preview durations before applying either: 0 disables
+	// the ceiling, so a negative max is rejected rather than silently treated as
+	// disabled; the default is a fallback length and must be positive.
+	if input.MaxMarkerPreviewDuration != nil && *input.MaxMarkerPreviewDuration < 0 {
+		return makeConfigGeneralResult(), errors.New("maxMarkerPreviewDuration must be 0 (disabled) or a positive value")
+	}
+	if input.DefaultMarkerPreviewDuration != nil && *input.DefaultMarkerPreviewDuration <= 0 {
+		return makeConfigGeneralResult(), errors.New("defaultMarkerPreviewDuration must be a positive value")
+	}
+	r.setConfigInt(config.MaxMarkerPreviewDuration, input.MaxMarkerPreviewDuration)
+	r.setConfigInt(config.DefaultMarkerPreviewDuration, input.DefaultMarkerPreviewDuration)
 	r.setConfigString(config.PreviewExcludeStart, input.PreviewExcludeStart)
 	r.setConfigString(config.PreviewExcludeEnd, input.PreviewExcludeEnd)
 	if input.PreviewPreset != nil {
