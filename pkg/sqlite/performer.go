@@ -682,7 +682,7 @@ func (qb *PerformerStore) QueryCount(ctx context.Context, performerFilter *model
 
 func (qb *PerformerStore) sortByOCounter(direction string) string {
 	// need to sum the o_counter from scenes and images
-	return " ORDER BY (" + selectPerformerOCountSQL + ") IS NULL, (" + selectPerformerOCountSQL + ") " + direction
+	return " ORDER BY (" + selectPerformerOCountSQL + ") " + direction
 }
 
 func (qb *PerformerStore) sortByPlayCount(direction string) string {
@@ -711,7 +711,7 @@ var selectPerformerLastOAtSQL = utils.StrFormat(
 
 func (qb *PerformerStore) sortByLastOAt(direction string) string {
 	// need to get the o_dates from scenes
-	return " ORDER BY (" + selectPerformerLastOAtSQL + ") IS NULL, (" + selectPerformerLastOAtSQL + ") " + direction
+	return " ORDER BY (" + selectPerformerLastOAtSQL + ") " + direction
 }
 
 // used for sorting on performer latest scene
@@ -733,7 +733,7 @@ var selectPerformerLatestSceneSQL = utils.StrFormat(
 
 func (qb *PerformerStore) sortByLatestScene(direction string) string {
 	// need to get the latest date from scenes
-	return " ORDER BY (" + selectPerformerLatestSceneSQL + ") IS NULL, (" + selectPerformerLatestSceneSQL + ") " + direction
+	return " ORDER BY (" + selectPerformerLatestSceneSQL + ") " + direction
 }
 
 // used for sorting on performer last view_date
@@ -757,7 +757,7 @@ var selectPerformerLastPlayedAtSQL = utils.StrFormat(
 
 func (qb *PerformerStore) sortByLastPlayedAt(direction string) string {
 	// need to get the view_dates from scenes
-	return " ORDER BY (" + selectPerformerLastPlayedAtSQL + ") IS NULL, (" + selectPerformerLastPlayedAtSQL + ") " + direction
+	return " ORDER BY (" + selectPerformerLastPlayedAtSQL + ") " + direction
 }
 
 // used for sorting by total scene duration

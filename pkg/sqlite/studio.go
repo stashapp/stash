@@ -655,7 +655,7 @@ var selectStudioLatestSceneSQL = utils.StrFormat(
 
 func (qb *StudioStore) sortByLatestScene(direction string) string {
 	// need to get the latest date from scenes
-	return " ORDER BY (" + selectStudioLatestSceneSQL + ") IS NULL, (" + selectStudioLatestSceneSQL + ") " + direction
+	return " ORDER BY (" + selectStudioLatestSceneSQL + ") " + direction
 }
 
 var studioSortOptions = sortOptions{
