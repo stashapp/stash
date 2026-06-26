@@ -4,7 +4,6 @@ import { Button, Form, Row, Col, Dropdown } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { Icon } from "src/components/Shared/Icon";
 import * as GQL from "src/core/generated-graphql";
-import TextUtils from "src/utils/text";
 import { FolderSelectDialog } from "../Shared/FolderSelect/FolderSelectDialog";
 import { BooleanSetting } from "./Inputs";
 import { SettingSection } from "./SettingSection";
@@ -126,7 +125,7 @@ const StashConfiguration: React.FC<IStashConfigurationProps> = ({
               setStashes([
                 ...stashes,
                 {
-                  path: TextUtils.stripQuotes(v),
+                  path: v,
                   excludeVideo: false,
                   excludeImage: false,
                 },
@@ -146,7 +145,7 @@ const StashConfiguration: React.FC<IStashConfigurationProps> = ({
                   if (index === editingIndex) {
                     return {
                       ...vv,
-                      path: TextUtils.stripQuotes(v),
+                      path: v,
                     };
                   }
                   return vv;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Button, InputGroup, Form, Collapse } from "react-bootstrap";
 import { Icon } from "../Icon";
@@ -31,13 +31,8 @@ const _FolderSelect: React.FC<IProps> = ({
   const intl = useIntl();
   const [showBrowser, setShowBrowser] = useState(false);
   const [path, setPath] = useState(currentDirectory);
-  const [displayPath, setDisplayPath] = useState(currentDirectory);
 
-  useEffect(() => {
-    setDisplayPath(currentDirectory);
-  }, [currentDirectory]);
-
-  const normalizedPath = TextUtils.stripQuotes(path);
+  const normalizedPath = quotePath ? TextUtils.stripQuotes(path) : path;
   const { directories, parent, error, loading } = useDirectoryPaths(
     normalizedPath,
     hideError
@@ -49,21 +44,15 @@ const _FolderSelect: React.FC<IProps> = ({
   const debouncedSetDirectory = useDebounce(setPath, 250);
 
   function setInstant(value: string) {
-    const stripped = TextUtils.stripQuotes(value);
     const normalizedValue =
-      quotePath && stripped.includes(" ")
-        ? TextUtils.addQuotes(stripped)
-        : stripped;
-    setDisplayPath(normalizedValue);
+      quotePath && value.includes(" ") ? TextUtils.addQuotes(value) : value;
     onChangeDirectory(normalizedValue);
     setPath(normalizedValue);
   }
 
   function setDebounced(value: string) {
-    const stripped = TextUtils.stripQuotes(value);
-    setDisplayPath(stripped);
-    onChangeDirectory(stripped);
-    debouncedSetDirectory(stripped);
+    onChangeDirectory(value);
+    debouncedSetDirectory(value);
   }
 
   function goUp() {
@@ -93,7 +82,7 @@ const _FolderSelect: React.FC<IProps> = ({
           onChange={(e) => {
             setDebounced(e.currentTarget.value);
           }}
-          value={displayPath}
+          value={currentDirectory}
           spellCheck={false}
         />
 
