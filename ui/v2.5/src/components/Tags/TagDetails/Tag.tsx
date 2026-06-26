@@ -127,7 +127,7 @@ const TagTabs: React.FC<{
     groupCount,
   ]);
 
-  const { setTabKey } = useTabKey({
+  const { activeTabKey, setTabKey } = useTabKey({
     tabKey,
     validTabs,
     defaultTabKey: populatedDefaultTab,
@@ -152,16 +152,12 @@ const TagTabs: React.FC<{
     );
   }, [showAllDetails, tag.children.length]);
 
-  // #6798 - if Tabs renders while tabKey is undefined, it doesn't render correctly
-  // when it is subsequently set to a valid value.
-  if (!tabKey) return null;
-
   return (
     <Tabs
       id="tag-tabs"
       mountOnEnter
       unmountOnExit
-      activeKey={tabKey}
+      activeKey={activeTabKey}
       onSelect={setTabKey}
     >
       <Tab
@@ -176,7 +172,7 @@ const TagTabs: React.FC<{
       >
         {contentSwitch}
         <TagScenesPanel
-          active={tabKey === "scenes"}
+          active={activeTabKey === "scenes"}
           tag={tag}
           showSubTagContent={showAllDetails}
         />
@@ -193,7 +189,7 @@ const TagTabs: React.FC<{
       >
         {contentSwitch}
         <TagImagesPanel
-          active={tabKey === "images"}
+          active={activeTabKey === "images"}
           tag={tag}
           showSubTagContent={showAllDetails}
         />
@@ -210,7 +206,7 @@ const TagTabs: React.FC<{
       >
         {contentSwitch}
         <TagGalleriesPanel
-          active={tabKey === "galleries"}
+          active={activeTabKey === "galleries"}
           tag={tag}
           showSubTagContent={showAllDetails}
         />
@@ -227,7 +223,7 @@ const TagTabs: React.FC<{
       >
         {contentSwitch}
         <TagGroupsPanel
-          active={tabKey === "groups"}
+          active={activeTabKey === "groups"}
           tag={tag}
           showSubTagContent={showAllDetails}
         />
@@ -244,7 +240,7 @@ const TagTabs: React.FC<{
       >
         {contentSwitch}
         <TagMarkersPanel
-          active={tabKey === "markers"}
+          active={activeTabKey === "markers"}
           tag={tag}
           showSubTagContent={showAllDetails}
         />
@@ -261,7 +257,7 @@ const TagTabs: React.FC<{
       >
         {contentSwitch}
         <TagPerformersPanel
-          active={tabKey === "performers"}
+          active={activeTabKey === "performers"}
           tag={tag}
           showSubTagContent={showAllDetails}
         />
@@ -278,7 +274,7 @@ const TagTabs: React.FC<{
       >
         {contentSwitch}
         <TagStudiosPanel
-          active={tabKey === "studios"}
+          active={activeTabKey === "studios"}
           tag={tag}
           showSubTagContent={showAllDetails}
         />

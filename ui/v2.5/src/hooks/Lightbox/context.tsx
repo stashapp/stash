@@ -16,6 +16,7 @@ export interface IState {
   pages?: number;
   pageSize?: number;
   slideshowEnabled: boolean;
+  slideshowAutostart?: boolean;
   onClose?: () => void;
 }
 interface IContext {
@@ -52,7 +53,14 @@ export const LightboxProvider: React.FC = ({ children }) => {
   }, []);
 
   const onHide = () => {
-    setLightboxState({ ...lightboxState, isVisible: false });
+    // slideshowAutostart is a per-open instruction (set when opening a gallery's
+    // lightbox from the galleries page). Clear it on close so it doesn't leak
+    // into the next lightbox opened from another entry point.
+    setLightboxState({
+      ...lightboxState,
+      isVisible: false,
+      slideshowAutostart: false,
+    });
     if (lightboxState.onClose) {
       lightboxState.onClose();
     }
