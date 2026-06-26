@@ -22,21 +22,26 @@ type StashConfig struct {
 type StashConfigs []*StashConfig
 
 func (s StashConfigs) GetStashFromPath(path string) *StashConfig {
-	for _, f := range s {
-		if fsutil.IsPathInDir(f.Path, filepath.Dir(path)) {
-			return f
-		}
-	}
-	return nil
+	return s.GetStashFromDirPath(filepath.Dir(path))
 }
 
 func (s StashConfigs) GetStashFromDirPath(dirPath string) *StashConfig {
+	var ret *StashConfig
+	longestPath := -1
+
 	for _, f := range s {
-		if fsutil.IsPathInDir(f.Path, dirPath) {
-			return f
+		if f == nil {
+			continue
+		}
+
+		path := filepath.Clean(f.Path)
+		if fsutil.IsPathInDir(path, dirPath) && len(path) > longestPath {
+			ret = f
+			longestPath = len(path)
 		}
 	}
-	return nil
+
+	return ret
 }
 
 func (s StashConfigs) Paths() []string {
