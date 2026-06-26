@@ -138,6 +138,17 @@ func (r *studioResolver) GroupCount(ctx context.Context, obj *models.Studio, dep
 	return ret, nil
 }
 
+func (r *studioResolver) SceneMarkerCount(ctx context.Context, obj *models.Studio, depth *int) (ret int, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = scene.MarkerCountByStudioID(ctx, r.repository.SceneMarker, obj.ID, depth)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 // deprecated
 func (r *studioResolver) MovieCount(ctx context.Context, obj *models.Studio, depth *int) (ret int, err error) {
 	return r.GroupCount(ctx, obj, depth)

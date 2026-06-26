@@ -43,6 +43,10 @@ const sortByOptions = [
       messageID: "subsidiary_studio_count",
       value: "child_count",
     },
+    {
+      messageID: "scene_marker_count",
+      value: "scene_markers_count",
+    },
   ]);
 
 const displayModeOptions = [

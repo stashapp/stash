@@ -669,6 +669,7 @@ var studioSortOptions = sortOptions{
 	"scenes_count",
 	"scenes_duration",
 	"scenes_size",
+	"scene_markers_count",
 	"random",
 	"rating",
 	"tag_count",
@@ -707,6 +708,8 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 		sortQuery += getCountSort(studioTable, galleryTable, studioIDColumn, direction)
 	case "child_count":
 		sortQuery += getCountSort(studioTable, studioTable, studioParentIDColumn, direction)
+	case "scene_markers_count":
+		sortQuery += fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM %s INNER JOIN %s ON %[1]s.scene_id = %[2]s.id WHERE %[2]s.%s = %s.id) %s", sceneMarkerTable, sceneTable, studioIDColumn, studioTable, getSortDirection(direction))
 	case "latest_scene":
 		sortQuery += qb.sortByLatestScene(direction)
 	default:
