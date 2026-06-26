@@ -892,12 +892,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
                     onImageURL={onImageLoad}
                     onGenerateDefault={onGenerateThumbDefault}
                     onGenerateCurrent={onGenerateThumbFromCurrent}
+                    onReset={scene.id ? () => onResetCover() : undefined}
                   />
-                )}
-                {scene.id && (
-                  <Button variant="danger" onClick={() => onResetCover()}>
-                    {intl.formatMessage({ id: "actions.clear_image" })}
-                  </Button>
                 )}
               </div>
             </Form.Group>

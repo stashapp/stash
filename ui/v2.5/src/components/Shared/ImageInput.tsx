@@ -16,6 +16,7 @@ import {
   faClipboard,
   faFile,
   faLink,
+  faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { PatchComponent } from "src/patch";
 import ImageUtils from "src/utils/image";
@@ -171,6 +172,7 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
                 </Button>
               </div>
             )}
+            {(onGenerateDefault || onGenerateCurrent) && <hr className="my-1" />}
             {onGenerateDefault && (
               <div>
                 <Button className="minimal" onClick={onGenerateDefault}>
@@ -195,6 +197,19 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
                 </Button>
               </div>
             )}
+            {onReset && (
+              <>
+                <hr className="my-1" />
+                <div>
+                  <Button className="minimal" onClick={onReset}>
+                    <Icon icon={faTrashAlt} className="fa-fw" />
+                    <span>
+                      {intl.formatMessage({ id: "actions.clear_image" })}
+                    </span>
+                  </Button>
+                </div>
+              </>
+            )}
           </>
         </Popover.Content>
       </Popover>
@@ -213,11 +228,6 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
             {text ?? intl.formatMessage({ id: "actions.set_image" })}
           </Button>
         </OverlayTrigger>
-        {onReset && (
-          <Button variant="danger" className="mr-2" onClick={onReset}>
-            {intl.formatMessage({ id: "actions.clear_image" })}
-          </Button>
-        )}
       </>
     );
   }
