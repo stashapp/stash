@@ -126,6 +126,20 @@ export const LightboxComponent: React.FC<IProps> = ({
   const oldIndex = useRef<number | null>(null);
   const [instantTransition, setInstantTransition] = useState(false);
   const [isSwitchingPage, setIsSwitchingPage] = useState(true);
+  // Mirrors isSwitchingPage synchronously, purely to gate the nav handlers
+  // (handleLeft/handleRight, reached by both arrow keys and clicks on the
+  // chevrons / image edges): they fire on raw keydown/click events that can
+  // arrive faster than React re-renders, so reading the isSwitchingPage state
+  // from their closure is stale; the ref reflects an in-flight page switch
+  // immediately and drops the extra inputs. (Index reconciliation keys off the
+  // `page` prop, not this.)
+  const isSwitchingPageRef = useRef(true);
+  // Tracks the last `page` we reconciled the index for. The parent updates the
+  // `page` and `images` props together, so a change here is the reliable,
+  // race-free signal that a new page has arrived (unlike the switch ref, which
+  // a synchronously-cached page can outrun).
+  const prevPageRef = useRef(page);
+  const initialSettleRef = useRef(false);
   const [isFullscreen, setFullscreen] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [showChapters, setShowChapters] = useState(false);
@@ -133,8 +147,6 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const lastDKeyTime = useRef<number>(0);
   const [navOffset, setNavOffset] = useState<React.CSSProperties | undefined>();
-
-  const oldImages = useRef<ILightboxImage[]>([]);
 
   const [zoom, setZoom] = useState(1);
 
@@ -255,13 +267,6 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [displayedSlideshowInterval, setDisplayedSlideshowInterval] =
     useState<string>((slideshowDelay / SECONDS_TO_MS).toString());
 
-  useEffect(() => {
-    if (images !== oldImages.current && isSwitchingPage) {
-      if (index === -1) setIndex(images.length - 1);
-      setIsSwitchingPage(false);
-    }
-  }, [isSwitchingPage, images, index]);
-
   const disableInstantTransition = useDebounce(
     () => setInstantTransition(false),
     400
@@ -370,7 +375,7 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const handleLeft = useCallback(
     (isUserAction = true) => {
-      if (isSwitchingPage || index === -1) return;
+      if (isSwitchingPageRef.current || index === -1) return;
 
       if (disableAnimation) {
         setInstant();
@@ -380,12 +385,15 @@ export const LightboxComponent: React.FC<IProps> = ({
       setMovingLeft(true);
 
       if (index === 0) {
-        // go to next page, or loop back if no callback is set
+        // go to previous page, or loop back if no callback is set. Set the nav
+        // guard before pageCallback so rapid presses during the switch are
+        // dropped even if the page is cached and swaps in synchronously. The
+        // landing index is reconciled by the page-change effect.
         if (pageCallback) {
-          pageCallback({ direction: -1 });
-          setIndex(-1);
-          oldImages.current = images;
+          isSwitchingPageRef.current = true;
           setIsSwitchingPage(true);
+          setIndex(-1);
+          pageCallback({ direction: -1 });
         } else setIndex(images.length - 1);
       } else setIndex((index ?? 0) - 1);
 
@@ -393,12 +401,12 @@ export const LightboxComponent: React.FC<IProps> = ({
         resetIntervalCallback.current();
       }
     },
-    [images, pageCallback, isSwitchingPage, index, disableAnimation, setInstant]
+    [images, pageCallback, index, disableAnimation, setInstant]
   );
 
   const handleRight = useCallback(
     (isUserAction = true) => {
-      if (isSwitchingPage) return;
+      if (isSwitchingPageRef.current) return;
 
       if (disableAnimation) {
         setInstant();
@@ -408,12 +416,15 @@ export const LightboxComponent: React.FC<IProps> = ({
       setShowChapters(false);
 
       if (index === images.length - 1) {
-        // go to preview page, or loop back if no callback is set
+        // go to next page, or loop back if no callback is set. Set the nav guard
+        // before pageCallback so rapid presses during the switch are dropped even
+        // if the page is cached and swaps in synchronously. The landing index is
+        // reconciled by the page-change effect.
         if (pageCallback) {
-          pageCallback({ direction: 1 });
-          oldImages.current = images;
+          isSwitchingPageRef.current = true;
           setIsSwitchingPage(true);
           setIndex(0);
+          pageCallback({ direction: 1 });
         } else setIndex(0);
       } else setIndex((index ?? 0) + 1);
 
@@ -421,7 +432,7 @@ export const LightboxComponent: React.FC<IProps> = ({
         resetIntervalCallback.current();
       }
     },
-    [images, pageCallback, isSwitchingPage, index, disableAnimation, setInstant]
+    [images, pageCallback, index, disableAnimation, setInstant]
   );
 
   const firstScroll = useRef<number | null>(null);
@@ -547,19 +558,49 @@ export const LightboxComponent: React.FC<IProps> = ({
     if (isLoading) return;
     if (images.length === 0) {
       close();
-    } else if (index !== null && index >= images.length) {
+      return;
+    }
+
+    const prevPage = prevPageRef.current;
+    if (page !== prevPage) {
+      // A page switch delivered a new page. `page` and `images` update together,
+      // so keying off the page change (rather than the switch ref, which a
+      // synchronously-cached page can outrun) reconciles the index race-free.
+      // Land on the new page's first image going forward, its last going back.
+      prevPageRef.current = page;
+      if (prevPage !== undefined && page !== undefined && page < prevPage) {
+        setIndex(images.length - 1);
+      } else {
+        setIndex(0);
+      }
+      isSwitchingPageRef.current = false;
+      setIsSwitchingPage(false);
+      return;
+    }
+
+    // First settle after open: clear the initial switching state once the images
+    // exist (index is left for the initialIndex effect — don't reset it here).
+    if (!initialSettleRef.current) {
+      initialSettleRef.current = true;
+      isSwitchingPageRef.current = false;
+      setIsSwitchingPage(false);
+    }
+
+    // Same page: keep a now-out-of-range index valid, e.g. when the last image
+    // was deleted and findImages refetched a shorter list.
+    if (index !== null && index >= images.length) {
       setIndex(images.length - 1);
     }
-  }, [images.length, index, close, isLoading]);
+  }, [page, images, index, close, isLoading]);
 
   function gotoPage(imageIndex: number) {
     const indexInPage = (imageIndex - 1) % pageSize;
     if (pageCallback) {
       const jumppage = Math.floor((imageIndex - 1) / pageSize) + 1;
       if (page !== jumppage) {
-        pageCallback({ page: jumppage });
-        oldImages.current = images;
+        isSwitchingPageRef.current = true;
         setIsSwitchingPage(true);
+        pageCallback({ page: jumppage });
       }
     }
 
