@@ -57,8 +57,7 @@ func TestValidateCustomFieldSortCast(t *testing.T) {
 }
 
 func TestSetCustomFieldSortValidation(t *testing.T) {
-	qb := &SceneStore{}
-	q := &queryBuilder{}
+	qb := &SceneStore{} // zero-value safe: setCustomFieldSort must not require a live DB handle
 
 	rejectCases := []struct {
 		spec string
@@ -69,11 +68,13 @@ func TestSetCustomFieldSortValidation(t *testing.T) {
 		{":REAL:DESC", "empty field name"},
 		{"smobile_rec_score:FLOAT:DESC", "invalid cast"},
 		{"smobile_rec_score:REAL:UP", "invalid direction"},
+		{"smobile_rec_score:REAL:DOWN", "invalid direction DOWN"},
 		{"a;drop:REAL:DESC", "dangerous field name"},
 		{strings.Repeat("a", 65) + ":REAL:DESC", "field name too long"},
 	}
 	for _, tc := range rejectCases {
-		if err := qb.setCustomFieldSort(q, tc.spec); err == nil {
+		qRej := &queryBuilder{}
+		if err := qb.setCustomFieldSort(qRej, tc.spec); err == nil {
 			t.Errorf("expected spec %q (%s) to be rejected, but got no error", tc.spec, tc.desc)
 		}
 	}
