@@ -732,6 +732,13 @@
         }
       },
       "editing": {
+        "auto_save": {
+          "delay": {
+            "label": "Auto-save delay (seconds)"
+          },
+          "description": "Automatically save changes to scenes without requiring a manual save.",
+          "heading": "Auto-save"
+        },
         "disable_dropdown_create": {
           "description": "Remove the ability to create new objects from the dropdown selectors.",
           "heading": "Disable dropdown create"

@@ -39,6 +39,7 @@ export type FrontPageContent = ISavedFilterRow | ICustomFilter;
 
 export const defaultMaxOptionsShown = 200;
 export const defaultPreviewVolume = 25;
+export const defaultAutoSaveDelay = 1;
 
 export interface IUIConfig {
   // unknown to prevent direct access - use getFrontPageContent
@@ -94,6 +95,11 @@ export interface IUIConfig {
   // maximum number of items to shown in the dropdown list - defaults to 200
   // upper limit of 1000
   maxOptionsShown?: number;
+
+  // auto-save settings for edit panels
+  autoSave?: boolean;
+  // delay in seconds before auto-saving (default 1)
+  autoSaveDelay?: number;
 
   imageWallOptions?: ImageWallOptions;
 

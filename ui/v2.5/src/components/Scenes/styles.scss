@@ -560,6 +560,36 @@ input[type="range"].blue-slider {
     @media (min-width: 575px) and (max-width: 1199px) {
       top: 3rem;
     }
+
+    .auto-save-progress {
+      animation: auto-save-fill var(--auto-save-delay, 1000ms) linear forwards;
+      background-color: var(--primary, #007bff);
+      height: 2px;
+      transform: scaleX(0);
+      transform-origin: left center;
+
+      &--saving {
+        animation: none;
+        transform: scaleX(1);
+      }
+
+      &--saved {
+        animation: none;
+        background-color: var(--success, #28a745);
+        transform: scaleX(1);
+        transition: background-color 0.2s ease;
+      }
+    }
+  }
+
+  @keyframes auto-save-fill {
+    from {
+      transform: scaleX(0);
+    }
+
+    to {
+      transform: scaleX(1);
+    }
   }
 
   .form-group[data-field="urls"] .string-list-input input.form-control {

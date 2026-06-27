@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import {
   Button,
@@ -26,10 +26,14 @@ import { useToast } from "src/hooks/Toast";
 import ImageUtils from "src/utils/image";
 import { addUpdateStashID, getStashIDs } from "src/utils/stashIds";
 import { useFormik } from "formik";
-import { Prompt } from "react-router-dom";
+import {
+  faCheck,
+  faSearch,
+  faPlus,
+} from "@fortawesome/free-solid-svg-icons";
+import { defaultAutoSaveDelay } from "src/core/config";
 import { useConfigurationContext } from "src/hooks/Config";
 import { IGroupEntry, SceneGroupTable } from "./SceneGroupTable";
-import { faSearch, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import { lazyComponent } from "src/utils/lazyComponent";
@@ -134,9 +138,17 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }, [scene.studio]);
 
   const { configuration: stashConfig } = useConfigurationContext();
+  const autoSaveEnabled = stashConfig?.ui.autoSave ?? true;
+  const autoSaveDelay = (stashConfig?.ui.autoSaveDelay ?? defaultAutoSaveDelay) * 1000;
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
+
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
+    "idle"
+  );
+  const [saveProgressKey, setSaveProgressKey] = useState(0);
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const schema = yup.object({
     title: yup.string().ensure(),
@@ -273,6 +285,35 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }
   });
 
+  // Auto-save for existing scenes: debounce after any value or error change.
+  // formik.values is required in deps to reset the debounce timer on each keystroke.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: formik.values drives debounce reset
+  useEffect(() => {
+    if (isNew || !autoSaveEnabled || !formik.dirty) return;
+    if (
+      Object.keys(formik.errors).length > 0 ||
+      customFieldsError !== undefined
+    )
+      return;
+
+    setSaveProgressKey((k) => k + 1);
+    clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(() => {
+      formik.submitForm();
+    }, autoSaveDelay);
+
+    return () => clearTimeout(autoSaveTimer.current);
+  }, [
+    isNew,
+    autoSaveEnabled,
+    autoSaveDelay,
+    formik.dirty,
+    formik.errors,
+    formik.values,
+    formik.submitForm,
+    customFieldsError,
+  ]);
+
   function onSetGroups(items: Group[]) {
     setGroups(items);
 
@@ -294,14 +335,28 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }
 
   async function onSave(input: InputValues, andNew?: boolean) {
-    setIsLoading(true);
-    try {
-      await onSubmit(input, andNew);
-      formik.resetForm();
-    } catch (e) {
-      Toast.error(e);
+    if (isNew) {
+      setIsLoading(true);
+      try {
+        await onSubmit(input, andNew);
+        formik.resetForm();
+      } catch (e) {
+        Toast.error(e);
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      setSaveStatus("saving");
+      try {
+        await onSubmit(input, andNew);
+        formik.resetForm();
+        setSaveStatus("saved");
+        setTimeout(() => setSaveStatus("idle"), 2000);
+      } catch (e) {
+        Toast.error(e);
+        setSaveStatus("idle");
+      }
     }
-    setIsLoading(false);
   }
 
   async function onSaveAndNewClick() {
@@ -750,11 +805,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   return (
     <div id="scene-edit-details">
-      <Prompt
-        when={formik.dirty}
-        message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
-      />
-
       {renderScrapeQueryModal()}
       {maybeRenderScrapeDialog()}
       {isStashIDSearchOpen && (
@@ -772,69 +822,103 @@ export const SceneEditPanel: React.FC<IProps> = ({
         />
       )}
       <Form noValidate onSubmit={formik.handleSubmit}>
-        <Row className="form-container edit-buttons-container px-3 pt-3">
-          <div className="edit-buttons mb-3 pl-0">
-            {isNew ? (
-              <SplitButton
-                id="scene-save-split-button"
-                className="edit-button"
-                variant="primary"
-                disabled={
-                  !isEqual(formik.errors, {}) || customFieldsError !== undefined
-                }
-                title={intl.formatMessage({ id: "actions.save" })}
-                onClick={() => formik.submitForm()}
-              >
-                <Dropdown.Item onClick={() => onSaveAndNewClick()}>
-                  <FormattedMessage id="actions.save_and_new" />
-                </Dropdown.Item>
-              </SplitButton>
-            ) : (
-              <Button
-                className="edit-button"
-                variant="primary"
-                disabled={
-                  (!isNew && !formik.dirty) ||
-                  !isEqual(formik.errors, {}) ||
-                  customFieldsError !== undefined
-                }
-                onClick={() => formik.submitForm()}
-              >
-                <FormattedMessage id="actions.save" />
-              </Button>
-            )}
-            {onDelete && (
-              <Button
-                className="edit-button"
-                variant="danger"
-                onClick={() => onDelete()}
-              >
-                <FormattedMessage id="actions.delete" />
-              </Button>
-            )}
-          </div>
-          {!isNew && (
-            <div className="ml-auto text-right d-flex">
-              <ButtonGroup className="scraper-group">
-                <ScraperMenu
-                  toggle={intl.formatMessage({ id: "actions.scrape_with" })}
-                  stashBoxes={stashConfig?.general.stashBoxes ?? []}
-                  scrapers={fragmentScrapers}
-                  onScraperClicked={onScrapeClicked}
-                  onReloadScrapers={onReloadScrapers}
-                />
-                <ScraperMenu
-                  variant="secondary"
-                  toggle={<Icon icon={faSearch} />}
-                  stashBoxes={stashConfig?.general.stashBoxes ?? []}
-                  scrapers={queryableScrapers}
-                  onScraperClicked={onScrapeQueryClicked}
-                  onReloadScrapers={onReloadScrapers}
-                />
-              </ButtonGroup>
+        <div className="edit-buttons-container">
+          <Row className="form-container px-3 pt-3">
+            <div className="edit-buttons mb-3 pl-0">
+              {isNew ? (
+                <SplitButton
+                  id="scene-save-split-button"
+                  className="edit-button"
+                  variant="primary"
+                  disabled={
+                    !isEqual(formik.errors, {}) ||
+                    customFieldsError !== undefined
+                  }
+                  title={intl.formatMessage({ id: "actions.save" })}
+                  onClick={() => formik.submitForm()}
+                >
+                  <Dropdown.Item onClick={() => onSaveAndNewClick()}>
+                    <FormattedMessage id="actions.save_and_new" />
+                  </Dropdown.Item>
+                </SplitButton>
+              ) : null}
+              {onDelete && (
+                <Button
+                  className="edit-button"
+                  variant="danger"
+                  onClick={() => onDelete()}
+                >
+                  <FormattedMessage id="actions.delete" />
+                </Button>
+              )}
             </div>
+            {!isNew && (
+              <div className="ml-auto text-right d-flex align-items-center">
+                {autoSaveEnabled && (
+                  <span className="scene-edit-save-status mr-3">
+                    {saveStatus === "saving" && (
+                      <span className="text-muted">
+                        <FormattedMessage id="actions.save" />
+                        {"…"}
+                      </span>
+                    )}
+                    {saveStatus === "saved" && (
+                      <span className="text-success">
+                        <Icon icon={faCheck} className="mr-1" />
+                        <FormattedMessage
+                          id="toast.saved_entity"
+                          values={{
+                            entity: intl
+                              .formatMessage({ id: "scene" })
+                              .toLocaleLowerCase(),
+                          }}
+                        />
+                      </span>
+                    )}
+                  </span>
+                )}
+                <ButtonGroup className="scraper-group">
+                  <ScraperMenu
+                    toggle={intl.formatMessage({ id: "actions.scrape_with" })}
+                    stashBoxes={stashConfig?.general.stashBoxes ?? []}
+                    scrapers={fragmentScrapers}
+                    onScraperClicked={onScrapeClicked}
+                    onReloadScrapers={onReloadScrapers}
+                  />
+                  <ScraperMenu
+                    variant="secondary"
+                    toggle={<Icon icon={faSearch} />}
+                    stashBoxes={stashConfig?.general.stashBoxes ?? []}
+                    scrapers={queryableScrapers}
+                    onScraperClicked={onScrapeQueryClicked}
+                    onReloadScrapers={onReloadScrapers}
+                  />
+                </ButtonGroup>
+              </div>
+            )}
+          </Row>
+          {!isNew && autoSaveEnabled && (
+            <>
+              {formik.dirty && saveStatus === "idle" && (
+                <div
+                  key={saveProgressKey}
+                  className="auto-save-progress"
+                  style={
+                    {
+                      "--auto-save-delay": `${autoSaveDelay}ms`,
+                    } as React.CSSProperties
+                  }
+                />
+              )}
+              {saveStatus === "saving" && (
+                <div className="auto-save-progress auto-save-progress--saving" />
+              )}
+              {saveStatus === "saved" && (
+                <div className="auto-save-progress auto-save-progress--saved" />
+              )}
+            </>
           )}
-        </Row>
+        </div>
         <Row className="form-container px-3">
           <Col lg={7} xl={12}>
             {renderInputField("title")}

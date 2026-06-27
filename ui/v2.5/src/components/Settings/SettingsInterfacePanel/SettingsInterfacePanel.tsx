@@ -42,7 +42,11 @@ import {
   defaultImageWallDirection,
   defaultImageWallMargin,
 } from "src/utils/imageWall";
-import { defaultMaxOptionsShown, defaultPreviewVolume } from "src/core/config";
+import {
+  defaultAutoSaveDelay,
+  defaultMaxOptionsShown,
+  defaultPreviewVolume,
+} from "src/core/config";
 import { PatchComponent } from "src/patch";
 
 const allMenuItems = [
@@ -799,6 +803,21 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             value={ui.maxOptionsShown ?? defaultMaxOptionsShown}
             onChange={(v) => saveUI({ maxOptionsShown: v })}
           />
+          <BooleanSetting
+            id="auto_save"
+            headingID="config.ui.editing.auto_save.heading"
+            subHeadingID="config.ui.editing.auto_save.description"
+            checked={ui.autoSave ?? true}
+            onChange={(v) => saveUI({ autoSave: v })}
+          />
+          {(ui.autoSave ?? true) && (
+            <NumberSetting
+              id="auto_save_delay"
+              headingID="config.ui.editing.auto_save.delay.label"
+              value={ui.autoSaveDelay ?? defaultAutoSaveDelay}
+              onChange={(v) => saveUI({ autoSaveDelay: v })}
+            />
+          )}
           <SelectSetting
             id="rating_system"
             headingID="config.ui.editing.rating_system.type.label"
