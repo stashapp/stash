@@ -159,7 +159,8 @@
         "from_clipboard": "Depuis le presse-papiers",
         "selective_generate": "Génération sélective",
         "exclude_lowercase": "exclure",
-        "create_parent_tag": "Créer une étiquette parente"
+        "create_parent_tag": "Créer une étiquette parente",
+        "set_as_performer_image": "Définir comme image du performeur"
     },
     "actions_name": "Actions",
     "age": "Âge",
@@ -452,7 +453,11 @@
             "sprite_screenshot_size_desc": "Taille désirée pour chaque sprite en pixels.",
             "sprite_screenshot_size_head": "Taille des sprites",
             "use_custom_sprite_interval_head": "Utiliser un intervalle de sprite personnalisé",
-            "use_custom_sprite_interval_desc": "Active l'intervalle de sprite personnalisé selon les paramètres ci-dessous."
+            "use_custom_sprite_interval_desc": "Active l'intervalle de sprite personnalisé selon les paramètres ci-dessous.",
+            "default_marker_preview_duration_desc": "Durée (en secondes) des aperçus de marqueurs sans temps de fin. Cette valeur doit être supérieure à 0.",
+            "default_marker_preview_duration_head": "Durée par défaut de l'aperçu des marqueurs",
+            "max_marker_preview_duration_desc": "Durée maximale (en secondes) des aperçus de marqueurs. Une valeur de 0 désactive cette limite.",
+            "max_marker_preview_duration_head": "Durée maximale de l'aperçu des marqueurs"
         },
         "library": {
             "exclusions": "Exceptions",
@@ -909,6 +914,10 @@
                         "heading": "Volume des aperçus"
                     }
                 }
+            },
+            "autostart_gallery_slideshow": {
+                "description": "Lance automatiquement le diaporama lors de l'ouverture de la visionneuse d'une galerie depuis la page des galeries.",
+                "heading": "Lancement automatique du diaporama de la galerie"
             }
         },
         "advanced_mode": "Mode avancé",
@@ -1724,5 +1733,6 @@
     "scenes_size": "Taille de la scène",
     "refer_to": "Merci de consulter {link}.",
     "related_studios": "En rapport",
-    "sub_group_description": "Description du groupe affilié"
+    "sub_group_description": "Description du groupe affilié",
+    "scene_marker_count": "Nombre de marqueurs"
 }
