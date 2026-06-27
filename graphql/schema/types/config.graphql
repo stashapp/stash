@@ -13,6 +13,9 @@ input SetupInput {
   storeBlobsInDatabase: Boolean!
   "Empty to indicate default - only applicable if storeBlobsInDatabase is false"
   blobsLocation: String!
+  
+  initialUsername: String
+  initialPassword: String
 }
 
 enum StreamingResolutionEnum {
