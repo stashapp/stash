@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -1160,6 +1161,11 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	}
 	sort := findFilter.GetSort("title")
 
+	// custom_fields.<field>:<cast>:<direction> — handled before the CVE whitelist
+	if strings.HasPrefix(sort, "custom_fields.") {
+		return qb.setCustomFieldSort(query, sort[len("custom_fields."):])
+	}
+
 	// CVE-2024-32231 - ensure sort is in the list of allowed sorts
 	if err := sceneSortOptions.validateSort(sort); err != nil {
 		return err
@@ -1563,4 +1569,67 @@ func getFirstPath(scenes []*models.Scene) string {
 		}
 	}
 	return firstPath
+}
+
+// validCustomFieldSortCasts is the allowlist for CAST types in custom_field sort specs.
+var validCustomFieldSortCasts = map[string]bool{
+	"REAL": true, "INTEGER": true, "TEXT": true, "NUMERIC": true,
+}
+
+// validateCustomFieldSortName checks that name is a safe identifier for use as a
+// scene_custom_fields.field value: alphanumeric and underscore only, 1-64 chars.
+func validateCustomFieldSortName(name string) error {
+	if len(name) == 0 || len(name) > 64 {
+		return fmt.Errorf("custom_fields sort: field name must be 1-64 chars, got %d", len(name))
+	}
+	for _, c := range name {
+		if !unicode.IsLetter(c) && !unicode.IsDigit(c) && c != '_' {
+			return fmt.Errorf("custom_fields sort: field name must be alphanumeric or underscore, got %q", string(c))
+		}
+	}
+	return nil
+}
+
+// validateCustomFieldSortCast checks that cast is one of the allowed SQLite CAST types.
+func validateCustomFieldSortCast(cast string) error {
+	if !validCustomFieldSortCasts[cast] {
+		return fmt.Errorf("custom_fields sort: cast must be REAL, INTEGER, TEXT, or NUMERIC, got %q", cast)
+	}
+	return nil
+}
+
+// setCustomFieldSort handles sort strings of the form "<field>:<cast>:<direction>",
+// where the caller has already stripped the "custom_fields." prefix.
+// It adds a LEFT JOIN on scene_custom_fields and an ORDER BY CAST(value AS <cast>) <direction>.
+// The sortdir GraphQL/URL parameter is intentionally ignored — direction is self-contained.
+func (qb *SceneStore) setCustomFieldSort(query *queryBuilder, spec string) error {
+	parts := strings.SplitN(spec, ":", 3)
+	if len(parts) != 3 {
+		return fmt.Errorf("custom_fields sort: expected field:cast:direction, got %q", spec)
+	}
+	fieldName := parts[0]
+	castType := strings.ToUpper(parts[1])
+	direction := strings.ToUpper(parts[2])
+
+	if err := validateCustomFieldSortName(fieldName); err != nil {
+		return err
+	}
+	if err := validateCustomFieldSortCast(castType); err != nil {
+		return err
+	}
+	if direction != "ASC" && direction != "DESC" {
+		return fmt.Errorf("custom_fields sort: direction must be ASC or DESC, got %q", direction)
+	}
+
+	// fieldName is validated to alphanumeric+underscore — safe to inline as a SQL string literal.
+	// joinSort adds a LEFT JOIN marked as sort-related (sort:true), matching Stash's pattern.
+	query.joinSort("scene_custom_fields", "sort_cf",
+		"sort_cf.scene_id = scenes.id AND sort_cf.field = '"+fieldName+"'")
+	// SQLite NULL semantics: NULL < any value, so DESC puts NULLs last (correct for score rows),
+	// ASC puts NULLs first (correct for text/label rows). No override needed.
+	query.sortAndPagination += fmt.Sprintf(
+		"ORDER BY CAST(sort_cf.value AS %s) %s, COALESCE(scenes.title, scenes.id) COLLATE NATURAL_CI ASC ",
+		castType, direction,
+	)
+	return nil
 }
