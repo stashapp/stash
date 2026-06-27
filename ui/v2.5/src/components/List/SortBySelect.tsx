@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { SortDirectionEnum } from "src/core/generated-graphql";
 import {
   Button,
@@ -18,6 +18,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { ISortByOption } from "src/models/list-filter/filter-options";
 import { useConfigurationContext } from "src/hooks/Config";
+import ClearableInput from "../Shared/ClearableInput";
+import useFocus from "src/utils/focus";
+import ScreenUtils from "src/utils/screen";
 
 export const SortBySelect: React.FC<{
   className?: string;
@@ -40,6 +43,12 @@ export const SortBySelect: React.FC<{
   const { configuration } = useConfigurationContext();
   const { sfwContentMode } = configuration.interface;
 
+  const [filter, setFilter] = React.useState("");
+
+  const focusOnOpen = !ScreenUtils.isTouch();
+  const focusRef = useFocus();
+  const [, setFocus] = focusRef;
+
   const currentSortBy = options.find((o) => o.value === sortBy);
   const currentSortByMessageID = currentSortBy
     ? !sfwContentMode
@@ -47,7 +56,7 @@ export const SortBySelect: React.FC<{
       : (currentSortBy.sfwMessageID ?? currentSortBy.messageID)
     : "";
 
-  function renderSortByOptions() {
+  const sortedOptions = useMemo(() => {
     return options
       .map((o) => {
         const messageID = !sfwContentMode
@@ -58,22 +67,39 @@ export const SortBySelect: React.FC<{
           value: o.value,
         };
       })
-      .sort((a, b) => a.message.localeCompare(b.message))
-      .map((option) => (
-        <Dropdown.Item
-          onSelect={onChangeSortBy}
-          key={option.value}
-          className="bg-secondary text-white"
-          eventKey={option.value}
-          data-value={option.value}
-        >
-          {option.message}
-        </Dropdown.Item>
-      ));
-  }
+      .sort((a, b) => a.message.localeCompare(b.message));
+  }, [intl, options, sfwContentMode]);
+
+  const filteredOptions = useMemo(() => {
+    if (!filter) return sortedOptions;
+
+    return sortedOptions.filter((o) =>
+      o.message.toLowerCase().includes(filter.toLowerCase())
+    );
+  }, [sortedOptions, filter]);
+
+  const dropdownItems = useMemo(() => {
+    return filteredOptions.map((option) => (
+      <Dropdown.Item
+        onSelect={onChangeSortBy}
+        key={option.value}
+        className="bg-secondary text-white"
+        eventKey={option.value}
+        data-value={option.value}
+      >
+        {option.message}
+      </Dropdown.Item>
+    ));
+  }, [filteredOptions, onChangeSortBy]);
 
   return (
-    <Dropdown as={ButtonGroup} className={`${className ?? ""} sort-by-select`}>
+    <Dropdown
+      as={ButtonGroup}
+      className={`${className ?? ""} sort-by-select`}
+      onToggle={(v) => {
+        if (focusOnOpen && v) setTimeout(() => setFocus(true), 0);
+      }}
+    >
       <InputGroup.Prepend>
         <Dropdown.Toggle variant="secondary">
           {currentSortBy
@@ -82,7 +108,16 @@ export const SortBySelect: React.FC<{
         </Dropdown.Toggle>
       </InputGroup.Prepend>
       <Dropdown.Menu className="bg-secondary text-white">
-        {renderSortByOptions()}
+        <div className="sort-by-filter-container">
+          <ClearableInput
+            placeholder={`${intl.formatMessage({ id: "filter" })}...`}
+            value={filter}
+            setValue={setFilter}
+            focus={focusRef}
+          />
+        </div>
+
+        {dropdownItems}
       </Dropdown.Menu>
       <OverlayTrigger
         overlay={
