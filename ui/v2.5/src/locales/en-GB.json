@@ -1459,6 +1459,12 @@
   "seconds": "Seconds",
   "settings": "Settings",
   "setup": {
+    "credentials": {
+      "description": "Enter the username and password you want to use to login to stash system. These can be left blank if you do not want to enter a username/password to access the system. Credentials are mandatory for systems accessible from public internet.",
+      "heading": "Setup your credentials",
+      "password_invalid": "Password must be non-empty if username is set.",
+      "username_invalid": "Username must not have any leading or trailing whitespace."
+    },
     "confirm": {
       "almost_ready": "We're almost ready to complete the configuration. Please confirm the following settings. You can click back to change anything incorrect. If everything looks good, click Confirm to create your system.",
       "blobs_directory": "Binary data directory",
@@ -1468,6 +1474,7 @@
       "database_file_path": "Database file path",
       "generated_directory": "Generated directory",
       "nearly_there": "Nearly there!",
+      "password_set_warning": "Note: you will be asked to enter your credentials after the system is created.",
       "stash_library_directories": "Stash library directories"
     },
     "creating": {
