@@ -5,9 +5,23 @@ import { RatingSystemType } from "src/utils/rating";
 export function useRatingKeybinds(
   isVisible: boolean,
   ratingSystem: RatingSystemType | undefined,
-  setRating: (v: number) => void
+  setRating: (v: number) => void,
+  mousetrap: Pick<Mousetrap.MousetrapInstance, "bind" | "unbind"> = Mousetrap
 ) {
   const firstChar = useRef<string | undefined>(undefined);
+  const ratingTimeout = useRef<ReturnType<typeof setTimeout>>();
+
+  // (Re)start the 1s window after each "r"-initiated sequence, cancelling any
+  // pending unbind. Without this, pressing "r" again before the window elapses
+  // leaves the earlier timeout scheduled, which then unbinds the digit keys
+  // mid-sequence and drops the next keypress (e.g. a quick "r 3" then "r 4").
+  function restartRatingTimeout(unbind: () => void) {
+    if (ratingTimeout.current) clearTimeout(ratingTimeout.current);
+    ratingTimeout.current = setTimeout(() => {
+      ratingTimeout.current = undefined;
+      unbind();
+    }, 1000);
+  }
 
   const starRatingShortcuts: { [char: string]: number } = {
     "0": NaN,
@@ -20,23 +34,27 @@ export function useRatingKeybinds(
 
   function handleStarRatingKeybinds() {
     for (const key in starRatingShortcuts) {
-      Mousetrap.bind(key, () => setRating(starRatingShortcuts[key]));
+      mousetrap.bind(key, () => setRating(starRatingShortcuts[key]));
     }
 
-    setTimeout(() => {
+    restartRatingTimeout(() => {
       for (const key in starRatingShortcuts) {
-        Mousetrap.unbind(key);
+        mousetrap.unbind(key);
       }
-    }, 1000);
+    });
   }
 
   function handleDecimalKeybinds() {
-    Mousetrap.bind("`", () => {
+    // start each sequence fresh so a new "r" doesn't combine with a digit left
+    // buffered from a previous, abandoned sequence
+    firstChar.current = undefined;
+
+    mousetrap.bind("`", () => {
       setRating(NaN);
     });
 
     for (let i = 0; i <= 9; ++i) {
-      Mousetrap.bind(i.toString(), () => {
+      mousetrap.bind(i.toString(), () => {
         if (firstChar.current !== undefined) {
           let combined = parseInt(firstChar.current + i.toString(), 10);
           if (combined === 0) {
@@ -51,20 +69,20 @@ export function useRatingKeybinds(
       });
     }
 
-    setTimeout(() => {
+    restartRatingTimeout(() => {
       firstChar.current = undefined;
 
-      Mousetrap.unbind("`");
+      mousetrap.unbind("`");
       for (let i = 0; i <= 9; ++i) {
-        Mousetrap.unbind(i.toString());
+        mousetrap.unbind(i.toString());
       }
-    }, 1000);
+    });
   }
 
   useEffect(() => {
     if (!isVisible) return;
 
-    Mousetrap.bind("r", () => {
+    mousetrap.bind("r", () => {
       // numeric keypresses get caught by jwplayer, so blur the element
       // if the rating sequence is started
       if (document.activeElement instanceof HTMLElement) {
@@ -79,7 +97,7 @@ export function useRatingKeybinds(
     });
 
     return () => {
-      Mousetrap.unbind("r");
+      mousetrap.unbind("r");
     };
   });
 }
