@@ -159,7 +159,8 @@
         "invert_selection": "反轉選取",
         "create_new": "建立",
         "exclude_lowercase": "不包含",
-        "from_clipboard": "從剪貼簿讀取"
+        "from_clipboard": "從剪貼簿讀取",
+        "set_as_performer_image": "設定為演員封面"
     },
     "actions_name": "動作",
     "age": "年齡",
@@ -445,7 +446,11 @@
             "sprite_screenshot_size_desc": "每個縮圖的大小（像素）。",
             "sprite_screenshot_size_head": "縮圖大小",
             "use_custom_sprite_interval_head": "使用自訂縮圖間隔",
-            "use_custom_sprite_interval_desc": "勾選後，將依照下方的設定來套用自訂的縮圖間隔。"
+            "use_custom_sprite_interval_desc": "勾選後，將依照下方的設定來套用自訂的縮圖間隔。",
+            "default_marker_preview_duration_desc": "未設定結束時間時，標記預覽的長度（秒）。必須大於 0。",
+            "default_marker_preview_duration_head": "預設標記預覽長度",
+            "max_marker_preview_duration_desc": "標記預覽的最長長度（秒）。設定為 0 停用限制。",
+            "max_marker_preview_duration_head": "最長標記預覽長度"
         },
         "library": {
             "exclusions": "白名單",
@@ -902,6 +907,10 @@
             "sfw_mode": {
                 "description": "啟用此功能以進入 SFW 模式。啟用後，系統將隱藏或更動部分與成人內容相關的介面元素。",
                 "heading": "SFW 內容模式"
+            },
+            "autostart_gallery_slideshow": {
+                "description": "從圖庫頁面開啟圖片燈箱時，自動開始幻燈片播放。",
+                "heading": "自動開始圖庫幻燈片播放"
             }
         },
         "advanced_mode": "進階模式",
@@ -1018,7 +1027,7 @@
             "marker_screenshots": "章節截圖",
             "marker_screenshots_tooltip": "靜態 JPG 預覽，僅適用於設定為『靜態』的預覽類型",
             "markers": "章節預覽",
-            "markers_tooltip": "自標記的時間點算起長度 20 秒的短片預覽。",
+            "markers_tooltip": "自標記的時間點的短片預覽。",
             "override_preview_generation_options": "強制使用所選的預覽產生設定",
             "override_preview_generation_options_desc": "在本次工作排程中，強制使用所選的預覽產生設定。預設設定請見『系統』->『預覽產生設定』。",
             "overwrite": "覆寫現有的產生檔案",
@@ -1278,7 +1287,10 @@
         "update_performer": "更新演員資料",
         "update_performers": "更新演員",
         "updating_untagged_performers_description": "更新未標記演員將會嘗試比對所有缺少 stashid 的演員並更新其 Metadata。",
-        "performer_names_or_stashids_separated_by_comma": "演員名稱或 StashID (以逗號分隔)"
+        "performer_names_or_stashids_separated_by_comma": "演員名稱或 StashID (以逗號分隔)",
+        "configure_fields": "設定欄位",
+        "field_options": "欄位選項",
+        "field_options_description": "選擇各個欄位的更新方式：覆寫將替換現有資料、合併將新增至現有資料、跳過則保持不變。"
     },
     "performer_tags": "演員標籤",
     "performers": "演員",
@@ -1720,5 +1732,7 @@
             "no_fields_are_excluded": "未排除任何欄位",
             "no_instances_found": "找不到任何實例"
         }
-    }
+    },
+    "scene_marker_count": "章節標記數量",
+    "sub_group_description": "子群組敘述"
 }
