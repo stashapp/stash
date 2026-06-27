@@ -103,6 +103,7 @@ export interface IUIConfig {
 
   pinnedFilters?: Record<string, string[]>;
   tableColumns?: Record<string, string[]>;
+  pinnedSortBy?: Record<string, string[]>;
 
   advancedMode?: boolean;
 
