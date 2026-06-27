@@ -1013,7 +1013,7 @@
             "marker_screenshots": "Capturas de pantalla de marcadores",
             "marker_screenshots_tooltip": "Imágenes estáticas JPG de marcadores",
             "markers": "Vistas previas de marcadores",
-            "markers_tooltip": "Vídeos de 20 segundos de duración que comienzan a partir del tiempo seleccionado.",
+            "markers_tooltip": "Vistas previas de vídeo que comienzan a partir del tiempo seleccionado.",
             "override_preview_generation_options": "Sobrescribir opciones para la generación de vistas previas",
             "override_preview_generation_options_desc": "Sobrescribir opciones de generación de vistas previas para esta operación. Las opciones por defecto se configuran en Sistema -> Generación de vistas previas.",
             "overwrite": "Sobreescribir archivos generados ya existentes",
