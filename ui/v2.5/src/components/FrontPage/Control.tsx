@@ -13,6 +13,7 @@ import { SceneRecommendationRow } from "../Scenes/SceneRecommendationRow";
 import { StudioRecommendationRow } from "../Studios/StudioRecommendationRow";
 import { TagRecommendationRow } from "../Tags/TagRecommendationRow";
 import { SceneMarkerRecommendationRow } from "../Scenes/SceneMarkerRecommendationRow";
+import { TagCloudPanel } from "../Tags/TagCloudPanel";
 
 interface IFilter {
   mode: GQL.FilterMode;
@@ -182,6 +183,8 @@ export const Control: React.FC<IProps> = ({ content }) => {
       );
     case "CustomFilter":
       return <CustomFilterResults customFilter={content} />;
+    case "TagCloud":
+      return <TagCloudPanel />;
     default:
       return null;
   }

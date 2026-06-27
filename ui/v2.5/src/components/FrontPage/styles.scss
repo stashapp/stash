@@ -172,6 +172,23 @@
   }
 }
 
+/* Tag Cloud */
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  padding: 0.75rem 0 1rem;
+}
+
+.tag-cloud-link {
+  line-height: 1.4;
+  white-space: nowrap;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
 /* Slider */
 .slick-slider {
   box-sizing: border-box;

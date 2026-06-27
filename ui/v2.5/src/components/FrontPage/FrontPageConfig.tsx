@@ -8,6 +8,7 @@ import { useConfigurationContext } from "src/hooks/Config";
 import {
   ISavedFilterRow,
   ICustomFilter,
+  ITagCloud,
   FrontPageContent,
   generatePremadeFrontPageContent,
   getFrontPageContent,
@@ -70,6 +71,10 @@ const AddContentModal: React.FC<IAddSavedFilterModalProps> = ({
         setPremadeFilterIndex(undefined);
         setSavedFilter(undefined);
         break;
+      case "front_page.types.tag_cloud":
+        setPremadeFilterIndex(undefined);
+        setSavedFilter(undefined);
+        break;
     }
   }
 
@@ -79,6 +84,8 @@ const AddContentModal: React.FC<IAddSavedFilterModalProps> = ({
         return premadeFilterIndex !== undefined;
       case "front_page.types.saved_filter":
         return savedFilter !== undefined;
+      case "front_page.types.tag_cloud":
+        return true;
     }
 
     return false;
@@ -114,6 +121,7 @@ const AddContentModal: React.FC<IAddSavedFilterModalProps> = ({
     const options = [
       "front_page.types.premade_filter",
       "front_page.types.saved_filter",
+      "front_page.types.tag_cloud",
     ];
     return (
       <Form.Group controlId="filter">
@@ -194,6 +202,9 @@ const AddContentModal: React.FC<IAddSavedFilterModalProps> = ({
           savedFilterId: parseInt(savedFilter!, 10),
         });
         return;
+      case "front_page.types.tag_cloud":
+        onClose({ __typename: "TagCloud" });
+        return;
     }
 
     onClose();
@@ -250,6 +261,9 @@ const ContentRow: React.FC<IFilterRowProps> = (props: IFilterRowProps) => {
             asCustomFilter.message.values
           );
         return asCustomFilter.title ?? "";
+      }
+      case "TagCloud": {
+        return intl.formatMessage({ id: "tag_cloud" });
       }
     }
   }
