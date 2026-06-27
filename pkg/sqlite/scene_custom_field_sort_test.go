@@ -95,3 +95,20 @@ func TestSetCustomFieldSortValidation(t *testing.T) {
 		}
 	}
 }
+
+func TestSetCustomFieldSortPagination(t *testing.T) {
+	qb := &SceneStore{} // zero-value safe: setCustomFieldSort must not require a live DB handle
+	q := &queryBuilder{}
+	if err := qb.setCustomFieldSort(q, "smobile_rec_score:REAL:DESC"); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.HasPrefix(q.sortAndPagination, " ORDER BY") {
+		t.Errorf("sortAndPagination missing leading space: %q", q.sortAndPagination)
+	}
+	if !strings.Contains(q.sortAndPagination, "CAST(sort_cf.value AS REAL)") {
+		t.Errorf("sortAndPagination missing CAST: %q", q.sortAndPagination)
+	}
+	if !strings.Contains(q.sortAndPagination, "DESC") {
+		t.Errorf("sortAndPagination missing direction: %q", q.sortAndPagination)
+	}
+}

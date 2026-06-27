@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -1579,8 +1580,9 @@ var validCustomFieldSortCasts = map[string]bool{
 // validateCustomFieldSortName checks that name is a safe identifier for use as a
 // scene_custom_fields.field value: alphanumeric and underscore only, 1-64 chars.
 func validateCustomFieldSortName(name string) error {
-	if len(name) == 0 || len(name) > 64 {
-		return fmt.Errorf("custom_fields sort: field name must be 1-64 chars, got %d", len(name))
+	n := utf8.RuneCountInString(name)
+	if n == 0 || n > 64 {
+		return fmt.Errorf("custom_fields sort: field name must be 1-64 chars, got %d", n)
 	}
 	for _, c := range name {
 		if !unicode.IsLetter(c) && !unicode.IsDigit(c) && c != '_' {
@@ -1628,7 +1630,7 @@ func (qb *SceneStore) setCustomFieldSort(query *queryBuilder, spec string) error
 	// SQLite NULL semantics: NULL < any value, so DESC puts NULLs last (correct for score rows),
 	// ASC puts NULLs first (correct for text/label rows). No override needed.
 	query.sortAndPagination += fmt.Sprintf(
-		"ORDER BY CAST(sort_cf.value AS %s) %s, COALESCE(scenes.title, scenes.id) COLLATE NATURAL_CI ASC ",
+		" ORDER BY CAST(sort_cf.value AS %s) %s, COALESCE(scenes.title, scenes.id) COLLATE NATURAL_CI ASC ",
 		castType, direction,
 	)
 	return nil
