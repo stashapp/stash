@@ -1047,7 +1047,7 @@
             "marker_screenshots": "Captures d'écran des marqueurs",
             "marker_screenshots_tooltip": "Images JPG statiques des marqueurs",
             "markers": "Aperçus des marqueurs",
-            "markers_tooltip": "Vidéos de 20 secondes qui débutent au repère temporel donné.",
+            "markers_tooltip": "Aperçus vidéo commençant au repère temporel indiqué.",
             "override_preview_generation_options": "Remplacer les options de génération d'aperçu",
             "override_preview_generation_options_desc": "Remplacer les options de génération d'aperçu pour cette opération. Les valeurs par défaut sont définies dans Système -> Génération d'aperçus.",
             "overwrite": "Remplacer les fichiers existants",
