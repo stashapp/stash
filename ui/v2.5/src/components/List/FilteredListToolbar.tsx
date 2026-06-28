@@ -2,7 +2,8 @@ import React from "react";
 import { QueryResult } from "@apollo/client";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { PageSizeSelector, SearchTermInput, SortBySelect } from "./ListFilter";
+import { PageSizeSelector, SearchTermInput } from "./ListFilter";
+import { SortBySelect } from "./SortBySelect";
 import { ListViewButtonGroup } from "./ListViewOptions";
 import {
   IListFilterOperation,
