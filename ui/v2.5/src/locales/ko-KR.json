@@ -159,7 +159,8 @@
         "exclude_lowercase": "제외시키기",
         "from_clipboard": "클립보드에서 불러오기",
         "selective_generate": "선택적 생성",
-        "create_parent_tag": "부모 태그 생성"
+        "create_parent_tag": "부모 태그 생성",
+        "set_as_performer_image": "배우 사진으로 설정"
     },
     "actions_name": "액션",
     "age": "나이",
@@ -451,7 +452,11 @@
             "sprite_screenshot_size_desc": "각각의 스프라이트의 원하는 크기를 지정합니다 (픽셀).",
             "sprite_screenshot_size_head": "스프라이트 크기",
             "use_custom_sprite_interval_head": "사용자 지정 스프라이트 시간 간격 사용",
-            "use_custom_sprite_interval_desc": "사용자 지정 스프라이트 시간 간격을, 아래 설정과 같이 활성화합니다."
+            "use_custom_sprite_interval_desc": "사용자 지정 스프라이트 시간 간격을, 아래 설정과 같이 활성화합니다.",
+            "default_marker_preview_duration_desc": "종료 시간이 없는 마커 미리보기의 재생 길이(초)입니다. 0보다 커야 합니다.",
+            "default_marker_preview_duration_head": "마커 미리보기 재생 길이의 기본값",
+            "max_marker_preview_duration_desc": "마커 미리보기의 최대 재생 길이입니다. 0으로 설정하면 제한을 두지 않습니다.",
+            "max_marker_preview_duration_head": "마커 미리보기 재생 길이의 최댓값"
         },
         "library": {
             "exclusions": "제외",
@@ -908,6 +913,10 @@
                         "heading": "미리보기 음량"
                     }
                 }
+            },
+            "autostart_gallery_slideshow": {
+                "description": "갤러리 페이지에서 갤러리의 라이트박스를 열 때, 슬라이드쇼를 자동으로 시작합니다.",
+                "heading": "갤러리 슬라이드쇼 자동 시작"
             }
         },
         "advanced_mode": "고급 설정 모드",
@@ -1027,7 +1036,7 @@
             "marker_screenshots": "마커 스크린샷",
             "marker_screenshots_tooltip": "마커 고정 JPG 이미지",
             "markers": "마커 미리보기",
-            "markers_tooltip": "주어진 시간 코드에서 시작하는 20초 짜리 비디오입니다.",
+            "markers_tooltip": "주어진 타임코드에서 시작하는 비디오 미리보기입니다.",
             "override_preview_generation_options": "미리보기 생성 옵션 재정의",
             "override_preview_generation_options_desc": "이 작업에 대한 미리보기 생성 옵션을 재정의합니다. 기본값은 '시스템' -> '미리보기 생성'에서 설정됩니다.",
             "overwrite": "기존 파일들 덮어쓰기",
@@ -1724,5 +1733,6 @@
     "refer_to": "{link}를 참조해 주십시오.",
     "scenes_size": "영상 크기",
     "related_studios": "연관됨",
-    "sub_group_description": "서브그룹 설명"
+    "sub_group_description": "서브그룹 설명",
+    "scene_marker_count": "영상 마커 개수"
 }
