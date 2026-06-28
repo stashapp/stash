@@ -76,6 +76,11 @@ func (d *FileDeleter) MarkGeneratedFiles(scene *models.Scene) error {
 		files = append(files, heatmapPath)
 	}
 
+	// embedded subtitle tracks are cached one file per language
+	if embeddedCaptions, err := filepath.Glob(d.Paths.Scene.GetEmbeddedCaptionGlob(sceneHash)); err == nil {
+		files = append(files, embeddedCaptions...)
+	}
+
 	return d.FilesWithoutTrash(files)
 }
 

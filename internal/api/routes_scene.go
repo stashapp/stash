@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -408,6 +410,13 @@ func (rs sceneRoutes) InteractiveHeatmap(w http.ResponseWriter, r *http.Request)
 func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang string, ext string) {
 	s := r.Context().Value(sceneKey).(*models.Scene)
 
+	// embedded subtitle tracks have no sidecar file - extract them from the video
+	// container on demand and serve the cached result
+	if ext == models.CaptionTypeEmbedded {
+		rs.serveEmbeddedCaption(w, r, s, lang)
+		return
+	}
+
 	var captions []*models.VideoCaption
 	readTxnErr := rs.withReadTxn(r, func(ctx context.Context) error {
 		var err error
@@ -453,6 +462,57 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 		utils.ServeStaticContent(w, r, buf.Bytes())
 		return
 	}
+}
+
+// serveEmbeddedCaption extracts the embedded subtitle track for the given
+// language from the scene's video file (if not already cached), converts it to
+// WebVTT, caches it under the generated directory, and serves it.
+func (rs sceneRoutes) serveEmbeddedCaption(w http.ResponseWriter, r *http.Request, s *models.Scene, lang string) {
+	mgr := manager.GetInstance()
+
+	sceneHash := s.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
+	if sceneHash == "" {
+		http.Error(w, "scene has no hash", http.StatusInternalServerError)
+		return
+	}
+
+	cachePath := mgr.Paths.Scene.GetEmbeddedCaptionPath(sceneHash, lang)
+
+	// extract and cache on first request; subsequent requests serve the cached file
+	if exists, _ := fsutil.FileExists(cachePath); !exists {
+		subs, err := video.GetEmbeddedSubtitles(mgr.FFProbe, s.Path)
+		if err != nil {
+			logger.Warnf("error probing embedded subtitles for %q: %v", s.Path, err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		streamIndex := -1
+		for _, sub := range subs {
+			if sub.LanguageCode == lang {
+				streamIndex = sub.Index
+				break
+			}
+		}
+		if streamIndex == -1 {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+
+		if err := os.MkdirAll(filepath.Dir(cachePath), 0o755); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if err := video.ExtractEmbeddedSubtitle(r.Context(), mgr.FFMpeg, s.Path, streamIndex, cachePath); err != nil {
+			logger.Warnf("error extracting embedded subtitle for %q: %v", s.Path, err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	w.Header().Set("Content-Type", "text/vtt")
+	utils.ServeStaticFile(w, r, cachePath)
 }
 
 func (rs sceneRoutes) CaptionLang(w http.ResponseWriter, r *http.Request) {

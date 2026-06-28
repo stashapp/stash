@@ -277,6 +277,12 @@ type SceneFileType struct {
 	Bitrate    *int     `graphql:"bitrate" json:"bitrate"`
 }
 
+// CaptionTypeEmbedded is the reserved caption type used for subtitle tracks that
+// are embedded inside the video container. Unlike sidecar captions (e.g. "srt" or
+// "vtt"), these have no caption file on disk - they are extracted from the video
+// on demand and cached. See the scene caption route.
+const CaptionTypeEmbedded = "embedded"
+
 type VideoCaption struct {
 	LanguageCode string `json:"language_code"`
 	Filename     string `json:"filename"`
@@ -285,4 +291,10 @@ type VideoCaption struct {
 
 func (c VideoCaption) Path(filePath string) string {
 	return filepath.Join(filepath.Dir(filePath), c.Filename)
+}
+
+// IsEmbedded returns true if the caption refers to a subtitle track embedded in
+// the video file rather than a sidecar caption file.
+func (c VideoCaption) IsEmbedded() bool {
+	return c.CaptionType == CaptionTypeEmbedded
 }

@@ -381,6 +381,20 @@ func (v *VideoFile) getVideoStream() *FFProbeStream {
 	return nil
 }
 
+// GetSubtitleStreams returns all subtitle streams in the file, excluding
+// attached pictures. The returned streams reference the underlying probe data,
+// so callers should not retain them beyond the lifetime of the VideoFile.
+func (v *VideoFile) GetSubtitleStreams() []*FFProbeStream {
+	var ret []*FFProbeStream
+	for i := range v.JSON.Streams {
+		s := &v.JSON.Streams[i]
+		if s.CodecType == "subtitle" && s.Disposition.AttachedPic == 0 {
+			ret = append(ret, s)
+		}
+	}
+	return ret
+}
+
 func (v *VideoFile) getStreamIndex(fileType string, probeJSON FFProbeJSON) int {
 	ret := -1
 	for i, stream := range probeJSON.Streams {

@@ -8,6 +8,8 @@ import (
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/internal/manager"
+	"github.com/stashapp/stash/pkg/file/video"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/signedurl"
@@ -183,7 +185,19 @@ func (r *sceneResolver) Captions(ctx context.Context, obj *models.Scene) (ret []
 		return nil, err
 	}
 
-	return ret, err
+	// Include subtitle tracks embedded in the video container. These are extracted
+	// on demand when requested (see the scene caption route). Probing is best-effort:
+	// a failure here must not break the scene query.
+	if mgr := manager.GetInstance(); mgr != nil && mgr.FFProbe != nil {
+		embedded, eerr := video.EmbeddedCaptions(mgr.FFProbe, primaryFile.Path)
+		if eerr != nil {
+			logger.Debugf("error detecting embedded captions for %q: %v", primaryFile.Path, eerr)
+		} else {
+			ret = append(ret, embedded...)
+		}
+	}
+
+	return ret, nil
 }
 
 func (r *sceneResolver) Galleries(ctx context.Context, obj *models.Scene) (ret []*models.Gallery, err error) {
