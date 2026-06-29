@@ -159,7 +159,8 @@
         "exclude_lowercase": "välista",
         "from_clipboard": "Lõikelaualt",
         "selective_generate": "Valiv genereerimine",
-        "create_parent_tag": "Loo vanemsilt"
+        "create_parent_tag": "Loo vanemsilt",
+        "set_as_performer_image": "Määra näitleja pildiks"
     },
     "actions_name": "Tegevused",
     "age": "Vanus",
@@ -446,7 +447,11 @@
             "sprite_screenshot_size_desc": "Iga spraidi soovitud suurus pikslites.",
             "sprite_screenshot_size_head": "Spraidi suurus",
             "use_custom_sprite_interval_head": "Kasuta kohandatud spraitide intervalli",
-            "use_custom_sprite_interval_desc": "Luba kohandatud spraitide intervall vastavalt allolevatele sätetele."
+            "use_custom_sprite_interval_desc": "Luba kohandatud spraitide intervall vastavalt allolevatele sätetele.",
+            "default_marker_preview_duration_desc": "Markerite eelvaadete pikkus (sekundites), ilma lõpuajata. Peab olema suurem kui 0.",
+            "default_marker_preview_duration_head": "Vaikimisi markerite eelvaate pikkus",
+            "max_marker_preview_duration_desc": "Markerite eelvaadete maksimaalne pikkus (sekundites). 0 keelab limiidi.",
+            "max_marker_preview_duration_head": "Maksimaalne markerite eelvaate pikkus"
         },
         "library": {
             "exclusions": "Välistused",
@@ -496,7 +501,11 @@
             "anonymising_database": "Muudan andmebaasi anonüümseks",
             "auto_tag": {
                 "auto_tagging_all_paths": "Automaatne märkimine kõikidel failiteedel",
-                "auto_tagging_paths": "Automaatne märkimine järgnevatel failiteedel"
+                "auto_tagging_paths": "Automaatne märkimine järgnevatel failiteedel",
+                "disable_warning": {
+                    "description": "Keela kinnitushoiatus, mida näidatakse enne automaatset sildistamist.",
+                    "heading": "Keela automaatse sildistamise hoiatus"
+                }
             },
             "auto_tag_based_on_filenames": "Märgi sisu automaatselt vastavalt failinimedele.",
             "auto_tagging": "Automaatne märkimine",
@@ -899,6 +908,10 @@
                         "heading": "Eelvaate helitugevus"
                     }
                 }
+            },
+            "autostart_gallery_slideshow": {
+                "description": "Alusta slaidiesitust automaatselt, kui avatakse galerii lehelt galerii valguskast.",
+                "heading": "Alusta galerii slaidiesitlust automaatself"
             }
         },
         "advanced_mode": "Täpsem režiim",
@@ -1026,7 +1039,7 @@
             "marker_screenshots": "Markeri ekraanipildid",
             "marker_screenshots_tooltip": "Markeeri staatilised JPG-kujutised",
             "markers": "Markeri eelvaated",
-            "markers_tooltip": "20-sekundilised videod, mis algavad etteantud ajakoodiga.",
+            "markers_tooltip": "20-sekundilised Video eelvaated, mis algavad etteantud ajakoodiga.",
             "override_preview_generation_options": "Eelvaate genereerimise valikute ülekirjutamine",
             "override_preview_generation_options_desc": "Eelvaate genereerimise sätete üle kirjutamine selle operatsiooni jaoks. Vaikeseaded määratakse jaotises Süsteem -> Eelvaate Genereerimine.",
             "overwrite": "Kirjuta üle olemasolevad failid",
@@ -1073,7 +1086,8 @@
         "studios_found": "{count} stuudiot leitud",
         "tags_found": "{count} silti leitud",
         "scrape_results_missing": "Puudub",
-        "edit_entity_count_title": "Redigeeri {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}"
+        "edit_entity_count_title": "Redigeeri {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "dont_show_again": "Ära näita seda hoiatust edaspidi"
     },
     "dimensions": "Dimensioonid",
     "director": "Režissöör",
@@ -1293,7 +1307,10 @@
         "update_performer": "Uuenda Näitlejat",
         "update_performers": "Uuenda Näitlejaid",
         "updating_untagged_performers_description": "Märgistamata esinejate värskendamisel püütakse leida vasteid esinejatele, kellel puudub stashid, ja värskendatakse metaandmeid.",
-        "performer_names_or_stashids_separated_by_comma": "Näitlejate nimed või StashID-d eraldatud komadega"
+        "performer_names_or_stashids_separated_by_comma": "Näitlejate nimed või StashID-d eraldatud komadega",
+        "configure_fields": "Muuda Välju",
+        "field_options": "Välja Valikud",
+        "field_options_description": "Vali, kuidas igat välja uuendatakse: kirjuta üle asendab olemasoleva informatsiooni, mesti lisab sellele, jäta vahele jätab selle muutumata."
     },
     "performer_tags": "Näitleja Sildid",
     "performers": "Näitlejad",
@@ -1715,5 +1732,7 @@
     "empty_value": "tühi",
     "refer_to": "Palun vaata {link}.",
     "scenes_size": "Ekraani Suurus",
-    "related_studios": "Seotud"
+    "related_studios": "Seotud",
+    "scene_marker_count": "Stseeni Markerite Arv",
+    "sub_group_description": "Alam-Grupi Kirjeldus"
 }
