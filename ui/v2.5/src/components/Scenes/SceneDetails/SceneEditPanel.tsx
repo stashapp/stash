@@ -884,18 +884,23 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 {intl.formatMessage({ id: "cover_image" })}
               </Form.Label>
               {image}
-              <div className="mt-2 d-flex align-items-center">
-                {!isNew && (
-                  <ImageInput
-                    isEditing
-                    onImageChange={onCoverImageChange}
-                    onImageURL={onImageLoad}
-                    onGenerateDefault={onGenerateThumbDefault}
-                    onGenerateCurrent={onGenerateThumbFromCurrent}
-                    onReset={scene.id ? () => onResetCover() : undefined}
-                  />
-                )}
-              </div>
+              <ImageInput
+                isEditing
+                onImageChange={onCoverImageChange}
+                onImageURL={onImageLoad}
+                // Generate/clear-from-server actions require a saved scene.
+                onGenerateDefault={
+                  !isNew ? onGenerateThumbDefault : undefined
+                }
+                onGenerateCurrent={
+                  !isNew ? onGenerateThumbFromCurrent : undefined
+                }
+                onReset={
+                  formik.values.cover_image
+                    ? () => onResetCover()
+                    : undefined
+                }
+              />
             </Form.Group>
 
             <CustomFieldsInput
