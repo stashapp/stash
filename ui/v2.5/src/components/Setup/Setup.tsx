@@ -720,6 +720,7 @@ const CredentialsStep: React.FC<IWizardStep> = ({ goBack, next }) => {
             })}
             value={username}
             onChange={(e) => setUsername(e.currentTarget.value)}
+            isInvalid={!usernameValid}
           />
           <Form.Control.Feedback type="invalid">
             {!usernameValid
@@ -740,6 +741,7 @@ const CredentialsStep: React.FC<IWizardStep> = ({ goBack, next }) => {
               })}
               value={password}
               onChange={(e) => setPassword(e.currentTarget.value)}
+              isInvalid={!passwordValid}
             />
             <Form.Control.Feedback type="invalid">
               {!passwordValid
