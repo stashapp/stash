@@ -20,6 +20,8 @@ import { FolderSelectDialog } from "../Shared/FolderSelect/FolderSelectDialog";
 import {
   faEllipsisH,
   faExclamationTriangle,
+  faEye,
+  faEyeSlash,
 } from "@fortawesome/free-solid-svg-icons";
 import { ExternalLink } from "../Shared/ExternalLink";
 
@@ -681,6 +683,49 @@ function validatePassword(username: string, password: string) {
   return true;
 }
 
+const PasswordField: React.FC<{
+  password: string;
+  setPassword: React.Dispatch<React.SetStateAction<string>>;
+  isInvalid?: boolean;
+}> = ({ password, setPassword, isInvalid }) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const intl = useIntl();
+
+  const type = showPassword ? "text" : "password";
+  const hideShowTextID = showPassword ? "actions.hide" : "actions.show";
+  const icon = showPassword ? faEyeSlash : faEye;
+
+  return (
+    <div className="password-field-group">
+      <Form.Control
+        className="text-input"
+        type={type}
+        placeholder={intl.formatMessage({
+          id: "login.password",
+        })}
+        value={password}
+        onChange={(e) => setPassword(e.currentTarget.value)}
+        isInvalid={isInvalid}
+      />
+      <Button
+        variant="secondary"
+        onClick={() => setShowPassword(!showPassword)}
+        title={intl.formatMessage({ id: hideShowTextID })}
+        className="show-password-button"
+      >
+        <Icon icon={icon} />
+      </Button>
+      <Form.Control.Feedback type="invalid">
+        {isInvalid
+          ? intl.formatMessage({
+              id: "setup.credentials.password_invalid",
+            })
+          : null}
+      </Form.Control.Feedback>
+    </div>
+  );
+};
+
 const CredentialsStep: React.FC<IWizardStep> = ({ goBack, next }) => {
   const { setupState } = useSetupContext();
   const intl = useIntl();
@@ -733,23 +778,11 @@ const CredentialsStep: React.FC<IWizardStep> = ({ goBack, next }) => {
             <FormattedMessage id="login.password" />:
           </Form.Label>
           <Form.Group id="password">
-            <Form.Control
-              className="text-input"
-              type="password"
-              placeholder={intl.formatMessage({
-                id: "login.password",
-              })}
-              value={password}
-              onChange={(e) => setPassword(e.currentTarget.value)}
+            <PasswordField
+              password={password}
+              setPassword={setPassword}
               isInvalid={!passwordValid}
             />
-            <Form.Control.Feedback type="invalid">
-              {!passwordValid
-                ? intl.formatMessage({
-                    id: "setup.credentials.password_invalid",
-                  })
-                : null}
-            </Form.Control.Feedback>
           </Form.Group>
         </Form.Group>
       </section>
