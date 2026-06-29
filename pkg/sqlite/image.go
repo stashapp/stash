@@ -736,31 +736,7 @@ func (qb *ImageStore) OCountByStudioID(ctx context.Context, studioID int, depth 
 	var ret int
 
 	if depth != 0 {
-		q := `
-		WITH RECURSIVE sub_studios AS (
-			SELECT id, 0 AS level FROM studios WHERE id = ?
-			UNION ALL
-			SELECT s.id, ss.level + 1 FROM studios s
-			INNER JOIN sub_studios ss ON s.parent_id = ss.id
-			WHERE ss.level < ? OR ? < 0
-		)
-		SELECT COALESCE(SUM(o_counter), 0) FROM images
-		WHERE images.studio_id IN (SELECT id FROM sub_studios)`
-
-		rows, err := dbWrapper.QueryxContext(ctx, q, studioID, depth, depth)
-		if err != nil {
-			return 0, fmt.Errorf("querying image o_count by studio: %w", err)
-		}
-		defer rows.Close()
-		for rows.Next() {
-			if err := rows.Scan(&ret); err != nil {
-				return 0, fmt.Errorf("scanning image o_count: %w", err)
-			}
-		}
-		if err := rows.Err(); err != nil {
-			return 0, fmt.Errorf("iterating image o_count rows: %w", err)
-		}
-		return ret, nil
+		return qb.oCountByStudioIDRecursive(ctx, studioID, depth)
 	}
 
 	table := qb.table()
@@ -784,6 +760,36 @@ func (qb *ImageStore) OCount(ctx context.Context) (int, error) {
 		return 0, err
 	}
 
+	return ret, nil
+}
+
+func (qb *ImageStore) oCountByStudioIDRecursive(ctx context.Context, studioID int, depth int) (int, error) {
+	q := `
+	WITH RECURSIVE sub_studios AS (
+		SELECT id, 0 AS level FROM studios WHERE id = ?
+		UNION ALL
+		SELECT s.id, ss.level + 1 FROM studios s
+		INNER JOIN sub_studios ss ON s.parent_id = ss.id
+		WHERE ss.level < ? OR ? < 0
+	)
+	SELECT COALESCE(SUM(o_counter), 0) FROM images
+	WHERE images.studio_id IN (SELECT id FROM sub_studios)`
+
+	rows, err := dbWrapper.QueryxContext(ctx, q, studioID, depth, depth)
+	if err != nil {
+		return 0, fmt.Errorf("querying image o_count by studio: %w", err)
+	}
+	defer rows.Close()
+
+	var ret int
+	for rows.Next() {
+		if err := rows.Scan(&ret); err != nil {
+			return 0, fmt.Errorf("scanning image o_count: %w", err)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return 0, fmt.Errorf("iterating image o_count rows: %w", err)
+	}
 	return ret, nil
 }
 

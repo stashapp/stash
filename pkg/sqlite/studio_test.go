@@ -1942,6 +1942,16 @@ func TestStudioQueryCustomFields(t *testing.T) {
 	}
 }
 
+// TODO Create
+// TODO Update
+// TODO Destroy
+// TODO Find
+// TODO FindBySceneID
+// TODO Count
+// TODO All
+// TODO AllSlim
+// TODO Query
+
 func TestStudioOCountByStudioID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		// studioIdxWithTwoImages has images 13 and 14 with o_counter 1 and 2
