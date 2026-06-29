@@ -172,7 +172,9 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
                 </Button>
               </div>
             )}
-            {(onGenerateDefault || onGenerateCurrent) && <hr className="my-1" />}
+            {(onGenerateDefault || onGenerateCurrent) && (
+              <div className="set-image-menu-divider" />
+            )}
             {onGenerateDefault && (
               <div>
                 <Button className="minimal" onClick={onGenerateDefault}>
@@ -199,7 +201,7 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
             )}
             {onReset && (
               <>
-                <hr className="my-1" />
+                <div className="set-image-menu-divider" />
                 <div>
                   <Button className="minimal" onClick={onReset}>
                     <Icon icon={faTrashAlt} className="fa-fw" />
