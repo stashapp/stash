@@ -1081,7 +1081,7 @@
       "marker_screenshots": "Marker screenshots",
       "marker_screenshots_tooltip": "Marker static JPG images",
       "markers": "Marker previews",
-      "markers_tooltip": "20 second videos which begin at the given timecode.",
+      "markers_tooltip": "Video previews which begin at the given timecode.",
       "override_preview_generation_options": "Override preview generation options",
       "override_preview_generation_options_desc": "Override preview generation options for this operation. Defaults are set in System -> Preview Generation.",
       "overwrite": "Overwrite existing files",
