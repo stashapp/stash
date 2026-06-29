@@ -1014,6 +1014,7 @@ div.dropdown-menu {
 #set-image-popover {
   .set-image-menu-divider {
     border-top: 1px solid $textfield-bg;
+    color: $text-color;
     height: 0;
     margin: 0.25rem -0.75rem;
     overflow: hidden;
