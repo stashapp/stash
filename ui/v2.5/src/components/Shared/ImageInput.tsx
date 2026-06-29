@@ -145,7 +145,7 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
           <>
             <div>
               <Form.Label className="image-input">
-                <Button variant="secondary">
+                <Button className="minimal">
                   <Icon icon={faFile} className="fa-fw" />
                   <span>{intl.formatMessage({ id: "actions.from_file" })}</span>
                 </Button>
