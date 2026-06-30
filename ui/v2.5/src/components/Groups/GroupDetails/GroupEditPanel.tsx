@@ -196,7 +196,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
       formik.setFieldValue("date", state.date);
     }
 
-    if (state.studio && state.studio.stored_id) {
+    if (state.studio?.stored_id) {
       onSetStudio({
         id: state.studio.stored_id,
         name: state.studio.name ?? "",
@@ -250,7 +250,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
 
     try {
       const result = await queryScrapeGroupURL(url);
-      if (!result.data || !result.data.scrapeGroupURL) {
+      if (!result.data?.scrapeGroupURL) {
         return;
       }
 

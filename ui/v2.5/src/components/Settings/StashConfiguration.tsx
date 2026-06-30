@@ -23,8 +23,8 @@ const Stash: React.FC<IStashProps> = ({
   onEdit,
   onDelete,
 }) => {
-  // eslint-disable-next-line
-  const handleInput = (key: string, value: any) => {
+  // XXbiome-ignore
+  const handleInput = (key: string, value: unknown) => {
     const newObj = {
       ...stash,
       [key]: value,
@@ -106,7 +106,7 @@ const StashConfiguration: React.FC<IStashConfigurationProps> = ({
   }
 
   function onDelete(index: number) {
-    setStashes(stashes.filter((v, i) => i !== index));
+    setStashes(stashes.filter((_v, i) => i !== index));
   }
 
   function onNew() {

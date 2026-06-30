@@ -43,9 +43,9 @@ import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
 import { languageMap } from "src/utils/caption";
 import { VIDEO_PLAYER_ID } from "./util";
 
-// @ts-ignore
+// @ts-expect-error
 import airplay from "@silvermine/videojs-airplay";
-// @ts-ignore
+// @ts-expect-error
 import chromecast from "@silvermine/videojs-chromecast";
 import abLoopPlugin from "videojs-abloop";
 import ScreenUtils from "src/utils/screen";
@@ -418,7 +418,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
       const vjs = videojs(videoEl, options);
 
-      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+      /* biome-ignore lint/suspicious/noExplicitAny: intentional */
       const settings = (vjs as any).textTrackSettings;
       settings.setValues({
         backgroundColor: "#000",
@@ -442,8 +442,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       // showAbLoopControls is necessary to re-init the player when the config changes
       // Note: interfaceConfig?.autostartVideo is intentionally excluded to prevent
       // player re-initialization when toggling autostart (which would interrupt playback)
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [uiConfig?.showAbLoopControls, uiConfig?.enableChromecast]);
+      // XXbiome-ignore lint/correctness/useExhaustiveDependencies: intentional
+    }, [
+      uiConfig?.showAbLoopControls,
+      uiConfig?.enableChromecast,
+      interfaceConfig?.autostartVideo,
+    ]);
 
     useEffect(() => {
       const player = getPlayer();
@@ -659,7 +663,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         const languageCode = getDefaultLanguageCode();
         let hasDefault = false;
 
-        for (let caption of scene.captions) {
+        for (const caption of scene.captions) {
           const lang = caption.language_code;
           let label = lang;
           if (languageMap.has(lang)) {
@@ -667,7 +671,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
           }
 
           label = label + " (" + caption.caption_type + ")";
-          const setAsDefault = !hasDefault && languageCode == lang;
+          const setAsDefault = !hasDefault && languageCode === lang;
           if (setAsDefault) {
             hasDefault = true;
           }
@@ -847,7 +851,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     }, [
       getPlayer,
       scene,
-      vrTag,
       trackActivity,
       minimumPlayPercent,
       sceneIncrementPlayCount,
@@ -962,7 +965,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
         return;
       }
-      if (event.key == " ") {
+      if (event.key === " ") {
         event.preventDefault();
         event.stopPropagation();
         if (player.paused()) {
@@ -973,8 +976,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       }
     }
 
-    const isPortrait =
-      file && file.height && file.width && file.height > file.width;
+    const isPortrait = file?.height && file?.width && file.height > file.width;
 
     return (
       <div

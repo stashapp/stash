@@ -257,6 +257,7 @@ Returns `void`.
 - `GroupCardGrid`
 - `GroupIDSelect`
 - `GroupList`
+- `GroupPage`
 - `GroupRecommendationRow`
 - `GroupSelect`
 - `GroupSelect.sort`
@@ -343,6 +344,7 @@ Returns `void`.
 - `StudioDetailsPanel`
 - `StudioIDSelect`
 - `StudioList`
+- `StudioPage`
 - `StudioRecommendationRow`
 - `StudioSelect`
 - `StudioSelect.sort`
@@ -358,6 +360,7 @@ Returns `void`.
 - `TagIDSelect`
 - `TagLink`
 - `TagList`
+- `TagPage`
 - `TagRecommendationRow`
 - `TagSelect`
 - `TagSelect.sort`

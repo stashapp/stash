@@ -106,7 +106,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   slideshowEnabled = false,
   page,
   pages,
-  pageSize: pageSize = 40,
+  pageSize = 40,
   pageCallback,
   chapters = [],
   hide,
@@ -233,7 +233,7 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   // slideshowInterval is used for controlling the logic
   // displaySlideshowInterval is for display purposes only
-  // keeping them separate and independant allows us to handle the logic however we want
+  // keeping them separate and independent allows us to handle the logic however we want
   // while still displaying something that makes sense to the user
   const [slideshowInterval, setSlideshowInterval] = useState<number | null>(
     null
@@ -291,6 +291,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
   }, [index, images.length]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional reset on images change
   useEffect(() => {
     // reset images loaded counter for new images
     setImagesLoaded(0);
@@ -324,7 +325,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       document.body.style.overflow = "hidden";
       Mousetrap.pause();
     }
-  }, [initialIndex, isVisible, setIndex, index]);
+  }, [initialIndex, isVisible, index]);
 
   const toggleSlideshow = useCallback(() => {
     if (slideshowInterval) {
@@ -351,8 +352,7 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
     const { className } = e.target as Element;
-    if (className && className.includes && className.includes(CLASSNAME_IMAGE))
-      close();
+    if (className?.includes?.(CLASSNAME_IMAGE)) close();
   };
 
   const handleLeft = useCallback(
@@ -380,15 +380,7 @@ export const LightboxComponent: React.FC<IProps> = ({
         resetIntervalCallback.current();
       }
     },
-    [
-      images,
-      pageCallback,
-      isSwitchingPage,
-      resetIntervalCallback,
-      index,
-      disableAnimation,
-      setInstant,
-    ]
+    [images, pageCallback, isSwitchingPage, index, disableAnimation, setInstant]
   );
 
   const handleRight = useCallback(
@@ -416,16 +408,7 @@ export const LightboxComponent: React.FC<IProps> = ({
         resetIntervalCallback.current();
       }
     },
-    [
-      images,
-      setIndex,
-      pageCallback,
-      isSwitchingPage,
-      resetIntervalCallback,
-      index,
-      disableAnimation,
-      setInstant,
-    ]
+    [images, pageCallback, isSwitchingPage, index, disableAnimation, setInstant]
   );
 
   const firstScroll = useRef<number | null>(null);
@@ -446,12 +429,6 @@ export const LightboxComponent: React.FC<IProps> = ({
     },
     [setInstant, handleLeft, handleRight, close]
   );
-  const handleFullScreenChange = () => {
-    if (clearIntervalCallback.current) {
-      clearIntervalCallback.current();
-    }
-    setFullscreen(document.fullscreenElement !== null);
-  };
 
   const [clearCallback, resetCallback] = useInterval(
     () => {
@@ -464,6 +441,13 @@ export const LightboxComponent: React.FC<IProps> = ({
   clearIntervalCallback.current = clearCallback;
 
   useEffect(() => {
+    const handleFullScreenChange = () => {
+      if (clearIntervalCallback.current) {
+        clearIntervalCallback.current();
+      }
+      setFullscreen(document.fullscreenElement !== null);
+    };
+
     if (isVisible) {
       document.addEventListener("keydown", handleKey);
       document.addEventListener("fullscreenchange", handleFullScreenChange);
@@ -489,14 +473,14 @@ export const LightboxComponent: React.FC<IProps> = ({
   }
 
   const navItems = images.map((image, i) =>
-    React.createElement(image.paths.preview != "" ? "video" : "img", {
-      loop: image.paths.preview != "",
-      autoPlay: image.paths.preview != "",
-      playsInline: image.paths.preview != "",
+    React.createElement(image.paths.preview !== "" ? "video" : "img", {
+      loop: image.paths.preview !== "",
+      autoPlay: image.paths.preview !== "",
+      playsInline: image.paths.preview !== "",
       src:
-        image.paths.preview != ""
-          ? image.paths.preview ?? ""
-          : image.paths.thumbnail ?? "",
+        image.paths.preview !== ""
+          ? (image.paths.preview ?? "")
+          : (image.paths.thumbnail ?? ""),
       alt: "",
       className: cx(CLASSNAME_NAVIMAGE, {
         [CLASSNAME_NAVSELECTED]: i === index,
@@ -535,7 +519,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   function gotoPage(imageIndex: number) {
     const indexInPage = (imageIndex - 1) % pageSize;
     if (pageCallback) {
-      let jumppage = Math.floor((imageIndex - 1) / pageSize) + 1;
+      const jumppage = Math.floor((imageIndex - 1) / pageSize) + 1;
       if (page !== jumppage) {
         pageCallback({ page: jumppage });
         oldImages.current = images;
@@ -554,7 +538,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       : imageNumber;
 
     let chapterTitle = "";
-    chapters.forEach(function (chapter) {
+    chapters.forEach((chapter) => {
       if (chapter.image_index > globalIndex) {
         return;
       }
@@ -999,7 +983,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   }
 
   if (!isVisible) {
-    return <></>;
+    return null;
   }
 
   return (

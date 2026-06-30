@@ -200,12 +200,12 @@ export const ImageEditPanel: React.FC<IProps> = ({
   }
 
   async function onScrapeClicked(s: GQL.ScraperSourceInput) {
-    if (!image || !image.id) return;
+    if (!image?.id) return;
 
     setIsLoading(true);
     try {
       const result = await queryScrapeImage(s.scraper_id!, image.id);
-      if (!result.data || !result.data.scrapeSingleImage?.length) {
+      if (!result.data?.scrapeSingleImage?.length) {
         Toast.success("No images found");
         return;
       }
@@ -304,7 +304,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
     setIsLoading(true);
     try {
       const result = await queryScrapeImageURL(url);
-      if (!result || !result.data || !result.data.scrapeImageURL) {
+      if (!result.data?.scrapeImageURL) {
         return;
       }
       setScrapedImage(result.data.scrapeImageURL);
@@ -383,7 +383,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
     const date = (() => {
       try {
         return schema.validateSyncAt("date", formik.values);
-      } catch (e) {
+      } catch (_e) {
         return undefined;
       }
     })();

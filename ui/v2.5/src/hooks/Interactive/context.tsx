@@ -220,7 +220,7 @@ export const InteractiveProvider: React.FC = ({ children }) => {
         );
         setCurrentScript(funscriptPath);
         setState(ConnectionState.Ready);
-      } catch (e) {
+      } catch (_e) {
         setState(ConnectionState.Error);
       }
     },

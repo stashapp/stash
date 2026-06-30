@@ -106,13 +106,13 @@ func (qb *performerFilterHandler) handle(ctx context.Context, f *filterBuilder) 
 		return
 	}
 
+	f.handleCriterion(ctx, qb.criterionHandler())
+
 	sf := filter.SubFilter()
 	if sf != nil {
 		sub := &performerFilterHandler{sf}
 		handleSubFilter(ctx, sub, f, filter.OperatorFilter)
 	}
-
-	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
 func (qb *performerFilterHandler) criterionHandler() criterionHandler {

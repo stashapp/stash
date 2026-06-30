@@ -15,6 +15,7 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
 	"github.com/stashapp/stash/pkg/fsutil"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -34,8 +35,16 @@ func (g Generator) SpriteScreenshot(ctx context.Context, input string, seconds f
 	}
 
 	args := transcoder.ScreenshotTime(input, seconds, ssOptions)
+	img, err := g.generateImage(lockCtx, args)
+	if err != nil {
+		logger.Warnf("[generator] fast sprite screenshot seek failed for %s at %.3fs, retrying with accurate seek: %v", input, seconds, err)
 
-	return g.generateImage(lockCtx, args)
+		ssOptions.SlowSeek = true
+		args = transcoder.ScreenshotTime(input, seconds, ssOptions)
+		return g.generateImage(lockCtx, args)
+	}
+
+	return img, nil
 }
 
 func (g Generator) SpriteScreenshotSlow(ctx context.Context, input string, frame int, width int) (image.Image, error) {

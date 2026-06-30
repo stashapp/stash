@@ -215,7 +215,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
               ss.stash_box_endpoint === s.source.stash_box_endpoint
           );
 
-          if (!found) return;
+          if (!found) return undefined;
 
           const ret: IScraperSource = {
             ...found,
@@ -317,9 +317,9 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
     // only include scrapers not already present
     return !editingSource?.id === undefined
       ? []
-      : allSources?.filter((s) => {
+      : (allSources?.filter((s) => {
           return !sources.some((ss) => ss.id === s.id);
-        }) ?? [];
+        }) ?? []);
   }
 
   function onEditSource(s?: IScraperSource) {

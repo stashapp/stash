@@ -31,18 +31,14 @@ func TestStudioFindByName(t *testing.T) {
 
 		assert.Equal(t, studioNames[studioIdxWithScene], studio.Name)
 
-		name = studioNames[studioIdxWithDupName] // find a studio by name nocase
+		name = strings.ToUpper(studioNames[studioIdxWithNothing]) // find a studio by name nocase
 
 		studio, err = sqb.FindByName(ctx, name, true)
 
 		if err != nil {
 			t.Errorf("Error finding studios: %s", err.Error())
 		}
-		// studioIdxWithDupName and studioIdxWithScene should have similar names ( only diff should be Name vs NaMe)
-		//studio.Name should match with studioIdxWithScene since its ID is before studioIdxWithDupName
-		assert.Equal(t, studioNames[studioIdxWithScene], studio.Name)
-		//studio.Name should match with studioIdxWithDupName if the check is not case sensitive
-		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithDupName]), strings.ToLower(studio.Name))
+		assert.Equal(t, studioNames[studioIdxWithNothing], studio.Name)
 
 		return nil
 	})
@@ -107,7 +103,7 @@ func Test_StudioStore_Create(t *testing.T) {
 					Details:       details,
 					IgnoreAutoTag: ignoreAutoTag,
 					Organized:     organized,
-					TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithStudio], tagIDs[tagIdx1WithDupName]}),
+					TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithStudio], tagIDs[tagIdx1WithNothing]}),
 					Aliases:       models.NewRelatedStrings(aliases),
 					StashIDs: models.NewRelatedStashIDs([]models.StashID{
 						{
@@ -236,7 +232,7 @@ func Test_StudioStore_Update(t *testing.T) {
 					IgnoreAutoTag: ignoreAutoTag,
 					Organized:     organized,
 					Aliases:       models.NewRelatedStrings(aliases),
-					TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithStudio]}),
+					TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithStudio], tagIDs[tagIdx1WithNothing]}),
 					StashIDs: models.NewRelatedStashIDs([]models.StashID{
 						{
 							StashID:   stashID1,
@@ -403,7 +399,7 @@ func Test_StudioStore_UpdatePartial(t *testing.T) {
 	}{
 		{
 			"full",
-			studioIDs[studioIdxWithDupName],
+			studioIDs[studioIdxWithNothing],
 			models.StudioPartial{
 				Name: models.NewOptionalString(name),
 				URLs: &models.UpdateStrings{
@@ -420,7 +416,7 @@ func Test_StudioStore_UpdatePartial(t *testing.T) {
 				IgnoreAutoTag: models.NewOptionalBool(ignoreAutoTag),
 				Organized:     models.NewOptionalBool(organized),
 				TagIDs: &models.UpdateIDs{
-					IDs:  []int{tagIDs[tagIdx1WithStudio], tagIDs[tagIdx1WithDupName]},
+					IDs:  []int{tagIDs[tagIdx1WithStudio], tagIDs[tagIdx1WithNothing]},
 					Mode: models.RelationshipUpdateModeSet,
 				},
 				StashIDs: &models.UpdateStashIDs{
@@ -442,7 +438,7 @@ func Test_StudioStore_UpdatePartial(t *testing.T) {
 				UpdatedAt: models.NewOptionalTime(updatedAt),
 			},
 			models.Studio{
-				ID:            studioIDs[studioIdxWithDupName],
+				ID:            studioIDs[studioIdxWithNothing],
 				Name:          name,
 				URLs:          models.NewRelatedStrings([]string{url}),
 				Aliases:       models.NewRelatedStrings(aliases),
@@ -451,7 +447,7 @@ func Test_StudioStore_UpdatePartial(t *testing.T) {
 				Details:       details,
 				IgnoreAutoTag: ignoreAutoTag,
 				Organized:     organized,
-				TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithStudio]}),
+				TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithStudio], tagIDs[tagIdx1WithNothing]}),
 				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
 						StashID:   stashID1,
