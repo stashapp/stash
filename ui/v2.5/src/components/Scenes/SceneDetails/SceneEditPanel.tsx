@@ -896,7 +896,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
                   !isNew ? onGenerateThumbFromCurrent : undefined
                 }
                 onReset={
-                  formik.values.cover_image
+                  formik.values.cover_image ||
+                  (formik.values.cover_image !== null &&
+                    scene.paths?.screenshot)
                     ? () => onResetCover()
                     : undefined
                 }

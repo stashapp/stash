@@ -1,5 +1,6 @@
 import { Tab, Nav, Dropdown, Button } from "react-bootstrap";
 import React, {
+  useCallback,
   useEffect,
   useState,
   useMemo,
@@ -57,6 +58,7 @@ import { SceneMergeModal } from "../SceneMergeDialog";
 import { goBackOrReplace } from "src/utils/history";
 import { FormattedDate } from "src/components/Shared/Date";
 import { StudioLogo } from "src/components/Shared/StudioLogo";
+import { JobFragment, useMonitorJob } from "src/utils/job";
 
 const SubmitStashBoxDraft = lazyComponent(
   () => import("src/components/Dialogs/SubmitDraft")
@@ -154,6 +156,7 @@ interface IProps {
   collapsed: boolean;
   setCollapsed: (state: boolean) => void;
   setContinuePlaylist: (value: boolean) => void;
+  onRefreshScene: () => Promise<void>;
 }
 
 interface ISceneParams {
@@ -183,6 +186,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
     collapsed,
     setCollapsed,
     setContinuePlaylist,
+    onRefreshScene,
   } = props;
 
   const Toast = useToast();
@@ -190,6 +194,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
   const history = useHistory();
   const [updateScene] = useSceneUpdate();
   const [generateScreenshot] = useSceneGenerateScreenshot();
+  const [screenshotJobID, setScreenshotJobID] = useState<string>();
   const { configuration } = useConfigurationContext();
   const { showStudioText } = configuration?.ui ?? {};
 
@@ -215,6 +220,29 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
   const [isMerging, setIsMerging] = useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+
+  const onScreenshotJobComplete = useCallback(
+    async (job?: JobFragment) => {
+      setScreenshotJobID(undefined);
+
+      if (job?.status === GQL.JobStatus.Failed) {
+        Toast.error(job.error);
+        return;
+      }
+
+      if (job?.status === GQL.JobStatus.Cancelled) {
+        return;
+      }
+
+      await onRefreshScene();
+      Toast.success(
+        intl.formatMessage({ id: "toast.screenshot_generated" })
+      );
+    },
+    [Toast, intl, onRefreshScene]
+  );
+
+  useMonitorJob(screenshotJobID, onScreenshotJobComplete);
 
   const onIncrementOClick = async () => {
     try {
@@ -385,13 +413,21 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
   }
 
   async function onGenerateScreenshot(at?: number) {
-    await generateScreenshot({
-      variables: {
-        id: scene.id,
-        at,
-      },
-    });
-    Toast.success(intl.formatMessage({ id: "toast.generating_screenshot" }));
+    try {
+      const result = await generateScreenshot({
+        variables: {
+          id: scene.id,
+          at,
+        },
+      });
+      const jobID = result.data?.sceneGenerateScreenshot;
+      if (jobID) {
+        setScreenshotJobID(jobID);
+      }
+      Toast.success(intl.formatMessage({ id: "toast.generating_screenshot" }));
+    } catch (e) {
+      Toast.error(e);
+    }
   }
 
   function onDeleteDialogClosed(deleted: boolean) {
@@ -746,9 +782,16 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
 }) => {
   const { id } = match.params;
   const { configuration } = useConfigurationContext();
-  const { data, loading, error } = useFindScene(id);
+  const { data, loading, error, refetch } = useFindScene(id);
 
   const [scene, setScene] = useState<GQL.SceneDataFragment>();
+
+  const onRefreshScene = useCallback(async () => {
+    const result = await refetch();
+    if (result.data?.findScene) {
+      setScene(result.data.findScene);
+    }
+  }, [refetch]);
 
   // useLayoutEffect to update before paint
   useLayoutEffect(() => {
@@ -1019,6 +1062,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
         collapsed={collapsed}
         setCollapsed={setCollapsed}
         setContinuePlaylist={setContinuePlaylist}
+        onRefreshScene={onRefreshScene}
       />
       <div className={`scene-player-container ${collapsed ? "expanded" : ""}`}>
         <ScenePlayer
