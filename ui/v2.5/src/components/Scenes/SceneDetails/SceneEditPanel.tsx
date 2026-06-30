@@ -889,9 +889,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 onImageChange={onCoverImageChange}
                 onImageURL={onImageLoad}
                 // Generate/clear-from-server actions require a saved scene.
-                onGenerateDefault={
-                  !isNew ? onGenerateThumbDefault : undefined
-                }
+                onGenerateDefault={!isNew ? onGenerateThumbDefault : undefined}
                 onGenerateCurrent={
                   !isNew ? onGenerateThumbFromCurrent : undefined
                 }

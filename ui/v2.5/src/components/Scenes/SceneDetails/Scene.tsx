@@ -235,9 +235,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
       }
 
       await onRefreshScene();
-      Toast.success(
-        intl.formatMessage({ id: "toast.screenshot_generated" })
-      );
+      Toast.success(intl.formatMessage({ id: "toast.screenshot_generated" }));
     },
     [Toast, intl, onRefreshScene]
   );
