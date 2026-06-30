@@ -10,13 +10,16 @@ ifdef IS_WIN_SHELL
   RM := del /s /q
   RMDIR := rmdir /s /q
   NOOP := @@
-  PREFIX := $(USERPROFILE)\\bin
+  DEFAULT_PREFIX  := $(USERPROFILE)\\bin
 else
   RM := rm -f
   RMDIR := rm -rf
   NOOP := @:
-  PREFIX := $(HOME)/.local
+  DEFAULT_PREFIX  := $(HOME)/.local
 endif
+
+# PREFIX from homebrew
+PREFIX ?= $(DEFAULT_PREFIX)
 
 # set LDFLAGS environment variable to any extra ldflags required
 LDFLAGS := $(LDFLAGS)
@@ -47,19 +50,18 @@ GO_BUILD_TAGS += sqlite_stat4 sqlite_math_functions
 
 export CGO_ENABLED := 1
 
+# sentinel prerequisite files
+# can be used as a dependency to enforce parallel builds
+UI_SENTINEL := ui/v2.5/build/index.html
+BACKEND_GENERATE_SENTINEL := internal/api/generated_exec.go internal/api/generated_models.go
+
 # define COMPILER_IMAGE for cross-compilation docker container
 ifndef COMPILER_IMAGE
   COMPILER_IMAGE := ghcr.io/stashapp/compiler:latest
 endif
 
-# cannot really parallelise the release target
-# generate requires pre-ui, ui requires generate and build-release requires ui, so they must be run sequentially
 .PHONY: release
-release: 
-	$(MAKE) pre-ui
-	$(MAKE) generate
-	$(MAKE) ui
-	$(MAKE) build-release
+release: pre-ui generate ui build-release
 
 # targets to set various build flags
 # use combinations on the make command-line to configure a build, e.g.:
@@ -103,7 +105,7 @@ flags-static-windows:
 .PHONY: build-info
 build-info:
 ifndef BUILD_DATE
-	$(eval BUILD_DATE := $(shell GOOS=$$(go env GOHOSTOS) GOARCH=$$(go env GOHOSTARCH) go run scripts/getDate.go))
+	$(eval BUILD_DATE := $(shell go run scripts/getDate.go))
 endif
 ifndef GITHASH
 	$(eval GITHASH := $(shell git rev-parse --short HEAD))
@@ -125,7 +127,7 @@ build-flags: build-info
 	$(eval BUILD_FLAGS := -v -tags "$(GO_BUILD_TAGS)" $(GO_BUILD_FLAGS) -ldflags "$(BUILD_LDFLAGS)")
 
 .PHONY: stash
-stash: build-flags
+stash: $(BACKEND_GENERATE_SENTINEL) build-flags
 	go build $(STASH_OUTPUT) $(BUILD_FLAGS) ./cmd/stash
 
 .PHONY: phasher
@@ -138,7 +140,7 @@ build: stash
 
 # builds dynamically-linked PIE release binaries
 .PHONY: build-release
-build-release: flags-release flags-pie build
+build-release: generate-backend-release flags-release flags-pie build
 
 # compile and bundle into Stash.app
 # for when on macOS itself
@@ -287,12 +289,17 @@ endif
 generate: generate-backend generate-ui
 
 .PHONY: generate-ui
-generate-ui:
+generate-ui: pre-ui
 	cd ui/v2.5 && pnpm run gqlgen
 
 .PHONY: generate-backend
-generate-backend: touch-ui
+generate-backend: $(BACKEND_GENERATE_SENTINEL)
+
+$(BACKEND_GENERATE_SENTINEL) &:
 	go generate ./cmd/stash
+
+.PHONY: generate-backend-release
+generate-backend-release: $(UI_SENTINEL) generate-backend
 
 .PHONY: generate-login-locale
 generate-login-locale:
@@ -375,10 +382,12 @@ ifdef STASH_SOURCEMAPS
 endif
 
 .PHONY: ui
-ui: ui-only generate-login-locale
+ui: $(UI_SENTINEL) generate-login-locale
 
 .PHONY: ui-only
-ui-only: ui-env
+ui-only: $(UI_SENTINEL)
+
+$(UI_SENTINEL): pre-ui generate-ui ui-env
 	cd ui/v2.5 && pnpm run build
 
 .PHONY: zip-ui
@@ -388,7 +397,7 @@ zip-ui:
 
 .PHONY: ui-start
 ui-start: ui-env
-	cd ui/v2.5 && pnpm run start --host
+	cd ui/v2.5 && pnpm run start -- --host
 
 .PHONY: fmt-ui
 fmt-ui:
@@ -396,7 +405,7 @@ fmt-ui:
 
 # runs all of the frontend PR-acceptance steps
 .PHONY: validate-ui
-validate-ui:
+validate-ui: pre-ui generate
 	cd ui/v2.5 && pnpm run validate
 
 # these targets run the same steps as fmt-ui and validate-ui, but only on files that have changed
@@ -455,5 +464,5 @@ ifdef IS_WIN_SHELL
 	@copy "dist\\stash-win.exe" "$(PREFIX)\\stash-win.exe"
 else
 	@mkdir -p $(PREFIX)/bin
-	@install -m 755 $(STASH_OUTPUT) $(PREFIX)/bin/stash
+	@install -m 755 stash $(PREFIX)/bin/stash
 endif
