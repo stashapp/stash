@@ -42,6 +42,7 @@ fragment StudioData on Studio {
     ...SlimTagData
   }
   o_counter
+  o_counter_all: o_counter(depth: -1)
   custom_fields
 }
 

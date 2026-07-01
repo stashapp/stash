@@ -1319,6 +1319,7 @@
   "new": "New",
   "none": "None",
   "o_count": "O Count",
+  "o_count_all": "O Count (All)",
   "o_count_sfw": "Likes",
   "o_history": "O History",
   "o_history_sfw": "Like History",
@@ -1380,6 +1381,7 @@
   "performer": "Performer",
   "performer_age": "Performer Age",
   "performer_count": "Performer Count",
+  "performer_count_all": "Performer Count (All)",
   "performer_favorite": "Performer Favourited",
   "performer_image": "Performer Image",
   "performer_tagger": {

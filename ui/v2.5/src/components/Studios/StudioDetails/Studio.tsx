@@ -511,9 +511,11 @@ const StudioPage: React.FC<IProps> = PatchComponent(
                     clickToRate
                     withoutContext
                   />
-                  {!!studio.o_counter && (
+                  {showAllCounts && !!studio.o_counter_all ? (
+                    <OCounterButton value={studio.o_counter_all} />
+                  ) : !showAllCounts && !!studio.o_counter ? (
                     <OCounterButton value={studio.o_counter} />
-                  )}
+                  ) : null}
                 </div>
                 {!isEditing && (
                   <StudioDetailsPanel
