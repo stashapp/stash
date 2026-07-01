@@ -193,14 +193,21 @@ Please disable it on the server and refresh the page.`);
     cache,
   });
 
-  // Watch for scan/clean tasks and reset cache when they complete
+  // resetStore() is cache.reset() + reFetchObservableQueries(), but its
+  // cache.reset() step also cancels any query still in flight, briefly
+  // rendering it as a failed "Error loading items" screen. Calling
+  // cache.reset() directly keeps the same full-cache-wipe behavior
+  // without that cancellation, then reFetchObservableQueries() refreshes
+  // what's on screen the same way resetStore() would have.
   client
     .subscribe<GQL.ScanCompleteSubscribeSubscription>({
       query: GQL.ScanCompleteSubscribeDocument,
     })
     .subscribe({
       next: () => {
-        client.resetStore();
+        cache.reset({ discardWatches: false }).then(() => {
+          client.reFetchObservableQueries();
+        });
       },
     });
 
