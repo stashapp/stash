@@ -1245,13 +1245,13 @@
     "performer": "Actriz/Actor",
     "performer_age": "Edad de la actriz/actor",
     "performer_count": "Número de actrices/actores",
-    "performer_favorite": "Actriz/actor favorita/o",
-    "performer_image": "Imagen de actriz/actor",
+    "performer_favorite": "Artista favorito",
+    "performer_image": "Imagen del artista",
     "performer_tagger": {
-        "add_new_performers": "Añadir nuevas/os actrices/actores",
-        "any_names_entered_will_be_queried": "Cualquier nombre introducido será consultado desde una instancia Stash-Box remota y añadido si es encontrado. Solo se aceptan coincidencias exactas.",
-        "batch_add_performers": "Adición automatizada de actrices/actores",
-        "batch_update_performers": "Actualización automatizada de actrices/actores",
+        "add_new_performers": "Añadir nuevos artistas",
+        "any_names_entered_will_be_queried": "Los nombres introducidos se consultarán en la instancia remota de Stash-Box y se añadirán si se encuentran. Solo se considerarán coincidencias exactas.",
+        "batch_add_performers": "Añadir intérpretes por lotes",
+        "batch_update_performers": "Actualización masiva de intérpretes",
         "current_page": "Página actual",
         "failed_to_save_performer": "Error al guardar \"{performer}\"",
         "name_already_exists": "El nombre ya existe",
@@ -1311,7 +1311,8 @@
             "stash_library_directories": "Directorio/s que contiene/n la librería de archivos de Stash",
             "cache_directory": "Carpeta de la caché",
             "blobs_directory": "Directorio de datos binarios",
-            "blobs_use_database": "<uso de base de datos>"
+            "blobs_use_database": "<uso de base de datos>",
+            "password_set_warning": "Nota: se le pedirá que introduzca sus credenciales una vez creado el sistema."
         },
         "creating": {
             "creating_your_system": "Creando tu nuevo entorno"
@@ -1397,7 +1398,13 @@
             "next_step": "Cuando estés preparado para la creación de un nuevo entorno pulsa Siguiente.",
             "unable_to_locate_specified_config": "Si estás leyendo esto es que Stash no ha podido encontrar el fichero de configuración especificado en la línea de comandos o en el entorno en el que está instalado. Este asistente te guiará durante el proceso de creación de una nueva configuración."
         },
-        "welcome_to_stash": "Bienvenido a Stash"
+        "welcome_to_stash": "Bienvenido a Stash",
+        "credentials": {
+            "description": "Ingrese el nombre de usuario y la contraseña que desea usar para iniciar sesión en el sistema Stash. Puede dejar estos campos en blanco si no desea ingresar un nombre de usuario ni una contraseña para acceder al sistema. Se requieren credenciales si accede al sistema desde internet.",
+            "heading": "Configura tus credenciales",
+            "password_invalid": "Si se ha configurado un nombre de usuario, la contraseña no debe estar vacía.",
+            "username_invalid": "El nombre de usuario no debe contener espacios en blanco al principio ni al final."
+        }
     },
     "stash_id": "Identificador único Stash",
     "stash_ids": "Stash IDs",
@@ -1733,5 +1740,7 @@
     "scenes_size": "Tamaño de la escena",
     "related_studios": "Relacionado",
     "sub_group_description": "Descripción del subgrupo",
-    "scene_marker_count": "Recuento de marcadores de escena"
+    "scene_marker_count": "Recuento de marcadores de escena",
+    "performer_count_all": "Total de Intérpretes",
+    "o_count_all": "Contar todo"
 }
