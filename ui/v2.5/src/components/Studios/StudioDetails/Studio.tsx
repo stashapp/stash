@@ -124,7 +124,7 @@ const StudioTabs: React.FC<{
     studio,
   ]);
 
-  const { setTabKey } = useTabKey({
+  const { activeTabKey, setTabKey } = useTabKey({
     tabKey,
     validTabs,
     defaultTabKey: populatedDefaultTab,
@@ -149,16 +149,12 @@ const StudioTabs: React.FC<{
     );
   }, [showAllDetails, studio.child_studios.length]);
 
-  // #6798 - if Tabs renders while tabKey is undefined, it doesn't render correctly
-  // when it is subsequently set to a valid value.
-  if (!tabKey) return null;
-
   return (
     <Tabs
       id="studio-tabs"
       mountOnEnter
       unmountOnExit
-      activeKey={tabKey}
+      activeKey={activeTabKey}
       onSelect={setTabKey}
     >
       <Tab
@@ -173,7 +169,7 @@ const StudioTabs: React.FC<{
       >
         {contentSwitch}
         <StudioScenesPanel
-          active={tabKey === "scenes"}
+          active={activeTabKey === "scenes"}
           studio={studio}
           showChildStudioContent={showAllDetails}
         />
@@ -190,7 +186,7 @@ const StudioTabs: React.FC<{
       >
         {contentSwitch}
         <StudioGalleriesPanel
-          active={tabKey === "galleries"}
+          active={activeTabKey === "galleries"}
           studio={studio}
           showChildStudioContent={showAllDetails}
         />
@@ -207,7 +203,7 @@ const StudioTabs: React.FC<{
       >
         {contentSwitch}
         <StudioImagesPanel
-          active={tabKey === "images"}
+          active={activeTabKey === "images"}
           studio={studio}
           showChildStudioContent={showAllDetails}
         />
@@ -224,7 +220,7 @@ const StudioTabs: React.FC<{
       >
         {contentSwitch}
         <StudioPerformersPanel
-          active={tabKey === "performers"}
+          active={activeTabKey === "performers"}
           studio={studio}
           showChildStudioContent={showAllDetails}
         />
@@ -241,7 +237,7 @@ const StudioTabs: React.FC<{
       >
         {contentSwitch}
         <StudioGroupsPanel
-          active={tabKey === "groups"}
+          active={activeTabKey === "groups"}
           studio={studio}
           showChildStudioContent={showAllDetails}
         />
@@ -257,7 +253,7 @@ const StudioTabs: React.FC<{
         }
       >
         <StudioChildrenPanel
-          active={tabKey === "childstudios"}
+          active={activeTabKey === "childstudios"}
           studio={studio}
         />
       </Tab>
@@ -515,9 +511,11 @@ const StudioPage: React.FC<IProps> = PatchComponent(
                     clickToRate
                     withoutContext
                   />
-                  {!!studio.o_counter && (
+                  {showAllCounts && !!studio.o_counter_all ? (
+                    <OCounterButton value={studio.o_counter_all} />
+                  ) : !showAllCounts && !!studio.o_counter ? (
                     <OCounterButton value={studio.o_counter} />
-                  )}
+                  ) : null}
                 </div>
                 {!isEditing && (
                   <StudioDetailsPanel

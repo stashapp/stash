@@ -129,6 +129,7 @@
     "selective_generate": "Selective generate",
     "selective_scan": "Selective scan",
     "set_as_default": "Set as default",
+    "set_as_performer_image": "Set as performer image",
     "set_back_image": "Back image…",
     "set_cover": "Set as Cover",
     "set_front_image": "Front image…",
@@ -401,6 +402,8 @@
           }
         }
       },
+      "default_marker_preview_duration_desc": "Duration (seconds) for marker previews without an end time. Must be greater than 0.",
+      "default_marker_preview_duration_head": "Default marker preview duration",
       "funscript_heatmap_draw_range": "Include range in generated heatmaps",
       "funscript_heatmap_draw_range_desc": "Draw range of motion on the y-axis of the generated heatmap. Existing heatmaps will need to be regenerated after changing.",
       "gallery_cover_regex_desc": "Regexps used to identify an image as gallery cover.",
@@ -418,6 +421,8 @@
       "include_audio_desc": "Includes audio stream when generating previews.",
       "include_audio_head": "Include audio",
       "logging": "Logging",
+      "max_marker_preview_duration_desc": "Maximum duration (seconds) for marker previews. 0 disables the limit.",
+      "max_marker_preview_duration_head": "Max marker preview duration",
       "maximum_streaming_transcode_size_desc": "Maximum size for transcoded streams.",
       "maximum_streaming_transcode_size_head": "Maximum streaming transcode size",
       "maximum_transcode_size_desc": "Maximum size for generated transcodes.",
@@ -653,6 +658,10 @@
       "abbreviate_counters": {
         "description": "Abbreviate counters in cards and details view pages, for example \"1831\" will get formated to \"1.8K\".",
         "heading": "Abbreviate counters"
+      },
+      "autostart_gallery_slideshow": {
+        "description": "Automatically start the slideshow when opening a gallery's lightbox from the galleries page.",
+        "heading": "Auto-start gallery slideshow"
       },
       "basic_settings": "Basic Settings",
       "custom_css": {
@@ -1030,7 +1039,6 @@
         "original": "Original"
       },
       "options": "Options",
-      "page_header": "Page {page} / {total}",
       "reset_zoom_on_nav": "Reset zoom level when changing image",
       "scale_up": {
         "description": "Scale smaller images up to fill screen.",
@@ -1072,7 +1080,7 @@
       "marker_screenshots": "Marker screenshots",
       "marker_screenshots_tooltip": "Marker static JPG images",
       "markers": "Marker previews",
-      "markers_tooltip": "20 second videos which begin at the given timecode.",
+      "markers_tooltip": "Video previews which begin at the given timecode.",
       "override_preview_generation_options": "Override preview generation options",
       "override_preview_generation_options_desc": "Override preview generation options for this operation. Defaults are set in System -> Preview Generation.",
       "overwrite": "Overwrite existing files",
@@ -1310,6 +1318,7 @@
   "new": "New",
   "none": "None",
   "o_count": "O Count",
+  "o_count_all": "O Count (All)",
   "o_count_sfw": "Likes",
   "o_history": "O History",
   "o_history_sfw": "Like History",
@@ -1371,6 +1380,7 @@
   "performer": "Performer",
   "performer_age": "Performer Age",
   "performer_count": "Performer Count",
+  "performer_count_all": "Performer Count (All)",
   "performer_favorite": "Performer Favourited",
   "performer_image": "Performer Image",
   "performer_tagger": {
@@ -1427,6 +1437,7 @@
   "scene": "Scene",
   "sceneTagger": "Scene Tagger",
   "scene_code": "Studio Code",
+  "scene_marker_count": "Scene Marker Count",
   "scene_count": "Scene Count",
   "scenes_duration": "Scene Duration",
   "scenes_size": "Scene Size",

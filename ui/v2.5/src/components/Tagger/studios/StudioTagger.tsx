@@ -520,13 +520,16 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
   const selectedEndpoint =
     stashConfig?.general.stashBoxes[selectedEndpointIndex];
 
-  const selectedEndpointInput = useMemo(
-    () => ({
+  const selectedEndpointInput = useMemo(() => {
+    if (!selectedEndpoint) {
+      return;
+    }
+
+    return {
       endpoint: selectedEndpoint.endpoint,
       index: selectedEndpointIndex,
-    }),
-    [selectedEndpoint, selectedEndpointIndex]
-  );
+    };
+  }, [selectedEndpoint, selectedEndpointIndex]);
 
   if (!config) return <LoadingIndicator />;
 
@@ -612,7 +615,7 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
     }
   }
 
-  if (selectedEndpointIndex === -1 || !selectedEndpoint) {
+  if (selectedEndpointIndex === -1 || !selectedEndpointInput) {
     return (
       <div className="my-4">
         <h3 className="text-center mt-4">
