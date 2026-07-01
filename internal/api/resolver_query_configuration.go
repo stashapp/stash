@@ -25,7 +25,7 @@ func (r *queryResolver) Directory(ctx context.Context, path, locale *string) (*D
 
 	var dirPath = ""
 	if path != nil {
-		dirPath = *path
+		dirPath = strings.Trim(*path, "\"")
 	}
 	currentDir := getDir(dirPath)
 	directories, err := listDir(col, currentDir)
