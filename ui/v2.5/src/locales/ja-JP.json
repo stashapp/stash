@@ -226,7 +226,7 @@
         "verb_submit_fp": "送信 {fpCount, plural, one{# Fingerprint} other{# Fingerprints}}",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} 一致しないシーン",
-        "verb_add_as_alias": "スクレイピングした名前をエイリアスとして追加",
+        "verb_add_as_alias": "スクレイピングした名前を別名として追加する",
         "verb_link_existing": "既存のものにリンク",
         "verb_match_tag": "タグを突き合わせる",
         "verb_scrape_selected": "選択したものをスクレイプ"
