@@ -23,3 +23,15 @@ mutation SubmitStashBoxSceneDraft($input: StashBoxDraftSubmissionInput!) {
 mutation SubmitStashBoxPerformerDraft($input: StashBoxDraftSubmissionInput!) {
   submitStashBoxPerformerDraft(input: $input)
 }
+
+mutation QueueFingerprintSubmission($input: QueueFingerprintInput!) {
+  queueFingerprintSubmission(input: $input)
+}
+
+mutation RemoveFingerprintSubmission($input: RemoveFingerprintInput!) {
+  removeFingerprintSubmission(input: $input)
+}
+
+mutation SubmitFingerprintSubmissions($stash_box_endpoint: String!) {
+  submitFingerprintSubmissions(stash_box_endpoint: $stash_box_endpoint)
+}

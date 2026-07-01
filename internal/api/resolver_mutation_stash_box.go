@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync"
+	"time"
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/logger"
@@ -13,8 +15,10 @@ import (
 	"github.com/stashapp/stash/pkg/stashbox"
 )
 
+var fingerprintSubmissionMu sync.Mutex
+
 func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input StashBoxFingerprintSubmissionInput) (bool, error) {
-	b, err := resolveStashBox(input.StashBoxIndex, input.StashBoxEndpoint)
+	b, err := resolveStashBox(input.StashBoxIndex, input.StashBoxEndpoint) //nolint:staticcheck
 	if err != nil {
 		return false, err
 	}
@@ -221,4 +225,128 @@ func (r *mutationResolver) SubmitStashBoxPerformerDraft(ctx context.Context, inp
 	})
 
 	return res, err
+}
+
+func (r *mutationResolver) QueueFingerprintSubmission(ctx context.Context, input QueueFingerprintInput) (bool, error) {
+	sceneID, err := strconv.Atoi(input.SceneID)
+	if err != nil {
+		return false, fmt.Errorf("invalid scene ID: %w", err)
+	}
+
+	submission := &models.FingerprintSubmission{
+		Endpoint:  input.Endpoint,
+		StashID:   input.StashID,
+		SceneID:   sceneID,
+		Vote:      models.FingerprintVote(input.Vote),
+		CreatedAt: time.Now(),
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		// Remove any existing submission for this stash ID before creating a new one
+		if err := r.repository.FingerprintSubmission.Delete(ctx, input.Endpoint, input.StashID); err != nil {
+			return err
+		}
+		return r.repository.FingerprintSubmission.Create(ctx, submission)
+	}); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *mutationResolver) RemoveFingerprintSubmission(ctx context.Context, input RemoveFingerprintInput) (bool, error) {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		return r.repository.FingerprintSubmission.Delete(ctx, input.Endpoint, input.StashID)
+	}); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *mutationResolver) SubmitFingerprintSubmissions(ctx context.Context, stashBoxEndpoint string) (bool, error) {
+	b, err := resolveStashBox(nil, &stashBoxEndpoint)
+	if err != nil {
+		return false, err
+	}
+
+	var submissions []*models.FingerprintSubmission
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		var err error
+		submissions, err = r.repository.FingerprintSubmission.FindByEndpoint(ctx, stashBoxEndpoint)
+		return err
+	}); err != nil {
+		return false, err
+	}
+
+	if len(submissions) == 0 {
+		return true, nil
+	}
+
+	ids := make([]int, len(submissions))
+	for i, sub := range submissions {
+		ids[i] = sub.SceneID
+	}
+
+	var scenes []*models.Scene
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		var err error
+		scenes, err = r.sceneService.FindByIDs(ctx, ids, scene.LoadFiles)
+		return err
+	}); err != nil {
+		return false, err
+	}
+
+	sceneMap := make(map[int]*models.Scene)
+	for _, s := range scenes {
+		sceneMap[s.ID] = s
+	}
+
+	client := r.newStashBoxClient(*b)
+
+	if len(submissions) > 40 {
+		// Submit async to avoid timeouts for large batches
+		if !fingerprintSubmissionMu.TryLock() {
+			return false, fmt.Errorf("fingerprint submission already in progress")
+		}
+		go func() {
+			defer fingerprintSubmissionMu.Unlock()
+			r.submitFingerprintBatch(client, submissions, sceneMap)
+		}()
+	} else {
+		r.submitFingerprintBatch(client, submissions, sceneMap)
+	}
+
+	return true, nil
+}
+
+func (r *mutationResolver) submitFingerprintBatch(client *stashbox.Client, submissions []*models.FingerprintSubmission, sceneMap map[int]*models.Scene) {
+	var successfulSubmissions []*models.FingerprintSubmission
+	for _, sub := range submissions {
+		s, ok := sceneMap[sub.SceneID]
+		if !ok {
+			logger.Warnf("Scene %d not found for fingerprint submission, skipping", sub.SceneID)
+			continue
+		}
+
+		if err := client.SubmitFingerprintsWithVote(context.Background(), s, sub.StashID, sub.Vote); err != nil {
+			logger.Warnf("Failed to submit fingerprint for scene %d: %v", sub.SceneID, err)
+			continue
+		}
+
+		successfulSubmissions = append(successfulSubmissions, sub)
+	}
+
+	if len(successfulSubmissions) > 0 {
+		if err := r.withTxn(context.Background(), func(ctx context.Context) error {
+			for _, sub := range successfulSubmissions {
+				if err := r.repository.FingerprintSubmission.Delete(ctx, sub.Endpoint, sub.StashID); err != nil {
+					return err
+				}
+			}
+			return nil
+		}); err != nil {
+			logger.Warnf("Failed to delete fingerprint submissions: %v", err)
+		}
+	}
 }

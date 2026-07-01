@@ -93,6 +93,16 @@
     margin-right: 10px;
     width: var(--fa-fw-width, 1.25em);
   }
+
+  .marked-wrong {
+    opacity: 0.6;
+
+    .scene-link,
+    h4,
+    h5 {
+      text-decoration: line-through;
+    }
+  }
 }
 
 .selected-result {

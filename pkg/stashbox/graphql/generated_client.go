@@ -400,9 +400,12 @@ func (t *PerformerAppearanceFragment) GetPerformer() *PerformerFragment {
 }
 
 type FingerprintFragment struct {
-	Algorithm FingerprintAlgorithm "json:\"algorithm\" graphql:\"algorithm\""
-	Hash      string               "json:\"hash\" graphql:\"hash\""
-	Duration  int                  "json:\"duration\" graphql:\"duration\""
+	Algorithm     FingerprintAlgorithm "json:\"algorithm\" graphql:\"algorithm\""
+	Hash          string               "json:\"hash\" graphql:\"hash\""
+	Duration      int                  "json:\"duration\" graphql:\"duration\""
+	Reports       int                  "json:\"reports\" graphql:\"reports\""
+	UserSubmitted bool                 "json:\"user_submitted\" graphql:\"user_submitted\""
+	UserReported  bool                 "json:\"user_reported\" graphql:\"user_reported\""
 }
 
 func (t *FingerprintFragment) GetAlgorithm() *FingerprintAlgorithm {
@@ -422,6 +425,24 @@ func (t *FingerprintFragment) GetDuration() int {
 		t = &FingerprintFragment{}
 	}
 	return t.Duration
+}
+func (t *FingerprintFragment) GetReports() int {
+	if t == nil {
+		t = &FingerprintFragment{}
+	}
+	return t.Reports
+}
+func (t *FingerprintFragment) GetUserSubmitted() bool {
+	if t == nil {
+		t = &FingerprintFragment{}
+	}
+	return t.UserSubmitted
+}
+func (t *FingerprintFragment) GetUserReported() bool {
+	if t == nil {
+		t = &FingerprintFragment{}
+	}
+	return t.UserReported
 }
 
 type SceneFragment struct {
@@ -1108,6 +1129,9 @@ fragment FingerprintFragment on Fingerprint {
 	algorithm
 	hash
 	duration
+	reports
+	user_submitted
+	user_reported
 }
 `
 
@@ -1251,6 +1275,9 @@ fragment FingerprintFragment on Fingerprint {
 	algorithm
 	hash
 	duration
+	reports
+	user_submitted
+	user_reported
 }
 `
 
@@ -1552,6 +1579,9 @@ fragment FingerprintFragment on Fingerprint {
 	algorithm
 	hash
 	duration
+	reports
+	user_submitted
+	user_reported
 }
 `
 

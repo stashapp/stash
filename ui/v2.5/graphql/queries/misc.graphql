@@ -46,3 +46,15 @@ query LatestVersion {
     url
   }
 }
+
+query PendingFingerprintSubmissions($stash_box_endpoint: String!) {
+  pendingFingerprintSubmissions(stash_box_endpoint: $stash_box_endpoint) {
+    endpoint
+    stash_id
+    scene {
+      id
+    }
+    vote
+    created_at
+  }
+}

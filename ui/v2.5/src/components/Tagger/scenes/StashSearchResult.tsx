@@ -10,6 +10,7 @@ import {
   faLink,
   faPlus,
   faTriangleExclamation,
+  faUndo,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -98,13 +99,21 @@ const getDurationStatus = (
   );
 };
 
+interface IPhashMatch {
+  hash: string;
+  distance: number;
+  reports: number;
+  userSubmitted: boolean;
+  userReported: boolean;
+}
+
 function matchPhashes(
   scenePhashes: Pick<GQL.Fingerprint, "type" | "value">[],
   fingerprints: GQL.StashBoxFingerprint[]
-) {
+): IPhashMatch[] {
   const phashes = fingerprints.filter((f) => f.algorithm === "PHASH");
 
-  const matches: { [key: string]: number } = {};
+  const matches: IPhashMatch[] = [];
   phashes.forEach((p) => {
     let bestMatch = -1;
     scenePhashes.forEach((fp) => {
@@ -116,31 +125,63 @@ function matchPhashes(
     });
 
     if (bestMatch !== -1) {
-      matches[p.hash] = bestMatch;
+      matches.push({
+        hash: p.hash,
+        distance: bestMatch,
+        reports: p.reports,
+        userSubmitted: p.user_submitted,
+        userReported: p.user_reported,
+      });
     }
   });
 
-  // convert to tuple and sort by distance descending
-  const entries = Object.entries(matches);
-  entries.sort((a, b) => {
-    return a[1] - b[1];
-  });
+  // sort by distance ascending
+  matches.sort((a, b) => a.distance - b.distance);
 
-  return entries;
+  return matches;
 }
 
-const getFingerprintStatus = (
-  scene: IScrapedScene,
-  stashScene: GQL.SlimSceneDataFragment
-) => {
-  const checksumMatch = scene.fingerprints?.some((f) =>
-    stashScene.files.some((ff) =>
+interface IChecksumMatch {
+  hash: string;
+  reports: number;
+  userSubmitted: boolean;
+  userReported: boolean;
+}
+
+function matchChecksums(
+  stashScene: GQL.SlimSceneDataFragment,
+  fingerprints: GQL.StashBoxFingerprint[]
+): IChecksumMatch[] {
+  const matches: IChecksumMatch[] = [];
+
+  fingerprints.forEach((f) => {
+    if (f.algorithm !== "OSHASH" && f.algorithm !== "MD5") return;
+
+    const isMatch = stashScene.files.some((ff) =>
       ff.fingerprints.some(
         (fp) =>
           fp.value === f.hash && (fp.type === "oshash" || fp.type === "md5")
       )
-    )
-  );
+    );
+
+    if (isMatch) {
+      matches.push({
+        hash: f.hash,
+        reports: f.reports,
+        userSubmitted: f.user_submitted,
+        userReported: f.user_reported,
+      });
+    }
+  });
+
+  return matches;
+}
+
+const hasUserReportedFingerprint = (
+  scene: IScrapedScene,
+  stashScene: GQL.SlimSceneDataFragment
+): boolean => {
+  const checksumMatches = matchChecksums(stashScene, scene.fingerprints ?? []);
 
   const allPhashes: Pick<GQL.Fingerprint, "type" | "value">[] = [];
 
@@ -150,63 +191,123 @@ const getFingerprintStatus = (
 
   const phashMatches = matchPhashes(allPhashes, scene.fingerprints ?? []);
 
+  return (
+    checksumMatches.some((m) => m.userReported) ||
+    phashMatches.some((m) => m.userReported)
+  );
+};
+
+const getFingerprintStatus = (
+  scene: IScrapedScene,
+  stashScene: GQL.SlimSceneDataFragment
+) => {
+  const checksumMatches = matchChecksums(stashScene, scene.fingerprints ?? []);
+
+  const allPhashes = stashScene.files.reduce(
+    (pv: Pick<GQL.Fingerprint, "type" | "value">[], cv) => {
+      return [...pv, ...cv.fingerprints.filter((f) => f.type === "phash")];
+    },
+    []
+  );
+
+  const phashMatches = matchPhashes(allPhashes, scene.fingerprints ?? []);
+
+  // Combine all matches to check for reports and user submissions
+  const allMatches = [
+    ...phashMatches.map((m) => ({
+      reports: m.reports,
+      userSubmitted: m.userSubmitted,
+      userReported: m.userReported,
+    })),
+    ...checksumMatches.map((m) => ({
+      reports: m.reports,
+      userSubmitted: m.userSubmitted,
+      userReported: m.userReported,
+    })),
+  ];
+
+  const hasReports = allMatches.some((m) => m.reports > 0);
+  const hasUserSubmitted = allMatches.some((m) => m.userSubmitted);
+  const totalReports = allMatches.reduce((sum, m) => sum + m.reports, 0);
+
   const phashList = (
     <div className="m-2">
-      {phashMatches.map((fp: [string, number]) => {
-        const hash = fp[0];
-        const d = fp[1];
+      {phashMatches.map((fp) => {
         return (
-          <div key={hash}>
-            <b>{hash}</b>
-            {d === 0 ? ", Exact match" : `, distance ${d}`}
+          <div key={fp.hash}>
+            <b>{fp.hash}</b>
+            {fp.distance === 0 ? ", Exact match" : `, distance ${fp.distance}`}
+            {fp.reports > 0 && (
+              <span className="text-warning ml-2">
+                ({fp.reports} {fp.reports === 1 ? "report" : "reports"})
+              </span>
+            )}
           </div>
         );
       })}
     </div>
   );
 
-  if (checksumMatch || phashMatches.length > 0)
-    return (
-      <div>
-        {phashMatches.length > 0 && (
-          <div className="font-weight-bold">
-            <SuccessIcon className="SceneTaggerIcon" />
-            <HoverPopover
-              placement="bottom"
-              content={phashList}
-              className="PHashPopover"
-            >
-              {phashMatches.length > 1 ? (
-                <FormattedMessage
-                  id="component_tagger.results.phash_matches"
-                  values={{
-                    count: phashMatches.length,
-                  }}
-                />
-              ) : (
-                <FormattedMessage
-                  id="component_tagger.results.hash_matches"
-                  values={{
-                    hash_type: <FormattedMessage id="media_info.phash" />,
-                  }}
-                />
-              )}
-            </HoverPopover>
-          </div>
-        )}
-        {checksumMatch && (
-          <div className="font-weight-bold">
-            <SuccessIcon className="mr-2" />
-            <FormattedMessage
-              id="component_tagger.results.hash_matches"
-              values={{
-                hash_type: <FormattedMessage id="media_info.md5" />,
-              }}
-            />
-          </div>
-        )}
-      </div>
-    );
+  if (checksumMatches.length === 0 && phashMatches.length === 0) {
+    return null;
+  }
+
+  return (
+    <div>
+      {phashMatches.length > 0 && (
+        <div className="font-weight-bold">
+          <SuccessIcon className="SceneTaggerIcon" />
+          <HoverPopover
+            placement="bottom"
+            content={phashList}
+            className="PHashPopover"
+          >
+            {phashMatches.length > 1 ? (
+              <FormattedMessage
+                id="component_tagger.results.phash_matches"
+                values={{
+                  count: phashMatches.length,
+                }}
+              />
+            ) : (
+              <FormattedMessage
+                id="component_tagger.results.hash_matches"
+                values={{
+                  hash_type: <FormattedMessage id="media_info.phash" />,
+                }}
+              />
+            )}
+          </HoverPopover>
+        </div>
+      )}
+      {checksumMatches.length > 0 && (
+        <div className="font-weight-bold">
+          <SuccessIcon className="SceneTaggerIcon" />
+          <FormattedMessage
+            id="component_tagger.results.hash_matches"
+            values={{
+              hash_type: <FormattedMessage id="media_info.md5" />,
+            }}
+          />
+        </div>
+      )}
+      {hasReports && (
+        <div className="text-danger font-weight-bold">
+          <Icon className="SceneTaggerIcon" icon={faTriangleExclamation} />
+          <FormattedMessage
+            id="component_tagger.results.fp_reported"
+            values={{ count: totalReports }}
+          />
+        </div>
+      )}
+      {hasUserSubmitted && (
+        <div className="font-weight-bold">
+          <SuccessIcon className="SceneTaggerIcon" />
+          <FormattedMessage id="component_tagger.results.fp_submitted" />
+        </div>
+      )}
+    </div>
+  );
 };
 
 interface IStashSearchResultProps {
@@ -214,6 +315,7 @@ interface IStashSearchResultProps {
   stashScene: GQL.SlimSceneDataFragment;
   index: number;
   isActive: boolean;
+  onReportWrong?: () => void;
 }
 
 const StashSearchResult: React.FC<IStashSearchResultProps> = ({
@@ -221,6 +323,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   stashScene,
   index,
   isActive,
+  onReportWrong,
 }) => {
   const intl = useIntl();
 
@@ -236,6 +339,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     resolveScene,
     currentSource,
     saveScene,
+    queueFingerprintSubmission,
+    removeFingerprintSubmission,
+    isReported,
   } = React.useContext(TaggerStateContext);
 
   const performerGenders = config.performerGenders || genderList;
@@ -418,8 +524,33 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       delete sceneCreateInput.stash_ids;
     }
 
-    await saveScene(sceneCreateInput, includeStashID);
+    await saveScene(
+      sceneCreateInput,
+      includeStashID,
+      scene.remote_site_id ?? undefined
+    );
   }
+
+  async function handleReportWrong() {
+    if (!scene.remote_site_id) return;
+    await queueFingerprintSubmission(
+      stashScene.id,
+      scene.remote_site_id,
+      GQL.FingerprintVote.Invalid
+    );
+    onReportWrong?.();
+  }
+
+  async function handleRemoveReport() {
+    if (!scene.remote_site_id) return;
+    await removeFingerprintSubmission(scene.remote_site_id);
+  }
+
+  const alreadyReported = hasUserReportedFingerprint(scene, stashScene);
+  const pendingReport = scene.remote_site_id
+    ? isReported(stashScene.id, scene.remote_site_id)
+    : false;
+  const isReportedWrong = alreadyReported || pendingReport;
 
   function showPerformerModal(t: GQL.ScrapedPerformer) {
     createPerformerModal(t, (toCreate) => {
@@ -816,7 +947,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
   return (
     <>
-      <div className={isActive ? "col-lg-6" : ""}>
+      <div
+        className={cx(isActive ? "col-lg-6" : "", {
+          "marked-wrong": isReportedWrong,
+        })}
+      >
         <div className="row mx-0">
           {maybeRenderCoverImage()}
           <div className="d-flex flex-column justify-content-center scene-metadata">
@@ -826,6 +961,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
               <>
                 {renderStudioDate()}
                 {renderPerformerList()}
+                {isReportedWrong && (
+                  <Badge variant="danger" className="mt-1">
+                    <FormattedMessage id="component_tagger.marked_wrong" />
+                  </Badge>
+                )}
               </>
             )}
 
@@ -851,6 +991,35 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           {maybeRenderTagsField()}
 
           <div className="row no-gutters mt-2 align-items-center justify-content-end">
+            {scene.remote_site_id && !isReportedWrong && (
+              <OperationButton
+                className="mr-2"
+                operation={handleReportWrong}
+                variant="danger"
+                disabled={alreadyReported}
+              >
+                <Icon icon={faXmark} />
+                <span className="ml-1">
+                  {alreadyReported ? (
+                    <FormattedMessage id="component_tagger.marked_wrong" />
+                  ) : (
+                    <FormattedMessage id="component_tagger.report_match" />
+                  )}
+                </span>
+              </OperationButton>
+            )}
+            {scene.remote_site_id && pendingReport && (
+              <OperationButton
+                className="mr-2"
+                operation={handleRemoveReport}
+                variant="danger"
+              >
+                <Icon icon={faUndo} />
+                <span className="ml-1">
+                  <FormattedMessage id="component_tagger.undo_report" />
+                </span>
+              </OperationButton>
+            )}
             <OperationButton operation={handleSave}>
               <FormattedMessage id="actions.save" />
             </OperationButton>
@@ -914,6 +1083,11 @@ export const SceneSearchResults: React.FC<ISceneSearchResults> = ({
             isActive={i === selectedResult}
             scene={s}
             stashScene={target}
+            onReportWrong={
+              i === selectedResult
+                ? () => setSelectedResult(undefined)
+                : undefined
+            }
           />
         </li>
       ))}

@@ -211,6 +211,9 @@ fragment ScrapedSceneData on ScrapedScene {
     hash
     algorithm
     duration
+    reports
+    user_submitted
+    user_reported
   }
 }
 
@@ -282,6 +285,9 @@ fragment ScrapedStashBoxSceneData on ScrapedScene {
     hash
     algorithm
     duration
+    reports
+    user_submitted
+    user_reported
   }
 
   studio {

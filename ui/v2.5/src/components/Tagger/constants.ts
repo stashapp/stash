@@ -32,7 +32,6 @@ export const initialConfig: ITaggerConfig = {
   setCoverImage: true,
   setTags: true,
   tagOperation: "merge",
-  fingerprintQueue: {},
   excludedPerformerFields: DEFAULT_EXCLUDED_PERFORMER_FIELDS,
   markSceneAsOrganizedOnSave: false,
   excludedStudioFields: DEFAULT_EXCLUDED_STUDIO_FIELDS,
@@ -51,7 +50,6 @@ export interface ITaggerConfig {
   setTags: boolean;
   tagOperation: TagOperation;
   selectedEndpoint?: string;
-  fingerprintQueue: Record<string, string[]>;
   excludedPerformerFields?: string[];
   markSceneAsOrganizedOnSave?: boolean;
   excludedStudioFields?: string[];

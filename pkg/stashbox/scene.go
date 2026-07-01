@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -223,9 +224,12 @@ func getFingerprints(scene *graphql.SceneFragment) []*models.StashBoxFingerprint
 	fingerprints := []*models.StashBoxFingerprint{}
 	for _, fp := range scene.Fingerprints {
 		fingerprint := models.StashBoxFingerprint{
-			Algorithm: fp.Algorithm.String(),
-			Hash:      fp.Hash,
-			Duration:  fp.Duration,
+			Algorithm:     fp.Algorithm.String(),
+			Hash:          fp.Hash,
+			Duration:      fp.Duration,
+			Reports:       fp.Reports,
+			UserSubmitted: fp.UserSubmitted,
+			UserReported:  fp.UserReported,
 		}
 		fingerprints = append(fingerprints, &fingerprint)
 	}
@@ -451,6 +455,44 @@ func (c Client) submitFingerprints(ctx context.Context, fingerprints []graphql.F
 	}
 
 	return true, nil
+}
+
+// SubmitFingerprintsWithVote submits fingerprints for a scene with an explicit stash-box scene ID and vote
+func (c Client) SubmitFingerprintsWithVote(ctx context.Context, scene *models.Scene, stashBoxSceneID string, vote models.FingerprintVote) error {
+	var fingerprints []graphql.FingerprintSubmission
+
+	for _, f := range scene.Files.List() {
+		duration := f.Duration
+
+		if duration == 0 {
+			continue
+		}
+
+		fps := fileFingerprintsToInputGraphQL(f.Fingerprints, int(duration))
+		voteType := graphql.FingerprintSubmissionType(vote)
+		for _, fp := range fps {
+			fingerprints = append(fingerprints, graphql.FingerprintSubmission{
+				SceneID:     stashBoxSceneID,
+				Fingerprint: fp,
+				Vote:        &voteType,
+			})
+		}
+	}
+
+	for _, fingerprint := range fingerprints {
+		_, err := c.client.SubmitFingerprint(ctx, fingerprint)
+		if err != nil {
+			// When voting INVALID, stash-box returns "fingerprint has no submissions" if the
+			// fingerprint hasn't been associated with that scene yet. There's nothing to
+			// invalidate in that case, so skip it rather than failing the whole submission.
+			if vote == models.FingerprintVoteInvalid && strings.Contains(err.Error(), "fingerprint has no submissions") {
+				continue
+			}
+			return err
+		}
+	}
+
+	return nil
 }
 
 func appendFingerprintUnique(v []*graphql.FingerprintInput, toAdd *graphql.FingerprintInput) []*graphql.FingerprintInput {

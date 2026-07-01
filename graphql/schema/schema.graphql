@@ -248,6 +248,11 @@ type Query {
   ): Directory!
   validateStashBoxCredentials(input: StashBoxInput!): StashBoxValidationResult!
 
+  "List pending fingerprint submissions for a stash-box endpoint"
+  pendingFingerprintSubmissions(
+    stash_box_endpoint: String!
+  ): [FingerprintSubmission!]!
+
   # System status
   systemStatus: SystemStatus!
 
@@ -564,12 +569,19 @@ type Mutation {
   "Submit fingerprints to stash-box instance"
   submitStashBoxFingerprints(
     input: StashBoxFingerprintSubmissionInput!
-  ): Boolean!
+  ): Boolean! @deprecated(reason: "Use submitFingerprintSubmissions")
 
   "Submit scene as draft to stash-box instance"
   submitStashBoxSceneDraft(input: StashBoxDraftSubmissionInput!): ID
   "Submit performer as draft to stash-box instance"
   submitStashBoxPerformerDraft(input: StashBoxDraftSubmissionInput!): ID
+
+  "Add a fingerprint submission to the queue"
+  queueFingerprintSubmission(input: QueueFingerprintInput!): Boolean!
+  "Remove a fingerprint submission from the queue"
+  removeFingerprintSubmission(input: RemoveFingerprintInput!): Boolean!
+  "Submit all pending fingerprint submissions for a stash-box endpoint"
+  submitFingerprintSubmissions(stash_box_endpoint: String!): Boolean!
 
   "Backup the database. Optionally returns a link to download the database file"
   backupDatabase(input: BackupDatabaseInput!): String
