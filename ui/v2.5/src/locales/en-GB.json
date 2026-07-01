@@ -1460,7 +1460,7 @@
   "settings": "Settings",
   "setup": {
     "credentials": {
-      "description": "Enter the username and password you want to use to login to stash system. These can be left blank if you do not want to enter a username/password to access the system. Credentials are required if you are accessing the system from the public internet.",
+      "description": "Enter the username and password you want to use to login to Stash system. These can be left blank if you do not want to enter a username/password to access the system. Credentials are required if you are accessing the system from the public internet.",
       "heading": "Setup your credentials",
       "password_invalid": "Password must be non-empty if username is set.",
       "username_invalid": "Username must not have any leading or trailing whitespace."
