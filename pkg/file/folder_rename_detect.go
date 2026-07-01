@@ -161,9 +161,12 @@ func (s *Scanner) detectFolderMove(ctx context.Context, file ScannedFile) (*mode
 				// parent folder must be missing
 				_, err = file.FS.Lstat(pf.Path)
 				if err == nil && fsutil.NormalizePath(pf.Path) != file.Path {
-					// #4425 - the normalization guard above lets a folder differing
-					// only by NFC/NFD be treated as a move (updated in place) instead
-					// of a duplicate
+					// parent folder exists, not a candidate
+					// #4425 - Lstat succeeds via a pre-normalization NFD path too,
+					// since macOS is normalization-insensitive; exclude that case,
+					// since it's the same folder as the one being scanned rather
+					// than a separate one that's still present, so its path should
+					// be updated in place instead of creating a duplicate
 					detector.reject(parentFolderID)
 					continue
 				}
