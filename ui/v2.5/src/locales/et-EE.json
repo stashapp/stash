@@ -1003,7 +1003,6 @@
                 "original": "Originaal"
             },
             "options": "Sätted",
-            "page_header": "Leht {page} / {total}",
             "reset_zoom_on_nav": "Pildi muutumisel lähtesta suumi tase",
             "scale_up": {
                 "description": "Suurendage väiksemaid pilte ekraani täitmiseks.",

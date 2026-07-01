@@ -1009,7 +1009,6 @@
                 "original": "Original"
             },
             "options": "Options",
-            "page_header": "Page {page} / {total}",
             "reset_zoom_on_nav": "Réinitialisation du facteur de zoom lors d'un changement d'image",
             "scale_up": {
                 "description": "Redimensionner les petites images pour les adapter à l'écran.",

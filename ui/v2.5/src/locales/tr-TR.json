@@ -953,7 +953,6 @@
                 "pan_y": "Y Ekseninde Çevir",
                 "zoom": "Yakınlaştırma"
             },
-            "page_header": "Sayfa {page} / {total}",
             "disable_animation": "Resimler arasındaki geçiş animasyonunu devre dışı bırak"
         },
         "scene_gen": {

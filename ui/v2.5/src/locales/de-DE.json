@@ -950,7 +950,6 @@
                 "original": "Original"
             },
             "options": "Optionen",
-            "page_header": "Seite {page} / {total}",
             "reset_zoom_on_nav": "Zoomstufe beim Bildwechsel zurücksetzen",
             "scale_up": {
                 "description": "Skaliere kleinere Bilder auf Bildschirmgröße.",

@@ -1008,7 +1008,6 @@
                 "original": "기본 모드"
             },
             "options": "옵션",
-            "page_header": "{total} 페이지 중 {page} 페이지",
             "reset_zoom_on_nav": "이미지를 바꿀 때 줌 수준 초기화",
             "scale_up": {
                 "description": "작은 이미지들이 화면을 채우도록 확대합니다.",

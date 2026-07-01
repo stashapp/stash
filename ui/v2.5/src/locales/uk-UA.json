@@ -1271,7 +1271,6 @@
                 "fit_horizontally": "Підігнати по горизонталі",
                 "original": "Оригінал"
             },
-            "page_header": "Сторінка {page} / {total}",
             "disable_animation": "Вимкнути анімацію переходу між зображеннями",
             "options": "Опції"
         },

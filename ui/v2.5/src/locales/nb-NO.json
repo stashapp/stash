@@ -1001,8 +1001,7 @@
             "scale_up": {
                 "description": "Skaler mindre bilder opp for å fylle skjermen",
                 "label": "Skaler opp for å passe"
-            },
-            "page_header": "Side {side} / {totalt}"
+            }
         },
         "merge": {
             "empty_results": "Verdiene i destinasjonsfeltet vil forbli uendret.",

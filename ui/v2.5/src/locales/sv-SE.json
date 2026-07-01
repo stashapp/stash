@@ -1000,7 +1000,6 @@
                 "original": "Original"
             },
             "options": "Alternativ",
-            "page_header": "Sida {page} / {total}",
             "reset_zoom_on_nav": "Återställ zoom vid bildbyte",
             "scale_up": {
                 "description": "Skala mindre bilder så att de fyller skärmen.",

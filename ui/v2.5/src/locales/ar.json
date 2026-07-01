@@ -1015,7 +1015,6 @@
                 "original": "أصلي"
             },
             "options": "خيارات",
-            "page_header": "الصفحة {page} / {total}",
             "reset_zoom_on_nav": "أعد ضبط مستوى التكبير عند تغيير الصورة",
             "scale_up": {
                 "description": "قم بتكبير الصور الصغيرة لملء الشاشة.",

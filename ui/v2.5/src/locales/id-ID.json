@@ -594,8 +594,7 @@
             "options": "Opsi",
             "scroll_mode": {
                 "zoom": "Perbesar"
-            },
-            "page_header": "Halaman {page} / {total}"
+            }
         },
         "merge": {
             "destination": "Destinasi",

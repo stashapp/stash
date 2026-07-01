@@ -999,7 +999,6 @@
                 "original": "原图"
             },
             "options": "选项",
-            "page_header": "第 {page} 页，共 {total} 页",
             "reset_zoom_on_nav": "图片改动时重设缩放度",
             "scale_up": {
                 "description": "放大小图到整屏。",

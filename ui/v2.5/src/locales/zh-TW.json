@@ -1003,7 +1003,6 @@
                 "pan_y": "Y 軸滑動",
                 "zoom": "放大"
             },
-            "page_header": "第 {page} 頁，共計{total}頁",
             "disable_animation": "停用圖片切換動畫"
         },
         "merge": {

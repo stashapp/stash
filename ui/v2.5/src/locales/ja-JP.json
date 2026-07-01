@@ -908,8 +908,7 @@
                 "label": "スクロールモード",
                 "pan_y": "Yにパン",
                 "zoom": "拡大"
-            },
-            "page_header": "ページ {page} / {total}"
+            }
         },
         "merge": {
             "destination": "宛先",

@@ -996,7 +996,6 @@
                 "fit_horizontally": "ขนาดพอดีความกว้างจอ"
             },
             "options": "ตัวเลือก",
-            "page_header": "หน้าที่ {page} / {total}",
             "reset_zoom_on_nav": "รีเซ็ตระดับการซูมเมื่อเปลี่ยนภาพ",
             "scale_up": {
                 "description": "ขยายภาพที่มีขนาดเล็กให้พอดีหน้าจอ",

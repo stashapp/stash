@@ -879,8 +879,7 @@
                 "label": "Rulletilstand",
                 "pan_y": "Panorer Y",
                 "zoom": "Zoom"
-            },
-            "page_header": "Side {page} / {total}"
+            }
         },
         "scene_gen": {
             "force_transcodes": "Tving omkodningsgenerering",

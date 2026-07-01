@@ -835,7 +835,6 @@
                 "original": "Bản gốc"
             },
             "options": "Tùy Chọn",
-            "page_header": "Trang {page} / {total}",
             "reset_zoom_on_nav": "Đặt lại mức thu phóng khi đổi ảnh",
             "scroll_mode": {
                 "description": "Giữ phím Shift để tạm thời dùng chế độ khác.",

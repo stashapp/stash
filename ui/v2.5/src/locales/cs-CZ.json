@@ -986,7 +986,6 @@
                 "pan_y": "Náklon Y",
                 "zoom": "Zvětšit"
             },
-            "page_header": "Stránka {page} / {total}",
             "disable_animation": "Zakázat animaci přechodu mezi obrázky"
         },
         "scene_gen": {

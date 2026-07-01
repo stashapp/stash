@@ -999,7 +999,6 @@
                 "pan_y": "Panorámica eje Y",
                 "zoom": "Zoom"
             },
-            "page_header": "Página {page} / {total}",
             "disable_animation": "Desactivar la animación de transición entre imágenes"
         },
         "scene_gen": {

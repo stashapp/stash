@@ -934,7 +934,6 @@
                 "original": "Oryginalny"
             },
             "options": "Opcje",
-            "page_header": "Strona {page} / {total}",
             "reset_zoom_on_nav": "Resetuj poziom powiększenia przy zmianie obrazu",
             "scale_up": {
                 "description": "Skaluj mniejsze obrazy, aby wypełnić ekran",
