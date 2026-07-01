@@ -53,6 +53,7 @@ import { useDebounce } from "../debounce";
 import { isVideo } from "src/utils/visualFile";
 import { imageTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
+import type { LightboxHideReason } from "./context";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
@@ -98,7 +99,7 @@ interface IProps {
   totalCount?: number;
   pageCallback?: (props: { direction?: number; page?: number }) => void;
   chapters?: IChapter[];
-  hide: () => void;
+  hide: (reason?: LightboxHideReason) => void;
   onDeleteImage?: (id: string) => void;
 }
 
@@ -333,12 +334,26 @@ export const LightboxComponent: React.FC<IProps> = ({
   };
 
   useEffect(() => {
-    if (isVisible) {
-      if (index === null) setIndex(initialIndex);
-      document.body.style.overflow = "hidden";
-      Mousetrap.pause();
-    }
+    if (isVisible && index === null) setIndex(initialIndex);
   }, [initialIndex, isVisible, index]);
+
+  useEffect(() => {
+    if (!isVisible) return;
+
+    document.body.style.overflow = "hidden";
+    Mousetrap.pause();
+    return () => {
+      const fullscreenElement = document.fullscreenElement;
+      if (
+        fullscreenElement &&
+        containerRef.current?.contains(fullscreenElement)
+      ) {
+        document.exitFullscreen();
+      }
+      document.body.style.overflow = "auto";
+      Mousetrap.unpause();
+    };
+  }, [isVisible]);
 
   const toggleSlideshow = useCallback(() => {
     if (slideshowInterval) {
@@ -355,13 +370,12 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
   });
 
-  const close = useCallback(() => {
-    if (isFullscreen) document.exitFullscreen();
-
-    hide();
-    document.body.style.overflow = "auto";
-    Mousetrap.unpause();
-  }, [isFullscreen, hide]);
+  const close = useCallback(
+    (reason: LightboxHideReason = "dismiss") => {
+      hide(reason);
+    },
+    [hide]
+  );
 
   const handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
     const { className } = e.target as Element;
@@ -993,7 +1007,8 @@ export const LightboxComponent: React.FC<IProps> = ({
                   <Link
                     className="image-link"
                     to={`/images/${currentImage.id}`}
-                    onClick={() => close()}
+                    replace
+                    onClick={() => close("navigate")}
                   >
                     {title ?? ""}
                   </Link>
@@ -1011,7 +1026,8 @@ export const LightboxComponent: React.FC<IProps> = ({
                   <Link
                     className="image-gallery-link"
                     to={`/galleries/${currentImage.galleries[0].id}`}
-                    onClick={() => close()}
+                    replace
+                    onClick={() => close("navigate")}
                   >
                     <Icon icon={faImages} />
                     {galleryTitle(currentImage.galleries[0])}
