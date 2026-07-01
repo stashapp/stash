@@ -446,6 +446,13 @@ export const LightboxComponent: React.FC<IProps> = ({
     inScrollGroup.current = false;
   }, SCROLL_ZOOM_TIMEOUT);
 
+  useEffect(() => {
+    return () => {
+      disableInstantTransition.cancel();
+      debouncedScrollReset.cancel();
+    };
+  }, [disableInstantTransition, debouncedScrollReset]);
+
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
       if (e.repeat && (e.key === "ArrowRight" || e.key === "ArrowLeft"))

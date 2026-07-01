@@ -70,6 +70,7 @@ export const LightboxProvider: React.FC = ({ children }) => {
 
   const activeHistoryID = useRef<number>();
   const nextHistoryID = useRef(0);
+  const isDismissingRef = useRef(false);
   const isVisibleRef = useRef(lightboxState.isVisible);
   const onCloseRef = useRef<(() => void) | undefined>();
 
@@ -87,6 +88,7 @@ export const LightboxProvider: React.FC = ({ children }) => {
     const id = nextHistoryID.current + 1;
     nextHistoryID.current = id;
     activeHistoryID.current = id;
+    isDismissingRef.current = false;
 
     history.pushState(
       {
@@ -110,11 +112,13 @@ export const LightboxProvider: React.FC = ({ children }) => {
     delete (currentState as ILightboxHistoryState)[LIGHTBOX_HISTORY_KEY];
     history.replaceState(currentState, "", window.location.href);
     activeHistoryID.current = undefined;
+    isDismissingRef.current = false;
   }, [isCurrentLightboxHistoryEntry]);
 
   const closeLightbox = useCallback(() => {
     if (!isVisibleRef.current) return;
 
+    isDismissingRef.current = false;
     isVisibleRef.current = false;
     setLightboxState((currentState: IState) =>
       currentState.isVisible
@@ -134,6 +138,7 @@ export const LightboxProvider: React.FC = ({ children }) => {
         pushLightboxHistory();
         isVisibleRef.current = true;
       } else if (state.isVisible === false) {
+        isDismissingRef.current = false;
         isVisibleRef.current = false;
       }
 
@@ -154,6 +159,9 @@ export const LightboxProvider: React.FC = ({ children }) => {
       }
 
       if (isCurrentLightboxHistoryEntry()) {
+        if (isDismissingRef.current) return;
+
+        isDismissingRef.current = true;
         history.back();
         return;
       }
@@ -171,6 +179,7 @@ export const LightboxProvider: React.FC = ({ children }) => {
         historyID === activeHistoryID.current
       ) {
         if (!isVisibleRef.current) {
+          isDismissingRef.current = false;
           isVisibleRef.current = true;
           setLightboxState((currentState: IState) => ({
             ...currentState,
