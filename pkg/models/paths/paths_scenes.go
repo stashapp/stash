@@ -53,3 +53,15 @@ func (sp *scenePaths) GetSpriteVttFilePath(checksum string) string {
 func (sp *scenePaths) GetInteractiveHeatmapPath(checksum string) string {
 	return filepath.Join(sp.InteractiveHeatmap, checksum+".png")
 }
+
+// GetEmbeddedCaptionPath returns the cache path for an embedded subtitle track
+// (extracted from the video container) for the given scene hash and language.
+func (sp *scenePaths) GetEmbeddedCaptionPath(checksum string, lang string) string {
+	return filepath.Join(sp.Vtt, checksum+"_"+lang+"_embedded.vtt")
+}
+
+// GetEmbeddedCaptionGlob returns a glob matching all cached embedded subtitle
+// tracks for the given scene hash, used to clean them up when a scene is removed.
+func (sp *scenePaths) GetEmbeddedCaptionGlob(checksum string) string {
+	return filepath.Join(sp.Vtt, checksum+"_*_embedded.vtt")
+}
