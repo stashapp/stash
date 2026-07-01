@@ -15,6 +15,7 @@ import {
   faCaretDown,
   faCaretUp,
   faRandom,
+  faThumbtack,
 } from "@fortawesome/free-solid-svg-icons";
 import { ISortByOption } from "src/models/list-filter/filter-options";
 import { useConfigurationContext } from "src/hooks/Config";
@@ -22,11 +23,18 @@ import ClearableInput from "../Shared/ClearableInput";
 import useFocus from "src/utils/focus";
 import ScreenUtils from "src/utils/screen";
 
+interface IMessageValue {
+  value: string;
+  message: string;
+}
+
 export const SortBySelect: React.FC<{
   className?: string;
   sortBy: string | undefined;
   sortDirection: SortDirectionEnum;
   options: ISortByOption[];
+  pinnedOptions?: string[];
+  togglePinSortBy?: (sortBy: string) => void;
   onChangeSortBy: (eventKey: string | null) => void;
   onChangeSortDirection: () => void;
   onReshuffleRandomSort: () => void;
@@ -35,6 +43,8 @@ export const SortBySelect: React.FC<{
   sortBy,
   sortDirection,
   options,
+  pinnedOptions = [],
+  togglePinSortBy,
   onChangeSortBy,
   onChangeSortDirection,
   onReshuffleRandomSort,
@@ -56,7 +66,7 @@ export const SortBySelect: React.FC<{
       : (currentSortBy.sfwMessageID ?? currentSortBy.messageID)
     : "";
 
-  const sortedOptions = useMemo(() => {
+  const sortedOptions: IMessageValue[] = useMemo(() => {
     return options
       .map((o) => {
         const messageID = !sfwContentMode
@@ -78,19 +88,57 @@ export const SortBySelect: React.FC<{
     );
   }, [sortedOptions, filter]);
 
+  const filteredPinnedOptions = useMemo(() => {
+    return filteredOptions.filter((o) => pinnedOptions.includes(o.value));
+  }, [filteredOptions, pinnedOptions]);
+
+  const unpinnedOptions = useMemo(() => {
+    return filteredOptions.filter((o) => !pinnedOptions.includes(o.value));
+  }, [filteredOptions, pinnedOptions]);
+
   const dropdownItems = useMemo(() => {
-    return filteredOptions.map((option) => (
-      <Dropdown.Item
-        onSelect={onChangeSortBy}
-        key={option.value}
-        className="bg-secondary text-white"
-        eventKey={option.value}
-        data-value={option.value}
-      >
-        {option.message}
-      </Dropdown.Item>
-    ));
-  }, [filteredOptions, onChangeSortBy]);
+    function togglePin(
+      e: React.MouseEvent<HTMLElement>,
+      option: IMessageValue
+    ) {
+      e.stopPropagation();
+      e.preventDefault();
+      togglePinSortBy?.(option.value);
+    }
+
+    function renderOptionMessage(option: IMessageValue, isPin: boolean) {
+      return (
+        <Dropdown.Item
+          onSelect={onChangeSortBy}
+          key={option.value}
+          className="bg-secondary text-white sort-by-option"
+          eventKey={option.value}
+          data-value={option.value}
+        >
+          {option.message}
+          {togglePinSortBy && (
+            <Button
+              className="pin-sort-by-button"
+              variant="minimal"
+              onClick={(e) => togglePin(e, option)}
+            >
+              <Icon icon={faThumbtack} className={isPin ? "" : "tilted"} />
+            </Button>
+          )}
+        </Dropdown.Item>
+      );
+    }
+
+    return (
+      <>
+        {filteredPinnedOptions.map((option) =>
+          renderOptionMessage(option, true)
+        )}
+        {filteredPinnedOptions.length > 0 && <Dropdown.Divider />}
+        {unpinnedOptions.map((option) => renderOptionMessage(option, false))}
+      </>
+    );
+  }, [filteredPinnedOptions, unpinnedOptions, onChangeSortBy, togglePinSortBy]);
 
   return (
     <Dropdown
