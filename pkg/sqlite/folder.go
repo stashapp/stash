@@ -24,6 +24,7 @@ type folderRow struct {
 	Path           string          `db:"path"`
 	ZipFileID      null.Int        `db:"zip_file_id"`
 	ParentFolderID null.Int        `db:"parent_folder_id"`
+	MissingSince   NullTimestamp   `db:"missing_since"`
 	ModTime        Timestamp       `db:"mod_time"`
 	CreatedAt      Timestamp       `db:"created_at"`
 	UpdatedAt      Timestamp       `db:"updated_at"`
@@ -36,6 +37,7 @@ func (r *folderRow) fromFolder(o models.Folder) {
 	r.Path = o.Path
 	r.ZipFileID = nullIntFromFileIDPtr(o.ZipFileID)
 	r.ParentFolderID = nullIntFromFolderIDPtr(o.ParentFolderID)
+	r.MissingSince = NullTimestampFromTimePtr(o.MissingSince)
 	r.ModTime = Timestamp{Timestamp: o.ModTime}
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
@@ -53,8 +55,9 @@ func (r *folderQueryRow) resolve() *models.Folder {
 	ret := &models.Folder{
 		ID: r.ID,
 		DirEntry: models.DirEntry{
-			ZipFileID: nullIntFileIDPtr(r.ZipFileID),
-			ModTime:   r.ModTime.Timestamp,
+			ZipFileID:    nullIntFileIDPtr(r.ZipFileID),
+			ModTime:      r.ModTime.Timestamp,
+			MissingSince: r.MissingSince.TimePtr(),
 		},
 		Path:           string(r.Path),
 		ParentFolderID: nullIntFolderIDPtr(r.ParentFolderID),
