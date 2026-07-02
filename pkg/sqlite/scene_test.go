@@ -5,6 +5,7 @@ package sqlite_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math"
 	"path/filepath"
@@ -5327,6 +5328,85 @@ func TestSceneQueryCustomFields(t *testing.T) {
 				},
 			},
 			nil,
+			[]int{sceneIdxWithPerformer},
+			false,
+		},
+		{
+			"json number greater than",
+			&models.SceneFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierGreaterThan,
+						Value:    []any{json.Number("0.15")},
+					},
+				},
+			},
+			[]int{sceneIdxWithPerformer},
+			[]int{sceneIdxWithGallery},
+			false,
+		},
+		{
+			"json number equals",
+			&models.SceneFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierEquals,
+						Value:    []any{json.Number("0.2")},
+					},
+				},
+			},
+			[]int{sceneIdxWithPerformer},
+			[]int{sceneIdxWithGallery},
+			false,
+		},
+		{
+			"json number between",
+			&models.SceneFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierBetween,
+						Value:    []any{json.Number("0.15"), json.Number("0.25")},
+					},
+				},
+			},
+			[]int{sceneIdxWithPerformer},
+			[]int{sceneIdxWithGallery},
+			false,
+		},
+		{
+			"nested performer json number greater than",
+			&models.SceneFilterType{
+				PerformersFilter: &models.PerformerFilterType{
+					CustomFields: []models.CustomFieldCriterionInput{
+						{
+							Field:    "real",
+							Modifier: models.CriterionModifierGreaterThan,
+							Value:    []any{json.Number("0.15")},
+						},
+					},
+				},
+			},
+			[]int{sceneIdxWithTwoPerformers},
+			[]int{sceneIdxWithPerformer},
+			false,
+		},
+		{
+			"nested performer json number less than",
+			&models.SceneFilterType{
+				PerformersFilter: &models.PerformerFilterType{
+					CustomFields: []models.CustomFieldCriterionInput{
+						{
+							Field:    "real",
+							Modifier: models.CriterionModifierLessThan,
+							Value:    []any{json.Number("0.15")},
+						},
+					},
+				},
+			},
+			[]int{sceneIdxWithTwoPerformers},
 			[]int{sceneIdxWithPerformer},
 			false,
 		},

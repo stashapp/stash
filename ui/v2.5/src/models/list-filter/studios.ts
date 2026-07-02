@@ -40,8 +40,28 @@ const sortByOptions = [
       value: "scenes_count",
     },
     {
+      messageID: "o_count",
+      value: "o_counter",
+    },
+    {
+      messageID: "o_count_all",
+      value: "o_counter_all",
+    },
+    {
+      messageID: "performer_count",
+      value: "performer_count",
+    },
+    {
+      messageID: "performer_count_all",
+      value: "performer_count_all",
+    },
+    {
       messageID: "subsidiary_studio_count",
       value: "child_count",
+    },
+    {
+      messageID: "scene_marker_count",
+      value: "scene_markers_count",
     },
   ]);
 

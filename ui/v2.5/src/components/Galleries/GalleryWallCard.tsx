@@ -5,7 +5,8 @@ import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import TextUtils from "src/utils/text";
-import { useGalleryLightbox } from "src/hooks/Lightbox/hooks";
+import { useGalleriesLightbox } from "src/hooks/Lightbox/hooks";
+import { useConfigurationContext } from "src/hooks/Config";
 import { galleryTitle } from "src/core/galleries";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import { GalleryPreviewScrubber } from "./GalleryPreviewScrubber";
@@ -42,7 +43,10 @@ const GalleryWallCard: React.FC<IProps> = ({
     React.useState<Orientation>("landscape");
   const [imageOrientation, setImageOrientation] =
     React.useState<Orientation>("landscape");
-  const showLightbox = useGalleryLightbox(gallery.id, gallery.chapters);
+  const { configuration } = useConfigurationContext();
+  const showLightbox = useGalleriesLightbox();
+  const autostartSlideshow =
+    configuration?.ui.autostartGallerySlideshow ?? false;
 
   const { dragProps } = useDragMoveSelect({
     selecting: selecting || false,
@@ -87,7 +91,7 @@ const GalleryWallCard: React.FC<IProps> = ({
       return;
     }
 
-    showLightbox(0);
+    showLightbox(gallery, 0, true, autostartSlideshow);
   }
 
   const imgClassname =
@@ -155,7 +159,7 @@ const GalleryWallCard: React.FC<IProps> = ({
           defaultPath={cover ?? ""}
           imageCount={gallery.image_count}
           onClick={(i) => {
-            showLightbox(i);
+            showLightbox(gallery, i, true, autostartSlideshow);
           }}
           onPathChanged={setImgSrc}
         />

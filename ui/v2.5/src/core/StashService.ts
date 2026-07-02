@@ -1530,6 +1530,7 @@ const sceneMarkerMutationImpactedQueries = [
   GQL.FindSceneMarkersDocument, // various filters
   GQL.MarkerStringsDocument, // marker list
   GQL.FindSceneMarkerTagsDocument, // marker tag list
+  GQL.FindStudiosDocument, // filter/sort by marker count
   GQL.FindTagsDocument, // filter by marker count
 ];
 

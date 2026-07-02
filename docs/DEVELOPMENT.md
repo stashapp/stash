@@ -85,6 +85,8 @@ When building, you can optionally prepend `flags-*` targets to the target list i
 4. In a separate terminal, run `make ui-start` to run the UI in development mode
 5. Open the UI in a browser: `http://localhost:3000/`
 
+> **⚠️ Note:** Running the UI in development mode does not support sending authentication credentials due to issues with cross-origin requests. Ensure credentials are unset on the server when running the UI in development mode.
+
 Changes to the UI code can be seen by reloading the browser page.
 
 Changes to the backend code require a server restart (`CTRL-C` in the server terminal, followed by `make server-start` again) to be seen.

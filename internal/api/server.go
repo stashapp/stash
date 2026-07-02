@@ -124,6 +124,7 @@ func Initialize() (*Server, error) {
 
 	r.Use(middleware.Heartbeat("/healthz"))
 	r.Use(cors.AllowAll().Handler)
+	r.Use(RequestIPMiddleware)
 	r.Use(authenticateHandler())
 	visitedPluginHandler := mgr.SessionStore.VisitedPluginHandler()
 	r.Use(visitedPluginHandler)
@@ -373,10 +374,9 @@ func (s *Server) getSceneRoutes() chi.Router {
 func (s *Server) getAudioRoutes() chi.Router {
 	repo := s.manager.Repository
 	return audioRoutes{
-		routes:        routes{txnManager: repo.TxnManager},
-		audioFinder:   repo.Audio,
-		fileGetter:    repo.File,
-		captionFinder: repo.File,
+		routes:      routes{txnManager: repo.TxnManager},
+		audioFinder: repo.Audio,
+		fileGetter:  repo.File,
 	}.Routes()
 }
 
@@ -651,6 +651,7 @@ type contextKey struct {
 
 var (
 	BaseURLCtxKey = &contextKey{"BaseURL"}
+	IPCtxKey      = &contextKey{"requestIP"}
 )
 
 func BaseURLMiddleware(next http.Handler) http.Handler {

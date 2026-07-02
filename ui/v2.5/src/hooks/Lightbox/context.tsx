@@ -15,7 +15,9 @@ export interface IState {
   page?: number;
   pages?: number;
   pageSize?: number;
+  totalCount?: number;
   slideshowEnabled: boolean;
+  slideshowAutostart?: boolean;
   onClose?: () => void;
 }
 interface IContext {
@@ -52,11 +54,25 @@ export const LightboxProvider: React.FC = ({ children }) => {
   }, []);
 
   const onHide = () => {
-    setLightboxState({ ...lightboxState, isVisible: false });
+    // slideshowAutostart is a per-open instruction (set when opening a gallery's
+    // lightbox from the galleries page). Clear it on close so it doesn't leak
+    // into the next lightbox opened from another entry point.
+    setLightboxState({
+      ...lightboxState,
+      isVisible: false,
+      slideshowAutostart: false,
+    });
     if (lightboxState.onClose) {
       lightboxState.onClose();
     }
   };
+
+  const onDeleteImage = useCallback((id: string) => {
+    setLightboxState((s) => ({
+      ...s,
+      images: s.images.filter((img) => img.id !== id),
+    }));
+  }, []);
 
   return (
     <LightboxContext.Provider
@@ -65,7 +81,11 @@ export const LightboxProvider: React.FC = ({ children }) => {
       {children}
       <Suspense fallback={null}>
         {lightboxState.isVisible && (
-          <LightboxComponent {...lightboxState} hide={onHide} />
+          <LightboxComponent
+            {...lightboxState}
+            hide={onHide}
+            onDeleteImage={onDeleteImage}
+          />
         )}
       </Suspense>
     </LightboxContext.Provider>

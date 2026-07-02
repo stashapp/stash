@@ -683,6 +683,62 @@ func (qb *StudioStore) sortByLatestScene(direction string) string {
 	return " ORDER BY (" + selectStudioLatestSceneSQL + ") " + direction
 }
 
+func (qb *StudioStore) sortByPerformerCount(direction string) string {
+	return fmt.Sprintf(` ORDER BY (
+		SELECT COUNT(DISTINCT %[2]s.performer_id)
+		FROM %[4]s
+		INNER JOIN %[2]s ON %[2]s.scene_id = %[4]s.id
+		WHERE %[4]s.%[3]s = %[1]s.id
+	) %[5]s`, studioTable, performersScenesTable, studioIDColumn, sceneTable, getSortDirection(direction))
+}
+
+func (qb *StudioStore) sortByPerformerCountAll(direction string) string {
+	return fmt.Sprintf(` ORDER BY (
+		WITH RECURSIVE sub_studios AS (
+			SELECT s.id FROM %[1]s s WHERE s.id = %[1]s.id
+			UNION ALL
+			SELECT s.id FROM %[1]s s
+			INNER JOIN sub_studios ss ON s.parent_id = ss.id
+		)
+		SELECT COUNT(DISTINCT %[2]s.performer_id)
+		FROM sub_studios ss
+		INNER JOIN %[4]s sc ON sc.%[3]s = ss.id
+		INNER JOIN %[2]s ON %[2]s.scene_id = sc.id
+	) %[5]s`, studioTable, performersScenesTable, studioIDColumn, sceneTable, getSortDirection(direction))
+}
+
+func (qb *StudioStore) sortByOCounter(direction string) string {
+	return fmt.Sprintf(` ORDER BY (
+		SELECT COALESCE((
+			SELECT COUNT(*) FROM %[3]s
+			INNER JOIN %[4]s ON %[3]s.id = %[4]s.scene_id
+			WHERE %[3]s.%[2]s = %[1]s.id
+		), 0) + COALESCE((
+			SELECT SUM(o_counter) FROM %[5]s
+			WHERE %[5]s.%[2]s = %[1]s.id
+		), 0)
+	) %[6]s`, studioTable, studioIDColumn, sceneTable, scenesODatesTable, imageTable, getSortDirection(direction))
+}
+
+func (qb *StudioStore) sortByOCounterAll(direction string) string {
+	return fmt.Sprintf(` ORDER BY (
+		WITH RECURSIVE sub_studios AS (
+			SELECT s.id FROM %[1]s s WHERE s.id = %[1]s.id
+			UNION ALL
+			SELECT ch.id FROM %[1]s ch
+			INNER JOIN sub_studios ss ON ch.parent_id = ss.id
+		)
+		SELECT COALESCE((
+			SELECT COUNT(*) FROM %[3]s
+			INNER JOIN %[4]s ON %[3]s.id = %[4]s.scene_id
+			WHERE %[3]s.%[2]s IN (SELECT id FROM sub_studios)
+		), 0) + COALESCE((
+			SELECT SUM(o_counter) FROM %[5]s
+			WHERE %[5]s.%[2]s IN (SELECT id FROM sub_studios)
+		), 0)
+	) %[6]s`, studioTable, studioIDColumn, sceneTable, scenesODatesTable, imageTable, getSortDirection(direction))
+}
+
 // used for sorting on performer latest audio
 var selectStudioLatestAudioSQL = utils.StrFormat(
 	"SELECT MAX(date) FROM ("+
@@ -710,9 +766,14 @@ var studioSortOptions = sortOptions{
 	"images_count",
 	"latest_scene",
 	"name",
+	"o_counter",
+	"o_counter_all",
+	"performer_count",
+	"performer_count_all",
 	"scenes_count",
 	"scenes_duration",
 	"scenes_size",
+	"scene_markers_count",
 	"audios_count",
 	"audios_duration",
 	"audios_size",
@@ -760,10 +821,20 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 		sortQuery += getCountSort(studioTable, galleryTable, studioIDColumn, direction)
 	case "child_count":
 		sortQuery += getCountSort(studioTable, studioTable, studioParentIDColumn, direction)
+	case "scene_markers_count":
+		sortQuery += fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM %s INNER JOIN %s ON %[1]s.scene_id = %[2]s.id WHERE %[2]s.%s = %s.id) %s", sceneMarkerTable, sceneTable, studioIDColumn, studioTable, getSortDirection(direction))
 	case "latest_scene":
 		sortQuery += qb.sortByLatestScene(direction)
 	case "latest_audio":
 		sortQuery += qb.sortByLatestAudio(direction)
+	case "o_counter":
+		sortQuery += qb.sortByOCounter(direction)
+	case "o_counter_all":
+		sortQuery += qb.sortByOCounterAll(direction)
+	case "performer_count":
+		sortQuery += qb.sortByPerformerCount(direction)
+	case "performer_count_all":
+		sortQuery += qb.sortByPerformerCountAll(direction)
 	default:
 		sortQuery += getSort(sort, direction, "studios")
 	}

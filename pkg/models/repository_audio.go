@@ -40,7 +40,7 @@ type AudioCounter interface {
 	CountByFileID(ctx context.Context, fileID FileID) (int, error)
 	OCountByPerformerID(ctx context.Context, performerID int) (int, error)
 	OCountByGroupID(ctx context.Context, groupID int) (int, error)
-	OCountByStudioID(ctx context.Context, studioID int) (int, error)
+	OCountByStudioID(ctx context.Context, studioID int, depth int) (int, error)
 }
 
 // AudioCreator provides methods to create audios.

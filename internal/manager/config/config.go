@@ -1,7 +1,9 @@
 package config
 
 import (
+	"errors"
 	"fmt"
+	"net"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -46,6 +48,8 @@ const (
 
 	SignedURLExpiry        = "signed_url_expiry"
 	signedURLExpiryDefault = 60 * 60 * 4 // 4 hours in seconds
+
+	PublicWhitelist = "public_whitelist"
 
 	// SFWContentMode mode config key
 	SFWContentMode = "sfw_content_mode"
@@ -125,6 +129,12 @@ const (
 	PreviewExcludeEnd        = "preview_exclude_end"
 	previewExcludeEndDefault = "0"
 
+	MaxMarkerPreviewDuration        = "max_marker_preview_duration"
+	maxMarkerPreviewDurationDefault = 0
+
+	DefaultMarkerPreviewDuration        = "default_marker_preview_duration"
+	defaultMarkerPreviewDurationDefault = 20
+
 	WriteImageThumbnails        = "write_image_thumbnails"
 	writeImageThumbnailsDefault = true
 
@@ -145,6 +155,12 @@ const (
 	// urls or IPs that should not use the proxy
 	NoProxy        = "no_proxy"
 	noProxyDefault = "localhost,127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12"
+
+	// proxy patterns for which X-Forwarded-For will be trusted
+	// may be IP addresses or CIDR notation for subnets
+	// eg: 192.168.1.0/24 will match any IP address within 192.168.1.0 subnet.
+	// Loaded at startup - requires restart to update
+	TrustedProxies = "trusted_proxies"
 
 	// key used to sign JWT tokens
 	JWTSignKey = "jwt_secret_key"
@@ -254,12 +270,6 @@ const (
 	ThemeColor        = "theme_color"
 	DefaultThemeColor = "#202b33"
 
-	// Security
-	dangerousAllowPublicWithoutAuth                   = "dangerous_allow_public_without_auth"
-	dangerousAllowPublicWithoutAuthDefault            = "false"
-	SecurityTripwireAccessedFromPublicInternet        = "security_tripwire_accessed_from_public_internet"
-	securityTripwireAccessedFromPublicInternetDefault = ""
-
 	sslCertPath = "ssl_cert_path"
 	sslKeyPath  = "ssl_key_path"
 
@@ -356,6 +366,9 @@ type Config struct {
 	keyFile  string
 	sync.RWMutex
 	// deadlock.RWMutex // for deadlock testing/issues
+
+	// cached values for high-frequency calls
+	publicIPWhitelist ipWhitelist
 }
 
 var instance *Config
@@ -384,6 +397,36 @@ func (i *Config) SetConfigFile(fn string) {
 	i.Lock()
 	defer i.Unlock()
 	i.filePath = fn
+}
+
+type ipWhitelist struct {
+	nets  []net.IPNet
+	addrs []net.IP
+}
+
+func (i *Config) initialisePublicWhitelist() error {
+	// ensure ip whitelist entries are valid
+	for _, ip := range i.getStringSlice(PublicWhitelist) {
+		if ip == "*" {
+			return errors.New("cannot use wildcard '*' in public whitelist for security reasons")
+		}
+		_, ipNet, err := net.ParseCIDR(ip)
+		if err == nil {
+			i.publicIPWhitelist.nets = append(i.publicIPWhitelist.nets, *ipNet)
+		} else if ip := net.ParseIP(ip); ip == nil {
+			i.publicIPWhitelist.addrs = append(i.publicIPWhitelist.addrs, ip)
+		} else {
+			return fmt.Errorf("invalid entry in public whitelist: %s", ip)
+		}
+	}
+
+	return nil
+}
+
+// GetPublicWhitelist returns the list of IPs and subnets that are allowed external access to Stash when public access is disabled.
+func (i *Config) GetPublicWhitelist() (nets []net.IPNet, addrs []net.IP) {
+	// don't bother protecting this as it's not writable at runtime
+	return i.publicIPWhitelist.nets, i.publicIPWhitelist.addrs
 }
 
 func (i *Config) InitTLS() {
@@ -1104,6 +1147,21 @@ func (i *Config) GetTranscodeHardwareAcceleration() bool {
 	return i.getBool(TranscodeHardwareAcceleration)
 }
 
+// GetMaxMarkerPreviewDuration returns the ceiling in seconds applied to
+// generated marker preview videos when the marker has an explicit end time.
+// Any value <= 0 disables the ceiling, honoring the marker's end time verbatim.
+func (i *Config) GetMaxMarkerPreviewDuration() int {
+	return i.getInt(MaxMarkerPreviewDuration)
+}
+
+// GetDefaultMarkerPreviewDuration returns the duration in seconds used for
+// marker preview videos when the marker has no usable explicit end time
+// (nil end, or end <= start). Must be a positive value; the configure
+// mutation rejects non-positive input.
+func (i *Config) GetDefaultMarkerPreviewDuration() int {
+	return i.getInt(DefaultMarkerPreviewDuration)
+}
+
 func (i *Config) GetMaxTranscodeSize() models.StreamingResolutionEnum {
 	ret := i.getString(MaxTranscodeSize)
 
@@ -1691,19 +1749,6 @@ func (i *Config) GetDefaultGenerateSettings() *models.GenerateMetadataOptions {
 	return nil
 }
 
-// GetDangerousAllowPublicWithoutAuth determines if the security feature is enabled.
-// See https://discourse.stashapp.cc/t/-/1658
-func (i *Config) GetDangerousAllowPublicWithoutAuth() bool {
-	return i.getBool(dangerousAllowPublicWithoutAuth)
-}
-
-// GetSecurityTripwireAccessedFromPublicInternet returns a public IP address if stash
-// has been accessed from the public internet, with no auth enabled, and
-// DangerousAllowPublicWithoutAuth disabled. Returns an empty string otherwise.
-func (i *Config) GetSecurityTripwireAccessedFromPublicInternet() string {
-	return i.getString(SecurityTripwireAccessedFromPublicInternet)
-}
-
 // GetDLNAServerName returns the visible name of the DLNA server. If empty,
 // "stash" will be used.
 func (i *Config) GetDLNAServerName() string {
@@ -1843,12 +1888,8 @@ func (i *Config) GetNoProxy() string {
 	return i.getString(NoProxy)
 }
 
-// ActivatePublicAccessTripwire sets the security_tripwire_accessed_from_public_internet
-// config field to the provided IP address to indicate that stash has been accessed
-// from this public IP without authentication.
-func (i *Config) ActivatePublicAccessTripwire(requestIP string) error {
-	i.SetString(SecurityTripwireAccessedFromPublicInternet, requestIP)
-	return i.Write()
+func (i *Config) GetTrustedProxies() []string {
+	return i.getStringSlice(TrustedProxies)
 }
 
 func (i *Config) getPackageSources(key string) []*models.PackageSource {
@@ -1958,6 +1999,8 @@ func (i *Config) setDefaultValues() {
 	i.setDefault(PreviewExcludeStart, previewExcludeStartDefault)
 	i.setDefault(PreviewExcludeEnd, previewExcludeEndDefault)
 	i.setDefault(PreviewAudio, previewAudioDefault)
+	i.setDefault(MaxMarkerPreviewDuration, maxMarkerPreviewDurationDefault)
+	i.setDefault(DefaultMarkerPreviewDuration, defaultMarkerPreviewDurationDefault)
 	i.setDefault(SoundOnPreview, false)
 
 	i.setDefault(UseCustomSpriteInterval, UseCustomSpriteIntervalDefault)
@@ -1972,9 +2015,6 @@ func (i *Config) setDefaultValues() {
 	i.setDefault(CreateImageClipsFromVideos, createImageClipsFromVideosDefault)
 
 	i.setDefault(Database, defaultDatabaseFilePath)
-
-	i.setDefault(dangerousAllowPublicWithoutAuth, dangerousAllowPublicWithoutAuthDefault)
-	i.setDefault(SecurityTripwireAccessedFromPublicInternet, securityTripwireAccessedFromPublicInternetDefault)
 
 	// Set generated to the metadata path for backwards compat
 	i.setDefault(Generated, i.main.String(Metadata))

@@ -726,7 +726,13 @@ func (qb *AudioStore) OCountByGroupID(ctx context.Context, groupID int) (int, er
 	return ret, nil
 }
 
-func (qb *AudioStore) OCountByStudioID(ctx context.Context, studioID int) (int, error) {
+func (qb *AudioStore) OCountByStudioID(ctx context.Context, studioID int, depth int) (int, error) {
+	var ret int
+
+	if depth != 0 {
+		return qb.oCountByStudioIDRecursive(ctx, studioID, depth)
+	}
+
 	table := qb.table()
 	oHistoryTable := goqu.T(audiosODatesTable)
 
@@ -735,11 +741,41 @@ func (qb *AudioStore) OCountByStudioID(ctx context.Context, studioID int) (int, 
 		goqu.On(table.Col(idColumn).Eq(oHistoryTable.Col(audioIDColumn))),
 	).Where(table.Col(studioIDColumn).Eq(studioID))
 
-	var ret int
 	if err := querySimple(ctx, q, &ret); err != nil {
 		return 0, err
 	}
 
+	return ret, nil
+}
+
+func (qb *AudioStore) oCountByStudioIDRecursive(ctx context.Context, studioID int, depth int) (int, error) {
+	q := `
+	WITH RECURSIVE sub_studios AS (
+		SELECT id, 0 AS level FROM studios WHERE id = ?
+		UNION ALL
+		SELECT s.id, ss.level + 1 FROM studios s
+		INNER JOIN sub_studios ss ON s.parent_id = ss.id
+		WHERE ss.level < ? OR ? < 0
+	)
+	SELECT COUNT(*) FROM audios
+	INNER JOIN audios_o_dates ON audios.id = audios_o_dates.audio_id
+	WHERE audios.studio_id IN (SELECT id FROM sub_studios)`
+
+	rows, err := dbWrapper.QueryxContext(ctx, q, studioID, depth, depth)
+	if err != nil {
+		return 0, fmt.Errorf("querying audio o_count by studio: %w", err)
+	}
+	defer rows.Close()
+
+	var ret int
+	for rows.Next() {
+		if err := rows.Scan(&ret); err != nil {
+			return 0, fmt.Errorf("scanning audio o_count: %w", err)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return 0, fmt.Errorf("iterating audio o_count rows: %w", err)
+	}
 	return ret, nil
 }
 
