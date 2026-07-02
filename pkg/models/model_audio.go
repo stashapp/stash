@@ -215,9 +215,3 @@ func (s Audio) DisplayName() string {
 
 	return strconv.Itoa(s.ID)
 }
-
-// GetHash returns the hash of the audio, based on the hash algorithm provided. If
-// hash algorithm is MD5, then Checksum is returned. Otherwise, OSHash is returned.
-func (s Audio) GetHash(hashAlgorithm HashAlgorithm) string {
-	return s.Checksum
-}

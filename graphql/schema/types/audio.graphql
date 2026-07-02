@@ -65,6 +65,8 @@ input AudioCreateInput {
   performer_ids: [ID!]
   groups: [AudioGroupInput!]
   tag_ids: [ID!]
+  "This should be a URL or a base64 encoded data URL"
+  cover_image: String
 
   """
   The first id will be assigned as primary.
@@ -90,6 +92,8 @@ input AudioUpdateInput {
   performer_ids: [ID!]
   groups: [AudioGroupInput!]
   tag_ids: [ID!]
+  "This should be a URL or a base64 encoded data URL"
+  cover_image: String
 
   "The time index a audio was left at"
   resume_time: Float

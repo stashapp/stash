@@ -52,6 +52,7 @@ type AudioCreator interface {
 type AudioUpdater interface {
 	Update(ctx context.Context, updatedAudio *Audio) error
 	UpdatePartial(ctx context.Context, id int, updatedAudio AudioPartial) (*Audio, error)
+	UpdateCover(ctx context.Context, audioID int, cover []byte) error
 }
 
 // AudioDestroyer provides methods to destroy audios.

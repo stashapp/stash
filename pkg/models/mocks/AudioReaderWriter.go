@@ -1302,6 +1302,20 @@ func (_m *AudioReaderWriter) Update(ctx context.Context, updatedAudio *models.Au
 	return r0
 }
 
+// UpdateCover provides a mock function with given fields: ctx, audioID, cover
+func (_m *AudioReaderWriter) UpdateCover(ctx context.Context, audioID int, cover []byte) error {
+	ret := _m.Called(ctx, audioID, cover)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, []byte) error); ok {
+		r0 = rf(ctx, audioID, cover)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // UpdatePartial provides a mock function with given fields: ctx, id, updatedAudio
 func (_m *AudioReaderWriter) UpdatePartial(ctx context.Context, id int, updatedAudio models.AudioPartial) (*models.Audio, error) {
 	ret := _m.Called(ctx, id, updatedAudio)

@@ -3349,17 +3349,17 @@ func TestAudioFindByPerformerID(t *testing.T) {
 	})
 }
 
-// func TestAudioUpdateAudioCover(t *testing.T) {
-// 	if err := withTxn(func(ctx context.Context) error {
-// 		qb := db.Audio
+func TestAudioUpdateAudioCover(t *testing.T) {
+	if err := withTxn(func(ctx context.Context) error {
+		qb := db.Audio
 
-// 		audioID := audioIDs[audioIdxWithGallery]
+		audioID := audioIDs[audioIdxWithGallery]
 
-// 		return testUpdateImage(t, ctx, audioID, qb.UpdateCover, qb.GetCover)
-// 	}); err != nil {
-// 		t.Error(err.Error())
-// 	}
-// }
+		return testUpdateImage(t, ctx, audioID, qb.UpdateCover, qb.GetCover)
+	}); err != nil {
+		t.Error(err.Error())
+	}
+}
 
 func TestAudioQueryQTrim(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {

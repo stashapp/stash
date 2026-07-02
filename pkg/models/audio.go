@@ -117,6 +117,8 @@ type AudioCreateInput struct {
 	PerformerIds []string          `json:"performer_ids"`
 	Groups       []AudioGroupInput `json:"groups"`
 	TagIds       []string          `json:"tag_ids"`
+	// This should be a URL or a base64 encoded data URL
+	CoverImage *string `json:"cover_image"`
 	// The first id will be assigned as primary.
 	// Files will be reassigned from existing audios if applicable.
 	// Files must not already be primary for another audio.
@@ -140,11 +142,13 @@ type AudioUpdateInput struct {
 	PerformerIds     []string          `json:"performer_ids"`
 	Groups           []AudioGroupInput `json:"groups"`
 	TagIds           []string          `json:"tag_ids"`
-	ResumeTime       *float64          `json:"resume_time"`
-	PlayDuration     *float64          `json:"play_duration"`
-	PlayCount        *int              `json:"play_count"`
-	PrimaryFileID    *string           `json:"primary_file_id"`
-	CustomFields     *CustomFieldsInput
+	// This should be a URL or a base64 encoded data URL
+	CoverImage    *string  `json:"cover_image"`
+	ResumeTime    *float64 `json:"resume_time"`
+	PlayDuration  *float64 `json:"play_duration"`
+	PlayCount     *int     `json:"play_count"`
+	PrimaryFileID *string  `json:"primary_file_id"`
+	CustomFields  *CustomFieldsInput
 }
 
 type AudiosDestroyInput struct {

@@ -167,6 +167,7 @@ var (
 )
 
 type AudioStore struct {
+	blobJoinQueryBuilder
 	customFieldsStore
 
 	tableMgr *table
@@ -376,6 +377,11 @@ func (qb *AudioStore) Update(ctx context.Context, updatedObject *models.Audio) e
 }
 
 func (qb *AudioStore) Destroy(ctx context.Context, id int) error {
+	// must handle image checksums manually
+	if err := qb.destroyCover(ctx, id); err != nil {
+		return err
+	}
+
 	// audio markers should be handled prior to calling destroy
 	// galleries should be handled prior to calling destroy
 
@@ -1223,6 +1229,22 @@ func (qb *AudioStore) ResetActivity(ctx context.Context, id int, resetResume boo
 
 func (qb *AudioStore) GetURLs(ctx context.Context, audioID int) ([]string, error) {
 	return audiosURLsTableMgr.get(ctx, audioID)
+}
+
+func (qb *AudioStore) GetCover(ctx context.Context, audioID int) ([]byte, error) {
+	return qb.GetImage(ctx, audioID, sceneCoverBlobColumn)
+}
+
+func (qb *AudioStore) HasCover(ctx context.Context, audioID int) (bool, error) {
+	return qb.HasImage(ctx, audioID, sceneCoverBlobColumn)
+}
+
+func (qb *AudioStore) UpdateCover(ctx context.Context, audioID int, image []byte) error {
+	return qb.UpdateImage(ctx, audioID, sceneCoverBlobColumn, image)
+}
+
+func (qb *AudioStore) destroyCover(ctx context.Context, audioID int) error {
+	return qb.DestroyImage(ctx, audioID, sceneCoverBlobColumn)
 }
 
 func (qb *AudioStore) AssignFiles(ctx context.Context, audioID int, fileIDs []models.FileID) error {
