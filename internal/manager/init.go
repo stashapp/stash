@@ -61,7 +61,6 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 		Repository:  db.Audio,
 		PluginCache: pluginCache,
 		Paths:       mgrPaths,
-		Config:      cfg,
 	}
 
 	imageService := &image.Service{

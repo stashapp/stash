@@ -8,15 +8,10 @@ import (
 	"github.com/stashapp/stash/pkg/plugin"
 )
 
-type Config interface {
-	GetAudioFileNamingAlgorithm() models.HashAlgorithm
-}
-
 type Service struct {
 	File        models.FileReaderWriter
 	Repository  models.AudioReaderWriter
 	PluginCache *plugin.Cache
 
-	Paths  *paths.Paths
-	Config Config
+	Paths *paths.Paths
 }

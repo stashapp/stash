@@ -898,12 +898,6 @@ func (i *Config) GetVideoFileNamingAlgorithm() models.HashAlgorithm {
 	return models.HashAlgorithm(ret)
 }
 
-// GetAudioFileNamingAlgorithm returns what hash algorithm should be used for
-// naming generated audio files.
-func (i *Config) GetAudioFileNamingAlgorithm() models.HashAlgorithm {
-	return models.HashAlgorithmMd5
-}
-
 func (i *Config) GetSequentialScanning() bool {
 	return i.getBool(SequentialScanning)
 }

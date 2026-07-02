@@ -145,10 +145,11 @@ With `graphviz` installed and in the path, a call graph can be generated with:
 
 Make sure all of the following commands succeed on your local branch before pushing remotely.
 
-**GOTCHA:** Linting pulls in `develop` and then applies your PR on top, so if you are behind `develop` this can make you local tests pass but CI checks fail.
-
 1. `make generate`
 2. `make fmt`
 3. `make lint`
+    * **GOTCHA:** Linting pulls in `develop` and then applies your PR on top, so if you are behind `develop` this can make you local tests pass but CI checks fail.
 4. `make fmt-ui`
 5. `make validate-ui`
+6. `make it` - integration tests
+    * if a specific test fails, then run `make it-one PKG=<PACKAGE_RELATIVE_PATH>`

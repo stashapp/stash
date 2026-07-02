@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -76,7 +75,7 @@ func GetAudioStreamPaths(audio *models.Audio, directStreamURL *url.URL, maxStrea
 	// don't care if we can't get the container
 	container, _ := GetAudioFileContainer(pf)
 
-	if HasAudioTranscode(audio, config.GetInstance().GetAudioFileNamingAlgorithm()) || ffmpeg.IsValidAudioForContainer(audioCodec, container) {
+	if HasAudioTranscode(audio, models.HashAlgorithmMd5) || ffmpeg.IsValidAudioForContainer(audioCodec, container) {
 		endpoints = append(endpoints, makeStreamEndpoint(directAudioEndpointType))
 	}
 

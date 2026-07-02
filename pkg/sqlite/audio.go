@@ -32,6 +32,8 @@ const (
 	audioPlayDateColumn   = "play_date"
 	audiosODatesTable     = "audios_o_dates"
 	audioODateColumn      = "o_date"
+
+	audioCoverBlobColumn = "cover_blob"
 )
 
 type audioRow struct {
@@ -49,6 +51,9 @@ type audioRow struct {
 	UpdatedAt    Timestamp `db:"updated_at"`
 	ResumeTime   float64   `db:"resume_time"`
 	PlayDuration float64   `db:"play_duration"`
+
+	// not used in resolutions or updates
+	CoverBlob zero.String `db:"cover_blob"`
 }
 
 func (r *audioRow) fromAudio(o models.Audio) {
@@ -177,8 +182,12 @@ type AudioStore struct {
 	repo *storeRepository
 }
 
-func NewAudioStore(r *storeRepository) *AudioStore {
+func NewAudioStore(r *storeRepository, blobStore *BlobStore) *AudioStore {
 	return &AudioStore{
+		blobJoinQueryBuilder: blobJoinQueryBuilder{
+			blobStore: blobStore,
+			joinTable: audioTable,
+		},
 		customFieldsStore: customFieldsStore{
 			table: audiosCustomFieldsTable,
 			fk:    audiosCustomFieldsTable.Col(audioIDColumn),
@@ -1232,19 +1241,19 @@ func (qb *AudioStore) GetURLs(ctx context.Context, audioID int) ([]string, error
 }
 
 func (qb *AudioStore) GetCover(ctx context.Context, audioID int) ([]byte, error) {
-	return qb.GetImage(ctx, audioID, sceneCoverBlobColumn)
+	return qb.GetImage(ctx, audioID, audioCoverBlobColumn)
 }
 
 func (qb *AudioStore) HasCover(ctx context.Context, audioID int) (bool, error) {
-	return qb.HasImage(ctx, audioID, sceneCoverBlobColumn)
+	return qb.HasImage(ctx, audioID, audioCoverBlobColumn)
 }
 
 func (qb *AudioStore) UpdateCover(ctx context.Context, audioID int, image []byte) error {
-	return qb.UpdateImage(ctx, audioID, sceneCoverBlobColumn, image)
+	return qb.UpdateImage(ctx, audioID, audioCoverBlobColumn, image)
 }
 
 func (qb *AudioStore) destroyCover(ctx context.Context, audioID int) error {
-	return qb.DestroyImage(ctx, audioID, sceneCoverBlobColumn)
+	return qb.DestroyImage(ctx, audioID, audioCoverBlobColumn)
 }
 
 func (qb *AudioStore) AssignFiles(ctx context.Context, audioID int, fileIDs []models.FileID) error {

@@ -431,7 +431,7 @@ func (r *mutationResolver) AudiosDestroy(ctx context.Context, input models.Audio
 	}
 
 	var audios []*models.Audio
-	fileNamingAlgo := manager.GetInstance().Config.GetAudioFileNamingAlgorithm()
+	fileNamingAlgo := models.HashAlgorithmMd5
 	trashPath := manager.GetInstance().Config.GetDeleteTrashPath()
 
 	fileDeleter := &audio.FileDeleter{
@@ -544,7 +544,7 @@ func (r *mutationResolver) AudioMerge(ctx context.Context, input AudioMergeInput
 	trashPath := mgr.Config.GetDeleteTrashPath()
 	fileDeleter := &audio.FileDeleter{
 		Deleter:        file.NewDeleterWithTrash(trashPath),
-		FileNamingAlgo: mgr.Config.GetAudioFileNamingAlgorithm(),
+		FileNamingAlgo: models.HashAlgorithmMd5,
 		Paths:          mgr.Paths,
 	}
 

@@ -13,10 +13,11 @@ CREATE TABLE "audios" (
     `code` text,
     `resume_time` float not null default 0,
     `play_duration` float not null default 0,
+    `cover_blob` varchar(255),
     `created_at` datetime not null,
     `updated_at` datetime not null,
-    foreign key(`studio_id`) references `studios`(`id`) on delete
-    SET NULL
+    foreign key(`studio_id`) references `studios`(`id`) on delete SET NULL
+    foreign key(`cover_blob`) references `blobs`(`checksum`) on delete SET NULL
 );
 CREATE INDEX `index_audios_on_studio_id` on `audios` (`studio_id`);
 --------------------------------------------

@@ -258,6 +258,8 @@ func (qb *audioFilterHandler) isMissingCriterionHandler(isMissing *string) crite
 			case "tags":
 				audioRepository.tags.leftJoin(f, "tags_join", "audios.id")
 				f.addWhere("tags_join.audio_id IS NULL")
+			case "cover":
+				f.addWhere("audios.cover_blob IS NULL")
 			default:
 				if err := validateIsMissing(*isMissing, []string{
 					"title", "code", "details", "rating",
