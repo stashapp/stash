@@ -33,6 +33,7 @@ type basicFileRow struct {
 	Basename       string          `db:"basename"`
 	ZipFileID      null.Int        `db:"zip_file_id"`
 	ParentFolderID models.FolderID `db:"parent_folder_id"`
+	MissingSince   NullTimestamp   `db:"missing_since"`
 	Size           int64           `db:"size"`
 	ModTime        Timestamp       `db:"mod_time"`
 	CreatedAt      Timestamp       `db:"created_at"`
@@ -45,6 +46,7 @@ func (r *basicFileRow) fromBasicFile(o models.BaseFile) {
 	r.ZipFileID = nullIntFromFileIDPtr(o.ZipFileID)
 	r.ParentFolderID = o.ParentFolderID
 	r.Size = o.Size
+	r.MissingSince = NullTimestampFromTimePtr(o.MissingSince)
 	r.ModTime = Timestamp{Timestamp: o.ModTime}
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
@@ -170,6 +172,7 @@ type fileQueryRow struct {
 	Basename       null.String   `db:"basename"`
 	ZipFileID      null.Int      `db:"zip_file_id"`
 	ParentFolderID null.Int      `db:"parent_folder_id"`
+	MissingSince   NullTimestamp `db:"missing_since"`
 	Size           null.Int      `db:"size"`
 	ModTime        NullTimestamp `db:"mod_time"`
 	CreatedAt      NullTimestamp `db:"file_created_at"`
@@ -189,8 +192,9 @@ func (r *fileQueryRow) resolve() models.File {
 	basic := &models.BaseFile{
 		ID: models.FileID(r.FileID.Int64),
 		DirEntry: models.DirEntry{
-			ZipFileID: nullIntFileIDPtr(r.ZipFileID),
-			ModTime:   r.ModTime.Timestamp,
+			ZipFileID:    nullIntFileIDPtr(r.ZipFileID),
+			ModTime:      r.ModTime.Timestamp,
+			MissingSince: r.MissingSince.TimePtr(),
 		},
 		Path:           filepath.Join(r.FolderPath.String, r.Basename.String),
 		ParentFolderID: models.FolderID(r.ParentFolderID.Int64),
