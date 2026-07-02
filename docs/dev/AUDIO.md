@@ -43,6 +43,12 @@ The `Audio` datatype is similar to `Scene` but stores audio-only media (i.e. Aud
         - add `audios` into the calculation
         - split into `sortBySceneOCounter` and `sortByAudioOCounter`
 
+- Flaky Unit Tests
+    - pkg/sqlite/studio_test.go --> `TestStudioQuerySortOCounter`
+        - Assumes an id, but doesn't enforce this in the test setup
+        - This test will likely keep breaking due to this
+        - might be better to for a very large o_count on a specific studio to ensure this does not keep failing
+
 ## Future Tickets
 
 - UI

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/autotag"
+	"github.com/stashapp/stash/pkg/audio"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
@@ -440,6 +441,15 @@ func (t *autoTagFilesTask) makeSceneFilter() *models.SceneFilterType {
 	return ret
 }
 
+func (t *autoTagFilesTask) makeAudioFilter() *models.AudioFilterType {
+	ret := audio.FilterFromPaths(t.paths)
+
+	organized := false
+	ret.Organized = &organized
+
+	return ret
+}
+
 func (t *autoTagFilesTask) makeImageFilter() *models.ImageFilterType {
 	ret := &models.ImageFilterType{}
 	or := ret
@@ -612,6 +622,69 @@ func (t *autoTagFilesTask) processScenes(ctx context.Context) {
 	}
 }
 
+func (t *autoTagFilesTask) processAudios(ctx context.Context) {
+	if job.IsCancelled(ctx) {
+		return
+	}
+
+	logger.Info("Auto-tagging audios...")
+
+	batchSize := 1000
+
+	findFilter := models.BatchFindFilter(batchSize)
+	audioFilter := t.makeAudioFilter()
+
+	r := t.repository
+
+	more := true
+	for more {
+		var audios []*models.Audio
+		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+			var err error
+			audios, err = audio.Query(ctx, r.Audio, audioFilter, findFilter)
+			return err
+		}); err != nil {
+			if !job.IsCancelled(ctx) {
+				logger.Errorf("error querying audios for auto-tag: %w", err)
+			}
+			return
+		}
+
+		for _, ss := range audios {
+			if job.IsCancelled(ctx) {
+				logger.Info("Stopping auto-tag due to user request")
+				return
+			}
+
+			tt := autoTagAudioTask{
+				repository: r,
+				audio:      ss,
+				performers: t.performers,
+				studios:    t.studios,
+				tags:       t.tags,
+				cache:      t.cache,
+			}
+
+			var wg sync.WaitGroup
+			wg.Add(1)
+			go tt.Start(ctx, &wg)
+			wg.Wait()
+
+			t.progress.Increment()
+		}
+
+		if len(audios) != batchSize {
+			more = false
+		} else {
+			*findFilter.Page++
+
+			if *findFilter.Page%10 == 1 {
+				logger.Infof("Processed %d audios...", (*findFilter.Page-1)*batchSize)
+			}
+		}
+	}
+}
+
 func (t *autoTagFilesTask) processImages(ctx context.Context) {
 	if job.IsCancelled(ctx) {
 		return
@@ -757,6 +830,7 @@ func (t *autoTagFilesTask) process(ctx context.Context) {
 	}
 
 	t.processScenes(ctx)
+	t.processAudios(ctx)
 	t.processImages(ctx)
 	t.processGalleries(ctx)
 }
@@ -794,6 +868,50 @@ func (t *autoTagSceneTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 		if t.tags {
 			if err := autotag.SceneTags(ctx, t.scene, r.Scene, r.Tag, t.cache); err != nil {
 				return fmt.Errorf("tagging scene tags for %s: %v", t.scene.DisplayName(), err)
+			}
+		}
+
+		return nil
+	}); err != nil {
+		if !job.IsCancelled(ctx) {
+			logger.Errorf("auto-tag error: %v", err)
+		}
+	}
+}
+
+type autoTagAudioTask struct {
+	repository models.Repository
+	audio      *models.Audio
+
+	performers bool
+	studios    bool
+	tags       bool
+
+	cache *match.Cache
+}
+
+func (t *autoTagAudioTask) Start(ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
+	r := t.repository
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
+		if t.audio.Path == "" {
+			// nothing to do
+			return nil
+		}
+
+		if t.performers {
+			if err := autotag.AudioPerformers(ctx, t.audio, r.Audio, r.Performer, t.cache); err != nil {
+				return fmt.Errorf("tagging audio performers for %s: %v", t.audio.DisplayName(), err)
+			}
+		}
+		if t.studios {
+			if err := autotag.AudioStudios(ctx, t.audio, r.Audio, r.Studio, t.cache); err != nil {
+				return fmt.Errorf("tagging audio studio for %s: %v", t.audio.DisplayName(), err)
+			}
+		}
+		if t.tags {
+			if err := autotag.AudioTags(ctx, t.audio, r.Audio, r.Tag, t.cache); err != nil {
+				return fmt.Errorf("tagging audio tags for %s: %v", t.audio.DisplayName(), err)
 			}
 		}
 

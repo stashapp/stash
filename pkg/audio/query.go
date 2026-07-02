@@ -2,7 +2,9 @@ package audio
 
 import (
 	"context"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -31,6 +33,35 @@ func Query(ctx context.Context, qb models.AudioQueryer, audioFilter *models.Audi
 	}
 
 	return audios, nil
+}
+
+// FilterFromPaths creates a AudioFilterType that filters using the provided
+// paths.
+func FilterFromPaths(paths []string) *models.AudioFilterType {
+	ret := &models.AudioFilterType{}
+	or := ret
+	sep := string(filepath.Separator)
+
+	for _, p := range paths {
+		if !strings.HasSuffix(p, sep) {
+			p += sep
+		}
+
+		if ret.Path == nil {
+			or = ret
+		} else {
+			newOr := &models.AudioFilterType{}
+			or.Or = newOr
+			or = newOr
+		}
+
+		or.Path = &models.StringCriterionInput{
+			Modifier: models.CriterionModifierEquals,
+			Value:    p + "%",
+		}
+	}
+
+	return ret
 }
 
 func CountByStudioID(ctx context.Context, r models.AudioQueryer, id int, depth *int) (int, error) {

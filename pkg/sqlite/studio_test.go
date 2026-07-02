@@ -2004,6 +2004,7 @@ func TestStudioQuerySortOCounter(t *testing.T) {
 		direction = models.SortDirectionEnumAsc
 		studios = queryStudios(ctx, t, nil, findFilter)
 		assert.True(t, len(studios) > 0)
+		// TODO(audio): fix this unit test
 		assert.Equal(t, studioIDs[studioIdxWithTwoImages], studios[len(studios)-1].ID)
 
 		return nil

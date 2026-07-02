@@ -355,7 +355,7 @@ func (h *cleanHandler) handleRelatedAudios(ctx context.Context, fileDeleter *fil
 		return err
 	}
 
-	fileNamingAlgo := mgr.Config.GetVideoFileNamingAlgorithm()
+	fileNamingAlgo := models.HashAlgorithmMd5
 
 	audioFileDeleter := &audio.FileDeleter{
 		Deleter:        fileDeleter,

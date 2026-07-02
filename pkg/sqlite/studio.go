@@ -708,6 +708,7 @@ func (qb *StudioStore) sortByPerformerCountAll(direction string) string {
 }
 
 func (qb *StudioStore) sortByOCounter(direction string) string {
+	// TODO(Audio): add Audios to this filter
 	return fmt.Sprintf(` ORDER BY (
 		SELECT COALESCE((
 			SELECT COUNT(*) FROM %[3]s
@@ -721,6 +722,7 @@ func (qb *StudioStore) sortByOCounter(direction string) string {
 }
 
 func (qb *StudioStore) sortByOCounterAll(direction string) string {
+	// TODO(Audio): add Audios to this filter
 	return fmt.Sprintf(` ORDER BY (
 		WITH RECURSIVE sub_studios AS (
 			SELECT s.id FROM %[1]s s WHERE s.id = %[1]s.id
