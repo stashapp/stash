@@ -477,6 +477,7 @@ func (qb *performerFilterHandler) galleryCountCriterionHandler(count *models.Int
 }
 
 // used for sorting and filtering on performer o-count
+// TODO(Audio): add Audios to this filter
 var selectPerformerOCountSQL = utils.StrFormat(
 	"SELECT SUM(o_counter) "+
 		"FROM ("+

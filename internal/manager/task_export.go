@@ -331,7 +331,7 @@ func (t *ExportTask) populateGroupScenes(ctx context.Context) {
 func (t *ExportTask) populateGroupAudios(ctx context.Context) {
 	r := t.repository
 	reader := r.Group
-	sceneReader := r.Scene
+	audioReader := r.Audio
 
 	var groups []*models.Group
 	var err error
@@ -347,7 +347,7 @@ func (t *ExportTask) populateGroupAudios(ctx context.Context) {
 	}
 
 	for _, m := range groups {
-		audios, err := sceneReader.FindByGroupID(ctx, m.ID)
+		audios, err := audioReader.FindByGroupID(ctx, m.ID)
 		if err != nil {
 			logger.Errorf("[groups] <%s> failed to fetch audios for group: %v", m.Name, err)
 			continue
@@ -712,34 +712,34 @@ func (t *ExportTask) exportAudio(ctx context.Context, wg *sync.WaitGroup, jobCha
 	performerReader := r.Performer
 	tagReader := r.Tag
 
-	for s := range jobChan {
-		audioHash := s.GetHash(t.fileNamingAlgorithm)
+	for a := range jobChan {
+		audioHash := a.Checksum
 
-		if err := s.LoadRelationships(ctx, audioReader); err != nil {
+		if err := a.LoadRelationships(ctx, audioReader); err != nil {
 			logger.Errorf("[audios] <%s> error loading audio relationships: %v", audioHash, err)
 		}
 
-		newAudioJSON, err := audio.ToBasicJSON(ctx, audioReader, s)
+		newAudioJSON, err := audio.ToBasicJSON(ctx, audioReader, a)
 		if err != nil {
 			logger.Errorf("[audios] <%s> error getting audio JSON: %v", audioHash, err)
 			continue
 		}
 
 		// export files
-		for _, f := range s.Files.List() {
+		for _, f := range a.Files.List() {
 			t.exportFile(f)
 		}
 
-		newAudioJSON.Studio, err = audio.GetStudioName(ctx, studioReader, s)
+		newAudioJSON.Studio, err = audio.GetStudioName(ctx, studioReader, a)
 		if err != nil {
 			logger.Errorf("[audios] <%s> error getting audio studio name: %v", audioHash, err)
 			continue
 		}
 
-		newAudioJSON.ResumeTime = s.ResumeTime
-		newAudioJSON.PlayDuration = s.PlayDuration
+		newAudioJSON.ResumeTime = a.ResumeTime
+		newAudioJSON.PlayDuration = a.PlayDuration
 
-		performers, err := performerReader.FindByAudioID(ctx, s.ID)
+		performers, err := performerReader.FindByAudioID(ctx, a.ID)
 		if err != nil {
 			logger.Errorf("[audios] <%s> error getting audio performer names: %v", audioHash, err)
 			continue
@@ -747,31 +747,31 @@ func (t *ExportTask) exportAudio(ctx context.Context, wg *sync.WaitGroup, jobCha
 
 		newAudioJSON.Performers = performer.GetNames(performers)
 
-		newAudioJSON.Tags, err = audio.GetTagNames(ctx, tagReader, s)
+		newAudioJSON.Tags, err = audio.GetTagNames(ctx, tagReader, a)
 		if err != nil {
 			logger.Errorf("[audios] <%s> error getting audio tag names: %v", audioHash, err)
 			continue
 		}
 
-		newAudioJSON.Groups, err = audio.GetAudioGroupsJSON(ctx, groupReader, s)
+		newAudioJSON.Groups, err = audio.GetAudioGroupsJSON(ctx, groupReader, a)
 		if err != nil {
 			logger.Errorf("[audios] <%s> error getting audio groups JSON: %v", audioHash, err)
 			continue
 		}
 
 		if t.includeDependencies {
-			if s.StudioID != nil {
-				t.studios.IDs = sliceutil.AppendUnique(t.studios.IDs, *s.StudioID)
+			if a.StudioID != nil {
+				t.studios.IDs = sliceutil.AppendUnique(t.studios.IDs, *a.StudioID)
 			}
 
-			tagIDs, err := audio.GetDependentTagIDs(ctx, tagReader, s)
+			tagIDs, err := audio.GetDependentTagIDs(ctx, tagReader, a)
 			if err != nil {
 				logger.Errorf("[audios] <%s> error getting audio tags: %v", audioHash, err)
 				continue
 			}
 			t.tags.IDs = sliceutil.AppendUniques(t.tags.IDs, tagIDs)
 
-			groupIDs, err := audio.GetDependentGroupIDs(ctx, s)
+			groupIDs, err := audio.GetDependentGroupIDs(ctx, a)
 			if err != nil {
 				logger.Errorf("[audios] <%s> error getting audio groups: %v", audioHash, err)
 				continue
@@ -781,10 +781,10 @@ func (t *ExportTask) exportAudio(ctx context.Context, wg *sync.WaitGroup, jobCha
 			t.performers.IDs = sliceutil.AppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
 
-		basename := filepath.Base(s.Path)
-		hash := s.Checksum
+		basename := filepath.Base(a.Path)
+		hash := a.Checksum
 
-		fn := newAudioJSON.Filename(s.ID, basename, hash)
+		fn := newAudioJSON.Filename(a.ID, basename, hash)
 
 		if err := t.json.saveAudio(fn, newAudioJSON); err != nil {
 			logger.Errorf("[audios] <%s> failed to save json: %v", audioHash, err)

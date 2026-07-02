@@ -1,7 +1,6 @@
 package api
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"net/http"
@@ -10,10 +9,8 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/stashapp/stash/internal/manager"
-	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type AudioFinder interface {
@@ -24,9 +21,8 @@ type AudioFinder interface {
 
 type audioRoutes struct {
 	routes
-	audioFinder   AudioFinder
-	fileGetter    models.FileGetter
-	captionFinder CaptionFinder
+	audioFinder AudioFinder
+	fileGetter  models.FileGetter
 }
 
 func (rs audioRoutes) Routes() chi.Router {
@@ -37,7 +33,6 @@ func (rs audioRoutes) Routes() chi.Router {
 
 		// streaming endpoints
 		r.Get("/stream", rs.StreamDirect)
-		r.Get("/caption", rs.CaptionLang)
 	})
 
 	return r
@@ -49,67 +44,6 @@ func (rs audioRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
 		TxnManager: rs.txnManager,
 	}
 	ss.StreamAudioDirect(audio, w, r)
-}
-
-func (rs audioRoutes) Caption(w http.ResponseWriter, r *http.Request, lang string, ext string) {
-	s := r.Context().Value(audioKey).(*models.Audio)
-
-	var captions []*models.VideoCaption
-	readTxnErr := rs.withReadTxn(r, func(ctx context.Context) error {
-		var err error
-		primaryFile := s.Files.Primary()
-		if primaryFile == nil {
-			return nil
-		}
-
-		captions, err = rs.captionFinder.GetCaptions(ctx, primaryFile.Base().ID)
-
-		return err
-	})
-	if errors.Is(readTxnErr, context.Canceled) {
-		return
-	}
-	if readTxnErr != nil {
-		logger.Warnf("read transaction error on fetch audio captions: %v", readTxnErr)
-		http.Error(w, readTxnErr.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	for _, caption := range captions {
-		if lang != caption.LanguageCode || ext != caption.CaptionType {
-			continue
-		}
-
-		sub, err := video.ReadSubs(caption.Path(s.Path))
-		if err != nil {
-			logger.Warnf("error while reading subs: %v", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		var buf bytes.Buffer
-
-		err = sub.WriteToWebVTT(&buf)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "text/vtt")
-		utils.ServeStaticContent(w, r, buf.Bytes())
-		return
-	}
-}
-
-func (rs audioRoutes) CaptionLang(w http.ResponseWriter, r *http.Request) {
-	// serve caption based on lang query param, if provided
-	if err := r.ParseForm(); err != nil {
-		logger.Warnf("[caption] error parsing query form: %v", err)
-	}
-
-	l := r.Form.Get("lang")
-	ext := r.Form.Get("type")
-	rs.Caption(w, r, l, ext)
 }
 
 func (rs audioRoutes) AudioCtx(next http.Handler) http.Handler {

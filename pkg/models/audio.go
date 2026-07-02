@@ -52,8 +52,6 @@ type AudioFilterType struct {
 	PerformerCount *IntCriterionInput `json:"performer_count"`
 	// Filter by url
 	URL *StringCriterionInput `json:"url"`
-	// Filter by captions
-	Captions *StringCriterionInput `json:"captions"`
 	// Filter by resume time
 	ResumeTime *IntCriterionInput `json:"resume_time"`
 	// Filter by play count

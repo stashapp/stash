@@ -116,7 +116,7 @@ func (s *AudioServer) StreamAudioDirect(audio *models.Audio, w http.ResponseWrit
 		return
 	}
 
-	audioHash := audio.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
+	audioHash := audio.Checksum
 
 	fp := GetInstance().Paths.Audio.GetStreamPath(audio.Path, audioHash)
 	streamRequestCtx := ffmpeg.NewStreamRequestContext(w, r)

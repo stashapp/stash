@@ -33,7 +33,7 @@ The `Audio` datatype is similar to `Scene` but stores audio-only media (i.e. Aud
 ### Open Questions
 
 - Should Audio's have `cover` photo?
-    - ANSWER: ___
+    - ANSWER: yes
 - Should Legacy/Deprecate features be copied over?
     - ANSWER: do not copy over deprecated features
 - What should be done for `sortByOCounter`/`sortByPlayCount`?

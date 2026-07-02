@@ -136,11 +136,6 @@ type FindAudiosResultType {
   audios: [Audio!]!
 }
 
-input AudioHashInput {
-  checksum: String
-  oshash: String
-}
-
 type AudioStreamEndpoint {
   url: String!
   mime_type: String

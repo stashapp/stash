@@ -49,7 +49,6 @@ type Performer {
   performer_count: Int! # Resolver
   o_counter: Int # Resolver
   scenes: [Scene!]!
-  audios: [Audio!]!
   stash_ids: [StashID!]!
   # rating expressed as 1-100
   rating100: Int

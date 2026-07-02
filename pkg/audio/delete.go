@@ -20,12 +20,6 @@ type FileDeleter struct {
 // MarkGeneratedFiles marks for deletion the generated files for the provided audio.
 // Generated files bypass trash and are permanently deleted since they can be regenerated.
 func (d *FileDeleter) MarkGeneratedFiles(audio *models.Audio) error {
-	audioHash := audio.GetHash(d.FileNamingAlgo)
-
-	if audioHash == "" {
-		return nil
-	}
-
 	var files []string
 
 	// TODO(future|audio generated files): add paths here

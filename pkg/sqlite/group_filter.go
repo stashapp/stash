@@ -241,6 +241,7 @@ func (qb *groupFilterHandler) sceneCountCriterionHandler(count *models.IntCriter
 }
 
 // used for sorting and filtering on group o-count
+// TODO(Audio): add Audios to this filter (see pkg/sqlite/performer_filter.go on how to combine)
 var selectGroupOCountSQL = utils.StrFormat(
 	"SELECT SUM(o_counter) "+
 		"FROM ("+
