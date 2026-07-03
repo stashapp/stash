@@ -83,6 +83,7 @@ func (qb *fileFilterHandler) criterionHandler() criterionHandler {
 		qb.hashesCriterionHandler(fileFilter.Hashes),
 
 		qb.duplicatedCriterionHandler(fileFilter.Duplicated),
+		&timestampCriterionHandler{fileFilter.MissingSince, "files.missing_since", nil},
 		&timestampCriterionHandler{fileFilter.CreatedAt, "files.created_at", nil},
 		&timestampCriterionHandler{fileFilter.UpdatedAt, "files.updated_at", nil},
 

@@ -1063,6 +1063,7 @@ var fileSortOptions = sortOptions{
 	"id",
 	"path",
 	"random",
+	"missing_since",
 	"updated_at",
 }
 

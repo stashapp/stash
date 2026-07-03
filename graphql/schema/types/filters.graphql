@@ -789,6 +789,9 @@ input FileFilterType {
   parent_folder: HierarchicalMultiCriterionInput
   zip_file: MultiCriterionInput
 
+  "Filter by missing since time"
+  missing_since: TimestampCriterionInput
+
   "Filter by modification time"
   mod_time: TimestampCriterionInput
 
@@ -828,6 +831,9 @@ input FolderFilterType {
 
   parent_folder: HierarchicalMultiCriterionInput
   zip_file: MultiCriterionInput
+
+  "Filter by missing since time"
+  missing_since: TimestampCriterionInput
 
   "Filter by modification time"
   mod_time: TimestampCriterionInput
