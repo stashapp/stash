@@ -196,6 +196,7 @@ func (qb *FolderStore) selectDataset() *goqu.SelectDataset {
 		table.Col("path"),
 		table.Col("zip_file_id"),
 		table.Col("parent_folder_id"),
+		table.Col("missing_since"),
 		table.Col("mod_time"),
 		table.Col("created_at"),
 		table.Col("updated_at"),
