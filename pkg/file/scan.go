@@ -267,6 +267,9 @@ func (s *Scanner) handleFolderRename(ctx context.Context, file ScannedFile) (*mo
 	logger.Infof("%s moved to %s. Updating path...", renamedFrom.Path, file.Path)
 	renamedFrom.Path = file.Path
 
+	// clear any missing flag, since the folder is no longer missing
+	renamedFrom.MissingSince = nil
+
 	// update the parent folder ID
 	// find the parent folder
 	parentFolderID, err := s.getFolderID(ctx, filepath.Dir(file.Path))
@@ -290,6 +293,13 @@ func (s *Scanner) handleFolderRename(ctx context.Context, file ScannedFile) (*mo
 
 func (s *Scanner) onExistingFolder(ctx context.Context, f ScannedFile, existing *models.Folder) (*models.Folder, error) {
 	update := false
+
+	// update if missing
+	if existing.MissingSince != nil {
+		logger.Infof("Marking folder %q as no longer missing.", existing.Path)
+		existing.MissingSince = nil
+		update = true
+	}
 
 	// update if mod time is changed
 	entryModTime := f.ModTime
@@ -650,6 +660,8 @@ func (s *Scanner) handleRename(ctx context.Context, f models.File, fp []models.F
 	fBaseCopy.ID = updatedBase.ID
 	fBaseCopy.CreatedAt = updatedBase.CreatedAt
 	fBaseCopy.Fingerprints = updatedBase.Fingerprints
+	// clear missing since flag, since the file is no longer missing
+	fBaseCopy.MissingSince = nil
 	*updatedBase = fBaseCopy
 
 	zipMover := zipHierarchyMover{
@@ -790,6 +802,9 @@ func (s *Scanner) onExistingFile(ctx context.Context, f ScannedFile, existing mo
 	base.Size = f.Size
 	base.UpdatedAt = time.Now()
 
+	// clear any missing flag, since the file is no longer missing
+	base.MissingSince = nil
+
 	// calculate and update fingerprints for the file
 	const useExisting = false
 	fp, err := s.calculateFingerprints(f.FS, base, path, useExisting)
@@ -866,6 +881,18 @@ func (s *Scanner) removeOutdatedFingerprints(existing models.File, fp models.Fin
 // returns a file only if it was updated
 func (s *Scanner) onUnchangedFile(ctx context.Context, f ScannedFile, existing models.File) (*ScanFileResult, error) {
 	var err error
+
+	if existing.Base().MissingSince != nil {
+		logger.Infof("Marking file %q as no longer missing.", existing.Base().Path)
+		if err := s.Repository.WithTxn(ctx, func(ctx context.Context) error {
+			if err := s.Repository.File.SetMissing(ctx, existing.Base().ID, nil); err != nil {
+				return fmt.Errorf("updating file %q: %w", existing.Base().Path, err)
+			}
+			return nil
+		}); err != nil {
+			return nil, err
+		}
+	}
 
 	isMissingMetdata := s.isMissingMetadata(ctx, f, existing)
 	// set missing information
