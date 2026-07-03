@@ -319,25 +319,56 @@ type CleanMetadataInput struct {
 }
 
 func (s *Manager) Clean(ctx context.Context, input CleanMetadataInput) int {
-	cleaner := &file.Cleaner{
+	// deprecated - run verify paths task with purge missing turned on
+	return s.VerifyPaths(ctx, file.VerifyOptions{
+		Paths:                 input.Paths,
+		IgnoreZipFileContents: input.IgnoreZipFileContents,
+		DryRun:                input.DryRun,
+		PurgeMissing:          !input.DryRun,
+	})
+}
+
+func (s *Manager) VerifyPaths(ctx context.Context, options file.VerifyOptions) int {
+	verifier := &file.Verifier{
 		FS:         &file.OsFS{},
 		Repository: file.NewRepository(s.Repository),
-		Handlers: []file.CleanHandler{
-			&cleanHandler{},
+		PurgeHandlers: []file.PurgeHandler{
+			&purgeHandler{},
 		},
 		TrashPath: s.Config.GetDeleteTrashPath(),
 	}
 
-	j := cleanJob{
-		cleaner:      cleaner,
+	j := verifyJob{
+		verifier:     verifier,
 		repository:   s.Repository,
 		sceneService: s.SceneService,
 		imageService: s.ImageService,
-		input:        input,
+		options:      options,
 		scanSubs:     s.scanSubs,
 	}
 
-	return s.JobManager.Add(ctx, "Cleaning...", &j)
+	return s.JobManager.Add(ctx, "Verifying paths...", &j)
+}
+
+func (s *Manager) PurgeMissing(ctx context.Context, options file.PurgeMissingOptions) int {
+	purger := &file.MissingPurger{
+		Repository: file.NewRepository(s.Repository),
+		PurgeHandlers: []file.PurgeHandler{
+			&purgeHandler{},
+		},
+		TrashPath: s.Config.GetDeleteTrashPath(),
+	}
+
+	j := purgeMissingJob{
+		purger:       purger,
+		repository:   s.Repository,
+		sceneService: s.SceneService,
+		imageService: s.ImageService,
+		options:      options,
+		scanSubs:     s.scanSubs,
+	}
+
+	return s.JobManager.Add(ctx, "Purging missing files and folders...", &j)
 }
 
 func (s *Manager) OptimiseDatabase(ctx context.Context) int {
