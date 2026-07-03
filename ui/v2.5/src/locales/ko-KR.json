@@ -1365,7 +1365,8 @@
             "generated_directory": "생성된 컨텐츠 폴더",
             "nearly_there": "거의 끝났습니다!",
             "stash_library_directories": "Stash 라이브러리 폴더",
-            "blobs_use_database": "<데이터베이스 사용 중>"
+            "blobs_use_database": "<데이터베이스 사용 중>",
+            "password_set_warning": "참고: 시스템이 생성된 후 인증 정보 입력 페이지가 표시됩니다."
         },
         "creating": {
             "creating_your_system": "시스템 생성 중"
@@ -1451,7 +1452,13 @@
             "next_step": "새로운 시스템을 설정할 준비가 되었다면, '다음'을 누르세요.",
             "unable_to_locate_specified_config": "이 오류 문구가 출력되었다면, 명령어 또는 환경에서 지정된 설정 파일을 찾지 못한 것입니다. 설정 마법사가 새로운 설정 파일을 만드는 과정을 도와줄 것입니다."
         },
-        "welcome_to_stash": "Stash에 오신 것을 환영합니다"
+        "welcome_to_stash": "Stash에 오신 것을 환영합니다",
+        "credentials": {
+            "description": "Stash 시스템에 로그인할 사용자 이름과 패스워드를 입력하십시오. 시스템 접속에 사용자 이름 및 패스워드를 설정하지 않으려면 공백으로 둘 수 있습니다. 공개 인터넷을 통해 접속하는 경우에는 인증이 필요합니다.",
+            "heading": "인증 정보 설정",
+            "password_invalid": "사용자 이름이 설정된 경우 패스워드를 비워둘 수 없습니다.",
+            "username_invalid": "사용자 이름의 앞과 뒤에는 공백이 없어야 합니다."
+        }
     },
     "stash_id": "Stash ID",
     "stash_id_endpoint": "Stash ID 엔드포인트 URL",
@@ -1733,5 +1740,7 @@
     "scenes_size": "영상 크기",
     "related_studios": "연관됨",
     "sub_group_description": "서브그룹 설명",
-    "scene_marker_count": "영상 마커 개수"
+    "scene_marker_count": "영상 마커 개수",
+    "o_count_all": "싼 횟수(전체)",
+    "performer_count_all": "배우 수(전체)"
 }
