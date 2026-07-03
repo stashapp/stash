@@ -705,6 +705,7 @@ var folderSortOptions = sortOptions{
 	"path",
 	"basename",
 	"random",
+	"missing_since",
 	"updated_at",
 }
 
