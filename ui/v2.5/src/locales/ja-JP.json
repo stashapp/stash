@@ -6,7 +6,7 @@
         "add_to_entity": "{entityType}に追加",
         "allow": "許可",
         "allow_temporarily": "一時的に許可",
-        "anonymise": "匿名にする",
+        "anonymise": "匿名化",
         "apply": "適用",
         "auto_tag": "自動タグ付け",
         "backup": "バックアップ",
@@ -32,7 +32,7 @@
         "delete_generated_supporting_files": "生成済みのサポートファイルを削除",
         "disallow": "拒否",
         "download": "ダウンロード",
-        "download_anonymised": "匿名でダウンロード",
+        "download_anonymised": "匿名化をダウンロード",
         "download_backup": "バックアップをダウンロード",
         "edit": "編集",
         "edit_entity": "{entityType}を編集",
@@ -106,7 +106,7 @@
         "submit_update": "更新を送信",
         "swap": "入れ替える",
         "tasks": {
-            "clean_confirm_message": "クリーニングを実行してもよろしいですか？この操作により、ファイルシステムで利用されていないすべてのシーンとギャラリーから生成されたコンテンツとデータベース情報が削除されます。",
+            "clean_confirm_message": "クリーニングを実行してもよろしいですか？ ファイルシステム上で見つからない全てのシーンとギャラリーについて、データベース情報と生成済みコンテンツが削除されます。",
             "dry_mode_selected": "ドライモードが選択されています。実際の削除は実施されず、ログ処理だけが実行されます。",
             "import_warning": "インポートしてもよろしいですか？この操作により、データベースが削除され、エクスポートされているメタデータから改めてインポートされます。"
         },
@@ -123,7 +123,7 @@
         "migrate_blobs": "Blobを移行",
         "migrate_scene_screenshots": "シーンのスクリーンショットを移行",
         "add_manual_date": "手動で日付を追加",
-        "add_o": "Oを追加",
+        "add_o": "💦を追加",
         "add_play": "再生を追加",
         "choose_date": "日付を選択",
         "clean_generated": "生成済みのファイルを削除",
@@ -196,7 +196,7 @@
             "set_tag_desc": "シーン上の既存のタグを上書きまたはマージすることで、シーンにタグを付与します。",
             "set_tag_label": "タグを設定",
             "source": "ソース",
-            "mark_organized_desc": "保存ボタンをクリック後に、すぐにシーンが「分類済み」になります。",
+            "mark_organized_desc": "保存ボタンをクリックした後、すぐにシーンを「分類済み」にします。",
             "mark_organized_label": "分類済みにして保存",
             "errors": {
                 "blacklist_duplicate": "ブラックリスト項目が重複しています"
@@ -210,20 +210,20 @@
         "results": {
             "duration_off": "最低{number}秒間オフ",
             "duration_unknown": "長さ不明",
-            "fp_found": "{fpCount, plural, =0 {No new fingerprint matches found} other {# new fingerprint matches found}}",
+            "fp_found": "{fpCount, plural, =0 {新しいフィンガープリントの一致は見つかりませんでした} other {新しいフィンガープリントの一致が # 件見つかりました}}",
             "fp_matches": "長さが一致しました",
             "fp_matches_multi": "長さが一致しました {matchCount}/{durationsLength}件のハッシュ値",
             "hash_matches": "{hash_type}が一致しました",
             "match_failed_already_tagged": "シーンはすでにタグ付けされています",
             "match_failed_no_result": "結果が見つかりませんでした",
             "match_success": "シーンのタグ付けに成功しました",
-            "phash_matches": "{count}件のPハッシュが一致しました",
+            "phash_matches": "{count}件の知覚的ハッシュが一致しました",
             "unnamed": "名称未設定"
         },
         "verb_match_fp": "ハッシュ値を突き合わせる",
         "verb_matched": "一致",
         "verb_scrape_all": "全てスクレイプ",
-        "verb_submit_fp": "送信 {fpCount, plural, one{# Fingerprint} other{# Fingerprints}}",
+        "verb_submit_fp": "{fpCount, plural, one {# 件のフィンガープリント} other {# 件のフィンガープリント}} を送信",
         "verb_toggle_config": "{toggle} {configuration}",
         "verb_toggle_unmatched": "{toggle} 一致しないシーン",
         "verb_add_as_alias": "スクレイピングした名前を別名として追加する",
@@ -240,11 +240,11 @@
             "latest_version_build_hash": "最新バージョンのビルドハッシュ:",
             "new_version_notice": "[NEW]",
             "release_date": "リリース日:",
-            "stash_home": "Stashのすべては{url}にあります。",
-            "stash_wiki": "Stashの{url}で疑問を解決。",
+            "stash_home": "Stashは{url}にあります。",
+            "stash_wiki": "Stashの{url} をご覧ください。",
             "version": "バージョン",
-            "stash_community": "{forumUrl} または {discordUrl} のコミュニティに参加してください。",
-            "support_us": "{openCollectiveUrl} または {githubSponsorsUrl} を通じて支援してください。"
+            "stash_community": "{forumUrl} や {discordUrl} でコミュニティに参加してください。",
+            "support_us": "{openCollectiveUrl} や {githubSponsorsUrl} を通じた支援をお願いします。"
         },
         "application_paths": {
             "heading": "アプリケーションパス"
@@ -257,7 +257,7 @@
             "metadata_providers": "メタデータのプロバイダー",
             "plugins": "プラグイン",
             "scraping": "スクレイピング",
-            "security": "セキュリティー",
+            "security": "セキュリティ",
             "services": "サービス",
             "system": "システム",
             "tasks": "タスク",
@@ -268,13 +268,13 @@
             "allowed_ip_addresses": "許可済みのIPアドレス",
             "allowed_ip_temporarily": "一時的に許可するIPアドレス",
             "default_ip_whitelist": "デフォルトIPアドレスのホワイトリスト",
-            "default_ip_whitelist_desc": "デフォルトIPアドレスからのDLNAへのアクセスを許可します。すべてのIPアドレスを許可するには、{wildcard}を使用してください。",
+            "default_ip_whitelist_desc": "デフォルトIPアドレスからのDLNAへのアクセスを許可します。全てのIPアドレスを許可するには、{wildcard}を使用してください。",
             "disabled_dlna_temporarily": "一時的にDLNAを無効にする",
             "disallowed_ip": "無効なIPアドレス",
             "enabled_by_default": "デフォルトで有効",
             "enabled_dlna_temporarily": "一時的にDLNAを有効にする",
             "network_interfaces": "インターフェース",
-            "network_interfaces_desc": "DLNAサーバーを公開するためのネットワークインターフェースです。リストが空の場合は、すべてのインターフェースで実行されます。 変更後にDLNAを再起動する必要があります。",
+            "network_interfaces_desc": "DLNAサーバーを公開するためのネットワークインターフェースです。リストが空の場合は、全てのインターフェースで実行されます。 変更後にDLNAを再起動する必要があります。",
             "recent_ip_addresses": "最近のIPアドレス",
             "server_display_name": "サーバー表示名",
             "server_display_name_desc": "DLNAサーバーの表示名を設定できます。空欄の場合は、デフォルトの{server_name}が設定されます。",
@@ -297,7 +297,7 @@
                 },
                 "generate_api_key": "APIキーを生成",
                 "log_file": "ログファイル",
-                "log_file_desc": "ログを出力するファイルのパスを指定してください。空白の場合は、ファイルへのログ出力が無効になります。設定後は再起動が必要です。",
+                "log_file_desc": "ログを出力するファイルのパスを指定してください。空欄の場合はファイルへのログ出力が無効になります。設定後は再起動が必要です。",
                 "log_http": "HTTP accessのログ",
                 "log_http_desc": "HTTP accessログをターミナルへ出力します。設定後は再起動が必要です。",
                 "log_to_terminal": "ターミナルへログ出力",
@@ -350,7 +350,7 @@
                     },
                     "output_args": {
                         "desc": "詳細: 動画をライブ変換する際に、ffmpegに通す、output欄の前に付与する追加の引数を指定できます。",
-                        "heading": "ffmpeg変換出力引数"
+                        "heading": "FFmpeg変換出力引数"
                     }
                 },
                 "download_ffmpeg": {
@@ -370,24 +370,24 @@
                     "heading": "FFmpeg ハードウェアエンコード"
                 }
             },
-            "gallery_ext_desc": "ギャラリーzipファイルとして認識させるファイル拡張子のコンマ区切りリストです。",
-            "gallery_ext_head": "ギャラリーzipの拡張子",
-            "generated_file_naming_hash_desc": "生成されたファイルの命名にMD5またはoshashを使用します。これを変更するには、すべてのシーンに該当するMD5/oshash値が適用されている必要があります。この値を変更後、既に存在する生成済みのファイルを移行または再生成する必要があります。遺構についてはタスクページをご確認ください。",
+            "gallery_ext_desc": "ギャラリーZIPファイルとして認識させるファイル拡張子のコンマ区切りリストです。",
+            "gallery_ext_head": "ギャラリーZIPの拡張子",
+            "generated_file_naming_hash_desc": "生成されたファイルの命名にMD5またはoshashを使用します。これを変更するには、全てのシーンに該当するMD5/oshash値が適用されている必要があります。この値を変更後、既に存在する生成済みのファイルを移行または再生成する必要があります。遺構についてはタスクページをご確認ください。",
             "generated_file_naming_hash_head": "生成ファイルの命名ハッシュ",
             "generated_files_location": "生成ファイル(シーンマーカー、シーンプレビュー、スプライトイメージなど)を保存するディレクトリを指定してください。",
             "generated_path_head": "生成ファイルパス",
             "hashing": "ハッシュ",
             "image_ext_desc": "画像として認識させるファイル拡張子のコンマ区切りリストです。",
             "image_ext_head": "画像の拡張子",
-            "include_audio_desc": "プレビューを生成する際に、音声を含めます。",
+            "include_audio_desc": "プレビューの生成に音声を含めます。",
             "include_audio_head": "音声を含める",
             "logging": "ロギング",
-            "maximum_streaming_transcode_size_desc": "トランスコードストリームの最大サイズ",
+            "maximum_streaming_transcode_size_desc": "トランスコードストリームの最大サイズです。",
             "maximum_streaming_transcode_size_head": "ストリーミングトランスコードの最大サイズ",
-            "maximum_transcode_size_desc": "生成ファイルのトランスコードの最大サイズ",
+            "maximum_transcode_size_desc": "生成ファイルのトランスコードの最大サイズです。",
             "maximum_transcode_size_head": "最大トランスコードサイズ",
             "metadata_path": {
-                "description": "完全エクスポートまたはインポートを実行する際に使用されるディレクトリ",
+                "description": "完全エクスポートまたはインポートを実行する際に使用されるディレクトリ。",
                 "heading": "メタデータのパス"
             },
             "number_of_parallel_task_for_scan_generation_desc": "自動検出にする場合は0を設定してください。CPU使用率が100%に達するタスク数以上の値を設定すると、パフォーマンスの低下やその他の問題が発生する場合があります。",
@@ -395,17 +395,17 @@
             "parallel_scan_head": "同時スキャン/生成",
             "preview_generation": "プレビューの生成",
             "python_path": {
-                "description": "Pythonが配置されており、実行可能なパス（フォルダだけではなく）を指定してください。スクレイパーとプラグインスクリプトを実行するために使用されます。空欄の場合、環境変数からPythonのパスを取得します",
+                "description": "Python実行ファイルへのパスです（フォルダではありません）。スクリプトスクレイパーやプラグインで使用されます。空欄の場合は環境変数からPythonを検出します。",
                 "heading": "実行可能なPytyonパス"
             },
             "scraper_user_agent": "スクレイパーのユーザーエージェント",
-            "scraper_user_agent_desc": "httpリクエストによるスクレイプを実行する際に使用するユーザーエージェント",
+            "scraper_user_agent_desc": "HTTPリクエストによるスクレイプを実行する際に使用するユーザーエージェントです。",
             "scrapers_path": {
-                "description": "スクレイパーの設定ファイルを保存するディレクトリ",
+                "description": "スクレイパーの設定ファイルを保存するディレクトリです。",
                 "heading": "スクレイパーのパス"
             },
             "scraping": "スクレイピング",
-            "sqlite_location": "SQLiteデータベースファイルの保存場所(再起動が必要です)",
+            "sqlite_location": "SQLiteデータベースファイルの保存場所です（再起動が必要です）。警告: Stashサーバーを実行している環境とは別のシステムにデータベースを保存する構成（ネットワーク越しの保存）はサポートされていません！",
             "video_ext_desc": "動画として認識させるファイル拡張子のコンマ区切りリストです。",
             "video_ext_head": "動画の拡張子",
             "video_head": "動画",
@@ -423,7 +423,7 @@
             "gallery_cover_regex_desc": "画像をギャラリーのカバーとして識別するための正規表現。",
             "heatmap_generation": "Funscriptのヒートマップ生成",
             "plugins_path": {
-                "description": "プラグイン設定ファイルのディレクトリ",
+                "description": "プラグイン設定ファイルのディレクトリです。",
                 "heading": "プラグインパス"
             },
             "funscript_heatmap_draw_range": "生成済みのヒートマップに範囲を含める",
@@ -436,7 +436,7 @@
             "max_marker_preview_duration_desc": "マーカープレビューの最大時間です。0を指定すると無制限になります。",
             "max_marker_preview_duration_head": "マーカープレビューの最大時間",
             "sprite_generation_head": "スプライト画像の生成",
-            "sprite_interval_desc": "スプライト画像の生成間隔です。秒単位で指定します。",
+            "sprite_interval_desc": "スプライト画像の生成間隔を秒単位で指定します。",
             "sprite_interval_head": "スプライト画像の生成間隔",
             "sprite_maximum_desc": "1シーンあたりに生成するスプライト画像の最大数。0を指定すると無制限になります。",
             "sprite_maximum_head": "最大スプライト画像数",
@@ -457,14 +457,14 @@
         },
         "plugins": {
             "hooks": "フック",
-            "triggers_on": "ONにするトリガー",
+            "triggers_on": "実行タイミング",
             "available_plugins": "利用可能なプラグイン",
             "installed_plugins": "インストール済みのプラグイン"
         },
         "scraping": {
             "entity_metadata": "{entityType}のメタデータ",
             "entity_scrapers": "{entityType}のスクレイパー",
-            "excluded_tag_patterns_desc": "スクレイピング結果から除外するタグ名の正規表現",
+            "excluded_tag_patterns_desc": "スクレイピング結果から除外するタグ名の正規表現です。",
             "excluded_tag_patterns_head": "除外タグの規則",
             "scraper": "スクレイパー",
             "scrapers": "スクレイパー",
@@ -491,11 +491,11 @@
         "tasks": {
             "added_job_to_queue": "{operation_name}がジョブキューに追加されました",
             "anonymise_and_download": "データベースを匿名化し、結果をダウンロードします。",
-            "anonymise_database": "センシティブな全データを匿名化して、バックアップ先にデータベースのコピーを保存します。これは、他者にトラブルシューティングを依頼したり、デバッグ目的の際に役立ちます。オリジナルのデータベースは一切変更されません。匿名化されたデータベースには次のファイル名規則が利用されます:{filename_format}",
+            "anonymise_database": "全ての機密データを匿名化してバックアップ先にデータベースのコピーを保存します。作成されたコピーは、トラブルシューティングやデバッグのために他者に提供できます。元のデータベースは一切変更されません。匿名化されたデータベースには次のファイル名規則が利用されます: {filename_format}。",
             "anonymising_database": "匿名データベース",
             "auto_tag": {
-                "auto_tagging_all_paths": "すべてのパスを自動タグ付け",
-                "auto_tagging_paths": "次のパスを自動タグ付け：",
+                "auto_tagging_all_paths": "全てのパスを自動タグ付け",
+                "auto_tagging_paths": "次のパスを自動タグ付け",
                 "disable_warning": {
                     "description": "自動タグ付けを実行する前の確認を無効にします。",
                     "heading": "自動タグ付けの警告を無効にする"
@@ -505,7 +505,7 @@
             "auto_tagging": "自動タグ付け",
             "backing_up_database": "データベースをバックアップ",
             "backup_and_download": "データベースのバックアップを実施し、結果ファイルをダウンロードします。",
-            "cleanup_desc": "不明なファイルを確認し、データベースから削除します。この操作はもとに戻せません。",
+            "cleanup_desc": "見つからないファイルを確認し、データベースから削除します。この操作は元に戻せません。",
             "data_management": "データ管理",
             "defaults_set": "デフォルトが設定されており、タスクページの{action}ボタンをクリックした際に使用されます。",
             "dont_include_file_extension_as_part_of_the_title": "タイトルの一部にファイル拡張子を含めない",
@@ -516,10 +516,10 @@
                 "generating_scenes": "{num} {scene}を生成中"
             },
             "generate_desc": "サポートされている画像、スプライトイメージ、動画、vttとその他ファイルを生成します。",
-            "generate_phashes_during_scan": "知覚的ハッシュを生成",
-            "generate_phashes_during_scan_tooltip": "重複排除とシーン検知で使用されます。",
+            "generate_phashes_during_scan": "ビデオの知覚的ハッシュを生成",
+            "generate_phashes_during_scan_tooltip": "重複検出とシーン識別に使用します。",
             "generate_previews_during_scan": "アニメーション形式の画像プレビューを生成",
-            "generate_previews_during_scan_tooltip": "アニメーション(WebP)プレビューも生成します。これは、「シーン/マーカーウォールのプレビュータイプ」が「アニメーション画像」に設定されている場合にのみ必要です。ブラウジングの際に、動画のプレビューよりもCPUの使用量は少なくなりますが、追加で生成されるため、ファイルのサイズが大きくなります。",
+            "generate_previews_during_scan_tooltip": "アニメーション(WebP)プレビューも生成します。これは、「シーン/マーカーウォールのプレビュータイプ」が「アニメーション画像」に設定されている場合にのみ必要です。ブラウジングの際に、動画のプレビューよりもCPUの使用量は少なくなりますが、動画プレビューとは別に生成されるためファイルのサイズが大きくなります。",
             "generate_sprites_during_scan": "ザッピング用のスプライトイメージを生成",
             "generate_thumbnails_during_scan": "画像のサムネイルを生成",
             "generate_video_previews_during_scan": "プレビューを生成",
@@ -537,19 +537,19 @@
                 "heading": "識別",
                 "identifying_from_paths": "次のパスからシーンを識別中",
                 "identifying_scenes": "{num} {scene}を識別中",
-                "include_male_performers": "男優を含める",
+                "include_male_performers": "男性を含める",
                 "set_cover_images": "カバー画像を設定",
-                "set_organized": "分類フラグを設定",
+                "set_organized": "分類済みフラグを設定",
                 "source": "ソース",
                 "source_options": "{source}設定",
                 "sources": "ソース",
                 "strategy": "戦略",
-                "skip_single_name_performers_tooltip": "これが有効になっていない場合は、サマンサやオルガなどの一般的な出演者が一致するようになります",
-                "skip_single_name_performers": "曖昧さを明確にせずに単一名の出演者をスキップする",
-                "tag_skipped_performers": "スキップされた出演者にタグをつける:",
-                "tag_skipped_matches": "スキップされた一致にタグをつける:",
-                "skip_multiple_matches": "複数の結果がある一致をスキップする",
-                "skip_multiple_matches_tooltip": "これが有効でない場合に、複数の結果が返却された場合は、一致する結果がランダムに選択されます",
+                "skip_single_name_performers_tooltip": "無効にすると、Samantha や Olga のような一般的な単一名の出演者も照合対象になります",
+                "skip_single_name_performers": "曖昧な単一名の出演者をスキップする",
+                "tag_skipped_performers": "スキップした出演者に付けるタグ:",
+                "tag_skipped_matches": "スキップした一致候補に付けるタグ:",
+                "skip_multiple_matches": "複数の結果が見つかった一致候補をスキップする",
+                "skip_multiple_matches_tooltip": "無効にすると、複数の一致候補がある場合にそのうち1つがランダムに選択されます",
                 "tag_skipped_performer_tooltip": "「識別: 単一名の出演者」のようなタグを作成します。このタグをシーンタグビューでフィルタリングし、これらの出演者の処理方法を選択できます",
                 "tag_skipped_matches_tooltip": "「識別: 複数の一致」のようなタグを作成します。このタグをシーンタグビューでフィルタリングし、期待する一致を手動で選択できます",
                 "performer_genders": "出演者の性別",
@@ -564,7 +564,7 @@
             "only_dry_run": "ドライランモードで実行します。何も削除されません",
             "plugin_tasks": "プラグインのタスク",
             "scan": {
-                "scanning_all_paths": "すべてのパスをスキャン中",
+                "scanning_all_paths": "全てのパスをスキャン中",
                 "scanning_paths": "次のパスをスキャン中"
             },
             "scan_for_content_desc": "新しいコンテンツをスキャンし、データベースに追加します。",
@@ -580,7 +580,7 @@
                 "image_thumbnails_desc": "画像のサムネイルとクリップ",
                 "markers": "マーカーのプレビュー",
                 "transcodes": "シーンのトランスコード",
-                "previews": "シーンのプレビュー",
+                "previews": "シーンプレビュー",
                 "previews_desc": "シーンのプレビューとサムネイル",
                 "sprites": "シーンのスプライト画像",
                 "description": "対応するデータベースエントリのない生成されたファイルを削除します。"
@@ -593,9 +593,9 @@
                 "overwrite_existing": "既存のblobをスクリーンショットデータで上書きする"
             },
             "optimise_database": "データベースファイル全体を分析して再構築することで、パフォーマンスの向上を試みます。",
-            "optimise_database_warning": "警告: このタスクの実行中、データベースを変更する操作はすべて失敗します。データベースのサイズによっては、完了までに数分かかる場合があります。また、最低でもデータベースのサイズと同等のディスクの空き容量が必要ですが、1.5倍程度が推奨されます。",
+            "optimise_database_warning": "警告: このタスクの実行中、データベースを変更する操作は全て失敗します。データベースのサイズによっては完了までに数分かかる場合があります。また、最低でもデータベースのサイズと同等(1.5倍程度が推奨)のディスクの空き容量が必要です。",
             "rescan": "ファイルの再スキャン",
-            "rescan_tooltip": "パス内のすべてのファイルを再スキャンします。ファイルのメタデータを強制的に更新し、zip ファイルを再スキャンするために使用されます。",
+            "rescan_tooltip": "指定したパス内の全てのファイルを再スキャンします。ファイルのメタデータを強制的に更新したり、zip ファイルを再スキャンするために使用します。",
             "auto_tag_confirm": "既存のメタデータと照合して、コンテンツの一致を試みます。",
             "auto_tag_warning": "この処理は元に戻せず、誤った一致が発生する可能性があります。",
             "backup_database": {
@@ -604,14 +604,14 @@
                 "download": "ダウンロード",
                 "include_blobs": "バックアップにBlobを含める",
                 "include_blobs_desc": "無効にするとSQLiteデータベースファイルのみをバックアップします。",
-                "sqlite": "バックアップファイルはSQLiteデータベースファイルがファイル名を {filename_format} でコピーされます。",
+                "sqlite": "バックアップファイルはSQLiteデータベースファイルのコピーとして作成され、ファイル名は {filename_format} になります",
                 "to_directory": "保存先",
                 "warning_blobs": "Blobファイルはバックアップに含まれません。バックアップから正常に復元するには、ファイルが保存場所に存在している必要があります。",
                 "zip": "SQLiteデータベースファイルとBlobファイルを1つのZIPファイル {filename_format} にまとめる"
             },
             "clean_ignore_zip_contents": "zipファイルを無視",
-            "clean_ignore_zip_contents_desc": "高速ですが、ZIPファイル内で削除されたファイルは検出されません。ZIP内のファイルを削除しない場合は、有効にしても問題ありません。",
-            "generate_image_phashes_during_scan": "画像の Perceptual hashes を生成する",
+            "clean_ignore_zip_contents_desc": "高速ですが、zipファイル内で削除されたファイルは検出されません。zip内のファイルを削除しない場合は有効にしても問題ありません。",
+            "generate_image_phashes_during_scan": "画像の知覚的ハッシュを生成する",
             "generate_image_phashes_during_scan_tooltip": "重複検出や識別に使用します。"
         },
         "tools": {
@@ -623,7 +623,7 @@
                 "escape_chars": "リテラル文字をエスケープするには \\ を使用します",
                 "filename": "ファイル名",
                 "filename_pattern": "ファイル名の規則",
-                "ignore_organized": "分類されたシーンを無視",
+                "ignore_organized": "分類済みシーンを無視する",
                 "ignored_words": "無視する単語",
                 "matches_with": "{i}と一致",
                 "select_parser_recipe": "解析のレシピを選択",
@@ -657,11 +657,11 @@
                 "option_label": "カスタム翻訳が有効です"
             },
             "delete_options": {
-                "description": "画像、ギャラリー、シーンを削除するときのデフォルト設定です。",
+                "description": "画像、ギャラリー、シーンを削除する際のデフォルト設定です。",
                 "heading": "削除オプション",
                 "options": {
-                    "delete_file": "ファイルの削除をデフォルトにする",
-                    "delete_generated_supporting_files": "サポートされているファイルの生成ファイル削除をデフォルトにする"
+                    "delete_file": "ファイルをデフォルトで削除する",
+                    "delete_generated_supporting_files": "生成された補助的なファイルをデフォルトで削除する"
                 }
             },
             "desktop_integration": {
@@ -715,7 +715,7 @@
             },
             "handy_connection_key": {
                 "description": "Handy connection keyは、インタラクティブなシーンで使用されます。このキーを設定すると、Stashが現在のシーン情報をhandyfeeling.comと共有することを許可します。",
-                "heading": "Handy Connection Key"
+                "heading": "Handyの接続キー"
             },
             "image_lightbox": {
                 "heading": "画像のLightbox"
@@ -743,11 +743,11 @@
             },
             "menu_items": {
                 "description": "タイプナビゲーションバー上の異なるコンテンツタイプの表示または非表示を切り替えます。",
-                "heading": "メニューアイテム"
+                "heading": "メニュー項目"
             },
             "minimum_play_percent": {
-                "description": "再生回数を増やすために再生しなければならないシーンの時間割合を指します。",
-                "heading": "最低再生割合"
+                "description": "再生回数にカウントするために必要なシーンの再生の割合です。",
+                "heading": "最低再生パーセント"
             },
             "performers": {
                 "options": {
@@ -759,7 +759,7 @@
             },
             "preview_type": {
                 "description": "デフォルトでは動画(mp4)プレビューが使用されます。閲覧時のCPU使用量を抑えたい場合はアニメーション画像(webp)プレビューを使用できます。ただし、動画プレビューとは別に生成する必要があり、ファイルサイズも大きくなります。",
-                "heading": "プレビュータイプ",
+                "heading": "プレビュー形式",
                 "options": {
                     "animated": "アニメーション画像",
                     "static": "静止画",
@@ -786,8 +786,8 @@
                         "description": "動画の再生が終了した際にキューに入っている次の動画を再生します。",
                         "heading": "デフォルトでプレイリストを続行"
                     },
-                    "show_scrubber": "スクラバーを表示",
-                    "track_activity": "アクティビティを追跡",
+                    "show_scrubber": "ザッピング用のスプライトイメージを表示",
+                    "track_activity": "シーン再生履歴を記録",
                     "disable_mobile_media_auto_rotate": "モバイル機器でフル画面再生時の画面回転を無効化",
                     "enable_chromecast": "クロームキャスト機能の有効化",
                     "vr_tag": {
@@ -802,7 +802,7 @@
                 "heading": "シーン / マーカーウォール",
                 "options": {
                     "display_title": "タイトルとタグを表示",
-                    "toggle_sound": "音声を有効にする"
+                    "toggle_sound": "ホバー時のプレビュー再生の音声を有効にする"
                 }
             },
             "scroll_attempts_before_change": {
@@ -861,7 +861,7 @@
                 "margin": "マージン (px単位)"
             },
             "performer_list": {
-                "heading": "AV女優・男優リスト",
+                "heading": "出演者リスト",
                 "options": {
                     "show_links_on_grid_card": {
                         "heading": "出演者のグリッドカードにリンクを表示する"
@@ -879,15 +879,15 @@
             "troubleshooting_mode": {
                 "button": "トラブルシューティングモード",
                 "dialog_title": "トラブルシューティングモードを有効化",
-                "dialog_description": "問題の診断を行うため、すべてのカスタマイズを一時的に無効化します。",
-                "dialog_item_plugins": "すべてのプラグイン",
+                "dialog_description": "問題の診断を行うため、全てのカスタマイズを一時的に無効化します。",
+                "dialog_item_plugins": "全てのプラグイン",
                 "dialog_item_css": "カスタムCSS",
                 "dialog_item_js": "カスタムJavaScript",
                 "dialog_item_locales": "カスタムロケール",
                 "dialog_log_level": "詳細な診断のため、ログレベルがDebugに設定されます。",
                 "dialog_reload_note": "このページは自動的にリロードされます。",
                 "enable": "有効化してリロード",
-                "overlay_message": "トラブルシューティングモードが有効 - すべてのカスタマイズが無効化",
+                "overlay_message": "トラブルシューティングモードが有効 - 全てのカスタマイズが無効化",
                 "exit": "終了"
             },
             "autostart_gallery_slideshow": {
@@ -915,14 +915,14 @@
     },
     "configuration": "設定",
     "countables": {
-        "files": "{count, plural, one {File} other {Files}}",
-        "galleries": "{count, plural, one {Gallery} other {Galleries}}",
-        "images": "{count, plural, one {Image} other {Images}}",
-        "markers": "{count, plural, one {Marker} other {Markers}}",
-        "performers": "{count, plural, one {Performer} other {Performers}}",
-        "scenes": "{count, plural, one {Scene} other {Scenes}}",
-        "studios": "{count, plural, one {Studio} other {Studios}}",
-        "tags": "{count, plural, one {Tag} other {Tags}}",
+        "files": "{count, plural, one {ファイル} other {ファイル}}",
+        "galleries": "{count, plural, one {ギャラリー} other {ギャラリー}}",
+        "images": "{count, plural, one {イメージ} other {イメージ}}",
+        "markers": "{count, plural, one {マーカー} other {マーカー}}",
+        "performers": "{count, plural, one {出演者} other {出演者}}",
+        "scenes": "{count, plural, one {シーン} other {シーン}}",
+        "studios": "{count, plural, one {スタジオ} other {スタジオ}}",
+        "tags": "{count, plural, one {タグ} other {タグ}}",
         "groups": "{count, plural, one {グループ} other {グループ}}"
     },
     "country": "国",
@@ -941,7 +941,7 @@
         "format_string": "{criterion} {modifierString} {valueString}",
         "greater_than": "が次より大きい",
         "includes": "含む",
-        "includes_all": "すべて含む",
+        "includes_all": "全て含む",
         "is_null": "がnull",
         "less_than": "が次より小さい",
         "matches_regex": "が次の正規表現に一致",
@@ -949,7 +949,7 @@
         "not_equals": "でない",
         "not_matches_regex": "が正規表現に一致しない",
         "not_null": "がnullでない",
-        "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {すべて} other {{深さ}}})",
+        "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {全て} other {{depth}}})",
         "format_string_excludes": "{criterion} {modifierString} {valueString} (除外 {excludedString})",
         "format_string_excludes_depth": "{criterion} {modifierString} {valueString} ({excludedString} を除外) (+{depth, plural, =-1 {全て} other {{depth}}})"
     },
@@ -964,15 +964,15 @@
     "developmentVersion": "開発者バージョン",
     "dialogs": {
         "create_new_entity": "{entity}を新規作成する",
-        "delete_alert": "次の{count, plural, one {{singularEntity}} other {{pluralEntity}}}は完全に削除されます:",
+        "delete_alert": "次の{count, plural, one {{singularEntity}} other {{pluralEntity}}}を完全に削除します:",
         "delete_confirm": "本当に{entityName}を削除してよろしいですか？",
-        "delete_entity_desc": "{count, plural, one {Are you sure you want to delete this {singularEntity}? Unless the file is also deleted, this {singularEntity} will be re-added when scan is performed.} other {Are you sure you want to delete these {pluralEntity}? Unless the files are also deleted, these {pluralEntity} will be re-added when scan is performed.}}",
+        "delete_entity_desc": "{count, plural, one {この {singularEntity} を削除してもよろしいですか？ファイルも削除しない限り、スキャン時にこの {singularEntity} は再度追加されます。} other {これらの {pluralEntity} を削除してもよろしいですか？ファイルも削除しない限り、スキャン時にこれらの {pluralEntity} は再度追加されます。}}",
         "delete_entity_simple_desc": "{count, plural, one {本当にこの{singularEntity}を削除してもよろしいですか？} other {本当にこれらの{pluralEntity}を削除してもよろしいですか？}}",
-        "delete_entity_title": "{count, plural, one {Delete {singularEntity}} other {Delete {pluralEntity}}}",
+        "delete_entity_title": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} を削除",
         "delete_galleries_extra": "...加えて、画像ファイルが他のどのギャラリーにも属していません。",
         "delete_gallery_files": "ギャラリーフォルダー/zipファイルとギャラリーに属していない全ての画像を削除します。",
-        "delete_object_desc": "本当に{count, plural, one {this {singularEntity}} other {these {pluralEntity}}}を削除してもよろしいですか？",
-        "delete_object_overflow": "…加えて、{count}件とその他{count, plural, one {{singularEntity}} other {{pluralEntity}}}が含まれます。",
+        "delete_object_desc": "本当に{count, plural, one {この{singularEntity}} other {これらの {pluralEntity}}}を削除してもよろしいですか？",
+        "delete_object_overflow": "…ほか {count} 件の {count, plural, one {{singularEntity}} other {{pluralEntity}}}が含まれます。",
         "delete_object_title": "{count, plural, one {{singularEntity}} other {{pluralEntity}}}を削除",
         "dont_show_until_updated": "次の更新まで表示しない",
         "edit_entity_title": "{count, plural, one {{singularEntity}} other {{pluralEntity}}}を編集",
@@ -1006,7 +1006,7 @@
             "source": "ソース",
             "combined": "統合"
         },
-        "reassign_entity_title": "{count, plural, one {{singularEntity}を再割り当て} other {{pluralEntity}を再割り当て}}",
+        "reassign_entity_title": "{count, plural, one {{singularEntity}} other {{pluralEntity}}}を再割り当て",
         "reassign_files": {
             "destination": "次に再割り当て:"
         },
@@ -1014,18 +1014,18 @@
             "force_transcodes": "強制的にトランスコード済みファイルを生成",
             "force_transcodes_tooltip": "初期設定では、トランスコード済みファイルはブラウザーがサポートしていない動画ファイルであった場合にのみ生成されます。有効にすると、ブラウザーがサポートする動画ファイルであった場合でもトランスコード済みファイルを生成します。",
             "image_previews": "アニメーション画像によるプレビュー",
-            "image_previews_tooltip": "WebP形式のアニメーションプレビューは、プレビュータイプがアニメーション画像に設定されている場合のみ必要です。",
+            "image_previews_tooltip": "WebP形式のアニメーションプレビューを生成します。ウォールプレビュー形式をアニメーション画像に設定している場合に必要です。閲覧時のCPU使用量は動画プレビューより少なくなりますが、動画プレビューとは別に生成されるためファイルサイズは大きくなります。",
             "interactive_heatmap_speed": "インタラクティブなシーン向けにヒートマップとスピードを生成",
             "marker_image_previews": "マーカーにアニメーション画像プレビューを使用",
-            "marker_image_previews_tooltip": "WebP形式のアニメーションマーカープレビューは、プレビュータイプがアニメーション画像に設定されている場合のみ必要です。",
+            "marker_image_previews_tooltip": "WebPのアニメーション画像プレビューも生成します。ウォールプレビュー形式を「アニメーション画像」に設定している場合にのみ必要です。閲覧時のCPU使用量は動画プレビューより少なくなりますが、動画プレビューとは別に生成されるためファイルサイズは大きくなります。",
             "marker_screenshots": "マーカーのスクリーンショット",
             "marker_screenshots_tooltip": "マーカーの静止画JPG画像",
             "markers": "マーカーのプレビュー",
-            "markers_tooltip": "マーカーに設定されたタイムコードから２０秒間の動画を生成します。",
+            "markers_tooltip": "指定された時刻からの動画プレビューを生成します。",
             "override_preview_generation_options": "プレビュー生成の設定を上書きする",
             "override_preview_generation_options_desc": "この操作に限り、プレビュー生成の設定を上書きします。デフォルト設定は、システム -> プレビュー生成から変更できます。",
             "overwrite": "既に生成済みの生成ファイルを上書きする",
-            "phash": "視覚的ハッシュ (重複排除用)",
+            "phash": "ビデオの知覚的ハッシュ",
             "preview_exclude_end_time_desc": "シーンプレビューから最後のX秒を除外します。値は、秒またはシーンの再生時間の割合(2%など)で指定できます。",
             "preview_exclude_end_time_head": "除外する動画の終了時間",
             "preview_exclude_start_time_desc": "シーンプレビューから最初のX秒を除外します。値は、秒またはシーンの再生時間の割合(2%など)で指定できます。",
@@ -1038,7 +1038,7 @@
             "preview_seg_count_head": "プレビューのセグメント数",
             "preview_seg_duration_desc": "各プレビューセグメントの長さを秒で指定します。",
             "preview_seg_duration_head": "プレビューセグメントの長さ",
-            "sprites": "シーンのザッピング用スプライトイメージ",
+            "sprites": "ザッピング用のスプライトイメージ",
             "sprites_tooltip": "動画プレイヤーの下に表示されるサムネイル画像一覧です。",
             "transcodes": "トランスコード",
             "transcodes_tooltip": "サポートされていない動画フォーマットをMP4に変換します",
@@ -1046,10 +1046,10 @@
             "video_previews_tooltip": "シーンにマウスカーソルを置いた時に再生されるビデオプレビュー",
             "clip_previews": "画像のプレビュー",
             "covers": "シーンカバー",
-            "image_thumbnails": "サムネ画像",
-            "image_phash": "画像のPerceptual hashe",
+            "image_thumbnails": "サムネイル画像",
+            "image_phash": "画像の知覚的ハッシュ",
             "image_phash_tooltip": "重複検出や識別に使用します",
-            "phash_tooltip": "重複検出やシーン識別に使用します"
+            "phash_tooltip": "重複検出とシーン識別に使用します"
         },
         "scenes_found": "{count}シーンが見つかりました",
         "scrape_entity_query": "{entity_type}スクレイプクエリ",
@@ -1068,10 +1068,10 @@
             },
             "margin_desc": "各画像全体の周囲の余白をピクセル数で指定します。"
         },
-        "clear_o_history_confirm": "O履歴を消去してもよろしいですか？",
+        "clear_o_history_confirm": "💦履歴を消去してもよろしいですか？",
         "clear_o_history_confirm_sfw": "いいね履歴を消去してもよろしいですか？",
         "dont_show_again": "この警告を再び表示しない",
-        "delete_alert_to_trash": "以下の {count, plural, one {{singularEntity}} other {{pluralEntity}}} をゴミ箱に移動します:",
+        "delete_alert_to_trash": "次の {count, plural, one {{singularEntity}} other {{pluralEntity}}} をゴミ箱に移動します:",
         "edit_entity_count_title": "{count} 件の {count, plural, one {{singularEntity}} other {{pluralEntity}}} を編集",
         "overwrite_filter_warning": "保存済みフィルター「{entityName}」は上書きされました。",
         "stashid_exists_warning": "このStash-Boxの既存のStash IDは置き換えられます。",
@@ -1094,7 +1094,7 @@
     "donate": "寄付",
     "dupe_check": {
         "description": "「正確」より下のレベルは、計算に時間がかかる場合があります。 誤検知は、精度レベルが低い場合にも返却される可能性があります。",
-        "found_sets": "{setCount, plural, one{# set of duplicates found.} other {# sets of duplicates found.}}",
+        "found_sets": "{setCount, plural, one{重複セットが # 件見つかりました。} other {重複セットが # 件見つかりました。}}",
         "options": {
             "exact": "正確",
             "high": "高",
@@ -1109,14 +1109,14 @@
             "any": "いずれか",
             "equal": "等しい"
         },
-        "only_select_matching_codecs": "重複グループ内のすべてのコーデックが一致する場合のみ選択する",
-        "select_all_but_largest_file": "各重複グループ内で、最大のファイルを除くすべてのファイルを選択する",
-        "select_all_but_largest_resolution": "各重複グループ内で、最も解像度が高いファイルを除くすべてのファイルを選択する",
+        "only_select_matching_codecs": "重複グループ内の全てのコーデックが一致する場合のみ選択する",
+        "select_all_but_largest_file": "各重複グループ内で、最大のファイルを除く全てのファイルを選択する",
+        "select_all_but_largest_resolution": "各重複グループ内で、最も解像度が高いファイルを除く全てのファイルを選択する",
         "select_none": "選択を解除",
         "select_oldest": "重複グループ内で最も古いファイルを選択する",
         "select_options": "選択オプション…"
     },
-    "duplicated_phash": "重複 (phash)",
+    "duplicated_phash": "重複 (知覚的ハッシュ)",
     "duration": "長さ",
     "effect_filters": {
         "aspect": "アスペクト比",
@@ -1147,7 +1147,7 @@
     "false": "無効",
     "favourite": "お気に入り",
     "file": "ファイル",
-    "file_count": "ファイルカウント",
+    "file_count": "ファイル数",
     "file_info": "ファイル情報",
     "file_mod_time": "ファイル変更日時",
     "files": "ファイル",
@@ -1158,7 +1158,7 @@
     "filters": "フィルター",
     "folder": "フォルダー",
     "framerate": "フレームレート",
-    "frames_per_second": "{value}FPS",
+    "frames_per_second": "{value} FPS",
     "front_page": {
         "types": {
             "premade_filter": "既製フィルター",
@@ -1171,7 +1171,7 @@
     "gender": "性別",
     "gender_types": {
         "FEMALE": "女性",
-        "INTERSEX": "間性",
+        "INTERSEX": "インターセックス",
         "MALE": "男性",
         "NON_BINARY": "ノンバイナリー",
         "TRANSGENDER_FEMALE": "トランスジェンダーの女性",
@@ -1181,7 +1181,7 @@
     "handy_connection_status": {
         "connecting": "接続中",
         "disconnected": "切断済み",
-        "error": "Handyに接続中にエラーが発生しました",
+        "error": "Handyの接続中にエラーが発生しました",
         "missing": "ありません",
         "ready": "準備完了",
         "syncing": "サーバーと同期中",
@@ -1203,7 +1203,7 @@
     "interactive_speed": "インタラクティブ速度",
     "isMissing": "未設定",
     "last_played_at": "前回再生した日時",
-    "library": "ライブラリー",
+    "library": "ライブラリ",
     "loading": {
         "generic": "読み込み中…",
         "plugins": "プラグインを読み込んでいます…"
@@ -1219,15 +1219,15 @@
             "age": "{age}{years_old}",
             "age_context": "{age} {years_old}(撮影当時)"
         },
-        "phash": "PHash",
+        "phash": "知覚的ハッシュ",
         "play_count": "再生回数",
         "play_duration": "再生時間",
         "stream": "ストリーム",
         "video_codec": "動画コーデック",
         "md5": "MD5チェックサム",
-        "o_count": "H数",
+        "o_count": "💦回数",
         "oshash_meaning": "OpenSubtitlesハッシュ",
-        "phash_meaning": "Perceptual Hash(知覚ハッシュ)",
+        "phash_meaning": "Perceptual Hash(知覚的ハッシュ)",
         "oshash": "oshash(OpenSubtitlesハッシュ)"
     },
     "megabits_per_second": "{value}Mbps",
@@ -1250,7 +1250,7 @@
     "parent_tags": "親タグ",
     "part_of": "{parent}の一部",
     "path": "パス",
-    "perceptual_similarity": "知覚的類似性 (phash)",
+    "perceptual_similarity": "知覚的類似性 (知覚的ハッシュ)",
     "performer": "出演者",
     "performer_age": "出演者の年齢",
     "performer_count": "出演者数",
@@ -1280,9 +1280,9 @@
         "untagged_performers": "タグ付けされていない出演者",
         "update_performer": "出演者を更新",
         "update_performers": "出演者を更新",
-        "updating_untagged_performers_description": "タグ付けされていない出演者の更新機能により、stash IDがない出演者のマッチングを試み、メタデータを更新します。",
+        "updating_untagged_performers_description": "タグ付けされていない出演者の更新機能により、Stash IDがない出演者のマッチングを試み、メタデータを更新します。",
         "field_options_description": "各項目の更新方法を選択します。上書きは既存のデータを置き換え、マージは既存のデータに追加し、スキップは変更しません。",
-        "performer_names_or_stashids_separated_by_comma": "出演者名またはStashIDをカンマ区切りで入力してください",
+        "performer_names_or_stashids_separated_by_comma": "出演者名またはStash IDをカンマ区切りで入力してください",
         "configure_fields": "項目を設定",
         "field_options": "項目オプション"
     },
@@ -1308,9 +1308,9 @@
     "scene_date": "シーンの日付",
     "scene_id": "シーンID",
     "scene_tags": "シーンタグ",
-    "scene_updated_at": "シーンの更新日時",
+    "scene_updated_at": "シーン更新日時",
     "scenes": "シーン",
-    "scenes_updated_at": "シーンの更新日：",
+    "scenes_updated_at": "シーン更新日時",
     "search_filter": {
         "name": "フィルター",
         "saved_filters": "保存済みのフィルター",
@@ -1328,7 +1328,7 @@
             "database_file_path": "データベースのファイルパス",
             "generated_directory": "生成ファイルのディレクトリ",
             "nearly_there": "もうすぐです！",
-            "stash_library_directories": "Stashライブラリーのディレクトリ",
+            "stash_library_directories": "Stashライブラリのディレクトリ",
             "blobs_directory": "バイナリデータディレクトリ",
             "cache_directory": "キャッシュディレクトリ",
             "password_set_warning": "注: システムの作成後に、認証情報の入力を求められます。",
@@ -1350,8 +1350,8 @@
         },
         "github_repository": "Githubのリポジトリ",
         "migrate": {
-            "backup_database_path_leave_empty_to_disable_backup": "データベースのバックアップパス (バックアップを無効にする場合は空白):",
-            "backup_recommended": "移行する前に、既に存在するデータベースをバックアップすることを推奨します。こちらで、<code>{defaultBackupPath}</code>にコピーを生成することも可能です。",
+            "backup_database_path_leave_empty_to_disable_backup": "データベースのバックアップパス (空欄の場合はバックアップ無効):",
+            "backup_recommended": "移行する前に、既に存在するデータベースをバックアップすることを推奨します。こちらで、 <code>{defaultBackupPath}</code> にコピーを生成することも可能です。",
             "migrating_database": "データベースを移行中",
             "migration_failed": "移行失敗",
             "migration_failed_error": "データベースの移行中に次のエラーが発生しました:",
@@ -1360,20 +1360,20 @@
             "migration_notes": "移行ノート",
             "migration_required": "移行が必要です",
             "perform_schema_migration": "スキーマ移行を実施する",
-            "schema_too_old": "お使いのStashデータベースのスキーマバージョンは、<strong>{databaseSchema}</strong> であり、バージョン<strong>{appSchema}</strong>への移行が必要です。このバージョンのStashは、データベースの移行を実施しないと動作しません。移行を実施しない場合、お使いのデータベーススキーマに合致するバージョンにダウングレードする必要があります。"
+            "schema_too_old": "お使いのStashデータベースのスキーマバージョンは、 <strong>{databaseSchema}</strong> であり、バージョン <strong>{appSchema}</strong> への移行が必要です。このバージョンのStashは、データベースの移行を実施しないと動作しません。移行を実施しない場合、お使いのデータベーススキーマに合致するバージョンにダウングレードする必要があります。"
         },
         "paths": {
-            "database_filename_empty_for_default": "データベースファイル名 (空白でデフォルトを使用)",
-            "description": "続いて、あなたのコレクションの保存場所、データベースと生成ファイルを保存する場所を教えていただく必要があります。これらの設定は、後で必要に応じて変更が可能です。",
-            "path_to_generated_directory_empty_for_default": "生成ファイルの保存パス (空白でデフォルト使用)",
+            "database_filename_empty_for_default": "データベースファイル名 (空欄の場合はデフォルト)",
+            "description": "次に、コレクションの保存場所とデータベース・生成ファイル・キャッシュファイルを保存する場所を設定します。この設定は後から変更できます。",
+            "path_to_generated_directory_empty_for_default": "生成ファイルの保存パス (空欄の場合はデフォルト)",
             "set_up_your_paths": "パスをセットアップ",
-            "stash_alert": "ライブラリーパスが選択されていません。Stashはメディアをスキャンできませんがよろしいですか？",
+            "stash_alert": "ライブラリのパスが選択されていません。Stashはメディアをスキャンできませんがよろしいですか？",
             "where_can_stash_store_its_database": "Stashはどこにデータベースを保存すればよいですか？",
-            "where_can_stash_store_its_database_description": "Stashは、コレクションのメタデータを保存するためにsqliteデータベースを使用しています。初期設定では、設定ファイルが保存されているディレクトリに<code> stash-go.sqlite</code>という名称で保存されます。変更したい場合は、絶対または現在の作業ディレクトリまでの相対パスを含めたファイル名を入力してください。",
+            "where_can_stash_store_its_database_description": "Stashは、コンテンツのメタデータをSQLiteデータベースに保存します。デフォルトでは設定ファイルがあるディレクトリに <code> stash-go.sqlite</code> という名称で保存されます。保存先を変更したい場合は、絶対パスまたは現在の作業ディレクトリからの相対パスでファイル名を入力してください。",
             "where_can_stash_store_its_generated_content": "Stashはどこに生成コンテンツを保存すればよいですか？",
-            "where_can_stash_store_its_generated_content_description": "サムネイル、プレビューとスプライトイメージを使用できるようにするため、Stashは画像と動画を生成します。これには、未サポートのファイル形式を変換したものも含まれます。初期設定では、Stashは、設定ファイルが保存されているディレクトリに<code> generated</code>ディレクトリを作成します。この生成メディアの保存場所を変更したい場合は、絶対または現在の作業ディレクトリまでの相対パスを含めたパスを入力してください。ディレクトリが存在しない場合、Stashが自動的に作成します。",
-            "where_is_your_porn_located": "お宝はどこに眠っていますか？",
-            "where_is_your_porn_located_description": "あなたのお宝動画と画像が保存されているディレクトリを追加してください。Stashは、動画と画像のスキャン時にこれらのディレクトリを使用します。",
+            "where_can_stash_store_its_generated_content_description": "サムネイル、プレビュー、スプライトを使用できるようにするため、Stashは画像や動画を生成します。これには、未サポートのファイル形式を変換したものも含まれます。初期設定では、設定ファイルが保存されているディレクトリに <code> generated</code> ディレクトリを作成します。この生成メディアの保存場所を変更したい場合は、絶対パスまたは現在の作業ディレクトリからの相対パスを含めたパスを入力してください。ディレクトリが存在しない場合、Stashが自動的に作成します。",
+            "where_is_your_porn_located": "コンテンツはどこにありますか？",
+            "where_is_your_porn_located_description": "動画や画像が含まれるディレクトリを追加してください。Stashはスキャン時に、これらのディレクトリから動画や画像を検出します。",
             "path_to_blobs_directory_empty_for_default": "Blobディレクトリのパス（空欄の場合はデフォルト）",
             "path_to_cache_directory_empty_for_default": "キャッシュディレクトリのパス（空欄の場合はデフォルト）",
             "sfw_content_settings": "StashをSFWコンテンツに使用しますか？",
@@ -1385,7 +1385,7 @@
             "where_can_stash_store_blobs_description_addendum": "また、データをデータベースに保存することもできます。<strong>注:</strong> データベースファイルのサイズが大きくなり、データベースのマイグレーションにかかる時間も長くなります。",
             "where_can_stash_store_cache_files": "キャッシュファイルはどこに保存されますか？",
             "where_can_stash_store_cache_files_description": "HLS/DASHのライブトランスコードなど一部の機能を使用するには、一時ファイル用のキャッシュディレクトリが必要です。デフォルトでは、設定ファイルがあるディレクトリ内に <code>cache</code> ディレクトリが作成されます。保存先を変更する場合は、絶対パスまたは現在の作業ディレクトリからの相対パスを入力してください。ディレクトリが存在しない場合は自動で作成されます。",
-            "where_can_stash_store_its_database_warning": "警告: Stashを実行している環境とは別のシステムにデータベースを保存する構成（例: Stashサーバーは別のコンピューターで実行し、データベースはNASに保存する）は<strong>サポートされていません</strong>。SQLiteはネットワーク越しの使用を想定しておらず、そのような構成ではデータベース全体が破損する可能性が非常に高くなります。"
+            "where_can_stash_store_its_database_warning": "警告: Stashを実行している環境とは別のシステムにデータベースを保存する構成（例: Stashサーバーは別のコンピューターで実行し、データベースはNASに保存する）は <strong>サポートされていません</strong> 。SQLiteはネットワーク越しの使用を想定しておらず、そのような構成ではデータベース全体が破損する可能性が非常に高くなります。"
         },
         "stash_setup_wizard": "Stash セットアップウィザード",
         "success": {
@@ -1393,7 +1393,7 @@
             "help_links": "問題に直面または質問や提案がある場合、お気軽に{githubLink}からIssueをオープンしていただくか、{discordLink}からコミュニエティに質問してみてください。",
             "in_app_manual_explained": "次のような画面の右上にあるアイコンからアクセスできるアプリ内マニュアルを確認することもお勧めします: {icon}",
             "next_config_step_one": "続いて、設定ページに移動します。 このページでは、コレクションに含めるファイルと除外するファイルをカスタマイズしたり、システムを不正なアクセスから保護するためのユーザー名とパスワードを設定したり、その他のさまざまなオプションを設定できます。",
-            "next_config_step_two": "これらの設定で問題ない場合は、<code>{localized_task}</code>へ進み、<code>{localized_scan}</code>をクリックすることで、コンテンツのスキャンを開始できます。",
+            "next_config_step_two": "これらの設定で問題ない場合は、 <code>{localized_task}</code> へ進み、 <code>{localized_scan}</code> をクリックすることで、コンテンツのスキャンを開始できます。",
             "open_collective": "{open_collective_link}から、あなたがStashの継続的な開発にどのように貢献できるかを確認いただけます。",
             "support_us": "Stashの開発をサポート",
             "thanks_for_trying_stash": "Stashをご利用いただきありがとうございます！",
@@ -1403,13 +1403,13 @@
             "missing_ffmpeg": "必須の <code>ffmpeg</code> バイナリが見つかりません。下のチェックボックスを有効にすると、設定ディレクトリに自動でダウンロードできます。またはシステム設定で <code>ffmpeg</code> と <code>ffprobe</code> のバイナリへのパスを指定することもできます。Stashの動作にはこれらのバイナリが必要です。"
         },
         "welcome": {
-            "config_path_logic_explained": "Stashは、まず初めに現在の作業ディレクトリに設定ファイル(<code>config.yml</code>)がないかどうか探し、存在しない場合は、<code>$HOME/.stash/config.yml</code>(Windowsは <code>%USERPROFILE%\\.stash\\config.yml</code>)にフォールバックします。<code>-c '<設定ファイルへのパス>'</code> または <code>--config '<設定ファイルへのパス>'</code>オプションをつけて起動させることで、特定の設定ファイルを読み込ませることもできます。",
+            "config_path_logic_explained": "Stashは現在の作業ディレクトリから設定ファイル(<code>config.yml</code>)を探し、見つからない場合は <code>{fallback_path}</code> を使用します。<code>-c '<設定ファイルへのパス>'</code> または <code>--config '<設定ファイルへのパス>'</code>オプションを指定して起動することで、特定の設定ファイルを読み込ませることもできます。",
             "in_current_stash_directory": "<code>{path}</code> ディレクトリ内:",
             "in_the_current_working_directory": "現在の作業ディレクトリ <code>{path}</code> 内:",
             "next_step": "これで、新しいシステムのセットアップを続行する準備ができました。構成ファイルを保存する場所を選択して、「次へ」をクリックしてください。",
             "store_stash_config": "Stashの設定はどこに保存すればよいですか？",
             "unable_to_locate_config": "このメッセージをお読みいただいている場合、Stashは既存の構成を見つけることができませんでした。 このウィザードで、新しい構成をセットアップするプロセスをご案内します。",
-            "unexpected_explained": "この画面が予期せず表示される場合は、正しい作業ディレクトリまたは<code>-c</code>フラグを使用してStashを再起動してみてください。",
+            "unexpected_explained": "この画面が予期せず表示される場合は、正しい作業ディレクトリまたは <code>-c</code> フラグを使用してStashを再起動してみてください。",
             "in_the_current_working_directory_disabled": "作業ディレクトリ <code>{path}</code> 内:",
             "in_the_current_working_directory_disabled_macos": "<code>Stash.app</code> で実行している場合は未対応です。<br></br>作業ディレクトリでセットアップするには、<code>stash-macos</code> を実行してください"
         },
@@ -1427,7 +1427,7 @@
         }
     },
     "stash_id": "Stash ID",
-    "stash_id_endpoint": "Stash IDエンドポイント",
+    "stash_id_endpoint": "Stash IDエンドポイントURL",
     "stash_ids": "Stash ID",
     "stashbox": {
         "go_review_draft": "下書きを確認するには、{endpoint_name}に移動してください。",
@@ -1443,14 +1443,14 @@
         "scenes_duration": "シーンの再生時間",
         "scenes_size": "シーンサイズ",
         "scenes_played": "再生済みシーン",
-        "total_o_count": "O-Count数",
-        "total_o_count_sfw": "健全O-Count数",
+        "total_o_count": "💦回数",
+        "total_o_count_sfw": "いいね数",
         "total_play_count": "総再生数",
         "total_play_duration": "総再生時間"
     },
     "status": "状態: {statusText}",
     "studio": "スタジオ",
-    "studio_depth": "レベル (空白で全て)",
+    "studio_depth": "レベル (空欄の場合は全て)",
     "studios": "スタジオ",
     "sub_tag_count": "サブタグ数",
     "sub_tag_of": "{parent}のサブタグ",
@@ -1463,7 +1463,7 @@
     "tattoos": "タトゥー",
     "title": "タイトル",
     "toast": {
-        "added_entity": "{count, plural, one {{singularEntity}}と、その他{{pluralEntity}}}を追加しました",
+        "added_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}}を追加しました",
         "added_generation_job_to_queue": "キューに生成ジョブが追加されました",
         "created_entity": "{entity}が作成されました",
         "default_filter_set": "デフォルトのフィルターセット",
@@ -1472,7 +1472,7 @@
         "merged_scenes": "マージされたシーン",
         "merged_tags": "マージされたタグ",
         "reassign_past_tense": "ファイルが再割り当てされました",
-        "removed_entity": "{count, plural, one {{singularEntity}}と、その他{{pluralEntity}}}を削除しました",
+        "removed_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}}を削除しました",
         "rescanning_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}}を再スキャン中…",
         "saved_entity": "{entity}が保存されました",
         "started_auto_tagging": "自動タグ付けを開始しました",
@@ -1489,14 +1489,14 @@
     "true": "有効",
     "twitter": "Twitter",
     "type": "タイプ",
-    "updated_at": "更新日:",
+    "updated_at": "更新日時",
     "url": "URL",
     "videos": "動画",
     "view_all": "全て表示",
     "weight": "幅",
     "weight_kg": "体重(kg)",
     "years_old": "歳",
-    "zip_file_count": "zipファイルカウント",
+    "zip_file_count": "zipファイル数",
     "appears_with": "次で登場:",
     "audio_codec": "音声コーデック",
     "circumcised": "割礼",
@@ -1543,7 +1543,7 @@
         "select_stashbox": "StashBoxを選択...",
         "no_results": "結果が見つかりません。",
         "header": "StashBox から {entityType} を検索",
-        "placeholder_name_or_id": "{entityType}名またはStashID..."
+        "placeholder_name_or_id": "{entityType}名またはStash ID..."
     },
     "studio_tagger": {
         "add_new_studios": "スタジオを新規追加",
@@ -1561,7 +1561,7 @@
         },
         "create_or_tag_parent_studios": "存在しない親スタジオを作成、または既存の親スタジオをタグ付けする",
         "number_of_studios_will_be_processed": "{studio_count} 件のスタジオを処理します",
-        "query_all_studios_in_the_database": "データベース内のすべてのスタジオ",
+        "query_all_studios_in_the_database": "データベース内の全てのスタジオ",
         "refresh_tagged_studios": "タグ付け済みのスタジオを更新",
         "refreshing_will_update_the_data": "更新すると、タグ付け済みのスタジオのデータをStash-Boxインスタンスから取得して更新します。",
         "status_tagging_job_queued": "状態: タグ付けジョブをキューに追加しました",
@@ -1575,7 +1575,7 @@
         "untagged_studios": "未タグ付けのスタジオ",
         "update_studio": "スタジオを更新",
         "update_studios": "スタジオを更新",
-        "updating_untagged_studios_description": "未タグ付けのスタジオを更新すると、StashIDがないスタジオの照合を試みてメタデータを更新します。"
+        "updating_untagged_studios_description": "未タグ付けのスタジオを更新すると、Stash IDがないスタジオの照合を試みてメタデータを更新します。"
     },
     "video_codec": "ビデオコーデック",
     "errors": {
@@ -1612,7 +1612,7 @@
         "no_packages": "パッケージが見つかりません",
         "no_upgradable": "更新可能なパッケージが見つかりません",
         "package": "パッケージ",
-        "show_all": "すべて表示",
+        "show_all": "全て表示",
         "source": {
             "local_path": {
                 "heading": "ローカルパス",
@@ -1655,7 +1655,7 @@
     "studio_and_parent": "スタジオと親スタジオ",
     "studio_count": "スタジオ数",
     "studio_tags": "スタジオタグ",
-    "sub_folder_depth": "サブフォルダの深さ（空欄の場合はすべて）",
+    "sub_folder_depth": "サブフォルダの深さ（空欄の場合は全て）",
     "sub_folders": "サブフォルダ",
     "sub_group": "サブグループ",
     "sub_group_count": "サブグループ数",
@@ -1682,7 +1682,7 @@
         "no_results_found": "結果が見つかりませんでした。",
         "number_of_tags_will_be_processed": "{tag_count} 件のタグを処理します",
         "parent_tag_no_remote_site_id_warning": "親タグにリモートサイトIDがないため、Stash-Boxインスタンスにはリンクされません。",
-        "query_all_tags_in_the_database": "データベース内のすべてのタグ",
+        "query_all_tags_in_the_database": "データベース内の全てのタグ",
         "refresh_tagged_tags": "タグ付け済みのタグを更新",
         "refreshing_will_update_the_data": "更新するとタグ付け済みのタグのデータをStash-Boxインスタンスから取得して更新します。",
         "status_tagging_job_queued": "ステータス: タグ付けジョブをキューに追加しました",
@@ -1695,7 +1695,7 @@
         "to_use_the_tag_tagger": "タグのタグ付け機能を使用するには、Stash-Boxインスタンスを設定する必要があります。",
         "untagged_tags": "未タグ付けのタグ",
         "update_tags": "タグを更新",
-        "updating_untagged_tags_description": "未タグ付けのタグを更新するとStashIDがないタグの照合を試みてメタデータを更新します。"
+        "updating_untagged_tags_description": "未タグ付けのタグを更新するとStash IDがないタグの照合を試みてメタデータを更新します。"
     },
     "tagger": {
         "config": {
@@ -1721,7 +1721,7 @@
     "duplicated_stash_id": "重複 (Stash ID)",
     "duplicated_title": "重複 (タイトル)",
     "empty_value": "空欄",
-    "eta": "完了予定",
+    "eta": "残り時間",
     "include_sub_folders": "サブフォルダを含める",
     "last_o_at": "最終アレ日時",
     "last_o_at_sfw": "最終いいね日時",
@@ -1733,12 +1733,12 @@
         "invalid_credentials": "ユーザー名またはパスワードが正しくありません",
         "internal_error": "予期しない内部エラーが発生しました。詳細はログを確認してください"
     },
-    "o_count": "H数",
+    "o_count": "💦回数",
     "o_count_all": "X数(全て)",
     "o_count_sfw": "いいね",
-    "o_history": "O履歴",
+    "o_history": "💦履歴",
     "o_history_sfw": "いいね履歴",
-    "odate_recorded_no": "O日は記録されていません",
+    "odate_recorded_no": "💦日時は記録されていません",
     "odate_recorded_no_sfw": "いいね日は記録されていません",
     "orientation": "向き",
     "time": "時刻",
