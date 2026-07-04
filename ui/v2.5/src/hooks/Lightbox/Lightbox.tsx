@@ -140,23 +140,51 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [showOptions, setShowOptions] = useState(false);
   const [showChapters, setShowChapters] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(0);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  // The image the delete dialog acts on, captured when the dialog is opened.
+  // Reading images[currentIndex] at confirm time instead would delete whatever
+  // image the index has since moved to (e.g. a page-switch settle landing
+  // while the dialog is open).
+  const [deleteTarget, setDeleteTarget] = useState<ILightboxImage | null>(null);
   const lastDKeyTime = useRef<number>(0);
   const [navOffset, setNavOffset] = useState<React.CSSProperties | undefined>();
 
-  // An in-flight page switch's intended landing, set synchronously by the nav
-  // handlers / chapter jump *before* pageCallback. The landing is an explicit
-  // target — "first"/"last"/a chapter index — NOT derived from the page-number
-  // direction (a wrap moves the page number opposite to nav direction, so
-  // deriving from direction breaks first/last wraparound). It is resolved to a
-  // concrete index by the settle effect once the new page has loaded.
-  const pendingTarget = useRef<"first" | "last" | number | null>(null);
-  // The page number at switch start. The settle effect treats the switch as
-  // complete when the page number changes (the parent swaps page + images in one
-  // update) — a reliable trigger, unlike comparing the images array identity,
-  // which also changes on same-page refetch/reopen and could fire the settle
-  // early, consuming the switch before the new page arrived.
+  // An in-flight page switch's intended landing, set synchronously by
+  // startPageSwitch *before* pageCallback. The landing is an explicit target —
+  // "last" or a concrete index (0 for a forward cross) — NOT derived from the
+  // page-number direction (a wrap moves the page number opposite to nav
+  // direction, so deriving from direction breaks first/last wraparound). It is
+  // resolved by the settle effect once the new page has loaded.
+  const pendingTarget = useRef<"last" | number | null>(null);
+  // The page number and images array at switch start, used by the settle
+  // effect to detect the new page's arrival.
   const switchFromPage = useRef<number | undefined>(page);
+  const switchFromImages = useRef<ILightboxImage[]>(images);
+
+  // The ref and the state must never disagree, so they are only written
+  // through this setter.
+  const setSwitching = useCallback((v: boolean) => {
+    isSwitchingPageRef.current = v;
+    setIsSwitchingPage(v);
+  }, []);
+
+  // Begin a page switch: raise the guard and record the landing intent
+  // *before* pageCallback. An already-cached page can swap its images in
+  // synchronously, so the guard must be up first or a rapid input (and the
+  // index-range effect) races the swap. The index is parked at 0 — valid on
+  // any non-empty page — while the new page loads, so the index-range clamp
+  // can't fire on a shorter incoming page; the settle effect moves it to the
+  // target once the page arrives.
+  const startPageSwitch = useCallback(
+    (target: "last" | number, cbArg: { direction?: number; page?: number }) => {
+      setSwitching(true);
+      switchFromPage.current = page;
+      switchFromImages.current = images;
+      pendingTarget.current = target;
+      setIndex(0);
+      pageCallback?.(cbArg);
+    },
+    [images, page, pageCallback, setSwitching]
+  );
 
   const [zoom, setZoom] = useState(1);
 
@@ -280,35 +308,39 @@ export const LightboxComponent: React.FC<IProps> = ({
   useEffect(() => {
     const target = pendingTarget.current;
     if (target !== null) {
-      // A page switch is in flight. It completes when the page NUMBER changes:
-      // the parent updates page + images together, so a changed page number
-      // means the new page's images are present. Resolve the handler's explicit
-      // landing then — "last"/"first"/a chapter index — and only then drop the
-      // switch flags. The target is never derived from the page-number
-      // direction, so first/last wraparound and chapter jumps land on the right
-      // image regardless of which way the page number moved.
-      if (page !== switchFromPage.current) {
-        setIndex(
+      // A page switch is in flight. It completes when the page number AND the
+      // images array have both changed: the parent delivers them together, and
+      // requiring both means a parent that updates the page a commit ahead of
+      // the images can't settle the switch against the outgoing page's array.
+      // Callers that provide pageCallback without a page prop can never change
+      // the page number, so for them fall back to the images identity alone.
+      const pageChanged = page !== switchFromPage.current;
+      const imagesChanged = images !== switchFromImages.current;
+      const settled =
+        page === undefined ? imagesChanged : pageChanged && imagesChanged;
+      if (settled) {
+        // Resolve the landing, clamped to the arrived page: a chapter's
+        // numeric target can be stale (images deleted since the chapters
+        // loaded), and "last" is -1 on an empty page (which the close effect
+        // then handles).
+        const resolved =
           target === "last"
             ? images.length - 1
-            : target === "first"
-              ? 0
-              : target
-        );
+            : Math.min(target, images.length - 1);
+        setIndex(Math.max(0, resolved));
         pendingTarget.current = null;
         switchFromPage.current = page;
-        isSwitchingPageRef.current = false;
-        setIsSwitchingPage(false);
+        switchFromImages.current = images;
+        setSwitching(false);
       }
       return;
     }
     // No switch pending: clear the switching flag once the first page's images
     // have loaded (the flag starts true on open so the loader shows until then).
     if (isSwitchingPage && !isLoading && images.length > 0) {
-      isSwitchingPageRef.current = false;
-      setIsSwitchingPage(false);
+      setSwitching(false);
     }
-  }, [isSwitchingPage, isLoading, images, page]);
+  }, [isSwitchingPage, isLoading, images, page, setSwitching]);
 
   const disableInstantTransition = useDebounce(
     () => setInstantTransition(false),
@@ -428,24 +460,10 @@ export const LightboxComponent: React.FC<IProps> = ({
       setMovingLeft(true);
 
       if (index === 0) {
-        // go to previous page, or loop back if no callback is set. Raise the
-        // guard and record the landing intent *before* pageCallback: an
-        // already-cached page can swap its images in synchronously, so the
-        // guard must be up first or a rapid input (and the index-range effect)
-        // races the swap. "last" is resolved by the settle effect to the new
-        // page's last image once the page number changes — no index is pre-set,
-        // so there is no transient sentinel index to leak into render.
+        // go to previous page (landing on its last image), or loop back if no
+        // callback is set
         if (pageCallback) {
-          isSwitchingPageRef.current = true;
-          setIsSwitchingPage(true);
-          switchFromPage.current = page;
-          pendingTarget.current = "last";
-          // Park the index at a value that is valid on any non-empty page (0)
-          // while the new page loads. The settle effect moves it to the target
-          // once the page arrives; parking it keeps it in range so the
-          // index-range clamp can't fire on a shorter incoming page.
-          setIndex(0);
-          pageCallback({ direction: -1 });
+          startPageSwitch("last", { direction: -1 });
         } else setIndex(images.length - 1);
       } else setIndex((index ?? 0) - 1);
 
@@ -453,7 +471,7 @@ export const LightboxComponent: React.FC<IProps> = ({
         resetIntervalCallback.current();
       }
     },
-    [images, pageCallback, index, page, disableAnimation, setInstant]
+    [images, pageCallback, index, disableAnimation, setInstant, startPageSwitch]
   );
 
   const handleRight = useCallback(
@@ -468,16 +486,10 @@ export const LightboxComponent: React.FC<IProps> = ({
       setShowChapters(false);
 
       if (index === images.length - 1) {
-        // go to next page, or loop back if no callback is set. Guard and landing
-        // intent recorded before pageCallback (see handleLeft): land on the new
-        // page's first image, even when a cached page swaps in synchronously.
+        // go to next page (landing on its first image), or loop back if no
+        // callback is set
         if (pageCallback) {
-          isSwitchingPageRef.current = true;
-          setIsSwitchingPage(true);
-          switchFromPage.current = page;
-          pendingTarget.current = "first";
-          setIndex(0); // keep in range while the page loads (see handleLeft)
-          pageCallback({ direction: 1 });
+          startPageSwitch(0, { direction: 1 });
         } else setIndex(0);
       } else setIndex((index ?? 0) + 1);
 
@@ -485,7 +497,7 @@ export const LightboxComponent: React.FC<IProps> = ({
         resetIntervalCallback.current();
       }
     },
-    [images, pageCallback, index, page, disableAnimation, setInstant]
+    [images, pageCallback, index, disableAnimation, setInstant, startPageSwitch]
   );
 
   const firstScroll = useRef<number | null>(null);
@@ -503,15 +515,17 @@ export const LightboxComponent: React.FC<IProps> = ({
       if (e.key === "ArrowLeft") handleLeft();
       else if (e.key === "ArrowRight") handleRight();
       else if (e.key === "Escape") close();
-      else if (
-        e.key === "d" &&
-        images[index ?? initialIndex]?.id !== undefined
-      ) {
-        const now = Date.now();
-        if (now - lastDKeyTime.current < 1000) {
-          setIsDeleteDialogOpen(true);
+      else if (e.key === "d") {
+        // Not while a page switch is in flight: the index is parked at 0 then,
+        // so the shortcut would target an image the user isn't viewing.
+        const image = images[index ?? initialIndex];
+        if (!isSwitchingPageRef.current && image?.id !== undefined) {
+          const now = Date.now();
+          if (now - lastDKeyTime.current < 1000) {
+            setDeleteTarget(image);
+          }
+          lastDKeyTime.current = now;
         }
-        lastDKeyTime.current = now;
       }
     },
     [setInstant, handleLeft, handleRight, close, images, index, initialIndex]
@@ -633,14 +647,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     if (pageCallback) {
       const jumppage = Math.floor((imageIndex - 1) / pageSize) + 1;
       if (page !== jumppage) {
-        // Same ordering as the nav handlers: raise the guard and record the
-        // landing intent before pageCallback so a cached page can't race them.
-        isSwitchingPageRef.current = true;
-        setIsSwitchingPage(true);
-        switchFromPage.current = page;
-        pendingTarget.current = indexInPage;
-        setIndex(0); // keep in range while the page loads (see handleLeft)
-        pageCallback({ page: jumppage });
+        startPageSwitch(indexInPage, { page: jumppage });
         setShowChapters(false);
         return;
       }
@@ -1083,7 +1090,7 @@ export const LightboxComponent: React.FC<IProps> = ({
                   {currentImage.id !== undefined && (
                     <Button
                       className="minimal delete-button"
-                      onClick={() => setIsDeleteDialogOpen(true)}
+                      onClick={() => setDeleteTarget(currentImage)}
                       title={intl.formatMessage({ id: "actions.delete" })}
                     >
                       <Icon icon={faTrash} />
@@ -1121,17 +1128,17 @@ export const LightboxComponent: React.FC<IProps> = ({
       onClick={handleClose}
     >
       {renderBody()}
-      {isDeleteDialogOpen && images[currentIndex]?.id !== undefined && (
+      {deleteTarget?.id !== undefined && (
         <DeleteImagesDialog
           selected={[
             {
-              id: images[currentIndex].id!,
-              visual_files: images[currentIndex].visual_files ?? [],
+              id: deleteTarget.id,
+              visual_files: deleteTarget.visual_files ?? [],
             },
           ]}
           onClose={(confirmed) => {
-            setIsDeleteDialogOpen(false);
-            if (confirmed) onDeleteImage?.(images[currentIndex].id!);
+            setDeleteTarget(null);
+            if (confirmed) onDeleteImage?.(deleteTarget.id!);
           }}
         />
       )}
