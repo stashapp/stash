@@ -239,6 +239,7 @@ Returns `void`.
 - `FilteredSceneMarkerList`
 - `FilteredStudioList`
 - `FilteredTagList`
+- `FilterTags.Extras`
 - `FolderSelect`
 - `FrontPage`
 - `GalleryCard`
