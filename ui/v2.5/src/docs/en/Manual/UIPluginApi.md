@@ -309,6 +309,7 @@ Returns `void`.
 - `RatingStars`
 - `RatingSystem`
 - `RecommendationRow`
+- `SavedFilter.Loaded`
 - `SceneCard`
 - `SceneCard.Details`
 - `SceneCard.Image`
