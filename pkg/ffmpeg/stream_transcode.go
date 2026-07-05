@@ -202,6 +202,13 @@ func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 	args = append(args, extraInputArgs...)
 
 	if o.StartTime != 0 {
+		if codec == VideoCodecCopy {
+			// Stream-copied video can only start at the keyframe preceding the
+			// seek point, while re-encoded audio would be trimmed exactly to it,
+			// leaving the output desynced by up to a GOP. Disable accurate seek
+			// so that both streams start at the keyframe.
+			args = args.NoAccurateSeek()
+		}
 		args = args.Seek(o.StartTime)
 	}
 
