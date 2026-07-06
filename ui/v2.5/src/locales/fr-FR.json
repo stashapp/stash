@@ -1368,7 +1368,8 @@
             "database_file_path": "Chemin du fichier de base de données",
             "generated_directory": "Répertoire généré",
             "nearly_there": "Nous y sommes presque !",
-            "stash_library_directories": "Répertoire de la bibliothèque Stash"
+            "stash_library_directories": "Répertoire de la bibliothèque Stash",
+            "password_set_warning": "Remarque: il vous sera demandé de saisir vos identifiants une fois le système créé."
         },
         "creating": {
             "creating_your_system": "Création de votre système"
@@ -1454,7 +1455,13 @@
             "next_step": "Lorsque vous êtes prêt à procéder à la configuration d'un nouveau système, cliquez sur Suivant.",
             "unable_to_locate_specified_config": "Si vous lisez ceci, Stash n'a pas pu trouver le fichier de configuration spécifié en ligne de commande ou dans l'environnement. Cet assistant vous guidera dans le processus de paramétrage d'une nouvelle configuration."
         },
-        "welcome_to_stash": "Bienvenue sur Stash"
+        "welcome_to_stash": "Bienvenue sur Stash",
+        "credentials": {
+            "description": "Saisissez le nom d'utilisateur et le mot de passe que vous souhaitez utiliser pour vous connecter à Stash. Vous pouvez laisser ces champs vides si vous ne souhaitez pas protéger l'accès au système par un nom d'utilisateur et un mot de passe. Ces identifiants sont obligatoires si le système est accessible depuis Internet public.",
+            "heading": "Configurer vos identifiants",
+            "password_invalid": "Un mot de passe est requis si un nom d'utilisateur est défini.",
+            "username_invalid": "Le nom d'utilisateur ne doit pas contenir d'espaces au début ou à la fin."
+        }
     },
     "stash_id": "identifiant Stash",
     "stash_id_endpoint": "URL du point de terminaison de l'identifiant Stash",
@@ -1733,5 +1740,7 @@
     "refer_to": "Merci de consulter {link}.",
     "related_studios": "En rapport",
     "sub_group_description": "Description du groupe affilié",
-    "scene_marker_count": "Nombre de marqueurs"
+    "scene_marker_count": "Nombre de marqueurs",
+    "o_count_all": "Nombre d'O (Total)",
+    "performer_count_all": "Nombre de performeurs (Total)"
 }
