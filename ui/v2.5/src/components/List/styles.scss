@@ -1223,6 +1223,11 @@ ul.selectable-list {
   min-width: 250px;
   padding-top: 0;
 
+  .dropdown-divider {
+    border-top-color: $textfield-bg;
+    margin: 0.25rem 0;
+  }
+
   .sort-by-filter-container {
     background-color: $secondary;
     border-bottom: solid 1px $textfield-bg;
@@ -1244,6 +1249,35 @@ ul.selectable-list {
     .clearable-text-field-clear {
       background-color: unset;
       border: unset;
+    }
+  }
+
+  .sort-by-option {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    padding-right: 0;
+
+    .pin-sort-by-button {
+      border: 0;
+      color: $text-color;
+      font-size: 0.8rem;
+      margin-left: 0.5rem;
+      padding-bottom: 0;
+      padding-top: 0;
+      visibility: hidden;
+
+      @media (pointer: coarse) {
+        visibility: visible;
+      }
+
+      &:hover svg {
+        transform: rotate(0);
+      }
+    }
+
+    &:hover .pin-sort-by-button {
+      visibility: visible;
     }
   }
 }

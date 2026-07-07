@@ -95,6 +95,7 @@ interface IProps {
   page?: number;
   pages?: number;
   pageSize?: number;
+  totalCount?: number;
   pageCallback?: (props: { direction?: number; page?: number }) => void;
   chapters?: IChapter[];
   hide: () => void;
@@ -110,8 +111,8 @@ export const LightboxComponent: React.FC<IProps> = ({
   slideshowEnabled = false,
   slideshowAutostart = false,
   page,
-  pages,
   pageSize = 40,
+  totalCount,
   pageCallback,
   chapters = [],
   hide,
@@ -790,26 +791,20 @@ export const LightboxComponent: React.FC<IProps> = ({
       }
     }
 
-    const pageHeader =
-      page && pages
-        ? intl.formatMessage(
-            { id: "dialogs.lightbox.page_header" },
-            { page, total: pages }
-          )
-        : "";
+    const currentNumber =
+      page !== undefined
+        ? (page - 1) * pageSize + currentIndex + 1
+        : currentIndex + 1;
+    const displayTotal = totalCount ?? images.length;
 
     return (
       <>
         <div className={CLASSNAME_HEADER}>
           <div className={CLASSNAME_LEFT_SPACER}>{renderChapterMenu()}</div>
           <div className={CLASSNAME_INDICATOR}>
-            <span>
-              {chapterHeader()} {pageHeader}
-            </span>
-            {images.length > 1 ? (
-              <b ref={indicatorRef}>{`${currentIndex + 1} / ${
-                images.length
-              }`}</b>
+            <span>{chapterHeader()}</span>
+            {displayTotal > 1 ? (
+              <b ref={indicatorRef}>{`${currentNumber} / ${displayTotal}`}</b>
             ) : undefined}
           </div>
           <div className={CLASSNAME_RIGHT}>

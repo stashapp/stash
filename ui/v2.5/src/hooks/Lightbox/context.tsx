@@ -15,6 +15,7 @@ export interface IState {
   page?: number;
   pages?: number;
   pageSize?: number;
+  totalCount?: number;
   slideshowEnabled: boolean;
   slideshowAutostart?: boolean;
   onClose?: () => void;
