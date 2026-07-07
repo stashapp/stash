@@ -161,7 +161,7 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
         <Link to={NavUtils.makeChildStudiosUrl(studio)}>
           {studio.child_studios.length}{" "}
           {intl.formatMessage(
-            { id: "studios" },
+            { id: "sub_studios" },
             { count: studio.child_studios.length }
           )}
         </Link>

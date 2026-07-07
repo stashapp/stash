@@ -233,6 +233,13 @@ const PerformerList: React.FC<{
       filter.sortBy
     );
 
+    const displaySortDirection =
+      activeSortColumn === "age"
+        ? filter.sortDirection === GQL.SortDirectionEnum.Asc
+          ? GQL.SortDirectionEnum.Desc
+          : GQL.SortDirectionEnum.Asc
+        : filter.sortDirection;
+
     if (performers.length === 0 && filter.displayMode !== DisplayMode.Tagger) {
       return null;
     }
@@ -256,7 +263,7 @@ const PerformerList: React.FC<{
           onSelectChange={onSelectChange}
           onSort={onSort}
           sortBy={activeSortColumn}
-          sortDirection={filter.sortDirection}
+          sortDirection={displaySortDirection}
         />
       );
     }
@@ -438,7 +445,12 @@ export const FilteredPerformerList = PatchComponent(
           setFilter(filter.toggleSortDirection());
         } else {
           const newFilter = filter.setSortBy(backendField);
-          newFilter.sortDirection = GQL.SortDirectionEnum.Asc;
+          // birthdate is inversely related to age; default Desc so
+          // youngest-first (Asc in the age column display)
+          newFilter.sortDirection =
+            value === "age"
+              ? GQL.SortDirectionEnum.Desc
+              : GQL.SortDirectionEnum.Asc;
           setFilter(newFilter);
         }
       },

@@ -1632,6 +1632,7 @@
   },
   "studio_tags": "Studio Tags",
   "studios": "Studios",
+  "sub_studios": "{count, plural, one {Sub-Studio} other {Sub-Studios}}",
   "sub_folder_depth": "Sub folder depth (empty for all)",
   "sub_folders": "Sub folders",
   "sub_group": "Sub-Group",

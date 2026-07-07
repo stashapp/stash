@@ -873,16 +873,8 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 	case "latest_scene":
 		sortQuery += qb.sortByLatestScene(direction)
 	case "birthdate":
-		// birthdate is inversely related to age (older = lower date).
-		// flip direction so DESC means "oldest first".
 		colName := getColumn(performerTable, "birthdate")
-		dir := getSortDirection(direction)
-		if dir == "ASC" {
-			dir = "DESC"
-		} else {
-			dir = "ASC"
-		}
-		sortQuery += " ORDER BY " + colName + " IS NULL, " + colName + " " + dir
+		sortQuery += " ORDER BY " + colName + " IS NULL, " + colName + " " + getSortDirection(direction)
 	default:
 		sortQuery += getSort(sort, direction, "performers")
 	}
