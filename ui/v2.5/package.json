@@ -44,6 +44,7 @@
     "bootstrap": "^4.6.2",
     "classnames": "^2.5.1",
     "crypto-js": "^4.2.0",
+    "date-fns": "^2.30.0",
     "event-target-polyfill": "^0.0.4",
     "flag-icons": "^7.5.0",
     "flexbin": "^0.2.0",

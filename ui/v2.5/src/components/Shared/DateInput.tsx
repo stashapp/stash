@@ -7,6 +7,7 @@ import { Icon } from "./Icon";
 
 import "react-datepicker/dist/react-datepicker.css";
 import { useIntl } from "react-intl";
+import { isDateLocaleSupported } from "src/locales";
 import { PatchComponent } from "src/patch";
 import { faBan, faTimes } from "@fortawesome/free-solid-svg-icons";
 
@@ -37,6 +38,9 @@ const ShowPickerButton = forwardRef<
 
 const _DateInput: React.FC<IProps> = (props: IProps) => {
   const intl = useIntl();
+  const datePickerLocale = isDateLocaleSupported(intl.locale)
+    ? intl.locale
+    : undefined;
 
   const {
     groupClassName = "date-input-group",
@@ -67,6 +71,7 @@ const _DateInput: React.FC<IProps> = (props: IProps) => {
           onChange={(v) => {
             props.onValueChange(v ? dateToString(v) : "");
           }}
+          locale={datePickerLocale}
           customInput={<ShowPickerButton onClick={() => {}} />}
           showMonthDropdown
           showYearDropdown

@@ -14,7 +14,11 @@ import { ToastProvider } from "src/hooks/Toast";
 import { LightboxProvider } from "src/hooks/Lightbox/context";
 import { initPolyfills } from "src/polyfills";
 
-import locales, { NestedMessage, registerCountry } from "src/locales";
+import locales, {
+  NestedMessage,
+  registerCountry,
+  registerDateLocale,
+} from "src/locales";
 import {
   useConfiguration,
   useConfigureUI,
@@ -171,6 +175,10 @@ export const App: React.FC = () => {
 
       // register countries for the chosen language
       await registerCountry(language);
+
+      // register the date-fns locale used by react-datepicker. moment.locale
+      // below only affects moment, not the date picker, which uses date-fns.
+      await registerDateLocale(translateLanguageLocale(language));
 
       const defaultMessages = (await locales[defaultMessageLanguage]()).default;
       const mergedMessages = cloneDeep(Object.assign({}, defaultMessages));

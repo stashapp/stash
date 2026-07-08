@@ -76,6 +76,9 @@ importers:
       crypto-js:
         specifier: ^4.2.0
         version: 4.2.0
+      date-fns:
+        specifier: ^2.30.0
+        version: 2.30.0
       event-target-polyfill:
         specifier: ^0.0.4
         version: 0.0.4
@@ -262,7 +265,7 @@ importers:
         version: 2.1.3
       '@vitejs/plugin-react':
         specifier: ^5.2.0
-        version: 5.2.0(vite@7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1))
+        version: 5.2.0(vite@7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1))
       extract-react-intl-messages:
         specifier: ^4.1.1
         version: 4.1.1
@@ -289,13 +292,13 @@ importers:
         version: 5.9.3
       vite:
         specifier: ^7.3.5
-        version: 7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1)
+        version: 7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1)
       vite-plugin-compression:
         specifier: ^0.5.1
-        version: 0.5.1(vite@7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1))
+        version: 0.5.1(vite@7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1))
       vite-tsconfig-paths:
         specifier: ^6.1.1
-        version: 6.1.1(typescript@5.9.3)(vite@7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1))
+        version: 6.1.1(typescript@5.9.3)(vite@7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1))
 
 packages:
 
@@ -5770,7 +5773,7 @@ snapshots:
       global: 4.4.0
       is-function: 1.0.2
 
-  '@vitejs/plugin-react@5.2.0(vite@7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1))':
+  '@vitejs/plugin-react@5.2.0(vite@7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1))':
     dependencies:
       '@babel/core': 7.29.7
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.29.7)
@@ -5778,7 +5781,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-rc.3
       '@types/babel__core': 7.20.5
       react-refresh: 0.18.0
-      vite: 7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1)
+      vite: 7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -6204,7 +6207,7 @@ snapshots:
 
   date-fns@2.30.0:
     dependencies:
-      '@babel/runtime': 7.29.2
+      '@babel/runtime': 7.29.7
 
   debounce@1.2.1: {}
 
@@ -8279,26 +8282,26 @@ snapshots:
     dependencies:
       global: 4.4.0
 
-  vite-plugin-compression@0.5.1(vite@7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1)):
+  vite-plugin-compression@0.5.1(vite@7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1)):
     dependencies:
       chalk: 4.1.2
       debug: 4.4.3
       fs-extra: 10.1.0
-      vite: 7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1)
+      vite: 7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
 
-  vite-tsconfig-paths@6.1.1(typescript@5.9.3)(vite@7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1)):
+  vite-tsconfig-paths@6.1.1(typescript@5.9.3)(vite@7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1)):
     dependencies:
       debug: 4.4.3
       globrex: 0.1.2
       tsconfck: 3.1.6(typescript@5.9.3)
-      vite: 7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1)
+      vite: 7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
       - typescript
 
-  vite@7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1):
+  vite@7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1):
     dependencies:
       esbuild: 0.27.7
       fdir: 6.5.0(picomatch@4.0.4)

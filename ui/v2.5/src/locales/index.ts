@@ -1,4 +1,6 @@
+import type { Locale } from "date-fns";
 import Countries, { LocaleData } from "i18n-iso-countries";
+import { registerLocale } from "react-datepicker";
 
 export type NestedMessage = { [key: string]: NestedMessage | string };
 
@@ -54,6 +56,64 @@ export async function registerCountry(locale: string) {
   const localeCode = getLocaleCode(locale);
   const countries = await localeCountries[localeCode]();
   Countries.registerLocale(countries);
+}
+
+export const dateFnsLocales: {
+  [key: string]: () => Promise<{ default: Locale }>;
+} = {
+  "af-ZA": () => import("date-fns/locale/af"),
+  ar: () => import("date-fns/locale/ar"),
+  "bg-BG": () => import("date-fns/locale/bg"),
+  "bn-BD": () => import("date-fns/locale/bn"),
+  "ca-ES": () => import("date-fns/locale/ca"),
+  "cs-CZ": () => import("date-fns/locale/cs"),
+  "da-DK": () => import("date-fns/locale/da"),
+  "de-DE": () => import("date-fns/locale/de"),
+  "en-GB": () => import("date-fns/locale/en-GB"),
+  "en-US": () => import("date-fns/locale/en-US"),
+  "es-ES": () => import("date-fns/locale/es"),
+  "et-EE": () => import("date-fns/locale/et"),
+  "fa-IR": () => import("date-fns/locale/fa-IR"),
+  "fi-FI": () => import("date-fns/locale/fi"),
+  "fr-FR": () => import("date-fns/locale/fr"),
+  "hi-IN": () => import("date-fns/locale/hi"),
+  "hr-HR": () => import("date-fns/locale/hr"),
+  "hu-HU": () => import("date-fns/locale/hu"),
+  "id-ID": () => import("date-fns/locale/id"),
+  "it-IT": () => import("date-fns/locale/it"),
+  "ja-JP": () => import("date-fns/locale/ja"),
+  "ko-KR": () => import("date-fns/locale/ko"),
+  "lt-LT": () => import("date-fns/locale/lt"),
+  "lv-LV": () => import("date-fns/locale/lv"),
+  "nb-NO": () => import("date-fns/locale/nb"),
+  "nn-NO": () => import("date-fns/locale/nn"),
+  "nl-NL": () => import("date-fns/locale/nl"),
+  "pl-PL": () => import("date-fns/locale/pl"),
+  "pt-BR": () => import("date-fns/locale/pt-BR"),
+  "ro-RO": () => import("date-fns/locale/ro"),
+  "ru-RU": () => import("date-fns/locale/ru"),
+  "sk-SK": () => import("date-fns/locale/sk"),
+  "sv-SE": () => import("date-fns/locale/sv"),
+  "th-TH": () => import("date-fns/locale/th"),
+  "tr-TR": () => import("date-fns/locale/tr"),
+  // "ur-PK": () => import("date-fns/locale/ur"), not found
+  "uk-UA": () => import("date-fns/locale/uk"),
+  "vi-VN": () => import("date-fns/locale/vi"),
+  "zh-CN": () => import("date-fns/locale/zh-CN"),
+  "zh-TW": () => import("date-fns/locale/zh-TW"),
+};
+
+export function isDateLocaleSupported(locale: string) {
+  return Boolean(dateFnsLocales[locale]);
+}
+
+export async function registerDateLocale(locale: string) {
+  const loader = dateFnsLocales[locale];
+  if (!loader) {
+    return;
+  }
+  const mod = await loader();
+  registerLocale(locale, mod.default);
 }
 
 export const localeLoader = {
