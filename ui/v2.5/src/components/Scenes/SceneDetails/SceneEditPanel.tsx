@@ -881,7 +881,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
             {renderDetailsField()}
             <Form.Group controlId="cover_image">
               <Form.Label>
-                {intl.formatMessage({ id: "cover_image" })}
+                <FormattedMessage id="cover_image" />
               </Form.Label>
               {image}
               <ImageInput

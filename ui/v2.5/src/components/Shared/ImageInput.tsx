@@ -7,7 +7,7 @@ import {
   Popover,
   Row,
 } from "react-bootstrap";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { ModalComponent } from "./Modal";
 import { Icon } from "./Icon";
 import {
@@ -60,7 +60,7 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
       return (
         <Form.Label className="image-input">
           <Button variant="secondary">
-            {text ?? intl.formatMessage({ id: "actions.browse_for_image" })}
+            {text ?? <FormattedMessage id="actions.browse_for_image" />}
           </Button>
           <Form.Control
             type="file"
@@ -121,7 +121,7 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
           <div className="dialog-content">
             <Form.Group controlId="url" as={Row}>
               <Form.Label column xs={3}>
-                {intl.formatMessage({ id: "url" })}
+                <FormattedMessage id="url" />
               </Form.Label>
               <Col xs={9}>
                 <Form.Control
@@ -147,7 +147,9 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
               <Form.Label className="image-input">
                 <Button className="minimal">
                   <Icon icon={faFile} className="fa-fw" />
-                  <span>{intl.formatMessage({ id: "actions.from_file" })}</span>
+                  <span>
+                    <FormattedMessage id="actions.from_file" />
+                  </span>
                 </Button>
                 <Form.Control
                   type="file"
@@ -159,7 +161,9 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
             <div>
               <Button className="minimal" onClick={showDialog}>
                 <Icon icon={faLink} className="fa-fw" />
-                <span>{intl.formatMessage({ id: "actions.from_url" })}</span>
+                <span>
+                  <FormattedMessage id="actions.from_url" />
+                </span>
               </Button>
             </div>
             {window.isSecureContext && (
@@ -167,7 +171,7 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
                 <Button className="minimal" onClick={onPasteClipboard}>
                   <Icon icon={faClipboard} className="fa-fw" />
                   <span>
-                    {intl.formatMessage({ id: "actions.from_clipboard" })}
+                    <FormattedMessage id="actions.from_clipboard" />
                   </span>
                 </Button>
               </div>
@@ -180,9 +184,7 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
                 <Button className="minimal" onClick={onGenerateDefault}>
                   <Icon icon={faArrowsRotate} className="fa-fw" />
                   <span>
-                    {intl.formatMessage({
-                      id: "actions.generate_thumb_default",
-                    })}
+                    <FormattedMessage id="actions.generate_thumb_default" />
                   </span>
                 </Button>
               </div>
@@ -192,9 +194,7 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
                 <Button className="minimal" onClick={onGenerateCurrent}>
                   <Icon icon={faCameraRotate} className="fa-fw" />
                   <span>
-                    {intl.formatMessage({
-                      id: "actions.generate_thumb_from_current",
-                    })}
+                    <FormattedMessage id="actions.generate_thumb_from_current" />
                   </span>
                 </Button>
               </div>
@@ -206,7 +206,7 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
                   <Button className="minimal" onClick={onReset}>
                     <Icon icon={faTrashAlt} className="fa-fw" />
                     <span>
-                      {intl.formatMessage({ id: "actions.clear_image" })}
+                      <FormattedMessage id="actions.clear_image" />
                     </span>
                   </Button>
                 </div>
@@ -227,7 +227,7 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
           rootClose
         >
           <Button variant="secondary" className="mr-2">
-            {text ?? intl.formatMessage({ id: "actions.set_image" })}
+            {text ?? <FormattedMessage id="actions.set_image" />}
           </Button>
         </OverlayTrigger>
       </>
