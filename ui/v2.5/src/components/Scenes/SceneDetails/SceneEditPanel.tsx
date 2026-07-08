@@ -29,7 +29,12 @@ import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { useConfigurationContext } from "src/hooks/Config";
 import { IGroupEntry, SceneGroupTable } from "./SceneGroupTable";
-import { faSearch, faPlus } from "@fortawesome/free-solid-svg-icons";
+import {
+  faSearch,
+  faPlus,
+  faArrowsRotate,
+  faCameraRotate,
+} from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import { lazyComponent } from "src/utils/lazyComponent";
@@ -888,10 +893,22 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 isEditing
                 onImageChange={onCoverImageChange}
                 onImageURL={onImageLoad}
-                // Generate/clear-from-server actions require a saved scene.
-                onGenerateDefault={!isNew ? onGenerateThumbDefault : undefined}
-                onGenerateCurrent={
-                  !isNew ? onGenerateThumbFromCurrent : undefined
+                // Generate-from-server actions require a saved scene.
+                extraActions={
+                  !isNew
+                    ? [
+                        {
+                          icon: faArrowsRotate,
+                          labelId: "actions.generate_thumb_default",
+                          onClick: () => onGenerateThumbDefault?.(),
+                        },
+                        {
+                          icon: faCameraRotate,
+                          labelId: "actions.generate_thumb_from_current",
+                          onClick: () => onGenerateThumbFromCurrent?.(),
+                        },
+                      ]
+                    : undefined
                 }
                 onReset={
                   formik.values.cover_image ||

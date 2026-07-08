@@ -8,11 +8,10 @@ import {
   Row,
 } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { ModalComponent } from "./Modal";
 import { Icon } from "./Icon";
 import {
-  faArrowsRotate,
-  faCameraRotate,
   faClipboard,
   faFile,
   faLink,
@@ -22,6 +21,12 @@ import { PatchComponent } from "src/patch";
 import ImageUtils from "src/utils/image";
 import { useToast } from "src/hooks/Toast";
 
+export interface IImageInputExtraAction {
+  icon: IconDefinition;
+  labelId: string;
+  onClick: () => void | Promise<void>;
+}
+
 interface IImageInput {
   isEditing: boolean;
   text?: string;
@@ -29,8 +34,7 @@ interface IImageInput {
   onImageURL?: (url: string) => void;
   onReset?: () => void;
   acceptSVG?: boolean;
-  onGenerateDefault?: () => void;
-  onGenerateCurrent?: () => void;
+  extraActions?: IImageInputExtraAction[];
 }
 
 function acceptExtensions(acceptSVG: boolean = false) {
@@ -46,8 +50,7 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
     onImageURL,
     onReset,
     acceptSVG = false,
-    onGenerateDefault,
-    onGenerateCurrent,
+    extraActions,
   }) => {
     const [isShowDialog, setIsShowDialog] = useState(false);
     const [url, setURL] = useState("");
@@ -176,29 +179,19 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
                 </Button>
               </div>
             )}
-            {(onGenerateDefault || onGenerateCurrent) && (
+            {extraActions && extraActions.length > 0 && (
               <div className="set-image-menu-divider" />
             )}
-            {onGenerateDefault && (
-              <div>
-                <Button className="minimal" onClick={onGenerateDefault}>
-                  <Icon icon={faArrowsRotate} className="fa-fw" />
+            {extraActions?.map((action) => (
+              <div key={action.labelId}>
+                <Button className="minimal" onClick={action.onClick}>
+                  <Icon icon={action.icon} className="fa-fw" />
                   <span>
-                    <FormattedMessage id="actions.generate_thumb_default" />
+                    <FormattedMessage id={action.labelId} />
                   </span>
                 </Button>
               </div>
-            )}
-            {onGenerateCurrent && (
-              <div>
-                <Button className="minimal" onClick={onGenerateCurrent}>
-                  <Icon icon={faCameraRotate} className="fa-fw" />
-                  <span>
-                    <FormattedMessage id="actions.generate_thumb_from_current" />
-                  </span>
-                </Button>
-              </div>
-            )}
+            ))}
             {onReset && (
               <>
                 <div className="set-image-menu-divider" />
