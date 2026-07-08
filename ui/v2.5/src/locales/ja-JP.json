@@ -937,11 +937,11 @@
     "criterion_modifier": {
         "between": "の間",
         "equals": "である",
-        "excludes": "除く",
-        "format_string": "{criterion} {modifierString} {valueString}",
+        "excludes": "を除く",
+        "format_string": "{criterion} {valueString} {modifierString}",
         "greater_than": "が次より大きい",
-        "includes": "含む",
-        "includes_all": "全て含む",
+        "includes": "を含む",
+        "includes_all": "を全て含む",
         "is_null": "がnull",
         "less_than": "が次より小さい",
         "matches_regex": "が次の正規表現に一致",
@@ -949,9 +949,9 @@
         "not_equals": "でない",
         "not_matches_regex": "が正規表現に一致しない",
         "not_null": "がnullでない",
-        "format_string_depth": "{criterion} {modifierString} {valueString} (+{depth, plural, =-1 {全て} other {{depth}}})",
-        "format_string_excludes": "{criterion} {modifierString} {valueString} (除外 {excludedString})",
-        "format_string_excludes_depth": "{criterion} {modifierString} {valueString} ({excludedString} を除外) (+{depth, plural, =-1 {全て} other {{depth}}})"
+        "format_string_depth": "{criterion} {valueString} {modifierString} (+{depth, plural, =-1 {全階層} other {深さ{depth}}})",
+        "format_string_excludes": "{criterion} {valueString} {modifierString} ({excludedString}を除く)",
+        "format_string_excludes_depth": "{criterion} {valueString} {modifierString} ({excludedString} を除く) (+{depth, plural, =-1 {全階層} other {深さ{depth}}})"
     },
     "custom": "カスタム",
     "date": "日付",
