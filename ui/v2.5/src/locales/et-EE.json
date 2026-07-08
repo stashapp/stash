@@ -1357,7 +1357,8 @@
             "generated_directory": "Genereeritud kaust",
             "nearly_there": "Peaaegu kohal!",
             "stash_library_directories": "Stashi kogu kaustad",
-            "blobs_use_database": "<kasutades andmebaasi>"
+            "blobs_use_database": "<kasutades andmebaasi>",
+            "password_set_warning": "Märkus: sult palutakse sisestada oma kasutajaandmed peale süsteemi loomist."
         },
         "creating": {
             "creating_your_system": "Loon sulle süsteemi"
@@ -1443,7 +1444,13 @@
             "next_step": "Kui oled valmis uue süsteemi seadistamisega jätkama, klõpsa nuppu Edasi.",
             "unable_to_locate_specified_config": "Kui seda näed, siis ei leidnud Stash käsureal ega keskkonnas määratud konfiguratsioonifaili. See viisard juhendab sind uue konfiguratsiooni seadistamise protsessis."
         },
-        "welcome_to_stash": "Teretulemast Stashi"
+        "welcome_to_stash": "Teretulemast Stashi",
+        "credentials": {
+            "description": "Sisesta kasutajanimi ja parool, mida soovid Stashi süsteemi sisselogimise ka kasutada. Neid võib jätta tühjaks, kui sa ei soovi süsteemi sisselogimiseks kasutajanime/parooli kasutada. Avalikust internetist süsteemile ligi pääsemiseks on isikutuvastus kohustuslik.",
+            "heading": "Isikutuvastuse ülesseadmine",
+            "password_invalid": "Parool ei tohi olla tühi, kui kasutajanimi on määratud.",
+            "username_invalid": "Kasutajanimel ei tohi olla eelnevaid ega järgnevaid tühikuid."
+        }
     },
     "stash_id": "Stashi ID",
     "stash_id_endpoint": "Stash ID Lõpp-punkti URL",
@@ -1733,5 +1740,7 @@
     "scenes_size": "Ekraani Suurus",
     "related_studios": "Seotud",
     "scene_marker_count": "Stseeni Markerite Arv",
-    "sub_group_description": "Alam-Grupi Kirjeldus"
+    "sub_group_description": "Alam-Grupi Kirjeldus",
+    "o_count_all": "O Luger (Kokku)",
+    "performer_count_all": "Esinejate Arv (Kokku)"
 }
