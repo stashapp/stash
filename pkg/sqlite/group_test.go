@@ -915,7 +915,7 @@ func TestGroupQueryAliases(t *testing.T) {
 	verifyGroupQuery(t, filter, verifyFn)
 
 	aliasesCriterion.Modifier = models.CriterionModifierIncludes
-	aliasesCriterion.Value = "oup_0001_A"
+	aliasesCriterion.Value = "0001_Ali"
 	verifyGroupQuery(t, filter, verifyFn)
 
 	aliasesCriterion.Modifier = models.CriterionModifierExcludes
