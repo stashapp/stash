@@ -159,7 +159,8 @@
         "selective_generate": "Вибіркове генерування",
         "from_clipboard": "З буфера обміну",
         "exclude_lowercase": "виключити",
-        "create_parent_tag": "Створити головний тег"
+        "create_parent_tag": "Створити головний тег",
+        "set_as_performer_image": "Встановити як зображення виконавця"
     },
     "actions_name": "Дії",
     "age": "Вік",
