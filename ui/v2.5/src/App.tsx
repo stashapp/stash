@@ -55,6 +55,7 @@ import { PatchFunction } from "./patch";
 import moment from "moment/min/moment-with-locales";
 import { ErrorMessage } from "./components/Shared/ErrorMessage";
 import cx from "classnames";
+import Welcome from "./components/Setup/Welcome";
 
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
@@ -203,7 +204,7 @@ export const App: React.FC = () => {
 
   const location = useLocation();
   const history = useHistory();
-  const setupMatch = useRouteMatch(["/setup", "/migrate"]);
+  const setupMatch = useRouteMatch(["/setup", "/migrate", "/welcome"]);
 
   // dispatch event when location changes
   useEffect(() => {
@@ -270,6 +271,7 @@ export const App: React.FC = () => {
               component={SceneDuplicateChecker}
             />
             <Route path="/setup" component={Setup} />
+            <Route path="/welcome" component={Welcome} />
             <Route path="/migrate" component={Migrate} />
             <PluginRoutes />
             <Route component={PageNotFound} />

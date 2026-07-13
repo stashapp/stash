@@ -592,7 +592,7 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo, 
 	}
 
 	// Check .stashignore files, bounded to the library root.
-	if !f.stashIgnoreFilter.Accept(ctx, path, info, s.Path, zipFilePath) {
+	if !f.stashIgnoreFilter.Accept(ctx, path, info, f.stashPaths.GetStashRootFromDirPath(path), zipFilePath) {
 		logger.Debugf("Skipping %s due to .stashignore", path)
 		return false
 	}

@@ -22,10 +22,15 @@ import { useIntl } from "react-intl";
 import { useDragMoveSelect } from "../Shared/GridCard/dragMoveSelect";
 import cx from "classnames";
 import { defaultPreviewVolume } from "src/core/config";
+import {
+  getFirstValidPreviewSource,
+  PreviewMediaType,
+} from "src/utils/wallPreview";
 
 interface IScenePhoto {
   scene: GQL.SlimSceneDataFragment;
   link: string;
+  mediaType: PreviewMediaType;
   onError?: (photo: PhotoProps<IScenePhoto>) => void;
 }
 
@@ -82,7 +87,7 @@ export const SceneWallItem: React.FC<
     }
   }
 
-  const video = props.photo.src.includes("preview");
+  const video = props.photo.mediaType === "video";
   const previewProps = {
     loading: "lazy",
     loop: video,
@@ -211,6 +216,27 @@ const breakpointZoomHeights = [
 
 type FailedSrcMap = Record<string, string[]>; // id to list of failed srcs
 
+function getScenePreviewSources(
+  scene: GQL.SlimSceneDataFragment,
+  previewType?: string | null
+) {
+  if (previewType === "image") {
+    return [{ src: scene.paths.screenshot, mediaType: "image" }] as const;
+  }
+
+  if (previewType === "animation") {
+    return [
+      { src: scene.paths.webp, mediaType: "image" },
+      { src: scene.paths.screenshot, mediaType: "image" },
+    ] as const;
+  }
+
+  return [
+    { src: scene.paths.preview, mediaType: "video" },
+    { src: scene.paths.screenshot, mediaType: "image" },
+  ] as const;
+}
+
 const SceneWall: React.FC<ISceneWallProps> = ({
   scenes,
   sceneQueue,
@@ -220,6 +246,8 @@ const SceneWall: React.FC<ISceneWallProps> = ({
   selecting,
 }) => {
   const history = useHistory();
+  const { configuration } = useConfigurationContext();
+  const previewType = configuration?.interface.wallPlayback;
 
   const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -249,13 +277,15 @@ const SceneWall: React.FC<ISceneWallProps> = ({
   const photos: PhotoProps<IScenePhoto>[] = useMemo(() => {
     return scenes.map((s, index) => {
       const { width, height } = getDimensions(s);
+      const previewSource = getFirstValidPreviewSource(
+        getScenePreviewSources(s, previewType),
+        erroredImgs[s.id] || []
+      );
 
       return {
         scene: s,
-        src:
-          s.paths.preview && !erroredImgs[s.id]?.includes(s.paths.preview)
-            ? s.paths.preview!
-            : s.paths.screenshot!,
+        src: previewSource.src,
+        mediaType: previewSource.mediaType,
         link: sceneQueue
           ? sceneQueue.makeLink(s.id, { sceneIndex: index })
           : `/scenes/${s.id}`,
@@ -268,7 +298,7 @@ const SceneWall: React.FC<ISceneWallProps> = ({
         onError: (photo: PhotoProps<IScenePhoto>) => handleError(s.id, photo),
       };
     });
-  }, [scenes, sceneQueue, erroredImgs, handleError]);
+  }, [scenes, previewType, sceneQueue, erroredImgs, handleError]);
 
   const onClick = useCallback(
     (_event, { index }) => {

@@ -747,6 +747,10 @@ func (_m *SceneReaderWriter) FindDuplicates(ctx context.Context, distance int, d
 	ret := _m.Called(ctx, distance, durationDiff, filter)
 
 	var r0 [][]*models.Scene
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, float64, *models.SceneFilterType) ([][]*models.Scene, error)); ok {
+		return rf(ctx, distance, durationDiff, filter)
+	}
 	if rf, ok := ret.Get(0).(func(context.Context, int, float64, *models.SceneFilterType) [][]*models.Scene); ok {
 		r0 = rf(ctx, distance, durationDiff, filter)
 	} else {
@@ -755,9 +759,8 @@ func (_m *SceneReaderWriter) FindDuplicates(ctx context.Context, distance int, d
 		}
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int, float64) error); ok {
-		r1 = rf(ctx, distance, durationDiff)
+	if rf, ok := ret.Get(1).(func(context.Context, int, float64, *models.SceneFilterType) error); ok {
+		r1 = rf(ctx, distance, durationDiff, filter)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1405,23 +1408,23 @@ func (_m *SceneReaderWriter) OCountByPerformerID(ctx context.Context, performerI
 	return r0, r1
 }
 
-// OCountByStudioID provides a mock function with given fields: ctx, studioID
-func (_m *SceneReaderWriter) OCountByStudioID(ctx context.Context, studioID int) (int, error) {
-	ret := _m.Called(ctx, studioID)
+// OCountByStudioID provides a mock function with given fields: ctx, studioID, depth
+func (_m *SceneReaderWriter) OCountByStudioID(ctx context.Context, studioID int, depth int) (int, error) {
+	ret := _m.Called(ctx, studioID, depth)
 
 	var r0 int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int) (int, error)); ok {
-		return rf(ctx, studioID)
+	if rf, ok := ret.Get(0).(func(context.Context, int, int) (int, error)); ok {
+		return rf(ctx, studioID, depth)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
-		r0 = rf(ctx, studioID)
+	if rf, ok := ret.Get(0).(func(context.Context, int, int) int); ok {
+		r0 = rf(ctx, studioID, depth)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, studioID)
+	if rf, ok := ret.Get(1).(func(context.Context, int, int) error); ok {
+		r1 = rf(ctx, studioID, depth)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1702,6 +1705,12 @@ type mockConstructorTestingTNewSceneReaderWriter interface {
 func NewSceneReaderWriter(t mockConstructorTestingTNewSceneReaderWriter) *SceneReaderWriter {
 	mock := &SceneReaderWriter{}
 	mock.Mock.Test(t)
+
+	t.Cleanup(func() { mock.AssertExpectations(t) })
+
+	return mock
+}
+
 
 	t.Cleanup(func() { mock.AssertExpectations(t) })
 
