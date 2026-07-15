@@ -6,6 +6,15 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report!
+  - type: checkboxes
+    id: confirm-troubleshooting
+    attributes:
+      label: Have you enabled troubleshooting mode?
+      description: |
+        To ensure the bug is not caused by custom modifications or plugins make sure to enable troubleshooting mode before filing the report. In Stash go to Settings and click **Troubleshooting mode** and then retest to see if the bug still occurs.
+      options:
+        - label: I confirm that the troubleshooting mode is enabled.
+          required: true
   - type: textarea
     id: description
     attributes:

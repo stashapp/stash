@@ -4,6 +4,7 @@ import * as GQL from "src/core/generated-graphql";
 import { DetailItem } from "src/components/Shared/DetailItem";
 import { StashIDPill } from "src/components/Shared/StashID";
 import { PatchComponent } from "src/patch";
+import { CustomFields } from "src/components/Shared/CustomFields";
 import { Link } from "react-router-dom";
 
 interface IStudioDetailsPanel {
@@ -87,6 +88,7 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = PatchComponent(
           value={renderStashIDs()}
           fullWidth={fullWidth}
         />
+        <CustomFields values={studio.custom_fields} />
       </div>
     );
   }

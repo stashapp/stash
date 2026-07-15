@@ -17,6 +17,7 @@ type FinderImageStashIDGetter interface {
 	models.URLLoader
 	models.StashIDLoader
 	GetImage(ctx context.Context, studioID int) ([]byte, error)
+	models.CustomFieldsReader
 }
 
 // ToJSON converts a Studio object into its JSON equivalent.
@@ -26,6 +27,7 @@ func ToJSON(ctx context.Context, reader FinderImageStashIDGetter, studio *models
 		Details:       studio.Details,
 		Favorite:      studio.Favorite,
 		IgnoreAutoTag: studio.IgnoreAutoTag,
+		Organized:     studio.Organized,
 		CreatedAt:     json.JSONTime{Time: studio.CreatedAt},
 		UpdatedAt:     json.JSONTime{Time: studio.UpdatedAt},
 	}
@@ -59,6 +61,12 @@ func ToJSON(ctx context.Context, reader FinderImageStashIDGetter, studio *models
 		return nil, fmt.Errorf("loading studio stash ids: %w", err)
 	}
 	newStudioJSON.StashIDs = studio.StashIDs.List()
+
+	var err error
+	newStudioJSON.CustomFields, err = reader.GetCustomFields(ctx, studio.ID)
+	if err != nil {
+		return nil, fmt.Errorf("getting studio custom fields: %v", err)
+	}
 
 	image, err := reader.GetImage(ctx, studio.ID)
 	if err != nil {

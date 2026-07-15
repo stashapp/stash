@@ -70,6 +70,7 @@ type StudioFinder interface {
 
 type TagFinder interface {
 	models.TagGetter
+	models.TagNameFinder
 	models.TagAutoTagQueryer
 }
 
@@ -182,7 +183,7 @@ func (c *Cache) ReloadScrapers() {
 			if err != nil {
 				logger.Errorf("Error loading scraper %s: %v", fp, err)
 			} else {
-				scraper := newGroupScraper(*conf, c.globalConfig)
+				scraper := scraperFromDefinition(*conf, c.globalConfig)
 				scrapers[scraper.spec().ID] = scraper
 			}
 		}

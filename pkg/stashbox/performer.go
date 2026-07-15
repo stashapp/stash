@@ -231,12 +231,22 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 		sp.Height = &hs
 	}
 
+	if p.CareerStartYear != nil {
+		cs := strconv.Itoa(*p.CareerStartYear)
+		sp.CareerStart = &cs
+	}
+
+	if p.CareerEndYear != nil {
+		ce := strconv.Itoa(*p.CareerEndYear)
+		sp.CareerEnd = &ce
+	}
+
 	if p.BirthDate != nil {
-		sp.Birthdate = padFuzzyDate(p.BirthDate)
+		sp.Birthdate = p.BirthDate
 	}
 
 	if p.DeathDate != nil {
-		sp.DeathDate = padFuzzyDate(p.DeathDate)
+		sp.DeathDate = p.DeathDate
 	}
 
 	if p.Gender != nil {
@@ -278,23 +288,6 @@ func performerFragmentToScrapedPerformer(p graphql.PerformerFragment) *models.Sc
 	}
 
 	return sp
-}
-
-func padFuzzyDate(date *string) *string {
-	if date == nil {
-		return nil
-	}
-
-	var paddedDate string
-	switch len(*date) {
-	case 10:
-		paddedDate = *date
-	case 7:
-		paddedDate = fmt.Sprintf("%s-01", *date)
-	case 4:
-		paddedDate = fmt.Sprintf("%s-01-01", *date)
-	}
-	return &paddedDate
 }
 
 // FindPerformerByID queries stash-box for a performer by ID.
@@ -388,16 +381,13 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 		aliases := strings.Join(performer.Aliases.List(), ",")
 		draft.Aliases = &aliases
 	}
-	if performer.CareerLength != "" {
-		var career = strings.Split(performer.CareerLength, "-")
-		if i, err := strconv.Atoi(strings.TrimSpace(career[0])); err == nil {
-			draft.CareerStartYear = &i
-		}
-		if len(career) == 2 {
-			if y, err := strconv.Atoi(strings.TrimSpace(career[1])); err == nil {
-				draft.CareerEndYear = &y
-			}
-		}
+	if performer.CareerStart != nil {
+		year := performer.CareerStart.Year()
+		draft.CareerStartYear = &year
+	}
+	if performer.CareerEnd != nil {
+		year := performer.CareerEnd.Year()
+		draft.CareerEndYear = &year
 	}
 
 	if len(performer.URLs.List()) > 0 {

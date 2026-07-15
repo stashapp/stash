@@ -1,4 +1,4 @@
-# Contributing Scrapers 
+# Contributing scrapers 
 
 Scrapers can be contributed to the community by creating a PR in [this repository](https://github.com/stashapp/CommunityScrapers/pulls).
 
@@ -56,7 +56,6 @@ The scraping types and their required fields are outlined in the following table
 
 URL-based scraping accepts multiple scrape configurations, and each configuration requires a `url` field. stash iterates through these configurations, attempting to match the entered URL against the `url` fields in the configuration. It executes the first scraping configuration where the entered URL contains the value of the `url` field. 
 
-    
 ## Actions
 
 ### Script
@@ -94,7 +93,7 @@ The script is sent input and expects output based on the scraping type, as detai
 
 For `performerByName`, only `name` is required in the returned performer fragments. One entire object is sent back to `performerByFragment` to scrape a specific performer, so the other fields may be included to assist in scraping a performer. For example, the `url` field may be filled in for the specific performer page, then `performerByFragment` can extract by using its value.
   
-Python example of a performer Scraper:
+Python example of a performer scraper:
   
 ```python
 import json
@@ -212,15 +211,14 @@ xPathScrapers:
 
 For `sceneByFragment` and `sceneByQueryFragment`, the `queryURL` field must also be present. This field is used to build a query URL for scenes. For `sceneByFragment`, the `queryURL` field supports the following placeholder fields:
 
-* `{checksum}` - the MD5 checksum of the scene
-* `{oshash}` - the oshash of the scene
-* `{filename}` - the base filename of the scene
-* `{title}` - the title of the scene
-* `{url}` - the url of the scene
+- `{checksum}` - the MD5 checksum of the scene
+- `{oshash}` - the oshash of the scene
+- `{phash}` - the phash of the scene
+- `{filename}` - the base filename of the scene
+- `{title}` - the title of the scene
+- `{url}` - the url of the scene
 
-These placeholder field values may be manipulated with regex replacements by adding a `queryURLReplace` section, containing a map of placeholder field to regex configuration which uses the same format as the `replace` post-process action covered below.
-
-For example:
+These placeholder field values may be manipulated with regex replacements by adding a `queryURLReplace` section, containing a map of placeholder field to regex configuration which uses the same format as the `replace` post-process action covered below. For example:
 
 ```yaml
 sceneByFragment:
@@ -239,7 +237,7 @@ The above configuration would scrape from the value of `queryURL`, replacing `{f
 
 For `sceneByURL`, `performerByURL`, `galleryByURL` the `queryURL` can also be present if we want to use `queryURLReplace`. The functionality is the same as `sceneByFragment`, the only placeholder field available though is the `url`:
 
-* `{url}` - the url of the scene/performer/gallery
+- `{url}` - the url of the scene/performer/gallery
 
 ```yaml
 sceneByURL:
@@ -335,9 +333,7 @@ The `{inputURL}` and `{inputHostname}` placeholders can be used in both `fixed` 
 
 #### {inputURL}
 
-The `{inputURL}` placeholder provides access to the full URL. This is useful when you want to return or reference the source URL as part of the scraped data.
-
-For example:
+The `{inputURL}` placeholder provides access to the full URL. This is useful when you want to return or reference the source URL as part of the scraped data. For example:
 
 ```yaml
 scene:
@@ -351,9 +347,7 @@ When scraping from `https://example.com/scene/12345`, the `{inputURL}` placehold
 
 #### {inputHostname}
 
-The `{inputHostname}` placeholder extracts just the hostname from the URL. This is useful when you need to reference the domain without manually parsing the URL.
-
-For example:
+The `{inputHostname}` placeholder extracts just the hostname from the URL. This is useful when you need to reference the domain without manually parsing the URL. For example:
 
 ```yaml
 scene:
@@ -375,7 +369,7 @@ scene:
     selector: //div[@data-host="{inputHostname}"]//span[@class="site-name"]
 ```
 
-> **Note:** These placeholders represent the actual URL used to fetch the content, after any URL replacements have been applied.
+> **⚠️ Note:** These placeholders represent the actual URL used to fetch the content, after any URL replacements have been applied.
 
 ### Common fragments
 
@@ -391,6 +385,7 @@ performer:
 The `Measurements` xpath string will replace `$infoPiece` with `//div[@class="infoPiece"]/span`, resulting in: `//div[@class="infoPiece"]/span[text() = 'Measurements:']/../span[@class="smallInfo"]`.
 
 > **⚠️ Note:** Recursive common fragments are **not** supported.  
+
 Referencing a common fragment within another common fragment will cause an error. For example:
 ```yaml
 common:
@@ -408,8 +403,10 @@ scene:
 
 Post-processing operations are contained in the `postProcess` key. Post-processing operations are performed in the order they are specified. The following post-processing operations are available:
 
-* `javascript`: accepts a javascript code block, that must return a string value. The input string is declared in the `value` variable. If an error occurs while compiling or running the script, then the original value is returned.
-Example:
+#### `javascript`
+
+`javascript`: accepts a javascript code block, that must return a string value. The input string is declared in the `value` variable. If an error occurs while compiling or running the script, then the original value is returned. For example:
+
 ```yaml
 performer:
   Name:
@@ -424,10 +421,18 @@ performer:
 
 We use [`goja` javascript engine](https://github.com/dop251/goja) which is missing a few built-in methods and may not be consistent with other modern javascript implementations.
 
-* `feetToCm`: converts a string containing feet and inches numbers into centimeters. Looks for up to two separate integers and interprets the first as the number of feet, and the second as the number of inches. The numbers can be separated by any non-numeric character including the `.` character. It does not handle decimal numbers. For example `6.3` and `6ft3.3` would both be interpreted as 6 feet, 3 inches before converting into centimeters.
-* `lbToKg`: converts a string containing lbs to kg.
-* `map`: contains a map of input values to output values. Where a value matches one of the input values, it is replaced with the matching output value. If no value is matched, then value is unmodified.
-Example:
+#### `feetToCm`
+
+`feetToCm`: converts a string containing feet and inches numbers into centimeters. Looks for up to two separate integers and interprets the first as the number of feet, and the second as the number of inches. The numbers can be separated by any non-numeric character including the `.` character. It does not handle decimal numbers. For example `6.3` and `6ft3.3` would both be interpreted as 6 feet, 3 inches before converting into centimeters.
+
+#### `lbToKg`
+
+`lbToKg`: converts a string containing lbs to kg.
+
+#### `map`
+
+`map`: contains a map of input values to output values. Where a value matches one of the input values, it is replaced with the matching output value. If no value is matched, then value is unmodified.For example:
+
 ```yaml
 performer:
   Gender:
@@ -445,15 +450,19 @@ performer:
     postProcess:
       - lbToKg: true
 ```
+
 Gets the contents of the selected div element, and sets the returned value to:
     - `Female` if the scraped value is `F`;
     - `Male` if the scraped value is `M`.
 
     Height and weight are extracted from the selected spans and converted to `cm` and `kg`.
 
-* `parseDate`: if present, the value is the date format using go's reference date (2006-01-02). For example, if an example date was `14-Mar-2003`, then the date format would be `02-Jan-2006`. See the [time.Parse documentation](https://golang.org/pkg/time/#Parse) for details. When present, the scraper will convert the input string into a date, then convert it to the string format used by stash (`YYYY-MM-DD`). Strings "Today", "Yesterday" are matched (case insensitive) and converted by the scraper so you don't need to edit/replace them. 
-Unix timestamps (example: 1660169451) can also be parsed by selecting `unix` as the date format.
-Example:
+#### `parseDate`
+
+`parseDate`: if present, the value is the date format using go's reference date (2006-01-02). For example, if an example date was `14-Mar-2003`, then the date format would be `02-Jan-2006`. See the [time.Parse documentation](https://golang.org/pkg/time/#Parse) for details. When present, the scraper will convert the input string into a date, then convert it to the string format used by stash (`YYYY-MM-DD`). Strings "Today", "Yesterday" are matched (case insensitive) and converted by the scraper so you don't need to edit/replace them. 
+
+Unix timestamps (example: 1660169451) can also be parsed by selecting `unix` as the date format.For example:
+
 ```yaml
 Date:
   selector: //div[@class="value epoch"]/text()
@@ -461,8 +470,9 @@ Date:
     - parseDate: unix
 ```
 
-* `subtractDays`: if set to `true` it subtracts the value in days from the current date and returns the resulting date in stash's date format.
-Example:
+#### `subtractDays`
+
+`subtractDays`: if set to `true` it subtracts the value in days from the current date and returns the resulting date in stash's date format. For example:
 ```yaml
 Date:
   selector: //strong[contains(text(),"Added:")]/following-sibling::text()
@@ -473,8 +483,10 @@ Date:
     - subtractDays: true
 ```
 
-* `replace`: contains an array of sub-objects. Each sub-object must have a `regex` and `with` field. The `regex` field is the regex pattern to replace, and `with` is the string to replace it with. `$` is used to reference capture groups - `$1` is the first capture group, `$2` the second and so on. Replacements are performed in order of the array.
-Example:
+#### `replace`
+
+`replace`: contains an array of sub-objects. Each sub-object must have a `regex` and `with` field. The `regex` field is the regex pattern to replace, and `with` is the string to replace it with. `$` is used to reference capture groups - `$1` is the first capture group, `$2` the second and so on. Replacements are performed in order of the array. For example:
+
 ```yaml
 CareerLength: 
   selector: $infoPiece[text() = 'Career Start and End:']/../span[@class="smallInfo"]
@@ -485,37 +497,43 @@ CareerLength:
 ```
 Replaces `2001 to 2003` with `2001-2003`.
 
-* `subScraper`: if present, the sub-scraper will be executed after all other post-processes are complete and before parseDate. It then takes the value and performs an http request, using the value as the URL. Within the `subScraper` config is a nested scraping configuration. This allows you to traverse to other webpages to get the attribute value you are after. For more info and examples have a look at [#370](https://github.com/stashapp/stash/pull/370), [#606](https://github.com/stashapp/stash/pull/606)
+#### `subScraper`
 
-Additionally, there are a number of fixed post-processing fields that are specified at the attribute level (not in `postProcess`) that are performed after the `postProcess` operations:
+`subScraper`: if present, the sub-scraper will be executed after all other post-processes are complete and before parseDate. It then takes the value and performs an http request, using the value as the URL. Within the `subScraper` config is a nested scraping configuration. This allows you to traverse to other webpages to get the attribute value you are after. For more info and examples have a look at [#370](https://github.com/stashapp/stash/pull/370), [#606](https://github.com/stashapp/stash/pull/606).
 
-* `concat`: if an xpath matches multiple elements, and `concat` is present, then all of the elements will be concatenated together
-* `split`: the inverse of `concat`. Splits a string to more elements using the separator given. For more info and examples have a look at PR [#579](https://github.com/stashapp/stash/pull/579)
-Example:
+### `concat` and `split` attributes
+
+These are fixed post-processing fields that are specified at the attribute level (not in `postProcess`) that are performed after the `postProcess` operations:
+
+- `concat`: if an xpath matches multiple elements, and `concat` is present, then all of the elements will be concatenated together.
+- `split`: the inverse of `concat`. Splits a string to more elements using the separator given. For more info and examples have a look at PR [#579](https://github.com/stashapp/stash/pull/579). For example:
+
 ```yaml
 Tags:
   Name:
     selector: //span[@class="list_attributes"]
     split: ","
 ```
-Splits a comma separated list of tags located in the span and returns the tags.
 
+Splits a comma separated list of tags located in the span and returns the tags.
 
 For backwards compatibility, `replace`, `subscraper` and `parseDate` are also allowed as keys for the attribute.
 
 Post-processing on attribute post-process is done in the following order: `concat`, `replace`, `subscraper`, `parseDate` and then `split`.
 
-### XPath resources:
+### XPath resources
 
 - Test XPaths in Firefox: https://addons.mozilla.org/en-US/firefox/addon/try-xpath/
 - XPath cheatsheet: https://devhints.io/xpath
 
-### GJSON resources:
+### GJSON resources
 
 - GJSON Path Syntax: https://github.com/tidwall/gjson/blob/master/SYNTAX.md
 
 ### Debugging support
+
 To print the received html/json from a scraper request to the log file, add the following to your scraper yml file:
+
 ```yaml
 debug:
   printHTML: true
@@ -526,6 +544,7 @@ debug:
 Some websites deliver content that cannot be scraped using the raw html file alone. These websites use javascript to dynamically load the content. As such, direct xpath scraping will not work on these websites. There is an option to use Chrome DevTools Protocol to load the webpage using an instance of Chrome, then scrape the result.
 
 Chrome CDP support can be enabled for a specific scraping configuration by adding the following to the root of the yml configuration:
+
 ```yaml
 driver:
   useCDP: true
@@ -537,9 +556,9 @@ When `useCDP` is set to true, stash will execute or connect to an instance of Ch
 
 `Chrome CDP path` can be set to a path to the chrome executable, or an http(s) address to remote chrome instance (for example: `http://localhost:9222/json/version`). As remote instance a docker container can also be used with the `chromedp/headless-shell` image being highly recommended.
 
-### CDP Click support
+### CDP `clicks` support
 
-When using CDP you can use  the `clicks` part of the `driver` section to do Mouse Clicks on elements you need to collapse or toggle. Each click element has an `xpath` value that holds the XPath for the button/element you need to click and an optional `sleep` value that is the time in seconds to wait for after clicking.
+When using CDP you can use the `clicks` part of the `driver` section to do Mouse Clicks on elements you need to collapse or toggle. Each click element has an `xpath` value that holds the XPath for the button/element you need to click and an optional `sleep` value that is the time in seconds to wait for after clicking.
 If the `sleep` value is not set it defaults to `2` seconds.
 
 A demo scraper using `clicks` follows.
@@ -582,9 +601,8 @@ In some websites the use of cookies is needed to bypass a welcoming message or s
 To use the cookie functionality a `cookies` sub section needs to be added to the `driver` section.
 Each cookie element can consist of a `CookieURL` and a number of `Cookies`.
 
-* `CookieURL` is only needed if you are using the direct / native scraper method. It is the request url that we expect from the site we scrape. It must be in the same domain as the cookies we try to set otherwise all cookies in the same group will fail to set. If the `CookieURL` is not a valid URL then again the cookies of that group will fail.
-
-* `Cookies` are the actual cookies we set. When using CDP that's the only part required. They have  `Name`, `Value`, `Domain`, `Path` values.
+- `CookieURL` is only needed if you are using the direct / native scraper method. It is the request url that we expect from the site we scrape. It must be in the same domain as the cookies we try to set otherwise all cookies in the same group will fail to set. If the `CookieURL` is not a valid URL then again the cookies of that group will fail.
+- `Cookies` are the actual cookies we set. When using CDP that's the only part required. They have  `Name`, `Value`, `Domain`, `Path` values.
 
 In the following example we use cookies for a site using the direct / native xpath scraper. We expect requests to come from `https://www.example.com` and `https://api.somewhere.com` that look for a `_warning` and a `_warn` cookie. A `_test2` cookie is also set just as a demo.
 
@@ -658,9 +676,8 @@ driver:
 
 When developing a scraper you can have a look at the cookies set by a site by adding
 
-* a `CookieURL` if you use the direct xpath scraper
-
-* a `Domain` if you use the CDP scraper
+- a `CookieURL` if you use the direct xpath scraper
+- a `Domain` if you use the CDP scraper
 
 and having a look at the log / console in debug mode.
 
@@ -679,7 +696,7 @@ driver:
       Value: Bearer ds3sdfcFdfY17p4qBkTVF03zscUU2glSjWF17bZyoe8
 ```
 
-* headers are set after stash's `User-Agent` configuration option is applied.
+- Headers are set after stash's `User-Agent` configuration option is applied.
 This means setting a `User-Agent` header from the scraper overrides the one in the configuration settings.
 
 ### XPath scraper example
@@ -881,7 +898,7 @@ Title
 URLs
 ```
 
-> **Important**: `Title` field is required. 
+> **⚠️ Important:** `Title` field is required. 
 
 ### Group
 
@@ -900,7 +917,7 @@ Tags (see Tag fields)
 URLs
 ```
 
-> **Important**: `Name` field is required. 
+> **⚠️ Important:** `Name` field is required. 
 
 ### Image
 
@@ -922,7 +939,8 @@ URLs
 ```
 Aliases
 Birthdate
-CareerLength
+CareerEnd
+CareerStart
 Circumcised
 Country
 DeathDate
@@ -944,9 +962,9 @@ URLs
 Weight
 ```
 
-> **Important**: `Name` field is required. 
+> **⚠️ Important:** `Name` field is required. 
 
-> **Note:**  - `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).
+> **⚠️ Note:** `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).
 
 ### Scene
 
@@ -964,7 +982,7 @@ Title
 URLs
 ```
 
-> **Important**: `Title` field is required only if fileless.
+> **⚠️ Important:** `Title` field is required only if fileless.
 
 ### Studio
 
@@ -976,7 +994,7 @@ Tags (see Tag fields)
 URL
 ```
 
-> **Important**: `Name` field is required. 
+> **⚠️ Important:** `Name` field is required. 
 
 ### Tag
 
@@ -984,4 +1002,4 @@ URL
 Name
 ```
 
-> **Important**: `Name` field is required. 
+> **⚠️ Important:** `Name` field is required. 

@@ -18,22 +18,19 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-const (
-	spriteScreenshotWidth = 160
-
-	spriteRows   = 9
-	spriteCols   = 9
-	spriteChunks = spriteRows * spriteCols
-)
-
-func (g Generator) SpriteScreenshot(ctx context.Context, input string, seconds float64) (image.Image, error) {
+func (g Generator) SpriteScreenshot(ctx context.Context, input string, seconds float64, size int, isPortrait bool) (image.Image, error) {
 	lockCtx := g.LockManager.ReadLock(ctx, input)
 	defer lockCtx.Cancel()
 
 	ssOptions := transcoder.ScreenshotOptions{
 		OutputPath: "-",
 		OutputType: transcoder.ScreenshotOutputTypeBMP,
-		Width:      spriteScreenshotWidth,
+	}
+
+	if !isPortrait {
+		ssOptions.Width = size
+	} else {
+		ssOptions.Height = size
 	}
 
 	args := transcoder.ScreenshotTime(input, seconds, ssOptions)
@@ -41,14 +38,14 @@ func (g Generator) SpriteScreenshot(ctx context.Context, input string, seconds f
 	return g.generateImage(lockCtx, args)
 }
 
-func (g Generator) SpriteScreenshotSlow(ctx context.Context, input string, frame int) (image.Image, error) {
+func (g Generator) SpriteScreenshotSlow(ctx context.Context, input string, frame int, width int) (image.Image, error) {
 	lockCtx := g.LockManager.ReadLock(ctx, input)
 	defer lockCtx.Cancel()
 
 	ssOptions := transcoder.ScreenshotOptions{
 		OutputPath: "-",
 		OutputType: transcoder.ScreenshotOutputTypeBMP,
-		Width:      spriteScreenshotWidth,
+		Width:      width,
 	}
 
 	args := transcoder.ScreenshotFrame(input, frame, ssOptions)
@@ -74,12 +71,13 @@ func (g Generator) CombineSpriteImages(images []image.Image) image.Image {
 	// Combine all of the thumbnails into a sprite image
 	width := images[0].Bounds().Size().X
 	height := images[0].Bounds().Size().Y
-	canvasWidth := width * spriteCols
-	canvasHeight := height * spriteRows
+	gridSize := GetSpriteGridSize(len(images))
+	canvasWidth := width * gridSize
+	canvasHeight := height * gridSize
 	montage := imaging.New(canvasWidth, canvasHeight, color.NRGBA{})
 	for index := 0; index < len(images); index++ {
-		x := width * (index % spriteCols)
-		y := height * int(math.Floor(float64(index)/float64(spriteRows)))
+		x := width * (index % gridSize)
+		y := height * int(math.Floor(float64(index)/float64(gridSize)))
 		img := images[index]
 		montage = imaging.Paste(montage, img, image.Pt(x, y))
 	}
@@ -87,14 +85,19 @@ func (g Generator) CombineSpriteImages(images []image.Image) image.Image {
 	return montage
 }
 
-func (g Generator) SpriteVTT(ctx context.Context, output string, spritePath string, stepSize float64) error {
-	lockCtx := g.LockManager.ReadLock(ctx, spritePath)
-	defer lockCtx.Cancel()
-
-	return g.generateFile(lockCtx, g.ScenePaths, vttPattern, output, g.spriteVTT(spritePath, stepSize))
+// GetSpriteGridSize return the required size of a grid, where the number of images in width
+// equals the number of images in height, to hold 'imageCount' images
+func GetSpriteGridSize(imageCount int) int {
+	return int(math.Ceil(math.Sqrt(float64(imageCount))))
 }
 
-func (g Generator) spriteVTT(spritePath string, stepSize float64) generateFn {
+func (g Generator) SpriteVTT(ctx context.Context, output string, spritePath string, stepSize float64, spriteChunks int) error {
+	lockCtx := g.LockManager.ReadLock(ctx, spritePath)
+	defer lockCtx.Cancel()
+	return g.generateFile(lockCtx, g.ScenePaths, vttPattern, output, g.spriteVTT(spritePath, stepSize, spriteChunks))
+}
+
+func (g Generator) spriteVTT(spritePath string, stepSize float64, spriteChunks int) generateFn {
 	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
 		spriteImage, err := os.Open(spritePath)
 		if err != nil {
@@ -106,16 +109,17 @@ func (g Generator) spriteVTT(spritePath string, stepSize float64) generateFn {
 		if err != nil {
 			return err
 		}
-		width := image.Width / spriteCols
-		height := image.Height / spriteRows
+
+		gridSize := GetSpriteGridSize(spriteChunks)
+		width := image.Width / gridSize
+		height := image.Height / gridSize
 
 		vttLines := []string{"WEBVTT", ""}
 		for index := 0; index < spriteChunks; index++ {
-			x := width * (index % spriteCols)
-			y := height * int(math.Floor(float64(index)/float64(spriteRows)))
+			x := width * (index % gridSize)
+			y := height * int(math.Floor(float64(index)/float64(gridSize)))
 			startTime := utils.GetVTTTime(float64(index) * stepSize)
 			endTime := utils.GetVTTTime(float64(index+1) * stepSize)
-
 			vttLines = append(vttLines, startTime+" --> "+endTime)
 			vttLines = append(vttLines, fmt.Sprintf("%s#xywh=%d,%d,%d,%d", spriteImageName, x, y, width, height))
 			vttLines = append(vttLines, "")

@@ -15,7 +15,7 @@ declare namespace PluginApi {
     const BulkPerformerUpdateDocument: { [key: string]: any };
     const BulkSceneUpdateDocument: { [key: string]: any };
     const BulkUpdateIdMode: { [key: string]: any };
-    const CircumisedEnum: { [key: string]: any };
+    const CircumcisedEnum: { [key: string]: any };
     const ConfigDataFragmentDoc: { [key: string]: any };
     const ConfigDefaultSettingsDataFragmentDoc: { [key: string]: any };
     const ConfigDlnaDataFragmentDoc: { [key: string]: any };
@@ -666,6 +666,14 @@ declare namespace PluginApi {
     DetailImage: React.FC<any>;
     ExternalLinkButtons: React.FC<any>;
     ExternalLinksButton: React.FC<any>;
+    FilteredGalleryList: React.FC<any>;
+    FilteredGroupList: React.FC<any>;
+    FilteredImageList: React.FC<any>;
+    FilteredPerformerList: React.FC<any>;
+    FilteredSceneList: React.FC<any>;
+    FilteredSceneMarkerList: React.FC<any>;
+    FilteredStudioList: React.FC<any>;
+    FilteredTagList: React.FC<any>;
     FolderSelect: React.FC<any>;
     FrontPage: React.FC<any>;
     GalleryCard: React.FC<any>;
@@ -738,6 +746,7 @@ declare namespace PluginApi {
     "SceneCard.Image": React.FC<any>;
     "SceneCard.Overlays": React.FC<any>;
     "SceneCard.Popovers": React.FC<any>;
+    "SceneCard.SceneSpecs": React.FC<any>;
     SceneCardGrid: React.FC<any>;
     SceneList: React.FC<any>;
     SceneListOperations: React.FC<any>;

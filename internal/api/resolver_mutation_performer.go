@@ -43,7 +43,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 
 	newPerformer.Name = strings.TrimSpace(input.Name)
 	newPerformer.Disambiguation = translator.string(input.Disambiguation)
-	newPerformer.Aliases = models.NewRelatedStrings(stringslice.TrimSpace(input.AliasList))
+	newPerformer.Aliases = models.NewRelatedStrings(stringslice.UniqueExcludeFold(stringslice.TrimSpace(input.AliasList), newPerformer.Name))
 	newPerformer.Gender = input.Gender
 	newPerformer.Ethnicity = translator.string(input.Ethnicity)
 	newPerformer.Country = translator.string(input.Country)
@@ -52,7 +52,6 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	newPerformer.FakeTits = translator.string(input.FakeTits)
 	newPerformer.PenisLength = input.PenisLength
 	newPerformer.Circumcised = input.Circumcised
-	newPerformer.CareerLength = translator.string(input.CareerLength)
 	newPerformer.Tattoos = translator.string(input.Tattoos)
 	newPerformer.Piercings = translator.string(input.Piercings)
 	newPerformer.Favorite = translator.bool(input.Favorite)
@@ -88,6 +87,25 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	newPerformer.DeathDate, err = translator.datePtr(input.DeathDate)
 	if err != nil {
 		return nil, fmt.Errorf("converting death date: %w", err)
+	}
+
+	newPerformer.CareerStart, err = translator.datePtr(input.CareerStart)
+	if err != nil {
+		return nil, fmt.Errorf("converting career start: %w", err)
+	}
+	newPerformer.CareerEnd, err = translator.datePtr(input.CareerEnd)
+	if err != nil {
+		return nil, fmt.Errorf("converting career end: %w", err)
+	}
+
+	// if career_start/career_end not provided, parse deprecated career_length
+	if newPerformer.CareerStart == nil && newPerformer.CareerEnd == nil && input.CareerLength != nil {
+		start, end, err := models.ParseYearRangeString(*input.CareerLength)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse career_length %q: %w", *input.CareerLength, err)
+		}
+		newPerformer.CareerStart = start
+		newPerformer.CareerEnd = end
 	}
 
 	newPerformer.TagIDs, err = translator.relatedIds(input.TagIds)
@@ -261,7 +279,29 @@ func performerPartialFromInput(input models.PerformerUpdateInput, translator cha
 	updatedPerformer.FakeTits = translator.optionalString(input.FakeTits, "fake_tits")
 	updatedPerformer.PenisLength = translator.optionalFloat64(input.PenisLength, "penis_length")
 	updatedPerformer.Circumcised = translator.optionalString((*string)(input.Circumcised), "circumcised")
-	updatedPerformer.CareerLength = translator.optionalString(input.CareerLength, "career_length")
+	// prefer career_start/career_end over deprecated career_length
+	if translator.hasField("career_start") || translator.hasField("career_end") {
+		var err error
+		updatedPerformer.CareerStart, err = translator.optionalDate(input.CareerStart, "career_start")
+		if err != nil {
+			return nil, fmt.Errorf("converting career start: %w", err)
+		}
+		updatedPerformer.CareerEnd, err = translator.optionalDate(input.CareerEnd, "career_end")
+		if err != nil {
+			return nil, fmt.Errorf("converting career end: %w", err)
+		}
+	} else if translator.hasField("career_length") && input.CareerLength != nil {
+		start, end, err := models.ParseYearRangeString(*input.CareerLength)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse career_length %q: %w", *input.CareerLength, err)
+		}
+		if start != nil {
+			updatedPerformer.CareerStart = models.NewOptionalDate(*start)
+		}
+		if end != nil {
+			updatedPerformer.CareerEnd = models.NewOptionalDate(*end)
+		}
+	}
 	updatedPerformer.Tattoos = translator.optionalString(input.Tattoos, "tattoos")
 	updatedPerformer.Piercings = translator.optionalString(input.Piercings, "piercings")
 	updatedPerformer.Favorite = translator.optionalBool(input.Favorite, "favorite")
@@ -348,6 +388,27 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 			}
 		}
 
+		if updatedPerformer.Aliases != nil {
+			p, err := qb.Find(ctx, performerID)
+			if err != nil {
+				return err
+			}
+			if p != nil {
+				if err := p.LoadAliases(ctx, qb); err != nil {
+					return err
+				}
+
+				effectiveAliases := updatedPerformer.Aliases.Apply(p.Aliases.List())
+				name := p.Name
+				if updatedPerformer.Name.Set {
+					name = updatedPerformer.Name.Value
+				}
+
+				sanitized := stringslice.UniqueExcludeFold(effectiveAliases, name)
+				updatedPerformer.Aliases.Values = sanitized
+				updatedPerformer.Aliases.Mode = models.RelationshipUpdateModeSet
+			}
+		}
 		if err := performer.ValidateUpdate(ctx, performerID, *updatedPerformer, qb); err != nil {
 			return err
 		}
@@ -396,7 +457,28 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer.FakeTits = translator.optionalString(input.FakeTits, "fake_tits")
 	updatedPerformer.PenisLength = translator.optionalFloat64(input.PenisLength, "penis_length")
 	updatedPerformer.Circumcised = translator.optionalString((*string)(input.Circumcised), "circumcised")
-	updatedPerformer.CareerLength = translator.optionalString(input.CareerLength, "career_length")
+	// prefer career_start/career_end over deprecated career_length
+	if translator.hasField("career_start") || translator.hasField("career_end") {
+		updatedPerformer.CareerStart, err = translator.optionalDate(input.CareerStart, "career_start")
+		if err != nil {
+			return nil, fmt.Errorf("converting career start: %w", err)
+		}
+		updatedPerformer.CareerEnd, err = translator.optionalDate(input.CareerEnd, "career_end")
+		if err != nil {
+			return nil, fmt.Errorf("converting career end: %w", err)
+		}
+	} else if translator.hasField("career_length") && input.CareerLength != nil {
+		start, end, err := models.ParseYearRangeString(*input.CareerLength)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse career_length %q: %w", *input.CareerLength, err)
+		}
+		if start != nil {
+			updatedPerformer.CareerStart = models.NewOptionalDate(*start)
+		}
+		if end != nil {
+			updatedPerformer.CareerEnd = models.NewOptionalDate(*end)
+		}
+	}
 	updatedPerformer.Tattoos = translator.optionalString(input.Tattoos, "tattoos")
 	updatedPerformer.Piercings = translator.optionalString(input.Piercings, "piercings")
 
@@ -572,7 +654,7 @@ func (r *mutationResolver) PerformerMerge(ctx context.Context, input PerformerMe
 		}
 		legacyURLs := legacyPerformerURLsFromInput(*input.Values, translator)
 		if legacyURLs.AnySet() {
-			return nil, errors.New("Merging legacy performer URLs is not supported")
+			return nil, errors.New("merging legacy performer URLs is not supported")
 		}
 
 		if input.Values.Image != nil {

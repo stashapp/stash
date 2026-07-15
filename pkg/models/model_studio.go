@@ -16,6 +16,7 @@ type Studio struct {
 	Favorite      bool   `json:"favorite"`
 	Details       string `json:"details"`
 	IgnoreAutoTag bool   `json:"ignore_auto_tag"`
+	Organized     bool   `json:"organized"`
 
 	Aliases  RelatedStrings  `json:"aliases"`
 	URLs     RelatedStrings  `json:"urls"`
@@ -23,11 +24,30 @@ type Studio struct {
 	StashIDs RelatedStashIDs `json:"stash_ids"`
 }
 
+type CreateStudioInput struct {
+	*Studio
+
+	CustomFields map[string]interface{} `json:"custom_fields"`
+}
+
+type UpdateStudioInput struct {
+	*Studio
+
+	CustomFields CustomFieldsInput `json:"custom_fields"`
+}
+
 func NewStudio() Studio {
 	currentTime := time.Now()
 	return Studio{
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
+	}
+}
+
+func NewCreateStudioInput() CreateStudioInput {
+	s := NewStudio()
+	return CreateStudioInput{
+		Studio: &s,
 	}
 }
 
@@ -43,11 +63,14 @@ type StudioPartial struct {
 	CreatedAt     OptionalTime
 	UpdatedAt     OptionalTime
 	IgnoreAutoTag OptionalBool
+	Organized     OptionalBool
 
 	Aliases  *UpdateStrings
 	URLs     *UpdateStrings
 	TagIDs   *UpdateIDs
 	StashIDs *UpdateStashIDs
+
+	CustomFields CustomFieldsInput
 }
 
 func NewStudioPartial() StudioPartial {

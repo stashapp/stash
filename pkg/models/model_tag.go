@@ -29,6 +29,18 @@ func NewTag() Tag {
 	}
 }
 
+type CreateTagInput struct {
+	*Tag
+
+	CustomFields map[string]interface{} `json:"custom_fields"`
+}
+
+type UpdateTagInput struct {
+	*Tag
+
+	CustomFields CustomFieldsInput `json:"custom_fields"`
+}
+
 func (s *Tag) LoadAliases(ctx context.Context, l AliasLoader) error {
 	return s.Aliases.load(func() ([]string, error) {
 		return l.GetAliases(ctx, s.ID)
@@ -66,6 +78,8 @@ type TagPartial struct {
 	ParentIDs *UpdateIDs
 	ChildIDs  *UpdateIDs
 	StashIDs  *UpdateStashIDs
+
+	CustomFields CustomFieldsInput
 }
 
 func NewTagPartial() TagPartial {

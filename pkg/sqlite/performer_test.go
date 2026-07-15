@@ -65,8 +65,9 @@ func Test_PerformerStore_Create(t *testing.T) {
 		measurements   = "measurements"
 		fakeTits       = "fakeTits"
 		penisLength    = 1.23
-		circumcised    = models.CircumisedEnumCut
-		careerLength   = "careerLength"
+		circumcised    = models.CircumcisedEnumCut
+		careerStart    = models.DateFromYear(2005)
+		careerEnd      = models.DateFromYear(2015)
 		tattoos        = "tattoos"
 		piercings      = "piercings"
 		aliases        = []string{"alias1", "alias2"}
@@ -107,7 +108,8 @@ func Test_PerformerStore_Create(t *testing.T) {
 					FakeTits:       fakeTits,
 					PenisLength:    &penisLength,
 					Circumcised:    &circumcised,
-					CareerLength:   careerLength,
+					CareerStart:    &careerStart,
+					CareerEnd:      &careerEnd,
 					Tattoos:        tattoos,
 					Piercings:      piercings,
 					Favorite:       favorite,
@@ -204,8 +206,6 @@ func Test_PerformerStore_Create(t *testing.T) {
 			}
 
 			assert.Equal(tt.newObject.CustomFields, cf)
-
-			return
 		})
 	}
 }
@@ -228,8 +228,9 @@ func Test_PerformerStore_Update(t *testing.T) {
 		measurements   = "measurements"
 		fakeTits       = "fakeTits"
 		penisLength    = 1.23
-		circumcised    = models.CircumisedEnumCut
-		careerLength   = "careerLength"
+		circumcised    = models.CircumcisedEnumCut
+		careerStart    = models.DateFromYear(2005)
+		careerEnd      = models.DateFromYear(2015)
 		tattoos        = "tattoos"
 		piercings      = "piercings"
 		aliases        = []string{"alias1", "alias2"}
@@ -271,7 +272,8 @@ func Test_PerformerStore_Update(t *testing.T) {
 					FakeTits:       fakeTits,
 					PenisLength:    &penisLength,
 					Circumcised:    &circumcised,
-					CareerLength:   careerLength,
+					CareerStart:    &careerStart,
+					CareerEnd:      &careerEnd,
 					Tattoos:        tattoos,
 					Piercings:      piercings,
 					Favorite:       favorite,
@@ -422,7 +424,8 @@ func clearPerformerPartial() models.PerformerPartial {
 		FakeTits:       nullString,
 		PenisLength:    nullFloat,
 		Circumcised:    nullString,
-		CareerLength:   nullString,
+		CareerStart:    nullDate,
+		CareerEnd:      nullDate,
 		Tattoos:        nullString,
 		Piercings:      nullString,
 		Aliases:        &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
@@ -454,8 +457,9 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 		measurements   = "measurements"
 		fakeTits       = "fakeTits"
 		penisLength    = 1.23
-		circumcised    = models.CircumisedEnumCut
-		careerLength   = "careerLength"
+		circumcised    = models.CircumcisedEnumCut
+		careerStart    = models.DateFromYear(2005)
+		careerEnd      = models.DateFromYear(2015)
 		tattoos        = "tattoos"
 		piercings      = "piercings"
 		aliases        = []string{"alias1", "alias2"}
@@ -501,7 +505,8 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				FakeTits:     models.NewOptionalString(fakeTits),
 				PenisLength:  models.NewOptionalFloat64(penisLength),
 				Circumcised:  models.NewOptionalString(circumcised.String()),
-				CareerLength: models.NewOptionalString(careerLength),
+				CareerStart:  models.NewOptionalDate(careerStart),
+				CareerEnd:    models.NewOptionalDate(careerEnd),
 				Tattoos:      models.NewOptionalString(tattoos),
 				Piercings:    models.NewOptionalString(piercings),
 				Aliases: &models.UpdateStrings{
@@ -552,7 +557,8 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				FakeTits:       fakeTits,
 				PenisLength:    &penisLength,
 				Circumcised:    &circumcised,
-				CareerLength:   careerLength,
+				CareerStart:    &careerStart,
+				CareerEnd:      &careerEnd,
 				Tattoos:        tattoos,
 				Piercings:      piercings,
 				Aliases:        models.NewRelatedStrings(aliases),
@@ -1194,7 +1200,7 @@ func TestPerformerQuery(t *testing.T) {
 			nil,
 			&models.PerformerFilterType{
 				Circumcised: &models.CircumcisionCriterionInput{
-					Value:    []models.CircumisedEnum{models.CircumisedEnumCut},
+					Value:    []models.CircumcisedEnum{models.CircumcisedEnumCut},
 					Modifier: models.CriterionModifierIncludes,
 				},
 			},
@@ -1207,7 +1213,7 @@ func TestPerformerQuery(t *testing.T) {
 			nil,
 			&models.PerformerFilterType{
 				Circumcised: &models.CircumcisionCriterionInput{
-					Value:    []models.CircumisedEnum{models.CircumisedEnumCut},
+					Value:    []models.CircumcisedEnum{models.CircumcisedEnumCut},
 					Modifier: models.CriterionModifierExcludes,
 				},
 			},
@@ -1766,30 +1772,117 @@ func verifyPerformerAge(t *testing.T, ageCriterion models.IntCriterionInput) {
 	})
 }
 
-func TestPerformerQueryCareerLength(t *testing.T) {
-	const value = "2005"
-	careerLengthCriterion := models.StringCriterionInput{
+func TestPerformerQueryLegacyCareerLength(t *testing.T) {
+	const value = "2002 - 2012"
+
+	tests := []struct {
+		name            string
+		c               models.StringCriterionInput
+		careerStartCrit *models.DateCriterionInput
+		careerEndCrit   *models.DateCriterionInput
+		err             bool
+	}{
+		{
+			name: "valid format",
+			c: models.StringCriterionInput{
+				Value:    value,
+				Modifier: models.CriterionModifierEquals,
+			},
+			careerStartCrit: &models.DateCriterionInput{
+				Value:    "2001-12-31",
+				Modifier: models.CriterionModifierGreaterThan,
+			},
+			careerEndCrit: &models.DateCriterionInput{
+				Value:    "2013-01-01",
+				Modifier: models.CriterionModifierLessThan,
+			},
+			err: false,
+		},
+		{
+			name: "invalid format",
+			c: models.StringCriterionInput{
+				Value:    "invalid format",
+				Modifier: models.CriterionModifierEquals,
+			},
+			err: true,
+		},
+		{
+			name: "is null",
+			c: models.StringCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			},
+			careerStartCrit: &models.DateCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			},
+			careerEndCrit: &models.DateCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			},
+			err: false,
+		},
+		{
+			name: "not null",
+			c: models.StringCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			},
+			careerStartCrit: &models.DateCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			},
+			careerEndCrit: &models.DateCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			},
+			err: false,
+		},
+		{
+			name: "invalid modifier",
+			c: models.StringCriterionInput{
+				Value:    value,
+				Modifier: models.CriterionModifierMatchesRegex,
+			},
+			err: true,
+		},
+	}
+
+	qb := db.Performer
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			performers, _, err := qb.Query(ctx, &models.PerformerFilterType{
+				CareerLength: &tt.c,
+			}, nil)
+
+			if err != nil && !tt.err {
+				t.Errorf("Error querying performer: %s", err.Error())
+			} else if err == nil && tt.err {
+				t.Errorf("Expected error but got none")
+			}
+
+			if err != nil || tt.err {
+				return
+			}
+
+			if len(performers) == 0 {
+				t.Errorf("Expected to find performers but found none")
+			}
+
+			for _, performer := range performers {
+				verifyDatePtr(t, performer.CareerStart, *tt.careerStartCrit)
+				verifyDatePtr(t, performer.CareerEnd, *tt.careerEndCrit)
+			}
+		})
+	}
+}
+
+func TestPerformerQueryCareerStart(t *testing.T) {
+	const value = "2002"
+	criterion := models.DateCriterionInput{
 		Value:    value,
 		Modifier: models.CriterionModifierEquals,
 	}
 
-	verifyPerformerCareerLength(t, careerLengthCriterion)
-
-	careerLengthCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyPerformerCareerLength(t, careerLengthCriterion)
-
-	careerLengthCriterion.Modifier = models.CriterionModifierMatchesRegex
-	verifyPerformerCareerLength(t, careerLengthCriterion)
-
-	careerLengthCriterion.Modifier = models.CriterionModifierNotMatchesRegex
-	verifyPerformerCareerLength(t, careerLengthCriterion)
-}
-
-func verifyPerformerCareerLength(t *testing.T, criterion models.StringCriterionInput) {
 	withTxn(func(ctx context.Context) error {
 		qb := db.Performer
 		performerFilter := models.PerformerFilterType{
-			CareerLength: &criterion,
+			CareerStart: &criterion,
 		}
 
 		performers, _, err := qb.Query(ctx, &performerFilter, nil)
@@ -1798,8 +1891,33 @@ func verifyPerformerCareerLength(t *testing.T, criterion models.StringCriterionI
 		}
 
 		for _, performer := range performers {
-			cl := performer.CareerLength
-			verifyString(t, cl, criterion)
+			verifyDatePtr(t, performer.CareerStart, criterion)
+		}
+
+		return nil
+	})
+}
+
+func TestPerformerQueryCareerEnd(t *testing.T) {
+	const value = "2012"
+	criterion := models.DateCriterionInput{
+		Value:    value,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	withTxn(func(ctx context.Context) error {
+		qb := db.Performer
+		performerFilter := models.PerformerFilterType{
+			CareerEnd: &criterion,
+		}
+
+		performers, _, err := qb.Query(ctx, &performerFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying performer: %s", err.Error())
+		}
+
+		for _, performer := range performers {
+			verifyDatePtr(t, performer.CareerEnd, criterion)
 		}
 
 		return nil

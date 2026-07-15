@@ -18,6 +18,7 @@ type ImporterReaderWriter interface {
 	models.SceneCreatorUpdater
 	models.ViewHistoryWriter
 	models.OHistoryWriter
+	models.CustomFieldsWriter
 	FindByFileID(ctx context.Context, fileID models.FileID) ([]*models.Scene, error)
 }
 
@@ -35,6 +36,7 @@ type Importer struct {
 
 	ID             int
 	scene          models.Scene
+	customFields   map[string]interface{}
 	coverImageData []byte
 	viewHistory    []time.Time
 	oHistory       []time.Time
@@ -74,6 +76,8 @@ func (i *Importer) PreImport(ctx context.Context) error {
 			return fmt.Errorf("invalid cover image: %v", err)
 		}
 	}
+
+	i.customFields = i.Input.CustomFields
 
 	i.populateViewHistory()
 	i.populateOHistory()
@@ -213,7 +217,7 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 }
 
 func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
-	newStudio := models.NewStudio()
+	newStudio := models.NewCreateStudioInput()
 	newStudio.Name = name
 
 	err := i.StudioWriter.Create(ctx, &newStudio)
@@ -449,6 +453,14 @@ func (i *Importer) PostImport(ctx context.Context, id int) error {
 		return err
 	}
 
+	if len(i.customFields) > 0 {
+		if err := i.ReaderWriter.SetCustomFields(ctx, id, models.CustomFieldsInput{
+			Full: i.customFields,
+		}); err != nil {
+			return fmt.Errorf("error setting scene custom fields: %v", err)
+		}
+	}
+
 	return nil
 }
 
@@ -549,7 +561,9 @@ func createTags(ctx context.Context, tagWriter models.TagCreator, names []string
 		newTag := models.NewTag()
 		newTag.Name = name
 
-		err := tagWriter.Create(ctx, &newTag)
+		err := tagWriter.Create(ctx, &models.CreateTagInput{
+			Tag: &newTag,
+		})
 		if err != nil {
 			return nil, err
 		}

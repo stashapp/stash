@@ -166,6 +166,14 @@ export const queryFindScenesByID = (sceneIDs: number[]) =>
     },
   });
 
+export const queryFindFullScenesByID = (sceneIDs: number[]) =>
+  client.query<GQL.FindFullScenesQuery>({
+    query: GQL.FindFullScenesDocument,
+    variables: {
+      ids: sceneIDs,
+    },
+  });
+
 export const queryFindScenesForSelect = (filter: ListFilterModel) =>
   client.query<GQL.FindScenesForSelectQuery>({
     query: GQL.FindScenesForSelectDocument,
@@ -472,6 +480,14 @@ export const queryFindTagsForList = (filter: ListFilterModel) =>
     },
   });
 
+export const queryFindTagsByID = (tagIDs: string[]) =>
+  client.query<GQL.FindTagsQuery>({
+    query: GQL.FindTagsDocument,
+    variables: {
+      ids: tagIDs,
+    },
+  });
+
 export const queryFindTagsByIDForSelect = (tagIDs: string[]) =>
   client.query<GQL.FindTagsForSelectQuery>({
     query: GQL.FindTagsForSelectDocument,
@@ -497,6 +513,24 @@ export const useFindSavedFilter = (id: string) =>
 export const useFindSavedFilters = (mode?: GQL.FilterMode) =>
   GQL.useFindSavedFiltersQuery({
     variables: { mode },
+  });
+
+export const queryFindSubFolders = (id: string, excludeZipFolders?: boolean) =>
+  client.query<GQL.FindFoldersForQueryQuery>({
+    query: GQL.FindFoldersForQueryDocument,
+    variables: {
+      folder_filter: {
+        parent_folder: { value: id, modifier: GQL.CriterionModifier.Equals },
+        zip_file: excludeZipFolders
+          ? { modifier: GQL.CriterionModifier.IsNull }
+          : undefined,
+      },
+      filter: {
+        per_page: -1,
+        sort: "basename",
+        direction: GQL.SortDirectionEnum.Asc,
+      },
+    },
   });
 
 /// Object Mutations
@@ -594,9 +628,8 @@ export const useSceneUpdate = () =>
     },
   });
 
-export const useBulkSceneUpdate = (input: GQL.BulkSceneUpdateInput) =>
+export const useBulkSceneUpdate = () =>
   GQL.useBulkSceneUpdateMutation({
-    variables: { input },
     update(cache, result) {
       if (!result.data?.bulkSceneUpdate) return;
 
@@ -1372,9 +1405,8 @@ export const useGroupUpdate = () =>
     },
   });
 
-export const useBulkGroupUpdate = (input: GQL.BulkGroupUpdateInput) =>
+export const useBulkGroupUpdate = () =>
   GQL.useBulkGroupUpdateMutation({
-    variables: { input },
     update(cache, result) {
       if (!result.data?.bulkGroupUpdate) return;
 
@@ -2240,6 +2272,18 @@ export const mutateDeleteFiles = (ids: string[]) =>
     },
   });
 
+export const mutateRevealFileInFileManager = (id: string) =>
+  client.mutate<GQL.RevealFileInFileManagerMutation>({
+    mutation: GQL.RevealFileInFileManagerDocument,
+    variables: { id },
+  });
+
+export const mutateRevealFolderInFileManager = (id: string) =>
+  client.mutate<GQL.RevealFolderInFileManagerMutation>({
+    mutation: GQL.RevealFolderInFileManagerDocument,
+    variables: { id },
+  });
+
 /// Scrapers
 
 export const useListSceneScrapers = () => GQL.useListSceneScrapersQuery();
@@ -2440,6 +2484,12 @@ export const mutateStashBoxBatchStudioTag = (
 ) =>
   client.mutate<GQL.StashBoxBatchStudioTagMutation>({
     mutation: GQL.StashBoxBatchStudioTagDocument,
+    variables: { input },
+  });
+
+export const mutateStashBoxBatchTagTag = (input: GQL.StashBoxBatchTagInput) =>
+  client.mutate<GQL.StashBoxBatchTagTagMutation>({
+    mutation: GQL.StashBoxBatchTagTagDocument,
     variables: { input },
   });
 

@@ -17,7 +17,7 @@
       order: 1;
     }
 
-    .gallery-studio-image {
+    .studio-logo {
       flex: 0 0 25%;
       order: 2;
     }
@@ -182,6 +182,11 @@ $galleryTabWidth: 450px;
   width: 100%;
 }
 
+@media (min-width: 1200px) {
+  .gallery-container .image-list .filtered-list-toolbar.has-selection {
+    top: 0;
+  }
+}
 @media (min-width: 1200px), (max-width: 575px) {
   .gallery-performers {
     .performer-card {
@@ -208,6 +213,20 @@ $galleryTabWidth: 450px;
   .form-group[data-field="urls"] .string-list-input input.form-control {
     font-size: 0.85em;
   }
+
+  @include media-breakpoint-up(xl) {
+    .custom-fields-input {
+      .custom-fields-field {
+        flex: 0 0 25%;
+        max-width: 25%;
+      }
+
+      .custom-fields-value {
+        flex: 0 0 75%;
+        max-width: 75%;
+      }
+    }
+  }
 }
 
 .gallery-cover {
@@ -229,7 +248,6 @@ div.GalleryWall {
   display: flex;
   flex-wrap: wrap;
   margin: 0 auto;
-  width: 96vw;
 
   /* Prevents last row from consuming all space and stretching images to oblivion */
   &::after {

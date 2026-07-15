@@ -225,6 +225,11 @@ func ValidateUpdateAliases(existing models.Performer, name models.OptionalString
 		newName = name.Value
 	}
 
+	// If aliases is nil, we're only changing the name - check existing aliases against new name
+	if aliases == nil {
+		return ValidateAliases(newName, existing.Aliases)
+	}
+
 	newAliases := aliases.Apply(existing.Aliases.List())
 
 	return ValidateAliases(newName, models.NewRelatedStrings(newAliases))

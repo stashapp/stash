@@ -71,6 +71,16 @@ func (o sortOptions) validateSort(sort string) error {
 	return fmt.Errorf("invalid sort: %s", sort)
 }
 
+func validateIsMissing(isMissing string, allowed []string) error {
+	for _, v := range allowed {
+		if v == isMissing {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("invalid is_missing field: %s", isMissing)
+}
+
 func getSortDirection(direction string) string {
 	if direction != "ASC" && direction != "DESC" {
 		return "ASC"
@@ -259,8 +269,11 @@ func getDateWhereClause(column string, modifier models.CriterionModifier, value 
 		upper = &u
 	}
 
-	args := []interface{}{value}
-	betweenArgs := []interface{}{value, *upper}
+	valueDate, _ := models.ParseDate(value)
+	date := Date{Date: valueDate.Time}
+
+	args := []interface{}{date}
+	betweenArgs := []interface{}{date, *upper}
 
 	switch modifier {
 	case models.CriterionModifierIsNull:

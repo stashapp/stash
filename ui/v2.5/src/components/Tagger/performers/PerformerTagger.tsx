@@ -15,12 +15,11 @@ import {
   evictQueries,
   performerMutationImpactedQueries,
 } from "src/core/StashService";
-import { Manual } from "src/components/Help/Manual";
 import { useConfigurationContext } from "src/hooks/Config";
 
 import StashSearchResult from "./StashSearchResult";
-import PerformerConfig from "./Config";
-import { ITaggerConfig } from "../constants";
+import TaggerConfig, { ConfigButton } from "../TaggerConfig";
+import { ITaggerConfig, PERFORMER_FIELDS } from "../constants";
 import PerformerModal from "../PerformerModal";
 import { useUpdatePerformer } from "../queries";
 import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
@@ -28,6 +27,7 @@ import { mergeStashIDs } from "src/utils/stashbox";
 import { separateNamesAndStashIds } from "src/utils/stashIds";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { useTaggerConfig } from "../config";
+import { StashBoxSelectorField } from "../StashBoxSelector";
 
 type JobFragment = Pick<
   GQL.Job,
@@ -348,6 +348,13 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
     });
   };
 
+  // clear tagged performers when source is changed
+  useEffect(() => {
+    setTaggedPerformers({});
+    setSearchResults({});
+    setSearchErrors({});
+  }, [selectedEndpoint]);
+
   const updatePerformer = useUpdatePerformer();
 
   function handleSaveError(performerID: string, name: string, message: string) {
@@ -620,11 +627,9 @@ interface ITaggerProps {
 
 export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
   const jobsSubscribe = useJobsSubscribe();
-  const intl = useIntl();
   const { configuration: stashConfig } = useConfigurationContext();
   const { config, setConfig } = useTaggerConfig();
   const [showConfig, setShowConfig] = useState(false);
-  const [showManual, setShowManual] = useState(false);
 
   const [batchJobID, setBatchJobID] = useState<string | undefined | null>();
   const [batchJob, setBatchJob] = useState<JobFragment | undefined>();
@@ -652,8 +657,6 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
     }
   }, [jobsSubscribe, batchJobID]);
 
-  if (!config) return <LoadingIndicator />;
-
   const savedEndpointIndex =
     stashConfig?.general.stashBoxes.findIndex(
       (s) => s.endpoint === config.selectedEndpoint
@@ -664,6 +667,16 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
       : savedEndpointIndex;
   const selectedEndpoint =
     stashConfig?.general.stashBoxes[selectedEndpointIndex];
+
+  const selectedEndpointInput = useMemo(
+    () => ({
+      endpoint: selectedEndpoint.endpoint,
+      index: selectedEndpointIndex,
+    }),
+    [selectedEndpoint, selectedEndpointIndex]
+  );
+
+  if (!config) return <LoadingIndicator />;
 
   async function batchAdd(performerInput: string) {
     if (performerInput && selectedEndpoint) {
@@ -742,70 +755,77 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
     }
   }
 
-  const showHideConfigId = showConfig
-    ? "actions.hide_configuration"
-    : "actions.show_configuration";
+  if (selectedEndpointIndex === -1 || !selectedEndpoint) {
+    return (
+      <div className="my-4">
+        <h3 className="text-center mt-4">
+          <FormattedMessage id="performer_tagger.to_use_the_performer_tagger" />
+        </h3>
+        <h5 className="text-center">
+          <FormattedMessage
+            id="refer_to"
+            values={{
+              link: (
+                <HashLink
+                  to="/settings?tab=metadata-providers#stash-boxes"
+                  scroll={(el) =>
+                    el.scrollIntoView({ behavior: "smooth", block: "center" })
+                  }
+                >
+                  <FormattedMessage id="config.stashbox.title" />
+                </HashLink>
+              ),
+            }}
+          />
+        </h5>
+      </div>
+    );
+  }
 
   return (
     <>
-      <Manual
-        show={showManual}
-        onClose={() => setShowManual(false)}
-        defaultActiveTab="Tagger.md"
-      />
       {renderStatus()}
       <div className="tagger-container mx-md-auto">
-        {selectedEndpointIndex !== -1 && selectedEndpoint ? (
-          <>
-            <div className="row mb-2 no-gutters">
-              <Button onClick={() => setShowConfig(!showConfig)} variant="link">
-                {intl.formatMessage({ id: showHideConfigId })}
-              </Button>
-              <Button
-                className="ml-auto"
-                onClick={() => setShowManual(true)}
-                title={intl.formatMessage({ id: "help" })}
-                variant="link"
-              >
-                <FormattedMessage id="help" />
-              </Button>
-            </div>
-
-            <PerformerConfig
-              config={config}
-              setConfig={setConfig}
-              show={showConfig}
-            />
-            <PerformerTaggerList
-              performers={performers}
-              selectedEndpoint={{
-                endpoint: selectedEndpoint.endpoint,
-                index: selectedEndpointIndex,
-              }}
-              isIdle={batchJobID === undefined}
-              config={config}
-              onBatchAdd={batchAdd}
-              onBatchUpdate={batchUpdate}
-            />
-          </>
-        ) : (
-          <div className="my-4">
-            <h3 className="text-center mt-4">
-              <FormattedMessage id="performer_tagger.to_use_the_performer_tagger" />
-            </h3>
-            <h5 className="text-center">
-              Please see{" "}
-              <HashLink
-                to="/settings?tab=metadata-providers#stash-boxes"
-                scroll={(el) =>
-                  el.scrollIntoView({ behavior: "smooth", block: "center" })
+        <div className="tagger-container-header">
+          <div className="d-flex justify-content-between align-items-center flex-wrap">
+            <div className="w-auto">
+              <StashBoxSelectorField
+                stashBoxes={stashConfig?.general.stashBoxes ?? []}
+                selectedEndpoint={selectedEndpoint.endpoint}
+                onEndpointChange={(endpoint) =>
+                  setConfig({ ...config, selectedEndpoint: endpoint })
                 }
-              >
-                Settings.
-              </HashLink>
-            </h5>
+              />
+            </div>
+            <div className="d-flex">
+              <div className="ml-2">
+                <ConfigButton
+                  showConfig={showConfig}
+                  onClick={() => setShowConfig(!showConfig)}
+                />
+              </div>
+            </div>
           </div>
-        )}
+
+          <TaggerConfig
+            show={showConfig}
+            excludedFields={config.excludedPerformerFields ?? []}
+            onFieldsChange={(fields) =>
+              setConfig({ ...config, excludedPerformerFields: fields })
+            }
+            fields={PERFORMER_FIELDS}
+            entityName="performers"
+          />
+        </div>
+
+        <PerformerTaggerList
+          performers={performers}
+          selectedEndpoint={selectedEndpointInput}
+          isIdle={batchJobID === undefined}
+          config={config}
+          onBatchAdd={batchAdd}
+          onBatchUpdate={batchUpdate}
+        />
       </div>
     </>
   );

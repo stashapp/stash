@@ -17,6 +17,12 @@ func queryURLParametersFromScene(scene *models.Scene) queryURLParameters {
 	ret["oshash"] = scene.OSHash
 	ret["filename"] = filepath.Base(scene.Path)
 
+	// pull phash from primary file
+	phashFingerprints := scene.Files.Primary().Base().Fingerprints.Filter(models.FingerprintTypePhash)
+	if len(phashFingerprints) > 0 {
+		ret["phash"] = phashFingerprints[0].Value()
+	}
+
 	if scene.Title != "" {
 		ret["title"] = scene.Title
 	}
@@ -110,7 +116,7 @@ func (p queryURLParameters) constructURL(url string) string {
 }
 
 // replaceURL does a partial URL Replace ( only url parameter is used)
-func replaceURL(url string, scraperConfig scraperTypeConfig) string {
+func replaceURL(url string, scraperConfig ByURLDefinition) string {
 	u := url
 	queryURL := queryURLParameterFromURL(u)
 	if scraperConfig.QueryURLReplacements != nil {

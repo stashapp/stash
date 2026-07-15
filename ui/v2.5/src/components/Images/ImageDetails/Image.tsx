@@ -1,7 +1,7 @@
 import { Tab, Nav, Dropdown } from "react-bootstrap";
 import React, { useEffect, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useHistory, Link, RouteComponentProps } from "react-router-dom";
+import { useHistory, RouteComponentProps } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import {
   useFindImage,
@@ -36,6 +36,8 @@ import cx from "classnames";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { goBackOrReplace } from "src/utils/history";
 import { FormattedDate } from "src/components/Shared/Date";
+import { GenerateDialog } from "src/components/Dialogs/GenerateDialog";
+import { StudioLogo } from "src/components/Shared/StudioLogo";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -50,6 +52,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
   const Toast = useToast();
   const intl = useIntl();
   const { configuration } = useConfigurationContext();
+  const { showStudioText } = configuration?.ui ?? {};
 
   const [incrementO] = useImageIncrementO(image.id);
   const [decrementO] = useImageDecrementO(image.id);
@@ -62,6 +65,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
   const [activeTabKey, setActiveTabKey] = useState("image-details-panel");
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
   async function onSave(input: GQL.ImageUpdateInput) {
     await updateImage({
@@ -170,6 +174,20 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
     }
   }
 
+  function maybeRenderSceneGenerateDialog() {
+    if (isGenerateDialogOpen) {
+      return (
+        <GenerateDialog
+          selectedIds={[image.id]}
+          onClose={() => {
+            setIsGenerateDialogOpen(false);
+          }}
+          type="image"
+        />
+      );
+    }
+  }
+
   function renderOperations() {
     return (
       <Dropdown>
@@ -188,6 +206,13 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
             onClick={() => onRescan()}
           >
             <FormattedMessage id="actions.rescan" />
+          </Dropdown.Item>
+          <Dropdown.Item
+            key="generate"
+            className="bg-secondary text-white"
+            onClick={() => setIsGenerateDialogOpen(true)}
+          >
+            <FormattedMessage id="actions.generate" />…
           </Dropdown.Item>
           <Dropdown.Item
             key="delete-image"
@@ -299,20 +324,11 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
       </Helmet>
 
       {maybeRenderDeleteDialog()}
+      {maybeRenderSceneGenerateDialog()}
       <div className="image-tabs order-xl-first order-last">
         <div>
           <div className="image-header-container">
-            {image.studio && (
-              <h1 className="text-center image-studio-image">
-                <Link to={`/studios/${image.studio.id}`}>
-                  <img
-                    src={image.studio.image_path ?? ""}
-                    alt={`${image.studio.name} logo`}
-                    className="studio-logo"
-                  />
-                </Link>
-              </h1>
-            )}
+            <StudioLogo studio={image.studio} showText={showStudioText} />
             <h3 className={cx("image-header", { "no-studio": !image.studio })}>
               <TruncatedText lineCount={2} text={title} />
             </h3>

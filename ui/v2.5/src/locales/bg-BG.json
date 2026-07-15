@@ -74,8 +74,6 @@
         "logout": "Изход",
         "make_primary": "Направи Основен",
         "merge": "Слей",
-        "merge_from": "Слей от",
-        "merge_into": "Слей към",
         "migrate_blobs": "Мигрирай Блобове",
         "migrate_scene_screenshots": "Мигрирай Скрийншоти от Сцени",
         "next_action": "Следващ",
@@ -234,9 +232,7 @@
             "latest_version_build_hash": "Хеш на билда на Последна Версия:",
             "new_version_notice": "[НОВО]",
             "release_date": "Дана за издаване:",
-            "stash_discord": "Присъедини се към нашият {url} канал",
             "stash_home": "Stash home на {url}",
-            "stash_open_collective": "Подкрепи ни чрез {url}",
             "stash_wiki": "Stash {url} страница",
             "version": "Версия"
         },

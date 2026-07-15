@@ -2,16 +2,16 @@
 
 Stash supports plugins that can do the following:
 
-- perform custom tasks when triggered by the user from the Tasks page
-- perform custom tasks when triggered from specific events
-- add custom CSS to the UI
-- add custom JavaScript to the UI
+- Perform custom tasks when triggered by the user from the Tasks page
+- Perform custom tasks when triggered from specific events
+- Add custom CSS to the UI
+- Add custom JavaScript to the UI
 
 Plugin tasks can be implemented using embedded Javascript, or by calling an external binary.
 
 > **⚠️ Note:** Plugin support is still experimental and is likely to change.
 
-## Managing Plugins
+## Managing plugins
 
 Plugins can be installed and managed from the `Settings > Plugins` page. 
 
@@ -130,7 +130,7 @@ The `exec`, `interface`, `errLog` and `tasks` fields are used only for plugins w
 
 The `settings` field is used to display plugin settings on the plugins page. Plugin settings can also be set using the graphql mutation `configurePlugin` - the settings set this way do _not_ need to be specified in the `settings` field unless they are to be displayed in the stock plugin settings UI.
 
-### UI Configuration
+### UI configuration
 
 The `css` and `javascript` field values may be relative paths to the plugin configuration file, or
 may be full external URLs.
@@ -240,7 +240,7 @@ hooks:
       argKey: argValue
 ```
 
-**Note:** it is possible for hooks to trigger eachother or themselves if they perform mutations. For safety, hooks will not be triggered if they have already been triggered in the context of the operation. Stash uses cookies to track this context, so it's important for plugins to send cookies when performing operations.
+**⚠️ Note:** It is possible for hooks to trigger eachother or themselves if they perform mutations. For safety, hooks will not be triggered if they have already been triggered in the context of the operation. Stash uses cookies to track this context, so it's important for plugins to send cookies when performing operations.
 
 #### Trigger types
 

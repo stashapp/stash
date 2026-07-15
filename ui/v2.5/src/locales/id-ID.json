@@ -73,8 +73,6 @@
         "logout": "Keluar",
         "make_primary": "Jadikan Utama",
         "merge": "Gabung",
-        "merge_from": "Gabung dari",
-        "merge_into": "Gabung ke",
         "migrate_blobs": "Migrasi Blob",
         "next_action": "Selanjutnya",
         "not_running": "tidak berjalan",
@@ -528,9 +526,7 @@
             "latest_version": "Versi Mutakhir",
             "release_date": "Tanggal rilis:",
             "new_version_notice": "[BARU]",
-            "stash_discord": "Gabung ke saluran {url} kami",
             "stash_home": "Beranda Stash di {url}",
-            "stash_open_collective": "Dukung kami melalui {url}",
             "version": "Versi",
             "check_for_new_version": "Periksa versi terbaru",
             "build_time": "Waktu dibangun::",
@@ -602,10 +598,6 @@
             "page_header": "Halaman {page} / {total}"
         },
         "merge": {
-            "destination": "Destinasi",
-            "source": "Sumber"
-        },
-        "merge_tags": {
             "destination": "Destinasi",
             "source": "Sumber"
         },

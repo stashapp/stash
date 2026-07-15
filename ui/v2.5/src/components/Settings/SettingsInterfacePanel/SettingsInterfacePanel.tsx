@@ -42,7 +42,7 @@ import {
   defaultImageWallDirection,
   defaultImageWallMargin,
 } from "src/utils/imageWall";
-import { defaultMaxOptionsShown } from "src/core/config";
+import { defaultMaxOptionsShown, defaultPreviewVolume } from "src/core/config";
 import { PatchComponent } from "src/patch";
 
 const allMenuItems = [
@@ -200,6 +200,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             onChange={(v) => saveInterface({ language: v })}
           >
             <option value="af-ZA">Afrikaans (Preview)</option>
+            <option value="ar">Arabic (Preview)</option>
             <option value="bg-BG">Bulgarian (Preview)</option>
             <option value="bn-BD">বাংলা (বাংলাদেশ) (Preview)</option>
             <option value="ca-ES">Catalan (Preview)</option>
@@ -308,6 +309,32 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
           />
         </SettingSection>
 
+        <SettingSection headingID="config.ui.scene_view.heading">
+          <BooleanSetting
+            id="sound-on-hover"
+            headingID="config.ui.scene_wall.options.toggle_sound"
+            checked={iface.soundOnPreview ?? undefined}
+            onChange={(v) => saveInterface({ soundOnPreview: v })}
+          />
+          <ModalSetting<number>
+            id="preview-volume"
+            headingID="config.ui.scene_view.options.preview_volume.heading"
+            subHeadingID="config.ui.scene_view.options.preview_volume.description"
+            value={ui.previewVolume ?? defaultPreviewVolume}
+            onChange={(v) => saveUI({ previewVolume: v })}
+            disabled={!iface.soundOnPreview}
+            renderField={(value, setValue) => (
+              <PercentInput
+                numericValue={value}
+                onValueChange={(v) => setValue(v ?? 0)}
+              />
+            )}
+            renderValue={(v) => {
+              return <span>{v}%</span>;
+            }}
+          />
+        </SettingSection>
+
         <SettingSection headingID="config.ui.scene_wall.heading">
           <BooleanSetting
             id="wall-show-title"
@@ -315,13 +342,6 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             checked={iface.wallShowTitle ?? undefined}
             onChange={(v) => saveInterface({ wallShowTitle: v })}
           />
-          <BooleanSetting
-            id="wall-sound-enabled"
-            headingID="config.ui.scene_wall.options.toggle_sound"
-            checked={iface.soundOnPreview ?? undefined}
-            onChange={(v) => saveInterface({ soundOnPreview: v })}
-          />
-
           <SelectSetting
             advanced
             id="wall-preview"
@@ -352,6 +372,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
           <BooleanSetting
             id="show-text-studios"
             headingID="config.ui.scene_list.options.show_studio_as_text"
+            subHeadingID="config.ui.scene_list.options.show_studio_as_text_desc"
             checked={iface.showStudioAsText ?? undefined}
             onChange={(v) => saveInterface({ showStudioAsText: v })}
           />
@@ -677,6 +698,13 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             subHeadingID="config.ui.detail.compact_expanded_details.description"
             checked={ui.compactExpandedDetails ?? undefined}
             onChange={(v) => saveUI({ compactExpandedDetails: v })}
+          />
+          <BooleanSetting
+            id="show_studio_text"
+            headingID="config.ui.detail.show_studio_text.heading"
+            subHeadingID="config.ui.detail.show_studio_text.description"
+            checked={ui.showStudioText ?? false}
+            onChange={(v) => saveUI({ showStudioText: v })}
           />
         </SettingSection>
 

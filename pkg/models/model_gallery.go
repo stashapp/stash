@@ -46,6 +46,20 @@ func NewGallery() Gallery {
 	}
 }
 
+type CreateGalleryInput struct {
+	*Gallery
+
+	FileIDs      []FileID
+	CustomFields map[string]interface{} `json:"custom_fields"`
+}
+
+type UpdateGalleryInput struct {
+	*Gallery
+
+	FileIDs      []FileID
+	CustomFields CustomFieldsInput `json:"custom_fields"`
+}
+
 // GalleryPartial represents part of a Gallery object. It is used to update
 // the database entry. Only non-nil fields will be updated.
 type GalleryPartial struct {
@@ -70,6 +84,8 @@ type GalleryPartial struct {
 	TagIDs        *UpdateIDs
 	PerformerIDs  *UpdateIDs
 	PrimaryFileID *FileID
+
+	CustomFields CustomFieldsInput
 }
 
 func NewGalleryPartial() GalleryPartial {

@@ -24,6 +24,7 @@ export const DEFAULT_BLACKLIST = [
 ];
 export const DEFAULT_EXCLUDED_PERFORMER_FIELDS = ["name"];
 export const DEFAULT_EXCLUDED_STUDIO_FIELDS = ["name"];
+export const DEFAULT_EXCLUDED_TAG_FIELDS = ["name"];
 
 export const initialConfig: ITaggerConfig = {
   blacklist: DEFAULT_BLACKLIST,
@@ -35,7 +36,9 @@ export const initialConfig: ITaggerConfig = {
   excludedPerformerFields: DEFAULT_EXCLUDED_PERFORMER_FIELDS,
   markSceneAsOrganizedOnSave: false,
   excludedStudioFields: DEFAULT_EXCLUDED_STUDIO_FIELDS,
+  excludedTagFields: DEFAULT_EXCLUDED_TAG_FIELDS,
   createParentStudios: true,
+  createParentTags: true,
 };
 
 export type ParseMode = "auto" | "filename" | "dir" | "path" | "metadata";
@@ -52,7 +55,9 @@ export interface ITaggerConfig {
   excludedPerformerFields?: string[];
   markSceneAsOrganizedOnSave?: boolean;
   excludedStudioFields?: string[];
+  excludedTagFields?: string[];
   createParentStudios: boolean;
+  createParentTags: boolean;
 }
 
 export const PERFORMER_FIELDS = [
@@ -75,9 +80,11 @@ export const PERFORMER_FIELDS = [
   "fake_tits",
   "tattoos",
   "piercings",
-  "career_length",
+  "career_start",
+  "career_end",
   "urls",
   "details",
 ];
 
 export const STUDIO_FIELDS = ["name", "image", "url", "parent_studio"];
+export const TAG_FIELDS = ["name", "description", "aliases", "parent_tags"];

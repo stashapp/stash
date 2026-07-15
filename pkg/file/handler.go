@@ -9,7 +9,7 @@ import (
 
 // PathFilter provides a filter function for paths.
 type PathFilter interface {
-	Accept(ctx context.Context, path string, info fs.FileInfo) bool
+	Accept(ctx context.Context, path string, info fs.FileInfo, zipFilePath string) bool
 }
 
 type PathFilterFunc func(path string) bool
