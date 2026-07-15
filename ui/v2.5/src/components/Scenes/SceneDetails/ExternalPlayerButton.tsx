@@ -19,15 +19,12 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
   const intl = useIntl();
   const { configuration } = useConfigurationContext();
   const showOpenExternal = configuration.ui.showOpenExternal ?? true;
-  const { paths, files } = scene;
+  const { paths } = scene;
+  const { files } = scene;
   // Get only file name from the full path.
   const fileName = files[0].path?.split("/").pop()?.split("\\").pop() ?? "";
 
-  if (
-    !paths ||
-    !paths.stream ||
-    (!isAndroid && !isAppleDevice && !showOpenExternal)
-  )
+  if (!paths || !paths.stream || (!isAndroid && !isAppleDevice && !showOpenExternal))
     return <span />;
 
   const { stream } = paths;

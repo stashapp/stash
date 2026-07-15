@@ -462,6 +462,7 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
               return <span>{TextUtils.secondsToTimestamp(v ?? 0)}</span>;
             }}
           />
+
           <BooleanSetting
             id="show-ab-loop"
             headingID="config.ui.scene_player.options.show_ab_loop_controls"
