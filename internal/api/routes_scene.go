@@ -5,8 +5,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"net/url"
-	"os"
 	"strconv"
 	"strings"
 
@@ -70,8 +68,7 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/stream.mpd", rs.StreamDASH)
 		r.Get("/stream.mpd/{segment}_v.webm", rs.StreamDASHVideoSegment)
 		r.Get("/stream.mpd/{segment}_a.webm", rs.StreamDASHAudioSegment)
-		r.Get("/stream/org/{streamOrgFile}", rs.StreamOrgDirect)
-
+		r.Get("/stream/{streamOrgFile}", rs.StreamDirect)
 		r.Get("/screenshot", rs.Screenshot)
 		r.Get("/preview", rs.Preview)
 		r.Get("/webp", rs.Webp)
@@ -100,44 +97,6 @@ func (rs sceneRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
 		SceneCoverGetter: rs.sceneFinder,
 	}
 	ss.StreamSceneDirect(scene, w, r)
-}
-
-func (rs sceneRoutes) StreamOrgDirect(w http.ResponseWriter, r *http.Request) {
-	scene := r.Context().Value(sceneKey).(*models.Scene)
-	// check if it's funscript
-	streamOrgFile := chi.URLParam(r, "streamOrgFile")
-	aStr := strings.Split(streamOrgFile, ".")
-	// aStr usually is the primary file, but can be .srt or other file format.
-	if strings.ToLower(aStr[len(aStr)-1]) == "funscript" {
-		// it's a funscript request
-		rs.Funscript(w, r)
-		return
-	}
-
-	// return 404 if the scene does not have a primary file
-	primaryFile := scene.Files.Primary()
-	if primaryFile == nil {
-		w.WriteHeader(http.StatusNotFound)
-		if _, err := w.Write([]byte("Primary file not found for streaming original file.")); err != nil {
-			logger.Warnf("[scene] error getting primary file for streaming original: $v", err)
-		}
-		return
-	}
-	pathBase := primaryFile.Path[:len(primaryFile.Path)-len(primaryFile.Basename)] // remove filename from the path.
-	f, err := url.PathUnescape(streamOrgFile)
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-	f = pathBase + f
-	// Also return 404 if the actual file cannot be found
-	if _, err := os.Stat(f); errors.Is(err, os.ErrNotExist) {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	utils.ServeStaticFile(w, r, f)
-	// http.ServeFile(w, r, f.Path)
 }
 
 func (rs sceneRoutes) StreamMp4(w http.ResponseWriter, r *http.Request) {

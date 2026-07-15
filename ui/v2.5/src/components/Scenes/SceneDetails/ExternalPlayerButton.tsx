@@ -53,7 +53,7 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
       .toString()
       .replace(new RegExp(`^${streamURL.protocol}`), "vlc-x-callback:");
   } else if (showOpenExternal) {
-    url = stream + "/org/" + encodeURIComponent(fileName);
+    url = stream + "/" + encodeURIComponent(fileName);
   }
 
   return (
