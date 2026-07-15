@@ -366,7 +366,7 @@ export const InstalledPackages: React.FC<{
 
       return prev;
     });
-  }, [checkedPackages, packages]);
+  }, [packages]);
 
   function confirmUninstall() {
     onUninstallPackages(filteredPackages);
@@ -518,7 +518,7 @@ const EditSourceModal: React.FC<{
     }
   }
 
-  const headerID = !!existing
+  const headerID = existing
     ? "package_manager.edit_source"
     : "package_manager.add_source";
 

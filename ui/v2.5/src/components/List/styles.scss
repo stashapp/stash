@@ -1067,6 +1067,8 @@ ul.selectable-list {
 .pagination-footer-container {
   background-color: transparent;
   bottom: $navbar-height;
+  margin: auto;
+  pointer-events: none;
   position: sticky;
   z-index: 10;
 
@@ -1078,6 +1080,7 @@ ul.selectable-list {
 .pagination-footer {
   margin: auto;
   padding: 0.5rem 1rem 0.75rem;
+  pointer-events: auto;
 
   width: fit-content;
 
@@ -1209,5 +1212,68 @@ ul.selectable-list {
 
   @include media-breakpoint-down(xs) {
     top: 0;
+  }
+}
+
+.sort-by-select .dropdown-menu {
+  min-width: 250px;
+  padding-top: 0;
+
+  .dropdown-divider {
+    border-top-color: $textfield-bg;
+    margin: 0.25rem 0;
+  }
+
+  .sort-by-filter-container {
+    background-color: $secondary;
+    border-bottom: solid 1px $textfield-bg;
+    display: flex;
+    padding: 5px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+
+    .clearable-input-group {
+      flex-grow: 1;
+    }
+
+    .clearable-text-field {
+      background-color: $textfield-bg;
+      width: 100%;
+    }
+
+    .clearable-text-field-clear {
+      background-color: unset;
+      border: unset;
+    }
+  }
+
+  .sort-by-option {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    padding-right: 0;
+
+    .pin-sort-by-button {
+      border: 0;
+      color: $text-color;
+      font-size: 0.8rem;
+      margin-left: 0.5rem;
+      padding-bottom: 0;
+      padding-top: 0;
+      visibility: hidden;
+
+      @media (pointer: coarse) {
+        visibility: visible;
+      }
+
+      &:hover svg {
+        transform: rotate(0);
+      }
+    }
+
+    &:hover .pin-sort-by-button {
+      visibility: visible;
+    }
   }
 }

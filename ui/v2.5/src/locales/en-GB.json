@@ -129,6 +129,7 @@
     "selective_generate": "Selective generate",
     "selective_scan": "Selective scan",
     "set_as_default": "Set as default",
+    "set_as_performer_image": "Set as performer image",
     "set_back_image": "Back image…",
     "set_cover": "Set as Cover",
     "set_front_image": "Front image…",
@@ -401,6 +402,8 @@
           }
         }
       },
+      "default_marker_preview_duration_desc": "Duration (seconds) for marker previews without an end time. Must be greater than 0.",
+      "default_marker_preview_duration_head": "Default marker preview duration",
       "funscript_heatmap_draw_range": "Include range in generated heatmaps",
       "funscript_heatmap_draw_range_desc": "Draw range of motion on the y-axis of the generated heatmap. Existing heatmaps will need to be regenerated after changing.",
       "gallery_cover_regex_desc": "Regexps used to identify an image as gallery cover.",
@@ -418,6 +421,8 @@
       "include_audio_desc": "Includes audio stream when generating previews.",
       "include_audio_head": "Include audio",
       "logging": "Logging",
+      "max_marker_preview_duration_desc": "Maximum duration (seconds) for marker previews. 0 disables the limit.",
+      "max_marker_preview_duration_head": "Max marker preview duration",
       "maximum_streaming_transcode_size_desc": "Maximum size for transcoded streams.",
       "maximum_streaming_transcode_size_head": "Maximum streaming transcode size",
       "maximum_transcode_size_desc": "Maximum size for generated transcodes.",
@@ -509,7 +514,11 @@
       "anonymising_database": "Anonymising database",
       "auto_tag": {
         "auto_tagging_all_paths": "Auto tagging all paths",
-        "auto_tagging_paths": "Auto tagging the following paths"
+        "auto_tagging_paths": "Auto tagging the following paths",
+        "disable_warning": {
+          "description": "Disable the confirmation warning shown before running auto tag.",
+          "heading": "Disable auto tag warning"
+        }
       },
       "auto_tag_based_on_filenames": "Auto tag content based on file paths.",
       "auto_tag_confirm": "This will attempt to match your content against existing metadata.",
@@ -525,7 +534,7 @@
         "include_blobs_desc": "Disable to only backup the SQLite database file.",
         "sqlite": "Backup file will be a copy of the SQLite database file, with the filename {filename_format}",
         "to_directory": "To {directory}",
-        "warning_blobs": "Blob files will not be included in the backup. This means that to succesfully restore from the backup, the blob files must be present in the blob storage location.",
+        "warning_blobs": "Blob files will not be included in the backup. This means that to successfully restore from the backup, the blob files must be present in the blob storage location.",
         "zip": "SQLite database file and blob files will be zipped into a single file, with the filename {filename_format}"
       },
       "cleanup_desc": "Check for missing files and remove them from the database. This is a destructive action.",
@@ -649,6 +658,10 @@
       "abbreviate_counters": {
         "description": "Abbreviate counters in cards and details view pages, for example \"1831\" will get formated to \"1.8K\".",
         "heading": "Abbreviate counters"
+      },
+      "autostart_gallery_slideshow": {
+        "description": "Automatically start the slideshow when opening a gallery's lightbox from the galleries page.",
+        "heading": "Auto-start gallery slideshow"
       },
       "basic_settings": "Basic Settings",
       "custom_css": {
@@ -1003,6 +1016,7 @@
     "delete_object_desc": "Are you sure you want to delete {count, plural, one {this {singularEntity}} other {these {pluralEntity}}}?",
     "delete_object_overflow": "…and {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Delete {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "dont_show_again": "Don't show this warning again",
     "dont_show_until_updated": "Don't show until next update",
     "edit_entity_title": "Edit {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "edit_entity_count_title": "Edit {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -1026,7 +1040,6 @@
         "original": "Original"
       },
       "options": "Options",
-      "page_header": "Page {page} / {total}",
       "reset_zoom_on_nav": "Reset zoom level when changing image",
       "scale_up": {
         "description": "Scale smaller images up to fill screen.",
@@ -1068,7 +1081,7 @@
       "marker_screenshots": "Marker screenshots",
       "marker_screenshots_tooltip": "Marker static JPG images",
       "markers": "Marker previews",
-      "markers_tooltip": "20 second videos which begin at the given timecode.",
+      "markers_tooltip": "Video previews which begin at the given timecode.",
       "override_preview_generation_options": "Override preview generation options",
       "override_preview_generation_options_desc": "Override preview generation options for this operation. Defaults are set in System -> Preview Generation.",
       "overwrite": "Overwrite existing files",
@@ -1306,6 +1319,7 @@
   "new": "New",
   "none": "None",
   "o_count": "O Count",
+  "o_count_all": "O Count (All)",
   "o_count_sfw": "Likes",
   "o_history": "O History",
   "o_history_sfw": "Like History",
@@ -1367,6 +1381,7 @@
   "performer": "Performer",
   "performer_age": "Performer Age",
   "performer_count": "Performer Count",
+  "performer_count_all": "Performer Count (All)",
   "performer_favorite": "Performer Favourited",
   "performer_image": "Performer Image",
   "performer_tagger": {
@@ -1374,8 +1389,11 @@
     "any_names_entered_will_be_queried": "Any names entered will be queried from the remote Stash-Box instance and added if found. Only exact matches will be considered a match.",
     "batch_add_performers": "Batch Add Performers",
     "batch_update_performers": "Batch Update Performers",
+    "configure_fields": "Configure Fields",
     "current_page": "Current page",
     "failed_to_save_performer": "Failed to save performer \"{performer}\"",
+    "field_options": "Field Options",
+    "field_options_description": "Choose how each field is updated: overwrite replaces existing data, merge adds to it, skip leaves it unchanged.",
     "name_already_exists": "Name already exists",
     "network_error": "Network Error",
     "no_results_found": "No results found.",
@@ -1413,12 +1431,14 @@
   "recently_added_objects": "Recently Added {objects}",
   "recently_released_objects": "Recently Released {objects}",
   "refer_to": "Please see {link}.",
+  "related_studios": "Related",
   "release_notes": "Release Notes",
   "resolution": "Resolution",
   "resume_time": "Resume Time",
   "scene": "Scene",
   "sceneTagger": "Scene Tagger",
   "scene_code": "Studio Code",
+  "scene_marker_count": "Scene Marker Count",
   "scene_count": "Scene Count",
   "scenes_duration": "Scene Duration",
   "scenes_size": "Scene Size",
@@ -1441,6 +1461,12 @@
   "seconds": "Seconds",
   "settings": "Settings",
   "setup": {
+    "credentials": {
+      "description": "Enter the username and password you want to use to login to Stash system. These can be left blank if you do not want to enter a username/password to access the system. Credentials are required if you are accessing the system from the public internet.",
+      "heading": "Setup your credentials",
+      "password_invalid": "Password must be non-empty if username is set.",
+      "username_invalid": "Username must not have any leading or trailing whitespace."
+    },
     "confirm": {
       "almost_ready": "We're almost ready to complete the configuration. Please confirm the following settings. You can click back to change anything incorrect. If everything looks good, click Confirm to create your system.",
       "blobs_directory": "Binary data directory",
@@ -1450,6 +1476,7 @@
       "database_file_path": "Database file path",
       "generated_directory": "Generated directory",
       "nearly_there": "Nearly there!",
+      "password_set_warning": "Note: you will be asked to enter your credentials after the system is created.",
       "stash_library_directories": "Stash library directories"
     },
     "creating": {
@@ -1612,6 +1639,7 @@
   "sub_group_count": "Sub-Group Count",
   "sub_group_of": "Sub-group of {parent}",
   "sub_group_order": "Sub-Group Order",
+  "sub_group_description": "Sub-Group Description",
   "sub_groups": "Sub-Groups",
   "sub_tag_count": "Sub-Tag Count",
   "sub_tag_of": "Sub-tag of {parent}",

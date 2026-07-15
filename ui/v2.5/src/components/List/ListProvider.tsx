@@ -82,7 +82,7 @@ export function useListContextOptional<T extends IHasID = IHasID>() {
 interface IQueryResultContextOptions<
   T extends QueryResult,
   E extends IHasID = IHasID,
-  M = unknown
+  M = unknown,
 > {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   useResult: (filter: ListFilterModel) => T;
@@ -94,7 +94,7 @@ interface IQueryResultContextOptions<
 export interface IQueryResultContextState<
   T extends QueryResult = QueryResult,
   E extends IHasID = IHasID,
-  M = unknown
+  M = unknown,
 > {
   effectiveFilter: ListFilterModel;
   result: T;
@@ -110,7 +110,7 @@ export const QueryResultStateContext =
 export const QueryResultContext = <
   T extends QueryResult,
   E extends IHasID = IHasID,
-  M = unknown
+  M = unknown,
 >(
   props: IQueryResultContextOptions<T, E, M> & {
     children?:
@@ -176,7 +176,7 @@ export const QueryResultContext = <
 export function useQueryResultContext<
   T extends QueryResult,
   E extends IHasID = IHasID,
-  M = unknown
+  M = unknown,
 >() {
   const context = React.useContext(QueryResultStateContext);
 

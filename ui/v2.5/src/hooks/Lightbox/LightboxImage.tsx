@@ -123,9 +123,9 @@ export const LightboxImage: React.FC<IProps> = ({
 
     function toggleVideoPlay() {
       if (container.current) {
-        let openVideo = container.current.getElementsByTagName("video");
+        const openVideo = container.current.getElementsByTagName("video");
         if (openVideo.length > 0) {
-          let rect = openVideo[0].getBoundingClientRect();
+          const rect = openVideo[0].getBoundingClientRect();
           if (Math.abs(rect.x) < document.body.clientWidth / 2) {
             openVideo[0].play();
           } else {
@@ -163,7 +163,7 @@ export const LightboxImage: React.FC<IProps> = ({
 
   const minMaxY = useCallback(
     (appliedZoom: number) => {
-      let minY, maxY: number;
+      let minY: number, maxY: number;
       const inBounds = appliedZoom * imageHeight <= boxHeight;
 
       // NOTE: I don't even know how these work, but they do
@@ -274,13 +274,7 @@ export const LightboxImage: React.FC<IProps> = ({
       setPositionX(x);
       setPositionY(y);
     }
-  }, [
-    zoom,
-    defaultZoom,
-    resetPosition,
-    resetPositionRef,
-    calculateInitialPosition,
-  ]);
+  }, [zoom, defaultZoom, resetPosition, calculateInitialPosition]);
 
   function getScrollMode(ev: React.WheelEvent) {
     if (ev.shiftKey) {
@@ -397,7 +391,7 @@ export const LightboxImage: React.FC<IProps> = ({
         Math.abs(firstDeltaY) < SCROLL_INFINITE_THRESHOLD);
 
     switch (getScrollMode(ev)) {
-      case GQL.ImageLightboxScrollMode.Zoom:
+      case GQL.ImageLightboxScrollMode.Zoom: {
         let percent: number;
         if (infinite) {
           percent = 1 - ev.deltaY / ZOOM_FACTOR;
@@ -406,6 +400,7 @@ export const LightboxImage: React.FC<IProps> = ({
         }
         setZoom(zoom * percent);
         break;
+      }
       case GQL.ImageLightboxScrollMode.PanY:
         onImageScrollPanY(ev, infinite);
         break;
@@ -552,7 +547,12 @@ export const LightboxImage: React.FC<IProps> = ({
       onWheel={(e) => onContainerScroll(e)}
     >
       {defaultZoom ? (
-        <picture
+        /* The transform is applied to this wrapper rather than the <img>
+           to work around a Safari rendering bug: `transform: scale` on
+           an <img> with very large intrinsic dimensions distorts the
+           image's aspect ratio. See #5087. */
+        <div
+          className={`${CLASSNAME_IMAGE}-wrapper`}
           style={{
             transform: `translate(${positionX}px, ${positionY}px) scale(${
               defaultZoom * zoom
@@ -560,7 +560,7 @@ export const LightboxImage: React.FC<IProps> = ({
           }}
         >
           <source srcSet={src} media="(min-width: 800px)" />
-          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+          {/* XXbiome-ignore jsx-a11y/no-noninteractive-element-interactions */}
           <ImageView
             loop={isVideo}
             src={src}
@@ -577,7 +577,7 @@ export const LightboxImage: React.FC<IProps> = ({
             onPointerUp={onPointerUp}
             onPointerMove={onPointerMove}
           />
-        </picture>
+        </div>
       ) : undefined}
     </div>
   );

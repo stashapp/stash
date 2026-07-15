@@ -1,0 +1,58 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.0/schema.json",
+  "json": {
+    "parser": {
+      "allowComments": true
+    }
+  },
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "ignoreUnknown": false,
+    "includes": [
+      "**",
+      "../../graphql/**",
+      "!src/core/generated-graphql.ts",
+      "!src/pluginApi.d.ts",
+      "!src/@types/videojs-vr.d.ts",
+      "!src/locales/*.json",
+      "!public/*.svg"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space"
+  },
+  "linter": {
+    "enabled": true,
+    "domains": {
+      "react": "recommended",
+      "types": "recommended"
+    },
+    "rules": {
+      "a11y": "off",
+      "style": {
+        // used where the type is known to be non-null, but the compiler can't figure it out
+        "noNonNullAssertion": "off",
+        // preferable, but not something we want to enforce right now
+        "useTemplate": "off",
+        // remove the following after fixing
+        "useImportType": "off"
+      },
+      "suspicious": {
+        // this is used extensively, and there's no obvious fix
+        "noArrayIndexKey": "off"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      // es5 requires the least amount of changes and (imo) looks better than "all"
+      "trailingCommas": "es5"
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": { "source": { "organizeImports": "off" } }
+  }
+}

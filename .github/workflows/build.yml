@@ -40,6 +40,16 @@ jobs:
       with:
         package_json_file: ui/v2.5/package.json
 
+    # ensure pnpm store path exists to fix post setup node.js error
+    # https://github.com/actions/setup-node/issues/1137#issuecomment-2508963254
+    - name: Ensure pnpm store path exists
+      run: |
+        PNPM_STORE_PATH="$( pnpm store path --silent )"
+        if [ ! -d "$PNPM_STORE_PATH" ]; then
+          echo "PNPM store directory does not exist, creating it."
+          mkdir -p "$PNPM_STORE_PATH"
+        fi
+
     - name: Setup Node.js
       uses: actions/setup-node@v6
       with:
@@ -48,7 +58,7 @@ jobs:
         cache-dependency-path: ui/v2.5/pnpm-lock.yaml
 
     - name: Install UI dependencies
-      run: cd ui/v2.5 && pnpm install --frozen-lockfile
+      run: make pre-ui
 
     - name: Generate
       run: make generate
@@ -171,16 +181,16 @@ jobs:
         path: .go-cache
         key: ${{ runner.os }}-go-cache-${{ matrix.platform }}-${{ hashFiles('go.mod', '**/go.sum') }}
 
-    # kept seperate to test timings
+    # kept separate to test timings
     - name: pull compiler image
       run: docker pull $COMPILER_IMAGE
 
     - name: Start build container
       env:
-        official-build: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/develop') || (github.event_name == 'release' && github.ref != 'refs/tags/latest_develop') }}
+        official-build: ${{ github.repository == 'stashapp/stash' && ((github.event_name == 'push' && github.ref == 'refs/heads/develop') || (github.event_name == 'release' && github.ref != 'refs/tags/latest_develop')) }}
       run: |
         mkdir -p .go-cache
-        docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated --env OFFICIAL_BUILD=${{ env.official-build }} -w /stash $COMPILER_IMAGE tail -f /dev/null
+        docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated --env OFFICIAL_BUILD=${{ env.official-build }} --env UPDATE_REPO=${{ github.repository }} -w /stash $COMPILER_IMAGE tail -f /dev/null
 
     - name: Build (${{ matrix.platform }})
       run: docker exec -t build /bin/bash -c "make ${{ matrix.make-target }}"

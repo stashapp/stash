@@ -259,12 +259,10 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
   }
 
   return (
-    <>
-      <ButtonGroup>
-        {operationButtons}
-        {moreDropdown}
-      </ButtonGroup>
-    </>
+    <ButtonGroup>
+      {operationButtons}
+      {moreDropdown}
+    </ButtonGroup>
   );
 };
 
@@ -325,7 +323,7 @@ export const ListOperations: React.FC<{
     }
 
     const playButton =
-      !!items && onPlay ? (
+      items && onPlay ? (
         <Button
           className="play-button"
           variant="secondary"

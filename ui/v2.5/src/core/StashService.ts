@@ -1092,7 +1092,7 @@ export const useSceneDecrementPlayCount = () =>
 
 export const useSceneResetPlayCount = () =>
   GQL.useSceneResetPlayCountMutation({
-    update(cache, result, { variables }) {
+    update(cache, _result, { variables }) {
       if (!variables) return;
 
       let lastPlayCount = 0;
@@ -1530,6 +1530,7 @@ const sceneMarkerMutationImpactedQueries = [
   GQL.FindSceneMarkersDocument, // various filters
   GQL.MarkerStringsDocument, // marker list
   GQL.FindSceneMarkerTagsDocument, // marker tag list
+  GQL.FindStudiosDocument, // filter/sort by marker count
   GQL.FindTagsDocument, // filter by marker count
 ];
 
@@ -2264,6 +2265,9 @@ export const mutateDeleteFiles = (ids: string[]) =>
       }
 
       evictQueries(cache, [
+        GQL.FindSceneDocument, // files list on scene detail
+        GQL.FindImageDocument, // files list on image detail
+        GQL.FindGalleryDocument, // files list on gallery detail
         GQL.FindScenesDocument, // filter by file count
         GQL.FindImagesDocument, // filter by file count
         GQL.FindGalleriesDocument, // filter by file count
