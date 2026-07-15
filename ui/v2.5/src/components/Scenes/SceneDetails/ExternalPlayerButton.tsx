@@ -24,7 +24,8 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
   // Get only file name from the full path.
   const fileName = files[0].path?.split("/").pop()?.split("\\").pop() ?? "";
 
-  if (!paths?.stream || (!isAndroid && !isAppleDevice && !showOpenExternal)) return <span />;
+  if (!paths?.stream || (!isAndroid && !isAppleDevice && !showOpenExternal))
+    return <span />;
 
   const { stream } = paths;
   const title = objectTitle(scene);
