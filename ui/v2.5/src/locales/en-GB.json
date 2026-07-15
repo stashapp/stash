@@ -1567,6 +1567,7 @@
   "stash_id": "Stash ID",
   "stash_id_count": "Stash ID Count",
   "stash_id_endpoint": "Stash ID Endpoint URL",
+  "stash_id_endpoint_any": "Any endpoint",
   "stash_ids": "Stash IDs",
   "stashbox_search": {
     "header": "Search {entityType} from StashBox",
