@@ -159,7 +159,8 @@
         "reveal_in_file_manager": "Apri percorso file",
         "reset_resume_time": "Azzera il tempo di visione",
         "save_and_new": "Salva e crea nuovo",
-        "selective_generate": "Generazione selettiva"
+        "selective_generate": "Generazione selettiva",
+        "set_as_performer_image": "Imposta come immagine dell'attore"
     },
     "actions_name": "Azioni",
     "age": "Età",
@@ -304,10 +305,10 @@
                 "log_file": "File di Log",
                 "log_file_desc": "Percorso al file di log. Vuoto per disabilitare log su file. Richiede riavvio.",
                 "log_http": "Salva log di accesso HTTP",
-                "log_http_desc": "Salva log accesso http sul terminale. Richiede riavvio.",
+                "log_http_desc": "Salva log accesso HTTP sul terminale. Richiede riavvio.",
                 "log_to_terminal": "Salva log sul terminale",
                 "log_to_terminal_desc": "Salva log sul terminale oltre che sul file. Sempre attivo se il logging su file è disabilitato. Richiede riavvio.",
-                "maximum_session_age": "Tempo Massimo Sessione",
+                "maximum_session_age": "Tempo massimo sessione",
                 "maximum_session_age_desc": "Massimo tempo di inutilizzo prima che la sessione espiri, in secondi.",
                 "password": "Password",
                 "password_desc": "Password per accedere a Stash. Lasciare vuota per disabilitare l'autenticazione utente",
@@ -318,19 +319,19 @@
                 "log_file_max_size_desc": "Massima grandezza in megabytes del file di log prima che sia compresso. 0MB è disabilitato. Richiede riavvio."
             },
             "backup_directory_path": {
-                "description": "Percorso della directory per i file di backup del database SQLite",
-                "heading": "Percorso Directory di Backup"
+                "description": "Percorso della directory per i file di backup del database SQLite.",
+                "heading": "Percorso directory di backup"
             },
             "blobs_path": {
                 "heading": "Percorso dei dati binari",
                 "description": "Dove salvare dati binari nel filesystem. Applicabile solo quando si utilizza Filesystem con archiviazione Blob. ATTENZIONE: cambiare questo richiede spostare manualmente i dati esistenti."
             },
             "cache_location": "Percorso della Cartella cache",
-            "cache_path_head": "Percorso Cache",
+            "cache_path_head": "Percorso cache",
             "calculate_md5_and_ohash_desc": "Calcola l'MD5 checksum oltre l'oshash. Attivare la funzione causerà una prima scansione più lenta. L'hash dei nomi file dev'essere impostata su oshash per disabilitare il calcolo MD5.",
             "calculate_md5_and_ohash_label": "Calcolare l'MD5 per i video",
             "check_for_insecure_certificates": "Controlla certificati non sicuri",
-            "check_for_insecure_certificates_desc": "Alcuni siti usano certificati ssl non sicuri. Quando non selezionato lo scraper salta il controllo e acconsente lo scraping di questi siti. Se ricevete un errore di certificato durante lo scraping spuntate la casella.",
+            "check_for_insecure_certificates_desc": "Alcuni siti usano certificati SSL non sicuri. Quando non selezionato lo scraper salta il controllo e acconsente lo scraping di questi siti. Se ricevete un errore di certificato durante lo scraping spuntate la casella.",
             "chrome_cdp_path": "Percorso al Chrome CDP",
             "chrome_cdp_path_desc": "Percorso all'eseguibile di Chrome, o indirizzo remoto (iniziando con http:// o https://, per esempio http://localhost:9222/json/version) verso un'istanza Chrome.",
             "create_galleries_from_folders_desc": "Se spuntato, crea gallerie dalle cartelle che contengono immagini.",
