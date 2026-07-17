@@ -214,7 +214,6 @@
             "match_failed_already_tagged": "Sahne zaten etiketlendi",
             "match_failed_no_result": "Sonuç bulunamadı",
             "match_success": "Sahne başarıyla etiketlendi",
-            "phash_matches": "{count} PHash eşleşiyor",
             "unnamed": "İsimsiz"
         },
         "verb_match_fp": "Parmak İzlerini Eşleştir",

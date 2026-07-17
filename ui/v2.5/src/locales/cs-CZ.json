@@ -216,7 +216,6 @@
             "match_failed_already_tagged": "Scéna byla již otagována",
             "match_failed_no_result": "Nebyly nalezeny žádné výsledky",
             "match_success": "Scéna úspěšně otagována",
-            "phash_matches": "{count} PHash(ů) se shoduje",
             "unnamed": "Bezejmený"
         },
         "verb_match_fp": "Identifikovat otisky",

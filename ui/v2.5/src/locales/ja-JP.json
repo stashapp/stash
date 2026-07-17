@@ -217,7 +217,6 @@
             "match_failed_already_tagged": "シーンはすでにタグ付けされています",
             "match_failed_no_result": "結果が見つかりませんでした",
             "match_success": "シーンのタグ付けに成功しました",
-            "phash_matches": "{count}件の知覚的ハッシュが一致しました",
             "unnamed": "名称未設定"
         },
         "verb_match_fp": "ハッシュ値を突き合わせる",

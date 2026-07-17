@@ -228,7 +228,6 @@
             "match_failed_already_tagged": "이미 태깅된 영상",
             "match_failed_no_result": "결과 없음",
             "match_success": "영상 태깅 성공",
-            "phash_matches": "{count}개의 PHash가 일치함",
             "unnamed": "이름 없음"
         },
         "verb_match_fp": "식별값 비교하기",

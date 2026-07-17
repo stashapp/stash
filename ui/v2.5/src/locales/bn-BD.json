@@ -174,7 +174,6 @@
             "match_failed_already_tagged": "দৃশ্য আগে থেকেই ট্যাগকৃত",
             "match_failed_no_result": "কোনো ফলাফল পাওয়া যায়নি",
             "match_success": "দৃশ্য সফলভাবে ট্যাগ করা হয়েছে",
-            "phash_matches": "{গণনা} পিহ্যাশগুলোর মিল",
             "unnamed": "বেনামী"
         },
         "verb_match_fp": "আঙ্গুলেরছাপ মিল করুন",

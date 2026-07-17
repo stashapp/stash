@@ -201,7 +201,6 @@
             "match_failed_already_tagged": "มีข้อมูลซีนนี้แล้ว",
             "match_failed_no_result": "ไม่พบผลลัพธ์",
             "match_success": "เพิ่มข้อมูลซีนสำเร็จแล้ว",
-            "phash_matches": "{count} PHashes ตรงกัน",
             "unnamed": "ไม่มีชื่อ"
         },
         "verb_match_fp": "ข้อมูลอัตลักษณ์ตรงกัน",

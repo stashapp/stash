@@ -227,7 +227,6 @@
             "match_failed_already_tagged": "Szene bereits getagged",
             "match_failed_no_result": "Keine Übereinstimmungen gefunden",
             "match_success": "Szene erfolgreich getagged",
-            "phash_matches": "{count} PHashes übereinstimmung",
             "unnamed": "Unbenannt"
         },
         "verb_match_fp": "Fingerabdrücke zuordnen",

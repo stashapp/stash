@@ -219,7 +219,6 @@
             "match_failed_already_tagged": "Kohtaukselle on jo asetettu tunnisteet",
             "match_failed_no_result": "Ei tuloksia",
             "match_success": "Kohtaukselle on nyt asetettu tunnisteet",
-            "phash_matches": "{count} PHashia täsmää",
             "unnamed": "Nimetön"
         },
         "verb_match_fp": "Sormenjäljet täsmäävät",

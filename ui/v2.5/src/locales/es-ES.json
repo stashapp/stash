@@ -222,7 +222,6 @@
             "match_failed_already_tagged": "Escena ya etiquetada",
             "match_failed_no_result": "No se han encontrado resultados",
             "match_success": "Escena etiquetada correctamente",
-            "phash_matches": "{count} PHash(es) coincide(n)",
             "unnamed": "Sin nombre"
         },
         "verb_match_fp": "huellas dactilares",

@@ -223,7 +223,6 @@
             "match_failed_already_tagged": "Stseen juba sildistatud",
             "match_failed_no_result": "Vasteid ei leitud",
             "match_success": "Stseen edukalt sildistatud",
-            "phash_matches": "{count} PHashi kattuvust",
             "unnamed": "Nimeta"
         },
         "verb_match_fp": "Leia Sõrmejälje Kattuvusi",

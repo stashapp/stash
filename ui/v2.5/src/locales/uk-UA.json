@@ -204,7 +204,6 @@
         "results": {
             "duration_unknown": "Тривалість невідома",
             "match_failed_no_result": "Результатів не знайдено",
-            "phash_matches": "{count} PHashes збігаються",
             "unnamed": "Без назви",
             "duration_off": "Тривалість відрізняється щонайменше на {number}с",
             "fp_matches": "Тривалість збігається",

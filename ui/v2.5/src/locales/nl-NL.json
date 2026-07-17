@@ -211,7 +211,6 @@
             "match_failed_already_tagged": "Deze scène is al gelabeld",
             "match_failed_no_result": "Er zijn geen zoekresultaten",
             "match_success": "De scène is gelabeld",
-            "phash_matches": "{count} PHashes komen overeen",
             "unnamed": "Naamloos"
         },
         "verb_match_fp": "Overeenkomen met vingerafdrukken",

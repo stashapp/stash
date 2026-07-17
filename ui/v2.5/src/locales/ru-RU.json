@@ -221,7 +221,6 @@
             "match_failed_already_tagged": "Сцена уже помечена",
             "match_failed_no_result": "Ничего не найдено",
             "match_success": "Сцена успешно помечена",
-            "phash_matches": "{count} PHashes совпадают",
             "unnamed": "Безымянный"
         },
         "verb_match_fp": "Сопоставить отпечатки файла",

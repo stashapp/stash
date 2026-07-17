@@ -222,7 +222,6 @@
             "match_failed_already_tagged": "短片先前已標記完畢",
             "match_failed_no_result": "未找到結果",
             "match_success": "已成功標記短片",
-            "phash_matches": "{count} 個 PHash 符合",
             "unnamed": "未命名"
         },
         "verb_match_fp": "特徵碼辨別",

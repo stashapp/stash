@@ -224,7 +224,6 @@
             "match_failed_already_tagged": "Scena już otagowana",
             "match_failed_no_result": "Nie znaleziono żadnych wyników",
             "match_success": "Scena pomyślnie otagowana",
-            "phash_matches": "{count} zgodnych PHashy",
             "unnamed": "Bez nazwy"
         },
         "verb_match_fp": "Dopasuj odciski palców",

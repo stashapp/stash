@@ -231,7 +231,6 @@
             "match_failed_already_tagged": "تم وضع وسم على المشهد بالفعل",
             "match_failed_no_result": "لم يتم العثور على نتائج",
             "match_success": "تم وضع وسم على المشهد بنجاح",
-            "phash_matches": "{count} تطابق التجزئات",
             "unnamed": "غير مسمى"
         },
         "verb_add_as_alias": "أضف الاسم المستخرج كاسم مستعار",

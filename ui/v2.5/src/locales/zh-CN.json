@@ -228,7 +228,6 @@
             "match_failed_already_tagged": "短片已经添加标签",
             "match_failed_no_result": "没有找到",
             "match_success": "短片成功添加标签",
-            "phash_matches": "{count} 个感知识别码 匹配",
             "unnamed": "无名"
         },
         "verb_match_fp": "匹配指纹",
