@@ -29,11 +29,16 @@ type BlobStoreOptions struct {
 	UseFilesystem bool
 	// UseDatabase should be true if blob data should be stored in the database
 	UseDatabase bool
+	// UseS3 should be true if blob data should be stored in S3-compatible object storage
+	UseS3 bool
 	// Path is the filesystem path to use for storing blobs
 	Path string
 	// SupplementaryPaths are alternative filesystem paths that will be used to find blobs
 	// No changes will be made to these filesystems
 	SupplementaryPaths []string
+	// S3 configures the S3-compatible object store; may be populated even when
+	// UseS3 is false so blobs can still be found/migrated from it
+	S3 blob.S3Options
 }
 
 type BlobStore struct {
@@ -42,6 +47,7 @@ type BlobStore struct {
 	tableMgr *table
 
 	fsStore *blob.FilesystemStore
+	s3Store *blob.S3Store
 	// supplementary stores
 	otherStores []blob.FilesystemReader
 	options     BlobStoreOptions
@@ -60,6 +66,10 @@ func NewBlobStore(options BlobStoreOptions) *BlobStore {
 
 		fsStore: blob.NewFilesystemStore(options.Path, fs),
 		options: options,
+	}
+
+	if options.UseS3 || options.S3.Configured() {
+		ret.s3Store = blob.NewS3Store(options.S3)
 	}
 
 	for _, otherPath := range options.SupplementaryPaths {
@@ -93,7 +103,7 @@ func (qb *BlobStore) Count(ctx context.Context) (int, error) {
 // Write stores the data and its checksum in enabled stores.
 // Always writes at least the checksum to the database.
 func (qb *BlobStore) Write(ctx context.Context, data []byte) (string, error) {
-	if !qb.options.UseDatabase && !qb.options.UseFilesystem {
+	if !qb.options.UseDatabase && !qb.options.UseFilesystem && !qb.options.UseS3 {
 		panic("no blob store configured")
 	}
 
@@ -117,6 +127,12 @@ func (qb *BlobStore) Write(ctx context.Context, data []byte) (string, error) {
 	if qb.options.UseFilesystem {
 		if err := qb.fsStore.Write(ctx, checksum, data); err != nil {
 			return "", fmt.Errorf("writing to filesystem: %w", err)
+		}
+	}
+
+	if qb.options.UseS3 {
+		if err := qb.s3Store.Write(ctx, checksum, data); err != nil {
+			return "", fmt.Errorf("writing to s3: %w", err)
 		}
 	}
 
@@ -169,7 +185,7 @@ func (e *ChecksumBlobNotExistError) Error() string {
 }
 
 func (qb *BlobStore) readSQL(ctx context.Context, querySQL string, args ...interface{}) ([]byte, string, error) {
-	if !qb.options.UseDatabase && !qb.options.UseFilesystem {
+	if !qb.options.UseDatabase && !qb.options.UseFilesystem && !qb.options.UseS3 {
 		panic("no blob store configured")
 	}
 
@@ -199,9 +215,9 @@ func (qb *BlobStore) readSQL(ctx context.Context, querySQL string, args ...inter
 		return row.Blob, checksum, nil
 	}
 
-	// don't use the filesystem if not configured to do so
-	if qb.options.UseFilesystem {
-		ret, err := qb.readFromFilesystem(ctx, checksum)
+	// don't use the other stores if not configured to do so
+	if qb.options.UseFilesystem || qb.options.UseS3 {
+		ret, err := qb.readFromStores(ctx, checksum)
 		if err != nil {
 			return nil, checksum, err
 		}
@@ -214,9 +230,46 @@ func (qb *BlobStore) readSQL(ctx context.Context, querySQL string, args ...inter
 	}
 }
 
+// readFromStores reads from the enabled stores, falling back to the others so
+// that reads keep working while blobs are being migrated between stores.
+func (qb *BlobStore) readFromStores(ctx context.Context, checksum string) ([]byte, error) {
+	if qb.options.UseS3 {
+		ret, err := qb.s3Store.Read(ctx, checksum)
+		if err == nil {
+			return ret, nil
+		}
+
+		if !errors.Is(err, fs.ErrNotExist) {
+			return nil, fmt.Errorf("reading from s3: %w", err)
+		}
+
+		// fall back to the filesystem stores
+		return qb.readFromFilesystem(ctx, checksum)
+	}
+
+	ret, err := qb.readFromFilesystem(ctx, checksum)
+	if err == nil {
+		return ret, nil
+	}
+
+	// fall back to s3 if configured (e.g. mid-migration back to filesystem)
+	var notExist *ChecksumBlobNotExistError
+	if errors.As(err, &notExist) && qb.s3Store != nil {
+		if s3ret, s3err := qb.s3Store.Read(ctx, checksum); s3err == nil {
+			return s3ret, nil
+		}
+	}
+
+	return nil, err
+}
+
 func (qb *BlobStore) readFromFilesystem(ctx context.Context, checksum string) ([]byte, error) {
 	// try to read from primary store first, then supplementaries
-	fsStores := append([]blob.FilesystemReader{qb.fsStore.FilesystemReader}, qb.otherStores...)
+	var fsStores []blob.FilesystemReader
+	if qb.options.Path != "" {
+		fsStores = append(fsStores, qb.fsStore.FilesystemReader)
+	}
+	fsStores = append(fsStores, qb.otherStores...)
 
 	for _, fsStore := range fsStores {
 		ret, err := fsStore.Read(ctx, checksum)
@@ -248,7 +301,7 @@ func (qb *BlobStore) EntryExists(ctx context.Context, checksum string) (bool, er
 
 // Read reads the data from the database or filesystem, depending on which is enabled.
 func (qb *BlobStore) Read(ctx context.Context, checksum string) ([]byte, error) {
-	if !qb.options.UseDatabase && !qb.options.UseFilesystem {
+	if !qb.options.UseDatabase && !qb.options.UseFilesystem && !qb.options.UseS3 {
 		panic("no blob store configured")
 	}
 
@@ -269,9 +322,9 @@ func (qb *BlobStore) Read(ctx context.Context, checksum string) ([]byte, error) 
 		return ret, nil
 	}
 
-	// don't use the filesystem if not configured to do so
-	if qb.options.UseFilesystem {
-		return qb.readFromFilesystem(ctx, checksum)
+	// don't use the other stores if not configured to do so
+	if qb.options.UseFilesystem || qb.options.UseS3 {
+		return qb.readFromStores(ctx, checksum)
 	}
 
 	// blob not found - should not happen
@@ -318,6 +371,13 @@ func (qb *BlobStore) Delete(ctx context.Context, checksum string) error {
 		logger.Debugf("Deleting blob %s from filesystem", checksum)
 		if err := qb.fsStore.Delete(ctx, checksum); err != nil {
 			return fmt.Errorf("deleting from filesystem: %w", err)
+		}
+	}
+
+	if qb.options.UseS3 {
+		logger.Debugf("Deleting blob %s from s3", checksum)
+		if err := qb.s3Store.Delete(ctx, checksum); err != nil {
+			return fmt.Errorf("deleting from s3: %w", err)
 		}
 	}
 

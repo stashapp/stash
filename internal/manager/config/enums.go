@@ -13,16 +13,19 @@ const (
 	BlobStorageTypeDatabase BlobsStorageType = "DATABASE"
 	// Filesystem
 	BlobStorageTypeFilesystem BlobsStorageType = "FILESYSTEM"
+	// S3-compatible object storage
+	BlobStorageTypeS3 BlobsStorageType = "S3"
 )
 
 var AllBlobStorageType = []BlobsStorageType{
 	BlobStorageTypeDatabase,
 	BlobStorageTypeFilesystem,
+	BlobStorageTypeS3,
 }
 
 func (e BlobsStorageType) IsValid() bool {
 	switch e {
-	case BlobStorageTypeDatabase, BlobStorageTypeFilesystem:
+	case BlobStorageTypeDatabase, BlobStorageTypeFilesystem, BlobStorageTypeS3:
 		return true
 	}
 	return false

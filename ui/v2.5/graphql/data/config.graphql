@@ -14,6 +14,13 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   cachePath
   blobsPath
   blobsStorage
+  s3Endpoint
+  s3AccessKey
+  s3SecretKey
+  s3Bucket
+  s3BlobsPrefix
+  s3Region
+  s3UseSsl
   ffmpegPath
   ffprobePath
   calculateMD5

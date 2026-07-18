@@ -59,6 +59,15 @@ const (
 
 	BlobsStorage = "blobs_storage"
 
+	// S3-compatible object storage (used when BlobsStorage is S3)
+	S3Endpoint    = "s3.endpoint"
+	S3AccessKey   = "s3.access_key"
+	S3SecretKey   = "s3.secret_key"
+	S3Bucket      = "s3.bucket"
+	S3BlobsPrefix = "s3.blobs_prefix"
+	S3Region      = "s3.region"
+	S3UseSSL      = "s3.use_ssl"
+
 	DefaultMaxSessionAge = 60 * 60 * 1 // 1 hours
 
 	Database = "database"
@@ -766,6 +775,29 @@ func (i *Config) GetBlobsStorage() BlobsStorageType {
 	}
 
 	return ret
+}
+
+// S3Options describes the S3-compatible object storage configuration.
+type S3Options struct {
+	Endpoint        string
+	AccessKeyID     string
+	SecretAccessKey string
+	Bucket          string
+	BlobsPrefix     string
+	Region          string
+	UseSSL          bool
+}
+
+func (i *Config) GetS3Options() S3Options {
+	return S3Options{
+		Endpoint:        i.getString(S3Endpoint),
+		AccessKeyID:     i.getString(S3AccessKey),
+		SecretAccessKey: i.getString(S3SecretKey),
+		Bucket:          i.getString(S3Bucket),
+		BlobsPrefix:     i.getString(S3BlobsPrefix),
+		Region:          i.getString(S3Region),
+		UseSSL:          i.getBool(S3UseSSL),
+	}
 }
 
 func (i *Config) GetMetadataPath() string {
@@ -1951,6 +1983,21 @@ func (i *Config) Validate() error {
 	if i.GetBlobsStorage() == BlobStorageTypeFilesystem && i.forKey(BlobsPath).String(BlobsPath) == "" {
 		return MissingConfigError{
 			missingFields: []string{BlobsPath},
+		}
+	}
+
+	if i.GetBlobsStorage() == BlobStorageTypeS3 {
+		var missingS3 []string
+		if i.getString(S3Endpoint) == "" {
+			missingS3 = append(missingS3, S3Endpoint)
+		}
+		if i.getString(S3Bucket) == "" {
+			missingS3 = append(missingS3, S3Bucket)
+		}
+		if len(missingS3) > 0 {
+			return MissingConfigError{
+				missingFields: missingS3,
+			}
 		}
 	}
 

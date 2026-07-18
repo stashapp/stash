@@ -109,6 +109,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
         return "blobs_storage_type.database";
       case GQL.BlobsStorageType.Filesystem:
         return "blobs_storage_type.filesystem";
+      case GQL.BlobsStorageType.S3:
+        return "blobs_storage_type.s3";
     }
 
     return "blobs_storage_type.database";
@@ -260,6 +262,59 @@ export const SettingsConfigurationPanel: React.FC = () => {
           value={general.blobsPath ?? ""}
           onChange={(v) => saveGeneral({ blobsPath: v })}
         />
+        {general.blobsStorage === GQL.BlobsStorageType.S3 && (
+          <>
+            <StringSetting
+              id="s3-endpoint"
+              headingID="config.general.s3_endpoint.heading"
+              subHeadingID="config.general.s3_endpoint.description"
+              value={general.s3Endpoint ?? ""}
+              onChange={(v) => saveGeneral({ s3Endpoint: v })}
+            />
+            <StringSetting
+              id="s3-bucket"
+              headingID="config.general.s3_bucket.heading"
+              subHeadingID="config.general.s3_bucket.description"
+              value={general.s3Bucket ?? ""}
+              onChange={(v) => saveGeneral({ s3Bucket: v })}
+            />
+            <StringSetting
+              id="s3-access-key"
+              headingID="config.general.s3_access_key.heading"
+              subHeadingID="config.general.s3_access_key.description"
+              value={general.s3AccessKey ?? ""}
+              onChange={(v) => saveGeneral({ s3AccessKey: v })}
+            />
+            <StringSetting
+              id="s3-secret-key"
+              headingID="config.general.s3_secret_key.heading"
+              subHeadingID="config.general.s3_secret_key.description"
+              value={general.s3SecretKey ?? ""}
+              onChange={(v) => saveGeneral({ s3SecretKey: v })}
+            />
+            <StringSetting
+              id="s3-blobs-prefix"
+              headingID="config.general.s3_blobs_prefix.heading"
+              subHeadingID="config.general.s3_blobs_prefix.description"
+              value={general.s3BlobsPrefix ?? ""}
+              onChange={(v) => saveGeneral({ s3BlobsPrefix: v })}
+            />
+            <StringSetting
+              id="s3-region"
+              headingID="config.general.s3_region.heading"
+              subHeadingID="config.general.s3_region.description"
+              value={general.s3Region ?? ""}
+              onChange={(v) => saveGeneral({ s3Region: v })}
+            />
+            <BooleanSetting
+              id="s3-use-ssl"
+              headingID="config.general.s3_use_ssl.heading"
+              subHeadingID="config.general.s3_use_ssl.description"
+              checked={general.s3UseSsl ?? false}
+              onChange={(v) => saveGeneral({ s3UseSsl: v })}
+            />
+          </>
+        )}
       </SettingSection>
 
       <SettingSection advanced headingID="config.general.hashing">

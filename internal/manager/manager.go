@@ -29,6 +29,7 @@ import (
 	"github.com/stashapp/stash/pkg/sqlite"
 
 	// register custom migrations
+	"github.com/stashapp/stash/pkg/sqlite/blob"
 	_ "github.com/stashapp/stash/pkg/sqlite/migrations"
 )
 
@@ -84,12 +85,23 @@ func (s *Manager) SetBlobStoreOptions() {
 	storageType := s.Config.GetBlobsStorage()
 	blobsPath := s.Config.GetBlobsPath()
 	extraBlobsPaths := s.Config.GetExtraBlobsPaths()
+	s3Options := s.Config.GetS3Options()
 
 	s.Database.SetBlobStoreOptions(sqlite.BlobStoreOptions{
 		UseFilesystem:      storageType == config.BlobStorageTypeFilesystem,
 		UseDatabase:        storageType == config.BlobStorageTypeDatabase,
+		UseS3:              storageType == config.BlobStorageTypeS3,
 		Path:               blobsPath,
 		SupplementaryPaths: extraBlobsPaths,
+		S3: blob.S3Options{
+			Endpoint:        s3Options.Endpoint,
+			AccessKeyID:     s3Options.AccessKeyID,
+			SecretAccessKey: s3Options.SecretAccessKey,
+			Bucket:          s3Options.Bucket,
+			Prefix:          s3Options.BlobsPrefix,
+			Region:          s3Options.Region,
+			UseSSL:          s3Options.UseSSL,
+		},
 	})
 }
 

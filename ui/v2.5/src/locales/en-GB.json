@@ -178,7 +178,8 @@
   "bitrate": "Bit Rate",
   "blobs_storage_type": {
     "database": "Database",
-    "filesystem": "Filesystem"
+    "filesystem": "Filesystem",
+    "s3": "S3 object storage"
   },
   "captions": "Captions",
   "career_end": "Career End",
@@ -346,6 +347,34 @@
       "blobs_storage": {
         "description": "Where to store binary data such as scene covers, performer, studio and tag images. After changing this value, the existing data must be migrated using the Migrate blobs tasks. See Tasks page for migration.",
         "heading": "Binary data storage type"
+      },
+      "s3_endpoint": {
+        "description": "S3-compatible endpoint host, e.g. minio:9000 or s3.amazonaws.com. Required for the S3 blob storage type.",
+        "heading": "S3 endpoint"
+      },
+      "s3_bucket": {
+        "description": "Bucket where blob objects are stored. Required for the S3 blob storage type.",
+        "heading": "S3 bucket"
+      },
+      "s3_access_key": {
+        "description": "Access key ID used to authenticate against the S3 endpoint.",
+        "heading": "S3 access key"
+      },
+      "s3_secret_key": {
+        "description": "Secret access key used to authenticate against the S3 endpoint.",
+        "heading": "S3 secret key"
+      },
+      "s3_blobs_prefix": {
+        "description": "Optional key prefix for blob objects, e.g. blobs/.",
+        "heading": "S3 blobs prefix"
+      },
+      "s3_region": {
+        "description": "Optional S3 region.",
+        "heading": "S3 region"
+      },
+      "s3_use_ssl": {
+        "description": "Use TLS when connecting to the S3 endpoint.",
+        "heading": "S3 use SSL"
       },
       "cache_location": "Directory location of the cache. Required if streaming using HLS (such as on Apple devices) or DASH.",
       "cache_path_head": "Cache path",

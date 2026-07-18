@@ -63,6 +63,8 @@ enum BlobsStorageType {
   # blobs are stored in the filesystem under the configured blobs directory
   "Filesystem"
   FILESYSTEM
+  "Stored in S3-compatible object storage"
+  S3
 }
 
 input ConfigGeneralInput {
@@ -88,6 +90,20 @@ input ConfigGeneralInput {
   blobsPath: String
   "Where to store blobs"
   blobsStorage: BlobsStorageType
+  "S3 endpoint host, e.g. minio:9000 or s3.amazonaws.com - required for S3 blob storage"
+  s3Endpoint: String
+  "S3 access key ID"
+  s3AccessKey: String
+  "S3 secret access key"
+  s3SecretKey: String
+  "S3 bucket - required for S3 blob storage"
+  s3Bucket: String
+  "Key prefix for blob objects, e.g. blobs/"
+  s3BlobsPrefix: String
+  "S3 region"
+  s3Region: String
+  "Use TLS when connecting to the S3 endpoint"
+  s3UseSsl: Boolean
   "Path to the ffmpeg binary. If empty, stash will attempt to find it in the path or config directory"
   ffmpegPath: String
   "Path to the ffprobe binary. If empty, stash will attempt to find it in the path or config directory"
@@ -230,6 +246,20 @@ type ConfigGeneralResult {
   blobsPath: String!
   "Where to store blobs"
   blobsStorage: BlobsStorageType!
+  "S3 endpoint host, e.g. minio:9000 or s3.amazonaws.com - required for S3 blob storage"
+  s3Endpoint: String!
+  "S3 access key ID"
+  s3AccessKey: String!
+  "S3 secret access key"
+  s3SecretKey: String!
+  "S3 bucket - required for S3 blob storage"
+  s3Bucket: String!
+  "Key prefix for blob objects, e.g. blobs/"
+  s3BlobsPrefix: String!
+  "S3 region"
+  s3Region: String!
+  "Use TLS when connecting to the S3 endpoint"
+  s3UseSsl: Boolean!
   "Path to the ffmpeg binary. If empty, stash will attempt to find it in the path or config directory"
   ffmpegPath: String!
   "Path to the ffprobe binary. If empty, stash will attempt to find it in the path or config directory"

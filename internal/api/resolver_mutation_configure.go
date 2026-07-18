@@ -234,9 +234,39 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		refreshBlobStorage = true
 	}
 
+	existingS3 := c.GetS3Options()
+	s3Fields := []struct {
+		key      string
+		input    *string
+		existing string
+	}{
+		{config.S3Endpoint, input.S3Endpoint, existingS3.Endpoint},
+		{config.S3AccessKey, input.S3AccessKey, existingS3.AccessKeyID},
+		{config.S3SecretKey, input.S3SecretKey, existingS3.SecretAccessKey},
+		{config.S3Bucket, input.S3Bucket, existingS3.Bucket},
+		{config.S3BlobsPrefix, input.S3BlobsPrefix, existingS3.BlobsPrefix},
+		{config.S3Region, input.S3Region, existingS3.Region},
+	}
+	for _, f := range s3Fields {
+		if f.input != nil && *f.input != f.existing {
+			c.SetString(f.key, *f.input)
+			refreshBlobStorage = true
+		}
+	}
+	if input.S3UseSsl != nil && *input.S3UseSsl != existingS3.UseSSL {
+		c.SetBool(config.S3UseSSL, *input.S3UseSsl)
+		refreshBlobStorage = true
+	}
+
 	if input.BlobsStorage != nil && *input.BlobsStorage != c.GetBlobsStorage() {
 		if *input.BlobsStorage == config.BlobStorageTypeFilesystem && c.GetBlobsPath() == "" {
 			return makeConfigGeneralResult(), fmt.Errorf("blobs path must be set when using filesystem storage")
+		}
+
+		if *input.BlobsStorage == config.BlobStorageTypeS3 {
+			if s3 := c.GetS3Options(); s3.Endpoint == "" || s3.Bucket == "" {
+				return makeConfigGeneralResult(), fmt.Errorf("s3 endpoint and bucket must be set when using S3 storage")
+			}
 		}
 
 		c.SetInterface(config.BlobsStorage, *input.BlobsStorage)
