@@ -224,11 +224,12 @@
             "fp_found": "{fpCount, plural, =0 {일치하는 새로운 식별값을 찾지 못했습니다.} other {# 일치하는 새로운 식별값을 찾았습니다.}}",
             "fp_matches": "영상 길이가 일치함",
             "fp_matches_multi": "영상 길이가 {durationsLength}개 중 {matchCount}개의 식별값과 일치합니다",
-            "hash_matches": "{hash_type}이 일치함",
+            "hash_matches": "{count, plural, one {{hash_type} #개 일치} other {{hash_type} #개 일치}}",
             "match_failed_already_tagged": "이미 태깅된 영상",
             "match_failed_no_result": "결과 없음",
             "match_success": "영상 태깅 성공",
-            "unnamed": "이름 없음"
+            "unnamed": "이름 없음",
+            "hash_submissions": "{count}건 제출"
         },
         "verb_match_fp": "식별값 비교하기",
         "verb_matched": "일치함",
@@ -1255,7 +1256,7 @@
         "video_codec": "비디오 코덱",
         "o_count": "싼 횟수",
         "md5": "MD5 체크섬",
-        "oshash": "oshash",
+        "oshash": "OSHash",
         "oshash_meaning": "파일 일치 여부 확인 해시 (OpenSubtitles Hash)",
         "phash_meaning": "시각적 유사성 비교 해시 (Perceptual Hash)"
     },
@@ -1741,5 +1742,6 @@
     "sub_group_description": "서브그룹 설명",
     "scene_marker_count": "영상 마커 개수",
     "o_count_all": "싼 횟수(전체)",
-    "performer_count_all": "배우 수(전체)"
+    "performer_count_all": "배우 수(전체)",
+    "stash_id_endpoint_any": "모든 엔드포인트"
 }
