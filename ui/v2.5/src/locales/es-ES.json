@@ -218,11 +218,12 @@
             "fp_found": "{fpCount, plural, =0 {No se han encontrado nuevas huellas dactilares} other {# resultados de huellas dactilares encontrados}}",
             "fp_matches": "La duración coincide",
             "fp_matches_multi": "{matchCount}/{durationsLength} cincidencias de fingerprint(s)",
-            "hash_matches": "{hash_type} coincide",
+            "hash_matches": "{count, plural, one {# {hash_type} coincidencia} other {# {hash_type} coincidencias}}",
             "match_failed_already_tagged": "Escena ya etiquetada",
             "match_failed_no_result": "No se han encontrado resultados",
             "match_success": "Escena etiquetada correctamente",
-            "unnamed": "Sin nombre"
+            "unnamed": "Sin nombre",
+            "hash_submissions": "{count} propuestas"
         },
         "verb_match_fp": "huellas dactilares",
         "verb_matched": "Coincidencia",
@@ -1216,7 +1217,7 @@
         "play_duration": "Tiempo de reproducción",
         "o_count": "Contador de orgasmos",
         "md5": "Suma de comprobación MD5",
-        "oshash": "oshash",
+        "oshash": "OSHash",
         "oshash_meaning": "Hash de OpenSubtitles",
         "phash_meaning": "Hash perceptual"
     },
@@ -1741,5 +1742,6 @@
     "sub_group_description": "Descripción del subgrupo",
     "scene_marker_count": "Recuento de marcadores de escena",
     "performer_count_all": "Total de Intérpretes",
-    "o_count_all": "Contar todo"
+    "o_count_all": "Contar todo",
+    "stash_id_endpoint_any": "Cualquier terminal"
 }
