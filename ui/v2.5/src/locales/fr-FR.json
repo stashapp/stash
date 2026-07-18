@@ -225,11 +225,12 @@
             "fp_found": "{fpCount, plural, =0 {Aucune nouvelle correspondance d'empreinte trouvée} other {# nouvelles correspondances d'empreintes trouvées}}",
             "fp_matches": "La durée correspond",
             "fp_matches_multi": "La durée correspond à {matchCount}/{durationsLength} empreintes",
-            "hash_matches": "{hash_type} est une correspondance",
+            "hash_matches": "{count, plural, one {# {hash_type} correspond} other {# {hash_type} correspondent}}",
             "match_failed_already_tagged": "Scène déjà étiquetée",
             "match_failed_no_result": "Aucun résultat trouvé",
             "match_success": "Scène étiquetée avec succès",
-            "unnamed": "Sans nom"
+            "unnamed": "Sans nom",
+            "hash_submissions": "{count} envois"
         },
         "verb_match_fp": "Empreintes correspondantes",
         "verb_matched": "Associé",
@@ -1257,7 +1258,7 @@
         "video_codec": "Codec vidéo",
         "o_count": "Nombre d'O",
         "md5": "Somme de contrôle MD5",
-        "oshash": "oshash",
+        "oshash": "OSHash",
         "oshash_meaning": "Empreinte OpenSubtitles",
         "phash_meaning": "Empreinte perceptuelle"
     },
@@ -1741,5 +1742,6 @@
     "sub_group_description": "Description du groupe affilié",
     "scene_marker_count": "Nombre de marqueurs",
     "o_count_all": "Nombre d'O (Total)",
-    "performer_count_all": "Nombre de performeurs (Total)"
+    "performer_count_all": "Nombre de performeurs (Total)",
+    "stash_id_endpoint_any": "Tout point de terminaison"
 }
