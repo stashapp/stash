@@ -113,7 +113,9 @@ jobs:
         name: generated
 
     - name: Test Backend
-      run: go test -timeout 30m -tags "sqlite_stat4 sqlite_math_functions integration" ./...
+      run: make it
+      env:
+        GOTESTFLAGS: -timeout 30m
 
   # Job 3: Cross-compile for all platforms
   # Each platform gets its own runner and Docker container (ghcr.io/stashapp/compiler:13).

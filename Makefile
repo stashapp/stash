@@ -331,7 +331,7 @@ test:
 .PHONY: it
 it:
 	$(eval GO_BUILD_TAGS += integration)
-	go test -tags "$(GO_BUILD_TAGS)" ./...
+	go test $(GOTESTFLAGS) -tags "$(GO_BUILD_TAGS)" ./...
 
 # generates test mocks
 .PHONY: generate-test-mocks
