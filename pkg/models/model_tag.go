@@ -72,7 +72,7 @@ type TagPartial struct {
 	Description   OptionalString
 	Favorite      OptionalBool
 	IgnoreAutoTag OptionalBool
-	Rating100     OptionalInt
+	Rating        OptionalInt
 	CreatedAt     OptionalTime
 	UpdatedAt     OptionalTime
 

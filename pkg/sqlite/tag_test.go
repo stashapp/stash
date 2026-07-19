@@ -1902,7 +1902,7 @@ func TestTagUpdateRating100(t *testing.T) {
 		// update rating100
 		rating100 := 75
 		partial := models.TagPartial{
-			Rating100: models.NewOptionalInt(rating100),
+			Rating: models.NewOptionalInt(rating100),
 		}
 		_, err = qb.UpdatePartial(ctx, tag.ID, partial)
 		if err != nil {

@@ -97,7 +97,7 @@ func (r *tagRowRecord) fromPartial(o models.TagPartial) {
 	r.setNullString("description", o.Description)
 	r.setBool("favorite", o.Favorite)
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
-	r.setNullInt("rating", o.Rating100)
+	r.setNullInt("rating", o.Rating)
 	r.setTimestamp("created_at", o.CreatedAt)
 	r.setTimestamp("updated_at", o.UpdatedAt)
 }

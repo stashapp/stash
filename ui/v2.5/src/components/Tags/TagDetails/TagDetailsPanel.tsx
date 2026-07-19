@@ -20,7 +20,7 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
       variables: {
         input: {
           id: tag.id,
-          rating: v,
+          rating100: v,
         },
       },
     });
@@ -93,7 +93,7 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
       />
       <DetailItem
         id="rating"
-        value={<RatingSystem value={tag.rating} onSetRating={setRating} />}
+        value={<RatingSystem value={tag.rating100} onSetRating={setRating} />}
         fullWidth={fullWidth}
       />
       <DetailItem
@@ -124,7 +124,7 @@ export const CompressedTagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
       variables: {
         input: {
           id: tag.id,
-          rating: v,
+          rating100: v,
         },
       },
     });
@@ -148,10 +148,10 @@ export const CompressedTagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
         ) : (
           ""
         )}
-        {tag.rating !== null ? (
+        {tag.rating100 !== null ? (
           <>
             <span className="detail-divider">/</span>
-            <RatingSystem value={tag.rating} onSetRating={setRating} />
+            <RatingSystem value={tag.rating100} onSetRating={setRating} />
           </>
         ) : (
           ""

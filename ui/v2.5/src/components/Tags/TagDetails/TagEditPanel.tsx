@@ -63,7 +63,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     sort_name: yup.string().ensure(),
     aliases: yupRequiredStringArray(intl).defined(),
     description: yup.string().ensure(),
-    rating: yup.number().nullable().defined(),
+    rating100: yup.number().nullable().defined(),
     parent_ids: yup.array(yup.string().required()).defined(),
     child_ids: yup.array(yup.string().required()).defined(),
     ignore_auto_tag: yup.boolean().defined(),
@@ -77,7 +77,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     sort_name: tag?.sort_name ?? "",
     aliases: tag?.aliases ?? [],
     description: tag?.description ?? "",
-    rating: tag?.rating ?? null,
+    rating100: tag?.rating100 ?? null,
     parent_ids: (tag?.parents ?? []).map((t) => t.id),
     child_ids: (tag?.children ?? []).map((t) => t.id),
     ignore_auto_tag: tag?.ignore_auto_tag ?? false,
@@ -272,7 +272,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
           {renderInputField("sort_name", "text")}
           {renderStringListField("aliases", "aliases", { orderable: false })}
           {renderInputField("description", "textarea")}
-          {renderRatingField("rating")}
+          {renderRatingField("rating100")}
           {renderParentTagsField()}
           {renderSubTagsField()}
           {renderStashIDsField(

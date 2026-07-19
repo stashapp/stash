@@ -6,7 +6,8 @@ type Tag {
   description: String
   aliases: [String!]!
   ignore_auto_tag: Boolean!
-  rating: Int
+  # rating expressed as 1-100
+  rating100: Int
   created_at: Time!
   updated_at: Time!
   favorite: Boolean!
@@ -37,7 +38,8 @@ input TagCreateInput {
   aliases: [String!]
   ignore_auto_tag: Boolean
   favorite: Boolean
-  rating: Int
+  # rating expressed as 1-100
+  rating100: Int
   "This should be a URL or a base64 encoded data URL"
   image: String
   stash_ids: [StashIDInput!]
@@ -58,7 +60,8 @@ input TagUpdateInput {
   aliases: [String!]
   ignore_auto_tag: Boolean
   favorite: Boolean
-  rating: Int
+  # rating expressed as 1-100
+  rating100: Int
   "This should be a URL or a base64 encoded data URL"
   image: String
   stash_ids: [StashIDInput!]
@@ -92,7 +95,8 @@ input BulkTagUpdateInput {
   aliases: BulkUpdateStrings
   ignore_auto_tag: Boolean
   favorite: Boolean
-  rating: Int
+  # rating expressed as 1-100
+  rating100: Int
 
   parent_ids: BulkUpdateIds
   child_ids: BulkUpdateIds

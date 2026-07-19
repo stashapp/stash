@@ -48,7 +48,7 @@ export const TagListTable: React.FC<ITagListTableProps> = (
         variables: {
           input: {
             id: tagId,
-            rating: v,
+            rating100: v,
           },
         },
       });
@@ -94,7 +94,7 @@ export const TagListTable: React.FC<ITagListTableProps> = (
 
   const RatingCell = (tag: GQL.TagListDataFragment) => (
     <RatingSystem
-      value={tag.rating}
+      value={tag.rating100}
       onSetRating={(value) => setRating(value, tag.id)}
       clickToRate
     />
