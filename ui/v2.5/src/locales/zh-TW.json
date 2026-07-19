@@ -218,11 +218,12 @@
             "fp_found": "{fpCount, plural, =0 {尚未發現新且符合的} other {找到 # 個已知}}特徵碼",
             "fp_matches": "長度符合現有特徵碼",
             "fp_matches_multi": "長度符合資料庫中 {matchCount}/{durationsLength} 個現有特徵碼",
-            "hash_matches": "{hash_type} 符合資料庫中的雜湊值",
+            "hash_matches": "{count, plural, one {# {hash_type} 符合} other {# {hash_type} 符合}}",
             "match_failed_already_tagged": "短片先前已標記完畢",
             "match_failed_no_result": "未找到結果",
             "match_success": "已成功標記短片",
-            "unnamed": "未命名"
+            "unnamed": "未命名",
+            "hash_submissions": "{count} 筆提交"
         },
         "verb_match_fp": "特徵碼辨別",
         "verb_matched": "符合",
@@ -1231,7 +1232,7 @@
         "o_count": "尻尻計數",
         "phash_meaning": "感知雜湊",
         "md5": "MD5 雜湊值",
-        "oshash": "oshash",
+        "oshash": "OSHash",
         "oshash_meaning": "OpenSubtitles 雜湊值"
     },
     "megabits_per_second": "{value} mbps",
@@ -1335,7 +1336,8 @@
             "stash_library_directories": "Stash 多媒體檔案路徑",
             "cache_directory": "快取目錄",
             "blobs_directory": "二進位資料目錄",
-            "blobs_use_database": "<使用資料庫中>"
+            "blobs_use_database": "<使用資料庫中>",
+            "password_set_warning": "請注意，於系統設定完成後，您將被要求輸入您所設定的登入資訊。"
         },
         "creating": {
             "creating_your_system": "建立系統中"
@@ -1421,7 +1423,13 @@
             "next_step": "當您準備繼續設定時，點擊「下一步」。",
             "unable_to_locate_specified_config": "如果看到此畫面的話，則代表 Stash 無法找到您在命令列所提供的設定檔路徑。本安裝畫面將帶您建立新的設定檔案。"
         },
-        "welcome_to_stash": "歡迎使用 Stash"
+        "welcome_to_stash": "歡迎使用 Stash",
+        "credentials": {
+            "description": "請輸入登入 Stash 系統所需的使用者名稱與密碼。如果您不希望透過使用者名稱/密碼來存取系統，可以將這些欄位留白。若您將於外網存取本系統，則必須設定登入資訊。",
+            "heading": "設定登入資訊",
+            "password_invalid": "若已設定使用者名稱，密碼不能為空。",
+            "username_invalid": "使用者名稱不可有前後墜空格。"
+        }
     },
     "stash_id": "Stash ID",
     "stash_id_endpoint": "Stash ID 端點 URL",
@@ -1732,5 +1740,8 @@
         }
     },
     "scene_marker_count": "章節標記數量",
-    "sub_group_description": "子群組敘述"
+    "sub_group_description": "子群組敘述",
+    "o_count_all": "尻尻計數 (所有)",
+    "performer_count_all": "演員數量 (所有)",
+    "stash_id_endpoint_any": "任意端點"
 }
