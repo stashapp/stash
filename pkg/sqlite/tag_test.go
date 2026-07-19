@@ -249,6 +249,19 @@ func TestTagQuerySort(t *testing.T) {
 		tags = queryTags(ctx, t, sqb, nil, findFilter)
 		assert.Equal(tagIDs[tagIdx1WithGroup], tags[0].ID)
 
+		// sort by rating, descending. NULL ratings sort last, so every
+		// non-null rating must be non-increasing down the result set.
+		sortBy = "rating"
+		tags = queryTags(ctx, t, sqb, nil, findFilter)
+		prev := math.MaxInt64
+		for _, tag := range tags {
+			if tag.Rating == nil {
+				continue
+			}
+			assert.LessOrEqual(*tag.Rating, prev, "tags not sorted by rating descending")
+			prev = *tag.Rating
+		}
+
 		return nil
 	})
 }

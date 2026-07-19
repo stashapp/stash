@@ -858,8 +858,6 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 	switch sort {
 	case "name":
 		sortQuery += fmt.Sprintf(" ORDER BY COALESCE(tags.sort_name, tags.name) COLLATE NATURAL_CI %s", getSortDirection(direction))
-	case "rating":
-		sortQuery += fmt.Sprintf(" ORDER BY tags.rating %s", getSortDirection(direction))
 	case "scenes_count":
 		sortQuery += getCountSort(tagTable, scenesTagsTable, tagIDColumn, direction)
 	case "scenes_duration":
