@@ -159,7 +159,8 @@
         "create_parent_tag": "Skapa överordnad tagg",
         "exclude_lowercase": "exkludera",
         "from_clipboard": "Från urklipp",
-        "selective_generate": "Selektiv generering"
+        "selective_generate": "Selektiv generering",
+        "set_as_performer_image": "Välj som stjärnbild"
     },
     "actions_name": "Handlingar",
     "age": "Ålder",
@@ -224,11 +225,12 @@
             "fp_found": "{fpCount, plural, =0 {Inga nya fingeravtryck hittades} other {# Nya fingeravtryck hittades}}",
             "fp_matches": "Speltid matchar",
             "fp_matches_multi": "Speltiden matchar {matchCount}/{durationsLength} fingeravtryck",
-            "hash_matches": "{hash_type} matchar",
+            "hash_matches": "{count, plural, one {# {hash_type} match} other {# {hash_type} matchar}}",
             "match_failed_already_tagged": "Scen redan taggad",
             "match_failed_no_result": "Inga resultat hittades",
             "match_success": "Scen taggad",
-            "unnamed": "Namnlös"
+            "unnamed": "Namnlös",
+            "hash_submissions": "{count} inskickningar"
         },
         "verb_match_fp": "Matcha fingeravtryck",
         "verb_matched": "Matchad",
@@ -451,7 +453,11 @@
             "sprite_screenshot_size_desc": "Önskad storlek i pixlar för varje sprite.",
             "sprite_screenshot_size_head": "Sprite-storlek",
             "use_custom_sprite_interval_head": "Använd egen sprite-intervall",
-            "use_custom_sprite_interval_desc": "Aktivera den egna sprite-intervallen enligt inställningarna nedan."
+            "use_custom_sprite_interval_desc": "Aktivera den egna sprite-intervallen enligt inställningarna nedan.",
+            "default_marker_preview_duration_desc": "Tid (sekunder) för markörförhandsvisningar utan en sluttid. Måste vara större än 0.",
+            "default_marker_preview_duration_head": "Standard markörförhandsvisningstid",
+            "max_marker_preview_duration_desc": "Maximal tid (sekunder) för markörförhandsvisningar. 0 stänger av gränsen.",
+            "max_marker_preview_duration_head": "Maximal markörförhandsvisningstid"
         },
         "library": {
             "exclusions": "Exkludera",
@@ -908,6 +914,10 @@
                         "heading": "Förhandsgranskningsvolym"
                     }
                 }
+            },
+            "autostart_gallery_slideshow": {
+                "description": "Starta bildspelet automatiskt vid öppning av ett galleris lightbox från gallerisidan.",
+                "heading": "Autostarta galleri bildspel"
             }
         },
         "advanced_mode": "Avancerat läge",
@@ -1036,7 +1046,7 @@
             "marker_screenshots": "Markörskärmklipp",
             "marker_screenshots_tooltip": "Markör statiska JPG-bilder",
             "markers": "Markörförhandsvisningar",
-            "markers_tooltip": "20-sekunders videor som börjar vid angiven tidsstämpel.",
+            "markers_tooltip": "Videoförhandsvisningar som börjar vid angiven tidsstämpel.",
             "override_preview_generation_options": "Åsidosätt inställningar för förhandsvisningsgeneration",
             "override_preview_generation_options_desc": "Åsidosätt inställningar för förhandsvisningsgeneration. Standarden ställs in i System -> Förhandsvisningsgeneration.",
             "overwrite": "Ersätt existerande filer",
@@ -1248,7 +1258,7 @@
         "video_codec": "Videokodek",
         "o_count": "Antal O",
         "md5": "MD5 Checksumma",
-        "oshash": "oshash",
+        "oshash": "OSHash",
         "oshash_meaning": "OpenSubtitles Hash",
         "phash_meaning": "Perceptuell Hash"
     },
@@ -1358,7 +1368,8 @@
             "database_file_path": "Databas filsökväg",
             "generated_directory": "Genererat sökväg",
             "nearly_there": "Nästan framme!",
-            "stash_library_directories": "Stash bibliotekssökväg"
+            "stash_library_directories": "Stash bibliotekssökväg",
+            "password_set_warning": "Anmärkning: du kommer bli frågad om ditt inlogg efter att systemet är skapat."
         },
         "creating": {
             "creating_your_system": "Skapar ditt system"
@@ -1444,7 +1455,13 @@
             "next_step": "När du är redo att fortsätta med uppstarten av ett nytt system tryck på Nästa.",
             "unable_to_locate_specified_config": "Om du läser detta så kunde Stash inte hitta konfigurationsfilen som specifierades via kommandoraden eller miljön. Denna hjälp kommer guida dig genom processen av att ställa in en ny konfiguration."
         },
-        "welcome_to_stash": "Välkommen till Stash"
+        "welcome_to_stash": "Välkommen till Stash",
+        "credentials": {
+            "description": "Ange användarnamnet och lösenordet som du vill använda för att logga in med i Stash. Dessa kan lämnas tomma om du inte vill använda användarnamn/lösenord för att få tillgång till systemet. Dessa behövs om du ska nå systemet från det offentliga internet.",
+            "heading": "Ställ in ditt inlogg",
+            "password_invalid": "Lösenord får ej vara blankt om användarnamnet är inställt.",
+            "username_invalid": "Användarnamn får inte börja eller sluta med blanksteg."
+        }
     },
     "stash_id": "Stash ID",
     "stash_id_endpoint": "Stash ID Slutpunkt URL",
@@ -1722,5 +1739,9 @@
     "sub_folder_depth": "Undermappsdjup (tomt för alla)",
     "sub_folders": "Undermappar",
     "related_studios": "Relaterade",
-    "sub_group_description": "Beskrivning av undergrupp"
+    "sub_group_description": "Beskrivning av undergrupp",
+    "o_count_all": "Antal O (Allt)",
+    "performer_count_all": "Antal Stjärnor (Allt)",
+    "scene_marker_count": "Antal Scenmarkörer",
+    "stash_id_endpoint_any": "Valfri slutpunkt"
 }
