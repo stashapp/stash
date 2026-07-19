@@ -71,6 +71,7 @@
     "hide_configuration": "Hide Configuration",
     "identify": "Identify",
     "ignore": "Ignore",
+    "loop": "Loop",
     "import": "Import…",
     "import_from_file": "Import from file",
     "load": "Load",
@@ -850,6 +851,10 @@
           "continue_playlist_default": {
             "description": "Play next scene in queue when video finishes.",
             "heading": "Continue playlist by default"
+          },
+          "loop_playlist_default": {
+            "description": "When the last scene in the queue finishes, continue from the first scene.",
+            "heading": "Loop playlist by default"
           },
           "disable_mobile_media_auto_rotate": "Disable auto-rotate of fullscreen media on mobile",
           "enable_chromecast": "Enable Chromecast",

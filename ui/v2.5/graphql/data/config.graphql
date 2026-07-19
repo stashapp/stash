@@ -92,6 +92,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   autostartVideo
   autostartVideoOnPlaySelected
   continuePlaylistDefault
+  loopPlaylistDefault
   showStudioAsText
   css
   cssEnabled
