@@ -331,7 +331,7 @@ type Mutation {
   sceneResetPlayCount(id: ID!): Int!
 
   "Generates screenshot at specified time in seconds. Leave empty to generate default screenshot"
-  sceneGenerateScreenshot(id: ID!, at: Float): String!
+  sceneGenerateScreenshot(id: ID!, at: Float): ID!
 
   sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker
   sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker
