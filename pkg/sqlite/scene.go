@@ -721,20 +721,25 @@ func (qb *SceneStore) FindByPath(ctx context.Context, p string) ([]*models.Scene
 	basename := filepath.Base(p)
 	dir := filepath.Dir(p)
 
-	// replace wildcards
-	basename = strings.ReplaceAll(basename, "*", "%")
-	dir = strings.ReplaceAll(dir, "*", "%")
-
 	sq := dialect.From(scenesFilesJoinTable).InnerJoin(
 		filesTable,
 		goqu.On(filesTable.Col(idColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn))),
 	).InnerJoin(
 		foldersTable,
 		goqu.On(foldersTable.Col(idColumn).Eq(filesTable.Col("parent_folder_id"))),
-	).Select(scenesFilesJoinTable.Col(sceneIDColumn)).Where(
-		foldersTable.Col("path").Like(dir),
-		filesTable.Col("basename").Like(basename),
-	)
+	).Select(scenesFilesJoinTable.Col(sceneIDColumn))
+
+	if pathHasWildcard(basename) || pathHasWildcard(dir) {
+		sq = sq.Where(
+			pathLike(foldersTable.Col("path"), dir),
+			pathLike(filesTable.Col("basename"), basename),
+		)
+	} else {
+		sq = sq.Where(
+			pathEqNoCase(foldersTable.Col("path"), dir),
+			pathEqNoCase(filesTable.Col("basename"), basename),
+		)
+	}
 
 	ret, err := qb.findBySubquery(ctx, sq)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {

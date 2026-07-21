@@ -371,7 +371,7 @@ func (s *Scanner) ScanFile(ctx context.Context, f ScannedFile) (*ScanFileResult,
 		// #1426 / #6326 - if file is in a case-insensitive filesystem, then try
 		// case insensitive search
 		// assume case sensitive if in zip
-		if ff == nil && f.ZipFileID != nil {
+		if ff == nil && f.ZipFileID == nil {
 			caseSensitive, _ := f.FS.IsPathCaseSensitive(f.Path)
 
 			if !caseSensitive {

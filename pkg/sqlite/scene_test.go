@@ -12,6 +12,7 @@ import (
 	"reflect"
 	"regexp"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -1735,6 +1736,12 @@ func Test_sceneQueryBuilder_FindByPath(t *testing.T) {
 		{
 			"valid",
 			getPath(sceneIdxWithSpacedName),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithSpacedName)},
+			false,
+		},
+		{
+			"case insensitive",
+			strings.ToUpper(getPath(sceneIdxWithSpacedName)),
 			[]*models.Scene{makeSceneWithID(sceneIdxWithSpacedName)},
 			false,
 		},
