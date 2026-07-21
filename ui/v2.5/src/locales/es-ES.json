@@ -1461,7 +1461,8 @@
         "merged_performers": "Actores fusionados",
         "clipboard_access_denied": "Acceso al portapapeles denegado. Comprueba los permisos de tu navegador",
         "clipboard_image_pasted": "Imagen pegada desde el portapapeles",
-        "clipboard_no_image": "No se ha encontrado ninguna imagen en el portapapeles"
+        "clipboard_no_image": "No se ha encontrado ninguna imagen en el portapapeles",
+        "screenshot_generated": "Captura de pantalla generada"
     },
     "total": "Total",
     "true": "Sí",
