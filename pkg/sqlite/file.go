@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/fs"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/doug-martin/goqu/v9"
@@ -624,7 +623,7 @@ func (qb *FileStore) find(ctx context.Context, id models.FileID) (models.File, e
 	return ret, nil
 }
 
-// FindByPath returns the first file that matches the given path. Wildcard characters are supported.
+// FindByPath returns the first file that matches the given path. The * wildcard is supported.
 func (qb *FileStore) FindByPath(ctx context.Context, p string, caseSensitive bool) (models.File, error) {
 
 	ret, err := qb.FindAllByPath(ctx, p, caseSensitive)
@@ -641,28 +640,29 @@ func (qb *FileStore) FindByPath(ctx context.Context, p string, caseSensitive boo
 }
 
 // FindAllByPath returns all the files that match the given path.
-// Wildcard characters are supported.
+// The * wildcard is supported.
 func (qb *FileStore) FindAllByPath(ctx context.Context, p string, caseSensitive bool) ([]models.File, error) {
 	// separate basename from path
 	basename := filepath.Base(p)
 	dirName := filepath.Dir(p)
 
-	// replace wildcards
-	basename = strings.ReplaceAll(basename, "*", "%")
-	dirName = strings.ReplaceAll(dirName, "*", "%")
-
 	table := qb.table()
 	folderTable := folderTableMgr.table
 
-	// like uses case-insensitive matching. Only use like if wildcards are used
 	q := qb.selectDataset().Prepared(true)
 
-	if strings.Contains(basename, "%") || strings.Contains(dirName, "%") || !caseSensitive {
+	switch {
+	case pathHasWildcard(basename) || pathHasWildcard(dirName):
 		q = q.Where(
-			folderTable.Col("path").Like(dirName),
-			table.Col("basename").Like(basename),
+			pathLike(folderTable.Col("path"), dirName),
+			pathLike(table.Col("basename"), basename),
 		)
-	} else {
+	case !caseSensitive:
+		q = q.Where(
+			pathEqNoCase(folderTable.Col("path"), dirName),
+			pathEqNoCase(table.Col("basename"), basename),
+		)
+	default:
 		q = q.Where(
 			folderTable.Col("path").Eq(dirName),
 			table.Col("basename").Eq(basename),
