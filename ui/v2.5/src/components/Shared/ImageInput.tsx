@@ -147,19 +147,19 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
         <Popover.Content>
           <>
             <div>
-              <Form.Label className="image-input">
+              <span className="image-input">
                 <Button className="minimal">
                   <Icon icon={faFile} className="fa-fw" />
                   <span>
                     <FormattedMessage id="actions.from_file" />
                   </span>
+                  <Form.Control
+                    type="file"
+                    onChange={onImageChange}
+                    accept={acceptExtensions(acceptSVG)}
+                  />
                 </Button>
-                <Form.Control
-                  type="file"
-                  onChange={onImageChange}
-                  accept={acceptExtensions(acceptSVG)}
-                />
-              </Form.Label>
+              </span>
             </div>
             <div>
               <Button className="minimal" onClick={showDialog}>
