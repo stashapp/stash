@@ -203,10 +203,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
     onSubmit: submit,
   });
 
-  const { tags, updateTagsStateFromScraper, tagsControl } = useTagsEdit(
-    scene.tags,
-    (ids) => formik.setFieldValue("tag_ids", ids)
-  );
+  const { tags, updateTagsStateFromScraper, resetTagsState, tagsControl } =
+    useTagsEdit(scene.tags, (ids) => formik.setFieldValue("tag_ids", ids));
 
   const coverImagePreview = useMemo(() => {
     const sceneImage = scene.paths?.screenshot;
@@ -298,6 +296,20 @@ export const SceneEditPanel: React.FC<IProps> = ({
     try {
       await onSubmit(input, andNew);
       formik.resetForm();
+      if (andNew) {
+        setGalleries(
+          scene.galleries?.map((g) => ({
+            id: g.id,
+            title: galleryTitle(g),
+            files: g.files,
+            folder: g.folder,
+          })) ?? []
+        );
+        setPerformers(scene.performers ?? []);
+        setGroups(scene.groups?.map((m) => m.group) ?? []);
+        setStudio(scene.studio ?? null);
+        resetTagsState();
+      }
     } catch (e) {
       Toast.error(e);
     }

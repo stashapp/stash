@@ -127,10 +127,8 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
     onSubmit: submit,
   });
 
-  const { tags, updateTagsStateFromScraper, tagsControl } = useTagsEdit(
-    group.tags,
-    (ids) => formik.setFieldValue("tag_ids", ids)
-  );
+  const { tags, updateTagsStateFromScraper, resetTagsState, tagsControl } =
+    useTagsEdit(group.tags, (ids) => formik.setFieldValue("tag_ids", ids));
 
   const containingGroupEntries = useMemo(() => {
     return formik.values.containing_groups
@@ -230,6 +228,11 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
     try {
       await onSubmit(input, andNew);
       formik.resetForm();
+      if (andNew) {
+        setStudio(group.studio ?? null);
+        setContainingGroups(group.containing_groups?.map((m) => m.group) ?? []);
+        resetTagsState();
+      }
     } catch (e) {
       Toast.error(e);
     }
