@@ -1553,7 +1553,8 @@
         "merged_performers": "Performeurs fusionnés",
         "clipboard_access_denied": "Accès au presse-papiers refusé. Vérifiez les autorisations de votre navigateur.",
         "clipboard_image_pasted": "Image collée depuis le presse-papiers",
-        "clipboard_no_image": "Aucune image trouvée dans le presse-papiers"
+        "clipboard_no_image": "Aucune image trouvée dans le presse-papiers",
+        "screenshot_generated": "Capture d'écran générée"
     },
     "total": "Total",
     "true": "Vrai",
