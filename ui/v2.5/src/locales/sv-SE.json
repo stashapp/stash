@@ -1552,7 +1552,8 @@
         "merged_performers": "Sammanslagna stjärnor",
         "clipboard_access_denied": "Åtkomst till urklipp nekad. Kontrollera dina webbläsarbehörigheter",
         "clipboard_image_pasted": "Bild inklistrad från urklipp",
-        "clipboard_no_image": "Ingen bild hittades i urklipp"
+        "clipboard_no_image": "Ingen bild hittades i urklipp",
+        "screenshot_generated": "Skärmdump genererad"
     },
     "total": "Total",
     "true": "Sant",
