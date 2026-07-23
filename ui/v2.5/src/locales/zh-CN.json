@@ -1513,7 +1513,8 @@
         "merged_performers": "合并的表演者",
         "clipboard_access_denied": "剪贴板访问受阻。检查你浏览器的权限",
         "clipboard_image_pasted": "粘贴剪贴板图像",
-        "clipboard_no_image": "没有图像在剪贴板中找到"
+        "clipboard_no_image": "没有图像在剪贴板中找到",
+        "screenshot_generated": "截图已生成"
     },
     "total": "总计",
     "true": "是",
