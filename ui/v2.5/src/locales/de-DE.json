@@ -159,7 +159,8 @@
         "reveal_in_file_manager": "Im Dateimanager anzeigen",
         "selective_generate": "Selektives Generieren",
         "create_parent_tag": "Übergeordnetes Tag erstellen",
-        "exclude_lowercase": "Ausschließen"
+        "exclude_lowercase": "Ausschließen",
+        "set_as_performer_image": "Als Darstellerbild festlegen"
     },
     "actions_name": "Aktionen",
     "age": "Alter",
