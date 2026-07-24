@@ -105,7 +105,7 @@ func (f *verifyFilter) Accept(ctx context.Context, path string, info fs.FileInfo
 	}
 
 	// Check .stashignore files, bounded to the library root.
-	if !f.stashIgnoreFilter.Accept(ctx, path, info, stash.Path, zipFilePath) {
+	if !f.stashIgnoreFilter.Accept(ctx, path, info, f.stashPaths.GetStashRootFromDirPath(path), zipFilePath) {
 		logger.Infof("%s is excluded due to .stashignore. Marking as missing: %q", fileOrFolder, path)
 		return false
 	}
