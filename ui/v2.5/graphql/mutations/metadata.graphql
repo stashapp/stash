@@ -38,6 +38,10 @@ mutation VerifyPaths($input: VerifyPathsInput!) {
   verifyPaths(input: $input)
 }
 
+mutation PurgeMissing($input: PurgeMissingInput!) {
+  purgeMissing(input: $input)
+}
+
 mutation MetadataCleanGenerated($input: CleanGeneratedInput!) {
   metadataCleanGenerated(input: $input)
 }

@@ -2945,6 +2945,12 @@ export const mutateVerifyPaths = (input: GQL.VerifyPathsInput) =>
     variables: { input },
   });
 
+export const mutatePurgeMissing = (input: GQL.PurgeMissingInput) =>
+  client.mutate<GQL.PurgeMissingMutation>({
+    mutation: GQL.PurgeMissingDocument,
+    variables: { input },
+  });
+
 export const mutateCleanGenerated = (input: GQL.CleanGeneratedInput) =>
   client.mutate<GQL.MetadataCleanGeneratedMutation>({
     mutation: GQL.MetadataCleanGeneratedDocument,
