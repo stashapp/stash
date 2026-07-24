@@ -153,7 +153,7 @@
       "dry_mode_selected": "Dry Mode selected. No changes to the database will be made, only logging.",
       "import_warning": "Are you sure you want to import? This will delete the database and re-import from your exported metadata.",
       "purge_missing_confirm_message": "Are you sure you want to purge files and folders marked missing? This will delete database information and generated content for all files and folders that marked as missing in the database.",
-      "verify_purge_confirm_message": "Are you sure you want to purge files found missing? This will delete database information and generated content for all files and folders that are no longer found in the filesystem."
+      "verify_purge_confirm_message": "Are you sure you want to purge files and folders found missing? This will delete database information and generated content for all files and folders that are no longer found in the filesystem."
     },
     "temp_disable": "Disable temporarily…",
     "temp_enable": "Enable temporarily…",
