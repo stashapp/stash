@@ -85,6 +85,7 @@ const VerifyDialog: React.FC<IVerifyDialog> = ({
   return (
     <ModalComponent
       show
+      header={<FormattedMessage id="actions.verify_files" />}
       icon={faTrashAlt}
       disabled={pathSelection && paths.length === 0}
       accept={{
@@ -225,6 +226,7 @@ const PurgeMissingDialog: React.FC<IPurgeMissingDialog> = ({
     <ModalComponent
       show
       icon={faTrashAlt}
+      header={<FormattedMessage id="config.tasks.purge_missing" />}
       disabled={pathSelection && paths.length === 0}
       accept={{
         text: intl.formatMessage({ id: "config.tasks.purge_missing" }),
