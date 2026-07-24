@@ -1517,7 +1517,8 @@
         "merged_performers": "배우가 병합되었습니다",
         "clipboard_access_denied": "클립보드 접근 거부됨. 브라우저 권한을 확인하십시오",
         "clipboard_image_pasted": "클립보드에서 이미지 복사됨",
-        "clipboard_no_image": "클립보드에 이미지 없음"
+        "clipboard_no_image": "클립보드에 이미지 없음",
+        "screenshot_generated": "스크린샷 생성됨"
     },
     "total": "전체",
     "true": "참",
