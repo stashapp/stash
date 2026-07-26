@@ -239,6 +239,7 @@ Returns `void`.
 - `FilteredSceneMarkerList`
 - `FilteredStudioList`
 - `FilteredTagList`
+- `FilterTags.Extras`
 - `FolderSelect`
 - `FrontPage`
 - `GalleryCard`
@@ -309,6 +310,7 @@ Returns `void`.
 - `RatingStars`
 - `RatingSystem`
 - `RecommendationRow`
+- `SavedFilter.Loaded`
 - `SceneCard`
 - `SceneCard.Details`
 - `SceneCard.Image`
