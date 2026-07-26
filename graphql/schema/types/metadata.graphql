@@ -107,6 +107,45 @@ input ScanMetadataInput {
   filter: ScanMetaDataFilterInput
 }
 
+# specifies when to generate metadata during a scan
+enum GenerateTiming {
+  """
+  Generate artifacts before returning from the scan API call.
+  This will block the API call until generation is complete, and is not recommended for large artifacts.
+  Recommended when you want the metadata/artifact to be available immediately after the scan completes (ie covers and phashes).
+  """
+  SYNC
+  """
+  Generate artifacts asynchronously and concurrently with the scan.
+  There is no guarantee that artifacts will be generated when the scan completes.
+  """
+  ASYNC
+}
+
+input ScanFileInput {
+  path: String!
+
+  "Forces a rescan on files even if modification time is unchanged"
+  rescan: Boolean
+
+  "Generate covers during scan"
+  generateCovers: GenerateTiming
+  "Generate video previews during scan"
+  generatePreviews: GenerateTiming
+  "Generate image previews during scan"
+  generateImagePreviews: GenerateTiming
+  "Generate video sprites during scan"
+  generateSprites: GenerateTiming
+  "Generate video phashes during scan"
+  generateVideoPhashes: GenerateTiming
+  "Generate image phashes during scan"
+  generateImagePhashes: GenerateTiming
+  "Generate image thumbnails during scan"
+  generateThumbnails: GenerateTiming
+  "Generate image clip previews during scan"
+  generateClipPreviews: GenerateTiming
+}
+
 type ScanMetadataOptions {
   "Forces a rescan on files even if modification time is unchanged"
   rescan: Boolean!
