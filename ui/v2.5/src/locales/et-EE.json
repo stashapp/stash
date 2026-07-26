@@ -223,7 +223,8 @@
             "match_failed_already_tagged": "Stseen juba sildistatud",
             "match_failed_no_result": "Vasteid ei leitud",
             "match_success": "Stseen edukalt sildistatud",
-            "unnamed": "Nimeta"
+            "unnamed": "Nimeta",
+            "hash_submissions": "{count} esitust"
         },
         "verb_match_fp": "Leia Sõrmejälje Kattuvusi",
         "verb_matched": "Kokkusobitatud",
@@ -1249,7 +1250,7 @@
         "stream": "Striim",
         "video_codec": "Video Koodek",
         "o_count": "O Arv",
-        "oshash": "oshash",
+        "oshash": "OSHash",
         "oshash_meaning": "OpenSubtitles'i Räsi",
         "phash_meaning": "Tajutav Räsi",
         "md5": "MD5 Kontrollsumma"
@@ -1508,7 +1509,8 @@
         "merged_performers": "Näitlejad kokku seotud",
         "clipboard_access_denied": "Lõikelaua ligipääs on keelatud. Vaata brauseri õigused üle",
         "clipboard_image_pasted": "Pilt kleebitud lõikelaualt",
-        "clipboard_no_image": "Lõukelaualt ei leitud pilti"
+        "clipboard_no_image": "Lõukelaualt ei leitud pilti",
+        "screenshot_generated": "Ekraanipilt genereeritud"
     },
     "total": "Kokku",
     "true": "Tõene",
@@ -1741,5 +1743,6 @@
     "scene_marker_count": "Stseeni Markerite Arv",
     "sub_group_description": "Alam-Grupi Kirjeldus",
     "o_count_all": "O Luger (Kokku)",
-    "performer_count_all": "Esinejate Arv (Kokku)"
+    "performer_count_all": "Esinejate Arv (Kokku)",
+    "stash_id_endpoint_any": "Kõik lõpp-punktid"
 }
