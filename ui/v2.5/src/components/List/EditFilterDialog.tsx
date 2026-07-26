@@ -36,7 +36,11 @@ import {
 import { useFocusOnce } from "src/utils/focus";
 import Mousetrap from "mousetrap";
 import ScreenUtils from "src/utils/screen";
-import { LoadFilterDialog, SaveFilterDialog } from "./SavedFilterList";
+import {
+  LoadFilterDialog,
+  notifySavedFilterLoaded,
+  SaveFilterDialog,
+} from "./SavedFilterList";
 import { SearchTermInput } from "./ListFilter";
 
 interface ICriterionList {
@@ -480,6 +484,11 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     newFilter.randomSeed = -1;
 
     onApply(newFilter);
+    notifySavedFilterLoaded({
+      filter: newFilter,
+      savedFilter: f,
+      source: "dialog",
+    });
   }
 
   async function onSaveFilter(name: string, id?: string) {
