@@ -219,7 +219,7 @@
             "fp_found": "{fpCount, plural, =0 {Uusi sõrmejälje kattuvusi ei leitud} other {# uut sõrmejälje kattuvust leitud}}",
             "fp_matches": "Kestus klapib",
             "fp_matches_multi": "Kestus klapib {matchCount}/{durationsLength} sõrmejälgedel",
-            "hash_matches": "{hash_type} klapib",
+            "hash_matches": "{count, plural, one {# {hash_type} klapib} other {# {hash_type} klapib}}",
             "match_failed_already_tagged": "Stseen juba sildistatud",
             "match_failed_no_result": "Vasteid ei leitud",
             "match_success": "Stseen edukalt sildistatud",
