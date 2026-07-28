@@ -477,6 +477,9 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
     if (taskDefaults?.verify) {
       setVerifyOptions(taskDefaults.verify);
     }
+    if (taskDefaults?.purgeMissing) {
+      setPurgeMissingOptions(taskDefaults.purgeMissing);
+    }
   }, [taskDefaults, loading]);
 
   function configureDefaults(partial: Record<string, object>) {
