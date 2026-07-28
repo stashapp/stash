@@ -103,7 +103,7 @@ func (j *purgeMissingJob) purgeMissingFiles(ctx context.Context, progress *job.P
 	for more {
 		var files []models.File
 
-		if err := r.WithTxn(ctx, func(ctx context.Context) error {
+		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 			if job.IsCancelled(ctx) {
 				return nil
 			}
