@@ -23,9 +23,6 @@ type purgeMissingJob struct {
 
 	progress *job.Progress
 	options  PurgeMissingOptions
-
-	missingFileHandler   missingFileFn
-	missingFolderHandler missingFolderFn
 }
 
 // PurgeMissingOptions provides options for purging missing files.

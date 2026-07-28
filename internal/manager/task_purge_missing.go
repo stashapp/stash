@@ -19,12 +19,11 @@ import (
 type purgeMissingJob struct {
 	purger *file.MissingPurger
 
-	options       file.PurgeMissingOptions
-	purgeHandlers []file.PurgeHandler
-	repository    models.Repository
-	sceneService  SceneService
-	imageService  ImageService
-	scanSubs      *subscriptionManager
+	options      file.PurgeMissingOptions
+	repository   models.Repository
+	sceneService SceneService
+	imageService ImageService
+	scanSubs     *subscriptionManager
 }
 
 // galleryCleanCandidate avoids retaining full gallery models for large libraries.
