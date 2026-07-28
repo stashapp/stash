@@ -753,7 +753,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
       {renderImportDialog()}
       {dialogOpen.verifyAlert || dialogOpen.verify ? (
         <VerifyDialog
-          dryRun={false}
+          dryRun={verifyOptions.dryRun ?? false}
           purgeMissing={verifyOptions.purgeMissing ?? false}
           pathSelection={dialogOpen.verify}
           onClose={(p) => {
@@ -776,7 +776,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
       ) : null}
       {dialogOpen.purgeMissingAlert || dialogOpen.purgeMissing ? (
         <PurgeMissingDialog
-          dryRun={false}
+          dryRun={purgeMissingOptions.dryRun ?? false}
           pathSelection={dialogOpen.purgeMissing}
           onClose={(p) => {
             // undefined means cancelled
