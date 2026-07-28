@@ -39,7 +39,7 @@ interface BaseFile {
   parent_folder: Folder!
   zip_file: BasicFile
 
-  "If not null, indicates when the folder was detected as missing. Set by the clean task"
+  "If not null, indicates when the folder was detected as missing. Set by the verifyPaths task"
   missing_since: Time
 
   mod_time: Time!
@@ -63,7 +63,7 @@ type BasicFile implements BaseFile {
   parent_folder: Folder!
   zip_file: BasicFile
 
-  "If not null, indicates when the folder was detected as missing. Set by the clean task"
+  "If not null, indicates when the folder was detected as missing. Set by the verifyPaths task"
   missing_since: Time
 
   mod_time: Time!
@@ -87,7 +87,7 @@ type VideoFile implements BaseFile {
   parent_folder: Folder!
   zip_file: BasicFile
 
-  "If not null, indicates when the folder was detected as missing. Set by the clean task"
+  "If not null, indicates when the folder was detected as missing. Set by the verifyPaths task"
   missing_since: Time
 
   mod_time: Time!
@@ -122,7 +122,7 @@ type ImageFile implements BaseFile {
   parent_folder: Folder!
   zip_file: BasicFile
 
-  "If not null, indicates when the folder was detected as missing. Set by the clean task"
+  "If not null, indicates when the folder was detected as missing. Set by the verifyPaths task"
   missing_since: Time
 
   mod_time: Time!
@@ -154,7 +154,7 @@ type GalleryFile implements BaseFile {
   parent_folder: Folder!
   zip_file: BasicFile
 
-  "If not null, indicates when the folder was detected as missing. Set by the clean task"
+  "If not null, indicates when the folder was detected as missing. Set by the verifyPaths task"
   missing_since: Time
   
   mod_time: Time!
