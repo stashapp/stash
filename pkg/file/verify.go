@@ -23,8 +23,8 @@ type Verifier struct {
 	TrashPath     string
 }
 
-type missingFileFn func(ctx context.Context, f models.File, topLevel bool) (processed bool, err error)
-type missingFolderFn func(ctx context.Context, f *models.Folder, topLevel bool) (processed bool, err error)
+type missingFileFn func(ctx context.Context, f models.File) (processed bool, err error)
+type missingFolderFn func(ctx context.Context, f *models.Folder) (processed bool, err error)
 
 type verifyJob struct {
 	*Verifier
@@ -76,8 +76,6 @@ func (s *Verifier) Verify(ctx context.Context, options VerifyOptions, progress *
 type fileOrFolder struct {
 	fileID   models.FileID
 	folderID models.FolderID
-	// topLevel indicates if processing this item should increment the progress counter
-	topLevel bool
 }
 
 type deleteSet struct {
@@ -94,9 +92,9 @@ func newDeleteSet() deleteSet {
 	}
 }
 
-func (s *deleteSet) add(id models.FileID, path string, topLevel bool) {
+func (s *deleteSet) add(id models.FileID, path string) {
 	if _, ok := s.fileIDSet[id]; !ok {
-		s.orderedList = append(s.orderedList, fileOrFolder{fileID: id, topLevel: topLevel})
+		s.orderedList = append(s.orderedList, fileOrFolder{fileID: id})
 		s.fileIDSet[id] = path
 	}
 }
@@ -106,9 +104,9 @@ func (s *deleteSet) has(id models.FileID) bool {
 	return ok
 }
 
-func (s *deleteSet) addFolder(id models.FolderID, path string, topLevel bool) {
+func (s *deleteSet) addFolder(id models.FolderID, path string) {
 	if _, ok := s.folderIDSet[id]; !ok {
-		s.orderedList = append(s.orderedList, fileOrFolder{folderID: id, topLevel: topLevel})
+		s.orderedList = append(s.orderedList, fileOrFolder{folderID: id})
 		s.folderIDSet[id] = path
 	}
 }
@@ -138,11 +136,11 @@ func (j *verifyJob) init() {
 	}
 }
 
-func (j *verifyJob) noopMissingFile(ctx context.Context, f models.File, topLevel bool) (processed bool, err error) {
+func (j *verifyJob) noopMissingFile(ctx context.Context, f models.File) (processed bool, err error) {
 	return true, nil
 }
 
-func (j *verifyJob) markMissingFile(ctx context.Context, f models.File, topLevel bool) (processed bool, err error) {
+func (j *verifyJob) markMissingFile(ctx context.Context, f models.File) (processed bool, err error) {
 	missingSince := time.Now()
 	if err := j.Repository.File.SetMissing(ctx, f.Base().ID, &missingSince); err != nil {
 		return false, err
@@ -150,17 +148,17 @@ func (j *verifyJob) markMissingFile(ctx context.Context, f models.File, topLevel
 	return true, nil
 }
 
-func (j *verifyJob) markToDeleteMissingFile(ctx context.Context, f models.File, topLevel bool) (processed bool, err error) {
-	j.toDelete.add(f.Base().ID, f.Base().Path, topLevel)
+func (j *verifyJob) markToDeleteMissingFile(ctx context.Context, f models.File) (processed bool, err error) {
+	j.toDelete.add(f.Base().ID, f.Base().Path)
 	// needs to be deleted, mark as not processed
 	return false, nil
 }
 
-func (j *verifyJob) noopMissingFolder(ctx context.Context, f *models.Folder, topLevel bool) (processed bool, err error) {
+func (j *verifyJob) noopMissingFolder(ctx context.Context, f *models.Folder) (processed bool, err error) {
 	return true, nil
 }
 
-func (j *verifyJob) markMissingFolder(ctx context.Context, f *models.Folder, topLevel bool) (processed bool, err error) {
+func (j *verifyJob) markMissingFolder(ctx context.Context, f *models.Folder) (processed bool, err error) {
 	missingSince := time.Now()
 	if err := j.Repository.Folder.SetMissing(ctx, f.ID, &missingSince); err != nil {
 		return false, err
@@ -168,8 +166,8 @@ func (j *verifyJob) markMissingFolder(ctx context.Context, f *models.Folder, top
 	return true, nil
 }
 
-func (j *verifyJob) markToDeleteMissingFolder(ctx context.Context, f *models.Folder, topLevel bool) (processed bool, err error) {
-	j.toDelete.addFolder(f.ID, f.Path, topLevel)
+func (j *verifyJob) markToDeleteMissingFolder(ctx context.Context, f *models.Folder) (processed bool, err error) {
+	j.toDelete.addFolder(f.ID, f.Path)
 	// needs to be deleted, mark as not processed
 	return false, nil
 }
@@ -230,9 +228,7 @@ func (j *verifyJob) execute(ctx context.Context) error {
 				j.deleteFolder(ctx, ff.folderID, j.toDelete.folderIDSet[ff.folderID])
 			}
 
-			if ff.topLevel {
-				progress.Increment()
-			}
+			progress.Increment()
 		}
 	})
 
@@ -271,19 +267,23 @@ func (j *verifyJob) assessFiles(ctx context.Context) error {
 			path := f.Base().Path
 			fileID := f.Base().ID
 
-			// short-cut, don't assess if already missing or added to delete set
-			if f.Base().MissingSince != nil || j.toDelete.has(fileID) {
+			// short-cut, don't assess if already missing
+			if f.Base().MissingSince != nil {
+				// increment progress, no further processing
+				progress.Increment()
+				continue
+			}
+
+			// skip if already added to delete set
+			// don't increment progress here, as it will be incremented when the file is processed
+			if j.toDelete.has(fileID) {
 				continue
 			}
 
 			var err error
 			progress.ExecuteTask(fmt.Sprintf("Verifying file %s", path), func() {
 				if j.shouldClean(ctx, f) {
-					var processed bool
-					processed, err = j.handleMissingFile(ctx, f)
-					if processed {
-						progress.Increment()
-					}
+					err = j.handleMissingFile(ctx, f)
 				} else {
 					// increment progress, no further processing
 					progress.Increment()
@@ -305,14 +305,12 @@ func (j *verifyJob) assessFiles(ctx context.Context) error {
 }
 
 // flagFolderForDelete adds folders to the toDelete set, with the leaf folders added first
-func (j *verifyJob) handleMissingFile(ctx context.Context, f models.File) (processed bool, err error) {
+func (j *verifyJob) handleMissingFile(ctx context.Context, f models.File) error {
 	r := j.Repository
 
 	// do all this in a transaction so that all contained files are marked in a single transaction
 	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		// add contained files first
-		topLevel := false
-
 		containedFiles, err := r.File.FindByZipFileID(ctx, f.Base().ID)
 		if err != nil {
 			return fmt.Errorf("error finding contained files for %q: %w", f.Base().Path, err)
@@ -320,8 +318,13 @@ func (j *verifyJob) handleMissingFile(ctx context.Context, f models.File) (proce
 
 		for _, cf := range containedFiles {
 			logger.Infof("Marking contained file %q to clean", cf.Base().Path)
-			if _, err := j.missingFileHandler(ctx, cf, topLevel); err != nil {
+			processed, err := j.missingFileHandler(ctx, cf)
+			if err != nil {
 				return err
+			}
+
+			if processed {
+				j.progress.Increment()
 			}
 		}
 
@@ -333,23 +336,31 @@ func (j *verifyJob) handleMissingFile(ctx context.Context, f models.File) (proce
 
 		for _, cf := range containedFolders {
 			logger.Infof("Marking contained folder %q to clean", cf.Path)
-			if _, err := j.missingFolderHandler(ctx, cf, topLevel); err != nil {
+			processed, err := j.missingFolderHandler(ctx, cf)
+			if err != nil {
 				return err
+			}
+
+			if processed {
+				j.progress.Increment()
 			}
 		}
 
-		// only use the processed return value for the top-level file
-		topLevel = true
-		processed, err = j.missingFileHandler(ctx, f, topLevel)
+		processed, err := j.missingFileHandler(ctx, f)
 		if err != nil {
 			return err
 		}
+
+		if processed {
+			j.progress.Increment()
+		}
+
 		return nil
 	}); err != nil {
-		return false, err
+		return err
 	}
 
-	return processed, nil
+	return nil
 }
 
 func (j *verifyJob) assessFolders(ctx context.Context) error {
@@ -384,20 +395,23 @@ func (j *verifyJob) assessFolders(ctx context.Context) error {
 			path := f.Path
 			folderID := f.ID
 
-			// don't assess if already missing or added to delete set
-			if f.MissingSince != nil || j.toDelete.hasFolder(folderID) {
+			// don't assess if already missing
+			if f.MissingSince != nil {
+				// increment progress, no further processing
 				progress.Increment()
 				continue
 			}
 
+			// skip if already added to delete set
+			// don't increment progress here, as it will be incremented when the folder is processed
+			if j.toDelete.hasFolder(folderID) {
+				continue
+			}
+
 			var err error
-			progress.ExecuteTask(fmt.Sprintf("Assessing folder %s for clean", path), func() {
+			progress.ExecuteTask(fmt.Sprintf("Verifying folder %s", path), func() {
 				if j.shouldCleanFolder(ctx, f) {
-					var processed bool
-					processed, err = j.handleMissingFolder(ctx, f)
-					if processed {
-						progress.Increment()
-					}
+					err = j.handleMissingFolder(ctx, f)
 				} else {
 					// increment progress, no further processing
 					progress.Increment()
@@ -418,14 +432,12 @@ func (j *verifyJob) assessFolders(ctx context.Context) error {
 	return nil
 }
 
-func (j *verifyJob) handleMissingFolder(ctx context.Context, folder *models.Folder) (processed bool, err error) {
+func (j *verifyJob) handleMissingFolder(ctx context.Context, folder *models.Folder) error {
 	r := j.Repository
 
 	// do all this in a transaction so that all contained files are marked in a single transaction
 	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		// add contained files first
-		topLevel := false
-
 		containedFiles, err := r.File.FindByFolderID(ctx, folder.ID)
 		if err != nil {
 			return fmt.Errorf("error finding contained files for %q: %w", folder.Path, err)
@@ -433,8 +445,13 @@ func (j *verifyJob) handleMissingFolder(ctx context.Context, folder *models.Fold
 
 		for _, cf := range containedFiles {
 			logger.Infof("Marking contained file %q to clean", cf.Base().Path)
-			if _, err := j.missingFileHandler(ctx, cf, topLevel); err != nil {
+			processed, err := j.missingFileHandler(ctx, cf)
+			if err != nil {
 				return err
+			}
+
+			if processed {
+				j.progress.Increment()
 			}
 		}
 
@@ -442,17 +459,21 @@ func (j *verifyJob) handleMissingFolder(ctx context.Context, folder *models.Fold
 		// so we need to check child folders separately
 
 		// only use the processed return value for the top-level folder
-		topLevel = true
-		processed, err = j.missingFolderHandler(ctx, folder, topLevel)
+		processed, err := j.missingFolderHandler(ctx, folder)
 		if err != nil {
 			return err
 		}
+
+		if processed {
+			j.progress.Increment()
+		}
+
 		return nil
 	}); err != nil {
-		return false, err
+		return err
 	}
 
-	return processed, nil
+	return nil
 }
 
 func isNotFound(err error) bool {
