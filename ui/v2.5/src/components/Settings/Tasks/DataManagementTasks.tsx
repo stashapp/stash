@@ -551,7 +551,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
       Toast.success(
         intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
-          { operation_name: intl.formatMessage({ id: "actions.verify" }) }
+          { operation_name: intl.formatMessage({ id: "actions.verify_files" }) }
         )
       );
     } catch (e) {
@@ -581,7 +581,9 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
         intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
           {
-            operation_name: intl.formatMessage({ id: "actions.purge_missing" }),
+            operation_name: intl.formatMessage({
+              id: "config.tasks.purge_missing",
+            }),
           }
         )
       );
