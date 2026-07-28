@@ -19,12 +19,11 @@ import (
 type purgeMissingJob struct {
 	purger *file.MissingPurger
 
-	options       file.PurgeMissingOptions
-	purgeHandlers []file.PurgeHandler
-	repository    models.Repository
-	sceneService  SceneService
-	imageService  ImageService
-	scanSubs      *subscriptionManager
+	options      file.PurgeMissingOptions
+	repository   models.Repository
+	sceneService SceneService
+	imageService ImageService
+	scanSubs     *subscriptionManager
 }
 
 func (j *purgeMissingJob) Execute(ctx context.Context, progress *job.Progress) error {
