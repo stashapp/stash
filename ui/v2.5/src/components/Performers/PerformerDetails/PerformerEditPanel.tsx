@@ -178,10 +178,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     onSubmit: submit,
   });
 
-  const { tags, updateTagsStateFromScraper, tagsControl } = useTagsEdit(
-    performer.tags,
-    (ids) => formik.setFieldValue("tag_ids", ids)
-  );
+  const { tags, updateTagsStateFromScraper, resetTagsState, tagsControl } =
+    useTagsEdit(performer.tags, (ids) => formik.setFieldValue("tag_ids", ids));
 
   function translateScrapedGender(scrapedGender?: string) {
     if (!scrapedGender) {
@@ -351,6 +349,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     try {
       await onSubmit(input, andNew);
       formik.resetForm();
+      if (andNew) {
+        resetTagsState();
+      }
     } catch (e) {
       Toast.error(e);
     }
