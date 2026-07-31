@@ -106,7 +106,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     onSubmit: submit,
   });
 
-  const { tagsControl } = useTagsEdit(studio.tags, (ids) =>
+  const { resetTagsState, tagsControl } = useTagsEdit(studio.tags, (ids) =>
     formik.setFieldValue("tag_ids", ids)
   );
 
@@ -176,6 +176,26 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     try {
       await onSubmit(input, andNew);
       formik.resetForm();
+      if (andNew) {
+        setParentStudio(
+          studio.parent_studio
+            ? {
+                id: studio.parent_studio.id,
+                name: studio.parent_studio.name,
+                aliases: [],
+              }
+            : null
+        );
+        setChildStudios(
+          (studio.child_studios ?? []).map((childStudio) => ({
+            id: childStudio.id,
+            name: childStudio.name,
+            aliases: [],
+            image_path: childStudio.image_path,
+          }))
+        );
+        resetTagsState();
+      }
     } catch (e) {
       Toast.error(e);
     }
