@@ -269,23 +269,6 @@ const Config: React.FC<IConfigProps> = ({ show }) => {
                 })}
               </Form.Text>
             </Form.Group>
-            <Form.Group controlId="warn-on-mismatches">
-              <Form.Check
-                label={
-                  <FormattedMessage id="component_tagger.config.warn_on_mismatches_label" />
-                }
-                checked={config.warnOnPotentialMismatches ?? true}
-                onChange={(e) =>
-                  setConfig({
-                    ...config,
-                    warnOnPotentialMismatches: e.currentTarget.checked,
-                  })
-                }
-              />
-              <Form.Text>
-                <FormattedMessage id="component_tagger.config.warn_on_mismatches_desc" />
-              </Form.Text>
-            </Form.Group>
             <Form.Group controlId="toggle-organized">
               <Form.Check
                 label={

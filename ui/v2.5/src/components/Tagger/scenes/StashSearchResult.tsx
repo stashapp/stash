@@ -762,9 +762,6 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
                   ? stashScene.date
                   : scene.date
               }
-              warnOnPotentialMismatches={
-                config.warnOnPotentialMismatches ?? true
-              }
             />
           ))}
         </Form.Group>
