@@ -145,67 +145,65 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
     const popover = (
       <Popover id="set-image-popover">
         <Popover.Content>
-          <>
-            <div>
-              <span className="image-input">
-                <Button className="minimal">
-                  <Icon icon={faFile} className="fa-fw" />
-                  <span>
-                    <FormattedMessage id="actions.from_file" />
-                  </span>
-                  <Form.Control
-                    type="file"
-                    onChange={onImageChange}
-                    accept={acceptExtensions(acceptSVG)}
-                  />
-                </Button>
-              </span>
-            </div>
-            <div>
-              <Button className="minimal" onClick={showDialog}>
-                <Icon icon={faLink} className="fa-fw" />
+          <div>
+            <span className="image-input">
+              <Button className="minimal">
+                <Icon icon={faFile} className="fa-fw" />
                 <span>
-                  <FormattedMessage id="actions.from_url" />
+                  <FormattedMessage id="actions.from_file" />
+                </span>
+                <Form.Control
+                  type="file"
+                  onChange={onImageChange}
+                  accept={acceptExtensions(acceptSVG)}
+                />
+              </Button>
+            </span>
+          </div>
+          <div>
+            <Button className="minimal" onClick={showDialog}>
+              <Icon icon={faLink} className="fa-fw" />
+              <span>
+                <FormattedMessage id="actions.from_url" />
+              </span>
+            </Button>
+          </div>
+          {window.isSecureContext && (
+            <div>
+              <Button className="minimal" onClick={onPasteClipboard}>
+                <Icon icon={faClipboard} className="fa-fw" />
+                <span>
+                  <FormattedMessage id="actions.from_clipboard" />
                 </span>
               </Button>
             </div>
-            {window.isSecureContext && (
-              <div>
-                <Button className="minimal" onClick={onPasteClipboard}>
-                  <Icon icon={faClipboard} className="fa-fw" />
-                  <span>
-                    <FormattedMessage id="actions.from_clipboard" />
-                  </span>
-                </Button>
-              </div>
-            )}
-            {extraActions && extraActions.length > 0 && (
+          )}
+          {extraActions && extraActions.length > 0 && (
+            <div className="set-image-menu-divider" />
+          )}
+          {extraActions?.map((action) => (
+            <div key={action.labelId}>
+              <Button className="minimal" onClick={action.onClick}>
+                <Icon icon={action.icon} className="fa-fw" />
+                <span>
+                  <FormattedMessage id={action.labelId} />
+                </span>
+              </Button>
+            </div>
+          ))}
+          {onReset && (
+            <>
               <div className="set-image-menu-divider" />
-            )}
-            {extraActions?.map((action) => (
-              <div key={action.labelId}>
-                <Button className="minimal" onClick={action.onClick}>
-                  <Icon icon={action.icon} className="fa-fw" />
+              <div>
+                <Button className="minimal" onClick={onReset}>
+                  <Icon icon={faTrashAlt} className="fa-fw" />
                   <span>
-                    <FormattedMessage id={action.labelId} />
+                    <FormattedMessage id="actions.clear_image" />
                   </span>
                 </Button>
               </div>
-            ))}
-            {onReset && (
-              <>
-                <div className="set-image-menu-divider" />
-                <div>
-                  <Button className="minimal" onClick={onReset}>
-                    <Icon icon={faTrashAlt} className="fa-fw" />
-                    <span>
-                      <FormattedMessage id="actions.clear_image" />
-                    </span>
-                  </Button>
-                </div>
-              </>
-            )}
-          </>
+            </>
+          )}
         </Popover.Content>
       </Popover>
     );
