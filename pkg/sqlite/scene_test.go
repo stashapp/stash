@@ -5,12 +5,14 @@ package sqlite_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math"
 	"path/filepath"
 	"reflect"
 	"regexp"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -119,7 +121,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithNothing]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
@@ -166,7 +168,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithNothing]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
@@ -352,7 +354,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithNothing]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
@@ -573,7 +575,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 					Mode: models.RelationshipUpdateModeSet,
 				},
 				TagIDs: &models.UpdateIDs{
-					IDs:  []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
+					IDs:  []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithNothing]},
 					Mode: models.RelationshipUpdateModeSet,
 				},
 				PerformerIDs: &models.UpdateIDs{
@@ -628,7 +630,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithNothing]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 				Groups: models.NewRelatedGroups([]models.GroupsScenes{
 					{
@@ -808,7 +810,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			sceneIDs[sceneIdxWithTwoTags],
 			models.ScenePartial{
 				TagIDs: &models.UpdateIDs{
-					IDs:  []int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGallery]},
+					IDs:  []int{tagIDs[tagIdx1WithGallery], tagIDs[tagIdx1WithNothing]},
 					Mode: models.RelationshipUpdateModeAdd,
 				},
 			},
@@ -816,7 +818,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				TagIDs: models.NewRelatedIDs(append(
 					[]int{
 						tagIDs[tagIdx1WithGallery],
-						tagIDs[tagIdx1WithDupName],
+						tagIDs[tagIdx1WithNothing],
 					},
 					indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags])...,
 				)),
@@ -828,14 +830,14 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			sceneIDs[sceneIdxWithTwoTags],
 			models.ScenePartial{
 				TagIDs: &models.UpdateIDs{
-					IDs:  []int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithDupName]},
+					IDs:  []int{tagIDs[tagIdx1WithNothing], tagIDs[tagIdx1WithNothing]},
 					Mode: models.RelationshipUpdateModeAdd,
 				},
 			},
 			models.Scene{
 				TagIDs: models.NewRelatedIDs(append(
 					[]int{
-						tagIDs[tagIdx1WithDupName],
+						tagIDs[tagIdx1WithNothing],
 					},
 					indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags])...,
 				)),
@@ -1738,6 +1740,12 @@ func Test_sceneQueryBuilder_FindByPath(t *testing.T) {
 			false,
 		},
 		{
+			"case insensitive",
+			strings.ToUpper(getPath(sceneIdxWithSpacedName)),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithSpacedName)},
+			false,
+		},
+		{
 			"invalid",
 			"invalid path",
 			nil,
@@ -2092,6 +2100,62 @@ func sceneQueryQ(ctx context.Context, t *testing.T, sqb models.SceneReader, q st
 	scenes = queryScene(ctx, t, sqb, nil, &filter)
 
 	assert.Len(t, scenes, totalScenes)
+}
+
+// #5503 - total size/duration must include secondary files of equal size/duration
+func TestSceneQueryTotalSizeMultipleFiles(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		sqb := db.Scene
+		fqb := db.File
+
+		const fileSize = int64(1234)
+		const fileDuration = float64(100)
+
+		makeFile := func(basename string) models.FileID {
+			f := &models.VideoFile{
+				BaseFile: &models.BaseFile{
+					Path:           getFilePath(folderIdxWithSceneFiles, basename),
+					Basename:       basename,
+					ParentFolderID: folderIDs[folderIdxWithSceneFiles],
+					Size:           fileSize,
+				},
+				Duration: fileDuration,
+			}
+			if err := fqb.Create(ctx, f); err != nil {
+				t.Fatalf("creating file: %v", err)
+			}
+			return f.ID
+		}
+
+		f1 := makeFile("multifile-scene-1.mp4")
+		f2 := makeFile("multifile-scene-2.mp4")
+
+		scene := &models.Scene{Title: "multifile scene"}
+		if err := sqb.Create(ctx, scene, []models.FileID{f1, f2}); err != nil {
+			t.Fatalf("creating scene: %v", err)
+		}
+
+		result, err := sqb.Query(ctx, models.SceneQueryOptions{
+			QueryOptions: models.QueryOptions{Count: true},
+			SceneFilter: &models.SceneFilterType{
+				ID: &models.IntCriterionInput{
+					Modifier: models.CriterionModifierEquals,
+					Value:    scene.ID,
+				},
+			},
+			TotalDuration: true,
+			TotalSize:     true,
+		})
+		if err != nil {
+			t.Fatalf("querying scene: %v", err)
+		}
+
+		assert.Equal(t, 1, result.Count)
+		assert.Equal(t, float64(fileSize*2), result.TotalSize)
+		assert.Equal(t, fileDuration*2, result.TotalDuration)
+
+		return nil
+	})
 }
 
 func TestSceneQuery(t *testing.T) {
@@ -3367,23 +3431,71 @@ func TestSceneQueryIsMissingRating(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingPhash(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
-		isMissing := "phash"
-		sceneFilter := models.SceneFilterType{
-			IsMissing: &isMissing,
-		}
+	isMissing := "phash"
 
-		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
+	tests := []struct {
+		name        string
+		filter      models.SceneFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"is missing phash",
+			models.SceneFilterType{
+				IsMissing: &isMissing,
+			},
+			[]int{sceneIdxMissingPhash},
+			[]int{sceneIdxWithGroup},
+			false,
+		},
+		{
+			"phash null",
+			models.SceneFilterType{
+				Phash: &models.StringCriterionInput{
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			[]int{sceneIdxMissingPhash},
+			[]int{sceneIdxWithGroup},
+			false,
+		},
+		{
+			"phash distance null",
+			models.SceneFilterType{
+				PhashDistance: &models.PhashDistanceCriterionInput{
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			[]int{sceneIdxMissingPhash},
+			[]int{sceneIdxWithGroup},
+			false,
+		},
+	}
 
-		if !assert.Len(t, scenes, 1) {
-			return nil
-		}
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-		assert.Equal(t, sceneIDs[sceneIdxMissingPhash], scenes[0].ID)
+			results, err := db.Scene.Query(ctx, models.SceneQueryOptions{
+				SceneFilter: &tt.filter,
+			})
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SceneStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-		return nil
-	})
+			include := indexesToIDs(sceneIDs, tt.includeIdxs)
+			exclude := indexesToIDs(sceneIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(results.IDs, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(results.IDs, e)
+			}
+		})
+	}
 }
 
 func TestSceneQueryPerformers(t *testing.T) {
@@ -4162,7 +4274,10 @@ func TestSceneQueryPhashDuplicated(t *testing.T) {
 
 		duplicated = false
 
-		scenes = queryScene(ctx, t, sqb, &sceneFilter, nil)
+		findFilter := models.FindFilterType{
+			PerPage: ptr(-1),
+		}
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		// -1 for missing phash
 		assert.Len(t, scenes, totalScenes-(dupeScenePhashes*2)-1)
 
@@ -4631,7 +4746,7 @@ func TestSceneStore_FindDuplicates(t *testing.T) {
 	withRollbackTxn(func(ctx context.Context) error {
 		distance := 0
 		durationDiff := -1.
-		got, err := qb.FindDuplicates(ctx, distance, durationDiff)
+		got, err := qb.FindDuplicates(ctx, distance, durationDiff, nil)
 		if err != nil {
 			t.Errorf("SceneStore.FindDuplicates() error = %v", err)
 			return nil
@@ -4641,13 +4756,221 @@ func TestSceneStore_FindDuplicates(t *testing.T) {
 
 		distance = 1
 		durationDiff = -1.
-		got, err = qb.FindDuplicates(ctx, distance, durationDiff)
+		got, err = qb.FindDuplicates(ctx, distance, durationDiff, nil)
 		if err != nil {
 			t.Errorf("SceneStore.FindDuplicates() error = %v", err)
 			return nil
 		}
 
 		assert.Len(t, got, dupeScenePhashes)
+
+		return nil
+	})
+}
+
+func TestSceneStore_FindDuplicatesWithFilter(t *testing.T) {
+	qb := db.Scene
+
+	// Helper to create a scene with a specific phash and optional title prefix
+	createDupeScene := func(ctx context.Context, name string, phash int64) (*models.Scene, error) {
+		sceneFile := &models.VideoFile{
+			BaseFile: &models.BaseFile{
+				Basename:       name,
+				ParentFolderID: folderIDs[folderIdxWithSceneFiles],
+				Fingerprints: models.Fingerprints{
+					{Type: models.FingerprintTypeMD5, Fingerprint: name + "_md5"},
+					{Type: models.FingerprintTypeOshash, Fingerprint: name + "_oshash"},
+					{Type: models.FingerprintTypePhash, Fingerprint: phash},
+				},
+			},
+			Duration: 100.0,
+			Width:    1920,
+			Height:   1080,
+		}
+
+		if err := db.File.Create(ctx, sceneFile); err != nil {
+			return nil, err
+		}
+
+		scene := &models.Scene{
+			Title: name,
+		}
+
+		if err := qb.Create(ctx, scene, []models.FileID{sceneFile.ID}); err != nil {
+			return nil, err
+		}
+
+		return scene, nil
+	}
+
+	// Helper to add tags to a scene
+	addSceneTags := func(ctx context.Context, sceneID int, tagIDsToAdd []int) error {
+		_, err := qb.UpdatePartial(ctx, sceneID, models.ScenePartial{
+			TagIDs: &models.UpdateIDs{
+				Mode: models.RelationshipUpdateModeSet,
+				IDs:  tagIDsToAdd,
+			},
+		})
+		return err
+	}
+
+	withRollbackTxn(func(ctx context.Context) error {
+		// Create a test tag to use for filtering
+		err := db.Tag.Create(ctx, &models.CreateTagInput{
+			Tag: &models.Tag{
+				Name: "FindDuplicatesFilterTestTag",
+			},
+		})
+		if err != nil {
+			t.Errorf("failed to create test tag: %v", err)
+			return nil
+		}
+
+		// fetch the tag we just created
+		tagName := "FindDuplicatesFilterTestTag"
+		tags, _, err := db.Tag.Query(ctx, &models.TagFilterType{
+			Name: &models.StringCriterionInput{
+				Value:    tagName,
+				Modifier: models.CriterionModifierEquals,
+			},
+		}, &models.FindFilterType{
+			PerPage: intPtr(1),
+		})
+		if err != nil || len(tags) == 0 {
+			t.Errorf("failed to find test tag: %v", err)
+			return nil
+		}
+		testTagID := tags[0].ID
+
+		// Create two pairs of duplicate scenes:
+		// Pair A: sceneA1 and sceneA2 have the same phash and share a tag
+		// Pair B: sceneB1 and sceneB2 have the same phash but no tag
+
+		const sharedPhash int64 = 999999
+
+		sceneA1, err := createDupeScene(ctx, "FilterTest_A1", sharedPhash)
+		if err != nil {
+			t.Errorf("failed to create sceneA1: %v", err)
+			return nil
+		}
+		sceneA2, err := createDupeScene(ctx, "FilterTest_A2", sharedPhash)
+		if err != nil {
+			t.Errorf("failed to create sceneA2: %v", err)
+			return nil
+		}
+
+		const otherPhash int64 = 888888
+
+		sceneB1, err := createDupeScene(ctx, "FilterTest_B1", otherPhash)
+		if err != nil {
+			t.Errorf("failed to create sceneB1: %v", err)
+			return nil
+		}
+		sceneB2, err := createDupeScene(ctx, "FilterTest_B2", otherPhash)
+		if err != nil {
+			t.Errorf("failed to create sceneB2: %v", err)
+			return nil
+		}
+
+		// Add tag only to pair A
+		if err := addSceneTags(ctx, sceneA1.ID, []int{testTagID}); err != nil {
+			t.Errorf("failed to add tag to sceneA1: %v", err)
+			return nil
+		}
+		if err := addSceneTags(ctx, sceneA2.ID, []int{testTagID}); err != nil {
+			t.Errorf("failed to add tag to sceneA2: %v", err)
+			return nil
+		}
+
+		// Test 1: No filter - should find all duplicates (2 pairs: original + our new ones)
+		distance := 0
+		durationDiff := -1.0
+		got, err := qb.FindDuplicates(ctx, distance, durationDiff, nil)
+		if err != nil {
+			t.Errorf("FindDuplicates(nil filter) error = %v", err)
+			return nil
+		}
+		// Should find at least our 2 new pairs (may find more from pre-populated data)
+		assert.GreaterOrEqual(t, len(got), 2, "nil filter should find at least our 2 new duplicate pairs")
+
+		// Test 2: Filter by tag - should only find pair A (the tagged pair)
+		got, err = qb.FindDuplicates(ctx, distance, durationDiff, &models.SceneFilterType{
+			Tags: &models.HierarchicalMultiCriterionInput{
+				Value:    []string{strconv.Itoa(testTagID)},
+				Modifier: models.CriterionModifierIncludes,
+			},
+		})
+		if err != nil {
+			t.Errorf("FindDuplicates(tag filter) error = %v", err)
+			return nil
+		}
+		// Should find exactly 1 duplicate pair (pair A)
+		assert.Len(t, got, 1, "tag filter should find exactly 1 duplicate pair")
+
+		// Verify the found pair contains our tagged scenes
+		if len(got) == 1 {
+			foundIDs := map[int]bool{}
+			for _, s := range got[0] {
+				foundIDs[s.ID] = true
+			}
+			assert.True(t, foundIDs[sceneA1.ID], "pair A scene 1 should be in results")
+			assert.True(t, foundIDs[sceneA2.ID], "pair A scene 2 should be in results")
+			// Pair B (untagged) should NOT be in the results
+			assert.False(t, foundIDs[sceneB1.ID], "pair B scene 1 should NOT be in tag-filtered results")
+			assert.False(t, foundIDs[sceneB2.ID], "pair B scene 2 should NOT be in tag-filtered results")
+		}
+
+		// Test 3: Filter by tag that no duplicate scene has - should find nothing
+		err = db.Tag.Create(ctx, &models.CreateTagInput{
+			Tag: &models.Tag{
+				Name: "FindDuplicatesFilterTestTag_NonExistent",
+			},
+		})
+		if err != nil {
+			t.Errorf("failed to create non-existent tag: %v", err)
+			return nil
+		}
+		nonExistentTagName := "FindDuplicatesFilterTestTag_NonExistent"
+		tags2, _, err := db.Tag.Query(ctx, &models.TagFilterType{
+			Name: &models.StringCriterionInput{
+				Value:    nonExistentTagName,
+				Modifier: models.CriterionModifierEquals,
+			},
+		}, &models.FindFilterType{
+			PerPage: intPtr(1),
+		})
+		if err != nil || len(tags2) == 0 {
+			t.Errorf("failed to find non-existent tag: %v", err)
+			return nil
+		}
+		nonExistentTagID := tags2[0].ID
+
+		got, err = qb.FindDuplicates(ctx, distance, durationDiff, &models.SceneFilterType{
+			Tags: &models.HierarchicalMultiCriterionInput{
+				Value:    []string{strconv.Itoa(nonExistentTagID)},
+				Modifier: models.CriterionModifierIncludes,
+			},
+		})
+		if err != nil {
+			t.Errorf("FindDuplicates(non-existent tag filter) error = %v", err)
+			return nil
+		}
+		assert.Len(t, got, 0, "non-existent tag filter should find no duplicates")
+
+		// Test 4: Fuzzy match (distance=1) with filter
+		distance = 1
+		got, err = qb.FindDuplicates(ctx, distance, durationDiff, &models.SceneFilterType{
+			Tags: &models.HierarchicalMultiCriterionInput{
+				Value:    []string{strconv.Itoa(testTagID)},
+				Modifier: models.CriterionModifierIncludes,
+			},
+		})
+		if err != nil {
+			t.Errorf("FindDuplicates(fuzzy + tag filter) error = %v", err)
+			return nil
+		}
+		// Should still find pair A with fuzzy matching
+		assert.Len(t, got, 1, "fuzzy + tag filter should find exactly 1 duplicate pair")
 
 		return nil
 	})
@@ -5060,6 +5383,85 @@ func TestSceneQueryCustomFields(t *testing.T) {
 				},
 			},
 			nil,
+			[]int{sceneIdxWithPerformer},
+			false,
+		},
+		{
+			"json number greater than",
+			&models.SceneFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierGreaterThan,
+						Value:    []any{json.Number("0.15")},
+					},
+				},
+			},
+			[]int{sceneIdxWithPerformer},
+			[]int{sceneIdxWithGallery},
+			false,
+		},
+		{
+			"json number equals",
+			&models.SceneFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierEquals,
+						Value:    []any{json.Number("0.2")},
+					},
+				},
+			},
+			[]int{sceneIdxWithPerformer},
+			[]int{sceneIdxWithGallery},
+			false,
+		},
+		{
+			"json number between",
+			&models.SceneFilterType{
+				CustomFields: []models.CustomFieldCriterionInput{
+					{
+						Field:    "real",
+						Modifier: models.CriterionModifierBetween,
+						Value:    []any{json.Number("0.15"), json.Number("0.25")},
+					},
+				},
+			},
+			[]int{sceneIdxWithPerformer},
+			[]int{sceneIdxWithGallery},
+			false,
+		},
+		{
+			"nested performer json number greater than",
+			&models.SceneFilterType{
+				PerformersFilter: &models.PerformerFilterType{
+					CustomFields: []models.CustomFieldCriterionInput{
+						{
+							Field:    "real",
+							Modifier: models.CriterionModifierGreaterThan,
+							Value:    []any{json.Number("0.15")},
+						},
+					},
+				},
+			},
+			[]int{sceneIdxWithTwoPerformers},
+			[]int{sceneIdxWithPerformer},
+			false,
+		},
+		{
+			"nested performer json number less than",
+			&models.SceneFilterType{
+				PerformersFilter: &models.PerformerFilterType{
+					CustomFields: []models.CustomFieldCriterionInput{
+						{
+							Field:    "real",
+							Modifier: models.CriterionModifierLessThan,
+							Value:    []any{json.Number("0.15")},
+						},
+					},
+				},
+			},
+			[]int{sceneIdxWithTwoPerformers},
 			[]int{sceneIdxWithPerformer},
 			false,
 		},

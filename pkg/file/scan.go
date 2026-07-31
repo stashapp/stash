@@ -348,6 +348,7 @@ type ScanFileResult struct {
 	Renamed            bool
 	Updated            bool
 	FingerprintChanged bool
+	HandlerRequired    bool
 }
 
 func (r ScanFileResult) IsUnchanged() bool {
@@ -370,7 +371,7 @@ func (s *Scanner) ScanFile(ctx context.Context, f ScannedFile) (*ScanFileResult,
 		// #1426 / #6326 - if file is in a case-insensitive filesystem, then try
 		// case insensitive search
 		// assume case sensitive if in zip
-		if ff == nil && f.ZipFileID != nil {
+		if ff == nil && f.ZipFileID == nil {
 			caseSensitive, _ := f.FS.IsPathCaseSensitive(f.Path)
 
 			if !caseSensitive {
@@ -842,6 +843,14 @@ func (s *Scanner) removeOutdatedFingerprints(existing models.File, fp models.Fin
 		return
 	}
 
+	b := existing.Base()
+
+	// oshash has changed - drop phash in case file contents are different
+	if b.Fingerprints.For(models.FingerprintTypePhash) != nil {
+		logger.Infof("Removing outdated phash from %s", b.Path)
+		b.Fingerprints = b.Fingerprints.Remove(models.FingerprintTypePhash)
+	}
+
 	md5 := fp.For(models.FingerprintTypeMD5)
 
 	if md5 != nil {
@@ -850,8 +859,7 @@ func (s *Scanner) removeOutdatedFingerprints(existing models.File, fp models.Fin
 	}
 
 	// oshash has changed, MD5 is missing - remove MD5 from the existing fingerprints
-	logger.Infof("Removing outdated checksum from %s", existing.Base().Path)
-	b := existing.Base()
+	logger.Infof("Removing outdated checksum from %s", b.Path)
 	b.Fingerprints = b.Fingerprints.Remove(models.FingerprintTypeMD5)
 }
 
@@ -911,7 +919,8 @@ func (s *Scanner) onUnchangedFile(ctx context.Context, f ScannedFile, existing m
 	// if this file is a zip file, then we need to rescan the contents
 	// as well. We do this by indicating that the file is updated.
 	return &ScanFileResult{
-		File:    existing,
-		Updated: true,
+		File:            existing,
+		Updated:         true,
+		HandlerRequired: true,
 	}, nil
 }

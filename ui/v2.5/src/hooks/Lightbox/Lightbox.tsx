@@ -45,8 +45,10 @@ import {
   faTimes,
   faBars,
   faImages,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
+import { DeleteImagesDialog } from "src/components/Images/DeleteImagesDialog";
 import { useDebounce } from "../debounce";
 import { isVideo } from "src/utils/visualFile";
 import { imageTitle } from "src/core/files";
@@ -89,12 +91,15 @@ interface IProps {
   initialIndex?: number;
   showNavigation: boolean;
   slideshowEnabled?: boolean;
+  slideshowAutostart?: boolean;
   page?: number;
   pages?: number;
   pageSize?: number;
+  totalCount?: number;
   pageCallback?: (props: { direction?: number; page?: number }) => void;
   chapters?: IChapter[];
   hide: () => void;
+  onDeleteImage?: (id: string) => void;
 }
 
 export const LightboxComponent: React.FC<IProps> = ({
@@ -104,12 +109,14 @@ export const LightboxComponent: React.FC<IProps> = ({
   initialIndex = 0,
   showNavigation,
   slideshowEnabled = false,
+  slideshowAutostart = false,
   page,
-  pages,
-  pageSize: pageSize = 40,
+  pageSize = 40,
+  totalCount,
   pageCallback,
   chapters = [],
   hide,
+  onDeleteImage,
 }) => {
   const [updateImage] = useImageUpdate();
 
@@ -119,13 +126,65 @@ export const LightboxComponent: React.FC<IProps> = ({
   const oldIndex = useRef<number | null>(null);
   const [instantTransition, setInstantTransition] = useState(false);
   const [isSwitchingPage, setIsSwitchingPage] = useState(true);
+  // Synchronous mirror of isSwitchingPage. The nav handlers (handleLeft/
+  // handleRight, reached by the arrow keys, the on-screen chevrons and the
+  // image-edge clicks) fire on raw keydown/click events that can arrive faster
+  // than React re-renders, so the isSwitchingPage *state* they close over is
+  // stale. The ref reflects an in-flight page switch immediately — set true
+  // before pageCallback — so rapid inputs are dropped and, crucially, the
+  // index-range effect won't clamp a stale index while a (possibly
+  // synchronously-cached) page is still swapping in. The landing index stays
+  // under the handlers' control; this ref only gates, it never picks the index.
+  const isSwitchingPageRef = useRef(true);
   const [isFullscreen, setFullscreen] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [showChapters, setShowChapters] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(0);
+  // The image the delete dialog acts on, captured when the dialog is opened.
+  // Reading images[currentIndex] at confirm time instead would delete whatever
+  // image the index has since moved to (e.g. a page-switch settle landing
+  // while the dialog is open).
+  const [deleteTarget, setDeleteTarget] = useState<ILightboxImage | null>(null);
+  const lastDKeyTime = useRef<number>(0);
   const [navOffset, setNavOffset] = useState<React.CSSProperties | undefined>();
 
-  const oldImages = useRef<ILightboxImage[]>([]);
+  // An in-flight page switch's intended landing, set synchronously by
+  // startPageSwitch *before* pageCallback. The landing is an explicit target —
+  // "last" or a concrete index (0 for a forward cross) — NOT derived from the
+  // page-number direction (a wrap moves the page number opposite to nav
+  // direction, so deriving from direction breaks first/last wraparound). It is
+  // resolved by the settle effect once the new page has loaded.
+  const pendingTarget = useRef<"last" | number | null>(null);
+  // The page number and images array at switch start, used by the settle
+  // effect to detect the new page's arrival.
+  const switchFromPage = useRef<number | undefined>(page);
+  const switchFromImages = useRef<ILightboxImage[]>(images);
+
+  // The ref and the state must never disagree, so they are only written
+  // through this setter.
+  const setSwitching = useCallback((v: boolean) => {
+    isSwitchingPageRef.current = v;
+    setIsSwitchingPage(v);
+  }, []);
+
+  // Begin a page switch: raise the guard and record the landing intent
+  // *before* pageCallback. An already-cached page can swap its images in
+  // synchronously, so the guard must be up first or a rapid input (and the
+  // index-range effect) races the swap. The index is parked at 0 — valid on
+  // any non-empty page — while the new page loads, so the index-range clamp
+  // can't fire on a shorter incoming page; the settle effect moves it to the
+  // target once the page arrives.
+  const startPageSwitch = useCallback(
+    (target: "last" | number, cbArg: { direction?: number; page?: number }) => {
+      setSwitching(true);
+      switchFromPage.current = page;
+      switchFromImages.current = images;
+      pendingTarget.current = target;
+      setIndex(0);
+      pageCallback?.(cbArg);
+    },
+    [images, page, pageCallback, setSwitching]
+  );
 
   const [zoom, setZoom] = useState(1);
 
@@ -231,23 +290,57 @@ export const LightboxComponent: React.FC<IProps> = ({
     setLightboxSettings({ displayMode: v });
   }
 
-  // slideshowInterval is used for controlling the logic
-  // displaySlideshowInterval is for display purposes only
-  // keeping them separate and independant allows us to handle the logic however we want
-  // while still displaying something that makes sense to the user
+  // `slideshowInterval` controls the slideshow logic, while
+  // `displayedSlideshowInterval` is for display purposes only. Keeping the two
+  // separate lets us handle the logic however we want while still showing the
+  // user something that makes sense.
+  //
+  // Autostart the slideshow on open when requested (e.g. opening a gallery's
+  // lightbox from the galleries page). The component mounts fresh on each open,
+  // so initialising the interval here starts playback immediately.
   const [slideshowInterval, setSlideshowInterval] = useState<number | null>(
-    null
+    slideshowEnabled && slideshowAutostart ? slideshowDelay : null
   );
 
   const [displayedSlideshowInterval, setDisplayedSlideshowInterval] =
     useState<string>((slideshowDelay / SECONDS_TO_MS).toString());
 
   useEffect(() => {
-    if (images !== oldImages.current && isSwitchingPage) {
-      if (index === -1) setIndex(images.length - 1);
-      setIsSwitchingPage(false);
+    const target = pendingTarget.current;
+    if (target !== null) {
+      // A page switch is in flight. It completes when the page number AND the
+      // images array have both changed: the parent delivers them together, and
+      // requiring both means a parent that updates the page a commit ahead of
+      // the images can't settle the switch against the outgoing page's array.
+      // Callers that provide pageCallback without a page prop can never change
+      // the page number, so for them fall back to the images identity alone.
+      const pageChanged = page !== switchFromPage.current;
+      const imagesChanged = images !== switchFromImages.current;
+      const settled =
+        page === undefined ? imagesChanged : pageChanged && imagesChanged;
+      if (settled) {
+        // Resolve the landing, clamped to the arrived page: a chapter's
+        // numeric target can be stale (images deleted since the chapters
+        // loaded), and "last" is -1 on an empty page (which the close effect
+        // then handles).
+        const resolved =
+          target === "last"
+            ? images.length - 1
+            : Math.min(target, images.length - 1);
+        setIndex(Math.max(0, resolved));
+        pendingTarget.current = null;
+        switchFromPage.current = page;
+        switchFromImages.current = images;
+        setSwitching(false);
+      }
+      return;
     }
-  }, [isSwitchingPage, images, index]);
+    // No switch pending: clear the switching flag once the first page's images
+    // have loaded (the flag starts true on open so the loader shows until then).
+    if (isSwitchingPage && !isLoading && images.length > 0) {
+      setSwitching(false);
+    }
+  }, [isSwitchingPage, isLoading, images, page, setSwitching]);
 
   const disableInstantTransition = useDebounce(
     () => setInstantTransition(false),
@@ -291,6 +384,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
   }, [index, images.length]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional reset on images change
   useEffect(() => {
     // reset images loaded counter for new images
     setImagesLoaded(0);
@@ -324,7 +418,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       document.body.style.overflow = "hidden";
       Mousetrap.pause();
     }
-  }, [initialIndex, isVisible, setIndex, index]);
+  }, [initialIndex, isVisible, index]);
 
   const toggleSlideshow = useCallback(() => {
     if (slideshowInterval) {
@@ -351,13 +445,12 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
     const { className } = e.target as Element;
-    if (className && className.includes && className.includes(CLASSNAME_IMAGE))
-      close();
+    if (className?.includes?.(CLASSNAME_IMAGE)) close();
   };
 
   const handleLeft = useCallback(
     (isUserAction = true) => {
-      if (isSwitchingPage || index === -1) return;
+      if (isSwitchingPageRef.current) return;
 
       if (disableAnimation) {
         setInstant();
@@ -367,12 +460,10 @@ export const LightboxComponent: React.FC<IProps> = ({
       setMovingLeft(true);
 
       if (index === 0) {
-        // go to next page, or loop back if no callback is set
+        // go to previous page (landing on its last image), or loop back if no
+        // callback is set
         if (pageCallback) {
-          pageCallback({ direction: -1 });
-          setIndex(-1);
-          oldImages.current = images;
-          setIsSwitchingPage(true);
+          startPageSwitch("last", { direction: -1 });
         } else setIndex(images.length - 1);
       } else setIndex((index ?? 0) - 1);
 
@@ -380,20 +471,12 @@ export const LightboxComponent: React.FC<IProps> = ({
         resetIntervalCallback.current();
       }
     },
-    [
-      images,
-      pageCallback,
-      isSwitchingPage,
-      resetIntervalCallback,
-      index,
-      disableAnimation,
-      setInstant,
-    ]
+    [images, pageCallback, index, disableAnimation, setInstant, startPageSwitch]
   );
 
   const handleRight = useCallback(
     (isUserAction = true) => {
-      if (isSwitchingPage) return;
+      if (isSwitchingPageRef.current) return;
 
       if (disableAnimation) {
         setInstant();
@@ -403,12 +486,10 @@ export const LightboxComponent: React.FC<IProps> = ({
       setShowChapters(false);
 
       if (index === images.length - 1) {
-        // go to preview page, or loop back if no callback is set
+        // go to next page (landing on its first image), or loop back if no
+        // callback is set
         if (pageCallback) {
-          pageCallback({ direction: 1 });
-          oldImages.current = images;
-          setIsSwitchingPage(true);
-          setIndex(0);
+          startPageSwitch(0, { direction: 1 });
         } else setIndex(0);
       } else setIndex((index ?? 0) + 1);
 
@@ -416,16 +497,7 @@ export const LightboxComponent: React.FC<IProps> = ({
         resetIntervalCallback.current();
       }
     },
-    [
-      images,
-      setIndex,
-      pageCallback,
-      isSwitchingPage,
-      resetIntervalCallback,
-      index,
-      disableAnimation,
-      setInstant,
-    ]
+    [images, pageCallback, index, disableAnimation, setInstant, startPageSwitch]
   );
 
   const firstScroll = useRef<number | null>(null);
@@ -443,15 +515,21 @@ export const LightboxComponent: React.FC<IProps> = ({
       if (e.key === "ArrowLeft") handleLeft();
       else if (e.key === "ArrowRight") handleRight();
       else if (e.key === "Escape") close();
+      else if (e.key === "d") {
+        // Not while a page switch is in flight: the index is parked at 0 then,
+        // so the shortcut would target an image the user isn't viewing.
+        const image = images[index ?? initialIndex];
+        if (!isSwitchingPageRef.current && image?.id !== undefined) {
+          const now = Date.now();
+          if (now - lastDKeyTime.current < 1000) {
+            setDeleteTarget(image);
+          }
+          lastDKeyTime.current = now;
+        }
+      }
     },
-    [setInstant, handleLeft, handleRight, close]
+    [setInstant, handleLeft, handleRight, close, images, index, initialIndex]
   );
-  const handleFullScreenChange = () => {
-    if (clearIntervalCallback.current) {
-      clearIntervalCallback.current();
-    }
-    setFullscreen(document.fullscreenElement !== null);
-  };
 
   const [clearCallback, resetCallback] = useInterval(
     () => {
@@ -464,6 +542,13 @@ export const LightboxComponent: React.FC<IProps> = ({
   clearIntervalCallback.current = clearCallback;
 
   useEffect(() => {
+    const handleFullScreenChange = () => {
+      if (clearIntervalCallback.current) {
+        clearIntervalCallback.current();
+      }
+      setFullscreen(document.fullscreenElement !== null);
+    };
+
     if (isVisible) {
       document.addEventListener("keydown", handleKey);
       document.addEventListener("fullscreenchange", handleFullScreenChange);
@@ -489,14 +574,14 @@ export const LightboxComponent: React.FC<IProps> = ({
   }
 
   const navItems = images.map((image, i) =>
-    React.createElement(image.paths.preview != "" ? "video" : "img", {
-      loop: image.paths.preview != "",
-      autoPlay: image.paths.preview != "",
-      playsInline: image.paths.preview != "",
+    React.createElement(image.paths.preview !== "" ? "video" : "img", {
+      loop: image.paths.preview !== "",
+      autoPlay: image.paths.preview !== "",
+      playsInline: image.paths.preview !== "",
       src:
-        image.paths.preview != ""
-          ? image.paths.preview ?? ""
-          : image.paths.thumbnail ?? "",
+        image.paths.preview !== ""
+          ? (image.paths.preview ?? "")
+          : (image.paths.thumbnail ?? ""),
       alt: "",
       className: cx(CLASSNAME_NAVIMAGE, {
         [CLASSNAME_NAVSELECTED]: i === index,
@@ -532,14 +617,39 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const currentIndex = index === null ? initialIndex : index;
 
+  useEffect(() => {
+    // Don't auto-close while images are still loading. Some entry points open
+    // the lightbox with an empty image list and isLoading=true, then populate
+    // it asynchronously. Only an empty list *after* loading means the last
+    // image was deleted.
+    if (isLoading) return;
+    if (images.length === 0) {
+      close();
+    } else if (
+      !isSwitchingPageRef.current &&
+      index !== null &&
+      index >= images.length
+    ) {
+      // Same-page shrink only — e.g. the last image was deleted and findImages
+      // refetched a shorter list. While a page switch is in flight the index is
+      // transiently stale against a just-swapped, shorter page; clamping it
+      // here is what made a forward cross land on the page's *last* image. The
+      // settle effect reconciles the switch instead, so skip the clamp then.
+      setIndex(images.length - 1);
+    }
+  }, [images.length, index, close, isLoading]);
+
   function gotoPage(imageIndex: number) {
+    // indexInPage is the chapter's explicit target; the settle effect lands on
+    // it once the new page loads, so a chapter jump lands on the right image of
+    // the new page rather than its first/last.
     const indexInPage = (imageIndex - 1) % pageSize;
     if (pageCallback) {
-      let jumppage = Math.floor((imageIndex - 1) / pageSize) + 1;
+      const jumppage = Math.floor((imageIndex - 1) / pageSize) + 1;
       if (page !== jumppage) {
-        pageCallback({ page: jumppage });
-        oldImages.current = images;
-        setIsSwitchingPage(true);
+        startPageSwitch(indexInPage, { page: jumppage });
+        setShowChapters(false);
+        return;
       }
     }
 
@@ -554,7 +664,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       : imageNumber;
 
     let chapterTitle = "";
-    chapters.forEach(function (chapter) {
+    chapters.forEach((chapter) => {
       if (chapter.image_index > globalIndex) {
         return;
       }
@@ -771,26 +881,20 @@ export const LightboxComponent: React.FC<IProps> = ({
       }
     }
 
-    const pageHeader =
-      page && pages
-        ? intl.formatMessage(
-            { id: "dialogs.lightbox.page_header" },
-            { page, total: pages }
-          )
-        : "";
+    const currentNumber =
+      page !== undefined
+        ? (page - 1) * pageSize + currentIndex + 1
+        : currentIndex + 1;
+    const displayTotal = totalCount ?? images.length;
 
     return (
       <>
         <div className={CLASSNAME_HEADER}>
           <div className={CLASSNAME_LEFT_SPACER}>{renderChapterMenu()}</div>
           <div className={CLASSNAME_INDICATOR}>
-            <span>
-              {chapterHeader()} {pageHeader}
-            </span>
-            {images.length > 1 ? (
-              <b ref={indicatorRef}>{`${currentIndex + 1} / ${
-                images.length
-              }`}</b>
+            <span>{chapterHeader()}</span>
+            {displayTotal > 1 ? (
+              <b ref={indicatorRef}>{`${currentNumber} / ${displayTotal}`}</b>
             ) : undefined}
           </div>
           <div className={CLASSNAME_RIGHT}>
@@ -972,13 +1076,27 @@ export const LightboxComponent: React.FC<IProps> = ({
           <div className={CLASSNAME_FOOTER_CENTER}>
             {currentImage && (
               <>
-                <Link
-                  className="image-link"
-                  to={`/images/${currentImage.id}`}
-                  onClick={() => close()}
+                <div
+                  className="d-flex align-items-center justify-content-center"
+                  style={{ gap: "0.5rem" }}
                 >
-                  {title ?? ""}
-                </Link>
+                  <Link
+                    className="image-link"
+                    to={`/images/${currentImage.id}`}
+                    onClick={() => close()}
+                  >
+                    {title ?? ""}
+                  </Link>
+                  {currentImage.id !== undefined && (
+                    <Button
+                      className="minimal delete-button"
+                      onClick={() => setDeleteTarget(currentImage)}
+                      title={intl.formatMessage({ id: "actions.delete" })}
+                    >
+                      <Icon icon={faTrash} />
+                    </Button>
+                  )}
+                </div>
                 {currentImage.galleries?.length ? (
                   <Link
                     className="image-gallery-link"
@@ -992,14 +1110,14 @@ export const LightboxComponent: React.FC<IProps> = ({
               </>
             )}
           </div>
-          <div className={CLASSNAME_FOOTER_RIGHT}></div>
+          <div className={CLASSNAME_FOOTER_RIGHT} />
         </div>
       </>
     );
   }
 
   if (!isVisible) {
-    return <></>;
+    return null;
   }
 
   return (
@@ -1010,6 +1128,20 @@ export const LightboxComponent: React.FC<IProps> = ({
       onClick={handleClose}
     >
       {renderBody()}
+      {deleteTarget?.id !== undefined && (
+        <DeleteImagesDialog
+          selected={[
+            {
+              id: deleteTarget.id,
+              visual_files: deleteTarget.visual_files ?? [],
+            },
+          ]}
+          onClose={(confirmed) => {
+            setDeleteTarget(null);
+            if (confirmed) onDeleteImage?.(deleteTarget.id!);
+          }}
+        />
+      )}
     </div>
   );
 };

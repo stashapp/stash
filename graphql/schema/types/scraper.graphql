@@ -289,6 +289,7 @@ type StashBoxFingerprint {
   algorithm: String!
   hash: String!
   duration: Int!
+  submissions: Int!
 }
 
 """
@@ -302,6 +303,8 @@ input StashBoxBatchTagInput {
   stash_box_endpoint: String
   "Fields to exclude when executing the tagging"
   exclude_fields: [String!]
+  "Collection fields to merge (add to existing) instead of overwriting when executing the tagging"
+  merge_fields: [String!]
   "Refresh items already tagged by StashBox if true. Only tag items with no StashBox tagging if false"
   refresh: Boolean!
   "If batch adding studios, should their parent studios also be created?"

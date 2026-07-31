@@ -232,7 +232,7 @@ func (g Generator) generateConcatFile(chunkFiles []string) (fn string, err error
 	for _, f := range chunkFiles {
 		// files in concat file should be relative to concat
 		relFile := filepath.Base(f)
-		if _, err := w.WriteString(fmt.Sprintf("file '%s'\n", relFile)); err != nil {
+		if _, err := fmt.Fprintf(w, "file '%s'\n", relFile); err != nil {
 			return concatFile.Name(), fmt.Errorf("writing concat file: %w", err)
 		}
 	}

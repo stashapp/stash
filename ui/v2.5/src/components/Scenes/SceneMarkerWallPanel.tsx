@@ -15,6 +15,10 @@ import { useDragMoveSelect } from "../Shared/GridCard/dragMoveSelect";
 import cx from "classnames";
 import NavUtils from "src/utils/navigation";
 import { markerTitle } from "src/core/markers";
+import {
+  getFirstValidPreviewSource,
+  PreviewMediaType,
+} from "src/utils/wallPreview";
 
 function wallItemTitle(sceneMarker: GQL.SceneMarkerDataFragment) {
   const newTitle = markerTitle(sceneMarker);
@@ -32,6 +36,7 @@ function wallItemTitle(sceneMarker: GQL.SceneMarkerDataFragment) {
 interface IMarkerPhoto {
   marker: GQL.SceneMarkerDataFragment;
   link: string;
+  mediaType: PreviewMediaType;
   onError?: (photo: PhotoProps<IMarkerPhoto>) => void;
 }
 
@@ -73,7 +78,7 @@ export const MarkerWallItem: React.FC<
     divStyle.top = props.top;
   }
 
-  const handleClick = function (event: React.MouseEvent) {
+  function handleClick(event: React.MouseEvent) {
     if (props.selecting && props.onSelectedChanged) {
       props.onSelectedChanged(!props.selected, event.shiftKey);
       event.preventDefault();
@@ -83,9 +88,9 @@ export const MarkerWallItem: React.FC<
     if (props.onClick) {
       props.onClick(event, { index: props.index });
     }
-  };
+  }
 
-  const video = props.photo.src.includes("stream");
+  const video = props.photo.mediaType === "video";
   const ImagePreview = video ? "video" : "img";
 
   const { marker } = props.photo;
@@ -166,15 +171,25 @@ interface IMarkerWallProps {
 // HACK: typescript doesn't allow Gallery to accept a parameter for some reason
 const MarkerGallery = Gallery as unknown as GalleryI<IMarkerPhoto>;
 
-function getFirstValidSrc(srcSet: string[], invalidSrcSet: string[]) {
-  if (!srcSet.length) {
-    return "";
+function getMarkerPreviewSources(
+  marker: GQL.SceneMarkerDataFragment,
+  previewType?: string | null
+) {
+  if (previewType === "image") {
+    return [{ src: marker.screenshot, mediaType: "image" }] as const;
   }
 
-  return (
-    srcSet.find((src) => !invalidSrcSet.includes(src)) ??
-    ([...srcSet].pop() as string)
-  );
+  if (previewType === "animation") {
+    return [
+      { src: marker.preview, mediaType: "image" },
+      { src: marker.screenshot, mediaType: "image" },
+    ] as const;
+  }
+
+  return [
+    { src: marker.stream, mediaType: "video" },
+    { src: marker.screenshot, mediaType: "image" },
+  ] as const;
 }
 
 interface IFile {
@@ -200,6 +215,8 @@ const breakpointZoomHeights = [
   { minWidth: 1400, heights: [160, 240, 300, 480] },
 ];
 
+type FailedSrcMap = Record<string, string[]>; // markerID to list of failed srcs
+
 const MarkerWall: React.FC<IMarkerWallProps> = ({
   markers,
   zoomIndex,
@@ -208,20 +225,32 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({
   selecting,
 }) => {
   const history = useHistory();
+  const { configuration } = useConfigurationContext();
+  const previewType = configuration?.interface.wallPlayback;
 
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   const margin = 3;
   const direction = "row";
 
-  const [erroredImgs, setErroredImgs] = useState<string[]>([]);
+  const [erroredImgs, setErroredImgs] = useState<FailedSrcMap>({});
 
-  const handleError = useCallback((photo: PhotoProps<IMarkerPhoto>) => {
-    setErroredImgs((prev) => [...prev, photo.src]);
-  }, []);
+  const handleError = useCallback(
+    (markerID: string, photo: PhotoProps<IMarkerPhoto>) => {
+      setErroredImgs((prev) => ({
+        ...prev,
+        [markerID]: [...(prev[markerID] || []), photo.src],
+      }));
+    },
+    []
+  );
 
   useEffect(() => {
-    setErroredImgs([]);
+    const ret: FailedSrcMap = {};
+    markers.forEach((m) => {
+      ret[m.id] = [];
+    });
+    setErroredImgs(ret);
   }, [markers]);
 
   const photos: PhotoProps<IMarkerPhoto>[] = useMemo(() => {
@@ -230,7 +259,10 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({
 
       return {
         marker: m,
-        src: getFirstValidSrc([m.stream, m.preview, m.screenshot], erroredImgs),
+        ...getFirstValidPreviewSource(
+          getMarkerPreviewSources(m, previewType),
+          erroredImgs[m.id] || []
+        ),
         link: NavUtils.makeSceneMarkerUrl(m),
         width,
         height,
@@ -238,21 +270,21 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({
         key: m.id,
         loading: "lazy",
         alt: objectTitle(m),
-        onError: handleError,
+        onError: (photo: PhotoProps<IMarkerPhoto>) => handleError(m.id, photo),
       };
     });
-  }, [markers, erroredImgs, handleError]);
+  }, [markers, previewType, erroredImgs, handleError]);
 
   const onClick = useCallback(
-    (event, { index }) => {
+    (_event, { index }) => {
       history.push(photos[index].link);
     },
     [history, photos]
   );
 
   function columns(containerWidth: number) {
-    let preferredSize = 300;
-    let columnCount = containerWidth / preferredSize;
+    const preferredSize = 300;
+    const columnCount = containerWidth / preferredSize;
     return Math.round(columnCount);
   }
 

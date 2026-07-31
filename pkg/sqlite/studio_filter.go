@@ -41,13 +41,13 @@ func (qb *studioFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 		return
 	}
 
+	f.handleCriterion(ctx, qb.criterionHandler())
+
 	sf := studioFilter.SubFilter()
 	if sf != nil {
 		sub := &studioFilterHandler{sf}
 		handleSubFilter(ctx, sub, f, studioFilter.OperatorFilter)
 	}
-
-	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
 func (qb *studioFilterHandler) criterionHandler() criterionHandler {
@@ -63,7 +63,7 @@ func (qb *studioFilterHandler) criterionHandler() criterionHandler {
 
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if studioFilter.StashID != nil {
-				studioRepository.stashIDs.join(f, "studio_stash_ids", "studios.id")
+				studioRepository.stashIDs.leftJoin(f, "studio_stash_ids", "studios.id")
 				stringCriterionHandler(studioFilter.StashID, "studio_stash_ids.stash_id")(ctx, f)
 			}
 		}),
@@ -143,15 +143,15 @@ func (qb *studioFilterHandler) isMissingCriterionHandler(isMissing *string) crit
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "url":
-				studiosURLsTableMgr.join(f, "", "studios.id")
+				studiosURLsTableMgr.leftJoin(f, "", "studios.id")
 				f.addWhere("studio_urls.url IS NULL")
 			case "image":
 				f.addWhere("studios.image_blob IS NULL")
 			case "stash_id":
-				studioRepository.stashIDs.join(f, "studio_stash_ids", "studios.id")
+				studioRepository.stashIDs.leftJoin(f, "studio_stash_ids", "studios.id")
 				f.addWhere("studio_stash_ids.studio_id IS NULL")
 			case "aliases":
-				studiosAliasesTableMgr.join(f, "", "studios.id")
+				studiosAliasesTableMgr.leftJoin(f, "", "studios.id")
 				f.addWhere("studio_aliases.alias IS NULL")
 			case "tags":
 				f.addLeftJoin(studiosTagsTable, "tags_join", "tags_join.studio_id = studios.id")
@@ -224,8 +224,8 @@ func (qb *studioFilterHandler) tagCountCriterionHandler(tagCount *models.IntCrit
 }
 
 func (qb *studioFilterHandler) parentCriterionHandler(parents *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
-		f.addLeftJoin("studios", "parent_studio", "parent_studio.id = studios.parent_id")
+	addJoinsFunc := func(f *filterBuilder, joinType joinType) {
+		f.addJoin(joinType, "studios", "parent_studio", "parent_studio.id = studios.parent_id")
 	}
 	h := multiCriterionHandlerBuilder{
 		primaryTable: studioTable,
@@ -244,8 +244,8 @@ func (qb *studioFilterHandler) aliasCriterionHandler(alias *models.StringCriteri
 		primaryFK:    studioIDColumn,
 		joinTable:    studioAliasesTable,
 		stringColumn: studioAliasColumn,
-		addJoinTable: func(f *filterBuilder) {
-			studiosAliasesTableMgr.join(f, "", "studios.id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			studiosAliasesTableMgr.join(f, joinType, "", "studios.id")
 		},
 	}
 
@@ -258,8 +258,8 @@ func (qb *studioFilterHandler) urlsCriterionHandler(url *models.StringCriterionI
 		primaryFK:    studioIDColumn,
 		joinTable:    studioURLsTable,
 		stringColumn: studioURLColumn,
-		addJoinTable: func(f *filterBuilder) {
-			studiosURLsTableMgr.join(f, "", "studios.id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			studiosURLsTableMgr.join(f, joinType, "", "studios.id")
 		},
 	}
 

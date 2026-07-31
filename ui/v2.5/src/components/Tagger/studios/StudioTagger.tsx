@@ -182,6 +182,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
   };
 
   // clear tagged studios when source is changed
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally only resetting when selectedEndpoint changes
   useEffect(() => {
     setTaggedStudios({});
     setSearchResults({});
@@ -191,7 +192,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
   const [createStudio] = useStudioCreate();
   const updateStudio = useUpdateStudio();
 
-  function handleSaveError(studioID: string, name: string, message: string) {
+  function handleSaveError(studioID: string, _name: string, message: string) {
     setError({
       ...error,
       [studioID]: {
@@ -267,7 +268,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
         return s.endpoint === selectedEndpoint.endpoint;
       });
 
-      let mainContent;
+      let mainContent: JSX.Element | undefined;
       if (!isTagged && stashID !== undefined) {
         mainContent = (
           <div className="text-left">
@@ -318,7 +319,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
         );
       }
 
-      let subContent;
+      let subContent: JSX.Element | undefined;
       if (stashID !== undefined) {
         const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
         const link = base ? (
@@ -376,7 +377,7 @@ const StudioTaggerList: React.FC<IStudioTaggerListProps> = ({
         );
       }
 
-      let searchResult;
+      let searchResult: JSX.Element | undefined;
       if (searchResults[studio.id]?.length > 0 && !isTagged) {
         searchResult = (
           <StashSearchResult
@@ -519,13 +520,16 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
   const selectedEndpoint =
     stashConfig?.general.stashBoxes[selectedEndpointIndex];
 
-  const selectedEndpointInput = useMemo(
-    () => ({
+  const selectedEndpointInput = useMemo(() => {
+    if (!selectedEndpoint) {
+      return;
+    }
+
+    return {
       endpoint: selectedEndpoint.endpoint,
       index: selectedEndpointIndex,
-    }),
-    [selectedEndpoint, selectedEndpointIndex]
-  );
+    };
+  }, [selectedEndpoint, selectedEndpointIndex]);
 
   if (!config) return <LoadingIndicator />;
 
@@ -611,7 +615,7 @@ export const StudioTagger: React.FC<ITaggerProps> = ({ studios }) => {
     }
   }
 
-  if (selectedEndpointIndex === -1 || !selectedEndpoint) {
+  if (selectedEndpointIndex === -1 || !selectedEndpointInput) {
     return (
       <div className="my-4">
         <h3 className="text-center mt-4">

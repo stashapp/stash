@@ -27,7 +27,11 @@ import {
   ScrapedTextAreaRow,
 } from "../Shared/ScrapeDialog/ScrapeDialogRow";
 import { ModalComponent } from "../Shared/Modal";
-import { sortStoredIdObjects, uniqIDStoredIDs } from "src/utils/data";
+import {
+  idToStoredID,
+  sortStoredIdObjects,
+  uniqIDStoredIDs,
+} from "src/utils/data";
 import {
   CustomFieldScrapeResults,
   ObjectListScrapeResult,
@@ -143,13 +147,6 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
   const [customFields, setCustomFields] = useState<CustomFieldScrapeResults>(
     new Map()
   );
-
-  function idToStoredID(o: { id: string; name: string }) {
-    return {
-      stored_id: o.id,
-      name: o.name,
-    };
-  }
 
   // calculate the values for everything
   // uses the first set value for single value fields, and combines all
@@ -304,10 +301,7 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
       )
     );
     setURLs(
-      new ScrapeResult(
-        dest.urls ?? [],
-        uniq(all.map((s) => s.urls ?? []).flat())
-      )
+      new ScrapeResult(dest.urls ?? [], uniq(all.flatMap((s) => s.urls ?? [])))
     );
     setGender(
       new ScrapeResult(
@@ -337,15 +331,14 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
     setTags(
       new ObjectListScrapeResult<GQL.ScrapedTag>(
         sortStoredIdObjects(dest.tags.map(idToStoredID)),
-        uniqIDStoredIDs(all.map((s) => s.tags.map(idToStoredID)).flat())
+        uniqIDStoredIDs(all.flatMap((s) => s.tags.map(idToStoredID)))
       )
     );
     setStashIDs(
       new ScrapeResult(
         dest.stash_ids,
         all
-          .map((s) => s.stash_ids)
-          .flat()
+          .flatMap((s) => s.stash_ids)
           .filter((s, index, a) => {
             // remove entries with duplicate endpoints
             return index === a.findIndex((ss) => ss.endpoint === s.endpoint);
@@ -614,9 +607,17 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
           title={intl.formatMessage({ id: "stash_id" })}
           result={stashIDs}
           originalField={
-            <StashIDsField values={stashIDs?.originalValue ?? []} />
+            <StashIDsField
+              values={stashIDs?.originalValue ?? []}
+              linkType="performers"
+            />
           }
-          newField={<StashIDsField values={stashIDs?.newValue ?? []} />}
+          newField={
+            <StashIDsField
+              values={stashIDs?.newValue ?? []}
+              linkType="performers"
+            />
+          }
           onChange={(value) => setStashIDs(value)}
           alwaysShow={
             !!stashIDs.originalValue?.length || !!stashIDs.newValue?.length
@@ -775,8 +776,8 @@ export const PerformerMergeModal: React.FC<IPerformerMergeModalProps> = ({
   }, [performers]);
 
   async function loadPerformers() {
-    const performerIDs = sourcePerformers.map((s) => parseInt(s.id));
-    performerIDs.push(parseInt(destPerformer[0].id));
+    const performerIDs = sourcePerformers.map((s) => parseInt(s.id, 10));
+    performerIDs.push(parseInt(destPerformer[0].id, 10));
     const query = await queryFindPerformersByID(performerIDs);
     const { performers: loadedPerformers } = query.data.findPerformers;
 

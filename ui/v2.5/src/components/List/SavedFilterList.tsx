@@ -32,6 +32,7 @@ import cx from "classnames";
 import { TruncatedInlineText } from "../Shared/TruncatedText";
 import { OperationButton } from "../Shared/OperationButton";
 import { createPortal } from "react-dom";
+import { PatchFunction } from "src/patch";
 
 const ExistingSavedFilterList: React.FC<{
   name: string;
@@ -247,6 +248,18 @@ interface ISavedFilterListProps {
   menuPortalTarget?: Element | DocumentFragment;
 }
 
+export interface ISavedFilterLoaded {
+  savedFilter: SavedFilterDataFragment;
+  filter: ListFilterModel;
+  source: "dialog" | "sidebar" | "toolbar";
+  view?: View;
+}
+
+export const notifySavedFilterLoaded = PatchFunction(
+  "SavedFilter.Loaded",
+  (event: ISavedFilterLoaded) => event
+);
+
 export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   filter,
   onSetFilter,
@@ -377,6 +390,12 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     newFilter.randomSeed = -1;
 
     onSetFilter(newFilter);
+    notifySavedFilterLoaded({
+      filter: newFilter,
+      savedFilter: f,
+      source: "toolbar",
+      view,
+    });
   }
 
   interface ISavedFilterItem {
@@ -642,6 +661,7 @@ export const SidebarSavedFilterList: React.FC<ISavedFilterListProps> = ({
   }, [data?.findSavedFilters, filterName]);
 
   // handle when filter is changed to de-select the current filter
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally only want to trigger when filter changes
   useEffect(() => {
     // HACK - first change will be from setting the filter
     // second change is likely from somewhere else
@@ -761,6 +781,12 @@ export const SidebarSavedFilterList: React.FC<ISavedFilterListProps> = ({
 
     setCurrentSavedFilter({ id: f.id, set: true });
     onSetFilter(newFilter);
+    notifySavedFilterLoaded({
+      filter: newFilter,
+      savedFilter: f,
+      source: "sidebar",
+      view,
+    });
   }
 
   return (

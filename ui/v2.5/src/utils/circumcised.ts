@@ -6,7 +6,7 @@ export const stringCircumMap = new Map<string, GQL.CircumcisedEnum>([
 ]);
 
 export const circumcisedToString = (
-  value?: GQL.CircumcisedEnum | String | null
+  value?: GQL.CircumcisedEnum | string | null
 ) => {
   if (!value) {
     return undefined;

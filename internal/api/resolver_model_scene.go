@@ -9,6 +9,8 @@ import (
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/session"
+	"github.com/stashapp/stash/pkg/signedurl"
 )
 
 func convertVideoFile(f models.File) (*models.VideoFile, error) {
@@ -107,15 +109,38 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePat
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	config := manager.GetInstance().Config
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj)
+
+	var streamPath string
+	var captionBasePath string
+	if config.HasCredentials() {
+		userID := session.GetCurrentUserID(ctx)
+		if userID == nil {
+			return nil, fmt.Errorf("user ID not found")
+		}
+
+		// Sign the stream prefix
+		streamURL := builder.GetStreamURL("")
+		streamURL.RawQuery = signedParams(config, *userID, signedurl.DerivePrefix(streamURL.Path)).Encode()
+		streamPath = streamURL.String()
+
+		// Sign the caption prefix
+		captionBase := builder.GetCaptionURL()
+		captionBasePath = captionBase + "?" + signedParams(config, *userID, builder.GetCaptionPath()).Encode()
+	} else {
+		apiKey := config.GetAPIKey()
+		streamURL := builder.GetStreamURL(apiKey)
+		streamPath = streamURL.String()
+		captionBasePath = builder.GetCaptionURL()
+	}
+
+	// Web-only formats: use unsigned URLs (rely on cookie authentication)
 	screenshotPath := builder.GetScreenshotURL()
 	previewPath := builder.GetStreamPreviewURL()
-	streamPath := builder.GetStreamURL(config.GetAPIKey()).String()
 	webpPath := builder.GetStreamPreviewImageURL()
 	objHash := obj.GetHash(config.GetVideoFileNamingAlgorithm())
 	vttPath := builder.GetSpriteVTTURL(objHash)
 	spritePath := builder.GetSpriteURL(objHash)
-	funscriptPath := builder.GetFunscriptURL()
-	captionBasePath := builder.GetCaptionURL()
+	funscriptPath := builder.GetFunscriptURL(config.GetAPIKey()).String()
 	interactiveHeatmap := builder.GetInteractiveHeatmapURL()
 
 	return &ScenePathsType{
@@ -294,9 +319,25 @@ func (r *sceneResolver) SceneStreams(ctx context.Context, obj *models.Scene) ([]
 
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj)
-	apiKey := config.GetAPIKey()
 
-	return manager.GetSceneStreamPaths(obj, builder.GetStreamURL(apiKey), config.GetMaxStreamingTranscodeSize())
+	// Build the base stream URL with signing params or apikey
+	streamURL := builder.GetStreamURL("")
+	if config.HasCredentials() {
+		userID := session.GetCurrentUserID(ctx)
+		if userID == nil {
+			return nil, fmt.Errorf("user ID not found")
+		}
+		streamURL.RawQuery = signedParams(config, *userID, signedurl.DerivePrefix(streamURL.Path)).Encode()
+	} else {
+		apiKey := config.GetAPIKey()
+		if apiKey != "" {
+			v := streamURL.Query()
+			v.Set("apikey", apiKey)
+			streamURL.RawQuery = v.Encode()
+		}
+	}
+
+	return manager.GetSceneStreamPaths(obj, streamURL, config.GetMaxStreamingTranscodeSize())
 }
 
 func (r *sceneResolver) Interactive(ctx context.Context, obj *models.Scene) (bool, error) {

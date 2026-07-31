@@ -42,13 +42,13 @@ func (qb *sceneFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 		return
 	}
 
+	f.handleCriterion(ctx, qb.criterionHandler())
+
 	sf := sceneFilter.SubFilter()
 	if sf != nil {
 		sub := &sceneFilterHandler{sf}
 		handleSubFilter(ctx, sub, f, sceneFilter.OperatorFilter)
 	}
-
-	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
 func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
@@ -63,8 +63,12 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		stringCriterionHandler(sceneFilter.Director, "scenes.director"),
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if sceneFilter.Oshash != nil {
-				qb.addSceneFilesTable(f)
-				f.addLeftJoin(fingerprintTable, "fingerprints_oshash", "scenes_files.file_id = fingerprints_oshash.file_id AND fingerprints_oshash.type = 'oshash'")
+				joinType := joinTypeInner
+				if sceneFilter.Oshash.Modifier == models.CriterionModifierIsNull {
+					joinType = joinTypeLeft
+				}
+				qb.addSceneFilesTable(f, joinType)
+				f.addJoin(joinType, fingerprintTable, "fingerprints_oshash", "scenes_files.file_id = fingerprints_oshash.file_id AND fingerprints_oshash.type = 'oshash'")
 			}
 
 			stringCriterionHandler(sceneFilter.Oshash, "fingerprints_oshash.fingerprint")(ctx, f)
@@ -72,8 +76,12 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if sceneFilter.Checksum != nil {
-				qb.addSceneFilesTable(f)
-				f.addLeftJoin(fingerprintTable, "fingerprints_md5", "scenes_files.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'")
+				joinType := joinTypeInner
+				if sceneFilter.Checksum.Modifier == models.CriterionModifierIsNull {
+					joinType = joinTypeLeft
+				}
+				qb.addSceneFilesTable(f, joinType)
+				f.addJoin(joinType, fingerprintTable, "fingerprints_md5", "scenes_files.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'")
 			}
 
 			stringCriterionHandler(sceneFilter.Checksum, "fingerprints_md5.fingerprint")(ctx, f)
@@ -84,8 +92,12 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 				// backwards compatibility
 				h := phashDistanceCriterionHandler{
 					joinFn: func(f *filterBuilder) {
-						qb.addSceneFilesTable(f)
-						f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
+						joinType := joinTypeInner
+						if sceneFilter.Phash.Modifier == models.CriterionModifierIsNull {
+							joinType = joinTypeLeft
+						}
+						qb.addSceneFilesTable(f, joinType)
+						f.addJoin(joinType, fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
 					},
 					criterion: &models.PhashDistanceCriterionInput{
 						Value:    sceneFilter.Phash.Value,
@@ -98,8 +110,12 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 
 		&phashDistanceCriterionHandler{
 			joinFn: func(f *filterBuilder) {
-				qb.addSceneFilesTable(f)
-				f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
+				joinType := joinTypeInner
+				if sceneFilter.PhashDistance.Modifier == models.CriterionModifierIsNull {
+					joinType = joinTypeLeft
+				}
+				qb.addSceneFilesTable(f, joinType)
+				f.addJoin(joinType, fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
 			},
 			criterion: sceneFilter.PhashDistance,
 		},
@@ -122,7 +138,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if sceneFilter.StashID != nil {
-				sceneRepository.stashIDs.join(f, "scene_stash_ids", "scenes.id")
+				sceneRepository.stashIDs.leftJoin(f, "scene_stash_ids", "scenes.id")
 				stringCriterionHandler(sceneFilter.StashID, "scene_stash_ids.stash_id")(ctx, f)
 			}
 		}),
@@ -236,8 +252,8 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 				isRelated:  true,
 			},
 			joinFn: func(f *filterBuilder) {
-				qb.addFilesTable(f)
-				qb.addFoldersTable(f)
+				qb.addFilesTable(f, joinTypeInner)
+				qb.addFoldersTable(f, joinTypeInner)
 			},
 			// don't use a subquery; join directly
 			directJoin: true,
@@ -254,23 +270,23 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 	}
 }
 
-func (qb *sceneFilterHandler) addSceneFilesTable(f *filterBuilder) {
-	f.addLeftJoin(scenesFilesTable, "", "scenes_files.scene_id = scenes.id")
+func (qb *sceneFilterHandler) addSceneFilesTable(f *filterBuilder, joinType joinType) {
+	f.addJoin(joinType, scenesFilesTable, "", "scenes_files.scene_id = scenes.id")
 }
 
-func (qb *sceneFilterHandler) addFilesTable(f *filterBuilder) {
-	qb.addSceneFilesTable(f)
-	f.addLeftJoin(fileTable, "", "scenes_files.file_id = files.id")
+func (qb *sceneFilterHandler) addFilesTable(f *filterBuilder, joinType joinType) {
+	qb.addSceneFilesTable(f, joinType)
+	f.addJoin(joinType, fileTable, "", "scenes_files.file_id = files.id")
 }
 
-func (qb *sceneFilterHandler) addFoldersTable(f *filterBuilder) {
-	qb.addFilesTable(f)
-	f.addLeftJoin(folderTable, "", "files.parent_folder_id = folders.id")
+func (qb *sceneFilterHandler) addFoldersTable(f *filterBuilder, joinType joinType) {
+	qb.addFilesTable(f, joinType)
+	f.addJoin(joinType, folderTable, "", "files.parent_folder_id = folders.id")
 }
 
-func (qb *sceneFilterHandler) addVideoFilesTable(f *filterBuilder) {
-	qb.addSceneFilesTable(f)
-	f.addLeftJoin(videoFileTable, "", "video_files.file_id = scenes_files.file_id")
+func (qb *sceneFilterHandler) addVideoFilesTable(f *filterBuilder, joinType joinType) {
+	qb.addSceneFilesTable(f, joinType)
+	f.addJoin(joinType, videoFileTable, "", "video_files.file_id = scenes_files.file_id")
 }
 
 func (qb *sceneFilterHandler) playCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
@@ -318,7 +334,7 @@ func (qb *sceneFilterHandler) duplicatedCriterionHandler(duplicatedFilter *model
 
 		// Handle explicit fields
 		if duplicatedFilter.Phash != nil {
-			qb.addSceneFilesTable(f)
+			qb.addSceneFilesTable(f, joinTypeInner)
 			qb.applyPhashDuplication(f, *duplicatedFilter.Phash)
 		}
 
@@ -368,11 +384,15 @@ func (qb *sceneFilterHandler) applyURLDuplication(f *filterBuilder, duplicated b
 	f.addInnerJoin("(SELECT scene_id FROM scene_urls INNER JOIN (SELECT url FROM scene_urls GROUP BY url HAVING COUNT(DISTINCT scene_id) "+v+" 1) dupes ON scene_urls.url = dupes.url)", "scurl", "scenes.id = scurl.scene_id")
 }
 
-func (qb *sceneFilterHandler) codecCriterionHandler(codec *models.StringCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+func (qb *sceneFilterHandler) codecCriterionHandler(codec *models.StringCriterionInput, codecColumn string, addJoinFn func(f *filterBuilder, joinType joinType)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if codec != nil {
 			if addJoinFn != nil {
-				addJoinFn(f)
+				joinType := joinTypeInner
+				if codec.Modifier == models.CriterionModifierIsNull {
+					joinType = joinTypeLeft
+				}
+				addJoinFn(f, joinType)
 			}
 
 			stringCriterionHandler(codec, codecColumn)(ctx, f)
@@ -398,29 +418,29 @@ func (qb *sceneFilterHandler) isMissingCriterionHandler(isMissing *string) crite
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "url":
-				scenesURLsTableMgr.join(f, "", "scenes.id")
+				scenesURLsTableMgr.leftJoin(f, "", "scenes.id")
 				f.addWhere("scene_urls.url IS NULL")
 			case "galleries":
-				sceneRepository.galleries.join(f, "galleries_join", "scenes.id")
+				sceneRepository.galleries.leftJoin(f, "galleries_join", "scenes.id")
 				f.addWhere("galleries_join.scene_id IS NULL")
 			case "studio":
 				f.addWhere("scenes.studio_id IS NULL")
 			case "movie", "group":
-				sceneRepository.groups.join(f, "groups_join", "scenes.id")
+				sceneRepository.groups.leftJoin(f, "groups_join", "scenes.id")
 				f.addWhere("groups_join.scene_id IS NULL")
 			case "performers":
-				sceneRepository.performers.join(f, "performers_join", "scenes.id")
+				sceneRepository.performers.leftJoin(f, "performers_join", "scenes.id")
 				f.addWhere("performers_join.scene_id IS NULL")
 			case "date":
 				f.addWhere(`scenes.date IS NULL OR scenes.date IS ""`)
 			case "tags":
-				sceneRepository.tags.join(f, "tags_join", "scenes.id")
+				sceneRepository.tags.leftJoin(f, "tags_join", "scenes.id")
 				f.addWhere("tags_join.scene_id IS NULL")
 			case "stash_id":
-				sceneRepository.stashIDs.join(f, "scene_stash_ids", "scenes.id")
+				sceneRepository.stashIDs.leftJoin(f, "scene_stash_ids", "scenes.id")
 				f.addWhere("scene_stash_ids.scene_id IS NULL")
 			case "phash":
-				qb.addSceneFilesTable(f)
+				qb.addSceneFilesTable(f, joinTypeLeft)
 				f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
 				f.addWhere("fingerprints_phash.fingerprint IS NULL")
 			case "cover":
@@ -444,15 +464,15 @@ func (qb *sceneFilterHandler) urlsCriterionHandler(url *models.StringCriterionIn
 		primaryFK:    sceneIDColumn,
 		joinTable:    scenesURLsTable,
 		stringColumn: sceneURLColumn,
-		addJoinTable: func(f *filterBuilder) {
-			scenesURLsTableMgr.join(f, "", "scenes.id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			scenesURLsTableMgr.join(f, joinType, "", "scenes.id")
 		},
 	}
 
 	return h.handler(url)
 }
 
-func (qb *sceneFilterHandler) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
+func (qb *sceneFilterHandler) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder, joinType joinType)) multiCriterionHandlerBuilder {
 	return multiCriterionHandlerBuilder{
 		primaryTable: sceneTable,
 		foreignTable: foreignTable,
@@ -469,9 +489,9 @@ func (qb *sceneFilterHandler) captionCriterionHandler(captions *models.StringCri
 		primaryFK:    sceneIDColumn,
 		joinTable:    videoCaptionsTable,
 		stringColumn: captionCodeColumn,
-		addJoinTable: func(f *filterBuilder) {
-			qb.addSceneFilesTable(f)
-			f.addLeftJoin(videoCaptionsTable, "", "video_captions.file_id = scenes_files.file_id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			qb.addSceneFilesTable(f, joinTypeLeft)
+			f.addJoin(joinType, videoCaptionsTable, "", "video_captions.file_id = scenes_files.file_id")
 		},
 		excludeHandler: func(f *filterBuilder, criterion *models.StringCriterionInput) {
 			excludeClause := `scenes.id NOT IN (
@@ -531,8 +551,8 @@ func (qb *sceneFilterHandler) performersCriterionHandler(performers *models.Mult
 		primaryFK:    sceneIDColumn,
 		foreignFK:    performerIDColumn,
 
-		addJoinTable: func(f *filterBuilder) {
-			sceneRepository.performers.join(f, "performers_join", "scenes.id")
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			sceneRepository.performers.join(f, joinType, "performers_join", "scenes.id")
 		},
 	}
 
@@ -587,9 +607,9 @@ func (qb *sceneFilterHandler) performerAgeCriterionHandler(performerAge *models.
 
 // legacy handler
 func (qb *sceneFilterHandler) moviesCriterionHandler(movies *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
-		sceneRepository.groups.join(f, "", "scenes.id")
-		f.addLeftJoin("groups", "", "groups_scenes.group_id = groups.id")
+	addJoinsFunc := func(f *filterBuilder, joinType joinType) {
+		sceneRepository.groups.leftJoin(f, "", "scenes.id")
+		f.addJoin(joinType, "groups", "", "groups_scenes.group_id = groups.id")
 	}
 	h := qb.getMultiCriterionHandlerBuilder(groupTable, groupsScenesTable, "group_id", addJoinsFunc)
 	return h.handler(movies)
@@ -613,9 +633,9 @@ func (qb *sceneFilterHandler) groupsCriterionHandler(groups *models.Hierarchical
 }
 
 func (qb *sceneFilterHandler) galleriesCriterionHandler(galleries *models.MultiCriterionInput) criterionHandlerFunc {
-	addJoinsFunc := func(f *filterBuilder) {
-		sceneRepository.galleries.join(f, "", "scenes.id")
-		f.addLeftJoin("galleries", "", "scenes_galleries.gallery_id = galleries.id")
+	addJoinsFunc := func(f *filterBuilder, joinType joinType) {
+		sceneRepository.galleries.leftJoin(f, "", "scenes.id")
+		f.addJoin(joinType, "galleries", "", "scenes_galleries.gallery_id = galleries.id")
 	}
 	h := qb.getMultiCriterionHandlerBuilder(galleryTable, scenesGalleriesTable, "gallery_id", addJoinsFunc)
 	return h.handler(galleries)

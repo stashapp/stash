@@ -31,18 +31,14 @@ func TestStudioFindByName(t *testing.T) {
 
 		assert.Equal(t, studioNames[studioIdxWithScene], studio.Name)
 
-		name = studioNames[studioIdxWithDupName] // find a studio by name nocase
+		name = strings.ToUpper(studioNames[studioIdxWithNothing]) // find a studio by name nocase
 
 		studio, err = sqb.FindByName(ctx, name, true)
 
 		if err != nil {
 			t.Errorf("Error finding studios: %s", err.Error())
 		}
-		// studioIdxWithDupName and studioIdxWithScene should have similar names ( only diff should be Name vs NaMe)
-		//studio.Name should match with studioIdxWithScene since its ID is before studioIdxWithDupName
-		assert.Equal(t, studioNames[studioIdxWithScene], studio.Name)
-		//studio.Name should match with studioIdxWithDupName if the check is not case sensitive
-		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithDupName]), strings.ToLower(studio.Name))
+		assert.Equal(t, studioNames[studioIdxWithNothing], studio.Name)
 
 		return nil
 	})
@@ -107,7 +103,7 @@ func Test_StudioStore_Create(t *testing.T) {
 					Details:       details,
 					IgnoreAutoTag: ignoreAutoTag,
 					Organized:     organized,
-					TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithStudio], tagIDs[tagIdx1WithDupName]}),
+					TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithStudio], tagIDs[tagIdx1WithNothing]}),
 					Aliases:       models.NewRelatedStrings(aliases),
 					StashIDs: models.NewRelatedStashIDs([]models.StashID{
 						{
@@ -236,7 +232,7 @@ func Test_StudioStore_Update(t *testing.T) {
 					IgnoreAutoTag: ignoreAutoTag,
 					Organized:     organized,
 					Aliases:       models.NewRelatedStrings(aliases),
-					TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithStudio]}),
+					TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithStudio], tagIDs[tagIdx1WithNothing]}),
 					StashIDs: models.NewRelatedStashIDs([]models.StashID{
 						{
 							StashID:   stashID1,
@@ -403,7 +399,7 @@ func Test_StudioStore_UpdatePartial(t *testing.T) {
 	}{
 		{
 			"full",
-			studioIDs[studioIdxWithDupName],
+			studioIDs[studioIdxWithNothing],
 			models.StudioPartial{
 				Name: models.NewOptionalString(name),
 				URLs: &models.UpdateStrings{
@@ -420,7 +416,7 @@ func Test_StudioStore_UpdatePartial(t *testing.T) {
 				IgnoreAutoTag: models.NewOptionalBool(ignoreAutoTag),
 				Organized:     models.NewOptionalBool(organized),
 				TagIDs: &models.UpdateIDs{
-					IDs:  []int{tagIDs[tagIdx1WithStudio], tagIDs[tagIdx1WithDupName]},
+					IDs:  []int{tagIDs[tagIdx1WithStudio], tagIDs[tagIdx1WithNothing]},
 					Mode: models.RelationshipUpdateModeSet,
 				},
 				StashIDs: &models.UpdateStashIDs{
@@ -442,7 +438,7 @@ func Test_StudioStore_UpdatePartial(t *testing.T) {
 				UpdatedAt: models.NewOptionalTime(updatedAt),
 			},
 			models.Studio{
-				ID:            studioIDs[studioIdxWithDupName],
+				ID:            studioIDs[studioIdxWithNothing],
 				Name:          name,
 				URLs:          models.NewRelatedStrings([]string{url}),
 				Aliases:       models.NewRelatedStrings(aliases),
@@ -451,7 +447,7 @@ func Test_StudioStore_UpdatePartial(t *testing.T) {
 				Details:       details,
 				IgnoreAutoTag: ignoreAutoTag,
 				Organized:     organized,
-				TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithStudio]}),
+				TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithStudio], tagIDs[tagIdx1WithNothing]}),
 				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
 						StashID:   stashID1,
@@ -1955,3 +1951,140 @@ func TestStudioQueryCustomFields(t *testing.T) {
 // TODO All
 // TODO AllSlim
 // TODO Query
+
+func TestStudioOCountByStudioID(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		// studioIdxWithTwoImages has images 13 and 14 with o_counter 1 and 2
+		count, err := db.Image.OCountByStudioID(ctx, studioIDs[studioIdxWithTwoImages], 0)
+		if err != nil {
+			t.Errorf("Error getting image o_count: %s", err.Error())
+		}
+		assert.Equal(t, 3, count)
+
+		// studio with no images
+		count, err = db.Image.OCountByStudioID(ctx, studioIDs[studioIdxWithNothing], 0)
+		if err != nil {
+			t.Errorf("Error getting image o_count: %s", err.Error())
+		}
+		assert.Equal(t, 0, count)
+
+		// scene o_count should be 0 (no o_date entries in test data)
+		count, err = db.Scene.OCountByStudioID(ctx, studioIDs[studioIdxWithGrandParent], 0)
+		if err != nil {
+			t.Errorf("Error getting scene o_count: %s", err.Error())
+		}
+		assert.Equal(t, 0, count)
+
+		// recursive should return same when no child studios have data
+		count, err = db.Image.OCountByStudioID(ctx, studioIDs[studioIdxWithGrandParent], -1)
+		if err != nil {
+			t.Errorf("Error getting image o_count: %s", err.Error())
+		}
+		assert.Equal(t, 2, count)
+
+		return nil
+	})
+}
+
+func TestStudioQuerySortOCounter(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sortBy := "o_counter"
+		direction := models.SortDirectionEnumDesc
+		findFilter := &models.FindFilterType{
+			Sort:      &sortBy,
+			Direction: &direction,
+		}
+
+		// studioIdxWithTwoImages has highest image o_counter sum (3)
+		studios := queryStudios(ctx, t, nil, findFilter)
+		assert.True(t, len(studios) > 0)
+		assert.Equal(t, studioIDs[studioIdxWithTwoImages], studios[0].ID)
+
+		// ascending
+		direction = models.SortDirectionEnumAsc
+		studios = queryStudios(ctx, t, nil, findFilter)
+		assert.True(t, len(studios) > 0)
+		assert.Equal(t, studioIDs[studioIdxWithTwoImages], studios[len(studios)-1].ID)
+
+		return nil
+	})
+}
+
+func TestStudioQuerySortOCounterAll(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sortBy := "o_counter_all"
+		direction := models.SortDirectionEnumDesc
+		findFilter := &models.FindFilterType{
+			Sort:      &sortBy,
+			Direction: &direction,
+		}
+
+		studios := queryStudios(ctx, t, nil, findFilter)
+		assert.True(t, len(studios) > 0)
+		// same as flat since no child studios have additional data
+		assert.Equal(t, studioIDs[studioIdxWithTwoImages], studios[0].ID)
+
+		return nil
+	})
+}
+
+func TestStudioQuerySortPerformerCount(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sortBy := "performer_count"
+		direction := models.SortDirectionEnumDesc
+		findFilter := &models.FindFilterType{
+			Sort:      &sortBy,
+			Direction: &direction,
+		}
+
+		studios := queryStudios(ctx, t, nil, findFilter)
+		assert.True(t, len(studios) > 0)
+		// studio with performers should appear before studio without
+		firstWithPerf := -1
+		lastWithoutPerf := -1
+		for i, s := range studios {
+			// sceneIdxWithStudioPerformer has performerIdxWithSceneStudio
+			if s.ID == studioIDs[studioIdxWithScenePerformer] && firstWithPerf == -1 {
+				firstWithPerf = i
+			}
+			if s.ID == studioIDs[studioIdxWithNothing] {
+				lastWithoutPerf = i
+			}
+		}
+		assert.Greater(t, firstWithPerf, -1)
+		assert.Greater(t, lastWithoutPerf, -1)
+		assert.Less(t, firstWithPerf, lastWithoutPerf)
+
+		return nil
+	})
+}
+
+func TestStudioQuerySortPerformerCountAll(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sortBy := "performer_count_all"
+		direction := models.SortDirectionEnumDesc
+		findFilter := &models.FindFilterType{
+			Sort:      &sortBy,
+			Direction: &direction,
+		}
+
+		studios := queryStudios(ctx, t, nil, findFilter)
+		assert.True(t, len(studios) > 0)
+		// studio with performers should appear before studio without
+		firstWithPerf := -1
+		lastWithoutPerf := -1
+		for i, s := range studios {
+			if s.ID == studioIDs[studioIdxWithScenePerformer] && firstWithPerf == -1 {
+				firstWithPerf = i
+			}
+			if s.ID == studioIDs[studioIdxWithNothing] {
+				lastWithoutPerf = i
+			}
+		}
+		assert.Greater(t, firstWithPerf, -1)
+		assert.Greater(t, lastWithoutPerf, -1)
+		assert.Less(t, firstWithPerf, lastWithoutPerf)
+
+		return nil
+	})
+}

@@ -239,6 +239,7 @@ Returns `void`.
 - `FilteredSceneMarkerList`
 - `FilteredStudioList`
 - `FilteredTagList`
+- `FilterTags.Extras`
 - `FolderSelect`
 - `FrontPage`
 - `GalleryCard`
@@ -257,6 +258,7 @@ Returns `void`.
 - `GroupCardGrid`
 - `GroupIDSelect`
 - `GroupList`
+- `GroupPage`
 - `GroupRecommendationRow`
 - `GroupSelect`
 - `GroupSelect.sort`
@@ -308,6 +310,7 @@ Returns `void`.
 - `RatingStars`
 - `RatingSystem`
 - `RecommendationRow`
+- `SavedFilter.Loaded`
 - `SceneCard`
 - `SceneCard.Details`
 - `SceneCard.Image`
@@ -343,6 +346,7 @@ Returns `void`.
 - `StudioDetailsPanel`
 - `StudioIDSelect`
 - `StudioList`
+- `StudioPage`
 - `StudioRecommendationRow`
 - `StudioSelect`
 - `StudioSelect.sort`
@@ -358,6 +362,7 @@ Returns `void`.
 - `TagIDSelect`
 - `TagLink`
 - `TagList`
+- `TagPage`
 - `TagRecommendationRow`
 - `TagSelect`
 - `TagSelect.sort`
