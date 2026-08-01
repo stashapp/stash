@@ -60,6 +60,8 @@ Some filters have regex modifier as an option. Regex modifiers are case-sensitiv
 
 The current sorting field is shown next to the query text field, indicating the current sort field and order. The page size dropdown allows selecting from a standard set of objects per page, and allows setting a custom page size.
 
+When sorting by **Performer Age**, items are ordered by the age their performer(s) were on the item's own date — ascending order uses the youngest performer, descending order uses the oldest. This requires the scene or image to have a date set; items with no date (or no performers) have no age to compare and are sorted last regardless of direction.
+
 ### Saved filters
 
 Saved filters can be accessed with the bookmark button on the left of the query text field. The current filter can be saved by entering a filter name and clicking on the save button. Existing saved filters may be overwritten with the current filter by clicking on the save button next to the filter name. Saved filters may also be deleted by pressing the delete button next to the filter name.

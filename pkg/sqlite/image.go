@@ -1032,12 +1032,15 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 			addFolderJoin()
 			sortClause = " ORDER BY COALESCE(images.title, files.basename) COLLATE NATURAL_CI " + direction + ", folders.path COLLATE NATURAL_CI " + direction
 		case "performer_age":
+			// Looking at the youngest performer by default
 			aggregation := "MIN"
 			if direction == "DESC" {
+				// When sorting by performer's age DESC, I should consider the oldest performer instead
 				aggregation = "MAX"
 			}
 			fallback := "NULL"
 			if direction == "ASC" {
+				// When sorting ascending, NULLs are first by default. Coalescing to the MAX int value supported by sqlite
 				fallback = "9223372036854775807"
 			}
 			sortClause = fmt.Sprintf(
