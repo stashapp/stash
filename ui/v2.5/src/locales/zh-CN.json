@@ -224,11 +224,12 @@
             "fp_found": "{fpCount, plural, =0 {没有新的匹配指纹} other {# 匹配到新的指纹}}",
             "fp_matches": "时长符合",
             "fp_matches_multi": "时长符合 {matchCount}/{durationsLength} 个指纹",
-            "hash_matches": "{hash_type} 数值符合",
+            "hash_matches": "{count, plural, one {# 条 {hash_type} 匹配} other {# 条 {hash_type} 匹配}}",
             "match_failed_already_tagged": "短片已经添加标签",
             "match_failed_no_result": "没有找到",
             "match_success": "短片成功添加标签",
-            "unnamed": "无名"
+            "unnamed": "无名",
+            "hash_submissions": "{count} 次提交"
         },
         "verb_match_fp": "匹配指纹",
         "verb_matched": "符合",
@@ -1255,7 +1256,7 @@
         "video_codec": "视频编码",
         "o_count": "高潮次数",
         "md5": "MD5 校验值",
-        "oshash": "oshash 值",
+        "oshash": "OSHash",
         "oshash_meaning": "OpenSubtitles 哈希值",
         "phash_meaning": "感知哈希值"
     },
@@ -1728,6 +1729,13 @@
             "fields_will_not_be_changed": "更新 {entity} 时这些字段将不变。",
             "no_fields_are_excluded": "没有字段被排除",
             "no_instances_found": "没有找到实例"
+        },
+        "performers": {
+            "birthdate": "匹配到的演员出生日期不一致。",
+            "country": "匹配到的演员国籍不同。",
+            "ethnicity": "匹配到的演员族裔不一致。",
+            "gender": "匹配到的演员性别不一致。",
+            "stash_mismatch": "匹配到的演员 stash-id 不一致。"
         }
     },
     "unsupported_criteria": "未支持标准：{criteria}",
@@ -1742,5 +1750,6 @@
     "sub_group_description": "子集合介绍",
     "o_count_all": "O 计数（所有）",
     "performer_count_all": "演员计数（所有）",
-    "scene_marker_count": "短片标记计数"
+    "scene_marker_count": "短片标记计数",
+    "stash_id_endpoint_any": "任意端点"
 }
