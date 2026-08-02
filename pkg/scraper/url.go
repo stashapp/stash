@@ -260,21 +260,11 @@ func urlFromCDP(ctx context.Context, urlCDP string, driverOptions scraperDriverO
 	// responses in an HTML pretty-printer when navigated to directly, so
 	// OuterHTML on such a page returns HTML containing the JSON rather than
 	// the JSON itself.
-	// jsonDoc is written from chromedp's event-processing goroutine (in the
-	// ListenTarget callback below) and read from the action sequence passed
-	// to chromedp.Run, so access must be synchronized.
-	var jsonDoc struct {
-		mutex     sync.Mutex
-		requestID network.RequestID
-		isJSON    bool
-	}
+	var jsonDoc jsonDocumentTracker
 	chromedp.ListenTarget(ctx, func(ev interface{}) {
 		if ev, ok := ev.(*network.EventResponseReceived); ok {
-			jsonDoc.mutex.Lock()
-			defer jsonDoc.mutex.Unlock()
-			if ev.Type == network.ResourceTypeDocument && !jsonDoc.isJSON && isJSONMimeType(ev.Response.MimeType) {
-				jsonDoc.requestID = ev.RequestID
-				jsonDoc.isJSON = true
+			if ev.Type == network.ResourceTypeDocument {
+				jsonDoc.markJSON(ev.RequestID, ev.Response.MimeType)
 			}
 		}
 	})
@@ -321,9 +311,7 @@ func urlFromCDP(ctx context.Context, urlCDP string, driverOptions scraperDriverO
 		chromedp.Sleep(sleepDuration),
 		setCDPClicks(driverOptions),
 		chromedp.ActionFunc(func(ctx context.Context) error {
-			jsonDoc.mutex.Lock()
-			isJSON, requestID := jsonDoc.isJSON, jsonDoc.requestID
-			jsonDoc.mutex.Unlock()
+			requestID, isJSON := jsonDoc.get()
 
 			if isJSON {
 				body, err := network.GetResponseBody(requestID).Do(ctx)
@@ -416,6 +404,40 @@ func isJSONMimeType(mimeType string) bool {
 	return mimeType == "application/json" ||
 		strings.HasSuffix(mimeType, "+json") ||
 		mimeType == "text/json"
+}
+
+// jsonDocumentTracker records whether the CDP-loaded page's main document
+// turned out to be JSON, and if so, which network request to fetch its raw
+// body from. It's written from chromedp's event-processing goroutine (via
+// markJSON, called from a ListenTarget callback) and read from the action
+// sequence passed to chromedp.Run (via get), so access is synchronized with
+// a mutex.
+type jsonDocumentTracker struct {
+	mutex     sync.Mutex
+	requestID network.RequestID
+	isJSON    bool
+}
+
+// markJSON records requestID as the main JSON document if mimeType
+// indicates JSON content and no JSON document has been recorded yet.
+// Subsequent calls after the first match are no-ops.
+func (t *jsonDocumentTracker) markJSON(requestID network.RequestID, mimeType string) {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	if !t.isJSON && isJSONMimeType(mimeType) {
+		t.requestID = requestID
+		t.isJSON = true
+	}
+}
+
+// get returns the recorded JSON request ID and whether a JSON document has
+// been found.
+func (t *jsonDocumentTracker) get() (network.RequestID, bool) {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	return t.requestID, t.isJSON
 }
 
 func cdpHeaders(driverOptions scraperDriverOptions) map[string]interface{} {
