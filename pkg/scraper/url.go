@@ -253,6 +253,25 @@ func urlFromCDP(ctx context.Context, urlCDP string, driverOptions scraperDriverO
 	var res string
 	headers := cdpHeaders(driverOptions)
 
+	// Track the main document response so that, if it turns out to be JSON,
+	// we can pull the raw response body via CDP's Network domain instead of
+	// reading the rendered DOM. Chrome's built-in JSON viewer wraps raw JSON
+	// responses in an HTML pretty-printer when navigated to directly, so
+	// OuterHTML on such a page returns HTML containing the JSON rather than
+	// the JSON itself.
+	var jsonRequestID network.RequestID
+	var isJSONDocument bool
+	chromedp.ListenTarget(ctx, func(ev interface{}) {
+		if ev, ok := ev.(*network.EventResponseReceived); ok {
+			if ev.Type == network.ResourceTypeDocument && !isJSONDocument {
+				if isJSONMimeType(ev.Response.MimeType) {
+					jsonRequestID = ev.RequestID
+					isJSONDocument = true
+				}
+			}
+		}
+	})
+
 	if proxyUsesAuth(globalConfig.GetProxy()) {
 		_, user, pass := splitProxyAuth(globalConfig.GetProxy())
 
@@ -294,7 +313,20 @@ func urlFromCDP(ctx context.Context, urlCDP string, driverOptions scraperDriverO
 		chromedp.Navigate(urlCDP),
 		chromedp.Sleep(sleepDuration),
 		setCDPClicks(driverOptions),
-		chromedp.OuterHTML("html", &res, chromedp.ByQuery),
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			if isJSONDocument {
+				body, err := network.GetResponseBody(jsonRequestID).Do(ctx)
+				if err != nil {
+					// fall back to OuterHTML if the response body is no
+					// longer available (e.g. evicted from Chrome's cache)
+					logger.Debugf("[scraper] could not get raw response body for JSON document, falling back to OuterHTML: %v", err)
+					return chromedp.OuterHTML("html", &res, chromedp.ByQuery).Do(ctx)
+				}
+				res = string(body)
+				return nil
+			}
+			return chromedp.OuterHTML("html", &res, chromedp.ByQuery).Do(ctx)
+		}),
 		printCDPCookies(driverOptions, "Cookies set"),
 	)
 
@@ -359,6 +391,20 @@ func getRemoteCDPWSAddress(ctx context.Context, url string) (string, error) {
 	remote := result["webSocketDebuggerUrl"].(string)
 	logger.Debugf("Remote cdp instance found %s", remote)
 	return remote, err
+}
+
+// isJSONMimeType returns true if the given response MIME type indicates
+// JSON content (e.g. "application/json", "application/ld+json",
+// "text/json; charset=utf-8"), for deciding whether a CDP-fetched document
+// should be read via its raw network response body rather than the
+// rendered DOM.
+func isJSONMimeType(mimeType string) bool {
+	mimeType, _, _ = strings.Cut(mimeType, ";")
+	mimeType = strings.TrimSpace(strings.ToLower(mimeType))
+
+	return mimeType == "application/json" ||
+		strings.HasSuffix(mimeType, "+json") ||
+		mimeType == "text/json"
 }
 
 func cdpHeaders(driverOptions scraperDriverOptions) map[string]interface{} {
