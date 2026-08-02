@@ -264,7 +264,7 @@ func urlFromCDP(ctx context.Context, urlCDP string, driverOptions scraperDriverO
 	chromedp.ListenTarget(ctx, func(ev interface{}) {
 		if ev, ok := ev.(*network.EventResponseReceived); ok {
 			if ev.Type == network.ResourceTypeDocument {
-				jsonDoc.markJSON(ev.RequestID, ev.Response.MimeType)
+				jsonDoc.markDocument(ev.RequestID, ev.Response.MimeType)
 			}
 		}
 	})
@@ -311,14 +311,19 @@ func urlFromCDP(ctx context.Context, urlCDP string, driverOptions scraperDriverO
 		chromedp.Sleep(sleepDuration),
 		setCDPClicks(driverOptions),
 		chromedp.ActionFunc(func(ctx context.Context) error {
-			requestID, isJSON := jsonDoc.get()
+			requestID, isJSON := jsonDoc.mainDocument()
 
 			if isJSON {
 				body, err := network.GetResponseBody(requestID).Do(ctx)
 				if err != nil {
-					// fall back to OuterHTML if the response body is no
-					// longer available (e.g. evicted from Chrome's cache)
-					logger.Warnf("[scraper] could not get raw response body for JSON document, falling back to OuterHTML: %v", err)
+					// Fall back to OuterHTML if the response body is no
+					// longer available (e.g. evicted from Chrome's cache).
+					// The scraper will most likely still fail downstream on
+					// this fallback, since OuterHTML returns Chrome's
+					// HTML-wrapped view of the JSON rather than the JSON
+					// itself - but it's a better failure mode than losing
+					// the response entirely.
+					logger.Warnf("[scraper] could not get raw response body for JSON document, falling back to OuterHTML (the scrape will likely still fail as a result): %v", err)
 					return chromedp.OuterHTML("html", &res, chromedp.ByQuery).Do(ctx)
 				}
 				res = string(body)
@@ -408,32 +413,50 @@ func isJSONMimeType(mimeType string) bool {
 
 // jsonDocumentTracker records whether the CDP-loaded page's main document
 // turned out to be JSON, and if so, which network request to fetch its raw
-// body from. It's written from chromedp's event-processing goroutine (via
-// markJSON, called from a ListenTarget callback) and read from the action
-// sequence passed to chromedp.Run (via get), so access is synchronized with
-// a mutex.
+// body from.
+//
+// It only ever considers the *first* Document-type response it sees, via
+// markDocument. Network.responseReceived fires with resourceType Document
+// for iframe navigations too, not just the top-level one, so a naive
+// "first Document that happens to be JSON" rule could latch onto an
+// iframe's JSON response instead of the main page's HTML - misidentifying
+// an HTML scrape as a JSON one. Redirects don't complicate this: a
+// pre-redirect response never gets its own responseReceived event (that
+// history arrives via requestWillBeSent's redirectResponse on the same
+// request instead), so the first Document response reliably corresponds to
+// the top-level navigation. A click-triggered navigation (via
+// setCDPClicks, which runs after the initial Navigate) is not treated as a
+// new "first" document either, so if a click leads to a JSON page, this
+// still reports the original navigation's result.
+//
+// It's written from chromedp's event-processing goroutine (via
+// markDocument, called from a ListenTarget callback) and read from the
+// action sequence passed to chromedp.Run (via mainDocument), so access is
+// synchronized with a mutex.
 type jsonDocumentTracker struct {
 	mutex     sync.Mutex
 	requestID network.RequestID
 	isJSON    bool
+	recorded  bool
 }
 
-// markJSON records requestID as the main JSON document if mimeType
-// indicates JSON content and no JSON document has been recorded yet.
-// Subsequent calls after the first match are no-ops.
-func (t *jsonDocumentTracker) markJSON(requestID network.RequestID, mimeType string) {
+// markDocument records requestID as the main document if no document has
+// been recorded yet. Subsequent calls after the first are no-ops.
+func (t *jsonDocumentTracker) markDocument(requestID network.RequestID, mimeType string) {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 
-	if !t.isJSON && isJSONMimeType(mimeType) {
-		t.requestID = requestID
-		t.isJSON = true
+	if t.recorded {
+		return
 	}
+	t.recorded = true
+	t.requestID = requestID
+	t.isJSON = isJSONMimeType(mimeType)
 }
 
-// get returns the recorded JSON request ID and whether a JSON document has
-// been found.
-func (t *jsonDocumentTracker) get() (network.RequestID, bool) {
+// mainDocument returns the main document's request ID and whether it was
+// JSON.
+func (t *jsonDocumentTracker) mainDocument() (network.RequestID, bool) {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 

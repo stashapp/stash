@@ -38,32 +38,46 @@ func TestIsJSONMimeType(t *testing.T) {
 	}
 }
 
-func TestJSONDocumentTrackerMarksOnlyFirstJSONMatch(t *testing.T) {
-	var tracker jsonDocumentTracker
+func TestJSONDocumentTrackerOnlyRecordsFirstDocument(t *testing.T) {
+	t.Run("first document is JSON, later ones don't override it", func(t *testing.T) {
+		var tracker jsonDocumentTracker
 
-	tracker.markJSON("req-1", "text/html")
-	if _, isJSON := tracker.get(); isJSON {
-		t.Fatal("non-JSON mime type should not be recorded")
-	}
+		tracker.markDocument("req-1", "application/json")
+		tracker.markDocument("req-2", "application/json")
+		tracker.markDocument("req-3", "text/html")
 
-	tracker.markJSON("req-2", "application/json")
-	if requestID, isJSON := tracker.get(); !isJSON || requestID != "req-2" {
-		t.Fatalf("get() = (%q, %v), want (%q, true)", requestID, isJSON, "req-2")
-	}
+		if requestID, isJSON := tracker.mainDocument(); !isJSON || requestID != "req-1" {
+			t.Fatalf("mainDocument() = (%q, %v), want (%q, true)", requestID, isJSON, "req-1")
+		}
+	})
 
-	tracker.markJSON("req-3", "application/json")
-	if requestID, isJSON := tracker.get(); !isJSON || requestID != "req-2" {
-		t.Fatalf("a second JSON match overwrote the first: get() = (%q, %v), want (%q, true)", requestID, isJSON, "req-2")
-	}
+	t.Run("first document is HTML, a later JSON response doesn't override it", func(t *testing.T) {
+		// This is the main-frame-vs-iframe scenario: an HTML scrape whose
+		// page contains an iframe that loads JSON (an embed widget, an ad
+		// frame) also fires a Document-type responseReceived for that
+		// iframe. Since the top-level HTML document is always the first
+		// Document response chromedp sees for a given navigation, the
+		// tracker must not let this later JSON response override it -
+		// otherwise an HTML scraper would incorrectly receive the iframe's
+		// JSON body instead of the page's HTML.
+		var tracker jsonDocumentTracker
+
+		tracker.markDocument("req-main-page", "text/html")
+		tracker.markDocument("req-iframe", "application/json")
+
+		if requestID, isJSON := tracker.mainDocument(); isJSON || requestID != "req-main-page" {
+			t.Fatalf("mainDocument() = (%q, %v), want (%q, false)", requestID, isJSON, "req-main-page")
+		}
+	})
 }
 
 // TestJSONDocumentTrackerConcurrentAccess exercises jsonDocumentTracker the
 // way urlFromCDP actually uses it: one goroutine (standing in for chromedp's
-// event-processing goroutine) calls markJSON while another goroutine
-// (standing in for the action sequence passed to chromedp.Run) calls get,
-// concurrently and repeatedly. Before requestID/isJSON were guarded by a
-// mutex, `go test -race` reliably flagged this exact access pattern as a
-// data race.
+// event-processing goroutine) calls markDocument while another goroutine
+// (standing in for the action sequence passed to chromedp.Run) calls
+// mainDocument, concurrently and repeatedly. Before requestID/isJSON/recorded
+// were guarded by a mutex, `go test -race` reliably flagged this exact
+// access pattern as a data race.
 func TestJSONDocumentTrackerConcurrentAccess(t *testing.T) {
 	var tracker jsonDocumentTracker
 
@@ -71,21 +85,20 @@ func TestJSONDocumentTrackerConcurrentAccess(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(2 * n)
 
-	for i := 0; i < n; i++ {
-		i := i
+	for i := range n {
 		go func() {
 			defer wg.Done()
-			tracker.markJSON(network.RequestID(fmt.Sprintf("req-%d", i)), "application/json")
+			tracker.markDocument(network.RequestID(fmt.Sprintf("req-%d", i)), "application/json")
 		}()
 		go func() {
 			defer wg.Done()
-			tracker.get()
+			tracker.mainDocument()
 		}()
 	}
 
 	wg.Wait()
 
-	requestID, isJSON := tracker.get()
+	requestID, isJSON := tracker.mainDocument()
 	if !isJSON {
 		t.Fatal("expected a JSON document to have been recorded")
 	}
