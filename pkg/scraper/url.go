@@ -264,14 +264,14 @@ func urlFromCDP(ctx context.Context, urlCDP string, driverOptions scraperDriverO
 	// ListenTarget callback below) and read from the action sequence passed
 	// to chromedp.Run, so access must be synchronized.
 	var jsonDoc struct {
-		sync.Mutex
+		mutex     sync.Mutex
 		requestID network.RequestID
 		isJSON    bool
 	}
 	chromedp.ListenTarget(ctx, func(ev interface{}) {
 		if ev, ok := ev.(*network.EventResponseReceived); ok {
-			jsonDoc.Lock()
-			defer jsonDoc.Unlock()
+			jsonDoc.mutex.Lock()
+			defer jsonDoc.mutex.Unlock()
 			if ev.Type == network.ResourceTypeDocument && !jsonDoc.isJSON && isJSONMimeType(ev.Response.MimeType) {
 				jsonDoc.requestID = ev.RequestID
 				jsonDoc.isJSON = true
@@ -321,9 +321,9 @@ func urlFromCDP(ctx context.Context, urlCDP string, driverOptions scraperDriverO
 		chromedp.Sleep(sleepDuration),
 		setCDPClicks(driverOptions),
 		chromedp.ActionFunc(func(ctx context.Context) error {
-			jsonDoc.Lock()
+			jsonDoc.mutex.Lock()
 			isJSON, requestID := jsonDoc.isJSON, jsonDoc.requestID
-			jsonDoc.Unlock()
+			jsonDoc.mutex.Unlock()
 
 			if isJSON {
 				body, err := network.GetResponseBody(requestID).Do(ctx)
