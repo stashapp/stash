@@ -1729,6 +1729,13 @@
             "fields_will_not_be_changed": "{entity}를 업데이트할 때 이 항목은 변경되지 않습니다.",
             "no_fields_are_excluded": "제외된 항목 없음",
             "no_instances_found": "인스턴스 없음"
+        },
+        "performers": {
+            "birthdate": "매칭된 배우의 생일이 서로 다릅니다.",
+            "country": "매칭된 배우의 국가 정보가 서로 다릅니다.",
+            "ethnicity": "매칭된 배우의 인종이 서로 다릅니다.",
+            "gender": "매칭된 배우의 성별이 서로 다릅니다.",
+            "stash_mismatch": "매칭된 배우는 이미 다른 stash-id를 가지고 있습니다."
         }
     },
     "unsupported_criteria": "지원되지 않는 기준: {criteria}",
