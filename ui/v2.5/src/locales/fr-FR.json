@@ -1729,6 +1729,13 @@
             "fields_will_not_be_changed": "Ces champs ne seront pas modifiés lors de la mise à jour de {entity}.",
             "no_fields_are_excluded": "Aucun champ n'est exclu",
             "no_instances_found": "Aucune instance trouvée"
+        },
+        "performers": {
+            "birthdate": "Le performeur correspondant a une date de naissance différente.",
+            "country": "Le performeur correspondant est originaire d'un autre pays.",
+            "ethnicity": "Le performeur correspondant a une origine ethnique différente.",
+            "gender": "Le performeur correspondant a un genre différent.",
+            "stash_mismatch": "Le performeur correspondant a déjà un identifiant Stash différent."
         }
     },
     "unsupported_criteria": "Critère non supporté : {criteria}",
