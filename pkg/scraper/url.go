@@ -11,6 +11,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/chromedp/cdproto/cdp"
@@ -259,15 +260,21 @@ func urlFromCDP(ctx context.Context, urlCDP string, driverOptions scraperDriverO
 	// responses in an HTML pretty-printer when navigated to directly, so
 	// OuterHTML on such a page returns HTML containing the JSON rather than
 	// the JSON itself.
-	var jsonRequestID network.RequestID
-	var isJSONDocument bool
+	// jsonDoc is written from chromedp's event-processing goroutine (in the
+	// ListenTarget callback below) and read from the action sequence passed
+	// to chromedp.Run, so access must be synchronized.
+	var jsonDoc struct {
+		sync.Mutex
+		requestID network.RequestID
+		isJSON    bool
+	}
 	chromedp.ListenTarget(ctx, func(ev interface{}) {
 		if ev, ok := ev.(*network.EventResponseReceived); ok {
-			if ev.Type == network.ResourceTypeDocument && !isJSONDocument {
-				if isJSONMimeType(ev.Response.MimeType) {
-					jsonRequestID = ev.RequestID
-					isJSONDocument = true
-				}
+			jsonDoc.Lock()
+			defer jsonDoc.Unlock()
+			if ev.Type == network.ResourceTypeDocument && !jsonDoc.isJSON && isJSONMimeType(ev.Response.MimeType) {
+				jsonDoc.requestID = ev.RequestID
+				jsonDoc.isJSON = true
 			}
 		}
 	})
@@ -314,12 +321,16 @@ func urlFromCDP(ctx context.Context, urlCDP string, driverOptions scraperDriverO
 		chromedp.Sleep(sleepDuration),
 		setCDPClicks(driverOptions),
 		chromedp.ActionFunc(func(ctx context.Context) error {
-			if isJSONDocument {
-				body, err := network.GetResponseBody(jsonRequestID).Do(ctx)
+			jsonDoc.Lock()
+			isJSON, requestID := jsonDoc.isJSON, jsonDoc.requestID
+			jsonDoc.Unlock()
+
+			if isJSON {
+				body, err := network.GetResponseBody(requestID).Do(ctx)
 				if err != nil {
 					// fall back to OuterHTML if the response body is no
 					// longer available (e.g. evicted from Chrome's cache)
-					logger.Debugf("[scraper] could not get raw response body for JSON document, falling back to OuterHTML: %v", err)
+					logger.Warnf("[scraper] could not get raw response body for JSON document, falling back to OuterHTML: %v", err)
 					return chromedp.OuterHTML("html", &res, chromedp.ByQuery).Do(ctx)
 				}
 				res = string(body)
