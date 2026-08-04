@@ -29,6 +29,7 @@ import { MainNavbar } from "./components/MainNavbar";
 import { PageNotFound } from "./components/PageNotFound";
 import * as GQL from "./core/generated-graphql";
 import { makeTitleProps } from "./hooks/title";
+import { useScrollRestoration } from "./hooks/scrollRestoration";
 import { LoadingIndicator } from "./components/Shared/LoadingIndicator";
 
 import {
@@ -205,6 +206,8 @@ export const App: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
   const setupMatch = useRouteMatch(["/setup", "/migrate", "/welcome"]);
+
+  useScrollRestoration();
 
   // dispatch event when location changes
   useEffect(() => {
