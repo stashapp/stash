@@ -615,7 +615,10 @@
                 "include_blobs_desc": "Deaktivieren, um nur die SQLite-Datenbankdatei zu sichern.",
                 "sqlite": "Die Backup-Datei ist eine Kopie der SQLite-Datenbankdatei mit dem Dateinamen {filename_format}",
                 "to_directory": "Nach {directory}",
-                "zip": "SQLite-Datenbankdatei und Blob-Dateien werden zu einer einzigen Datei mit dem Dateinamen {filename_format} gepackt"
+                "zip": "SQLite-Datenbankdatei und Blob-Dateien werden zu einer einzigen Datei mit dem Dateinamen {filename_format} gepackt",
+                "destination": "Ziel",
+                "download": "Backup herunterladen",
+                "warning_blobs": "Blob-Dateien sind nicht Teil des Backups. Damit die Wiederherstellung des Backups erfolgreich durchgeführt werden kann, müssen die Blob-Dateien im Blob-Speicherort vorhanden sein."
             },
             "clean_ignore_zip_contents": "Inhalte von ZIP-Dateien ignorieren",
             "clean_ignore_zip_contents_desc": "Schneller, übersieht aber Dateien, die innerhalb von ZIP-Dateien entfernt wurden. Kann bedenkenlos aktiviert werden, wenn innerhalb von ZIP-Archiven nichts gelöscht wird.",
@@ -898,7 +901,8 @@
                 "dialog_log_level": "Das Protokolllevel wird für eine detaillierte Diagnose auf „Debug“ gesetzt.",
                 "dialog_reload_note": "Die Seite wird automatisch neu geladen.",
                 "enable": "Aktivieren & neu laden",
-                "overlay_message": "Fehlerbehebungsmodus ist aktiv - alle Anpassungen sind deaktiviert"
+                "overlay_message": "Fehlerbehebungsmodus ist aktiv - alle Anpassungen sind deaktiviert",
+                "dialog_item_plugins": "Alle Plugins"
             },
             "autostart_gallery_slideshow": {
                 "description": "Startet die Diashow automatisch, wenn die Lightbox einer Galerie über die Galerien-Seite geöffnet wird.",
