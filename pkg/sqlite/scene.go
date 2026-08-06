@@ -82,6 +82,8 @@ func (r *sceneRow) fromScene(o models.Scene) {
 type sceneQueryRow struct {
 	sceneRow
 	PrimaryFileID         null.Int    `db:"primary_file_id"`
+	PrimaryFileStartTime  null.Float  `db:"primary_file_start_time"`
+	PrimaryFileEndTime    null.Float  `db:"primary_file_end_time"`
 	PrimaryFileFolderPath zero.String `db:"primary_file_folder_path"`
 	PrimaryFileBasename   zero.String `db:"primary_file_basename"`
 	PrimaryFileOshash     zero.String `db:"primary_file_oshash"`
@@ -103,6 +105,10 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
 		OSHash:        r.PrimaryFileOshash.String,
 		Checksum:      r.PrimaryFileChecksum.String,
+
+		// scene-file range (only valid for the primary file)
+		StartTime: nullFloatPtr(r.PrimaryFileStartTime),
+		EndTime:   nullFloatPtr(r.PrimaryFileEndTime),
 
 		CreatedAt: r.CreatedAt.Timestamp,
 		UpdatedAt: r.UpdatedAt.Timestamp,
@@ -264,6 +270,8 @@ func (qb *SceneStore) selectDataset() *goqu.SelectDataset {
 	).Select(
 		qb.table().All(),
 		scenesFilesJoinTable.Col(fileIDColumn).As("primary_file_id"),
+		scenesFilesJoinTable.Col("start_time").As("primary_file_start_time"),
+		scenesFilesJoinTable.Col("end_time").As("primary_file_end_time"),
 		folders.Col("path").As("primary_file_folder_path"),
 		files.Col("basename").As("primary_file_basename"),
 		checksum.Col("fingerprint").As("primary_file_checksum"),
@@ -284,6 +292,14 @@ func (qb *SceneStore) Create(ctx context.Context, newObject *models.Scene, fileI
 		const firstPrimary = true
 		if err := scenesFilesTableMgr.insertJoins(ctx, id, firstPrimary, fileIDs); err != nil {
 			return err
+		}
+
+		// set the scene-file range on the primary file if provided
+		if newObject.StartTime != nil || newObject.EndTime != nil {
+			primaryFileID := fileIDs[0]
+			if err := scenesFilesTableMgr.setRange(ctx, id, primaryFileID, newObject.StartTime, newObject.EndTime); err != nil {
+				return err
+			}
 		}
 	}
 

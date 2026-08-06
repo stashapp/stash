@@ -873,6 +873,25 @@ func (t *relatedFilesTable) setPrimary(ctx context.Context, id int, fileID model
 	return nil
 }
 
+// setRange sets the start/end time range of the scene within the provided
+// file. A nil start and end clears the range (full file).
+func (t *relatedFilesTable) setRange(ctx context.Context, id int, fileID models.FileID, start *float64, end *float64) error {
+	table := t.table.table
+
+	record := goqu.Record{
+		"start_time": start,
+		"end_time":   end,
+	}
+
+	q := dialect.Update(table).Prepared(true).Set(record).Where(t.idColumn.Eq(id), table.Col(fileIDColumn).Eq(fileID))
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("setting range in %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return nil
+}
+
 type viewHistoryTable struct {
 	table
 	dateColumn exp.IdentifierExpression

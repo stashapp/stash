@@ -30,6 +30,10 @@ type Scene struct {
 	OSHash string
 	// transient - checksum of primary file - empty if no files
 	Checksum string
+	// transient - start/end time of the scene within the primary file.
+	// nil means the full file is used. Only valid for the primary file.
+	StartTime *float64 `json:"start_time"`
+	EndTime   *float64 `json:"end_time"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`

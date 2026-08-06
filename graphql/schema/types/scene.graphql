@@ -69,6 +69,10 @@ type Scene {
   o_history: [Time!]!
 
   files: [VideoFile!]!
+  "Start time (seconds) of the scene within its primary file. null means the full file."
+  start_time: Float
+  "End time (seconds) of the scene within its primary file. null means the full file."
+  end_time: Float
   paths: ScenePathsType! # Resolver
   scene_markers: [SceneMarker!]!
   galleries: [Gallery!]!
@@ -123,6 +127,11 @@ input SceneCreateInput {
   """
   file_ids: [ID!]
 
+  "Start time (seconds) of the scene within its primary file. Only valid when creating with a single file."
+  start_time: Float
+  "End time (seconds) of the scene within its primary file. Only valid when creating with a single file."
+  end_time: Float
+
   custom_fields: Map
 }
 
@@ -162,6 +171,11 @@ input SceneUpdateInput {
     )
 
   primary_file_id: ID
+
+  "Start time (seconds) of the scene within its primary file. Only valid when creating with a single file."
+  start_time: Float
+  "End time (seconds) of the scene within its primary file. Only valid when creating with a single file."
+  end_time: Float
 
   custom_fields: CustomFieldsInput
 }

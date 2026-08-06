@@ -62,6 +62,9 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
+	newScene.StartTime = input.StartTime
+	newScene.EndTime = input.EndTime
+
 	if input.Urls != nil {
 		newScene.URLs = models.NewRelatedStrings(stringslice.TrimSpace(input.Urls))
 	} else if input.URL != nil {
