@@ -502,7 +502,7 @@
         "tasks": {
             "added_job_to_queue": "已经添加 {operation_name} 到工作队列",
             "anonymise_and_download": "建立一个匿名的数据库拷贝然后下载其文件。",
-            "anonymise_database": "建立一个数据库的拷贝到备份目录，匿名化所有敏感数据。这可以为其他人提供查找问题和去虫的方法。原本的数据库是没有改动的。匿名化数据库使用文件名格式 {filename_format}.",
+            "anonymise_database": "建立一个数据库的拷贝到备份目录，匿名化所有敏感数据。这可以为其他人提供查找问题和 debug 的方法。原本的数据库是没有改动的。匿名化数据库使用文件名格式 {filename_format}.",
             "anonymising_database": "数据库匿名化",
             "auto_tag": {
                 "auto_tagging_all_paths": "自动标签所有路径",
