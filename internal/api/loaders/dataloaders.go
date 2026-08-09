@@ -16,16 +16,9 @@
 //go:generate go run github.com/vektah/dataloaden RelatedFileIDsLoader int []github.com/stashapp/stash/pkg/models.FileID
 //go:generate go run github.com/vektah/dataloaden FileIDsRelatedIDsLoader github.com/stashapp/stash/pkg/models.FileID []int
 //go:generate go run github.com/vektah/dataloaden CustomFieldsLoader int github.com/stashapp/stash/pkg/models.CustomFieldMap
-//go:generate go run github.com/vektah/dataloaden SceneOCountLoader int int
-//go:generate go run github.com/vektah/dataloaden ScenePlayCountLoader int int
-//go:generate go run github.com/vektah/dataloaden SceneOHistoryLoader int []time.Time
-//go:generate go run github.com/vektah/dataloaden ScenePlayHistoryLoader int []time.Time
-//go:generate go run github.com/vektah/dataloaden SceneLastPlayedLoader int *time.Time
-//go:generate go run github.com/vektah/dataloaden AudioOCountLoader int int
-//go:generate go run github.com/vektah/dataloaden AudioPlayCountLoader int int
-//go:generate go run github.com/vektah/dataloaden AudioOHistoryLoader int []time.Time
-//go:generate go run github.com/vektah/dataloaden AudioPlayHistoryLoader int []time.Time
-//go:generate go run github.com/vektah/dataloaden AudioLastPlayedLoader int *time.Time
+//go:generate go run github.com/vektah/dataloaden RelatedCountLoader int int
+//go:generate go run github.com/vektah/dataloaden RelatedTimeSliceLoader int []time.Time
+//go:generate go run github.com/vektah/dataloaden RelatedTimeLoader int *time.Time
 package loaders
 
 import (
@@ -51,21 +44,21 @@ type Loaders struct {
 	SceneByID         *SceneLoader
 	SceneIDsByFileID  *FileIDsRelatedIDsLoader
 	SceneFiles        *RelatedFileIDsLoader
-	ScenePlayCount    *ScenePlayCountLoader
-	SceneOCount       *SceneOCountLoader
-	ScenePlayHistory  *ScenePlayHistoryLoader
-	SceneOHistory     *SceneOHistoryLoader
-	SceneLastPlayed   *SceneLastPlayedLoader
+	ScenePlayCount    *RelatedCountLoader
+	SceneOCount       *RelatedCountLoader
+	ScenePlayHistory  *RelatedTimeSliceLoader
+	SceneOHistory     *RelatedTimeSliceLoader
+	SceneLastPlayed   *RelatedTimeLoader
 	SceneCustomFields *CustomFieldsLoader
 
 	AudioByID         *AudioLoader
 	AudioIDsByFileID  *FileIDsRelatedIDsLoader
 	AudioFiles        *RelatedFileIDsLoader
-	AudioPlayCount    *AudioPlayCountLoader
-	AudioOCount       *AudioOCountLoader
-	AudioPlayHistory  *AudioPlayHistoryLoader
-	AudioOHistory     *AudioOHistoryLoader
-	AudioLastPlayed   *AudioLastPlayedLoader
+	AudioPlayCount    *RelatedCountLoader
+	AudioOCount       *RelatedCountLoader
+	AudioPlayHistory  *RelatedTimeSliceLoader
+	AudioOHistory     *RelatedTimeSliceLoader
+	AudioLastPlayed   *RelatedTimeLoader
 	AudioCustomFields *CustomFieldsLoader
 
 	ImageFiles   *RelatedFileIDsLoader
@@ -245,53 +238,53 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				maxBatch: maxBatch,
 				fetch:    m.fetchGalleriesFileIDs(ctx),
 			},
-			ScenePlayCount: &ScenePlayCountLoader{
+			ScenePlayCount: &RelatedCountLoader{
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchScenesPlayCount(ctx),
 			},
-			SceneOCount: &SceneOCountLoader{
+			SceneOCount: &RelatedCountLoader{
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchScenesOCount(ctx),
 			},
-			ScenePlayHistory: &ScenePlayHistoryLoader{
+			ScenePlayHistory: &RelatedTimeSliceLoader{
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchScenesPlayHistory(ctx),
 			},
-			SceneLastPlayed: &SceneLastPlayedLoader{
+			SceneLastPlayed: &RelatedTimeLoader{
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchScenesLastPlayed(ctx),
 			},
-			SceneOHistory: &SceneOHistoryLoader{
+			SceneOHistory: &RelatedTimeSliceLoader{
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchScenesOHistory(ctx),
 			},
 			// Audio
-			AudioPlayCount: &AudioPlayCountLoader{
+			AudioPlayCount: &RelatedCountLoader{
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchAudiosPlayCount(ctx),
 			},
-			AudioOCount: &AudioOCountLoader{
+			AudioOCount: &RelatedCountLoader{
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchAudiosOCount(ctx),
 			},
-			AudioPlayHistory: &AudioPlayHistoryLoader{
+			AudioPlayHistory: &RelatedTimeSliceLoader{
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchAudiosPlayHistory(ctx),
 			},
-			AudioLastPlayed: &AudioLastPlayedLoader{
+			AudioLastPlayed: &RelatedTimeLoader{
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchAudiosLastPlayed(ctx),
 			},
-			AudioOHistory: &AudioOHistoryLoader{
+			AudioOHistory: &RelatedTimeSliceLoader{
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchAudiosOHistory(ctx),

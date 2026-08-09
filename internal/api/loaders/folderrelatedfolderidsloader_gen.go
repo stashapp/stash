@@ -9,8 +9,8 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-// FolderParentFolderIDsLoaderConfig captures the config to create a new FolderParentFolderIDsLoader
-type FolderParentFolderIDsLoaderConfig struct {
+// FolderRelatedFolderIDsLoaderConfig captures the config to create a new FolderRelatedFolderIDsLoader
+type FolderRelatedFolderIDsLoaderConfig struct {
 	// Fetch is a method that provides the data for the loader
 	Fetch func(keys []models.FolderID) ([][]models.FolderID, []error)
 
@@ -21,8 +21,8 @@ type FolderParentFolderIDsLoaderConfig struct {
 	MaxBatch int
 }
 
-// NewFolderParentFolderIDsLoader creates a new FolderParentFolderIDsLoader given a fetch, wait, and maxBatch
-func NewFolderParentFolderIDsLoader(config FolderParentFolderIDsLoaderConfig) *FolderRelatedFolderIDsLoader {
+// NewFolderRelatedFolderIDsLoader creates a new FolderRelatedFolderIDsLoader given a fetch, wait, and maxBatch
+func NewFolderRelatedFolderIDsLoader(config FolderRelatedFolderIDsLoaderConfig) *FolderRelatedFolderIDsLoader {
 	return &FolderRelatedFolderIDsLoader{
 		fetch:    config.Fetch,
 		wait:     config.Wait,
@@ -48,13 +48,13 @@ type FolderRelatedFolderIDsLoader struct {
 
 	// the current batch. keys will continue to be collected until timeout is hit,
 	// then everything will be sent to the fetch method and out to the listeners
-	batch *folderParentFolderIDsLoaderBatch
+	batch *folderRelatedFolderIDsLoaderBatch
 
 	// mutex to prevent races
 	mu sync.Mutex
 }
 
-type folderParentFolderIDsLoaderBatch struct {
+type folderRelatedFolderIDsLoaderBatch struct {
 	keys    []models.FolderID
 	data    [][]models.FolderID
 	error   []error
@@ -79,7 +79,7 @@ func (l *FolderRelatedFolderIDsLoader) LoadThunk(key models.FolderID) func() ([]
 		}
 	}
 	if l.batch == nil {
-		l.batch = &folderParentFolderIDsLoaderBatch{done: make(chan struct{})}
+		l.batch = &folderRelatedFolderIDsLoaderBatch{done: make(chan struct{})}
 	}
 	batch := l.batch
 	pos := batch.keyIndex(l, key)
@@ -179,7 +179,7 @@ func (l *FolderRelatedFolderIDsLoader) unsafeSet(key models.FolderID, value []mo
 
 // keyIndex will return the location of the key in the batch, if its not found
 // it will add the key to the batch
-func (b *folderParentFolderIDsLoaderBatch) keyIndex(l *FolderRelatedFolderIDsLoader, key models.FolderID) int {
+func (b *folderRelatedFolderIDsLoaderBatch) keyIndex(l *FolderRelatedFolderIDsLoader, key models.FolderID) int {
 	for i, existingKey := range b.keys {
 		if key == existingKey {
 			return i
@@ -203,7 +203,7 @@ func (b *folderParentFolderIDsLoaderBatch) keyIndex(l *FolderRelatedFolderIDsLoa
 	return pos
 }
 
-func (b *folderParentFolderIDsLoaderBatch) startTimer(l *FolderRelatedFolderIDsLoader) {
+func (b *folderRelatedFolderIDsLoaderBatch) startTimer(l *FolderRelatedFolderIDsLoader) {
 	time.Sleep(l.wait)
 	l.mu.Lock()
 
@@ -219,7 +219,7 @@ func (b *folderParentFolderIDsLoaderBatch) startTimer(l *FolderRelatedFolderIDsL
 	b.end(l)
 }
 
-func (b *folderParentFolderIDsLoaderBatch) end(l *FolderRelatedFolderIDsLoader) {
+func (b *folderRelatedFolderIDsLoaderBatch) end(l *FolderRelatedFolderIDsLoader) {
 	b.data, b.error = l.fetch(b.keys)
 	close(b.done)
 }
