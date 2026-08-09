@@ -2838,6 +2838,77 @@ func TestPerformerMerge(t *testing.T) {
 	}
 }
 
+func queryPerformerIDsWithOCount(ctx context.Context, t *testing.T, oCount int) []int {
+	t.Helper()
+
+	performerFilter := models.PerformerFilterType{
+		OCounter: &models.IntCriterionInput{
+			Value:    oCount,
+			Modifier: models.CriterionModifierEquals,
+		},
+	}
+
+	return performersToIDs(queryPerformers(ctx, t, &performerFilter, nil))
+}
+
+func TestPerformerQueryOCounter(t *testing.T) {
+	runWithRollbackTxn(t, "scene o-count", func(t *testing.T, ctx context.Context) {
+		performerID := performerIDs[performerIdxWithScene]
+
+		assert.NotContains(t, queryPerformerIDsWithOCount(ctx, t, 1), performerID)
+
+		if _, err := db.Scene.AddO(ctx, sceneIDs[sceneIdxWithPerformer], nil); err != nil {
+			t.Fatalf("Error adding scene o-date: %v", err)
+		}
+
+		assert.Contains(t, queryPerformerIDsWithOCount(ctx, t, 1), performerID)
+	})
+
+	runWithRollbackTxn(t, "audio o-count", func(t *testing.T, ctx context.Context) {
+		performerID := performerIDs[performerIdxWithAudio]
+		audioID := audioIDs[audioIdxWithPerformer]
+
+		assert.NotContains(t, queryPerformerIDsWithOCount(ctx, t, 1), performerID)
+
+		if _, err := db.Audio.AddO(ctx, audioID, nil); err != nil {
+			t.Fatalf("Error adding audio o-date: %v", err)
+		}
+
+		assert.Contains(t, queryPerformerIDsWithOCount(ctx, t, 1), performerID)
+
+		if _, err := db.Audio.AddO(ctx, audioID, nil); err != nil {
+			t.Fatalf("Error adding audio o-date: %v", err)
+		}
+
+		assert.Contains(t, queryPerformerIDsWithOCount(ctx, t, 2), performerID)
+	})
+
+	runWithRollbackTxn(t, "scene and audio o-counts combined", func(t *testing.T, ctx context.Context) {
+		performerID := performerIDs[performerIdxWithScene]
+		audioID := audioIDs[audioIdxWithGroup]
+
+		// add the scene's performer to the audio, so that both o-counts contribute
+		if _, err := db.Audio.UpdatePartial(ctx, audioID, models.AudioPartial{
+			PerformerIDs: &models.UpdateIDs{
+				IDs:  []int{performerID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}); err != nil {
+			t.Fatalf("Error adding performer to audio: %v", err)
+		}
+
+		if _, err := db.Scene.AddO(ctx, sceneIDs[sceneIdxWithPerformer], nil); err != nil {
+			t.Fatalf("Error adding scene o-date: %v", err)
+		}
+		if _, err := db.Audio.AddO(ctx, audioID, nil); err != nil {
+			t.Fatalf("Error adding audio o-date: %v", err)
+		}
+
+		assert.NotContains(t, queryPerformerIDsWithOCount(ctx, t, 1), performerID)
+		assert.Contains(t, queryPerformerIDsWithOCount(ctx, t, 2), performerID)
+	})
+}
+
 // TODO Update
 // TODO Destroy
 // TODO Find

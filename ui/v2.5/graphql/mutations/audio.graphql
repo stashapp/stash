@@ -91,7 +91,6 @@ mutation AudiosDestroy(
     input: {
       ids: $ids
       delete_file: $delete_file
-      delete_generated: $delete_generated
     }
   )
 }

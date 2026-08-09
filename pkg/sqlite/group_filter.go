@@ -241,7 +241,6 @@ func (qb *groupFilterHandler) sceneCountCriterionHandler(count *models.IntCriter
 }
 
 // used for sorting and filtering on group o-count
-// TODO(Audio): add Audios to this filter (see pkg/sqlite/performer_filter.go on how to combine)
 var selectGroupOCountSQL = utils.StrFormat(
 	"SELECT SUM(o_counter) "+
 		"FROM ("+
@@ -249,6 +248,11 @@ var selectGroupOCountSQL = utils.StrFormat(
 		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
 		"LEFT JOIN {scenes_o_dates} ON {scenes_o_dates}.{scene_id} = {scenes}.id "+
 		"WHERE s.{group_id} = {group}.id "+
+		"UNION ALL "+
+		"SELECT COUNT({audios_o_dates}.{audio_o_date}) as o_counter from {groups_audios} a "+
+		"LEFT JOIN {audios} ON {audios}.id = a.{audio_id} "+
+		"LEFT JOIN {audios_o_dates} ON {audios_o_dates}.{audio_id} = {audios}.id "+
+		"WHERE a.{group_id} = {group}.id "+
 		")",
 	map[string]interface{}{
 		"group":          groupTable,
@@ -258,6 +262,11 @@ var selectGroupOCountSQL = utils.StrFormat(
 		"scene_id":       sceneIDColumn,
 		"scenes_o_dates": scenesODatesTable,
 		"o_date":         sceneODateColumn,
+		"groups_audios":  groupsAudiosTable,
+		"audios":         audioTable,
+		"audio_id":       audioIDColumn,
+		"audios_o_dates": audiosODatesTable,
+		"audio_o_date":   audioODateColumn,
 	},
 )
 
