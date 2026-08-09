@@ -413,15 +413,11 @@ type AudioFile struct {
 	Comment   string
 	Container string
 	// FileDuration is the declared (meta-data) duration of the *file*.
-	// In most cases (sprites, previews, etc.) we actually care about the duration of the audio stream specifically,
-	// because those two can differ slightly (e.g. audio stream longer than the audio stream, making the whole file
-	// longer).
-	FileDuration        float64
-	AudioStreamDuration float64
-	StartTime           float64
-	Bitrate             int64
-	Size                int64
-	CreationTime        time.Time
+	FileDuration float64
+	StartTime    float64
+	Bitrate      int64
+	Size         int64
+	CreationTime time.Time
 
 	AudioCodec string
 	SampleRate int64
