@@ -1990,9 +1990,12 @@ func TestStudioQuerySortOCounter(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		sortBy := "o_counter"
 		direction := models.SortDirectionEnumDesc
+		// return all studios - otherwise the default page size hides required studios
+		perPage := -1
 		findFilter := &models.FindFilterType{
 			Sort:      &sortBy,
 			Direction: &direction,
+			PerPage:   &perPage,
 		}
 
 		// studioIdxWithTwoImages has highest image o_counter sum (3)
@@ -2004,7 +2007,6 @@ func TestStudioQuerySortOCounter(t *testing.T) {
 		direction = models.SortDirectionEnumAsc
 		studios = queryStudios(ctx, t, nil, findFilter)
 		assert.True(t, len(studios) > 0)
-		// TODO(audio): fix this unit test
 		assert.Equal(t, studioIDs[studioIdxWithTwoImages], studios[len(studios)-1].ID)
 
 		return nil

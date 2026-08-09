@@ -66,18 +66,8 @@ func GetAudioStreamPaths(audio *models.Audio, directStreamURL *url.URL, maxStrea
 
 	var endpoints []*AudioStreamEndpoint
 
-	// direct stream should only apply when the audio codec is supported
-	audioCodec := ffmpeg.MissingUnsupported
-	if pf.AudioCodec != "" {
-		audioCodec = ffmpeg.ProbeAudioCodec(pf.AudioCodec)
-	}
-
-	// don't care if we can't get the container
-	container, _ := GetAudioFileContainer(pf)
-
-	if HasAudioTranscode(audio, models.HashAlgorithmMd5) || ffmpeg.IsValidAudioForContainer(audioCodec, container) {
-		endpoints = append(endpoints, makeStreamEndpoint(directAudioEndpointType))
-	}
+	// Always add direct audio stream
+	endpoints = append(endpoints, makeStreamEndpoint(directAudioEndpointType))
 
 	return endpoints, nil
 }

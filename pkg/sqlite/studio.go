@@ -708,7 +708,6 @@ func (qb *StudioStore) sortByPerformerCountAll(direction string) string {
 }
 
 func (qb *StudioStore) sortByOCounter(direction string) string {
-	// TODO(Audio): add Audios to this filter
 	return fmt.Sprintf(` ORDER BY (
 		SELECT COALESCE((
 			SELECT COUNT(*) FROM %[3]s
@@ -717,12 +716,15 @@ func (qb *StudioStore) sortByOCounter(direction string) string {
 		), 0) + COALESCE((
 			SELECT SUM(o_counter) FROM %[5]s
 			WHERE %[5]s.%[2]s = %[1]s.id
+		), 0) + COALESCE((
+			SELECT COUNT(*) FROM %[6]s
+			INNER JOIN %[7]s ON %[6]s.id = %[7]s.audio_id
+			WHERE %[6]s.%[2]s = %[1]s.id
 		), 0)
-	) %[6]s`, studioTable, studioIDColumn, sceneTable, scenesODatesTable, imageTable, getSortDirection(direction))
+	) %[8]s`, studioTable, studioIDColumn, sceneTable, scenesODatesTable, imageTable, audioTable, audiosODatesTable, getSortDirection(direction))
 }
 
 func (qb *StudioStore) sortByOCounterAll(direction string) string {
-	// TODO(Audio): add Audios to this filter
 	return fmt.Sprintf(` ORDER BY (
 		WITH RECURSIVE sub_studios AS (
 			SELECT s.id FROM %[1]s s WHERE s.id = %[1]s.id
@@ -737,8 +739,12 @@ func (qb *StudioStore) sortByOCounterAll(direction string) string {
 		), 0) + COALESCE((
 			SELECT SUM(o_counter) FROM %[5]s
 			WHERE %[5]s.%[2]s IN (SELECT id FROM sub_studios)
+		), 0) + COALESCE((
+			SELECT COUNT(*) FROM %[6]s
+			INNER JOIN %[7]s ON %[6]s.id = %[7]s.audio_id
+			WHERE %[6]s.%[2]s IN (SELECT id FROM sub_studios)
 		), 0)
-	) %[6]s`, studioTable, studioIDColumn, sceneTable, scenesODatesTable, imageTable, getSortDirection(direction))
+	) %[8]s`, studioTable, studioIDColumn, sceneTable, scenesODatesTable, imageTable, audioTable, audiosODatesTable, getSortDirection(direction))
 }
 
 // used for sorting on performer latest audio

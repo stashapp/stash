@@ -87,10 +87,6 @@ func IsValidAudioForContainer(audio ProbeAudioCodec, format Container) bool {
 		return isValidAudio(audio, validAudioForWebm)
 	case Mp4:
 		return isValidAudio(audio, validAudioForMp4)
-	case Mp3Container:
-		// TODO(audio): do we need to check ProbeAudioCodec for audio containers? (i.e. can `.mp3` contain a codec we need to transcode for?
-		return true
-		// return isValidAudio(audio, validAudioForMp3)
 	}
 	return false
 }
