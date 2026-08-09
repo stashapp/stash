@@ -11,6 +11,7 @@ The `Audio` datatype is similar to `Scene` but stores audio-only media (i.e. Aud
         - Audio is served as a direct stream only. There are no transcodes, and no transcode infrastructure - it can be added in a future ticket if it is needed
 
 - Audio metadata:
+    - Cover image (manually uploaded only - there is no generation)
     - Title
     - Date
     - Studio
@@ -63,6 +64,7 @@ The `Audio` datatype is similar to `Scene` but stores audio-only media (i.e. Aud
     - [x] FFProbe for Audio Files
 - [x] Graphql to return Audios (queries)
 - [x] Graphql to update Audios (mutations)
+- [x] Export/Import Audios (`ImportTask.ImportAudios` / `ExportTask.ExportAudios`)
 - [x] Update test files
 
 
@@ -107,8 +109,7 @@ query {
           zip_file{id}
           fingerprints{type value}
       }
-      captions{language_code caption_type}
-      paths{caption stream}
+      paths{screenshot stream}
       studio{id}
       groups{group{id} audio_index}
       tags{id}

@@ -17,6 +17,7 @@ fragment SlimAudioData on Audio {
   }
 
   paths {
+    screenshot
     stream
   }
 

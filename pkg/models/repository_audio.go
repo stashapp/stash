@@ -85,6 +85,8 @@ type AudioReader interface {
 	Size(ctx context.Context) (float64, error)
 	Duration(ctx context.Context) (float64, error)
 	PlayDuration(ctx context.Context) (float64, error)
+	GetCover(ctx context.Context, audioID int) ([]byte, error)
+	HasCover(ctx context.Context, audioID int) (bool, error)
 }
 
 // AudioWriter provides all methods to modify audios.

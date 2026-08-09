@@ -629,6 +629,29 @@ func (_m *AudioReaderWriter) GetAllOCount(ctx context.Context) (int, error) {
 	return r0, r1
 }
 
+// GetCover provides a mock function with given fields: ctx, audioID
+func (_m *AudioReaderWriter) GetCover(ctx context.Context, audioID int) ([]byte, error) {
+	ret := _m.Called(ctx, audioID)
+
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func(context.Context, int) []byte); ok {
+		r0 = rf(ctx, audioID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]byte)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, audioID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetCustomFields provides a mock function with given fields: ctx, id
 func (_m *AudioReaderWriter) GetCustomFields(ctx context.Context, id int) (map[string]interface{}, error) {
 	ret := _m.Called(ctx, id)
@@ -1104,7 +1127,7 @@ func (_m *AudioReaderWriter) OCountByPerformerID(ctx context.Context, performerI
 	return r0, r1
 }
 
-// OCountByStudioID provides a mock function with given fields: ctx, studioID
+// OCountByStudioID provides a mock function with given fields: ctx, studioID, depth
 func (_m *AudioReaderWriter) OCountByStudioID(ctx context.Context, studioID int, depth int) (int, error) {
 	ret := _m.Called(ctx, studioID, depth)
 

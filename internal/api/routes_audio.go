@@ -9,14 +9,17 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/stashapp/stash/internal/manager"
+	"github.com/stashapp/stash/internal/static"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type AudioFinder interface {
 	models.AudioGetter
 
 	FindByChecksum(ctx context.Context, checksum string) ([]*models.Audio, error)
+	GetCover(ctx context.Context, audioID int) ([]byte, error)
 }
 
 type audioRoutes struct {
@@ -31,11 +34,29 @@ func (rs audioRoutes) Routes() chi.Router {
 	r.Route("/{audioId}", func(r chi.Router) {
 		r.Use(rs.AudioCtx)
 
+		r.Get("/screenshot", rs.Screenshot)
+
 		// streaming endpoints
 		r.Get("/stream", rs.StreamDirect)
 	})
 
 	return r
+}
+
+func (rs audioRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
+	// if default flag is set, return the default image
+	if r.URL.Query().Get("default") == "true" {
+		utils.ServeImage(w, r, static.ReadAll(static.DefaultSceneImage))
+		return
+	}
+
+	audio := r.Context().Value(audioKey).(*models.Audio)
+
+	ss := manager.AudioServer{
+		TxnManager:       rs.txnManager,
+		AudioCoverGetter: rs.audioFinder,
+	}
+	ss.ServeScreenshot(audio, w, r)
 }
 
 func (rs audioRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {

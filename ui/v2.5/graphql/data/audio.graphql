@@ -23,6 +23,7 @@ fragment AudioData on Audio {
   }
 
   paths {
+    screenshot
     stream
   }
 

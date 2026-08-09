@@ -15,7 +15,9 @@ import (
 )
 
 const (
-	audioID = 1
+	audioID    = 1
+	noImageID  = 2
+	errImageID = 3
 
 	studioID        = 4
 	missingStudioID = 5
@@ -60,6 +62,10 @@ var names = []string{
 	"name1",
 	"name2",
 }
+
+var imageBytes = []byte("imageBytes")
+
+const imageBase64 = "aW1hZ2VCeXRlcw=="
 
 const (
 	path = "path"
@@ -114,8 +120,9 @@ func createEmptyAudio(id int) models.Audio {
 	}
 }
 
-func createFullJSONAudio(customFields map[string]interface{}) *jsonschema.Audio {
+func createFullJSONAudio(image string, customFields map[string]interface{}) *jsonschema.Audio {
 	return &jsonschema.Audio{
+		Cover:     image,
 		Title:     title,
 		Files:     []string{path},
 		Date:      date,
@@ -158,25 +165,32 @@ var scenarios = []basicTestScenario{
 	{
 		createFullAudio(audioID),
 		emptyCustomFields,
-		createFullJSONAudio(emptyCustomFields),
+		createFullJSONAudio(imageBase64, emptyCustomFields),
 		false,
 	},
 	{
 		createFullAudio(customFieldsID),
 		customFields,
-		createFullJSONAudio(customFields),
+		createFullJSONAudio("", customFields),
 		false,
 	},
 	{
 		createFullAudio(errCustomFieldsID),
 		customFields,
-		createFullJSONAudio(customFields),
+		createFullJSONAudio("", customFields),
 		true,
 	},
 	{
-		createEmptyAudio(audioID),
+		createEmptyAudio(noImageID),
 		emptyCustomFields,
 		createEmptyJSONAudio(),
+		false,
+	},
+	{
+		createFullAudio(errImageID),
+		emptyCustomFields,
+		createFullJSONAudio("", emptyCustomFields),
+		// failure to get the cover should not cause an error
 		false,
 	},
 }
@@ -184,6 +198,12 @@ var scenarios = []basicTestScenario{
 func TestToJSON(t *testing.T) {
 	db := mocks.NewDatabase()
 
+	imageErr := errors.New("error getting image")
+
+	db.Audio.On("GetCover", testCtx, audioID).Return(imageBytes, nil).Once()
+	db.Audio.On("GetCover", testCtx, noImageID).Return(nil, nil).Once()
+	db.Audio.On("GetCover", testCtx, errImageID).Return(nil, imageErr).Once()
+	db.Audio.On("GetCover", testCtx, mock.Anything).Return(nil, nil)
 	db.Audio.On("GetViewDates", testCtx, mock.Anything).Return(nil, nil)
 	db.Audio.On("GetODates", testCtx, mock.Anything).Return(nil, nil)
 	db.Audio.On("GetCustomFields", testCtx, customFieldsID).Return(customFields, nil).Once()

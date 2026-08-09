@@ -1,4 +1,5 @@
 type AudioPathsType {
+  screenshot: String # Resolver
   stream: String # Resolver
 }
 

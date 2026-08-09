@@ -22,6 +22,10 @@ func NewAudioURLBuilder(baseURL string, audio *models.Audio) AudioURLBuilder {
 	}
 }
 
+func (b AudioURLBuilder) GetScreenshotURL() string {
+	return b.BaseURL + "/audio/" + b.AudioID + "/screenshot?t=" + b.UpdatedAt
+}
+
 func (b AudioURLBuilder) GetStreamURL(apiKey string) *url.URL {
 	u, err := url.Parse(fmt.Sprintf("%s/audio/%s/stream", b.BaseURL, b.AudioID))
 	if err != nil {

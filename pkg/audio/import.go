@@ -11,6 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/sliceutil"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ImporterReaderWriter interface {
@@ -32,11 +33,12 @@ type Importer struct {
 	MissingRefBehaviour models.ImportMissingRefEnum
 	FileNamingAlgorithm models.HashAlgorithm
 
-	ID           int
-	audio        models.Audio
-	customFields map[string]interface{}
-	viewHistory  []time.Time
-	oHistory     []time.Time
+	ID             int
+	audio          models.Audio
+	customFields   map[string]interface{}
+	coverImageData []byte
+	viewHistory    []time.Time
+	oHistory       []time.Time
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {
@@ -60,6 +62,14 @@ func (i *Importer) PreImport(ctx context.Context) error {
 
 	if err := i.populateGroups(ctx); err != nil {
 		return err
+	}
+
+	if len(i.Input.Cover) > 0 {
+		var err error
+		i.coverImageData, err = utils.ProcessBase64Image(i.Input.Cover)
+		if err != nil {
+			return fmt.Errorf("invalid cover image: %v", err)
+		}
 	}
 
 	i.customFields = i.Input.CustomFields
@@ -343,6 +353,12 @@ func (i *Importer) addOHistory(ctx context.Context) error {
 }
 
 func (i *Importer) PostImport(ctx context.Context, id int) error {
+	if len(i.coverImageData) > 0 {
+		if err := i.ReaderWriter.UpdateCover(ctx, id, i.coverImageData); err != nil {
+			return fmt.Errorf("error setting audio cover: %v", err)
+		}
+	}
+
 	// add histories
 	if err := i.addViewHistory(ctx); err != nil {
 		return err

@@ -56,6 +56,12 @@ func (s *Service) Create(ctx context.Context, input models.CreateAudioInput) (*m
 		return nil, err
 	}
 
+	if len(input.CoverImage) > 0 {
+		if err := s.Repository.UpdateCover(ctx, ret.ID, input.CoverImage); err != nil {
+			return nil, fmt.Errorf("setting cover on new audio: %w", err)
+		}
+	}
+
 	s.PluginCache.RegisterPostHooks(ctx, ret.ID, hook.AudioCreatePost, nil, nil)
 
 	// re-find the audio so that it correctly returns file-related fields

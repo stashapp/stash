@@ -119,8 +119,11 @@ func (r *audioResolver) Paths(ctx context.Context, obj *models.Audio) (*AudioPat
 		streamPath = streamURL.String()
 	}
 
+	screenshotPath := builder.GetScreenshotURL()
+
 	return &AudioPathsType{
-		Stream: &streamPath,
+		Screenshot: &screenshotPath,
+		Stream:     &streamPath,
 	}, nil
 }
 

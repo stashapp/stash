@@ -4,16 +4,19 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/sliceutil"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ExportGetter interface {
 	models.ViewDateReader
 	models.ODateReader
 	models.CustomFieldsReader
+	GetCover(ctx context.Context, audioID int) ([]byte, error)
 }
 
 type TagFinder interface {
@@ -46,6 +49,15 @@ func ToBasicJSON(ctx context.Context, reader ExportGetter, audio *models.Audio) 
 
 	for _, f := range audio.Files.List() {
 		newAudioJSON.Files = append(newAudioJSON.Files, f.Base().Path)
+	}
+
+	cover, err := reader.GetCover(ctx, audio.ID)
+	if err != nil {
+		logger.Errorf("Error getting audio cover: %v", err)
+	}
+
+	if len(cover) > 0 {
+		newAudioJSON.Cover = utils.GetBase64StringFromData(cover)
 	}
 
 	dates, err := reader.GetViewDates(ctx, audio.ID)

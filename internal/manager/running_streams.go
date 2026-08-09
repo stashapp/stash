@@ -105,8 +105,13 @@ func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter
 	utils.ServeImage(w, r, cover)
 }
 
+type AudioCoverGetter interface {
+	GetCover(ctx context.Context, audioID int) ([]byte, error)
+}
+
 type AudioServer struct {
-	TxnManager txn.Manager
+	TxnManager       txn.Manager
+	AudioCoverGetter AudioCoverGetter
 }
 
 func (s *AudioServer) StreamAudioDirect(audio *models.Audio, w http.ResponseWriter, r *http.Request) {
@@ -128,4 +133,28 @@ func (s *AudioServer) StreamAudioDirect(audio *models.Audio, w http.ResponseWrit
 	contentDisposition := mime.FormatMediaType("inline", map[string]string{"filename": filename})
 	w.Header().Set("Content-Disposition", contentDisposition)
 	http.ServeFile(w, r, fp)
+}
+
+// ServeScreenshot serves the audio's cover image. Audio covers are only ever
+// manually uploaded - there is no generated fallback - so an audio without a
+// cover falls back to the default image.
+func (s *AudioServer) ServeScreenshot(audio *models.Audio, w http.ResponseWriter, r *http.Request) {
+	var cover []byte
+	readTxnErr := txn.WithReadTxn(r.Context(), s.TxnManager, func(ctx context.Context) error {
+		var err error
+		cover, err = s.AudioCoverGetter.GetCover(ctx, audio.ID)
+		return err
+	})
+	if errors.Is(readTxnErr, context.Canceled) {
+		return
+	}
+	if readTxnErr != nil {
+		logger.Warnf("read transaction error on fetch audio screenshot: %v", readTxnErr)
+	}
+
+	if cover == nil {
+		cover = static.ReadAll(static.DefaultSceneImage)
+	}
+
+	utils.ServeImage(w, r, cover)
 }
