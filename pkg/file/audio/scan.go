@@ -48,5 +48,17 @@ func (d *Decorator) Decorate(ctx context.Context, fs models.FS, f models.File) (
 }
 
 func (d *Decorator) IsMissingMetadata(ctx context.Context, fs models.FS, f models.File) bool {
-	return false
+	const (
+		unsetString = "unset"
+		unsetNumber = -1
+	)
+
+	af, ok := f.(*models.AudioFile)
+	if !ok {
+		return true
+	}
+
+	return af.AudioCodec == unsetString || af.Format == unsetString ||
+		af.Duration == unsetNumber || af.SampleRate == unsetNumber ||
+		af.BitRate == unsetNumber
 }

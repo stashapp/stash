@@ -17,31 +17,16 @@ type FileDeleter struct {
 	Paths          *paths.Paths
 }
 
-// MarkGeneratedFiles marks for deletion the generated files for the provided audio.
-// Generated files bypass trash and are permanently deleted since they can be regenerated.
-func (d *FileDeleter) MarkGeneratedFiles(audio *models.Audio) error {
-	var files []string
-
-	// TODO(future|audio generated files): add paths here
-
-	return d.FilesWithoutTrash(files)
-}
-
 // Destroy deletes a audio and its associated relationships from the
-// database.
-func (s *Service) Destroy(ctx context.Context, audio *models.Audio, fileDeleter *FileDeleter, deleteGenerated, deleteFile, destroyFileEntry bool) error {
+// database. Audio has no generated files, so there is nothing to clean up
+// beyond the source files themselves.
+func (s *Service) Destroy(ctx context.Context, audio *models.Audio, fileDeleter *FileDeleter, deleteFile, destroyFileEntry bool) error {
 	if deleteFile {
 		if err := s.deleteFiles(ctx, audio, fileDeleter); err != nil {
 			return err
 		}
 	} else if destroyFileEntry {
 		if err := s.destroyFileEntries(ctx, audio); err != nil {
-			return err
-		}
-	}
-
-	if deleteGenerated {
-		if err := fileDeleter.MarkGeneratedFiles(audio); err != nil {
 			return err
 		}
 	}

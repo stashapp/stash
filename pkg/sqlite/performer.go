@@ -851,10 +851,10 @@ func (qb *PerformerStore) sortByLatestAudio(direction string) string {
 
 // used for sorting by total audio duration
 var selectPerformerAudiosDurationSQL = utils.StrFormat(
-	"SELECT COALESCE(SUM(video_files.duration), 0) FROM {performers_audios} s "+
+	"SELECT COALESCE(SUM({audio_files}.duration), 0) FROM {performers_audios} s "+
 		"LEFT JOIN {audios} ON {audios}.id = s.{audio_id} "+
 		"LEFT JOIN {audios_files} ON {audios_files}.{audio_id} = {audios}.id "+
-		"LEFT JOIN video_files ON video_files.file_id = {audios_files}.file_id "+
+		"LEFT JOIN {audio_files} ON {audio_files}.file_id = {audios_files}.file_id "+
 		"WHERE s.{performer_id} = {performers}.id",
 	map[string]interface{}{
 		"performer_id":      performerIDColumn,
@@ -863,6 +863,7 @@ var selectPerformerAudiosDurationSQL = utils.StrFormat(
 		"audios":            audioTable,
 		"audio_id":          audioIDColumn,
 		"audios_files":      audiosFilesTable,
+		"audio_files":       audioFileTable,
 	},
 )
 

@@ -109,10 +109,9 @@ func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int,
 
 	// delete old audios
 	for _, src := range sources {
-		const deleteGenerated = true
 		const deleteFile = false
 		const destroyFileEntry = false
-		if err := s.Destroy(ctx, src, fileDeleter, deleteGenerated, deleteFile, destroyFileEntry); err != nil {
+		if err := s.Destroy(ctx, src, fileDeleter, deleteFile, destroyFileEntry); err != nil {
 			return fmt.Errorf("deleting audio %d: %w", src.ID, err)
 		}
 	}

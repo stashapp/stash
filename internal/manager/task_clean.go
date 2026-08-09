@@ -371,10 +371,9 @@ func (h *cleanHandler) handleRelatedAudios(ctx context.Context, fileDeleter *fil
 		// only delete if the audio has no other files
 		if len(audio.Files.List()) <= 1 {
 			logger.Infof("Deleting audio %q since it has no other related files", audio.DisplayName())
-			const deleteGenerated = true
 			const deleteFile = false
 			const destroyFileEntry = false
-			if err := mgr.AudioService.Destroy(ctx, audio, audioFileDeleter, deleteGenerated, deleteFile, destroyFileEntry); err != nil {
+			if err := mgr.AudioService.Destroy(ctx, audio, audioFileDeleter, deleteFile, destroyFileEntry); err != nil {
 				return err
 			}
 

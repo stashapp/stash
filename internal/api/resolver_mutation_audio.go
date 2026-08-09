@@ -440,7 +440,6 @@ func (r *mutationResolver) AudiosDestroy(ctx context.Context, input models.Audio
 		Paths:          manager.GetInstance().Paths,
 	}
 
-	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
 	deleteFile := utils.IsTrue(input.DeleteFile)
 	destroyFileEntry := utils.IsTrue(input.DestroyFileEntry)
 
@@ -461,7 +460,7 @@ func (r *mutationResolver) AudiosDestroy(ctx context.Context, input models.Audio
 			// kill any running encoders
 			manager.KillRunningStreamsAudio(audio, fileNamingAlgo)
 
-			if err := r.audioService.Destroy(ctx, audio, fileDeleter, deleteGenerated, deleteFile, destroyFileEntry); err != nil {
+			if err := r.audioService.Destroy(ctx, audio, fileDeleter, deleteFile, destroyFileEntry); err != nil {
 				return err
 			}
 		}

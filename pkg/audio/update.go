@@ -76,26 +76,20 @@ func AddTag(ctx context.Context, qb models.AudioUpdater, o *models.Audio, tagID 
 	return err
 }
 
-func AddGallery(ctx context.Context, qb models.AudioUpdater, o *models.Audio, galleryID int) error {
-	audioPartial := models.NewAudioPartial()
-	audioPartial.TagIDs = &models.UpdateIDs{
-		IDs:  []int{galleryID},
-		Mode: models.RelationshipUpdateModeAdd,
-	}
-	_, err := qb.UpdatePartial(ctx, o.ID, audioPartial)
-	return err
-}
-
 func (s *Service) AssignFile(ctx context.Context, audioID int, fileID models.FileID) error {
-	// ensure file isn't a primary file and that it is a video file
+	// ensure file isn't a primary file and that it is an audio file
 	f, err := s.File.Find(ctx, fileID)
 	if err != nil {
 		return err
 	}
 
+	if len(f) == 0 {
+		return fmt.Errorf("file with id %d not found", fileID)
+	}
+
 	ff := f[0]
-	if _, ok := ff.(*models.VideoFile); !ok {
-		return fmt.Errorf("%s is not a video file", ff.Base().Path)
+	if _, ok := ff.(*models.AudioFile); !ok {
+		return fmt.Errorf("%s is not an audio file", ff.Base().Path)
 	}
 
 	isPrimary, err := s.File.IsPrimary(ctx, fileID)

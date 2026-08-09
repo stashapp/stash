@@ -53,13 +53,13 @@ func (_m *AudioReaderWriter) AddO(ctx context.Context, id int, dates []time.Time
 	return r0, r1
 }
 
-// AddViews provides a mock function with given fields: ctx, audioID, dates
-func (_m *AudioReaderWriter) AddViews(ctx context.Context, audioID int, dates []time.Time) ([]time.Time, error) {
-	ret := _m.Called(ctx, audioID, dates)
+// AddViews provides a mock function with given fields: ctx, sceneID, dates
+func (_m *AudioReaderWriter) AddViews(ctx context.Context, sceneID int, dates []time.Time) ([]time.Time, error) {
+	ret := _m.Called(ctx, sceneID, dates)
 
 	var r0 []time.Time
 	if rf, ok := ret.Get(0).(func(context.Context, int, []time.Time) []time.Time); ok {
-		r0 = rf(ctx, audioID, dates)
+		r0 = rf(ctx, sceneID, dates)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]time.Time)
@@ -68,7 +68,7 @@ func (_m *AudioReaderWriter) AddViews(ctx context.Context, audioID int, dates []
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int, []time.Time) error); ok {
-		r1 = rf(ctx, audioID, dates)
+		r1 = rf(ctx, sceneID, dates)
 	} else {
 		r1 = ret.Error(1)
 	}

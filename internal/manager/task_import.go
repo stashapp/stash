@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/stashapp/stash/pkg/audio"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
@@ -134,6 +135,7 @@ func (t *ImportTask) Start(ctx context.Context) {
 	t.ImportGalleries(ctx)
 
 	t.ImportScenes(ctx)
+	t.ImportAudios(ctx)
 	t.ImportImages(ctx)
 }
 
@@ -737,6 +739,56 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 	}
 
 	logger.Info("[scenes] import complete")
+}
+
+func (t *ImportTask) ImportAudios(ctx context.Context) {
+	logger.Info("[audios] importing")
+
+	path := t.json.json.Audios
+	files, err := os.ReadDir(path)
+	if err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			logger.Errorf("[audios] failed to read audios directory: %v", err)
+		}
+
+		return
+	}
+
+	r := t.repository
+
+	for i, fi := range files {
+		index := i + 1
+
+		logger.Progressf("[audios] %d of %d", index, len(files))
+
+		audioJSON, err := jsonschema.LoadAudioFile(filepath.Join(path, fi.Name()))
+		if err != nil {
+			logger.Infof("[audios] <%s> json parse failure: %v", fi.Name(), err)
+			continue
+		}
+
+		if err := r.WithTxn(ctx, func(ctx context.Context) error {
+			audioImporter := &audio.Importer{
+				ReaderWriter: r.Audio,
+				Input:        *audioJSON,
+				FileFinder:   r.File,
+
+				FileNamingAlgorithm: t.fileNamingAlgorithm,
+				MissingRefBehaviour: t.MissingRefBehaviour,
+
+				GroupWriter:     r.Group,
+				PerformerWriter: r.Performer,
+				StudioWriter:    r.Studio,
+				TagWriter:       r.Tag,
+			}
+
+			return performImport(ctx, audioImporter, t.DuplicateBehaviour)
+		}); err != nil {
+			logger.Errorf("[audios] <%s> import failed: %v", fi.Name(), err)
+		}
+	}
+
+	logger.Info("[audios] import complete")
 }
 
 func (t *ImportTask) ImportImages(ctx context.Context) {

@@ -24,7 +24,7 @@ type AudioService interface {
 	Create(ctx context.Context, input models.CreateAudioInput) (*models.Audio, error)
 	AssignFile(ctx context.Context, audioID int, fileID models.FileID) error
 	Merge(ctx context.Context, sourceIDs []int, destinationID int, fileDeleter *audio.FileDeleter, options audio.MergeOptions) error
-	Destroy(ctx context.Context, audio *models.Audio, fileDeleter *audio.FileDeleter, deleteGenerated, deleteFile, destroyFileEntry bool) error
+	Destroy(ctx context.Context, audio *models.Audio, fileDeleter *audio.FileDeleter, deleteFile, destroyFileEntry bool) error
 
 	FindByIDs(ctx context.Context, ids []int, load ...audio.LoadRelationshipOption) ([]*models.Audio, error)
 }

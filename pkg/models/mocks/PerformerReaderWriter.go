@@ -130,6 +130,29 @@ func (_m *PerformerReaderWriter) Find(ctx context.Context, id int) (*models.Perf
 	return r0, r1
 }
 
+// FindByAudioID provides a mock function with given fields: ctx, audioID
+func (_m *PerformerReaderWriter) FindByAudioID(ctx context.Context, audioID int) ([]*models.Performer, error) {
+	ret := _m.Called(ctx, audioID)
+
+	var r0 []*models.Performer
+	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.Performer); ok {
+		r0 = rf(ctx, audioID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Performer)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, audioID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByGalleryID provides a mock function with given fields: ctx, galleryID
 func (_m *PerformerReaderWriter) FindByGalleryID(ctx context.Context, galleryID int) ([]*models.Performer, error) {
 	ret := _m.Called(ctx, galleryID)
@@ -192,29 +215,6 @@ func (_m *PerformerReaderWriter) FindByNames(ctx context.Context, names []string
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, []string, bool) error); ok {
 		r1 = rf(ctx, names, nocase)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// FindByAudioID provides a mock function with given fields: ctx, audioID
-func (_m *PerformerReaderWriter) FindByAudioID(ctx context.Context, audioID int) ([]*models.Performer, error) {
-	ret := _m.Called(ctx, audioID)
-
-	var r0 []*models.Performer
-	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.Performer); ok {
-		r0 = rf(ctx, audioID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Performer)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, audioID)
 	} else {
 		r1 = ret.Error(1)
 	}

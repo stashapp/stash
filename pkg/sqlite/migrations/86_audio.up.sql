@@ -16,7 +16,7 @@ CREATE TABLE "audios" (
     `cover_blob` varchar(255),
     `created_at` datetime not null,
     `updated_at` datetime not null,
-    foreign key(`studio_id`) references `studios`(`id`) on delete SET NULL
+    foreign key(`studio_id`) references `studios`(`id`) on delete SET NULL,
     foreign key(`cover_blob`) references `blobs`(`checksum`) on delete SET NULL
 );
 CREATE INDEX `index_audios_on_studio_id` on `audios` (`studio_id`);
@@ -60,7 +60,7 @@ CREATE TABLE "groups_audios" (
     foreign key(`audio_id`) references `audios`(`id`) on delete cascade,
     PRIMARY KEY("group_id", `audio_id`)
 );
-CREATE INDEX `index_group_audios_on_group_id` on "groups_audios" ("group_id");
+CREATE INDEX `index_groups_audios_on_audio_id` on "groups_audios" (`audio_id`);
 --------------------------------------------
 -- performers_audios definition
 --
