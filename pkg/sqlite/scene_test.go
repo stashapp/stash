@@ -12,6 +12,7 @@ import (
 	"reflect"
 	"regexp"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -1739,6 +1740,12 @@ func Test_sceneQueryBuilder_FindByPath(t *testing.T) {
 			false,
 		},
 		{
+			"case insensitive",
+			strings.ToUpper(getPath(sceneIdxWithSpacedName)),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithSpacedName)},
+			false,
+		},
+		{
 			"invalid",
 			"invalid path",
 			nil,
@@ -3424,23 +3431,71 @@ func TestSceneQueryIsMissingRating(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingPhash(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
-		isMissing := "phash"
-		sceneFilter := models.SceneFilterType{
-			IsMissing: &isMissing,
-		}
+	isMissing := "phash"
 
-		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
+	tests := []struct {
+		name        string
+		filter      models.SceneFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"is missing phash",
+			models.SceneFilterType{
+				IsMissing: &isMissing,
+			},
+			[]int{sceneIdxMissingPhash},
+			[]int{sceneIdxWithGroup},
+			false,
+		},
+		{
+			"phash null",
+			models.SceneFilterType{
+				Phash: &models.StringCriterionInput{
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			[]int{sceneIdxMissingPhash},
+			[]int{sceneIdxWithGroup},
+			false,
+		},
+		{
+			"phash distance null",
+			models.SceneFilterType{
+				PhashDistance: &models.PhashDistanceCriterionInput{
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			[]int{sceneIdxMissingPhash},
+			[]int{sceneIdxWithGroup},
+			false,
+		},
+	}
 
-		if !assert.Len(t, scenes, 1) {
-			return nil
-		}
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-		assert.Equal(t, sceneIDs[sceneIdxMissingPhash], scenes[0].ID)
+			results, err := db.Scene.Query(ctx, models.SceneQueryOptions{
+				SceneFilter: &tt.filter,
+			})
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SceneStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-		return nil
-	})
+			include := indexesToIDs(sceneIDs, tt.includeIdxs)
+			exclude := indexesToIDs(sceneIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(results.IDs, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(results.IDs, e)
+			}
+		})
+	}
 }
 
 func TestSceneQueryPerformers(t *testing.T) {
