@@ -82,17 +82,8 @@ mutation AudioResetO($id: ID!) {
   audioResetO(id: $id)
 }
 
-mutation AudiosDestroy(
-  $ids: [ID!]!
-  $delete_file: Boolean
-  $delete_generated: Boolean
-) {
-  audiosDestroy(
-    input: {
-      ids: $ids
-      delete_file: $delete_file
-    }
-  )
+mutation AudiosDestroy($ids: [ID!]!, $delete_file: Boolean) {
+  audiosDestroy(input: { ids: $ids, delete_file: $delete_file })
 }
 
 mutation AudioAssignFile($input: AssignAudioFileInput!) {
