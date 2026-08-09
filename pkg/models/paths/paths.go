@@ -11,7 +11,6 @@ type Paths struct {
 	Generated *generatedPaths
 
 	Scene        *scenePaths
-	Audio        *audioPaths
 	SceneMarkers *sceneMarkerPaths
 	Blobs        string
 }
@@ -21,7 +20,6 @@ func NewPaths(generatedPath string, blobsPath string) Paths {
 	p.Generated = newGeneratedPaths(generatedPath)
 
 	p.Scene = newScenePaths(p)
-	p.Audio = newAudioPaths(p)
 	p.SceneMarkers = newSceneMarkerPaths(p)
 	p.Blobs = blobsPath
 

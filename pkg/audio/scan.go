@@ -99,8 +99,6 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 		h.PluginCache.RegisterPostHooks(ctx, newAudio.ID, hook.AudioCreatePost, nil, nil)
 	}
 
-	// TODO(audio|transcodes): move all generated content from the old file to the new file
-
 	return nil
 }
 

@@ -116,9 +116,8 @@ func (s *AudioServer) StreamAudioDirect(audio *models.Audio, w http.ResponseWrit
 		return
 	}
 
-	audioHash := audio.Checksum
-
-	fp := GetInstance().Paths.Audio.GetStreamPath(audio.Path, audioHash)
+	// audio is always served directly from the original file
+	fp := audio.Path
 	streamRequestCtx := ffmpeg.NewStreamRequestContext(w, r)
 
 	// #2579 - hijacking and closing the connection here causes video playback to fail in Safari

@@ -204,7 +204,7 @@ func (r *audioResolver) AudioStreams(ctx context.Context, obj *models.Audio) ([]
 	builder := urlbuilders.NewAudioURLBuilder(baseURL, obj)
 	apiKey := config.GetAPIKey()
 
-	return manager.GetAudioStreamPaths(obj, builder.GetStreamURL(apiKey), config.GetMaxStreamingTranscodeSize())
+	return manager.GetAudioStreamPaths(obj, builder.GetStreamURL(apiKey))
 }
 
 func (r *audioResolver) Urls(ctx context.Context, obj *models.Audio) ([]string, error) {

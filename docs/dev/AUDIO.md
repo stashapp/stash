@@ -8,7 +8,7 @@ The `Audio` datatype is similar to `Scene` but stores audio-only media (i.e. Aud
     - Database design
     - Graphql Support
     - Scanner Support
-        - No transcodes right now, but will keep the infrastructure to more easily support adding transcodes in the future
+        - Audio is served as a direct stream only. There are no transcodes, and no transcode infrastructure - it can be added in a future ticket if it is needed
 
 - Audio metadata:
     - Title
