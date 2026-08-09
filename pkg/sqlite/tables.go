@@ -37,6 +37,7 @@ var (
 	audiosTagsJoinTable       = goqu.T(audiosTagsTable)
 	audiosPerformersJoinTable = goqu.T(performersAudiosTable)
 	audiosGroupsJoinTable     = goqu.T(groupsAudiosTable)
+	audiosGalleriesJoinTable  = goqu.T(audiosGalleriesTable)
 	audiosURLsJoinTable       = goqu.T(audiosURLsTable)
 	audiosCustomFieldsTable   = goqu.T("audio_custom_fields")
 
@@ -290,6 +291,16 @@ var (
 			idColumn: audiosGroupsJoinTable.Col(audioIDColumn),
 		},
 	}
+
+	audiosGalleriesTableMgr = &joinTable{
+		table: table{
+			table:    audiosGalleriesJoinTable,
+			idColumn: audiosGalleriesJoinTable.Col(audioIDColumn),
+		},
+		fkColumn: audiosGalleriesJoinTable.Col(galleryIDColumn),
+	}
+
+	galleriesAudiosTableMgr = audiosGalleriesTableMgr.invert()
 
 	audiosURLsTableMgr = &orderedValueTable[string]{
 		table: table{

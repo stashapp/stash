@@ -25,6 +25,7 @@ type AudioFinder interface {
 	FindByPrimaryFileID(ctx context.Context, fileID FileID) ([]*Audio, error)
 	FindByPerformerID(ctx context.Context, performerID int) ([]*Audio, error)
 	FindByGroupID(ctx context.Context, groupID int) ([]*Audio, error)
+	FindByGalleryID(ctx context.Context, galleryID int) ([]*Audio, error)
 }
 
 // AudioQueryer provides methods to query audios.
@@ -75,6 +76,7 @@ type AudioReader interface {
 	ViewDateReader
 	ODateReader
 	FileIDLoader
+	GalleryIDLoader
 	PerformerIDLoader
 	TagIDLoader
 	AudioGroupLoader
@@ -97,6 +99,7 @@ type AudioWriter interface {
 
 	AddFileID(ctx context.Context, id int, fileID FileID) error
 	AssignFiles(ctx context.Context, audioID int, fileID []FileID) error
+	AddGalleryIDs(ctx context.Context, audioID int, galleryIDs []int) error
 
 	OHistoryWriter
 	ViewHistoryWriter

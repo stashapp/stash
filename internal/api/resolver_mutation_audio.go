@@ -66,6 +66,10 @@ func (r *mutationResolver) AudioCreate(ctx context.Context, input models.AudioCr
 		newAudio.URLs = models.NewRelatedStrings([]string{strings.TrimSpace(*input.URL)})
 	}
 
+	newAudio.GalleryIDs, err = translator.relatedIds(input.GalleryIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting gallery ids: %w", err)
+	}
 	newAudio.PerformerIDs, err = translator.relatedIds(input.PerformerIds)
 	if err != nil {
 		return nil, fmt.Errorf("converting performer ids: %w", err)
@@ -205,6 +209,10 @@ func audioPartialFromInput(input models.AudioUpdateInput, translator changesetTr
 		return nil, fmt.Errorf("converting primary file id: %w", err)
 	}
 
+	updatedAudio.GalleryIDs, err = translator.updateIds(input.GalleryIds, "gallery_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting gallery ids: %w", err)
+	}
 	updatedAudio.PerformerIDs, err = translator.updateIds(input.PerformerIds, "performer_ids")
 	if err != nil {
 		return nil, fmt.Errorf("converting performer ids: %w", err)
@@ -360,6 +368,10 @@ func (r *mutationResolver) BulkAudioUpdate(ctx context.Context, input BulkAudioU
 
 	updatedAudio.URLs = translator.optionalURLsBulk(input.Urls, nil)
 
+	updatedAudio.GalleryIDs, err = translator.updateIdsBulk(input.GalleryIds, "gallery_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting gallery ids: %w", err)
+	}
 	updatedAudio.PerformerIDs, err = translator.updateIdsBulk(input.PerformerIds, "performer_ids")
 	if err != nil {
 		return nil, fmt.Errorf("converting performer ids: %w", err)

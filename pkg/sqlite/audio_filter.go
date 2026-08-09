@@ -108,6 +108,7 @@ func (qb *audioFilterHandler) criterionHandler() criterionHandler {
 		studioCriterionHandler(audioTable, audioFilter.Studios),
 
 		qb.groupsCriterionHandler(audioFilter.Groups),
+		qb.galleriesCriterionHandler(audioFilter.Galleries),
 
 		qb.performerTagsCriterionHandler(audioFilter.PerformerTags),
 		qb.performerFavoriteCriterionHandler(audioFilter.PerformerFavorite),
@@ -153,6 +154,15 @@ func (qb *audioFilterHandler) criterionHandler() criterionHandler {
 			relatedHandler: &groupFilterHandler{audioFilter.GroupsFilter},
 			joinFn: func(f *filterBuilder) {
 				audioRepository.groups.innerJoin(f, "", "audios.id")
+			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "audios_galleries.gallery_id",
+			relatedRepo:    galleryRepository.repository,
+			relatedHandler: &galleryFilterHandler{audioFilter.GalleriesFilter},
+			joinFn: func(f *filterBuilder) {
+				audioRepository.galleries.innerJoin(f, "", "audios.id")
 			},
 		},
 
@@ -258,6 +268,9 @@ func (qb *audioFilterHandler) isMissingCriterionHandler(isMissing *string) crite
 			case "tags":
 				audioRepository.tags.leftJoin(f, "tags_join", "audios.id")
 				f.addWhere("tags_join.audio_id IS NULL")
+			case "galleries":
+				audioRepository.galleries.leftJoin(f, "galleries_join", "audios.id")
+				f.addWhere("galleries_join.audio_id IS NULL")
 			case "cover":
 				f.addWhere("audios.cover_blob IS NULL")
 			default:
@@ -372,6 +385,26 @@ func (qb *audioFilterHandler) performerAgeCriterionHandler(performerAge *models.
 			f.addWhere(whereClause, args...)
 		}
 	}
+}
+
+func (qb *audioFilterHandler) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder, joinType joinType)) multiCriterionHandlerBuilder {
+	return multiCriterionHandlerBuilder{
+		primaryTable: audioTable,
+		foreignTable: foreignTable,
+		joinTable:    joinTable,
+		primaryFK:    audioIDColumn,
+		foreignFK:    foreignFK,
+		addJoinsFunc: addJoinsFunc,
+	}
+}
+
+func (qb *audioFilterHandler) galleriesCriterionHandler(galleries *models.MultiCriterionInput) criterionHandlerFunc {
+	addJoinsFunc := func(f *filterBuilder, joinType joinType) {
+		audioRepository.galleries.leftJoin(f, "", "audios.id")
+		f.addJoin(joinType, galleryTable, "", "audios_galleries.gallery_id = galleries.id")
+	}
+	h := qb.getMultiCriterionHandlerBuilder(galleryTable, audiosGalleriesTable, galleryIDColumn, addJoinsFunc)
+	return h.handler(galleries)
 }
 
 func (qb *audioFilterHandler) groupsCriterionHandler(groups *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {

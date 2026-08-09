@@ -104,6 +104,20 @@ func (r *galleryResolver) Scenes(ctx context.Context, obj *models.Gallery) (ret 
 	return ret, firstError(errs)
 }
 
+func (r *galleryResolver) Audios(ctx context.Context, obj *models.Gallery) (ret []*models.Audio, err error) {
+	if !obj.AudioIDs.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadAudioIDs(ctx, r.repository.Gallery)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	var errs []error
+	ret, errs = loaders.From(ctx).AudioByID.LoadAll(obj.AudioIDs.List())
+	return ret, firstError(errs)
+}
+
 func (r *galleryResolver) Studio(ctx context.Context, obj *models.Gallery) (ret *models.Studio, err error) {
 	if obj.StudioID == nil {
 		return nil, nil

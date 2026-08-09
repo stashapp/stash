@@ -25,6 +25,7 @@ const (
 	audioDateColumn       = "date"
 	performersAudiosTable = "performers_audios"
 	audiosTagsTable       = "audios_tags"
+	audiosGalleriesTable  = "audios_galleries"
 	groupsAudiosTable     = "groups_audios"
 	audiosURLsTable       = "audio_urls"
 	audioURLColumn        = "url"
@@ -129,6 +130,7 @@ func (r *audioRowRecord) fromPartial(o models.AudioPartial) {
 
 type audioRepositoryType struct {
 	repository
+	galleries  joinRepository
 	tags       joinRepository
 	performers joinRepository
 	groups     repository
@@ -141,6 +143,13 @@ var (
 		repository: repository{
 			tableName: audioTable,
 			idColumn:  idColumn,
+		},
+		galleries: joinRepository{
+			repository: repository{
+				tableName: audiosGalleriesTable,
+				idColumn:  audioIDColumn,
+			},
+			fkColumn: galleryIDColumn,
 		},
 		tags: joinRepository{
 			repository: repository{
@@ -268,6 +277,12 @@ func (qb *AudioStore) Create(ctx context.Context, newObject *models.Audio, fileI
 		}
 	}
 
+	if newObject.GalleryIDs.Loaded() {
+		if err := audiosGalleriesTableMgr.insertJoins(ctx, id, newObject.GalleryIDs.List()); err != nil {
+			return err
+		}
+	}
+
 	if newObject.PerformerIDs.Loaded() {
 		if err := audiosPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs.List()); err != nil {
 			return err
@@ -315,6 +330,11 @@ func (qb *AudioStore) UpdatePartial(ctx context.Context, id int, partial models.
 			return nil, err
 		}
 	}
+	if partial.GalleryIDs != nil {
+		if err := audiosGalleriesTableMgr.modifyJoins(ctx, id, partial.GalleryIDs.IDs, partial.GalleryIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
 	if partial.PerformerIDs != nil {
 		if err := audiosPerformersTableMgr.modifyJoins(ctx, id, partial.PerformerIDs.IDs, partial.PerformerIDs.Mode); err != nil {
 			return nil, err
@@ -349,6 +369,12 @@ func (qb *AudioStore) Update(ctx context.Context, updatedObject *models.Audio) e
 
 	if updatedObject.URLs.Loaded() {
 		if err := audiosURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
+			return err
+		}
+	}
+
+	if updatedObject.GalleryIDs.Loaded() {
+		if err := audiosGalleriesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.GalleryIDs.List()); err != nil {
 			return err
 		}
 	}
@@ -1293,6 +1319,27 @@ func (qb *AudioStore) GetGroups(ctx context.Context, id int) (ret []models.Group
 func (qb *AudioStore) AddFileID(ctx context.Context, id int, fileID models.FileID) error {
 	const firstPrimary = false
 	return audiosFilesTableMgr.insertJoins(ctx, id, firstPrimary, []models.FileID{fileID})
+}
+
+func (qb *AudioStore) GetGalleryIDs(ctx context.Context, id int) ([]int, error) {
+	return audioRepository.galleries.getIDs(ctx, id)
+}
+
+func (qb *AudioStore) AddGalleryIDs(ctx context.Context, audioID int, galleryIDs []int) error {
+	return audiosGalleriesTableMgr.addJoins(ctx, audioID, galleryIDs)
+}
+
+func (qb *AudioStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*models.Audio, error) {
+	sq := dialect.From(audiosGalleriesJoinTable).Select(audiosGalleriesJoinTable.Col(audioIDColumn)).Where(
+		audiosGalleriesJoinTable.Col(galleryIDColumn).Eq(galleryID),
+	)
+	ret, err := qb.findBySubquery(ctx, sq)
+
+	if err != nil {
+		return nil, fmt.Errorf("getting audios for gallery %d: %w", galleryID, err)
+	}
+
+	return ret, nil
 }
 
 func (qb *AudioStore) GetPerformerIDs(ctx context.Context, id int) ([]int, error) {

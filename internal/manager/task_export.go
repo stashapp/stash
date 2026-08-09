@@ -708,6 +708,7 @@ func (t *ExportTask) exportAudio(ctx context.Context, wg *sync.WaitGroup, jobCha
 	r := t.repository
 	audioReader := r.Audio
 	studioReader := r.Studio
+	galleryReader := r.Gallery
 	groupReader := r.Group
 	performerReader := r.Performer
 	tagReader := r.Tag
@@ -736,6 +737,21 @@ func (t *ExportTask) exportAudio(ctx context.Context, wg *sync.WaitGroup, jobCha
 			continue
 		}
 
+		galleries, err := galleryReader.FindByAudioID(ctx, a.ID)
+		if err != nil {
+			logger.Errorf("[audios] <%s> error getting audio galleries: %v", audioHash, err)
+			continue
+		}
+
+		for _, g := range galleries {
+			if err := g.LoadFiles(ctx, galleryReader); err != nil {
+				logger.Errorf("[audios] <%s> error getting audio gallery files: %v", audioHash, err)
+				continue
+			}
+		}
+
+		newAudioJSON.Galleries = gallery.GetRefs(galleries)
+
 		newAudioJSON.ResumeTime = a.ResumeTime
 		newAudioJSON.PlayDuration = a.PlayDuration
 
@@ -763,6 +779,8 @@ func (t *ExportTask) exportAudio(ctx context.Context, wg *sync.WaitGroup, jobCha
 			if a.StudioID != nil {
 				t.studios.IDs = sliceutil.AppendUnique(t.studios.IDs, *a.StudioID)
 			}
+
+			t.galleries.IDs = sliceutil.AppendUniques(t.galleries.IDs, gallery.GetIDs(galleries))
 
 			tagIDs, err := audio.GetDependentTagIDs(ctx, tagReader, a)
 			if err != nil {

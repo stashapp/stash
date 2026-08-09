@@ -18,7 +18,11 @@ const (
 	MimeMkvAudio  string = "audio/x-matroska"
 	MimeMp4Video  string = "video/mp4"
 	MimeMp4Audio  string = "audio/mp4"
-	MimeMp3Audio  string = "audio/mp3"
+	MimeMp3Audio  string = "audio/mpeg"
+	MimeFlacAudio string = "audio/flac"
+	MimeOggAudio  string = "audio/ogg"
+	MimeWavAudio  string = "audio/wav"
+	MimeAacAudio  string = "audio/aac"
 )
 
 type StreamManager struct {

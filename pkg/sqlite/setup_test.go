@@ -120,6 +120,8 @@ const (
 	audioIdxWithGrandChildStudio
 	audioIdxWithPerformerParentTag
 	audioIdxWithGroupWithParent
+	audioIdx2WithGallery
+	audioIdxWithTwoGalleries
 	// new indexes above
 	lastAudioIdx
 
@@ -248,6 +250,8 @@ const (
 	galleryIdxWithoutFile
 	galleryIdxWithPerformerParentTag
 	galleryIdxWithGrandChildTag
+	galleryIdxWithAudio
+	galleryIdxWithTwoAudios
 	// new indexes above
 	lastGalleryIdx
 
@@ -405,6 +409,9 @@ func (m linkMap) reverseLookup(idx int) []int {
 		}
 	}
 
+	// `v` (see `m[k]`) ordering is not stable, sorting can prevent flakey tests for future devs
+	slices.Sort(result)
+
 	return result
 }
 
@@ -461,6 +468,12 @@ var (
 
 	sceneGalleries = linkMap{
 		sceneIdxWithGallery: {galleryIdxWithScene},
+	}
+
+	audioGalleries = linkMap{
+		audioIdxWithGallery:      {galleryIdxWithAudio},
+		audioIdxWithTwoGalleries: {galleryIdxWithAudio, galleryIdxWithTwoAudios},
+		audioIdx2WithGallery:     {galleryIdxWithTwoAudios},
 	}
 
 	sceneGroups = linkMap{
@@ -1370,6 +1383,7 @@ func makeAudio(i int) *models.Audio {
 		studioID = &v
 	}
 
+	gids := indexesToIDs(galleryIDs, audioGalleries[i])
 	pids := indexesToIDs(performerIDs, audioPerformers[i])
 	tids := indexesToIDs(tagIDs, audioTags[i])
 
@@ -1393,6 +1407,7 @@ func makeAudio(i int) *models.Audio {
 		Rating:       getIntPtr(rating),
 		Date:         getObjectDate(i),
 		StudioID:     studioID,
+		GalleryIDs:   models.NewRelatedIDs(gids),
 		PerformerIDs: models.NewRelatedIDs(pids),
 		TagIDs:       models.NewRelatedIDs(tids),
 		Groups:       models.NewRelatedGroupsAudio(groups),
@@ -1673,6 +1688,7 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 
 	if includeScenes {
 		ret.SceneIDs = models.NewRelatedIDs(indexesToIDs(sceneIDs, sceneGalleries.reverseLookup(i)))
+		ret.AudioIDs = models.NewRelatedIDs(indexesToIDs(audioIDs, audioGalleries.reverseLookup(i)))
 	}
 
 	return ret

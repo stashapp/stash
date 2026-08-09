@@ -20,6 +20,7 @@ type GalleryFinder interface {
 	FindByFileID(ctx context.Context, fileID FileID) ([]*Gallery, error)
 	FindByFolderID(ctx context.Context, folderID FolderID) ([]*Gallery, error)
 	FindBySceneID(ctx context.Context, sceneID int) ([]*Gallery, error)
+	FindByAudioID(ctx context.Context, audioID int) ([]*Gallery, error)
 	FindByImageID(ctx context.Context, imageID int) ([]*Gallery, error)
 	FindUserGalleryByTitle(ctx context.Context, title string) ([]*Gallery, error)
 }
@@ -68,6 +69,7 @@ type GalleryReader interface {
 	FileIDLoader
 	ImageIDLoader
 	SceneIDLoader
+	AudioIDLoader
 	PerformerIDLoader
 	TagIDLoader
 	FileLoader
@@ -85,6 +87,7 @@ type GalleryWriter interface {
 	CustomFieldsWriter
 
 	AddSceneIDs(ctx context.Context, galleryID int, sceneIDs []int) error
+	AddAudioIDs(ctx context.Context, galleryID int, audioIDs []int) error
 	AddFileID(ctx context.Context, id int, fileID FileID) error
 	AddImages(ctx context.Context, galleryID int, imageIDs ...int) error
 	RemoveImages(ctx context.Context, galleryID int, imageIDs ...int) error

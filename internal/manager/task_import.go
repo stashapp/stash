@@ -776,6 +776,7 @@ func (t *ImportTask) ImportAudios(ctx context.Context) {
 				FileNamingAlgorithm: t.fileNamingAlgorithm,
 				MissingRefBehaviour: t.MissingRefBehaviour,
 
+				GalleryFinder:   r.Gallery,
 				GroupWriter:     r.Group,
 				PerformerWriter: r.Performer,
 				StudioWriter:    r.Studio,

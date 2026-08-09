@@ -24,6 +24,7 @@ The `Audio` datatype is similar to `Scene` but stores audio-only media (i.e. Aud
     - O History
     - Play History
     - Groups
+    - Gallery
     - ~~Captions~~ [REMOVED PER PR COMMENT - can be added back later]
 - Audio File metadata:
     - duration
@@ -37,12 +38,6 @@ The `Audio` datatype is similar to `Scene` but stores audio-only media (i.e. Aud
     - ANSWER: yes
 - Should Legacy/Deprecate features be copied over?
     - ANSWER: do not copy over deprecated features
-- What should be done for `sortByOCounter`/`sortByPlayCount`?
-    - These assume SCENES
-    - I see 3 options
-        - ignore
-        - add `audios` into the calculation
-        - split into `sortBySceneOCounter` and `sortByAudioOCounter`
 
 - Flaky Unit Tests
     - pkg/sqlite/studio_test.go --> `TestStudioQuerySortOCounter`
@@ -65,13 +60,13 @@ The `Audio` datatype is similar to `Scene` but stores audio-only media (i.e. Aud
 - [x] Graphql to return Audios (queries)
 - [x] Graphql to update Audios (mutations)
 - [x] Export/Import Audios (`ImportTask.ImportAudios` / `ExportTask.ExportAudios`)
+- [x] Gallery relationship (`audios_galleries`), bidirectional: `Audio.galleries` / `Gallery.audios`
 - [x] Update test files
 
 
 ## Notes
 
 - Phashes cannot be used on audio files; A future ticket might introduce Chromaprint (AcoustID)
-- Gallery could be added to Audio, but I am removing to reduce PR complexity
 - StashIDs was removed, audio is unlikely to be added immediately to stashbox
 - Audio's could have interactive components, but removed to reduce PR complexity
 
@@ -111,6 +106,7 @@ query {
       }
       paths{screenshot stream}
       studio{id}
+      galleries{id title}
       groups{group{id} audio_index}
       tags{id}
       performers{id}

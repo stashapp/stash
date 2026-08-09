@@ -62,6 +62,17 @@ CREATE TABLE "groups_audios" (
 );
 CREATE INDEX `index_groups_audios_on_audio_id` on "groups_audios" (`audio_id`);
 --------------------------------------------
+-- audios_galleries definition
+--
+CREATE TABLE `audios_galleries` (
+    `audio_id` integer NOT NULL,
+    `gallery_id` integer NOT NULL,
+    foreign key(`audio_id`) references `audios`(`id`) on delete CASCADE,
+    foreign key(`gallery_id`) references `galleries`(`id`) on delete CASCADE,
+    PRIMARY KEY(`audio_id`, `gallery_id`)
+);
+CREATE INDEX `index_audios_galleries_on_gallery_id` ON `audios_galleries` (`gallery_id`);
+--------------------------------------------
 -- performers_audios definition
 --
 CREATE TABLE "performers_audios" (
@@ -112,7 +123,6 @@ WHERE `primary` = 1;
 -- audio_files definition
 --
 
--- TODO(audio): think of better name for this, too close to `audios_files`
 CREATE TABLE `audio_files` (
     `file_id` integer NOT NULL primary key,
     `duration` float NOT NULL,

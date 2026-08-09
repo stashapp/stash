@@ -120,6 +120,7 @@ type galleryRepositoryType struct {
 	images     joinRepository
 	tags       joinRepository
 	scenes     joinRepository
+	audios     joinRepository
 	files      filesRepository
 }
 
@@ -172,6 +173,13 @@ var (
 				idColumn:  galleryIDColumn,
 			},
 			fkColumn: sceneIDColumn,
+		},
+		audios: joinRepository{
+			repository: repository{
+				tableName: audiosGalleriesTable,
+				idColumn:  galleryIDColumn,
+			},
+			fkColumn: audioIDColumn,
 		},
 		files: filesRepository{
 			repository: repository{
@@ -274,6 +282,11 @@ func (qb *GalleryStore) Create(ctx context.Context, newObject *models.CreateGall
 			return err
 		}
 	}
+	if newObject.AudioIDs.Loaded() {
+		if err := galleriesAudiosTableMgr.insertJoins(ctx, id, newObject.AudioIDs.List()); err != nil {
+			return err
+		}
+	}
 
 	const partial = false
 	if err := qb.setCustomFields(ctx, id, newObject.CustomFields, partial); err != nil {
@@ -315,6 +328,11 @@ func (qb *GalleryStore) Update(ctx context.Context, updatedObject *models.Update
 	}
 	if updatedObject.SceneIDs.Loaded() {
 		if err := galleriesScenesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.SceneIDs.List()); err != nil {
+			return err
+		}
+	}
+	if updatedObject.AudioIDs.Loaded() {
+		if err := galleriesAudiosTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.AudioIDs.List()); err != nil {
 			return err
 		}
 	}
@@ -369,6 +387,11 @@ func (qb *GalleryStore) UpdatePartial(ctx context.Context, id int, partial model
 	}
 	if partial.SceneIDs != nil {
 		if err := galleriesScenesTableMgr.modifyJoins(ctx, id, partial.SceneIDs.IDs, partial.SceneIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+	if partial.AudioIDs != nil {
+		if err := galleriesAudiosTableMgr.modifyJoins(ctx, id, partial.AudioIDs.IDs, partial.AudioIDs.Mode); err != nil {
 			return nil, err
 		}
 	}
@@ -682,6 +705,19 @@ func (qb *GalleryStore) FindBySceneID(ctx context.Context, sceneID int) ([]*mode
 	return ret, nil
 }
 
+func (qb *GalleryStore) FindByAudioID(ctx context.Context, audioID int) ([]*models.Gallery, error) {
+	sq := dialect.From(audiosGalleriesJoinTable).Select(audiosGalleriesJoinTable.Col(galleryIDColumn)).Where(
+		audiosGalleriesJoinTable.Col(audioIDColumn).Eq(audioID),
+	)
+
+	ret, err := qb.findBySubquery(ctx, sq)
+	if err != nil {
+		return nil, fmt.Errorf("getting galleries for audio %d: %w", audioID, err)
+	}
+
+	return ret, nil
+}
+
 func (qb *GalleryStore) FindByImageID(ctx context.Context, imageID int) ([]*models.Gallery, error) {
 	sq := dialect.From(galleriesImagesJoinTable).Select(galleriesImagesJoinTable.Col(galleryIDColumn)).Where(
 		galleriesImagesJoinTable.Col(imageIDColumn).Eq(imageID),
@@ -990,4 +1026,12 @@ func (qb *GalleryStore) GetSceneIDs(ctx context.Context, id int) ([]int, error) 
 
 func (qb *GalleryStore) AddSceneIDs(ctx context.Context, galleryID int, sceneIDs []int) error {
 	return galleriesScenesTableMgr.insertJoins(ctx, galleryID, sceneIDs)
+}
+
+func (qb *GalleryStore) GetAudioIDs(ctx context.Context, id int) ([]int, error) {
+	return galleryRepository.audios.getIDs(ctx, id)
+}
+
+func (qb *GalleryStore) AddAudioIDs(ctx context.Context, galleryID int, audioIDs []int) error {
+	return galleriesAudiosTableMgr.insertJoins(ctx, galleryID, audioIDs)
 }

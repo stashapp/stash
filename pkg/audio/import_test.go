@@ -19,6 +19,7 @@ const invalidImage = "aW1hZ2VCeXRlcw&&"
 
 var (
 	existingStudioID    = 101
+	existingGalleryID   = 102
 	existingPerformerID = 103
 	existingGroupID     = 104
 	existingTagID       = 105
@@ -38,6 +39,12 @@ var (
 	existingTagName = "existingTagName"
 	existingTagErr  = "existingTagErr"
 	missingTagName  = "missingTagName"
+
+	existingGalleryFolderPath = "existingGalleryFolderPath"
+	existingGalleryZipPath    = "existingGalleryZipPath"
+	existingGalleryTitle      = "existingGalleryTitle"
+	existingGalleryErrPath    = "existingGalleryErrPath"
+	missingGalleryPath        = "missingGalleryPath"
 )
 
 var testCtx = context.Background()
@@ -90,6 +97,7 @@ func TestImporterPreImport(t *testing.T) {
 				PlayDuration: playDuration,
 
 				Files:        models.NewRelatedAudioFiles([]*models.AudioFile{}),
+				GalleryIDs:   models.NewRelatedIDs([]int{}),
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				PerformerIDs: models.NewRelatedIDs([]int{}),
 				Groups:       models.NewRelatedGroupsAudio([]models.GroupsAudios{}),
@@ -209,6 +217,104 @@ func TestImporterPreImportWithStudio(t *testing.T) {
 	i.Input.Studio = existingStudioErr
 	err = i.PreImport(testCtx)
 	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
+}
+
+func TestImporterPreImportWithGallery(t *testing.T) {
+	tests := []struct {
+		name string
+		ref  jsonschema.GalleryRef
+	}{
+		{
+			name: "by folder path",
+			ref:  jsonschema.GalleryRef{FolderPath: existingGalleryFolderPath},
+		},
+		{
+			name: "by zip file",
+			ref:  jsonschema.GalleryRef{ZipFiles: []string{missingGalleryPath, existingGalleryZipPath}},
+		},
+		{
+			name: "by title",
+			ref:  jsonschema.GalleryRef{Title: existingGalleryTitle},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db := mocks.NewDatabase()
+
+			i := Importer{
+				GalleryFinder: db.Gallery,
+				Input: jsonschema.Audio{
+					Galleries: []jsonschema.GalleryRef{tt.ref},
+				},
+			}
+
+			db.Gallery.On("FindByPath", testCtx, existingGalleryFolderPath).Return([]*models.Gallery{{
+				ID: existingGalleryID,
+			}}, nil).Maybe()
+			db.Gallery.On("FindByPath", testCtx, existingGalleryZipPath).Return([]*models.Gallery{{
+				ID: existingGalleryID,
+			}}, nil).Maybe()
+			db.Gallery.On("FindByPath", testCtx, missingGalleryPath).Return(nil, nil).Maybe()
+			db.Gallery.On("FindUserGalleryByTitle", testCtx, existingGalleryTitle).Return([]*models.Gallery{{
+				ID: existingGalleryID,
+			}}, nil).Maybe()
+
+			err := i.PreImport(testCtx)
+			assert.Nil(t, err)
+			assert.Equal(t, []int{existingGalleryID}, i.audio.GalleryIDs.List())
+
+			db.AssertExpectations(t)
+		})
+	}
+}
+
+func TestImporterPreImportWithGalleryError(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	i := Importer{
+		GalleryFinder: db.Gallery,
+		Input: jsonschema.Audio{
+			Galleries: []jsonschema.GalleryRef{{FolderPath: existingGalleryErrPath}},
+		},
+	}
+
+	db.Gallery.On("FindByPath", testCtx, existingGalleryErrPath).Return(nil, errors.New("FindByPath error")).Once()
+
+	err := i.PreImport(testCtx)
+	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
+}
+
+func TestImporterPreImportWithMissingGallery(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	i := Importer{
+		GalleryFinder: db.Gallery,
+		Input: jsonschema.Audio{
+			Galleries: []jsonschema.GalleryRef{{FolderPath: missingGalleryPath}},
+		},
+		MissingRefBehaviour: models.ImportMissingRefEnumFail,
+	}
+
+	db.Gallery.On("FindByPath", testCtx, missingGalleryPath).Return(nil, nil).Times(3)
+
+	err := i.PreImport(testCtx)
+	assert.NotNil(t, err)
+
+	// galleries are never created - both Ignore and Create should skip silently
+	i.MissingRefBehaviour = models.ImportMissingRefEnumIgnore
+	err = i.PreImport(testCtx)
+	assert.Nil(t, err)
+	assert.Empty(t, i.audio.GalleryIDs.List())
+
+	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
+	err = i.PreImport(testCtx)
+	assert.Nil(t, err)
+	assert.Empty(t, i.audio.GalleryIDs.List())
 
 	db.AssertExpectations(t)
 }

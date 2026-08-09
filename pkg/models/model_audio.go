@@ -35,6 +35,7 @@ type Audio struct {
 	PlayDuration float64 `json:"play_duration"`
 
 	URLs         RelatedStrings     `json:"urls"`
+	GalleryIDs   RelatedIDs         `json:"gallery_ids"`
 	TagIDs       RelatedIDs         `json:"tag_ids"`
 	PerformerIDs RelatedIDs         `json:"performer_ids"`
 	Groups       RelatedGroupsAudio `json:"groups"`
@@ -79,6 +80,7 @@ type AudioPartial struct {
 	PlayDuration OptionalFloat64
 
 	URLs          *UpdateStrings
+	GalleryIDs    *UpdateIDs
 	TagIDs        *UpdateIDs
 	PerformerIDs  *UpdateIDs
 	GroupIDs      *UpdateGroupIDsAudio
@@ -127,6 +129,12 @@ func (s *Audio) LoadPrimaryFile(ctx context.Context, l FileGetter) error {
 	})
 }
 
+func (s *Audio) LoadGalleryIDs(ctx context.Context, l GalleryIDLoader) error {
+	return s.GalleryIDs.load(func() ([]int, error) {
+		return l.GetGalleryIDs(ctx, s.ID)
+	})
+}
+
 func (s *Audio) LoadPerformerIDs(ctx context.Context, l PerformerIDLoader) error {
 	return s.PerformerIDs.load(func() ([]int, error) {
 		return l.GetPerformerIDs(ctx, s.ID)
@@ -147,6 +155,10 @@ func (s *Audio) LoadGroups(ctx context.Context, l AudioGroupLoader) error {
 
 func (s *Audio) LoadRelationships(ctx context.Context, l AudioReader) error {
 	if err := s.LoadURLs(ctx, l); err != nil {
+		return err
+	}
+
+	if err := s.LoadGalleryIDs(ctx, l); err != nil {
 		return err
 	}
 
@@ -188,6 +200,7 @@ func (s AudioPartial) UpdateInput(id int) AudioUpdateInput {
 		Rating100:    s.Rating.Ptr(),
 		Organized:    s.Organized.Ptr(),
 		StudioID:     s.StudioID.StringPtr(),
+		GalleryIds:   s.GalleryIDs.IDStrings(),
 		PerformerIds: s.PerformerIDs.IDStrings(),
 		Groups:       s.GroupIDs.GroupInputs(),
 		TagIds:       s.TagIDs.IDStrings(),

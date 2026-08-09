@@ -558,6 +558,8 @@ input GalleryFilterType {
   has_chapters: String
   "Filter to only include galleries with these scenes"
   scenes: MultiCriterionInput
+  "Filter to only include galleries with these audios"
+  audios: MultiCriterionInput
   "Filter to only include galleries with this studio"
   studios: HierarchicalMultiCriterionInput
   "Filter to only include galleries with these tags"
@@ -591,6 +593,8 @@ input GalleryFilterType {
 
   "Filter by related scenes that meet this criteria"
   scenes_filter: SceneFilterType
+  "Filter by related audios that meet this criteria"
+  audios_filter: AudioFilterType
   "Filter by related images that meet this criteria"
   images_filter: ImageFilterType
   "Filter by related performers that meet this criteria"
@@ -813,6 +817,8 @@ input AudioFilterType {
   studios: HierarchicalMultiCriterionInput
   "Filter to only include audios with this group"
   groups: HierarchicalMultiCriterionInput
+  "Filter to only include audios with these galleries"
+  galleries: MultiCriterionInput
   "Filter to only include audios with these tags"
   tags: HierarchicalMultiCriterionInput
   "Filter by tag count"
@@ -852,6 +858,8 @@ input AudioFilterType {
   tags_filter: TagFilterType
   "Filter by related groups that meet this criteria"
   groups_filter: GroupFilterType
+  "Filter by related galleries that meet this criteria"
+  galleries_filter: GalleryFilterType
   "Filter by related files that meet this criteria"
   files_filter: FileFilterType
 

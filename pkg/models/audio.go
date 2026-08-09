@@ -36,6 +36,8 @@ type AudioFilterType struct {
 	Studios *HierarchicalMultiCriterionInput `json:"studios"`
 	// Filter to only include audios with this group
 	Groups *HierarchicalMultiCriterionInput `json:"groups"`
+	// Filter to only include audios with these galleries
+	Galleries *MultiCriterionInput `json:"galleries"`
 	// Filter to only include audios with these tags
 	Tags *HierarchicalMultiCriterionInput `json:"tags"`
 	// Filter by tag count
@@ -70,6 +72,8 @@ type AudioFilterType struct {
 	TagsFilter *TagFilterType `json:"tags_filter"`
 	// Filter by related groups that meet this criteria
 	GroupsFilter *GroupFilterType `json:"groups_filter"`
+	// Filter by related galleries that meet this criteria
+	GalleriesFilter *GalleryFilterType `json:"galleries_filter"`
 	// Filter by related files that meet this criteria
 	FilesFilter *FileFilterType `json:"files_filter"`
 	// Filter by created at
@@ -114,6 +118,7 @@ type AudioCreateInput struct {
 	Rating100    *int              `json:"rating100"`
 	Organized    *bool             `json:"organized"`
 	StudioID     *string           `json:"studio_id"`
+	GalleryIds   []string          `json:"gallery_ids"`
 	PerformerIds []string          `json:"performer_ids"`
 	Groups       []AudioGroupInput `json:"groups"`
 	TagIds       []string          `json:"tag_ids"`
@@ -139,6 +144,7 @@ type AudioUpdateInput struct {
 	OCounter         *int              `json:"o_counter"`
 	Organized        *bool             `json:"organized"`
 	StudioID         *string           `json:"studio_id"`
+	GalleryIds       []string          `json:"gallery_ids"`
 	PerformerIds     []string          `json:"performer_ids"`
 	Groups           []AudioGroupInput `json:"groups"`
 	TagIds           []string          `json:"tag_ids"`

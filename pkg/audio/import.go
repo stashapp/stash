@@ -26,6 +26,7 @@ type Importer struct {
 	ReaderWriter        ImporterReaderWriter
 	FileFinder          models.FileFinder
 	StudioWriter        models.StudioFinderCreator
+	GalleryFinder       models.GalleryFinder
 	PerformerWriter     models.PerformerFinderCreator
 	GroupWriter         models.GroupFinderCreator
 	TagWriter           models.TagFinderCreator
@@ -49,6 +50,10 @@ func (i *Importer) PreImport(ctx context.Context) error {
 	}
 
 	if err := i.populateStudio(ctx); err != nil {
+		return err
+	}
+
+	if err := i.populateGalleries(ctx); err != nil {
 		return err
 	}
 
@@ -85,6 +90,7 @@ func (i *Importer) audioJSONToAudio(audioJSON jsonschema.Audio) models.Audio {
 		Title:        audioJSON.Title,
 		Code:         audioJSON.Code,
 		Details:      audioJSON.Details,
+		GalleryIDs:   models.NewRelatedIDs([]int{}),
 		PerformerIDs: models.NewRelatedIDs([]int{}),
 		TagIDs:       models.NewRelatedIDs([]int{}),
 		Groups:       models.NewRelatedGroupsAudio([]models.GroupsAudios{}),
@@ -191,6 +197,56 @@ func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
 	}
 
 	return newStudio.ID, nil
+}
+
+func (i *Importer) locateGallery(ctx context.Context, ref jsonschema.GalleryRef) (*models.Gallery, error) {
+	var galleries []*models.Gallery
+	var err error
+	switch {
+	case ref.FolderPath != "":
+		galleries, err = i.GalleryFinder.FindByPath(ctx, ref.FolderPath)
+	case len(ref.ZipFiles) > 0:
+		for _, p := range ref.ZipFiles {
+			galleries, err = i.GalleryFinder.FindByPath(ctx, p)
+			if err != nil {
+				break
+			}
+
+			if len(galleries) > 0 {
+				break
+			}
+		}
+	case ref.Title != "":
+		galleries, err = i.GalleryFinder.FindUserGalleryByTitle(ctx, ref.Title)
+	}
+
+	var ret *models.Gallery
+	if len(galleries) > 0 {
+		ret = galleries[0]
+	}
+
+	return ret, err
+}
+
+func (i *Importer) populateGalleries(ctx context.Context) error {
+	for _, ref := range i.Input.Galleries {
+		gallery, err := i.locateGallery(ctx, ref)
+		if err != nil {
+			return err
+		}
+
+		if gallery == nil {
+			if i.MissingRefBehaviour == models.ImportMissingRefEnumFail {
+				return fmt.Errorf("audio gallery '%s' not found", ref.String())
+			}
+
+			// we don't create galleries - just ignore
+		} else {
+			i.audio.GalleryIDs.Add(gallery.ID)
+		}
+	}
+
+	return nil
 }
 
 func (i *Importer) populatePerformers(ctx context.Context) error {

@@ -30,6 +30,20 @@ func (_m *AudioReaderWriter) AddFileID(ctx context.Context, id int, fileID model
 	return r0
 }
 
+// AddGalleryIDs provides a mock function with given fields: ctx, audioID, galleryIDs
+func (_m *AudioReaderWriter) AddGalleryIDs(ctx context.Context, audioID int, galleryIDs []int) error {
+	ret := _m.Called(ctx, audioID, galleryIDs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, []int) error); ok {
+		r0 = rf(ctx, audioID, galleryIDs)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // AddO provides a mock function with given fields: ctx, id, dates
 func (_m *AudioReaderWriter) AddO(ctx context.Context, id int, dates []time.Time) ([]time.Time, error) {
 	ret := _m.Called(ctx, id, dates)
@@ -447,13 +461,13 @@ func (_m *AudioReaderWriter) FindByFingerprints(ctx context.Context, fp []models
 	return r0, r1
 }
 
-// FindByGalleryID provides a mock function with given fields: ctx, performerID
-func (_m *AudioReaderWriter) FindByGalleryID(ctx context.Context, performerID int) ([]*models.Audio, error) {
-	ret := _m.Called(ctx, performerID)
+// FindByGalleryID provides a mock function with given fields: ctx, galleryID
+func (_m *AudioReaderWriter) FindByGalleryID(ctx context.Context, galleryID int) ([]*models.Audio, error) {
+	ret := _m.Called(ctx, galleryID)
 
 	var r0 []*models.Audio
 	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.Audio); ok {
-		r0 = rf(ctx, performerID)
+		r0 = rf(ctx, galleryID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Audio)
@@ -462,7 +476,7 @@ func (_m *AudioReaderWriter) FindByGalleryID(ctx context.Context, performerID in
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, performerID)
+		r1 = rf(ctx, galleryID)
 	} else {
 		r1 = ret.Error(1)
 	}

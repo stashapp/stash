@@ -38,6 +38,7 @@ type Audio {
   files: [AudioFile!]!
   paths: AudioPathsType! # Resolver
   studio: Studio
+  galleries: [Gallery!]!
   groups: [AudioGroup!]!
   tags: [Tag!]!
   performers: [Performer!]!
@@ -63,6 +64,7 @@ input AudioCreateInput {
   rating100: Int
   organized: Boolean
   studio_id: ID
+  gallery_ids: [ID!]
   performer_ids: [ID!]
   groups: [AudioGroupInput!]
   tag_ids: [ID!]
@@ -90,6 +92,7 @@ input AudioUpdateInput {
   rating100: Int
   organized: Boolean
   studio_id: ID
+  gallery_ids: [ID!]
   performer_ids: [ID!]
   groups: [AudioGroupInput!]
   tag_ids: [ID!]
@@ -117,6 +120,7 @@ input BulkAudioUpdateInput {
   rating100: Int
   organized: Boolean
   studio_id: ID
+  gallery_ids: BulkUpdateIds
   performer_ids: BulkUpdateIds
   tag_ids: BulkUpdateIds
   group_ids: BulkUpdateIds

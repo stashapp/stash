@@ -24,6 +24,11 @@ func loadAudioRelationships(ctx context.Context, expected models.Audio, actual *
 		}
 	}
 
+	if expected.GalleryIDs.Loaded() {
+		if err := actual.LoadGalleryIDs(ctx, db.Audio); err != nil {
+			return err
+		}
+	}
 	if expected.TagIDs.Loaded() {
 		if err := actual.LoadTagIDs(ctx, db.Audio); err != nil {
 			return err
@@ -656,6 +661,94 @@ func Test_audioQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			false,
 		},
 		{
+			"add galleries",
+			audioIDs[audioIdxWithGallery],
+			models.AudioPartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{galleryIDs[galleryIdxWithTwoAudios], galleryIDs[galleryIdxWithScene]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Audio{
+				GalleryIDs: models.NewRelatedIDs(append(
+					indexesToIDs(galleryIDs, audioGalleries[audioIdxWithGallery]),
+					galleryIDs[galleryIdxWithTwoAudios],
+					galleryIDs[galleryIdxWithScene],
+				)),
+			},
+			false,
+		},
+		{
+			"add identical galleries",
+			audioIDs[audioIdxWithGallery],
+			models.AudioPartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{galleryIDs[galleryIdxWithScene], galleryIDs[galleryIdxWithScene]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Audio{
+				GalleryIDs: models.NewRelatedIDs(append(
+					indexesToIDs(galleryIDs, audioGalleries[audioIdxWithGallery]),
+					galleryIDs[galleryIdxWithScene],
+				)),
+			},
+			false,
+		},
+		{
+			"remove galleries",
+			audioIDs[audioIdxWithTwoGalleries],
+			models.AudioPartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{galleryIDs[galleryIdxWithAudio]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Audio{
+				GalleryIDs: models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithTwoAudios]}),
+			},
+			false,
+		},
+		{
+			"set galleries",
+			audioIDs[audioIdxWithGallery],
+			models.AudioPartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{galleryIDs[galleryIdxWithScene]},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+			},
+			models.Audio{
+				GalleryIDs: models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
+			},
+			false,
+		},
+		{
+			"clear galleries",
+			audioIDs[audioIdxWithGallery],
+			models.AudioPartial{
+				GalleryIDs: &models.UpdateIDs{
+					Mode: models.RelationshipUpdateModeSet,
+				},
+			},
+			models.Audio{
+				GalleryIDs: models.NewRelatedIDs([]int{}),
+			},
+			false,
+		},
+		{
+			"invalid gallery id",
+			audioIDs[audioIdxWithGallery],
+			models.AudioPartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{invalidID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Audio{},
+			true,
+		},
+		{
 			"add performers",
 			audioIDs[audioIdxWithTwoPerformers],
 			models.AudioPartial{
@@ -964,6 +1057,10 @@ func Test_audioQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			if tt.partial.TagIDs != nil {
 				assert.ElementsMatch(tt.want.TagIDs.List(), got.TagIDs.List())
 				assert.ElementsMatch(tt.want.TagIDs.List(), s.TagIDs.List())
+			}
+			if tt.partial.GalleryIDs != nil {
+				assert.ElementsMatch(tt.want.GalleryIDs.List(), got.GalleryIDs.List())
+				assert.ElementsMatch(tt.want.GalleryIDs.List(), s.GalleryIDs.List())
 			}
 			if tt.partial.GroupIDs != nil {
 				assert.ElementsMatch(tt.want.Groups.List(), got.Groups.List())
@@ -2231,6 +2328,187 @@ func TestAudioQueryIsMissingMovies(t *testing.T) {
 		}
 
 		return nil
+	})
+}
+
+func TestAudioQueryIsMissingGalleries(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Audio
+		isMissing := "galleries"
+		audioFilter := models.AudioFilterType{
+			IsMissing: &isMissing,
+		}
+
+		q := getAudioStringValue(audioIdxWithGallery, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		audios := queryAudio(ctx, t, sqb, &audioFilter, &findFilter)
+
+		assert.Len(t, audios, 0)
+
+		findFilter.Q = nil
+		audios = queryAudio(ctx, t, sqb, &audioFilter, &findFilter)
+
+		assert.NotEmpty(t, audios)
+
+		// none of the returned audios should have galleries
+		for _, audio := range audios {
+			assert.NotEqual(t, audioIDs[audioIdxWithGallery], audio.ID)
+			assert.NotEqual(t, audioIDs[audioIdxWithTwoGalleries], audio.ID)
+		}
+
+		return nil
+	})
+}
+
+func TestAudioQueryGalleries(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Audio
+
+		galleryCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(galleryIDs[galleryIdxWithAudio]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
+
+		audioFilter := models.AudioFilterType{
+			Galleries: &galleryCriterion,
+		}
+
+		audios := queryAudio(ctx, t, sqb, &audioFilter, nil)
+
+		assert.ElementsMatch(t, []int{
+			audioIDs[audioIdxWithGallery],
+			audioIDs[audioIdxWithTwoGalleries],
+		}, audiosToIDs(audios))
+
+		// excludes
+		galleryCriterion.Modifier = models.CriterionModifierExcludes
+		audios = queryAudio(ctx, t, sqb, &audioFilter, nil)
+
+		for _, audio := range audios {
+			assert.NotEqual(t, audioIDs[audioIdxWithGallery], audio.ID)
+			assert.NotEqual(t, audioIDs[audioIdxWithTwoGalleries], audio.ID)
+		}
+
+		// is null
+		galleryCriterion = models.MultiCriterionInput{
+			Modifier: models.CriterionModifierIsNull,
+		}
+		audios = queryAudio(ctx, t, sqb, &audioFilter, nil)
+
+		assert.NotEmpty(t, audios)
+		for _, audio := range audios {
+			assert.NotEqual(t, audioIDs[audioIdxWithGallery], audio.ID)
+		}
+
+		// not null
+		galleryCriterion.Modifier = models.CriterionModifierNotNull
+		audios = queryAudio(ctx, t, sqb, &audioFilter, nil)
+
+		assert.ElementsMatch(t, []int{
+			audioIDs[audioIdxWithGallery],
+			audioIDs[audioIdx2WithGallery],
+			audioIDs[audioIdxWithTwoGalleries],
+		}, audiosToIDs(audios))
+
+		return nil
+	})
+}
+
+func TestAudioQueryGalleriesFilter(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Audio
+
+		titleCriterion := models.StringCriterionInput{
+			Value:    getGalleryStringValue(galleryIdxWithAudio, titleField),
+			Modifier: models.CriterionModifierEquals,
+		}
+
+		audioFilter := models.AudioFilterType{
+			GalleriesFilter: &models.GalleryFilterType{
+				Title: &titleCriterion,
+			},
+		}
+
+		audios := queryAudio(ctx, t, sqb, &audioFilter, nil)
+
+		assert.ElementsMatch(t, []int{
+			audioIDs[audioIdxWithGallery],
+			audioIDs[audioIdxWithTwoGalleries],
+		}, audiosToIDs(audios))
+
+		return nil
+	})
+}
+
+func Test_audioStore_FindByGalleryID(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Audio
+
+		audios, err := sqb.FindByGalleryID(ctx, galleryIDs[galleryIdxWithTwoAudios])
+		if err != nil {
+			t.Errorf("AudioStore.FindByGalleryID() error = %v", err)
+			return nil
+		}
+
+		assert.ElementsMatch(t, []int{
+			audioIDs[audioIdx2WithGallery],
+			audioIDs[audioIdxWithTwoGalleries],
+		}, audiosToIDs(audios))
+
+		// gallery with no audios
+		audios, err = sqb.FindByGalleryID(ctx, galleryIDs[galleryIdxWithScene])
+		if err != nil {
+			t.Errorf("AudioStore.FindByGalleryID() error = %v", err)
+			return nil
+		}
+
+		assert.Empty(t, audios)
+
+		return nil
+	})
+}
+
+func Test_audioStore_AddGalleryIDs(t *testing.T) {
+	runWithRollbackTxn(t, "AddGalleryIDs", func(t *testing.T, ctx context.Context) {
+		sqb := db.Audio
+
+		audioID := audioIDs[audioIdxWithGallery]
+		newGalleryID := galleryIDs[galleryIdxWithScene]
+
+		if err := sqb.AddGalleryIDs(ctx, audioID, []int{newGalleryID}); err != nil {
+			t.Errorf("AudioStore.AddGalleryIDs() error = %v", err)
+			return
+		}
+
+		got, err := sqb.GetGalleryIDs(ctx, audioID)
+		if err != nil {
+			t.Errorf("AudioStore.GetGalleryIDs() error = %v", err)
+			return
+		}
+
+		assert.ElementsMatch(t, append(
+			indexesToIDs(galleryIDs, audioGalleries[audioIdxWithGallery]),
+			newGalleryID,
+		), got)
+
+		// adding an existing id should not duplicate it
+		if err := sqb.AddGalleryIDs(ctx, audioID, []int{newGalleryID}); err != nil {
+			t.Errorf("AudioStore.AddGalleryIDs() error = %v", err)
+			return
+		}
+
+		got, err = sqb.GetGalleryIDs(ctx, audioID)
+		if err != nil {
+			t.Errorf("AudioStore.GetGalleryIDs() error = %v", err)
+			return
+		}
+
+		assert.Len(t, got, len(audioGalleries[audioIdxWithGallery])+1)
 	})
 }
 
