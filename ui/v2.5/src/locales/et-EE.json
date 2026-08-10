@@ -1729,6 +1729,13 @@
             "fields_will_not_be_changed": "Neid välju {entity} värskendamisel ei muudeta.",
             "no_fields_are_excluded": "Mitte ühtegi välja pole välistatud",
             "no_instances_found": "Instanse ei leitud"
+        },
+        "performers": {
+            "birthdate": "Sobitatud näitlejal on teistsugune sünnikuupäev.",
+            "country": "Sobitatud näitleja on pärit teistsugusest riigist.",
+            "ethnicity": "Sobitatud näitlejal on teistsugune päritolu.",
+            "gender": "Sobitatud näitlejal on teistsugune sugu.",
+            "stash_mismatch": "Sobitatud näitlejal on juba teistsugune stash-id."
         }
     },
     "include_sub_folders": "Sisalda alam-kaustu",
