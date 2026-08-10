@@ -175,6 +175,8 @@ export function generatePremadeFrontPageContent(intl: IntlShape) {
     recentlyAdded(intl, FilterMode.Scenes, "scenes"),
     recentlyReleased(intl, FilterMode.Galleries, "galleries"),
     recentlyAdded(intl, FilterMode.Galleries, "galleries"),
+    recentlyReleased(intl, FilterMode.Audios, "audios"),
+    recentlyAdded(intl, FilterMode.Audios, "audios"),
     recentlyAdded(intl, FilterMode.Images, "images"),
     recentlyReleased(intl, FilterMode.Groups, "groups"),
     recentlyAdded(intl, FilterMode.Groups, "groups"),

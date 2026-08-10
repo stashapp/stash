@@ -78,6 +78,11 @@ type Query {
     filter: FindFilterType
   ): FindAudiosResultType!
 
+  parseAudioFilenames(
+    filter: FindFilterType
+    config: AudioParserInput!
+  ): AudioParserResultType!
+
   findImage(id: ID, checksum: String): Image
 
   "A function which queries Image objects"

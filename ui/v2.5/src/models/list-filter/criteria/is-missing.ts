@@ -42,6 +42,25 @@ export const SceneIsMissingCriterionOption = new IsMissingCriterionOption(
   ]
 );
 
+export const AudioIsMissingCriterionOption = new IsMissingCriterionOption(
+  "isMissing",
+  "is_missing",
+  [
+    "title",
+    "code",
+    "details",
+    "url",
+    "date",
+    "rating",
+    "cover",
+    "galleries",
+    "studio",
+    "group",
+    "performers",
+    "tags",
+  ]
+);
+
 export const ImageIsMissingCriterionOption = new IsMissingCriterionOption(
   "isMissing",
   "is_missing",

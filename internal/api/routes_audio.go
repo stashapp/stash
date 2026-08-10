@@ -46,7 +46,7 @@ func (rs audioRoutes) Routes() chi.Router {
 func (rs audioRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
 	// if default flag is set, return the default image
 	if r.URL.Query().Get("default") == "true" {
-		utils.ServeImage(w, r, static.ReadAll(static.DefaultSceneImage))
+		utils.ServeImage(w, r, static.ReadAll(static.DefaultAudioImage))
 		return
 	}
 

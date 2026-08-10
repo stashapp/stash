@@ -72,6 +72,7 @@ func (qb *tagFilterHandler) criterionHandler() criterionHandler {
 
 		qb.isMissingCriterionHandler(tagFilter.IsMissing),
 		qb.sceneCountCriterionHandler(tagFilter.SceneCount),
+		qb.audioCountCriterionHandler(tagFilter.AudioCount),
 		qb.imageCountCriterionHandler(tagFilter.ImageCount),
 		qb.galleryCountCriterionHandler(tagFilter.GalleryCount),
 		qb.performerCountCriterionHandler(tagFilter.PerformerCount),
@@ -115,6 +116,15 @@ func (qb *tagFilterHandler) criterionHandler() criterionHandler {
 			relatedHandler: &sceneFilterHandler{tagFilter.ScenesFilter},
 			joinFn: func(f *filterBuilder) {
 				tagRepository.scenes.innerJoin(f, "", "tags.id")
+			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "audios_tags.audio_id",
+			relatedRepo:    audioRepository.repository,
+			relatedHandler: &audioFilterHandler{tagFilter.AudiosFilter},
+			joinFn: func(f *filterBuilder) {
+				tagRepository.audios.innerJoin(f, "", "tags.id")
 			},
 		},
 
@@ -278,6 +288,10 @@ func (qb *tagFilterHandler) hierarchicalCountHandlerOnCol(input *models.Hierarch
 
 func (qb *tagFilterHandler) sceneCountCriterionHandler(sceneCount *models.HierarchicalCountInput) criterionHandlerFunc {
 	return qb.hierarchicalCountHandler(sceneCount, "scenes_tags", "scene_id")
+}
+
+func (qb *tagFilterHandler) audioCountCriterionHandler(audioCount *models.HierarchicalCountInput) criterionHandlerFunc {
+	return qb.hierarchicalCountHandler(audioCount, "audios_tags", "audio_id")
 }
 
 func (qb *tagFilterHandler) imageCountCriterionHandler(imageCount *models.HierarchicalCountInput) criterionHandlerFunc {

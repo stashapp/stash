@@ -16,6 +16,7 @@ import {
 } from "src/models/list-filter/types";
 import { Option } from "./SidebarListFilter";
 import {
+  AudioFilterType,
   CriterionModifier,
   FilterMode,
   GalleryFilterType,
@@ -522,6 +523,8 @@ export function makeQueryVariables(query: string, extraProps: object) {
 interface IFilterType {
   scenes_filter?: InputMaybe<SceneFilterType>;
   scene_count?: InputMaybe<CountCriterionInput>;
+  audios_filter?: InputMaybe<AudioFilterType>;
+  audio_count?: InputMaybe<CountCriterionInput>;
   performers_filter?: InputMaybe<PerformerFilterType>;
   performer_count?: InputMaybe<CountCriterionInput>;
   galleries_filter?: InputMaybe<GalleryFilterType>;
@@ -558,6 +561,7 @@ export function setObjectFilter(
   mode: FilterMode,
   relatedFilterOutput:
     | SceneFilterType
+    | AudioFilterType
     | PerformerFilterType
     | GalleryFilterType
     | GroupFilterType
@@ -574,6 +578,14 @@ export function setObjectFilter(
         break;
       }
       out.scenes_filter = relatedFilterOutput as SceneFilterType;
+      break;
+    case FilterMode.Audios:
+      // if empty, only get objects with audios
+      if (empty) {
+        out.audio_count = makeCountCriterion(options);
+        break;
+      }
+      out.audios_filter = relatedFilterOutput as AudioFilterType;
       break;
     case FilterMode.Performers:
       // if empty, only get objects with performers

@@ -11,6 +11,9 @@ query Stats {
     scene_count
     scenes_size
     scenes_duration
+    audio_count
+    audios_size
+    audios_duration
     image_count
     images_size
     gallery_count
@@ -22,6 +25,7 @@ query Stats {
     total_play_duration
     total_play_count
     scenes_played
+    audios_played
   }
 }
 

@@ -20,6 +20,7 @@ import { ErrorMessage } from "src/components/Shared/ErrorMessage";
 import { useToast } from "src/hooks/Toast";
 import { useConfigurationContext } from "src/hooks/Config";
 import { StudioScenesPanel } from "./StudioScenesPanel";
+import { StudioAudiosPanel } from "./StudioAudiosPanel";
 import { StudioGalleriesPanel } from "./StudioGalleriesPanel";
 import { StudioImagesPanel } from "./StudioImagesPanel";
 import { StudioChildrenPanel } from "./StudioChildrenPanel";
@@ -65,6 +66,7 @@ interface IStudioParams {
 const validTabs = [
   "default",
   "scenes",
+  "audios",
   "galleries",
   "images",
   "performers",
@@ -89,6 +91,8 @@ const StudioTabs: React.FC<{
 
   const sceneCount =
     (showAllDetails ? studio.scene_count_all : studio.scene_count) ?? 0;
+  const audioCount =
+    (showAllDetails ? studio.audio_count_all : studio.audio_count) ?? 0;
   const galleryCount =
     (showAllDetails ? studio.gallery_count_all : studio.gallery_count) ?? 0;
   const imageCount =
@@ -101,7 +105,9 @@ const StudioTabs: React.FC<{
   const populatedDefaultTab = useMemo(() => {
     let ret: TabKey = "scenes";
     if (sceneCount === 0) {
-      if (galleryCount !== 0) {
+      if (audioCount !== 0) {
+        ret = "audios";
+      } else if (galleryCount !== 0) {
         ret = "galleries";
       } else if (imageCount !== 0) {
         ret = "images";
@@ -117,6 +123,7 @@ const StudioTabs: React.FC<{
     return ret;
   }, [
     sceneCount,
+    audioCount,
     galleryCount,
     imageCount,
     performerCount,
@@ -170,6 +177,23 @@ const StudioTabs: React.FC<{
         {contentSwitch}
         <StudioScenesPanel
           active={activeTabKey === "scenes"}
+          studio={studio}
+          showChildStudioContent={showAllDetails}
+        />
+      </Tab>
+      <Tab
+        eventKey="audios"
+        title={
+          <TabTitleCounter
+            messageID="audios"
+            count={audioCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        {contentSwitch}
+        <StudioAudiosPanel
+          active={activeTabKey === "audios"}
           studio={studio}
           showChildStudioContent={showAllDetails}
         />

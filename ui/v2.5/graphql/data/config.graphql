@@ -2,6 +2,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   stashes {
     path
     excludeVideo
+    excludeAudio
     excludeImage
   }
   databasePath
@@ -49,6 +50,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   createGalleriesFromFolders
   galleryCoverRegex
   videoExtensions
+  audioExtensions
   imageExtensions
   galleryExtensions
   excludes

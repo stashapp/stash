@@ -27,6 +27,10 @@ fragment AudioData on Audio {
     stream
   }
 
+  galleries {
+    ...SlimGalleryData
+  }
+
   studio {
     ...SlimStudioData
   }

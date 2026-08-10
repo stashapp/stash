@@ -153,7 +153,7 @@ func (s *AudioServer) ServeScreenshot(audio *models.Audio, w http.ResponseWriter
 	}
 
 	if cover == nil {
-		cover = static.ReadAll(static.DefaultSceneImage)
+		cover = static.ReadAll(static.DefaultAudioImage)
 	}
 
 	utils.ServeImage(w, r, cover)

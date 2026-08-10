@@ -37,10 +37,10 @@ const Stash: React.FC<IStashProps> = ({
 
   return (
     <Row className={`stash-row align-items-center ${classAdd}`}>
-      <Form.Label column md={7}>
+      <Form.Label column md={5}>
         {stash.path}
       </Form.Label>
-      <Col md={2} xs={4} className="col form-label">
+      <Col md={2} xs={3} className="col form-label">
         {/* NOTE - language is opposite to meaning:
         internally exclude flags, displayed as include */}
         <div>
@@ -55,7 +55,20 @@ const Stash: React.FC<IStashProps> = ({
         </div>
       </Col>
 
-      <Col md={2} xs={4} className="col-form-label">
+      <Col md={2} xs={3} className="col-form-label">
+        <div>
+          <h6 className="d-md-none">
+            <FormattedMessage id="audios" />
+          </h6>
+          <BooleanSetting
+            id={`stash-exclude-audio-${index}`}
+            checked={!stash.excludeAudio}
+            onChange={(v) => handleInput("excludeAudio", !v)}
+          />
+        </div>
+      </Col>
+
+      <Col md={2} xs={3} className="col-form-label">
         <div>
           <h6 className="d-md-none">
             <FormattedMessage id="images" />
@@ -67,7 +80,7 @@ const Stash: React.FC<IStashProps> = ({
           />
         </div>
       </Col>
-      <Col className="justify-content-end" xs={4} md={1}>
+      <Col className="justify-content-end" xs={3} md={1}>
         <Dropdown className="text-right">
           <Dropdown.Toggle
             variant="minimal"
@@ -130,6 +143,7 @@ const StashConfiguration: React.FC<IStashConfigurationProps> = ({
                   // do the same here to be present a consistent value
                   path: TextUtils.stripQuotes(v),
                   excludeVideo: false,
+                  excludeAudio: false,
                   excludeImage: false,
                 },
               ]);
@@ -164,13 +178,16 @@ const StashConfiguration: React.FC<IStashConfigurationProps> = ({
       <div className="content" id="stash-table">
         {stashes.length > 0 && (
           <Row className="d-none d-md-flex">
-            <h6 className="col-md-7">
+            <h6 className="col-md-5">
               <FormattedMessage id="path" />
             </h6>
-            <h6 className="col-md-2 col-4">
+            <h6 className="col-md-2 col-3">
               <FormattedMessage id="videos" />
             </h6>
-            <h6 className="col-md-2 col-4">
+            <h6 className="col-md-2 col-3">
+              <FormattedMessage id="audios" />
+            </h6>
+            <h6 className="col-md-2 col-3">
               <FormattedMessage id="images" />
             </h6>
           </Row>

@@ -177,6 +177,8 @@ input PerformerFilterType {
   tag_count: IntCriterionInput
   "Filter by scene count"
   scene_count: IntCriterionInput
+  "Filter by audio count"
+  audio_count: IntCriterionInput
   "Filter by marker count (via scene)"
   marker_count: IntCriterionInput
   "Filter by image count"
@@ -216,6 +218,8 @@ input PerformerFilterType {
   death_date: DateCriterionInput
   "Filter by related scenes that meet this criteria"
   scenes_filter: SceneFilterType
+  "Filter by related audios that meet this criteria"
+  audios_filter: AudioFilterType
   "Filter by related images that meet this criteria"
   images_filter: ImageFilterType
   "Filter by related galleries that meet this criteria"
@@ -495,6 +499,8 @@ input StudioFilterType {
   favorite: Boolean
   "Filter by scene count"
   scene_count: IntCriterionInput
+  "Filter by audio count"
+  audio_count: IntCriterionInput
   "Filter by image count"
   image_count: IntCriterionInput
   "Filter by gallery count"
@@ -515,6 +521,8 @@ input StudioFilterType {
   organized: Boolean
   "Filter by related scenes that meet this criteria"
   scenes_filter: SceneFilterType
+  "Filter by related audios that meet this criteria"
+  audios_filter: AudioFilterType
   "Filter by related images that meet this criteria"
   images_filter: ImageFilterType
   "Filter by related galleries that meet this criteria"
@@ -639,6 +647,9 @@ input TagFilterType {
   "Filter by number of scenes with this tag"
   scene_count: HierarchicalCountInput
 
+  "Filter by number of audios with this tag"
+  audio_count: HierarchicalCountInput
+
   "Filter by number of images with this tag"
   image_count: HierarchicalCountInput
 
@@ -684,6 +695,8 @@ input TagFilterType {
 
   "Filter by related scenes that meet this criteria"
   scenes_filter: SceneFilterType
+  "Filter by related audios that meet this criteria"
+  audios_filter: AudioFilterType
   "Filter by related images that meet this criteria"
   images_filter: ImageFilterType
   "Filter by related galleries that meet this criteria"
@@ -1082,6 +1095,7 @@ enum FilterMode {
   GROUPS
   TAGS
   IMAGES
+  AUDIOS
 }
 
 type SavedFilter {

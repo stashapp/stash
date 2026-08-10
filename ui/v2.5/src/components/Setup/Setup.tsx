@@ -653,13 +653,16 @@ const SetPathsStep: React.FC<IWizardStep> = ({ goBack, next }) => {
 };
 
 const StashExclusions: React.FC<{ stash: GQL.StashConfig }> = ({ stash }) => {
-  if (!stash.excludeImage && !stash.excludeVideo) {
+  if (!stash.excludeImage && !stash.excludeVideo && !stash.excludeAudio) {
     return null;
   }
 
   const excludes = [];
   if (stash.excludeVideo) {
     excludes.push("videos");
+  }
+  if (stash.excludeAudio) {
+    excludes.push("audio");
   }
   if (stash.excludeImage) {
     excludes.push("images");

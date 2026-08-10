@@ -21,6 +21,17 @@ fragment SlimAudioData on Audio {
     stream
   }
 
+  galleries {
+    id
+    files {
+      path
+    }
+    folder {
+      path
+    }
+    title
+  }
+
   studio {
     id
     name

@@ -16,6 +16,7 @@ import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { ModalComponent } from "src/components/Shared/Modal";
 import { useToast } from "src/hooks/Toast";
 import { GroupScenesPanel } from "./GroupScenesPanel";
+import { GroupAudiosPanel } from "./GroupAudiosPanel";
 import {
   CompressedGroupDetailsPanel,
   GroupDetailsPanel,
@@ -46,7 +47,13 @@ import { Icon } from "src/components/Shared/Icon";
 import { goBackOrReplace } from "src/utils/history";
 import { PatchComponent } from "src/patch";
 
-const validTabs = ["default", "scenes", "performers", "subgroups"] as const;
+const validTabs = [
+  "default",
+  "scenes",
+  "audios",
+  "performers",
+  "subgroups",
+] as const;
 type TabKey = (typeof validTabs)[number];
 
 function isTabKey(tab: string): tab is TabKey {
@@ -60,13 +67,16 @@ const GroupTabs: React.FC<{
 }> = ({ tabKey, group, abbreviateCounter }) => {
   const {
     scene_count: sceneCount,
+    audio_count: audioCount,
     performer_count: performerCount,
     sub_group_count: groupCount,
   } = group;
 
   const populatedDefaultTab = useMemo(() => {
     if (sceneCount === 0) {
-      if (performerCount !== 0) {
+      if (audioCount !== 0) {
+        return "audios";
+      } else if (performerCount !== 0) {
         return "performers";
       } else if (groupCount !== 0) {
         return "subgroups";
@@ -74,7 +84,7 @@ const GroupTabs: React.FC<{
     }
 
     return "scenes";
-  }, [sceneCount, performerCount, groupCount]);
+  }, [sceneCount, audioCount, performerCount, groupCount]);
 
   const { activeTabKey, setTabKey } = useTabKey({
     tabKey,
@@ -102,6 +112,18 @@ const GroupTabs: React.FC<{
         }
       >
         <GroupScenesPanel active={activeTabKey === "scenes"} group={group} />
+      </Tab>
+      <Tab
+        eventKey="audios"
+        title={
+          <TabTitleCounter
+            messageID="audios"
+            count={audioCount}
+            abbreviateCounter={abbreviateCounter}
+          />
+        }
+      >
+        <GroupAudiosPanel active={activeTabKey === "audios"} group={group} />
       </Tab>
       <Tab
         eventKey="performers"

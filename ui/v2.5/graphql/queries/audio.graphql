@@ -5,6 +5,8 @@ query FindAudios(
 ) {
   findAudios(filter: $filter, audio_filter: $audio_filter, ids: $ids) {
     count
+    duration
+    filesize
     audios {
       ...SlimAudioData
     }
@@ -24,5 +26,63 @@ query FindAudiosMetadata(
 query FindAudio($id: ID!, $checksum: String) {
   findAudio(id: $id, checksum: $checksum) {
     ...AudioData
+  }
+}
+
+query FindAudiosForSelect(
+  $filter: FindFilterType
+  $audio_filter: AudioFilterType
+  $ids: [ID!]
+) {
+  findAudios(filter: $filter, audio_filter: $audio_filter, ids: $ids) {
+    count
+    audios {
+      ...SelectAudioData
+    }
+  }
+}
+
+query ParseAudioFilenames(
+  $filter: FindFilterType!
+  $config: AudioParserInput!
+) {
+  parseAudioFilenames(filter: $filter, config: $config) {
+    count
+    results {
+      audio {
+        ...SlimAudioData
+      }
+      title
+      code
+      details
+      url
+      date
+      rating100
+      studio_id
+      gallery_ids
+      groups {
+        group_id
+      }
+      performer_ids
+      tag_ids
+    }
+  }
+}
+
+query AudioStreams($id: ID!) {
+  findAudio(id: $id) {
+    audioStreams {
+      url
+      mime_type
+      label
+    }
+  }
+}
+
+query FindFullAudios($ids: [ID!]) {
+  findAudios(ids: $ids) {
+    audios {
+      ...AudioData
+    }
   }
 }

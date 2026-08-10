@@ -22,6 +22,7 @@ fragment PerformerData on Performer {
   ignore_auto_tag
   image_path
   scene_count
+  audio_count
   image_count
   gallery_count
   group_count
