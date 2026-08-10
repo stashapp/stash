@@ -54,6 +54,39 @@ input AudioGroupInput {
   audio_index: Int
 }
 
+input AudioParserInput {
+  ignoreWords: [String!]
+  whitespaceCharacters: String
+  capitalizeTitle: Boolean
+  ignoreOrganized: Boolean
+}
+
+type AudioGroupID {
+  group_id: ID!
+  audio_index: String
+}
+
+type AudioParserResult {
+  audio: Audio!
+  title: String
+  code: String
+  details: String
+  url: String
+  date: String
+  # rating expressed as 1-100
+  rating100: Int
+  studio_id: ID
+  gallery_ids: [ID!]
+  performer_ids: [ID!]
+  groups: [AudioGroupID!]
+  tag_ids: [ID!]
+}
+
+type AudioParserResultType {
+  count: Int!
+  results: [AudioParserResult!]!
+}
+
 input AudioCreateInput {
   title: String
   code: String

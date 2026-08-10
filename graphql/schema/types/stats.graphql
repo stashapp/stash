@@ -2,6 +2,9 @@ type StatsResultType {
   scene_count: Int!
   scenes_size: Float!
   scenes_duration: Float!
+  audio_count: Int!
+  audios_size: Float!
+  audios_duration: Float!
   image_count: Int!
   images_size: Float!
   gallery_count: Int!
@@ -14,4 +17,5 @@ type StatsResultType {
   total_play_duration: Float!
   total_play_count: Int!
   scenes_played: Int!
+  audios_played: Int!
 }

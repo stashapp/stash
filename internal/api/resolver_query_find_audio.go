@@ -8,6 +8,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 func (r *queryResolver) FindAudio(ctx context.Context, id *string, checksum *string) (*models.Audio, error) {
@@ -102,6 +103,30 @@ func (r *queryResolver) FindAudios(
 			Audios:   audios,
 			Duration: result.TotalDuration,
 			Filesize: result.TotalSize,
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (r *queryResolver) ParseAudioFilenames(ctx context.Context, filter *models.FindFilterType, config models.AudioParserInput) (ret *AudioParserResultType, err error) {
+	repo := scene.NewFilenameParserRepository(r.repository)
+	parser := scene.NewAudioFilenameParser(filter, config, repo)
+
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		result, count, err := parser.ParseAudios(ctx)
+
+		if err != nil {
+			return err
+		}
+
+		ret = &AudioParserResultType{
+			Count:   count,
+			Results: result,
 		}
 
 		return nil

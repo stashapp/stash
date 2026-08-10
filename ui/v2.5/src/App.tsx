@@ -78,6 +78,9 @@ const Images = lazyComponent(() => import("./components/Images/Images"));
 const Setup = lazyComponent(() => import("./components/Setup/Setup"));
 const Migrate = lazyComponent(() => import("./components/Setup/Migrate"));
 
+const AudioFilenameParser = lazyComponent(
+  () => import("./components/AudioFilenameParser/AudioFilenameParser")
+);
 const SceneFilenameParser = lazyComponent(
   () => import("./components/SceneFilenameParser/SceneFilenameParser")
 );
@@ -267,6 +270,10 @@ export const App: React.FC = () => {
             <Route
               path="/sceneFilenameParser"
               component={SceneFilenameParser}
+            />
+            <Route
+              path="/audioFilenameParser"
+              component={AudioFilenameParser}
             />
             <Route
               path="/sceneDuplicateChecker"

@@ -24,6 +24,11 @@ export const Stats: React.FC = () => {
     3
   );
 
+  const audiosDuration = TextUtils.secondsAsTimeString(
+    data.stats.audios_duration,
+    3
+  );
+
   const totalPlayDuration = TextUtils.secondsAsTimeString(
     data.stats.total_play_duration,
     3
@@ -68,6 +73,38 @@ export const Stats: React.FC = () => {
           </p>
           <p className="heading">
             <FormattedMessage id="performers" />
+          </p>
+        </div>
+      </div>
+      <div className="col col-sm-8 m-sm-auto row stats">
+        <div className="stats-element">
+          <p className="title">
+            <FileSize size={data.stats.audios_size} />
+          </p>
+          <p className="heading">
+            <FormattedMessage id="stats.audios_size" />
+          </p>
+        </div>
+        <div className="stats-element">
+          <p className="title">
+            <FormattedNumber value={data.stats.audio_count} />
+          </p>
+          <p className="heading">
+            <FormattedMessage id="audios" />
+          </p>
+        </div>
+        <div className="stats-element">
+          <p className="title">{audiosDuration || "-"}</p>
+          <p className="heading">
+            <FormattedMessage id="stats.audios_duration" />
+          </p>
+        </div>
+        <div className="stats-element">
+          <p className="title">
+            <FormattedNumber value={data.stats.audios_played} />
+          </p>
+          <p className="heading">
+            <FormattedMessage id="stats.audios_played" />
           </p>
         </div>
       </div>

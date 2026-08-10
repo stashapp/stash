@@ -197,31 +197,30 @@ func newParseMapper(pattern string, ignoreFields []string) (*parseMapper, error)
 	return ret, nil
 }
 
-type sceneHolder struct {
-	scene      *models.Scene
-	result     *models.Scene
-	yyyy       string
-	mm         string
-	dd         string
+// fileHolder accumulates the field values matched against a single filename. It is
+// deliberately media-agnostic so that scenes and audios share the same parsing machinery.
+type fileHolder struct {
+	// the date already stored against the object being parsed. A parsed date is only
+	// reported when it differs from this.
+	existingDate *models.Date
+
+	title      string
+	date       *models.Date
+	rating     *int
 	performers []string
 	groups     []string
 	studio     string
 	tags       []string
+
+	yyyy string
+	mm   string
+	dd   string
 }
 
-func newSceneHolder(scene *models.Scene) *sceneHolder {
-	sceneCopy := models.Scene{
-		ID:    scene.ID,
-		Files: scene.Files,
-		// Checksum: scene.Checksum,
-		// Path:     scene.Path,
+func newFileHolder(existingDate *models.Date) *fileHolder {
+	return &fileHolder{
+		existingDate: existingDate,
 	}
-	ret := sceneHolder{
-		scene:  scene,
-		result: &sceneCopy,
-	}
-
-	return &ret
 }
 
 func validateRating(rating int) bool {
@@ -264,7 +263,7 @@ func parseDate(dateStr string) *models.Date {
 	return &ret
 }
 
-func (h *sceneHolder) setDate(field *parserField, value string) {
+func (h *fileHolder) setDate(field *parserField, value string) {
 	yearIndex := 0
 	yearLength := len(strings.Split(field.field, "y")) - 1
 	dateIndex := 0
@@ -291,8 +290,10 @@ func (h *sceneHolder) setDate(field *parserField, value string) {
 	// ensure the date is valid
 	// only set if new value is different from the old
 	newDate := parseDate(fullDate)
-	if newDate != nil && h.scene.Date != nil && *h.scene.Date != *newDate {
-		h.result.Date = newDate
+	// NOTE - matches the long-standing scene parser behaviour: a full-date field is only
+	// reported when the object already has a date set and the parsed date differs from it.
+	if newDate != nil && h.existingDate != nil && *h.existingDate != *newDate {
+		h.date = newDate
 	}
 }
 
@@ -310,7 +311,7 @@ func mmmToMonth(mmm string) string {
 	return t.Format(format)[0:2]
 }
 
-func (h *sceneHolder) setField(field parserField, value interface{}) {
+func (h *fileHolder) setField(field parserField, value interface{}) {
 	if field.isFullDateField {
 		h.setDate(&field, value.(string))
 		return
@@ -318,21 +319,20 @@ func (h *sceneHolder) setField(field parserField, value interface{}) {
 
 	switch field.field {
 	case "title":
-		v := value.(string)
-		h.result.Title = v
+		h.title = value.(string)
 	case "date":
-		h.result.Date = parseDate(value.(string))
+		h.date = parseDate(value.(string))
 	case "rating":
 		rating, _ := strconv.Atoi(value.(string))
 		if validateRating(rating) {
 			// convert to 1-100 scale
 			rating = models.Rating5To100(rating)
-			h.result.Rating = &rating
+			h.rating = &rating
 		}
 	case "rating100":
 		rating, _ := strconv.Atoi(value.(string))
 		if validateRating100(rating) {
-			h.result.Rating = &rating
+			h.rating = &rating
 		}
 	case "performer":
 		// add performer to list
@@ -358,7 +358,7 @@ func (h *sceneHolder) setField(field parserField, value interface{}) {
 	}
 }
 
-func (h *sceneHolder) postParse() {
+func (h *fileHolder) postParse() {
 	// set the date if the components are set
 	if h.yyyy != "" && h.mm != "" && h.dd != "" {
 		fullDate := h.yyyy + "-" + h.mm + "-" + h.dd
@@ -366,15 +366,15 @@ func (h *sceneHolder) postParse() {
 	}
 }
 
-func (m parseMapper) parse(scene *models.Scene) *sceneHolder {
+func (m parseMapper) parse(path string, existingDate *models.Date) *fileHolder {
 
 	// #302 - if the pattern includes a path separator, then include the entire
-	// scene path in the match. Otherwise, use the default behaviour of just
+	// path in the match. Otherwise, use the default behaviour of just
 	// the file's basename
 	// must be double \ because of the regex escaping
-	filename := filepath.Base(scene.Path)
+	filename := filepath.Base(path)
 	if strings.Contains(m.regexString, `\\`) || strings.Contains(m.regexString, "/") {
-		filename = scene.Path
+		filename = path
 	}
 
 	result := m.regex.FindStringSubmatch(filename)
@@ -385,7 +385,7 @@ func (m parseMapper) parse(scene *models.Scene) *sceneHolder {
 
 	initParserFields()
 
-	sceneHolder := newSceneHolder(scene)
+	holder := newFileHolder(existingDate)
 
 	for index, match := range result {
 		if index == 0 {
@@ -396,18 +396,26 @@ func (m parseMapper) parse(scene *models.Scene) *sceneHolder {
 		field := m.fields[index-1]
 		parserField, found := validFields[field]
 		if found {
-			sceneHolder.setField(parserField, match)
+			holder.setField(parserField, match)
 		}
 	}
 
-	sceneHolder.postParse()
+	holder.postParse()
 
-	return sceneHolder
+	return holder
+}
+
+// parserOptions are the parsing options shared by the scene and audio parsers.
+type parserOptions struct {
+	IgnoreWords          []string
+	WhitespaceCharacters *string
+	CapitalizeTitle      *bool
+	IgnoreOrganized      *bool
 }
 
 type FilenameParser struct {
 	Pattern        string
-	ParserInput    models.SceneParserInput
+	Options        parserOptions
 	Filter         *models.FindFilterType
 	whitespaceRE   *regexp.Regexp
 	repository     FilenameParserRepository
@@ -418,11 +426,31 @@ type FilenameParser struct {
 }
 
 func NewFilenameParser(filter *models.FindFilterType, config models.SceneParserInput, repo FilenameParserRepository) *FilenameParser {
+	return newFilenameParser(filter, parserOptions{
+		IgnoreWords:          config.IgnoreWords,
+		WhitespaceCharacters: config.WhitespaceCharacters,
+		CapitalizeTitle:      config.CapitalizeTitle,
+		IgnoreOrganized:      config.IgnoreOrganized,
+	}, repo)
+}
+
+// NewAudioFilenameParser returns a parser that matches audio filenames. It lives alongside the
+// scene parser because both share the same field-matching machinery.
+func NewAudioFilenameParser(filter *models.FindFilterType, config models.AudioParserInput, repo FilenameParserRepository) *FilenameParser {
+	return newFilenameParser(filter, parserOptions{
+		IgnoreWords:          config.IgnoreWords,
+		WhitespaceCharacters: config.WhitespaceCharacters,
+		CapitalizeTitle:      config.CapitalizeTitle,
+		IgnoreOrganized:      config.IgnoreOrganized,
+	}, repo)
+}
+
+func newFilenameParser(filter *models.FindFilterType, options parserOptions, repo FilenameParserRepository) *FilenameParser {
 	p := &FilenameParser{
-		Pattern:     *filter.Q,
-		ParserInput: config,
-		Filter:      filter,
-		repository:  repo,
+		Pattern:    *filter.Q,
+		Options:    options,
+		Filter:     filter,
+		repository: repo,
 	}
 
 	p.performerCache = make(map[string]*models.Performer)
@@ -439,8 +467,8 @@ func (p *FilenameParser) initWhiteSpaceRegex() {
 	compileREs()
 
 	wsChars := ""
-	if p.ParserInput.WhitespaceCharacters != nil {
-		wsChars = *p.ParserInput.WhitespaceCharacters
+	if p.Options.WhitespaceCharacters != nil {
+		wsChars = *p.Options.WhitespaceCharacters
 		wsChars = strings.TrimSpace(wsChars)
 	}
 
@@ -473,7 +501,7 @@ func NewFilenameParserRepository(repo models.Repository) FilenameParserRepositor
 
 func (p *FilenameParser) Parse(ctx context.Context) ([]*models.SceneParserResult, int, error) {
 	// perform the query to find the scenes
-	mapper, err := newParseMapper(p.Pattern, p.ParserInput.IgnoreWords)
+	mapper, err := newParseMapper(p.Pattern, p.Options.IgnoreWords)
 
 	if err != nil {
 		return nil, 0, err
@@ -486,7 +514,7 @@ func (p *FilenameParser) Parse(ctx context.Context) ([]*models.SceneParserResult
 		},
 	}
 
-	if p.ParserInput.IgnoreOrganized != nil && *p.ParserInput.IgnoreOrganized {
+	if p.Options.IgnoreOrganized != nil && *p.Options.IgnoreOrganized {
 		organized := false
 		sceneFilter.Organized = &organized
 	}
@@ -503,16 +531,95 @@ func (p *FilenameParser) Parse(ctx context.Context) ([]*models.SceneParserResult
 	return ret, total, nil
 }
 
+// ParseAudios parses audio filenames using the same pattern syntax as the scene parser.
+func (p *FilenameParser) ParseAudios(ctx context.Context) ([]*models.AudioParserResult, int, error) {
+	mapper, err := newParseMapper(p.Pattern, p.Options.IgnoreWords)
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	audioFilter := &models.AudioFilterType{
+		Path: &models.StringCriterionInput{
+			Modifier: models.CriterionModifierMatchesRegex,
+			Value:    "(?i)" + mapper.regexString,
+		},
+	}
+
+	if p.Options.IgnoreOrganized != nil && *p.Options.IgnoreOrganized {
+		organized := false
+		audioFilter.Organized = &organized
+	}
+
+	p.Filter.Q = nil
+
+	total, err := p.repository.Audio.QueryCount(ctx, audioFilter, p.Filter)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	audios, err := audioQuery(ctx, p.repository.Audio, audioFilter, p.Filter)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	ret := p.parseAudios(ctx, audios, mapper)
+
+	return ret, total, nil
+}
+
 func (p *FilenameParser) parseScenes(ctx context.Context, scenes []*models.Scene, mapper *parseMapper) []*models.SceneParserResult {
 	var ret []*models.SceneParserResult
 	for _, scene := range scenes {
-		sceneHolder := mapper.parse(scene)
+		holder := mapper.parse(scene.Path, scene.Date)
 
-		if sceneHolder != nil {
+		if holder != nil {
 			r := &models.SceneParserResult{
 				Scene: scene,
 			}
-			p.setParserResult(ctx, *sceneHolder, r)
+
+			f := p.resolveFields(ctx, *holder)
+			r.Title = f.title
+			r.Date = f.date
+			r.Rating = f.rating
+			r.PerformerIds = f.performerIDs
+			r.TagIds = f.tagIDs
+			r.StudioID = f.studioID
+			for _, groupID := range f.groupIDs {
+				r.Movies = append(r.Movies, &models.SceneMovieID{
+					MovieID: groupID,
+				})
+			}
+
+			ret = append(ret, r)
+		}
+	}
+
+	return ret
+}
+
+func (p *FilenameParser) parseAudios(ctx context.Context, audios []*models.Audio, mapper *parseMapper) []*models.AudioParserResult {
+	var ret []*models.AudioParserResult
+	for _, audio := range audios {
+		holder := mapper.parse(audio.Path, audio.Date)
+
+		if holder != nil {
+			r := &models.AudioParserResult{
+				Audio: audio,
+			}
+
+			f := p.resolveFields(ctx, *holder)
+			r.Title = f.title
+			r.Date = f.date
+			r.Rating100 = f.rating
+			r.PerformerIds = f.performerIDs
+			r.TagIds = f.tagIDs
+			r.StudioID = f.studioID
+			for _, groupID := range f.groupIDs {
+				r.Groups = append(r.Groups, &models.AudioGroupID{
+					GroupID: groupID,
+				})
+			}
 
 			ret = append(ret, r)
 		}
@@ -624,99 +731,137 @@ func (p *FilenameParser) queryTag(ctx context.Context, qb models.TagNameFinder, 
 	return ret
 }
 
-func (p *FilenameParser) setPerformers(ctx context.Context, qb PerformerNamesFinder, h sceneHolder, result *models.SceneParserResult) {
+func (p *FilenameParser) performerIDs(ctx context.Context, qb PerformerNamesFinder, h fileHolder) []string {
 	// query for each performer
+	var ret []string
 	performersSet := make(map[int]bool)
 	for _, performerName := range h.performers {
 		if performerName != "" {
 			performer := p.queryPerformer(ctx, qb, performerName)
 			if performer != nil {
 				if _, found := performersSet[performer.ID]; !found {
-					result.PerformerIds = append(result.PerformerIds, strconv.Itoa(performer.ID))
+					ret = append(ret, strconv.Itoa(performer.ID))
 					performersSet[performer.ID] = true
 				}
 			}
 		}
 	}
+
+	return ret
 }
 
-func (p *FilenameParser) setTags(ctx context.Context, qb models.TagNameFinder, h sceneHolder, result *models.SceneParserResult) {
-	// query for each performer
+func (p *FilenameParser) tagIDs(ctx context.Context, qb models.TagNameFinder, h fileHolder) []string {
+	// query for each tag
+	var ret []string
 	tagsSet := make(map[int]bool)
 	for _, tagName := range h.tags {
 		if tagName != "" {
 			tag := p.queryTag(ctx, qb, tagName)
 			if tag != nil {
 				if _, found := tagsSet[tag.ID]; !found {
-					result.TagIds = append(result.TagIds, strconv.Itoa(tag.ID))
+					ret = append(ret, strconv.Itoa(tag.ID))
 					tagsSet[tag.ID] = true
 				}
 			}
 		}
 	}
+
+	return ret
 }
 
-func (p *FilenameParser) setStudio(ctx context.Context, qb models.StudioQueryer, h sceneHolder, result *models.SceneParserResult) {
-	// query for each performer
-	if h.studio != "" {
-		studio := p.queryStudio(ctx, qb, h.studio)
-		if studio != nil {
-			studioID := strconv.Itoa(studio.ID)
-			result.StudioID = &studioID
-		}
+func (p *FilenameParser) studioID(ctx context.Context, qb models.StudioQueryer, h fileHolder) *string {
+	if h.studio == "" {
+		return nil
 	}
+
+	studio := p.queryStudio(ctx, qb, h.studio)
+	if studio == nil {
+		return nil
+	}
+
+	studioID := strconv.Itoa(studio.ID)
+	return &studioID
 }
 
-func (p *FilenameParser) setGroups(ctx context.Context, qb GroupNameFinder, h sceneHolder, result *models.SceneParserResult) {
+func (p *FilenameParser) groupIDs(ctx context.Context, qb GroupNameFinder, h fileHolder) []string {
 	// query for each group
+	var ret []string
 	groupsSet := make(map[int]bool)
 	for _, groupName := range h.groups {
 		if groupName != "" {
 			group := p.queryGroup(ctx, qb, groupName)
 			if group != nil {
 				if _, found := groupsSet[group.ID]; !found {
-					result.Movies = append(result.Movies, &models.SceneMovieID{
-						MovieID: strconv.Itoa(group.ID),
-					})
+					ret = append(ret, strconv.Itoa(group.ID))
 					groupsSet[group.ID] = true
 				}
 			}
 		}
 	}
+
+	return ret
 }
 
-func (p *FilenameParser) setParserResult(ctx context.Context, h sceneHolder, result *models.SceneParserResult) {
-	if h.result.Title != "" {
-		title := h.result.Title
-		title = p.replaceWhitespaceCharacters(title)
+// resolvedFields is the media-agnostic outcome of parsing a single filename, with names
+// already resolved to object ids.
+type resolvedFields struct {
+	title        *string
+	date         *string
+	rating       *int
+	performerIDs []string
+	tagIDs       []string
+	studioID     *string
+	groupIDs     []string
+}
 
-		if p.ParserInput.CapitalizeTitle != nil && *p.ParserInput.CapitalizeTitle {
+func (p *FilenameParser) resolveFields(ctx context.Context, h fileHolder) resolvedFields {
+	var ret resolvedFields
+
+	if h.title != "" {
+		title := p.replaceWhitespaceCharacters(h.title)
+
+		if p.Options.CapitalizeTitle != nil && *p.Options.CapitalizeTitle {
 			title = capitalizeTitleRE.ReplaceAllStringFunc(title, strings.ToUpper)
 		}
 
-		result.Title = &title
+		ret.title = &title
 	}
 
-	if h.result.Date != nil {
-		dateStr := h.result.Date.String()
-		result.Date = &dateStr
+	if h.date != nil {
+		dateStr := h.date.String()
+		ret.date = &dateStr
 	}
 
-	if h.result.Rating != nil {
-		result.Rating = h.result.Rating
-	}
+	ret.rating = h.rating
 
 	r := p.repository
 
 	if len(h.performers) > 0 {
-		p.setPerformers(ctx, r.Performer, h, result)
+		ret.performerIDs = p.performerIDs(ctx, r.Performer, h)
 	}
 	if len(h.tags) > 0 {
-		p.setTags(ctx, r.Tag, h, result)
+		ret.tagIDs = p.tagIDs(ctx, r.Tag, h)
 	}
-	p.setStudio(ctx, r.Studio, h, result)
+	ret.studioID = p.studioID(ctx, r.Studio, h)
 
 	if len(h.groups) > 0 {
-		p.setGroups(ctx, r.Group, h, result)
+		ret.groupIDs = p.groupIDs(ctx, r.Group, h)
 	}
+
+	return ret
+}
+
+// audioQuery runs an audio query and resolves the results.
+func audioQuery(ctx context.Context, qb models.AudioQueryer, audioFilter *models.AudioFilterType, findFilter *models.FindFilterType) ([]*models.Audio, error) {
+	result, err := qb.Query(ctx, models.AudioQueryOptions{
+		QueryOptions: models.QueryOptions{
+			FindFilter: findFilter,
+		},
+		AudioFilter: audioFilter,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return result.Resolve(ctx)
 }
