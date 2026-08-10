@@ -6,6 +6,7 @@ import TextUtils from "src/utils/text";
 import { FormattedMessage, useIntl } from "react-intl";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
+import AudioQueue from "src/models/audioQueue";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import { useAudioUpdate } from "src/core/StashService";
 import { IColumn, ListTable } from "../List/ListTable";
@@ -14,6 +15,7 @@ import { FileSize } from "../Shared/FileSize";
 
 interface IAudioListTableProps {
   audios: GQL.SlimAudioDataFragment[];
+  queue?: AudioQueue;
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
 }
@@ -40,11 +42,14 @@ export const AudioListTable: React.FC<IAudioListTableProps> = (
     }
   }
 
-  const CoverImageCell = (audio: GQL.SlimAudioDataFragment) => {
+  const CoverImageCell = (audio: GQL.SlimAudioDataFragment, index: number) => {
     const title = objectTitle(audio);
+    const audioLink = props.queue
+      ? props.queue.makeLink(audio.id, { audioIndex: index })
+      : `/audios/${audio.id}`;
 
     return (
-      <Link to={`/audios/${audio.id}`}>
+      <Link to={audioLink}>
         <img
           loading="lazy"
           className="image-thumbnail"
@@ -55,11 +60,14 @@ export const AudioListTable: React.FC<IAudioListTableProps> = (
     );
   };
 
-  const TitleCell = (audio: GQL.SlimAudioDataFragment) => {
+  const TitleCell = (audio: GQL.SlimAudioDataFragment, index: number) => {
     const title = objectTitle(audio);
+    const audioLink = props.queue
+      ? props.queue.makeLink(audio.id, { audioIndex: index })
+      : `/audios/${audio.id}`;
 
     return (
-      <Link to={`/audios/${audio.id}`} title={title}>
+      <Link to={audioLink} title={title}>
         <span className="ellips-data">{title}</span>
       </Link>
     );

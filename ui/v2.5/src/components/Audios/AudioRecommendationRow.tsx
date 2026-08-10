@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useFindAudios } from "src/core/StashService";
 import { AudioCard } from "./AudioCard";
+import { AudioQueue } from "src/models/audioQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { PatchComponent } from "src/patch";
 import { FilteredRecommendationRow } from "../FrontPage/FilteredRecommendationRow";
@@ -16,6 +17,10 @@ export const AudioRecommendationRow: React.FC<IProps> = PatchComponent(
   (props) => {
     const result = useFindAudios(props.filter);
     const count = result.data?.findAudios.count ?? 0;
+
+    const queue = useMemo(() => {
+      return AudioQueue.fromListFilterModel(props.filter);
+    }, [props.filter]);
 
     return (
       <FilteredRecommendationRow
@@ -35,6 +40,7 @@ export const AudioRecommendationRow: React.FC<IProps> = PatchComponent(
               <AudioCard
                 key={audio.id}
                 audio={audio}
+                queue={queue}
                 index={index}
                 zoomIndex={1}
               />

@@ -16,6 +16,8 @@ import {
   useAudioIncrementO,
   useAudioUpdate,
   useAudioIncrementPlayCount,
+  queryFindAudios,
+  queryFindAudiosByID,
 } from "src/core/StashService";
 
 import { AudioEditPanel } from "./AudioEditPanel";
@@ -44,6 +46,8 @@ import { AudioMergeModal } from "../AudioMergeDialog";
 import { goBackOrReplace } from "src/utils/history";
 import { FormattedDate } from "src/components/Shared/Date";
 import { StudioLogo } from "src/components/Shared/StudioLogo";
+import AudioQueue, { QueuedAudio } from "src/models/audioQueue";
+import { ListFilterModel } from "src/models/list-filter/filter";
 
 const AudioPlayer = lazyComponent(
   () => import("src/components/AudioPlayer/AudioPlayer")
@@ -53,6 +57,7 @@ const GalleryViewer = lazyComponent(
   () => import("src/components/Galleries/GalleryViewer")
 );
 
+const AudioQueueViewer = lazyComponent(() => import("./AudioQueueViewer"));
 const AudioFileInfoPanel = lazyComponent(() => import("./AudioFileInfoPanel"));
 const AudioDetailPanel = lazyComponent(() => import("./AudioDetailPanel"));
 const AudioHistoryPanel = lazyComponent(() => import("./AudioHistoryPanel"));
@@ -120,6 +125,17 @@ const AudioSpecs: React.FC<{
 interface IProps {
   audio: GQL.AudioDataFragment;
   onDelete: () => void;
+  queueAudios: QueuedAudio[];
+  onQueueNext: () => void;
+  onQueuePrevious: () => void;
+  onQueueRandom: () => void;
+  onQueueAudioClicked: (audioID: string) => void;
+  continuePlaylist: boolean;
+  queueHasMoreAudios: boolean;
+  onQueueMoreAudios: () => void;
+  onQueueLessAudios: () => void;
+  queueStart: number;
+  setContinuePlaylist: (value: boolean) => void;
 }
 
 interface IAudioParams {
@@ -132,7 +148,21 @@ const AudioPageTabContent = PatchContainerComponent<IProps>(
 );
 
 const AudioPage: React.FC<IProps> = PatchComponent("AudioPage", (props) => {
-  const { audio, onDelete } = props;
+  const {
+    audio,
+    onDelete,
+    queueAudios,
+    onQueueNext,
+    onQueuePrevious,
+    onQueueRandom,
+    onQueueAudioClicked,
+    continuePlaylist,
+    queueHasMoreAudios,
+    onQueueMoreAudios,
+    onQueueLessAudios,
+    queueStart,
+    setContinuePlaylist,
+  } = props;
 
   const Toast = useToast();
   const intl = useIntl();
@@ -187,6 +217,7 @@ const AudioPage: React.FC<IProps> = PatchComponent("AudioPage", (props) => {
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("a", () => setActiveTabKey("audio-details-panel"));
+    Mousetrap.bind("q", () => setActiveTabKey("audio-queue-panel"));
     Mousetrap.bind("e", () => setActiveTabKey("audio-edit-panel"));
     Mousetrap.bind("i", () => setActiveTabKey("audio-file-info-panel"));
     Mousetrap.bind("h", () => setActiveTabKey("audio-history-panel"));
@@ -194,14 +225,21 @@ const AudioPage: React.FC<IProps> = PatchComponent("AudioPage", (props) => {
       onIncrementOClick();
     });
     Mousetrap.bind("d d", () => setIsDeleteAlertOpen(true));
+    Mousetrap.bind("p n", () => onQueueNext());
+    Mousetrap.bind("p p", () => onQueuePrevious());
+    Mousetrap.bind("p r", () => onQueueRandom());
 
     return () => {
       Mousetrap.unbind("a");
+      Mousetrap.unbind("q");
       Mousetrap.unbind("e");
       Mousetrap.unbind("i");
       Mousetrap.unbind("h");
       Mousetrap.unbind("o");
       Mousetrap.unbind("d d");
+      Mousetrap.unbind("p n");
+      Mousetrap.unbind("p p");
+      Mousetrap.unbind("p r");
     };
   });
 
@@ -345,6 +383,15 @@ const AudioPage: React.FC<IProps> = PatchComponent("AudioPage", (props) => {
                 <FormattedMessage id="details" />
               </Nav.Link>
             </Nav.Item>
+            {queueAudios.length > 0 ? (
+              <Nav.Item>
+                <Nav.Link eventKey="audio-queue-panel">
+                  <FormattedMessage id="queue" />
+                </Nav.Link>
+              </Nav.Item>
+            ) : (
+              ""
+            )}
             {audio.groups.length > 0 ? (
               <Nav.Item>
                 <Nav.Link eventKey="audio-group-panel">
@@ -391,6 +438,22 @@ const AudioPage: React.FC<IProps> = PatchComponent("AudioPage", (props) => {
         <AudioPageTabContent {...props}>
           <Tab.Pane eventKey="audio-details-panel">
             <AudioDetailPanel audio={audio} />
+          </Tab.Pane>
+          <Tab.Pane eventKey="audio-queue-panel">
+            <AudioQueueViewer
+              audios={queueAudios}
+              currentID={audio.id}
+              continue={continuePlaylist}
+              setContinue={setContinuePlaylist}
+              onAudioClicked={onQueueAudioClicked}
+              onNext={onQueueNext}
+              onPrevious={onQueuePrevious}
+              onRandom={onQueueRandom}
+              start={queueStart}
+              hasMoreAudios={queueHasMoreAudios}
+              onLessAudios={onQueueLessAudios}
+              onMoreAudios={onQueueMoreAudios}
+            />
           </Tab.Pane>
           <Tab.Pane eventKey="audio-group-panel">
             <AudioGroupPanel audio={audio} />
@@ -507,6 +570,7 @@ const AudioLoader: React.FC<RouteComponentProps<IAudioParams>> = ({
   match,
 }) => {
   const { id } = match.params;
+  const { configuration } = useConfigurationContext();
   const { data, loading, error } = useFindAudio(id);
 
   const [audio, setAudio] = useState<GQL.AudioDataFragment>();
@@ -524,6 +588,25 @@ const AudioLoader: React.FC<RouteComponentProps<IAudioParams>> = ({
     [location.search]
   );
 
+  const audioQueue = useMemo(
+    () => AudioQueue.fromQueryParameters(queryParams),
+    [queryParams]
+  );
+
+  const queryContinue = useMemo(() => {
+    const cont = queryParams.get("continue");
+    if (cont) {
+      return cont === "true";
+    } else {
+      return !!configuration?.interface.continuePlaylistDefault;
+    }
+  }, [configuration?.interface.continuePlaylistDefault, queryParams]);
+
+  const [queueAudios, setQueueAudios] = useState<QueuedAudio[]>([]);
+  const [queueTotal, setQueueTotal] = useState(0);
+  const [queueStart, setQueueStart] = useState(1);
+  const [continuePlaylist, setContinuePlaylist] = useState(queryContinue);
+
   const initialTimestamp = useMemo(() => {
     const t = queryParams.get("t");
     if (!t) return 0;
@@ -534,9 +617,181 @@ const AudioLoader: React.FC<RouteComponentProps<IAudioParams>> = ({
   }, [queryParams]);
 
   const autoplay = queryParams.get("autoplay") === "true";
+  const autoPlayOnSelected =
+    configuration?.interface.autostartVideoOnPlaySelected ?? false;
+
+  const currentQueueIndex = useMemo(
+    () => queueAudios.findIndex((a) => a.id === id),
+    [queueAudios, id]
+  );
+
+  useEffect(() => {
+    async function getQueueFilterAudios(filter: ListFilterModel) {
+      const query = await queryFindAudios(filter);
+      const { audios, count } = query.data.findAudios;
+      setQueueAudios(audios);
+      setQueueTotal(count);
+      setQueueStart((filter.currentPage - 1) * filter.itemsPerPage + 1);
+    }
+
+    async function getQueueAudios(audioIDs: number[]) {
+      const query = await queryFindAudiosByID(audioIDs);
+      const { audios, count } = query.data.findAudios;
+      setQueueAudios(audios);
+      setQueueTotal(count);
+      setQueueStart(1);
+    }
+
+    if (audioQueue.query) {
+      getQueueFilterAudios(audioQueue.query);
+    } else if (audioQueue.audioIDs) {
+      getQueueAudios(audioQueue.audioIDs);
+    }
+  }, [audioQueue]);
+
+  async function onQueueLessAudios() {
+    if (!audioQueue.query || queueStart <= 1) {
+      return;
+    }
+
+    const filterCopy = audioQueue.query.clone();
+    const newStart = queueStart - filterCopy.itemsPerPage;
+    filterCopy.currentPage = Math.ceil(newStart / filterCopy.itemsPerPage);
+    const query = await queryFindAudios(filterCopy);
+    const { audios } = query.data.findAudios;
+
+    // prepend audios to audio list
+    const newAudios = (audios as QueuedAudio[]).concat(queueAudios);
+    setQueueAudios(newAudios);
+    setQueueStart(newStart);
+
+    return audios;
+  }
+
+  const queueHasMoreAudios = useMemo(() => {
+    return queueStart + queueAudios.length - 1 < queueTotal;
+  }, [queueStart, queueAudios, queueTotal]);
+
+  async function onQueueMoreAudios() {
+    if (!audioQueue.query || !queueHasMoreAudios) {
+      return;
+    }
+
+    const filterCopy = audioQueue.query.clone();
+    const newStart = queueStart + queueAudios.length;
+    filterCopy.currentPage = Math.ceil(newStart / filterCopy.itemsPerPage);
+    const query = await queryFindAudios(filterCopy);
+    const { audios } = query.data.findAudios;
+
+    // append audios to audio list
+    const newAudios = queueAudios.concat(audios);
+    setQueueAudios(newAudios);
+    // don't change queue start
+    return audios;
+  }
+
+  function loadAudio(audioID: string, autoPlay?: boolean, newPage?: number) {
+    const audioLink = audioQueue.makeLink(audioID, {
+      newPage,
+      autoPlay,
+      continue: continuePlaylist,
+    });
+    history.replace(audioLink);
+  }
+
+  async function queueNext(autoPlay: boolean) {
+    if (currentQueueIndex === -1) return;
+
+    if (currentQueueIndex < queueAudios.length - 1) {
+      loadAudio(queueAudios[currentQueueIndex + 1].id, autoPlay);
+    } else {
+      // if we're at the end of the queue, load more audios
+      if (currentQueueIndex === queueAudios.length - 1 && queueHasMoreAudios) {
+        const loadedAudios = await onQueueMoreAudios();
+        if (loadedAudios && loadedAudios.length > 0) {
+          // set the page to the next page
+          const newPage = (audioQueue.query?.currentPage ?? 0) + 1;
+          loadAudio(loadedAudios[0].id, autoPlay, newPage);
+        }
+      }
+    }
+  }
+
+  async function queuePrevious(autoPlay: boolean) {
+    if (currentQueueIndex === -1) return;
+
+    if (currentQueueIndex > 0) {
+      loadAudio(queueAudios[currentQueueIndex - 1].id, autoPlay);
+    } else {
+      // if we're at the beginning of the queue, load the previous page
+      if (queueStart > 1) {
+        const loadedAudios = await onQueueLessAudios();
+        if (loadedAudios && loadedAudios.length > 0) {
+          const newPage = (audioQueue.query?.currentPage ?? 0) - 1;
+          loadAudio(
+            loadedAudios[loadedAudios.length - 1].id,
+            autoPlay,
+            newPage
+          );
+        }
+      }
+    }
+  }
+
+  async function queueRandom(autoPlay: boolean) {
+    if (audioQueue.query) {
+      const { query } = audioQueue;
+      const pages = Math.ceil(queueTotal / query.itemsPerPage);
+      const page = Math.floor(Math.random() * pages) + 1;
+      const index = Math.floor(
+        Math.random() * Math.min(query.itemsPerPage, queueTotal)
+      );
+      const filterCopy = audioQueue.query.clone();
+      filterCopy.currentPage = page;
+      const queryResults = await queryFindAudios(filterCopy);
+      if (queryResults.data.findAudios.audios.length > index) {
+        const { id: audioID } = queryResults.data.findAudios.audios[index];
+        loadAudio(audioID, autoPlay, page);
+      }
+    } else if (queueTotal !== 0) {
+      const index = Math.floor(Math.random() * queueTotal);
+      loadAudio(queueAudios[index].id, autoPlay);
+    }
+  }
+
+  function onComplete() {
+    // load the next audio if we're continuing
+    if (continuePlaylist) {
+      queueNext(true);
+    }
+  }
 
   function onDelete() {
-    goBackOrReplace(history, "/audios");
+    if (
+      continuePlaylist &&
+      currentQueueIndex >= 0 &&
+      currentQueueIndex < queueAudios.length - 1
+    ) {
+      loadAudio(queueAudios[currentQueueIndex + 1].id);
+    } else {
+      goBackOrReplace(history, "/audios");
+    }
+  }
+
+  function getAudioPage(audioID: string) {
+    if (!audioQueue.query) return;
+
+    // find the page that the audio is on
+    const index = queueAudios.findIndex((a) => a.id === audioID);
+
+    if (index === -1) return;
+
+    const perPage = audioQueue.query.itemsPerPage;
+    return Math.floor((index + queueStart - 1) / perPage) + 1;
+  }
+
+  function onQueueAudioClicked(audioID: string) {
+    loadAudio(audioID, autoPlayOnSelected, getAudioPage(audioID));
   }
 
   if (!audio) {
@@ -547,13 +802,31 @@ const AudioLoader: React.FC<RouteComponentProps<IAudioParams>> = ({
 
   return (
     <div className="row">
-      <AudioPage audio={audio} onDelete={onDelete} />
+      <AudioPage
+        audio={audio}
+        onDelete={onDelete}
+        queueAudios={queueAudios}
+        queueStart={queueStart}
+        onQueueNext={() => queueNext(autoPlayOnSelected)}
+        onQueuePrevious={() => queuePrevious(autoPlayOnSelected)}
+        onQueueRandom={() => queueRandom(autoPlayOnSelected)}
+        onQueueAudioClicked={onQueueAudioClicked}
+        continuePlaylist={continuePlaylist}
+        queueHasMoreAudios={queueHasMoreAudios}
+        onQueueLessAudios={onQueueLessAudios}
+        onQueueMoreAudios={onQueueMoreAudios}
+        setContinuePlaylist={setContinuePlaylist}
+      />
       <div className="audio-player-container">
         <AudioPlayer
           key="AudioPlayer"
           audio={audio}
           autoplay={autoplay}
+          permitLoop={!continuePlaylist}
           initialTimestamp={initialTimestamp}
+          onComplete={onComplete}
+          onNext={() => queueNext(true)}
+          onPrevious={() => queuePrevious(true)}
         />
       </div>
     </div>

@@ -23,11 +23,14 @@ import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
 import { GroupTag } from "../Groups/GroupTag";
 import { FileSize } from "../Shared/FileSize";
 import { OCounterButton } from "../Shared/CountButton";
+import { AudioQueue } from "src/models/audioQueue";
+import { useConfigurationContext } from "src/hooks/Config";
 
 interface IAudioCardProps {
   audio: GQL.SlimAudioDataFragment;
   width?: number;
   index?: number;
+  queue?: AudioQueue;
   compact?: boolean;
   selecting?: boolean;
   selected?: boolean | undefined;
@@ -280,6 +283,8 @@ const AudioCoverImage = React.memo(
 
 export const AudioCard = React.memo(
   PatchComponent("AudioCard", (props: IAudioCardProps) => {
+    const { configuration } = useConfigurationContext();
+
     const file = useMemo(
       () => (props.audio.files.length > 0 ? props.audio.files[0] : undefined),
       [props.audio]
@@ -301,10 +306,19 @@ export const AudioCard = React.memo(
       return "";
     }
 
+    const cont = configuration?.interface.continuePlaylistDefault ?? false;
+
+    const audioLink = props.queue
+      ? props.queue.makeLink(props.audio.id, {
+          audioIndex: props.index,
+          continue: cont,
+        })
+      : `/audios/${props.audio.id}`;
+
     return (
       <GridCard
         className={`audio-card ${zoomIndex()} ${filelessClass()}`}
-        url={`/audios/${props.audio.id}`}
+        url={audioLink}
         title={objectTitle(props.audio)}
         width={props.width}
         linkClassName="audio-card-link"

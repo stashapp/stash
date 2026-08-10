@@ -14,6 +14,7 @@ import cx from "classnames";
 // shared video.js plugins - registered globally on import
 import "../ScenePlayer/persist-volume";
 import "../ScenePlayer/big-buttons";
+import "../ScenePlayer/PlaylistButtons";
 import "../ScenePlayer/track-activity";
 import "../ScenePlayer/media-session";
 import "../ScenePlayer/wake-sentinel";
@@ -66,6 +67,22 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
 
   if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
     return;
+  }
+
+  const skipButtons = player.skipButtons();
+  if (skipButtons) {
+    // handle multimedia keys
+    switch (event.key) {
+      case "MediaTrackNext":
+        if (!skipButtons.onNext) return;
+        skipButtons.onNext();
+        break;
+      case "MediaTrackPrevious":
+        if (!skipButtons.onPrevious) return;
+        skipButtons.onPrevious();
+        break;
+      // MediaPlayPause handled by videojs
+    }
   }
 
   switch (event.which) {
@@ -122,6 +139,8 @@ interface IAudioPlayerProps {
   permitLoop?: boolean;
   initialTimestamp?: number;
   onComplete?: () => void;
+  onNext?: () => void;
+  onPrevious?: () => void;
 }
 
 export const AudioPlayer: React.FC<IAudioPlayerProps> = PatchComponent(
@@ -132,6 +151,8 @@ export const AudioPlayer: React.FC<IAudioPlayerProps> = PatchComponent(
     permitLoop = true,
     initialTimestamp = 0,
     onComplete,
+    onNext,
+    onPrevious,
   }) => {
     const { configuration } = useConfigurationContext();
     const interfaceConfig = configuration?.interface;
@@ -206,6 +227,7 @@ export const AudioPlayer: React.FC<IAudioPlayerProps> = PatchComponent(
           trackActivity: {},
           mediaSession: {},
           wakeSentinel: {},
+          skipButtons: {},
         },
       };
 
@@ -312,6 +334,14 @@ export const AudioPlayer: React.FC<IAudioPlayerProps> = PatchComponent(
       interfaceConfig?.autostartVideo,
       uiConfig?.alwaysStartFromBeginning,
     ]);
+
+    useEffect(() => {
+      const player = getPlayer();
+      if (!player) return;
+      const skipButtons = player.skipButtons();
+      skipButtons.setForwardHandler(onNext);
+      skipButtons.setBackwardHandler(onPrevious);
+    }, [getPlayer, onNext, onPrevious]);
 
     // cover art is used as the poster
     useEffect(() => {

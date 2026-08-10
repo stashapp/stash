@@ -13,6 +13,8 @@ import { DeleteAudiosDialog } from "./DeleteAudiosDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { AudioCardGrid } from "./AudioCardGrid";
 import { AudioMergeModal } from "./AudioMergeDialog";
+import { IPlayAudioOptions, AudioQueue } from "src/models/audioQueue";
+import { useConfigurationContext } from "src/hooks/Config";
 import { objectTitle } from "src/core/files";
 import TextUtils from "src/utils/text";
 import { View } from "../List/views";
@@ -80,11 +82,58 @@ function renderMetadataByline(result: GQL.FindAudiosQueryResult) {
   );
 }
 
-// audio has no play queue - playing simply navigates to the audio's page
-function usePlayRandom(filter: ListFilterModel, count: number) {
+function usePlayAudio() {
   const history = useHistory();
 
+  const { configuration: config } = useConfigurationContext();
+  const cont = config?.interface.continuePlaylistDefault ?? false;
+  const autoPlay = config?.interface.autostartVideoOnPlaySelected ?? false;
+
+  const playAudio = useCallback(
+    (queue: AudioQueue, audioID: string, options?: IPlayAudioOptions) => {
+      history.push(
+        queue.makeLink(audioID, { autoPlay, continue: cont, ...options })
+      );
+    },
+    [history, cont, autoPlay]
+  );
+
+  return playAudio;
+}
+
+function usePlaySelected(selectedIds: Set<string>) {
+  const playAudio = usePlayAudio();
+
+  const playSelected = useCallback(() => {
+    // populate queue and go to first audio
+    const audioIDs = Array.from(selectedIds.values());
+    const queue = AudioQueue.fromAudioIDList(audioIDs);
+
+    playAudio(queue, audioIDs[0]);
+  }, [selectedIds, playAudio]);
+
+  return playSelected;
+}
+
+function usePlayFirst() {
+  const playAudio = usePlayAudio();
+
+  const playFirst = useCallback(
+    (queue: AudioQueue, audioID: string, index: number) => {
+      // populate queue and go to first audio
+      playAudio(queue, audioID, { audioIndex: index });
+    },
+    [playAudio]
+  );
+
+  return playFirst;
+}
+
+function usePlayRandom(filter: ListFilterModel, count: number) {
+  const playAudio = usePlayAudio();
+
   const playRandom = useCallback(async () => {
+    // query for a random audio
     if (count === 0) {
       return;
     }
@@ -100,9 +149,10 @@ function usePlayRandom(filter: ListFilterModel, count: number) {
     const queryResults = await queryFindAudios(filterCopy);
     const audio = queryResults.data.findAudios.audios[index];
     if (audio) {
-      history.push(`/audios/${audio.id}`);
+      const queue = AudioQueue.fromListFilterModel(filterCopy);
+      playAudio(queue, audio.id, { audioIndex: index });
     }
-  }, [filter, count, history]);
+  }, [filter, count, playAudio]);
 
   return playRandom;
 }
@@ -130,6 +180,11 @@ const AudioList: React.FC<{
 }> = PatchComponent(
   "AudioList",
   ({ audios, filter, selectedIds, onSelectChange, fromGroupId }) => {
+    const queue = useMemo(
+      () => AudioQueue.fromListFilterModel(filter),
+      [filter]
+    );
+
     if (audios.length === 0) {
       return null;
     }
@@ -138,6 +193,7 @@ const AudioList: React.FC<{
       return (
         <AudioCardGrid
           audios={audios}
+          queue={queue}
           zoomIndex={filter.zoomIndex}
           selectedIds={selectedIds}
           onSelectChange={onSelectChange}
@@ -149,6 +205,7 @@ const AudioList: React.FC<{
       return (
         <AudioListTable
           audios={audios}
+          queue={queue}
           selectedIds={selectedIds}
           onSelectChange={onSelectChange}
         />
@@ -376,17 +433,29 @@ export const FilteredAudioList = PatchComponent(
       return renderMetadataByline(cachedResult) ?? null;
     }, [cachedResult]);
 
+    const queue = useMemo(
+      () => AudioQueue.fromListFilterModel(filter),
+      [filter]
+    );
+
     const playRandom = usePlayRandom(effectiveFilter, totalCount);
+    const playSelected = usePlaySelected(selectedIds);
+    const playFirst = usePlayFirst();
 
     function onPlay() {
       if (items.length === 0) {
         return;
       }
 
-      const audioID = hasSelection
-        ? Array.from(selectedIds.values())[0]
-        : items[0].id;
-      history.push(`/audios/${audioID}`);
+      // if there are selected items, play those
+      if (hasSelection) {
+        playSelected();
+        return;
+      }
+
+      // otherwise, play the first item in the list
+      const audioID = items[0].id;
+      playFirst(queue, audioID, 0);
     }
 
     function onExport(all: boolean) {
