@@ -764,7 +764,6 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = PatchComponent(
           Toast.success(intl.formatMessage({ id: "toast.merged_scenes" }));
           onClose(destScene[0].id);
         }
-        onClose();
       } catch (e) {
         Toast.error(e);
       } finally {

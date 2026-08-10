@@ -799,7 +799,6 @@ export const PerformerMergeModal: React.FC<IPerformerMergeModalProps> =
           Toast.success(intl.formatMessage({ id: "toast.merged_performers" }));
           onClose(destPerformer[0].id);
         }
-        onClose();
       } catch (e) {
         Toast.error(e);
       } finally {
