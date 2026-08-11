@@ -213,11 +213,12 @@
             "fp_found": "{fpCount, plural, =0 {新しいフィンガープリントの一致は見つかりませんでした} other {新しいフィンガープリントの一致が # 件見つかりました}}",
             "fp_matches": "長さが一致しました",
             "fp_matches_multi": "長さが一致しました {matchCount}/{durationsLength}件のハッシュ値",
-            "hash_matches": "{hash_type}が一致しました",
+            "hash_matches": "{count, plural, one {# {hash_type} が一致しました} other {# {hash_type} 一致が一致しました}}",
             "match_failed_already_tagged": "シーンはすでにタグ付けされています",
             "match_failed_no_result": "結果が見つかりませんでした",
             "match_success": "シーンのタグ付けに成功しました",
-            "unnamed": "名称未設定"
+            "unnamed": "名称未設定",
+            "hash_submissions": "{count} 件のoshash投稿"
         },
         "verb_match_fp": "ハッシュ値を突き合わせる",
         "verb_matched": "一致",
@@ -1227,7 +1228,7 @@
         "o_count": "💦回数",
         "oshash_meaning": "OpenSubtitlesハッシュ",
         "phash_meaning": "Perceptual Hash(知覚的ハッシュ)",
-        "oshash": "oshash(OpenSubtitlesハッシュ)"
+        "oshash": "OSHash(OpenSubtitlesハッシュ)"
     },
     "megabits_per_second": "{value}Mbps",
     "metadata": "メタデータ",
@@ -1279,7 +1280,7 @@
         "untagged_performers": "タグ付けされていない出演者",
         "update_performer": "出演者を更新",
         "update_performers": "出演者を更新",
-        "updating_untagged_performers_description": "タグ付けされていない出演者の更新機能により、Stash IDがない出演者のマッチングを試み、メタデータを更新します。",
+        "updating_untagged_performers_description": "未タグ付けの出演者を更新すると、Stash IDがない出演者をすべて照合してメタデータを更新します。",
         "field_options_description": "各項目の更新方法を選択します。上書きは既存のデータを置き換え、マージは既存のデータに追加し、スキップは変更しません。",
         "performer_names_or_stashids_separated_by_comma": "出演者名またはStash IDをカンマ区切りで入力してください",
         "configure_fields": "項目を設定",
@@ -1482,7 +1483,8 @@
         "clipboard_access_denied": "クリップボードへのアクセスが拒否されました。ブラウザの権限を確認してください",
         "clipboard_no_image": "クリップボードに画像が見つかりません",
         "image_index_too_large": "エラー: 画像のインデックスがギャラリー内の画像数を超えています",
-        "merged_performers": "出演者をマージしました"
+        "merged_performers": "出演者をマージしました",
+        "screenshot_generated": "スクリーンショットが生成されました"
     },
     "total": "合計",
     "true": "有効",
@@ -1574,7 +1576,7 @@
         "untagged_studios": "未タグ付けのスタジオ",
         "update_studio": "スタジオを更新",
         "update_studios": "スタジオを更新",
-        "updating_untagged_studios_description": "未タグ付けのスタジオを更新すると、Stash IDがないスタジオの照合を試みてメタデータを更新します。"
+        "updating_untagged_studios_description": "未タグ付けのスタジオを更新すると、Stash IDがないスタジオをすべて照合をしてメタデータを更新します。"
     },
     "video_codec": "ビデオコーデック",
     "errors": {
@@ -1694,7 +1696,7 @@
         "to_use_the_tag_tagger": "タグのタグ付け機能を使用するには、Stash-Boxインスタンスを設定する必要があります。",
         "untagged_tags": "未タグ付けのタグ",
         "update_tags": "タグを更新",
-        "updating_untagged_tags_description": "未タグ付けのタグを更新するとStash IDがないタグの照合を試みてメタデータを更新します。"
+        "updating_untagged_tags_description": "未タグ付けのタグを更新すると、Stash IDがないタグの照合を試みてメタデータを更新します。"
     },
     "tagger": {
         "config": {
@@ -1704,6 +1706,13 @@
             "fields_will_not_be_changed": "{entity} の更新時に、これらの項目は変更されません。",
             "no_fields_are_excluded": "除外する項目はありません",
             "no_instances_found": "インスタンスが見つかりません"
+        },
+        "performers": {
+            "birthdate": "一致した出演者の生年月日が異なります。",
+            "country": "一致した出演者の国が異なります。",
+            "ethnicity": "一致した出演者の民族が異なります。",
+            "gender": "一致した出演者の性別が異なります。",
+            "stash_mismatch": "一致した出演者には、すでに別のstash-idが割り当てられています。"
         }
     },
     "unknown_date": "日付不明",
@@ -1741,5 +1750,6 @@
     "odate_recorded_no_sfw": "いいね日は記録されていません",
     "orientation": "向き",
     "time": "時刻",
-    "time_end": "終了時間"
+    "time_end": "終了時間",
+    "stash_id_endpoint_any": "任意のエンドポイント"
 }
