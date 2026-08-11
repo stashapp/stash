@@ -185,6 +185,14 @@ mutation SubmitFingerprint($input: FingerprintSubmission!) {
   submitFingerprint(input: $input)
 }
 
+mutation SubmitFingerprints($input: [FingerprintBatchSubmission!]!) {
+  submitFingerprints(input: $input) {
+    scene_id
+    hash
+    error
+  }
+}
+
 query Me {
   me {
     name

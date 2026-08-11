@@ -6,7 +6,9 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strings"
 
+	"github.com/Yamashou/gqlgenc/clientv2"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
@@ -405,7 +407,81 @@ func fileFingerprintsToInputGraphQL(fps models.Fingerprints, duration int) []*gr
 	return ret
 }
 
-func (c Client) SubmitFingerprints(ctx context.Context, scenes []*models.Scene) (bool, error) {
+const fingerprintBatchSize = 50
+
+type FingerprintSubmissionResult struct {
+	Total     int
+	Succeeded int
+	Failed    int
+}
+
+type FingerprintSubmissionProgress interface {
+	SetTotal(total int)
+	Increment()
+}
+
+type fingerprintSubmitter interface {
+	SubmitFingerprint(ctx context.Context, input graphql.FingerprintSubmission, interceptors ...clientv2.RequestInterceptor) (*graphql.SubmitFingerprint, error)
+	SubmitFingerprints(ctx context.Context, input []*graphql.FingerprintBatchSubmission, interceptors ...clientv2.RequestInterceptor) (*graphql.SubmitFingerprints, error)
+}
+
+func (c Client) SubmitFingerprints(ctx context.Context, scenes []*models.Scene, progress FingerprintSubmissionProgress) (*FingerprintSubmissionResult, error) {
+	return submitFingerprints(ctx, c.client, c.collectFingerprints(scenes), progress)
+}
+
+func submitFingerprints(ctx context.Context, submitter fingerprintSubmitter, fingerprints []graphql.FingerprintSubmission, progress FingerprintSubmissionProgress) (*FingerprintSubmissionResult, error) {
+	result := &FingerprintSubmissionResult{Total: len(fingerprints)}
+	if progress != nil {
+		progress.SetTotal(len(fingerprints))
+	}
+	if len(fingerprints) == 0 {
+		return result, nil
+	}
+
+	// Try the batch mutation first, falling back to per-fingerprint submission
+	// for stash-box instances that don't support it.
+	useLegacy := false
+
+	for i := 0; i < len(fingerprints); i += fingerprintBatchSize {
+		end := i + fingerprintBatchSize
+		if end > len(fingerprints) {
+			end = len(fingerprints)
+		}
+		batch := fingerprints[i:end]
+
+		if !useLegacy {
+			supported, err := submitFingerprintBatch(ctx, submitter, batch, result)
+			if err != nil {
+				return result, err
+			}
+			if supported {
+				incrementProgress(progress, len(batch))
+				continue
+			}
+
+			// the stash-box instance doesn't support the batch mutation, so
+			// fall back to submitting fingerprints individually from here on
+			useLegacy = true
+		}
+
+		if err := submitFingerprintsLegacy(ctx, submitter, batch, result, progress); err != nil {
+			return result, err
+		}
+	}
+
+	return result, nil
+}
+
+func incrementProgress(progress FingerprintSubmissionProgress, n int) {
+	if progress == nil {
+		return
+	}
+	for i := 0; i < n; i++ {
+		progress.Increment()
+	}
+}
+
+func (c Client) collectFingerprints(scenes []*models.Scene) []graphql.FingerprintSubmission {
 	endpoint := c.box.Endpoint
 
 	var fingerprints []graphql.FingerprintSubmission
@@ -440,18 +516,75 @@ func (c Client) SubmitFingerprints(ctx context.Context, scenes []*models.Scene) 
 		}
 	}
 
-	return c.submitFingerprints(ctx, fingerprints)
+	return fingerprints
 }
+func submitFingerprintBatch(ctx context.Context, submitter fingerprintSubmitter, batch []graphql.FingerprintSubmission, result *FingerprintSubmissionResult) (supported bool, err error) {
+	input := make([]*graphql.FingerprintBatchSubmission, len(batch))
+	for i, fp := range batch {
+		input[i] = &graphql.FingerprintBatchSubmission{
+			SceneID:   fp.SceneID,
+			Hash:      fp.Fingerprint.Hash,
+			Algorithm: fp.Fingerprint.Algorithm,
+			Duration:  fp.Fingerprint.Duration,
+		}
+	}
 
-func (c Client) submitFingerprints(ctx context.Context, fingerprints []graphql.FingerprintSubmission) (bool, error) {
-	for _, fingerprint := range fingerprints {
-		_, err := c.client.SubmitFingerprint(ctx, fingerprint)
-		if err != nil {
-			return false, err
+	resp, err := submitter.SubmitFingerprints(ctx, input)
+	if err != nil {
+		if isBatchUnsupportedError(err) {
+			return false, nil
+		}
+		return true, err
+	}
+
+	for _, r := range resp.SubmitFingerprints {
+		if r.Error != nil {
+			result.Failed++
+			logger.Errorf("Error submitting fingerprint %s for scene %s: %s", r.Hash, r.SceneID, *r.Error)
+		} else {
+			result.Succeeded++
 		}
 	}
 
 	return true, nil
+}
+func submitFingerprintsLegacy(ctx context.Context, submitter fingerprintSubmitter, fingerprints []graphql.FingerprintSubmission, result *FingerprintSubmissionResult, progress FingerprintSubmissionProgress) error {
+	for _, fingerprint := range fingerprints {
+		_, err := submitter.SubmitFingerprint(ctx, fingerprint)
+		if err != nil {
+			if ctx.Err() != nil {
+				return ctx.Err()
+			}
+			result.Failed++
+			logger.Errorf("Error submitting fingerprint %s for scene %s: %v", fingerprint.Fingerprint.Hash, fingerprint.SceneID, err)
+		} else {
+			result.Succeeded++
+		}
+
+		if progress != nil {
+			progress.Increment()
+		}
+	}
+
+	return nil
+}
+func isBatchUnsupportedError(err error) bool {
+	var errResp *clientv2.ErrorResponse
+	if !errors.As(err, &errResp) || errResp.GqlErrors == nil {
+		return false
+	}
+
+	for _, gqlErr := range *errResp.GqlErrors {
+		msg := gqlErr.Message
+		if strings.Contains(msg, "submitFingerprints") &&
+			(strings.Contains(msg, "Cannot query field") ||
+				strings.Contains(msg, "Unknown field") ||
+				strings.Contains(msg, "unknown field")) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func appendFingerprintUnique(v []*graphql.FingerprintInput, toAdd *graphql.FingerprintInput) []*graphql.FingerprintInput {

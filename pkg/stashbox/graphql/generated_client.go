@@ -18,6 +18,7 @@ type StashBoxGraphQLClient interface {
 	FindTag(ctx context.Context, id *string, name *string, interceptors ...clientv2.RequestInterceptor) (*FindTag, error)
 	QueryTags(ctx context.Context, input TagQueryInput, interceptors ...clientv2.RequestInterceptor) (*QueryTags, error)
 	SubmitFingerprint(ctx context.Context, input FingerprintSubmission, interceptors ...clientv2.RequestInterceptor) (*SubmitFingerprint, error)
+	SubmitFingerprints(ctx context.Context, input []*FingerprintBatchSubmission, interceptors ...clientv2.RequestInterceptor) (*SubmitFingerprints, error)
 	Me(ctx context.Context, interceptors ...clientv2.RequestInterceptor) (*Me, error)
 	SubmitSceneDraft(ctx context.Context, input SceneDraftInput, interceptors ...clientv2.RequestInterceptor) (*SubmitSceneDraft, error)
 	SubmitPerformerDraft(ctx context.Context, input PerformerDraftInput, interceptors ...clientv2.RequestInterceptor) (*SubmitPerformerDraft, error)
@@ -827,6 +828,31 @@ func (t *QueryTags_QueryTags) GetTags() []*TagFragment {
 	return t.Tags
 }
 
+type SubmitFingerprints_SubmitFingerprints struct {
+	Error   *string "json:\"error,omitempty\" graphql:\"error\""
+	Hash    string  "json:\"hash\" graphql:\"hash\""
+	SceneID string  "json:\"scene_id\" graphql:\"scene_id\""
+}
+
+func (t *SubmitFingerprints_SubmitFingerprints) GetError() *string {
+	if t == nil {
+		t = &SubmitFingerprints_SubmitFingerprints{}
+	}
+	return t.Error
+}
+func (t *SubmitFingerprints_SubmitFingerprints) GetHash() string {
+	if t == nil {
+		t = &SubmitFingerprints_SubmitFingerprints{}
+	}
+	return t.Hash
+}
+func (t *SubmitFingerprints_SubmitFingerprints) GetSceneID() string {
+	if t == nil {
+		t = &SubmitFingerprints_SubmitFingerprints{}
+	}
+	return t.SceneID
+}
+
 type Me_Me struct {
 	Name string "json:\"name\" graphql:\"name\""
 }
@@ -957,6 +983,17 @@ func (t *SubmitFingerprint) GetSubmitFingerprint() bool {
 		t = &SubmitFingerprint{}
 	}
 	return t.SubmitFingerprint
+}
+
+type SubmitFingerprints struct {
+	SubmitFingerprints []*SubmitFingerprints_SubmitFingerprints "json:\"submitFingerprints\" graphql:\"submitFingerprints\""
+}
+
+func (t *SubmitFingerprints) GetSubmitFingerprints() []*SubmitFingerprints_SubmitFingerprints {
+	if t == nil {
+		t = &SubmitFingerprints{}
+	}
+	return t.SubmitFingerprints
 }
 
 type Me struct {
@@ -1728,6 +1765,32 @@ func (c *Client) SubmitFingerprint(ctx context.Context, input FingerprintSubmiss
 	return &res, nil
 }
 
+const SubmitFingerprintsDocument = `mutation SubmitFingerprints ($input: [FingerprintBatchSubmission!]!) {
+	submitFingerprints(input: $input) {
+		scene_id
+		hash
+		error
+	}
+}
+`
+
+func (c *Client) SubmitFingerprints(ctx context.Context, input []*FingerprintBatchSubmission, interceptors ...clientv2.RequestInterceptor) (*SubmitFingerprints, error) {
+	vars := map[string]any{
+		"input": input,
+	}
+
+	var res SubmitFingerprints
+	if err := c.Client.Post(ctx, "SubmitFingerprints", SubmitFingerprintsDocument, &res, vars, interceptors...); err != nil {
+		if c.Client.ParseDataWhenErrors {
+			return &res, err
+		}
+
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 const MeDocument = `query Me {
 	me {
 		name
@@ -1808,6 +1871,7 @@ var DocumentOperationNames = map[string]string{
 	FindTagDocument:                       "FindTag",
 	QueryTagsDocument:                     "QueryTags",
 	SubmitFingerprintDocument:             "SubmitFingerprint",
+	SubmitFingerprintsDocument:            "SubmitFingerprints",
 	MeDocument:                            "Me",
 	SubmitSceneDraftDocument:              "SubmitSceneDraft",
 	SubmitPerformerDraftDocument:          "SubmitPerformerDraft",

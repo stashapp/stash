@@ -16,6 +16,8 @@ import (
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/stashbox"
 )
 
 func useAsVideo(pathname string) bool {
@@ -559,6 +561,37 @@ func (s *Manager) batchTagAllPerformers(ctx context.Context, input StashBoxBatch
 	})
 
 	return tasks, err
+}
+
+func (s *Manager) SubmitStashBoxFingerprints(ctx context.Context, box *models.StashBox, sceneIDs []int) int {
+	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
+		logger.Infof("Submitting fingerprints for %d scene(s) to stash-box endpoint %s", len(sceneIDs), box.Endpoint)
+
+		var scenes []*models.Scene
+		if err := s.Repository.WithReadTxn(ctx, func(ctx context.Context) error {
+			var err error
+			scenes, err = s.SceneService.FindByIDs(ctx, sceneIDs, scene.LoadStashIDs, scene.LoadFiles)
+			return err
+		}); err != nil {
+			return fmt.Errorf("failed to load scenes for fingerprint submission: %w", err)
+		}
+
+		client := stashbox.NewClient(*box, stashbox.ExcludeTagPatterns(s.Config.GetScraperExcludeTagPatterns()))
+
+		result, err := client.SubmitFingerprints(ctx, scenes, progress)
+
+		// log the summary on all paths, including when the submission aborts
+		// part-way through, so the outcome is always visible
+		if result.Failed > 0 {
+			logger.Warnf("Submitted %d fingerprint(s) to stash-box, %d failed", result.Succeeded, result.Failed)
+		} else {
+			logger.Infof("Submitted %d fingerprint(s) to stash-box", result.Succeeded)
+		}
+
+		return err
+	})
+
+	return s.JobManager.Add(ctx, "Submitting fingerprints to stash-box...", j)
 }
 
 func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, box *models.StashBox, input StashBoxBatchTagInput) int {
