@@ -44,7 +44,9 @@ RUN apt update && apt upgrade -y && apt install -y \
     # intel dependencies
     intel-media-va-driver-non-free vainfo \
     # python tools
-    python3 python3-pip && \
+    python3 python3-pip \
+    # allow to run as non-root user
+    gosu && \
   # cleanup
   apt autoremove -y && apt clean && \
   rm -rf /var/lib/apt/lists/*
@@ -53,13 +55,14 @@ COPY --from=backend --chmod=555 /stash/stash /usr/bin/
 # NVENC Patch
 RUN mkdir -p /usr/local/bin /patched-lib
 ADD --chmod=555 https://raw.githubusercontent.com/keylase/nvidia-patch/master/patch.sh /usr/local/bin/patch.sh
-ADD --chmod=555 https://raw.githubusercontent.com/keylase/nvidia-patch/master/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+ADD --chmod=555 https://raw.githubusercontent.com/keylase/nvidia-patch/master/docker-entrypoint.sh /usr/local/bin/nvidia-patch-entrypoint.sh
 
 ENV LANG=C.UTF-8
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=video,utility
-ENV STASH_CONFIG_FILE=/root/.stash/config.yml
+ENV STASH_CONFIG_FILE=/home/stash/.stash/config.yml
 EXPOSE 9999
-ENTRYPOINT ["docker-entrypoint.sh", "stash"]
+COPY ./docker/build/x86_64/ubuntu-entrypoint.sh /usr/local/bin/set-user-entrypoint.sh
+ENTRYPOINT ["nvidia-patch-entrypoint.sh", "/usr/local/bin/set-user-entrypoint.sh", "stash"]
 
 # vim: ft=dockerfile
