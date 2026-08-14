@@ -28,6 +28,28 @@ Installing StashApp this way will by default bind stash to port 9999. This is av
 
 Good luck and have fun!
 
+### Run as a non-root user
+
+The image runs as root by default for compatibility with existing installations. To run Stash without root privileges, set a numeric user and group in `docker-compose.yml`:
+
+```yaml
+services:
+  stash:
+    user: "1000:1000"
+    environment:
+      - HOME=/config
+      - USER=stash
+      - STASH_CONFIG_FILE=/config/config.yml
+    volumes:
+      - ./config:/config
+```
+
+Replace `1000:1000` with the UID and GID that should own files created by Stash. That user must have access to the host directories mounted for config, media, metadata, cache, blobs, and generated content before the container starts. The container does not change ownership of mounted files.
+
+Using `/config` as `HOME` also gives Python scrapers and plugins a writable location for their cache.
+
+The CUDA image skips the optional NVIDIA driver patch when it is launched as a non-root user because patching the mounted driver libraries requires root. Hardware encoding remains subject to the limits of the host driver in that mode.
+
 ### Docker
 Docker is effectively a cross-platform software package repository. It allows you to ship an entire environment in what's referred to as a container. Containers are intended to hold everything that is needed to run an application from one place to another, making it easy for everyone along the way to reproduce the environment.
 
