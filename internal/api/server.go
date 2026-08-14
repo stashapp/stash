@@ -574,11 +574,14 @@ func cspConnectSrcFromSettings(settings map[string]interface{}) (valid []string,
 }
 
 func isValidConnectSrcURL(s string) bool {
+	if strings.ContainsAny(s, " \t\r\n;\"'") {
+		return false
+	}
 	u, err := url.Parse(s)
 	if err != nil {
 		return false
 	}
-	return (u.Scheme == "http" || u.Scheme == "https") && u.Host != "" && !strings.Contains(u.Host, "*")
+	return (u.Scheme == "http" || u.Scheme == "https") && u.Host != "" && u.Hostname() != "" && u.User == nil && !strings.Contains(u.Host, "*")
 }
 
 func setPageSecurityHeaders(w http.ResponseWriter, r *http.Request, plugins []*plugin.Plugin) {
@@ -639,7 +642,7 @@ func setPageSecurityHeaders(w http.ResponseWriter, r *http.Request, plugins []*p
 
 		connectSrcSlice = append(connectSrcSlice, ui.CSP.ConnectSrc...)
 
-		if settings := config.GetInstance().GetPluginConfiguration(plugin.ID); settings != nil {
+		if settings := c.GetPluginConfiguration(plugin.ID); settings != nil {
 			valid, skippedKeys := cspConnectSrcFromSettings(settings)
 			connectSrcSlice = append(connectSrcSlice, valid...)
 			for _, key := range skippedKeys {

@@ -49,6 +49,26 @@ func TestCspConnectSrcFromSettings(t *testing.T) {
 			skippedKeys: []string{"csp_x"},
 		},
 		{
+			name:        "csp directive breakout via semicolon in path",
+			settings:    map[string]interface{}{"csp_x": "https://evil.com/; script-src 'none'"},
+			skippedKeys: []string{"csp_x"},
+		},
+		{
+			name:        "whitespace in path",
+			settings:    map[string]interface{}{"csp_x": "https://evil.com/a b"},
+			skippedKeys: []string{"csp_x"},
+		},
+		{
+			name:        "degenerate host port only",
+			settings:    map[string]interface{}{"csp_x": "https://:7860"},
+			skippedKeys: []string{"csp_x"},
+		},
+		{
+			name:        "userinfo in url",
+			settings:    map[string]interface{}{"csp_x": "https://user@attacker.com"},
+			skippedKeys: []string{"csp_x"},
+		},
+		{
 			name:        "empty string",
 			settings:    map[string]interface{}{"csp_x": ""},
 			skippedKeys: []string{"csp_x"},
