@@ -1,0 +1,69 @@
+package api
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestCspConnectSrcFromSettings(t *testing.T) {
+	for _, tt := range []struct {
+		name        string
+		settings    map[string]interface{}
+		valid       []string
+		skippedKeys []string
+	}{
+		{
+			name:     "no csp keys",
+			settings: map[string]interface{}{"foo": "bar", "other_setting": "https://x.com"},
+			valid:    nil,
+		},
+		{
+			name:     "valid https url",
+			settings: map[string]interface{}{"csp_x": "https://api.example.com"},
+			valid:    []string{"https://api.example.com"},
+		},
+		{
+			name:     "valid http url",
+			settings: map[string]interface{}{"csp_x": "http://localhost:7860"},
+			valid:    []string{"http://localhost:7860"},
+		},
+		{
+			name:        "disallowed scheme",
+			settings:    map[string]interface{}{"csp_x": "ftp://example.com"},
+			skippedKeys: []string{"csp_x"},
+		},
+		{
+			name:        "not a url",
+			settings:    map[string]interface{}{"csp_x": "not a url"},
+			skippedKeys: []string{"csp_x"},
+		},
+		{
+			name:        "non string value",
+			settings:    map[string]interface{}{"csp_x": 123},
+			skippedKeys: []string{"csp_x"},
+		},
+		{
+			name:        "wildcard host",
+			settings:    map[string]interface{}{"csp_x": "http://*:7860"},
+			skippedKeys: []string{"csp_x"},
+		},
+		{
+			name:        "empty string",
+			settings:    map[string]interface{}{"csp_x": ""},
+			skippedKeys: []string{"csp_x"},
+		},
+		{
+			name:     "mixed valid and invalid",
+			settings: map[string]interface{}{"csp_a": "https://api.example.com", "csp_b": "javascript:alert(1)", "csp_c": "http://localhost:7860", "other": "ignored"},
+			valid:    []string{"https://api.example.com", "http://localhost:7860"},
+			skippedKeys: []string{"csp_b"},
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			valid, skippedKeys := cspConnectSrcFromSettings(tt.settings)
+			assert.ElementsMatch(t, tt.valid, valid)
+			assert.ElementsMatch(t, tt.skippedKeys, skippedKeys)
+		})
+	}
+}

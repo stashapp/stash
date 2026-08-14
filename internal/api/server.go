@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/fs"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -552,6 +553,34 @@ func isURL(s string) bool {
 	return strings.HasPrefix(s, "http://") || strings.HasPrefix(s, "https://")
 }
 
+const cspSettingPrefix = "csp_"
+
+// cspConnectSrcFromSettings returns validated http(s) connect-src URLs from
+// the plugin's settings, plus the keys that were skipped as invalid.
+// Settings keys beginning with "csp_" are treated as connect-src sources.
+func cspConnectSrcFromSettings(settings map[string]interface{}) (valid []string, skippedKeys []string) {
+	for k, v := range settings {
+		if !strings.HasPrefix(k, cspSettingPrefix) {
+			continue
+		}
+		s, ok := v.(string)
+		if !ok || !isValidConnectSrcURL(s) {
+			skippedKeys = append(skippedKeys, k)
+			continue
+		}
+		valid = append(valid, s)
+	}
+	return valid, skippedKeys
+}
+
+func isValidConnectSrcURL(s string) bool {
+	u, err := url.Parse(s)
+	if err != nil {
+		return false
+	}
+	return (u.Scheme == "http" || u.Scheme == "https") && u.Host != "" && !strings.Contains(u.Host, "*")
+}
+
 func setPageSecurityHeaders(w http.ResponseWriter, r *http.Request, plugins []*plugin.Plugin) {
 	c := config.GetInstance()
 
@@ -609,6 +638,15 @@ func setPageSecurityHeaders(w http.ResponseWriter, r *http.Request, plugins []*p
 		}
 
 		connectSrcSlice = append(connectSrcSlice, ui.CSP.ConnectSrc...)
+
+		if settings := config.GetInstance().GetPluginConfiguration(plugin.ID); settings != nil {
+			valid, skippedKeys := cspConnectSrcFromSettings(settings)
+			connectSrcSlice = append(connectSrcSlice, valid...)
+			for _, key := range skippedKeys {
+				logger.Debugf("skipping invalid csp_ setting %q for plugin %q", key, plugin.ID)
+			}
+		}
+
 		scriptSrcSlice = append(scriptSrcSlice, ui.CSP.ScriptSrc...)
 		styleSrcSlice = append(styleSrcSlice, ui.CSP.StyleSrc...)
 	}
