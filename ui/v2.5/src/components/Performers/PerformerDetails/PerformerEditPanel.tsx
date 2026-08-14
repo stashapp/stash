@@ -53,6 +53,7 @@ import {
   formatCustomFieldInput,
 } from "src/components/Shared/CustomFields";
 import cloneDeep from "lodash-es/cloneDeep";
+import { handleUnsavedChanges } from "src/utils/navigation";
 
 const isScraper = (
   scraper: GQL.Scraper | GQL.StashBox
@@ -714,7 +715,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
       <Prompt
         when={formik.dirty}
-        message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
+        message={(location, action) => {
+          console.log(location, action);  
+          return handleUnsavedChanges(intl, "performers", performer.id)(location)}
+        }
       />
       {renderButtons("mb-3")}
 
