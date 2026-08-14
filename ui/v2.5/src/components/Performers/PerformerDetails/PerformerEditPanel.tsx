@@ -715,9 +715,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
       <Prompt
         when={formik.dirty}
-        message={(location, action) => {
-          console.log(location, action);  
-          return handleUnsavedChanges(intl, "performers", performer.id)(location)}
+        message={(location) =>
+          handleUnsavedChanges(intl, "performers", performer.id)(location)
         }
       />
       {renderButtons("mb-3")}

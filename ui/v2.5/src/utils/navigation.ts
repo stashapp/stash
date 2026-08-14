@@ -470,7 +470,9 @@ export function handleUnsavedChanges(
   return (location: { pathname: string }) => {
     // #2291 - don't prompt if we're navigating within the gallery being edited
     // #7154 - don't prompt on lightbox navigation
-    const regex = new RegExp(`^\\/${basepath}\\/${id}(\\/(default|scenes|galleries|images|groups|appearswith|performers|subgroups))?$`)
+    const regex = new RegExp(
+      `^\\/${basepath}\\/${id}(\\/(default|scenes|galleries|images|groups|appearswith|performers|subgroups))?$`
+    );
     if (id !== undefined && regex.test(location.pathname)) {
       return true;
     }
