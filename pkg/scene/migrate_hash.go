@@ -48,6 +48,55 @@ func MigrateHash(p *paths.Paths, oldHash string, newHash string) {
 	migrateSceneFolder(oldPath, newPath)
 }
 
+// InvalidateGeneratedFiles removes the generated files associated with hash.
+//
+// Used instead of MigrateHash when a file's content changed at the same path,
+// where the old hash's generated files are no longer valid and should be
+// deleted rather than renamed onto the new hash.
+func InvalidateGeneratedFiles(p *paths.Paths, hash string) {
+	removeSceneFolder(filepath.Join(p.Generated.Markers, hash))
+
+	scenePaths := p.Scene
+	removeSceneFile(scenePaths.GetVideoPreviewPath(hash))
+	removeSceneFile(scenePaths.GetWebpPreviewPath(hash))
+	removeSceneFile(scenePaths.GetTranscodePath(hash))
+	removeSceneFile(scenePaths.GetSpriteVttFilePath(hash))
+	removeSceneFile(scenePaths.GetSpriteImageFilePath(hash))
+	removeSceneFile(scenePaths.GetInteractiveHeatmapPath(hash))
+
+	removeSceneFolder(p.SceneMarkers.GetFolderPath(hash))
+}
+
+func removeSceneFile(path string) {
+	exists, err := fsutil.FileExists(path)
+	if err != nil && !os.IsNotExist(err) {
+		logger.Errorf("Error checking existence of %s: %s", path, err.Error())
+		return
+	}
+
+	if exists {
+		logger.Infof("removing outdated generated file %s", path)
+		if err := os.Remove(path); err != nil {
+			logger.Errorf("error removing %s: %s", path, err.Error())
+		}
+	}
+}
+
+func removeSceneFolder(path string) {
+	exists, err := fsutil.DirExists(path)
+	if err != nil && !os.IsNotExist(err) {
+		logger.Errorf("Error checking existence of %s: %s", path, err.Error())
+		return
+	}
+
+	if exists {
+		logger.Infof("removing outdated generated folder %s", path)
+		if err := os.RemoveAll(path); err != nil {
+			logger.Errorf("error removing %s: %s", path, err.Error())
+		}
+	}
+}
+
 func migrateSceneFiles(oldName, newName string) {
 	oldExists, err := fsutil.FileExists(oldName)
 	if err != nil && !os.IsNotExist(err) {

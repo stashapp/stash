@@ -205,6 +205,15 @@ type MarkerFragment = Pick<GQL.SceneMarker, "title" | "seconds"> & {
   tags: Array<Pick<GQL.Tag, "name">>;
 };
 
+function getFileFingerprint(
+  fingerprints: Pick<GQL.Fingerprint, "type" | "value">[]
+) {
+  return fingerprints
+    .map((fp) => `${fp.type}:${fp.value}`)
+    .sort()
+    .join(",");
+}
+
 function getMarkerTitle(marker: MarkerFragment) {
   if (marker.title) {
     return marker.title;
@@ -249,6 +258,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     const videoRef = useRef<HTMLDivElement>(null);
     const [_player, setPlayer] = useState<VideoJsPlayer>();
     const sceneId = useRef<string>();
+    const fileFingerprint = useRef<string>();
     const [sceneSaveActivity] = useSceneSaveActivity();
     const [sceneIncrementPlayCount] = useSceneIncrementPlayCount();
     const [updateInterfaceConfig] = useConfigureInterface();
@@ -438,8 +448,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         videoEl.remove();
         setPlayer(undefined);
 
-        // reset sceneId to force reload sources
+        // reset sceneId/fileFingerprint to force reload sources
         sceneId.current = undefined;
+        fileFingerprint.current = undefined;
       };
       // empty deps - only init once
       // showAbLoopControls is necessary to re-init the player when the config changes
@@ -585,10 +596,18 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       const player = getPlayer();
       if (!player) return;
 
-      // don't re-initialise the player unless the scene has changed
-      if (!file || scene.id === sceneId.current) return;
+      // don't re-initialise the player unless the scene or its underlying
+      // file has changed - same scene id but different fingerprints means
+      // the file itself was edited in place (e.g. trimmed) without the
+      // scene id changing, and still needs new sources/duration pushed
+      // into the player
+      if (!file) return;
+      const fingerprint = getFileFingerprint(file.fingerprints);
+      if (scene.id === sceneId.current && fingerprint === fileFingerprint.current)
+        return;
 
       sceneId.current = scene.id;
+      fileFingerprint.current = fingerprint;
 
       setReady(false);
 
