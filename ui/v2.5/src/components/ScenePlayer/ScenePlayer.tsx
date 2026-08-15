@@ -21,6 +21,8 @@ import MarkersPlugin, { type IMarker } from "./markers";
 void MarkersPlugin;
 import "./vtt-thumbnails";
 import "./big-buttons";
+import "./ab-loop-toggle";
+import "./ab-loop-range";
 import "./track-activity";
 import "./vrmode";
 import "./media-session";
@@ -125,15 +127,17 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
 
   const skipButtons = player.skipButtons();
   if (skipButtons) {
-    // handle multimedia keys
+    // handle multimedia keys - routed through handleForward/handleBackward
+    // (rather than calling onNext/onPrevious directly) so this also resets
+    // an active AB loop, same as clicking the skip buttons does
     switch (event.key) {
       case "MediaTrackNext":
         if (!skipButtons.onNext) return;
-        skipButtons.onNext();
+        skipButtons.handleForward();
         break;
       case "MediaTrackPrevious":
         if (!skipButtons.onPrevious) return;
-        skipButtons.onPrevious();
+        skipButtons.handleBackward();
         break;
       // MediaPlayPause handled by videojs
     }
@@ -346,6 +350,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
             inline: false,
           },
           chaptersButton: false,
+          // current/total time show inline ("0:03 / 0:11") in the button
+          // row on desktop as normal; on mobile styles.scss repositions
+          // them to float either side of the progress bar instead, where
+          // remaining-time/divider aren't needed
+          remainingTimeDisplay: false,
         },
         html5: {
           dash: {
@@ -387,7 +396,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
           markers: {},
           sourceSelector: {},
           persistVolume: {},
-          bigButtons: {},
+          // bigButtons is the floating play/pause + jog (+ AB-loop
+          // start/end, when enabled) overlay, shown only on mobile widths
+          // in styles.scss; on desktop these stay as regular control-bar
+          // buttons instead
+          bigButtons: {
+            showAbLoop: uiConfig?.showAbLoopControls ?? false,
+          },
           seekButtons: {
             forward: 10,
             back: 10,
@@ -408,6 +423,17 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
             pauseBeforeLooping: false,
             createButtons: uiConfig?.showAbLoopControls ?? false,
           },
+          // icon-only enable/disable toggle, shown on mobile in place of
+          // the vendor plugin's own "LOOP ON"/"Loop off" text button above
+          // (hidden there via styles.scss) - see ab-loop-toggle.ts for why
+          // that button can't just be re-skinned in place
+          abLoopToggle: {
+            enabled: uiConfig?.showAbLoopControls ?? false,
+          },
+          // highlights the active AB-loop range on the progress bar
+          abLoopRange: {
+            enabled: uiConfig?.showAbLoopControls ?? false,
+          },
           mediaSession: {},
           wakeSentinel: {},
         },
@@ -420,6 +446,37 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       videoRef.current!.appendChild(videoEl);
 
       const vjs = videojs(videoEl, options);
+
+      // bridge AB-loop option changes (from any source: this menu, the "L"
+      // hotkey, marker clicks elsewhere) onto a player event, since the
+      // vendor plugin has no other change-notification hook. ab-loop-toggle.ts
+      // and ab-loop-range.ts listen for this to keep their state in sync.
+      // Also mirror "enabled" onto a player-level class: styles.scss uses it
+      // to keep the mobile start/end buttons hidden until looping is
+      // actually on (see big-buttons.ts's AbBoundButton).
+      vjs.abLoopPlugin.onOptionsChange = (_details, api, player) => {
+        player.toggleClass("vjs-ab-loop-enabled", api.getOptions().enabled);
+        player.trigger("abloopchange");
+      };
+
+      // swap the fullscreen toggle and the AB-loop enable/disable button:
+      // the vendor plugin just appends its buttons at the end of the
+      // control bar (after fullscreen), unlike every other custom button
+      // here which inserts itself before fullscreen - so fullscreen ends
+      // up stranded in the middle. Queued via ready() so it runs after the
+      // vendor plugin's own (also ready()-deferred) button creation.
+      vjs.ready(() => {
+        const controlBarEl = vjs.controlBar.el();
+        const fullscreenEl = vjs.controlBar.getChild("fullscreenToggle")?.el();
+        const toggleEl = controlBarEl.querySelector(".abLoopButton.enabled");
+        if (!fullscreenEl || !toggleEl) return;
+
+        const marker = document.createComment("");
+        controlBarEl.insertBefore(marker, toggleEl);
+        controlBarEl.insertBefore(toggleEl, fullscreenEl);
+        controlBarEl.insertBefore(fullscreenEl, marker);
+        marker.remove();
+      });
 
       /* biome-ignore lint/suspicious/noExplicitAny: intentional */
       const settings = (vjs as any).textTrackSettings;
@@ -929,9 +986,26 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       const player = getPlayer();
       if (!player) return;
 
-      player.on("ended", onComplete);
+      function ended(this: VideoJsPlayer) {
+        // the vendor plugin loops by watching timeupdate for currentTime
+        // getting within ~1s of the end and seeking back before playback
+        // actually completes - a margin that a full-video loop (nothing
+        // set, so the loop point *is* the true end) can lose the race
+        // against, letting "ended" fire and advance the queue instead of
+        // looping. Enforce the loop directly here as a backstop.
+        const opts = this.abLoopPlugin.getOptions();
+        if (opts.enabled) {
+          this.currentTime(typeof opts.start === "number" ? opts.start : 0);
+          this.play();
+          return;
+        }
 
-      return () => player.off("ended");
+        onComplete();
+      }
+
+      player.on("ended", ended);
+
+      return () => player.off("ended", ended);
     }, [getPlayer, onComplete]);
 
     // set up mediaSession plugin
