@@ -74,9 +74,9 @@ func TestCspConnectSrcFromSettings(t *testing.T) {
 			skippedKeys: []string{"csp_x"},
 		},
 		{
-			name:     "mixed valid and invalid",
-			settings: map[string]interface{}{"csp_a": "https://api.example.com", "csp_b": "javascript:alert(1)", "csp_c": "http://localhost:7860", "other": "ignored"},
-			valid:    []string{"https://api.example.com", "http://localhost:7860"},
+			name:        "mixed valid and invalid",
+			settings:    map[string]interface{}{"csp_a": "https://api.example.com", "csp_b": "javascript:alert(1)", "csp_c": "http://localhost:7860", "other": "ignored"},
+			valid:       []string{"https://api.example.com", "http://localhost:7860"},
 			skippedKeys: []string{"csp_b"},
 		},
 	} {
