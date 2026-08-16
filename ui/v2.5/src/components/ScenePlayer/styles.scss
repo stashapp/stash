@@ -466,6 +466,10 @@ $sceneTabWidth: 450px;
     .vjs-control-bar .vjs-control.abLoopButton {
       padding: 6px;
     }
+
+    .vjs-control-bar .vjs-control:has(.vjs-progress-holder) {
+      width: 100%;
+    }
   }
 
   // floating play/pause + jog buttons over the video, mobile only - on

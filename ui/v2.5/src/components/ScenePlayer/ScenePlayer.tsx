@@ -20,6 +20,7 @@ import "./autostart-button";
 import MarkersPlugin, { type IMarker } from "./markers";
 void MarkersPlugin;
 import "./vtt-thumbnails";
+import "./deferred-touch-seek";
 import "./big-buttons";
 import "./ab-loop-toggle";
 import "./ab-loop-range";
