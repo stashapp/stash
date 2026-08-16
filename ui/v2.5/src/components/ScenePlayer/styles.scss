@@ -172,7 +172,6 @@ $sceneTabWidth: 450px;
     pointer-events: none;
     position: absolute;
     top: 0;
-    transform: translateX(-50%);
     width: 3px;
     z-index: 0;
   }
@@ -457,8 +456,12 @@ $sceneTabWidth: 450px;
   // trim control width and the AB-loop vendor buttons' padding between here
   // and the full mobile breakpoint below - without this, the growing
   // number of controls in the bar overflows before the mobile layout
-  // (which hides/relocates several of them) kicks in to compensate
-  @media (max-width: 992px) {
+  // (which hides/relocates several of them) kicks in to compensate.
+  // Keyed off the player's own rendered width (.scene-player-container,
+  // see its container-type there) rather than the viewport's - expanding
+  // .scene-tabs narrows the player without the viewport changing size at
+  // all, and controls need to respond to that too.
+  @container scene-player (max-width: 992px) {
     .vjs-control-bar .vjs-control {
       width: 3.2em;
     }
@@ -473,8 +476,10 @@ $sceneTabWidth: 450px;
   }
 
   // floating play/pause + jog buttons over the video, mobile only - on
-  // desktop the +/-10s buttons stay as regular control-bar buttons instead
-  @media (max-width: 768px) {
+  // desktop the +/-10s buttons stay as regular control-bar buttons instead.
+  // See the container-query comment above: keyed off the player's own
+  // width, not the viewport's.
+  @container scene-player (max-width: 768px) {
     &.vjs-has-started .vjs-big-button-group {
       display: flex;
       opacity: 1;
@@ -520,7 +525,10 @@ $sceneTabWidth: 450px;
     // structure, so the icon is masked onto vjs-icon-placeholder itself
     // rather than the button root
     .vjs-ab-loop-toggle {
+      align-items: center;
       display: inline-block;
+      display: flex;
+      justify-content: center;
 
       .vjs-icon-placeholder {
         background-color: #fff;
@@ -579,7 +587,7 @@ $sceneTabWidth: 450px;
       display: none;
     }
   }
-  @media (max-width: 576px) {
+  @container scene-player (max-width: 576px) {
     .vjs-control-bar {
       .vjs-autostart-button {
         display: none;
@@ -588,7 +596,7 @@ $sceneTabWidth: 450px;
   }
 
   // make controls a little more compact on smaller screens
-  @media (max-width: 768px) {
+  @container scene-player (max-width: 768px) {
     .vjs-control-bar {
       .vjs-control {
         width: 2.5em;
@@ -662,6 +670,13 @@ $sceneTabWidth: 450px;
 }
 
 .scene-player-container {
+  // named so the player's own responsive rules (video-js's `@container
+  // scene-player (...)` queries below) can react to how much width the
+  // player actually has, rather than the viewport's - the two diverge
+  // whenever .scene-tabs is expanded rather than collapsed, since that
+  // narrows this container without the viewport itself getting any
+  // smaller
+  container: scene-player / inline-size;
   padding-right: 15px;
 }
 
