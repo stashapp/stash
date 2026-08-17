@@ -299,6 +299,7 @@ Returns `void`.
 - `PerformerIDSelect`
 - `PerformerImagesPanel`
 - `PerformerList`
+- `PerformerMergeModal`
 - `PerformerPage`
 - `PerformerRecommendationRow`
 - `PerformerScenesPanel`
@@ -327,6 +328,7 @@ Returns `void`.
 - `SceneMarkerCardsGrid`
 - `SceneMarkerList`
 - `SceneMarkerRecommendationRow`
+- `SceneMergeModal`
 - `SceneList`
 - `ScenePage`
 - `ScenePage.TabContent`
@@ -362,6 +364,7 @@ Returns `void`.
 - `TagIDSelect`
 - `TagLink`
 - `TagList`
+- `TagMergeModal`
 - `TagPage`
 - `TagRecommendationRow`
 - `TagSelect`
