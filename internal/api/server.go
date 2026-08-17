@@ -574,7 +574,7 @@ func cspConnectSrcFromSettings(settings map[string]interface{}) (valid []string,
 }
 
 func isValidConnectSrcURL(s string) bool {
-	if strings.ContainsAny(s, " \t\r\n;\"'") {
+	if strings.ContainsAny(s, " ,\t\r\n;\"'") {
 		return false
 	}
 	u, err := url.Parse(s)
@@ -642,11 +642,11 @@ func setPageSecurityHeaders(w http.ResponseWriter, r *http.Request, plugins []*p
 
 		connectSrcSlice = append(connectSrcSlice, ui.CSP.ConnectSrc...)
 
-		if settings := c.GetPluginConfiguration(plugin.ID); settings != nil {
+		if settings := c.GetPluginConfiguration(plugin.ID); settings != nil && ui.CSPSettings {
 			valid, skippedKeys := cspConnectSrcFromSettings(settings)
 			connectSrcSlice = append(connectSrcSlice, valid...)
 			for _, key := range skippedKeys {
-				logger.Debugf("skipping invalid csp_ setting %q for plugin %q", key, plugin.ID)
+				logger.Warnf("skipping invalid csp_ setting %q for plugin %q", key, plugin.ID)
 			}
 		}
 

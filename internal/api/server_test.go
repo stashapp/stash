@@ -3,6 +3,7 @@ package api
 import (
 	"testing"
 
+	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -59,6 +60,11 @@ func TestCspConnectSrcFromSettings(t *testing.T) {
 			skippedKeys: []string{"csp_x"},
 		},
 		{
+			name:        "comma in url",
+			settings:    map[string]interface{}{"csp_x": "https://evil.com/a,b"},
+			skippedKeys: []string{"csp_x"},
+		},
+		{
 			name:        "degenerate host port only",
 			settings:    map[string]interface{}{"csp_x": "https://:7860"},
 			skippedKeys: []string{"csp_x"},
@@ -86,4 +92,34 @@ func TestCspConnectSrcFromSettings(t *testing.T) {
 			assert.ElementsMatch(t, tt.skippedKeys, skippedKeys)
 		})
 	}
+}
+
+func TestSetPageSecurityHeaders_CSPSettingsOptIn(t *testing.T) {
+	// Plugin with CSPSettings enabled — csp_ settings should appear in connect-src
+	t.Run("opt-in enabled", func(t *testing.T) {
+		plugins := []*plugin.Plugin{
+			{
+				Enabled: true,
+				UI: plugin.PluginUI{
+					CSPSettings: true,
+				},
+			},
+		}
+
+		assert.True(t, plugins[0].UI.CSPSettings)
+	})
+
+	// Plugin without CSPSettings — csp_ settings should NOT be scanned
+	t.Run("opt-in disabled", func(t *testing.T) {
+		plugins := []*plugin.Plugin{
+			{
+				Enabled: true,
+				UI: plugin.PluginUI{
+					CSPSettings: false,
+				},
+			},
+		}
+
+		assert.False(t, plugins[0].UI.CSPSettings)
+	})
 }
