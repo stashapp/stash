@@ -477,6 +477,35 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         controlBarEl.insertBefore(toggleEl, fullscreenEl);
         controlBarEl.insertBefore(fullscreenEl, marker);
         marker.remove();
+
+        // the vendor plugin's own Start/End/Loop buttons bind their click
+        // handler with a plain .on('click', ...) and never stop propagation,
+        // unlike every custom button in this file (see AbBoundButton,
+        // AbLoopToggleButton) - so a tap on them also reaches whatever's
+        // listening underneath (videojs-mobile-ui's tap-to-toggle-controls/
+        // play-pause handling). On touch this compounds with the browser's
+        // own delayed touch->click compatibility event, which can fire a
+        // second, separate click after ours - together producing the
+        // toggles-twice/also-pauses-the-video behavior these buttons are
+        // known for on touch. Intercept touchend directly (stopping that
+        // delayed click from ever happening, and stopping propagation
+        // before it reaches anything else) and fire exactly one clean click.
+        const vendorAbLoopButtonEls =
+          controlBarEl.querySelectorAll<HTMLElement>(
+            ".abLoopButton.enabled, .abLoopButton.start, .abLoopButton.end"
+          );
+        vendorAbLoopButtonEls.forEach((btnEl) => {
+          btnEl.addEventListener("click", (e) => e.stopPropagation());
+          btnEl.addEventListener(
+            "touchend",
+            (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              btnEl.click();
+            },
+            { passive: false }
+          );
+        });
       });
 
       /* biome-ignore lint/suspicious/noExplicitAny: intentional */
