@@ -54,13 +54,13 @@ COPY --from=backend --chmod=555 /stash/stash /usr/bin/
 RUN mkdir -p /usr/local/bin /patched-lib
 ADD --chmod=555 https://raw.githubusercontent.com/keylase/nvidia-patch/master/patch.sh /usr/local/bin/patch.sh
 ADD --chmod=555 https://raw.githubusercontent.com/keylase/nvidia-patch/master/docker-entrypoint.sh /usr/local/bin/nvidia-patch-entrypoint.sh
-COPY --chmod=555 ./docker/build/x86_64/cuda-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+COPY --chmod=555 ./docker/build/x86_64/cuda-entrypoint.sh /usr/local/bin/cuda-entrypoint.sh
 
 ENV LANG=C.UTF-8
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=video,utility
 ENV STASH_CONFIG_FILE=/root/.stash/config.yml
 EXPOSE 9999
-ENTRYPOINT ["docker-entrypoint.sh", "stash"]
+ENTRYPOINT ["/usr/local/bin/cuda-entrypoint.sh", "stash"]
 
 # vim: ft=dockerfile

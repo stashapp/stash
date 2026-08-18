@@ -46,6 +46,8 @@ services:
 
 Replace `1000:1000` with the UID and GID that should own files created by Stash. That user must have access to the host directories mounted for config, media, metadata, cache, blobs, and generated content before the container starts. The container does not change ownership of mounted files.
 
+The numeric UID does not need an entry in the image's `/etc/passwd`, but `HOME` must point to a writable directory.
+
 Using `/config` as `HOME` also gives Python scrapers and plugins a writable location for their cache.
 
 The CUDA image skips the optional NVIDIA driver patch when it is launched as a non-root user because patching the mounted driver libraries requires root. Hardware encoding remains subject to the limits of the host driver in that mode.
