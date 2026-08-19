@@ -527,21 +527,42 @@ func (t *SceneFragment) GetFingerprints() []*FingerprintFragment {
 }
 
 type StudioFragment_Parent struct {
-	ID   string "json:\"id\" graphql:\"id\""
-	Name string "json:\"name\" graphql:\"name\""
+	Aliases []string         "json:\"aliases\" graphql:\"aliases\""
+	ID      string           "json:\"id\" graphql:\"id\""
+	Images  []*ImageFragment "json:\"images\" graphql:\"images\""
+	Name    string           "json:\"name\" graphql:\"name\""
+	Urls    []*URLFragment   "json:\"urls\" graphql:\"urls\""
 }
 
+func (t *StudioFragment_Parent) GetAliases() []string {
+	if t == nil {
+		t = &StudioFragment_Parent{}
+	}
+	return t.Aliases
+}
 func (t *StudioFragment_Parent) GetID() string {
 	if t == nil {
 		t = &StudioFragment_Parent{}
 	}
 	return t.ID
 }
+func (t *StudioFragment_Parent) GetImages() []*ImageFragment {
+	if t == nil {
+		t = &StudioFragment_Parent{}
+	}
+	return t.Images
+}
 func (t *StudioFragment_Parent) GetName() string {
 	if t == nil {
 		t = &StudioFragment_Parent{}
 	}
 	return t.Name
+}
+func (t *StudioFragment_Parent) GetUrls() []*URLFragment {
+	if t == nil {
+		t = &StudioFragment_Parent{}
+	}
+	return t.Urls
 }
 
 type TagFragment_Category struct {
@@ -570,21 +591,42 @@ func (t *TagFragment_Category) GetName() string {
 }
 
 type SceneFragment_Studio_StudioFragment_Parent struct {
-	ID   string "json:\"id\" graphql:\"id\""
-	Name string "json:\"name\" graphql:\"name\""
+	Aliases []string         "json:\"aliases\" graphql:\"aliases\""
+	ID      string           "json:\"id\" graphql:\"id\""
+	Images  []*ImageFragment "json:\"images\" graphql:\"images\""
+	Name    string           "json:\"name\" graphql:\"name\""
+	Urls    []*URLFragment   "json:\"urls\" graphql:\"urls\""
 }
 
+func (t *SceneFragment_Studio_StudioFragment_Parent) GetAliases() []string {
+	if t == nil {
+		t = &SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.Aliases
+}
 func (t *SceneFragment_Studio_StudioFragment_Parent) GetID() string {
 	if t == nil {
 		t = &SceneFragment_Studio_StudioFragment_Parent{}
 	}
 	return t.ID
 }
+func (t *SceneFragment_Studio_StudioFragment_Parent) GetImages() []*ImageFragment {
+	if t == nil {
+		t = &SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.Images
+}
 func (t *SceneFragment_Studio_StudioFragment_Parent) GetName() string {
 	if t == nil {
 		t = &SceneFragment_Studio_StudioFragment_Parent{}
 	}
 	return t.Name
+}
+func (t *SceneFragment_Studio_StudioFragment_Parent) GetUrls() []*URLFragment {
+	if t == nil {
+		t = &SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.Urls
 }
 
 type SceneFragment_Tags_TagFragment_Category struct {
@@ -613,21 +655,42 @@ func (t *SceneFragment_Tags_TagFragment_Category) GetName() string {
 }
 
 type FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent struct {
-	ID   string "json:\"id\" graphql:\"id\""
-	Name string "json:\"name\" graphql:\"name\""
+	Aliases []string         "json:\"aliases\" graphql:\"aliases\""
+	ID      string           "json:\"id\" graphql:\"id\""
+	Images  []*ImageFragment "json:\"images\" graphql:\"images\""
+	Name    string           "json:\"name\" graphql:\"name\""
+	Urls    []*URLFragment   "json:\"urls\" graphql:\"urls\""
 }
 
+func (t *FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent) GetAliases() []string {
+	if t == nil {
+		t = &FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.Aliases
+}
 func (t *FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent) GetID() string {
 	if t == nil {
 		t = &FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent{}
 	}
 	return t.ID
 }
+func (t *FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent) GetImages() []*ImageFragment {
+	if t == nil {
+		t = &FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.Images
+}
 func (t *FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent) GetName() string {
 	if t == nil {
 		t = &FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent{}
 	}
 	return t.Name
+}
+func (t *FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent) GetUrls() []*URLFragment {
+	if t == nil {
+		t = &FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.Urls
 }
 
 type FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragment_Tags_TagFragment_Category struct {
@@ -656,21 +719,42 @@ func (t *FindScenesBySceneFingerprints_FindScenesBySceneFingerprints_SceneFragme
 }
 
 type SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent struct {
-	ID   string "json:\"id\" graphql:\"id\""
-	Name string "json:\"name\" graphql:\"name\""
+	Aliases []string         "json:\"aliases\" graphql:\"aliases\""
+	ID      string           "json:\"id\" graphql:\"id\""
+	Images  []*ImageFragment "json:\"images\" graphql:\"images\""
+	Name    string           "json:\"name\" graphql:\"name\""
+	Urls    []*URLFragment   "json:\"urls\" graphql:\"urls\""
 }
 
+func (t *SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent) GetAliases() []string {
+	if t == nil {
+		t = &SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.Aliases
+}
 func (t *SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent) GetID() string {
 	if t == nil {
 		t = &SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent{}
 	}
 	return t.ID
 }
+func (t *SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent) GetImages() []*ImageFragment {
+	if t == nil {
+		t = &SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.Images
+}
 func (t *SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent) GetName() string {
 	if t == nil {
 		t = &SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent{}
 	}
 	return t.Name
+}
+func (t *SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent) GetUrls() []*URLFragment {
+	if t == nil {
+		t = &SearchScene_SearchScene_SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.Urls
 }
 
 type SearchScene_SearchScene_SceneFragment_Tags_TagFragment_Category struct {
@@ -699,21 +783,42 @@ func (t *SearchScene_SearchScene_SceneFragment_Tags_TagFragment_Category) GetNam
 }
 
 type FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent struct {
-	ID   string "json:\"id\" graphql:\"id\""
-	Name string "json:\"name\" graphql:\"name\""
+	Aliases []string         "json:\"aliases\" graphql:\"aliases\""
+	ID      string           "json:\"id\" graphql:\"id\""
+	Images  []*ImageFragment "json:\"images\" graphql:\"images\""
+	Name    string           "json:\"name\" graphql:\"name\""
+	Urls    []*URLFragment   "json:\"urls\" graphql:\"urls\""
 }
 
+func (t *FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent) GetAliases() []string {
+	if t == nil {
+		t = &FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.Aliases
+}
 func (t *FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent) GetID() string {
 	if t == nil {
 		t = &FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent{}
 	}
 	return t.ID
 }
+func (t *FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent) GetImages() []*ImageFragment {
+	if t == nil {
+		t = &FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.Images
+}
 func (t *FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent) GetName() string {
 	if t == nil {
 		t = &FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent{}
 	}
 	return t.Name
+}
+func (t *FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent) GetUrls() []*URLFragment {
+	if t == nil {
+		t = &FindSceneByID_FindScene_SceneFragment_Studio_StudioFragment_Parent{}
+	}
+	return t.Urls
 }
 
 type FindSceneByID_FindScene_SceneFragment_Tags_TagFragment_Category struct {
@@ -742,21 +847,42 @@ func (t *FindSceneByID_FindScene_SceneFragment_Tags_TagFragment_Category) GetNam
 }
 
 type FindStudio_FindStudio_StudioFragment_Parent struct {
-	ID   string "json:\"id\" graphql:\"id\""
-	Name string "json:\"name\" graphql:\"name\""
+	Aliases []string         "json:\"aliases\" graphql:\"aliases\""
+	ID      string           "json:\"id\" graphql:\"id\""
+	Images  []*ImageFragment "json:\"images\" graphql:\"images\""
+	Name    string           "json:\"name\" graphql:\"name\""
+	Urls    []*URLFragment   "json:\"urls\" graphql:\"urls\""
 }
 
+func (t *FindStudio_FindStudio_StudioFragment_Parent) GetAliases() []string {
+	if t == nil {
+		t = &FindStudio_FindStudio_StudioFragment_Parent{}
+	}
+	return t.Aliases
+}
 func (t *FindStudio_FindStudio_StudioFragment_Parent) GetID() string {
 	if t == nil {
 		t = &FindStudio_FindStudio_StudioFragment_Parent{}
 	}
 	return t.ID
 }
+func (t *FindStudio_FindStudio_StudioFragment_Parent) GetImages() []*ImageFragment {
+	if t == nil {
+		t = &FindStudio_FindStudio_StudioFragment_Parent{}
+	}
+	return t.Images
+}
 func (t *FindStudio_FindStudio_StudioFragment_Parent) GetName() string {
 	if t == nil {
 		t = &FindStudio_FindStudio_StudioFragment_Parent{}
 	}
 	return t.Name
+}
+func (t *FindStudio_FindStudio_StudioFragment_Parent) GetUrls() []*URLFragment {
+	if t == nil {
+		t = &FindStudio_FindStudio_StudioFragment_Parent{}
+	}
+	return t.Urls
 }
 
 type FindTag_FindTag_TagFragment_Category struct {
@@ -1044,6 +1170,13 @@ fragment StudioFragment on Studio {
 	parent {
 		name
 		id
+		aliases
+		urls {
+			... URLFragment
+		}
+		images {
+			... ImageFragment
+		}
 	}
 	images {
 		... ImageFragment
@@ -1188,6 +1321,13 @@ fragment StudioFragment on Studio {
 	parent {
 		name
 		id
+		aliases
+		urls {
+			... URLFragment
+		}
+		images {
+			... ImageFragment
+		}
 	}
 	images {
 		... ImageFragment
@@ -1490,6 +1630,13 @@ fragment StudioFragment on Studio {
 	parent {
 		name
 		id
+		aliases
+		urls {
+			... URLFragment
+		}
+		images {
+			... ImageFragment
+		}
 	}
 	images {
 		... ImageFragment
@@ -1597,6 +1744,13 @@ fragment StudioFragment on Studio {
 	parent {
 		name
 		id
+		aliases
+		urls {
+			... URLFragment
+		}
+		images {
+			... ImageFragment
+		}
 	}
 	images {
 		... ImageFragment
