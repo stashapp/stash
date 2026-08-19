@@ -20,6 +20,13 @@ fragment StudioFragment on Studio {
   parent {
     name
     id
+    aliases
+    urls {
+      ...URLFragment
+    }
+    images {
+      ...ImageFragment
+    }
   }
   images {
     ...ImageFragment
