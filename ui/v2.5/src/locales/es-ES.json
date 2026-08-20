@@ -1729,6 +1729,13 @@
             "fields_will_not_be_changed": "Estos campos no se modificarán al actualizar {entity}.",
             "no_fields_are_excluded": "No se excluye ningún campo",
             "no_instances_found": "No se han encontrado instancias"
+        },
+        "performers": {
+            "birthdate": "El intérprete correspondiente tiene una fecha de nacimiento diferente.",
+            "country": "El artista seleccionado es de otro país.",
+            "ethnicity": "Las razas de los actores emparejados son diferentes.",
+            "gender": "Los actores emparejados son de género diferente.",
+            "stash_mismatch": "El ID de almacenamiento del actor coincidente es inconsistente."
         }
     },
     "unsupported_criteria": "Criterios no admitidos: {criteria}",
