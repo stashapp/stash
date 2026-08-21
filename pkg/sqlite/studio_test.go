@@ -858,6 +858,43 @@ func TestStudioQueryParent(t *testing.T) {
 	})
 }
 
+// TestStudioQueryParentExcludesNilParent ensures that excluding by parent
+// studio does not also exclude studios that have no parent at all. The
+// Parents Excludes filter was previously implemented with an inner join
+// against the parent studio, which silently dropped every studio with a
+// NULL parent_id before the exclusion clause was even evaluated.
+func TestStudioQueryParentExcludesNilParent(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Studio
+
+		studioCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(studioIDs[studioIdxWithParentStudio]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
+
+		studioFilter := models.StudioFilterType{
+			Parents: &studioCriterion,
+		}
+
+		studios, _, err := sqb.Query(ctx, &studioFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying studio: %s", err.Error())
+		}
+
+		// studioIdxWithScene has no parent studio, so it must not be
+		// excluded by a Parents Excludes filter on an unrelated parent.
+		var ids []int
+		for _, s := range studios {
+			ids = append(ids, s.ID)
+		}
+		assert.Contains(t, ids, studioIDs[studioIdxWithScene])
+
+		return nil
+	})
+}
+
 func TestStudioDestroyParent(t *testing.T) {
 	const parentName = "parent"
 	const childName = "child"

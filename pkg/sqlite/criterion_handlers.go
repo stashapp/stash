@@ -558,7 +558,14 @@ func (m *multiCriterionHandlerBuilder) handler(criterion *models.MultiCriterionI
 				args = append(args, tagID)
 			}
 
-			if m.addJoinsFunc != nil {
+			// EXCLUDES is evaluated using a self-contained NOT IN/NOT EXISTS
+			// clause that never references the joined table, so the join must
+			// be skipped here. Adding it anyway turns it into an inner join
+			// that silently drops any row whose foreign key is NULL, before
+			// the EXCLUDES clause even runs - excluding rows that should be
+			// included (e.g. a studio with no parent, when excluding by
+			// parent studio).
+			if m.addJoinsFunc != nil && criterion.Modifier != models.CriterionModifierExcludes {
 				m.addJoinsFunc(f, joinTypeInner)
 			}
 
