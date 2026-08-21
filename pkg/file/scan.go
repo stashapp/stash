@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
@@ -371,7 +372,7 @@ func (s *Scanner) ScanFile(ctx context.Context, f ScannedFile) (*ScanFileResult,
 		// #1426 / #6326 - if file is in a case-insensitive filesystem, then try
 		// case insensitive search
 		// assume case sensitive if in zip
-		if ff == nil && f.ZipFileID != nil {
+		if ff == nil && f.ZipFileID == nil {
 			caseSensitive, _ := f.FS.IsPathCaseSensitive(f.Path)
 
 			if !caseSensitive {
@@ -609,6 +610,11 @@ func (s *Scanner) handleRename(ctx context.Context, f models.File, fp []models.F
 		info, err := fs.Lstat(other.Base().Path)
 		switch {
 		case err != nil:
+			missing = append(missing, other)
+		case other.Base().Path != f.Base().Path && fsutil.NormalizePath(other.Base().Path) == fsutil.NormalizePath(f.Base().Path):
+			// #4425 - same file under a different normalization (e.g. NFD stored
+			// before NFC was introduced); treat as a move so the path is updated
+			// in place instead of creating a duplicate
 			missing = append(missing, other)
 		case strings.EqualFold(f.Base().Path, other.Base().Path):
 			// #1426 - if file exists but is a case-insensitive match for the

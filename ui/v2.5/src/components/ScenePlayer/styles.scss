@@ -647,6 +647,7 @@ $sceneTabWidth: 450px;
 @media (min-width: 1200px) {
   .scene-tabs {
     flex: 0 0 $sceneTabWidth;
+    max-height: calc(100vh - 4rem);
     max-width: $sceneTabWidth;
     overflow: auto;
 

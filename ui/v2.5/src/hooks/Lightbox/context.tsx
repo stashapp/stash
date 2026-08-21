@@ -1,8 +1,17 @@
-import React, { Suspense, useCallback, useState } from "react";
+import React, {
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { lazyComponent } from "src/utils/lazyComponent";
 import { ILightboxImage, IChapter } from "./types";
 
 const LightboxComponent = lazyComponent(() => import("./Lightbox"));
+const LIGHTBOX_HISTORY_KEY = "stashLightbox";
+
+export type LightboxHideReason = "dismiss" | "navigate";
 
 export interface IState {
   images: ILightboxImage[];
@@ -25,6 +34,19 @@ interface IContext {
   setLightboxState: (state: Partial<IState>) => void;
 }
 
+interface ILightboxHistoryState {
+  [LIGHTBOX_HISTORY_KEY]?: {
+    id?: number;
+  };
+}
+
+const getLightboxHistoryID = (state: unknown) => {
+  if (!state || typeof state !== "object") return;
+
+  const lightboxState = (state as ILightboxHistoryState)[LIGHTBOX_HISTORY_KEY];
+  return typeof lightboxState?.id === "number" ? lightboxState.id : undefined;
+};
+
 export const LightboxContext = React.createContext<IContext | null>(null);
 
 export function useLightboxContext() {
@@ -46,26 +68,135 @@ export const LightboxProvider: React.FC = ({ children }) => {
     slideshowEnabled: false,
   });
 
-  const setPartialState = useCallback((state: Partial<IState>) => {
-    setLightboxState((currentState: IState) => ({
-      ...currentState,
-      ...state,
-    }));
+  const activeHistoryID = useRef<number>();
+  const nextHistoryID = useRef(0);
+  const isDismissingRef = useRef(false);
+  const isVisibleRef = useRef(lightboxState.isVisible);
+  const onCloseRef = useRef<(() => void) | undefined>();
+
+  isVisibleRef.current = lightboxState.isVisible;
+  onCloseRef.current = lightboxState.onClose;
+
+  const isCurrentLightboxHistoryEntry = useCallback(() => {
+    return (
+      activeHistoryID.current !== undefined &&
+      getLightboxHistoryID(history.state) === activeHistoryID.current
+    );
   }, []);
 
-  const onHide = () => {
-    // slideshowAutostart is a per-open instruction (set when opening a gallery's
-    // lightbox from the galleries page). Clear it on close so it doesn't leak
-    // into the next lightbox opened from another entry point.
-    setLightboxState({
-      ...lightboxState,
-      isVisible: false,
-      slideshowAutostart: false,
-    });
-    if (lightboxState.onClose) {
-      lightboxState.onClose();
-    }
-  };
+  const pushLightboxHistory = useCallback(() => {
+    const id = nextHistoryID.current + 1;
+    nextHistoryID.current = id;
+    activeHistoryID.current = id;
+    isDismissingRef.current = false;
+
+    history.pushState(
+      {
+        ...(typeof history.state === "object" && history.state !== null
+          ? history.state
+          : {}),
+        [LIGHTBOX_HISTORY_KEY]: { id },
+      },
+      "",
+      window.location.href
+    );
+  }, []);
+
+  const clearCurrentLightboxHistory = useCallback(() => {
+    if (!isCurrentLightboxHistoryEntry()) return;
+
+    const currentState =
+      typeof history.state === "object" && history.state !== null
+        ? { ...history.state }
+        : {};
+    delete (currentState as ILightboxHistoryState)[LIGHTBOX_HISTORY_KEY];
+    history.replaceState(currentState, "", window.location.href);
+    activeHistoryID.current = undefined;
+    isDismissingRef.current = false;
+  }, [isCurrentLightboxHistoryEntry]);
+
+  const closeLightbox = useCallback(() => {
+    if (!isVisibleRef.current) return;
+
+    isDismissingRef.current = false;
+    isVisibleRef.current = false;
+    setLightboxState((currentState: IState) =>
+      currentState.isVisible
+        ? {
+            ...currentState,
+            isVisible: false,
+            slideshowAutostart: false,
+          }
+        : currentState
+    );
+    onCloseRef.current?.();
+  }, []);
+
+  const setPartialState = useCallback(
+    (state: Partial<IState>) => {
+      if (state.isVisible === true && !isVisibleRef.current) {
+        pushLightboxHistory();
+        isVisibleRef.current = true;
+      } else if (state.isVisible === false) {
+        isDismissingRef.current = false;
+        isVisibleRef.current = false;
+      }
+
+      setLightboxState((currentState: IState) => ({
+        ...currentState,
+        ...state,
+      }));
+    },
+    [pushLightboxHistory]
+  );
+
+  const onHide = useCallback(
+    (reason: LightboxHideReason = "dismiss") => {
+      if (reason === "navigate") {
+        clearCurrentLightboxHistory();
+        closeLightbox();
+        return;
+      }
+
+      if (isCurrentLightboxHistoryEntry()) {
+        if (isDismissingRef.current) return;
+
+        isDismissingRef.current = true;
+        history.back();
+        return;
+      }
+
+      closeLightbox();
+    },
+    [clearCurrentLightboxHistory, closeLightbox, isCurrentLightboxHistoryEntry]
+  );
+
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const historyID = getLightboxHistoryID(event.state);
+      if (
+        activeHistoryID.current !== undefined &&
+        historyID === activeHistoryID.current
+      ) {
+        if (!isVisibleRef.current) {
+          isDismissingRef.current = false;
+          isVisibleRef.current = true;
+          setLightboxState((currentState: IState) => ({
+            ...currentState,
+            isVisible: true,
+          }));
+        }
+        return;
+      }
+
+      closeLightbox();
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [closeLightbox]);
 
   const onDeleteImage = useCallback((id: string) => {
     setLightboxState((s) => ({

@@ -8,15 +8,18 @@ import { useConfigurationContext } from "../../hooks/Config";
 import { Placement } from "react-bootstrap/esm/Overlay";
 
 interface IPeromerPopoverCardProps {
-  id: string;
+  id?: string;
+  cardContent?: React.ReactNode;
+  cardExtras?: React.ReactNode;
 }
 
-export const PerformerPopoverCard: React.FC<IPeromerPopoverCardProps> = ({
-  id,
-}) => {
-  const { data, loading, error } = useFindPerformer(id);
+const PerformerPopoverCardByID: React.FC<{
+  id: string;
+  cardExtras?: React.ReactNode;
+}> = ({ id, cardExtras }) => {
+  const { data, loading: isLoading, error } = useFindPerformer(id);
 
-  if (loading)
+  if (isLoading)
     return (
       <div className="tag-popover-card-placeholder">
         <LoadingIndicator card={true} message={""} />
@@ -29,25 +32,60 @@ export const PerformerPopoverCard: React.FC<IPeromerPopoverCardProps> = ({
   const performer = data.findPerformer;
 
   return (
-    <div className="tag-popover-card">
-      <PerformerCard performer={performer} zoomIndex={0} />
-    </div>
+    <>
+      <div className="tag-popover-card">
+        <PerformerCard performer={performer} zoomIndex={0} />
+      </div>
+      {cardExtras}
+    </>
   );
 };
 
+export const PerformerPopoverCard: React.FC<IPeromerPopoverCardProps> = ({
+  id,
+  cardContent,
+  cardExtras,
+}) => {
+  if (cardContent) {
+    return (
+      <>
+        {cardContent}
+        {cardExtras}
+      </>
+    );
+  }
+
+  if (!id) return null;
+  return <PerformerPopoverCardByID id={id} cardExtras={cardExtras} />;
+};
+
 interface IPeroformerPopoverProps {
-  id: string;
+  id?: string;
+  cardContent?: React.ReactNode;
+  cardExtras?: React.ReactNode;
   hide?: boolean;
   placement?: Placement;
+  enterDelay?: number;
+  leaveDelay?: number;
   target?: React.RefObject<HTMLElement>;
+  triggerClassName?: string;
+  onOpen?: () => void;
+  onClose?: () => void;
 }
 
 export const PerformerPopover: React.FC<IPeroformerPopoverProps> = ({
   id,
+  cardContent,
+  cardExtras,
   hide,
   children,
   placement = "top",
+  enterDelay = 500,
+  leaveDelay = 100,
   target,
+  triggerClassName,
+  onOpen,
+  onClose,
 }) => {
   const { configuration: config } = useConfigurationContext();
 
@@ -59,11 +97,20 @@ export const PerformerPopover: React.FC<IPeroformerPopoverProps> = ({
 
   return (
     <HoverPopover
+      className={triggerClassName}
       target={target}
       placement={placement}
-      enterDelay={500}
-      leaveDelay={100}
-      content={<PerformerPopoverCard id={id} />}
+      enterDelay={enterDelay}
+      leaveDelay={leaveDelay}
+      onOpen={onOpen}
+      onClose={onClose}
+      content={
+        <PerformerPopoverCard
+          id={id}
+          cardContent={cardContent}
+          cardExtras={cardExtras}
+        />
+      }
     >
       {children}
     </HoverPopover>

@@ -10,6 +10,7 @@ import { faGripLines } from "@fortawesome/free-solid-svg-icons";
 import { DragSide, useDragMoveSelect } from "./dragMoveSelect";
 import { useDebounce } from "src/hooks/debounce";
 import { PatchComponent } from "src/patch";
+import { ExternalLink } from "../ExternalLink";
 
 interface ICardProps {
   className?: string;
@@ -166,6 +167,27 @@ const MoveTarget: React.FC<{ dragSide: DragSide }> = ({ dragSide }) => {
   );
 };
 
+function CardNavLink(props: {
+  url: string;
+  linkClassName?: string;
+  onClick: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+  children: React.ReactNode;
+}) {
+  const { url, linkClassName, onClick, children } = props;
+  if (/^https?:\/\//i.test(url)) {
+    return (
+      <ExternalLink href={url} className={linkClassName} onClick={onClick}>
+        {children}
+      </ExternalLink>
+    );
+  }
+  return (
+    <Link to={url} className={linkClassName} onClick={onClick}>
+      {children}
+    </Link>
+  );
+}
+
 export const GridCard: React.FC<ICardProps> = PatchComponent(
   "GridCard",
   (props: ICardProps) => {
@@ -250,24 +272,24 @@ export const GridCard: React.FC<ICardProps> = PatchComponent(
         <div
           className={cx(props.thumbnailSectionClassName, "thumbnail-section")}
         >
-          <Link
-            to={props.url}
-            className={props.linkClassName}
+          <CardNavLink
+            url={props.url}
+            linkClassName={props.linkClassName}
             onClick={handleImageClick}
           >
             {props.image}
-          </Link>
+          </CardNavLink>
           {props.overlays}
           {maybeRenderProgressBar()}
         </div>
         {maybeRenderInteractiveHeatmap()}
         <div className="card-section">
-          <Link to={props.url} onClick={handleImageClick}>
+          <CardNavLink url={props.url} onClick={handleImageClick}>
             <h5 className="card-section-title flex-aligned">
               {props.pretitleIcon}
               <TruncatedText text={props.title} lineCount={2} />
             </h5>
-          </Link>
+          </CardNavLink>
           {props.details}
         </div>
 

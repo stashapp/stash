@@ -3088,6 +3088,13 @@ func TestImageQuerySorting(t *testing.T) {
 			imageIdxWithTwoGalleries,
 			imageIdxWithGrandChildStudio,
 		},
+		{
+			"performer_age",
+			"performer_age",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
 	}
 
 	qb := db.Image

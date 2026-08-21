@@ -324,7 +324,6 @@ textarea.scene-description {
 .scene-tabs {
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 4rem);
   overflow-wrap: break-word;
   word-wrap: break-word;
 

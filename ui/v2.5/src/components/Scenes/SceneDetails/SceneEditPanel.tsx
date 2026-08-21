@@ -29,7 +29,12 @@ import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { useConfigurationContext } from "src/hooks/Config";
 import { IGroupEntry, SceneGroupTable } from "./SceneGroupTable";
-import { faSearch, faPlus } from "@fortawesome/free-solid-svg-icons";
+import {
+  faSearch,
+  faPlus,
+  faArrowsRotate,
+  faCameraRotate,
+} from "@fortawesome/free-solid-svg-icons";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import { lazyComponent } from "src/utils/lazyComponent";
@@ -64,6 +69,8 @@ interface IProps {
   initialCoverImage?: string;
   isNew?: boolean;
   isVisible: boolean;
+  onGenerateThumbFromCurrent?: () => Promise<void>;
+  onGenerateThumbDefault?: () => Promise<void>;
   onSubmit: (input: GQL.SceneCreateInput, andNew?: boolean) => Promise<void>;
   onDelete?: () => void;
 }
@@ -73,6 +80,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
   initialCoverImage,
   isNew = false,
   isVisible,
+  onGenerateThumbFromCurrent,
+  onGenerateThumbDefault,
   onSubmit,
   onDelete,
 }) => {
@@ -203,10 +212,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
     onSubmit: submit,
   });
 
-  const { tags, updateTagsStateFromScraper, tagsControl } = useTagsEdit(
-    scene.tags,
-    (ids) => formik.setFieldValue("tag_ids", ids)
-  );
+  const { tags, updateTagsStateFromScraper, resetTagsState, tagsControl } =
+    useTagsEdit(scene.tags, (ids) => formik.setFieldValue("tag_ids", ids));
 
   const coverImagePreview = useMemo(() => {
     const sceneImage = scene.paths?.screenshot;
@@ -298,6 +305,20 @@ export const SceneEditPanel: React.FC<IProps> = ({
     try {
       await onSubmit(input, andNew);
       formik.resetForm();
+      if (andNew) {
+        setGalleries(
+          scene.galleries?.map((g) => ({
+            id: g.id,
+            title: galleryTitle(g),
+            files: g.files,
+            folder: g.folder,
+          })) ?? []
+        );
+        setPerformers(scene.performers ?? []);
+        setGroups(scene.groups?.map((m) => m.group) ?? []);
+        setStudio(scene.studio ?? null);
+        resetTagsState();
+      }
     } catch (e) {
       Toast.error(e);
     }
@@ -884,7 +905,30 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 isEditing
                 onImageChange={onCoverImageChange}
                 onImageURL={onImageLoad}
-                onReset={scene.id ? onResetCover : undefined}
+                // Generate-from-server actions require a saved scene.
+                extraActions={
+                  !isNew
+                    ? [
+                        {
+                          icon: faArrowsRotate,
+                          labelId: "actions.generate_thumb_default",
+                          onClick: () => onGenerateThumbDefault?.(),
+                        },
+                        {
+                          icon: faCameraRotate,
+                          labelId: "actions.generate_thumb_from_current",
+                          onClick: () => onGenerateThumbFromCurrent?.(),
+                        },
+                      ]
+                    : undefined
+                }
+                onReset={
+                  formik.values.cover_image ||
+                  (formik.values.cover_image !== null &&
+                    scene.paths?.screenshot)
+                    ? () => onResetCover()
+                    : undefined
+                }
               />
             </Form.Group>
 

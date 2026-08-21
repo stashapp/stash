@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   OptionProps,
+  ValueContainerProps,
   components as reactSelectComponents,
   MultiValueGenericProps,
   SingleValueProps,
@@ -82,6 +83,10 @@ const _PerformerSelect: React.FC<
       hoverPlacementLabel?: Placement;
       hoverPlacementOptions?: Placement;
       excludeIds?: string[];
+      wrapValueContainer?: (
+        children: React.ReactNode,
+        performer: Performer
+      ) => React.ReactNode;
     }
 > = (props) => {
   const [createPerformer] = usePerformerCreate();
@@ -273,6 +278,19 @@ const _PerformerSelect: React.FC<
     return <reactSelectComponents.SingleValue {...thisOptionProps} />;
   };
 
+  const PerformerValueContainer = (
+    vcProps: ValueContainerProps<Option, boolean>
+  ) => {
+    const selected = vcProps.getValue()[0]?.object;
+    const container = <reactSelectComponents.ValueContainer {...vcProps} />;
+
+    if (!props.wrapValueContainer || !selected) {
+      return container;
+    }
+
+    return <>{props.wrapValueContainer(container, selected)}</>;
+  };
+
   const onCreate = async (name: string) => {
     const result = await createPerformer({
       variables: { input: { name } },
@@ -330,6 +348,9 @@ const _PerformerSelect: React.FC<
         Option: PerformerOption,
         MultiValueLabel: PerformerMultiValueLabel,
         SingleValue: PerformerValueLabel,
+        ...(props.wrapValueContainer
+          ? { ValueContainer: PerformerValueContainer }
+          : undefined),
       }}
       isMulti={props.isMulti ?? false}
       creatable={props.creatable ?? defaultCreatable}

@@ -191,11 +191,7 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 	}
 
 	if s.Studio != nil {
-		var err error
-		ss.Studio, err = c.resolveStudio(ctx, s.Studio)
-		if err != nil {
-			return nil, err
-		}
+		ss.Studio = studioFragmentToScrapedStudio(*s.Studio)
 	}
 
 	for _, p := range s.Performers {
@@ -223,9 +219,10 @@ func getFingerprints(scene *graphql.SceneFragment) []*models.StashBoxFingerprint
 	fingerprints := []*models.StashBoxFingerprint{}
 	for _, fp := range scene.Fingerprints {
 		fingerprint := models.StashBoxFingerprint{
-			Algorithm: fp.Algorithm.String(),
-			Hash:      fp.Hash,
-			Duration:  fp.Duration,
+			Algorithm:   fp.Algorithm.String(),
+			Hash:        fp.Hash,
+			Duration:    fp.Duration,
+			Submissions: fp.Submissions,
 		}
 		fingerprints = append(fingerprints, &fingerprint)
 	}

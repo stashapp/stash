@@ -239,6 +239,7 @@ Returns `void`.
 - `FilteredSceneMarkerList`
 - `FilteredStudioList`
 - `FilteredTagList`
+- `FilterTags.Extras`
 - `FolderSelect`
 - `FrontPage`
 - `GalleryCard`
@@ -298,6 +299,7 @@ Returns `void`.
 - `PerformerIDSelect`
 - `PerformerImagesPanel`
 - `PerformerList`
+- `PerformerMergeModal`
 - `PerformerPage`
 - `PerformerRecommendationRow`
 - `PerformerScenesPanel`
@@ -309,6 +311,7 @@ Returns `void`.
 - `RatingStars`
 - `RatingSystem`
 - `RecommendationRow`
+- `SavedFilter.Loaded`
 - `SceneCard`
 - `SceneCard.Details`
 - `SceneCard.Image`
@@ -325,6 +328,7 @@ Returns `void`.
 - `SceneMarkerCardsGrid`
 - `SceneMarkerList`
 - `SceneMarkerRecommendationRow`
+- `SceneMergeModal`
 - `SceneList`
 - `ScenePage`
 - `ScenePage.TabContent`
@@ -360,6 +364,7 @@ Returns `void`.
 - `TagIDSelect`
 - `TagLink`
 - `TagList`
+- `TagMergeModal`
 - `TagPage`
 - `TagRecommendationRow`
 - `TagSelect`

@@ -228,11 +228,11 @@
       "fp_found": "{fpCount, plural, =0 {No new fingerprint matches found} other {# new fingerprint matches found}}",
       "fp_matches": "Duration is a match",
       "fp_matches_multi": "Duration matches {matchCount}/{durationsLength} fingerprints",
-      "hash_matches": "{hash_type} is a match",
+      "hash_matches": "{count, plural, one {# {hash_type} match} other {# {hash_type} matches}}",
+      "hash_submissions": "{count} submissions",
       "match_failed_already_tagged": "Scene already tagged",
       "match_failed_no_result": "No results found",
       "match_success": "Scene successfully tagged",
-      "phash_matches": "{count} PHashes match",
       "unnamed": "Unnamed"
     },
     "verb_add_as_alias": "Add scraped name as alias",
@@ -1298,7 +1298,7 @@
     "interactive_speed": "Interactive Speed",
     "md5": "MD5 Checksum",
     "o_count": "O Count",
-    "oshash": "oshash",
+    "oshash": "OSHash",
     "oshash_meaning": "OpenSubtitles Hash",
     "performer_card": {
       "age": "{age} {years_old}",
@@ -1567,6 +1567,7 @@
   "stash_id": "Stash ID",
   "stash_id_count": "Stash ID Count",
   "stash_id_endpoint": "Stash ID Endpoint URL",
+  "stash_id_endpoint_any": "Any endpoint",
   "stash_ids": "Stash IDs",
   "stashbox_search": {
     "header": "Search {entityType} from StashBox",
@@ -1690,6 +1691,13 @@
       "fields_will_not_be_changed": "These fields will not be changed when updating {entity}.",
       "no_fields_are_excluded": "No fields are excluded",
       "no_instances_found": "No instances found"
+    },
+    "performers": {
+      "birthdate": "Matched performer has a different birthdate.",
+      "country": "Matched performer is from a different country.",
+      "ethnicity": "Matched performer has a different ethnicity.",
+      "gender": "Matched performer has a different gender.",
+      "stash_mismatch": "Matched performer already has a different stash-id."
     }
   },
   "tags": "Tags",
@@ -1707,6 +1715,7 @@
     "default_filter_set": "Default filter set",
     "delete_past_tense": "Deleted {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Generating screenshot…",
+    "screenshot_generated": "Screenshot generated",
     "image_index_too_large": "Error: Image index is larger than the number of images in the Gallery",
     "merged_performers": "Merged performers",
     "merged_scenes": "Merged scenes",

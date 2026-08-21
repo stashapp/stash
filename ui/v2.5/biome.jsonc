@@ -29,7 +29,24 @@
       "types": "recommended"
     },
     "rules": {
+      // generally want to enforce recommended rules
+      // so change recommended rules that emit info by default to error
+      //
       "a11y": "off",
+      "complexity": {
+        "noUselessCatch": "error",
+        "noUselessEscapeInRegex": "error",
+        "noUselessFragments": "error",
+        "noUselessLabel": "error",
+        "noUselessLoneBlockStatements": "error",
+        "noUselessStringRaw": "error",
+        "noUselessSwitchCase": "error",
+        "noUselessTernary": "error",
+        "useFlatMap": "error",
+        "useIndexOf": "error",
+        "useLiteralKeys": "error",
+        "useOptionalChain": "error"
+      },
       "style": {
         // used where the type is known to be non-null, but the compiler can't figure it out
         "noNonNullAssertion": "off",

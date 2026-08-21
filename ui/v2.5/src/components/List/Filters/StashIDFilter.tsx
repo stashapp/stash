@@ -4,6 +4,8 @@ import { useIntl } from "react-intl";
 import { IStashIDValue } from "../../../models/list-filter/types";
 import { ModifierCriterion } from "../../../models/list-filter/criteria/criterion";
 import { CriterionModifier } from "src/core/generated-graphql";
+import { useConfigurationContext } from "src/hooks/Config";
+import { stashboxDisplayName } from "src/utils/stashbox";
 
 interface IStashIDFilterProps {
   criterion: ModifierCriterion<IStashIDValue>;
@@ -15,9 +17,12 @@ export const StashIDFilter: React.FC<IStashIDFilterProps> = ({
   onValueChanged,
 }) => {
   const intl = useIntl();
+  const { configuration } = useConfigurationContext();
   const { value } = criterion;
+  const stashBoxes = configuration.general.stashBoxes;
+  const selectedEndpoint = value?.endpoint ?? "";
 
-  function onEndpointChanged(event: React.ChangeEvent<HTMLInputElement>) {
+  function onEndpointChanged(event: React.ChangeEvent<HTMLSelectElement>) {
     onValueChanged({
       endpoint: event.target.value,
       stashID: criterion.value.stashID,
@@ -35,11 +40,25 @@ export const StashIDFilter: React.FC<IStashIDFilterProps> = ({
     <div>
       <Form.Group>
         <Form.Control
+          as="select"
           className="btn-secondary"
           onChange={onEndpointChanged}
-          value={value ? value.endpoint : ""}
-          placeholder={intl.formatMessage({ id: "stash_id_endpoint" })}
-        />
+          value={selectedEndpoint}
+          aria-label={intl.formatMessage({ id: "stash_id_endpoint" })}
+        >
+          <option value="">
+            {intl.formatMessage({ id: "stash_id_endpoint_any" })}
+          </option>
+          {stashBoxes.map((stashBox, index) => (
+            <option value={stashBox.endpoint} key={stashBox.endpoint}>
+              {stashboxDisplayName(stashBox.name, index)}
+            </option>
+          ))}
+          {selectedEndpoint &&
+            !stashBoxes.some(
+              (stashBox) => stashBox.endpoint === selectedEndpoint
+            ) && <option value={selectedEndpoint}>{selectedEndpoint}</option>}
+        </Form.Control>
       </Form.Group>
       {criterion.modifier !== CriterionModifier.IsNull &&
         criterion.modifier !== CriterionModifier.NotNull && (
