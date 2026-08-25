@@ -74,6 +74,16 @@ func (f *VideoFile) Fingerprints() []models.Fingerprint {
 	return f.VideoFile.Fingerprints
 }
 
+type AudioFile struct {
+	*models.AudioFile
+}
+
+func (AudioFile) IsBaseFile() {}
+
+func (f *AudioFile) Fingerprints() []models.Fingerprint {
+	return f.AudioFile.Fingerprints
+}
+
 type ImageFile struct {
 	*models.ImageFile
 }

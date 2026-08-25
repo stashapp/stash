@@ -73,6 +73,10 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
+	newGallery.AudioIDs, err = translator.relatedIds(input.AudioIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting audio ids: %w", err)
+	}
 	newGallery.SceneIDs, err = translator.relatedIds(input.SceneIds)
 	if err != nil {
 		return nil, fmt.Errorf("converting scene ids: %w", err)
@@ -241,6 +245,10 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
+	updatedGallery.AudioIDs, err = translator.updateIds(input.AudioIds, "audio_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting audio ids: %w", err)
+	}
 	updatedGallery.SceneIDs, err = translator.updateIds(input.SceneIds, "scene_ids")
 	if err != nil {
 		return nil, fmt.Errorf("converting scene ids: %w", err)
@@ -296,6 +304,10 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 	updatedGallery.TagIDs, err = translator.updateIdsBulk(input.TagIds, "tag_ids")
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
+	}
+	updatedGallery.AudioIDs, err = translator.updateIdsBulk(input.AudioIds, "audio_ids")
+	if err != nil {
+		return nil, fmt.Errorf("converting audio ids: %w", err)
 	}
 	updatedGallery.SceneIDs, err = translator.updateIdsBulk(input.SceneIds, "scene_ids")
 	if err != nil {

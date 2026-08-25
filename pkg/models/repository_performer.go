@@ -13,6 +13,7 @@ type PerformerGetter interface {
 type PerformerFinder interface {
 	PerformerGetter
 	FindBySceneID(ctx context.Context, sceneID int) ([]*Performer, error)
+	FindByAudioID(ctx context.Context, audioID int) ([]*Performer, error)
 	FindByImageID(ctx context.Context, imageID int) ([]*Performer, error)
 	FindByGalleryID(ctx context.Context, galleryID int) ([]*Performer, error)
 	FindByStashID(ctx context.Context, stashID StashID) ([]*Performer, error)

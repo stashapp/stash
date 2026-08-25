@@ -10,6 +10,7 @@ import (
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/file"
+	file_audio "github.com/stashapp/stash/pkg/file/audio"
 	file_image "github.com/stashapp/stash/pkg/file/image"
 	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -25,6 +26,10 @@ func useAsVideo(pathname string) bool {
 		return false
 	}
 	return isVideo(pathname)
+}
+
+func useAsAudio(pathname string) bool {
+	return isAudio(pathname)
 }
 
 func useAsImage(pathname string) bool {
@@ -43,6 +48,11 @@ func isZip(pathname string) bool {
 func isVideo(pathname string) bool {
 	vidExt := config.GetInstance().GetVideoExtensions()
 	return fsutil.MatchExtension(pathname, vidExt)
+}
+
+func isAudio(pathname string) bool {
+	imgExt := config.GetInstance().GetAudioExtensions()
+	return fsutil.MatchExtension(pathname, imgExt)
 }
 
 func isImage(pathname string) bool {
@@ -132,6 +142,12 @@ func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error
 					FFProbe: s.FFProbe,
 				},
 				Filter: file.FilterFunc(videoFileFilter),
+			},
+			&file.FilteredDecorator{
+				Decorator: &file_audio.Decorator{
+					FFProbe: s.FFProbe,
+				},
+				Filter: file.FilterFunc(audioFileFilter),
 			},
 			&file.FilteredDecorator{
 				Decorator: &file_image.Decorator{
@@ -332,6 +348,7 @@ func (s *Manager) Clean(ctx context.Context, input CleanMetadataInput) int {
 	j := cleanJob{
 		cleaner:      cleaner,
 		repository:   s.Repository,
+		audioService: s.AudioService,
 		sceneService: s.SceneService,
 		imageService: s.ImageService,
 		input:        input,

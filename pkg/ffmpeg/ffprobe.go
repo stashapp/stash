@@ -400,3 +400,127 @@ func (v *VideoFile) getStreamIndex(fileType string, probeJSON FFProbeJSON) int {
 
 	return ret
 }
+
+// AUDIO
+
+// AudioFile represents the ffprobe output for a audio file.
+type AudioFile struct {
+	JSON        FFProbeJSON
+	AudioStream *FFProbeStream
+
+	Path      string
+	Title     string
+	Comment   string
+	Container string
+	// FileDuration is the declared (meta-data) duration of the *file*.
+	FileDuration float64
+	StartTime    float64
+	Bitrate      int64
+	Size         int64
+	CreationTime time.Time
+
+	AudioCodec string
+	SampleRate int64
+}
+
+// NewAudioFile runs ffprobe on the given path and returns a AudioFile.
+func (f *FFProbe) NewAudioFile(audioPath string) (*AudioFile, error) {
+	args := []string{
+		"-v",
+		"quiet",
+		"-print_format", "json",
+		"-show_format",
+		"-show_streams",
+		"-show_error",
+	}
+
+	// show_entries stream_side_data=rotation requires 5.x or later ffprobe
+	if f.version.major >= 5 {
+		args = append(args, "-show_entries", "stream_side_data=rotation")
+	}
+
+	args = append(args, audioPath)
+
+	cmd := stashExec.Command(f.path, args...)
+	out, err := cmd.Output()
+
+	if err != nil {
+		return nil, fmt.Errorf("FFProbe encountered an error with <%s>.\nError JSON:\n%s\nError: %s", audioPath, string(out), err.Error())
+	}
+
+	probeJSON := &FFProbeJSON{}
+	if err := json.Unmarshal(out, probeJSON); err != nil {
+		return nil, fmt.Errorf("error unmarshalling audio data for <%s>: %s", audioPath, err.Error())
+	}
+
+	return parseAudio(audioPath, probeJSON)
+}
+
+func parseAudio(filePath string, probeJSON *FFProbeJSON) (*AudioFile, error) {
+	if probeJSON == nil {
+		return nil, fmt.Errorf("failed to get ffprobe json for <%s>", filePath)
+	}
+
+	result := &AudioFile{}
+	result.JSON = *probeJSON
+
+	if result.JSON.Error.Code != 0 {
+		return nil, fmt.Errorf("ffprobe error code %d: %s", result.JSON.Error.Code, result.JSON.Error.String)
+	}
+
+	result.Path = filePath
+	result.Title = probeJSON.Format.Tags.Title
+
+	result.Comment = probeJSON.Format.Tags.Comment
+	result.Bitrate, _ = strconv.ParseInt(probeJSON.Format.BitRate, 10, 64)
+
+	result.Container = probeJSON.Format.FormatName
+	duration, _ := strconv.ParseFloat(probeJSON.Format.Duration, 64)
+	result.FileDuration = math.Round(duration*100) / 100
+	fileStat, err := os.Stat(filePath)
+	if err != nil {
+		statErr := fmt.Errorf("error statting file <%s>: %w", filePath, err)
+		logger.Errorf("%v", statErr)
+		return nil, statErr
+	}
+	result.Size = fileStat.Size()
+	result.StartTime, _ = strconv.ParseFloat(probeJSON.Format.StartTime, 64)
+	result.CreationTime = probeJSON.Format.Tags.CreationTime.Time
+
+	audioStream := result.getAudioStream()
+	if audioStream != nil {
+		result.AudioCodec = audioStream.CodecName
+		result.SampleRate, _ = strconv.ParseInt(audioStream.SampleRate, 10, 64)
+		result.AudioStream = audioStream
+	}
+
+	return result, nil
+}
+
+func (a *AudioFile) getAudioStream() *FFProbeStream {
+	index := a.getStreamIndex("audio", a.JSON)
+	if index != -1 {
+		return &a.JSON.Streams[index]
+	}
+	return nil
+}
+
+func (a *AudioFile) getStreamIndex(fileType string, probeJSON FFProbeJSON) int {
+	ret := -1
+	for i, stream := range probeJSON.Streams {
+		// skip cover art/thumbnails
+		if stream.CodecType == fileType && stream.Disposition.AttachedPic == 0 {
+			// prefer default stream
+			if stream.Disposition.Default == 1 {
+				return i
+			}
+
+			// backwards compatible behaviour - fallback to first matching stream
+			if ret == -1 {
+				ret = i
+			}
+		}
+	}
+
+	return ret
+}

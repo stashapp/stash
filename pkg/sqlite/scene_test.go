@@ -673,8 +673,8 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				PerformerIDs: models.NewRelatedIDs([]int{}),
 				Groups:       models.NewRelatedGroups([]models.GroupsScenes{}),
 				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
-				PlayDuration: getScenePlayDuration(sceneIdxWithSpacedName),
-				ResumeTime:   getSceneResumeTime(sceneIdxWithSpacedName),
+				PlayDuration: getPlayDuration(sceneIdxWithSpacedName),
+				ResumeTime:   getResumeTime(sceneIdxWithSpacedName),
 			},
 			false,
 		},
@@ -2182,7 +2182,7 @@ func TestSceneQuery(t *testing.T) {
 			&models.SceneFilterType{
 				ResumeTime: &models.IntCriterionInput{
 					Modifier: models.CriterionModifierEquals,
-					Value:    int(getSceneResumeTime(sceneIdxWithGallery)),
+					Value:    int(getResumeTime(sceneIdxWithGallery)),
 				},
 			},
 			[]int{sceneIdxWithGallery},
@@ -2195,7 +2195,7 @@ func TestSceneQuery(t *testing.T) {
 			&models.SceneFilterType{
 				PlayDuration: &models.IntCriterionInput{
 					Modifier: models.CriterionModifierEquals,
-					Value:    int(getScenePlayDuration(sceneIdxWithGallery)),
+					Value:    int(getPlayDuration(sceneIdxWithGallery)),
 				},
 			},
 			[]int{sceneIdxWithGallery},
@@ -5157,8 +5157,8 @@ func TestSceneStore_SaveActivity(t *testing.T) {
 					t.Errorf("SceneStore.Find() error = %v", err)
 				}
 
-				expectedResumeTime := getSceneResumeTime(tt.sceneIdx)
-				expectedPlayDuration := getScenePlayDuration(tt.sceneIdx)
+				expectedResumeTime := getResumeTime(tt.sceneIdx)
+				expectedPlayDuration := getPlayDuration(tt.sceneIdx)
 
 				if tt.resumeTime != nil {
 					expectedResumeTime = *tt.resumeTime

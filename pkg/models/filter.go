@@ -237,6 +237,14 @@ type VideoFileFilterInput struct {
 	Interactive      *bool                 `json:"interactive,omitempty"`
 	InteractiveSpeed *IntCriterionInput    `json:"interactive_speed,omitempty"`
 }
+type AudioFileFilterInput struct {
+	Format     *StringCriterionInput `json:"format,omitempty"`
+	SampleRate *IntCriterionInput    `json:"sample_rate,omitempty"`
+	Bitrate    *IntCriterionInput    `json:"bitrate,omitempty"`
+	AudioCodec *StringCriterionInput `json:"audio_codec,omitempty"`
+	// in seconds
+	Duration *IntCriterionInput `json:"duration,omitempty"`
+}
 
 type ImageFileFilterInput struct {
 	Format      *StringCriterionInput      `json:"format,omitempty"`

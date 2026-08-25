@@ -69,9 +69,18 @@ type Query {
     ids: [ID!]
   ): FindSceneMarkersResultType!
 
+  findAudio(id: ID, checksum: String): Audio
+
+  "A function which queries Audio objects"
+  findAudios(
+    audio_filter: AudioFilterType
+    ids: [ID!]
+    filter: FindFilterType
+  ): FindAudiosResultType!
+
   findImage(id: ID, checksum: String): Image
 
-  "A function which queries Scene objects"
+  "A function which queries Image objects"
   findImages(
     image_filter: ImageFilterType
     image_ids: [Int!] @deprecated(reason: "use ids")
@@ -340,6 +349,40 @@ type Mutation {
   sceneMarkersDestroy(ids: [ID!]!): Boolean!
 
   sceneAssignFile(input: AssignSceneFileInput!): Boolean!
+
+  audioCreate(input: AudioCreateInput!): Audio
+  audioUpdate(input: AudioUpdateInput!): Audio
+  audioMerge(input: AudioMergeInput!): Audio
+  bulkAudioUpdate(input: BulkAudioUpdateInput!): [Audio!]
+  audiosDestroy(input: AudiosDestroyInput!): Boolean!
+  audiosUpdate(input: [AudioUpdateInput!]!): [Audio]
+
+  "Increments the o-counter for a audio. Uses the current time if none provided."
+  audioAddO(id: ID!, times: [Timestamp!]): HistoryMutationResult!
+  "Decrements the o-counter for a audio, removing the last recorded time if specific time not provided. Returns the new value"
+  audioDeleteO(id: ID!, times: [Timestamp!]): HistoryMutationResult!
+
+  "Resets the o-counter for a audio to 0. Returns the new value"
+  audioResetO(id: ID!): Int!
+
+  "Sets the resume time point (if provided) and adds the provided duration to the audio's play duration"
+  audioSaveActivity(id: ID!, resume_time: Float, playDuration: Float): Boolean!
+
+  "Resets the resume time point and play duration"
+  audioResetActivity(
+    id: ID!
+    reset_resume: Boolean
+    reset_duration: Boolean
+  ): Boolean!
+
+  "Increments the play count for the audio. Uses the current time if none provided."
+  audioAddPlay(id: ID!, times: [Timestamp!]): HistoryMutationResult!
+  "Decrements the play count for the audio, removing the specific times or the last recorded time if not provided."
+  audioDeletePlay(id: ID!, times: [Timestamp!]): HistoryMutationResult!
+  "Resets the play count for a audio to 0. Returns the new play count value."
+  audioResetPlayCount(id: ID!): Int!
+
+  audioAssignFile(input: AssignAudioFileInput!): Boolean!
 
   imageUpdate(input: ImageUpdateInput!): Image
   bulkImageUpdate(input: BulkImageUpdateInput!): [Image!]

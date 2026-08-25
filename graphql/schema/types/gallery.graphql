@@ -24,6 +24,7 @@ type Gallery {
 
   chapters: [GalleryChapter!]!
   scenes: [Scene!]!
+  audios: [Audio!]!
   studio: Studio
   image_count: Int!
   tags: [Tag!]!
@@ -48,6 +49,7 @@ input GalleryCreateInput {
   rating100: Int
   organized: Boolean
   scene_ids: [ID!]
+  audio_ids: [ID!]
   studio_id: ID
   tag_ids: [ID!]
   performer_ids: [ID!]
@@ -69,6 +71,7 @@ input GalleryUpdateInput {
   rating100: Int
   organized: Boolean
   scene_ids: [ID!]
+  audio_ids: [ID!]
   studio_id: ID
   tag_ids: [ID!]
   performer_ids: [ID!]
@@ -91,6 +94,7 @@ input BulkGalleryUpdateInput {
   rating100: Int
   organized: Boolean
   scene_ids: BulkUpdateIds
+  audio_ids: BulkUpdateIds
   studio_id: ID
   tag_ids: BulkUpdateIds
   performer_ids: BulkUpdateIds

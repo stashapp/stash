@@ -104,6 +104,7 @@ func (r *groupRowRecord) fromPartial(o models.GroupPartial) {
 type groupRepositoryType struct {
 	repository
 	scenes repository
+	audios repository
 	tags   joinRepository
 }
 
@@ -115,6 +116,10 @@ var (
 		},
 		scenes: repository{
 			tableName: groupsScenesTable,
+			idColumn:  groupIDColumn,
+		},
+		audios: repository{
+			tableName: groupsAudiosTable,
 			idColumn:  groupIDColumn,
 		},
 		tags: joinRepository{
@@ -499,6 +504,7 @@ var groupSortOptions = sortOptions{
 	"random",
 	"rating",
 	"scenes_count",
+	"audios_count",
 	"o_counter",
 	"sub_group_description",
 	"sub_group_order",
@@ -546,6 +552,8 @@ func (qb *GroupStore) setGroupSort(query *queryBuilder, findFilter *models.FindF
 		query.sortAndPagination += getCountSort(groupTable, groupsTagsTable, groupIDColumn, direction)
 	case "scenes_count": // generic getSort won't work for this
 		query.sortAndPagination += getCountSort(groupTable, groupsScenesTable, groupIDColumn, direction)
+	case "audios_count": // generic getSort won't work for this
+		query.sortAndPagination += getCountSort(groupTable, groupsAudiosTable, groupIDColumn, direction)
 	case "o_counter":
 		query.sortAndPagination += qb.sortByOCounter(direction)
 	default:

@@ -5,6 +5,7 @@ import (
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
+	"github.com/stashapp/stash/pkg/audio"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/group"
 	"github.com/stashapp/stash/pkg/image"
@@ -94,6 +95,17 @@ func (r *studioResolver) SceneCount(ctx context.Context, obj *models.Studio, dep
 	return ret, nil
 }
 
+func (r *studioResolver) AudioCount(ctx context.Context, obj *models.Studio, depth *int) (ret int, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = audio.CountByStudioID(ctx, r.repository.Audio, obj.ID, depth)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (r *studioResolver) ImageCount(ctx context.Context, obj *models.Studio, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = image.CountByStudioID(ctx, r.repository.Image, obj.ID, depth)
@@ -156,6 +168,7 @@ func (r *studioResolver) MovieCount(ctx context.Context, obj *models.Studio, dep
 
 func (r *studioResolver) OCounter(ctx context.Context, obj *models.Studio, depth *int) (ret int, err error) {
 	var res_scene int
+	var res_audio int
 	var res_image int
 	depthVal := 0
 	if depth != nil {
@@ -166,12 +179,16 @@ func (r *studioResolver) OCounter(ctx context.Context, obj *models.Studio, depth
 		if err != nil {
 			return err
 		}
+		res_audio, err = r.repository.Audio.OCountByStudioID(ctx, obj.ID, depthVal)
+		if err != nil {
+			return err
+		}
 		res_image, err = r.repository.Image.OCountByStudioID(ctx, obj.ID, depthVal)
 		return err
 	}); err != nil {
 		return 0, err
 	}
-	return res_scene + res_image, nil
+	return res_scene + res_audio + res_image, nil
 }
 
 func (r *studioResolver) ParentStudio(ctx context.Context, obj *models.Studio) (ret *models.Studio, err error) {

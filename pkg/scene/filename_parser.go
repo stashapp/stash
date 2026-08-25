@@ -453,6 +453,7 @@ func (p *FilenameParser) initWhiteSpaceRegex() {
 
 type FilenameParserRepository struct {
 	Scene     models.SceneQueryer
+	Audio     models.AudioQueryer
 	Performer PerformerNamesFinder
 	Studio    models.StudioQueryer
 	Group     GroupNameFinder
@@ -462,6 +463,7 @@ type FilenameParserRepository struct {
 func NewFilenameParserRepository(repo models.Repository) FilenameParserRepository {
 	return FilenameParserRepository{
 		Scene:     repo.Scene,
+		Audio:     repo.Audio,
 		Performer: repo.Performer,
 		Studio:    repo.Studio,
 		Group:     repo.Group,

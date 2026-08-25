@@ -1,0 +1,171 @@
+type AudioPathsType {
+  screenshot: String # Resolver
+  stream: String # Resolver
+}
+
+type AudioGroup {
+  group: Group!
+  audio_index: Int
+}
+
+type Audio {
+  id: ID!
+  title: String
+  code: String
+  details: String
+  urls: [String!]!
+  date: String
+  # rating expressed as 1-100
+  rating100: Int
+  organized: Boolean!
+  o_counter: Int
+  created_at: Time!
+  updated_at: Time!
+  "The last time play count was updated"
+  last_played_at: Time
+  "The time index an audio was left at"
+  resume_time: Float
+  "The total time an audio has spent playing"
+  play_duration: Float
+  "The number of times an audio has been played"
+  play_count: Int
+
+  "Times a audio was played"
+  play_history: [Time!]!
+  "Times the o counter was incremented"
+  o_history: [Time!]!
+
+  files: [AudioFile!]!
+  paths: AudioPathsType! # Resolver
+  studio: Studio
+  galleries: [Gallery!]!
+  groups: [AudioGroup!]!
+  tags: [Tag!]!
+  performers: [Performer!]!
+
+  custom_fields: Map!
+
+  "Return valid stream paths"
+  audioStreams: [AudioStreamEndpoint!]!
+}
+
+input AudioGroupInput {
+  group_id: ID!
+  audio_index: Int
+}
+
+input AudioCreateInput {
+  title: String
+  code: String
+  details: String
+  urls: [String!]
+  date: String
+  # rating expressed as 1-100
+  rating100: Int
+  organized: Boolean
+  studio_id: ID
+  gallery_ids: [ID!]
+  performer_ids: [ID!]
+  groups: [AudioGroupInput!]
+  tag_ids: [ID!]
+  "This should be a URL or a base64 encoded data URL"
+  cover_image: String
+
+  """
+  The first id will be assigned as primary.
+  Files will be reassigned from existing audios if applicable.
+  Files must not already be primary for another audio.
+  """
+  file_ids: [ID!]
+
+  custom_fields: Map
+}
+
+input AudioUpdateInput {
+  id: ID!
+  title: String
+  code: String
+  details: String
+  urls: [String!]
+  date: String
+  # rating expressed as 1-100
+  rating100: Int
+  organized: Boolean
+  studio_id: ID
+  gallery_ids: [ID!]
+  performer_ids: [ID!]
+  groups: [AudioGroupInput!]
+  tag_ids: [ID!]
+  "This should be a URL or a base64 encoded data URL"
+  cover_image: String
+
+  "The time index a audio was left at"
+  resume_time: Float
+  "The total time a audio has spent playing"
+  play_duration: Float
+
+  primary_file_id: ID
+
+  custom_fields: CustomFieldsInput
+}
+
+input BulkAudioUpdateInput {
+  ids: [ID!]
+  title: String
+  code: String
+  details: String
+  urls: BulkUpdateStrings
+  date: String
+  # rating expressed as 1-100
+  rating100: Int
+  organized: Boolean
+  studio_id: ID
+  gallery_ids: BulkUpdateIds
+  performer_ids: BulkUpdateIds
+  tag_ids: BulkUpdateIds
+  group_ids: BulkUpdateIds
+
+  custom_fields: CustomFieldsInput
+}
+
+input AudiosDestroyInput {
+  ids: [ID!]!
+  delete_file: Boolean
+  "If true, delete the file entry from the database if the file is not assigned to any other objects"
+  destroy_file_entry: Boolean
+}
+
+type FindAudiosResultType {
+  count: Int!
+  "Total duration in seconds"
+  duration: Float!
+  "Total file size in bytes"
+  filesize: Float!
+  audios: [Audio!]!
+}
+
+type AudioStreamEndpoint {
+  url: String!
+  mime_type: String
+  label: String
+}
+
+input AssignAudioFileInput {
+  audio_id: ID!
+  file_id: ID!
+}
+
+input AudioMergeInput {
+  """
+  If destination audio has no files, then the primary file of the
+  first source audio will be assigned as primary
+  """
+  source: [ID!]!
+  destination: ID!
+  # values defined here will override values in the destination
+  values: AudioUpdateInput
+
+  # if true, the source history will be combined with the destination
+  play_history: Boolean
+  o_history: Boolean
+}

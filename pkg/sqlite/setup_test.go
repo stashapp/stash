@@ -28,6 +28,7 @@ var epochTime = time.Unix(0, 0).UTC()
 
 const (
 	spacedSceneTitle = "zzz yyy xxx"
+	spacedAudioTitle = "zzz yyy xxx"
 )
 
 const (
@@ -41,6 +42,7 @@ const (
 	folderIdxWithImageFiles
 	folderIdxWithGalleryFiles
 	folderIdxWithSceneFiles
+	folderIdxWithAudioFiles
 
 	totalFolders
 )
@@ -50,6 +52,7 @@ const (
 	fileIdxInZip
 
 	fileIdxStartVideoFiles
+	fileIdxStartAudioFiles
 	fileIdxStartImageFiles
 	fileIdxStartGalleryFiles
 
@@ -90,6 +93,39 @@ const (
 	lastSceneIdx
 
 	totalScenes = lastSceneIdx + 3
+)
+
+const (
+	audioIdxWithGroup = iota
+	audioIdxWithGallery
+	audioIdxWithPerformer
+	audioIdx1WithPerformer
+	audioIdx2WithPerformer
+	audioIdxWithTwoPerformers
+	audioIdxWithThreePerformers
+	audioIdxWithTag
+	audioIdxWithTwoTags
+	audioIdxWithThreeTags
+	audioIdxWithStudio
+	audioIdx1WithStudio
+	audioIdx2WithStudio
+	audioIdxWithMarkers
+	audioIdxWithPerformerTag
+	audioIdxWithTwoPerformerTag
+	audioIdxWithPerformerTwoTags
+	audioIdxWithSpacedName
+	audioIdxWithStudioPerformer
+	audioIdx1WithTwoStudioPerformer
+	audioIdx2WithTwoStudioPerformer
+	audioIdxWithGrandChildStudio
+	audioIdxWithPerformerParentTag
+	audioIdxWithGroupWithParent
+	audioIdx2WithGallery
+	audioIdxWithTwoGalleries
+	// new indexes above
+	lastAudioIdx
+
+	totalAudios = lastAudioIdx + 3
 )
 
 const dupeScenePhashes = 2
@@ -146,6 +182,13 @@ const (
 	performerIdxWithGalleryStudio
 	performerIdxWithTwoSceneStudio
 	performerIdxWithParentTag
+	performerIdxWithAudio
+	performerIdx1WithAudio
+	performerIdx2WithAudio
+	performerIdx3WithAudio
+	performerIdxWithTwoAudios
+	performerIdxWithAudioStudio
+	performerIdxWithTwoAudioStudio
 	// new indexes above
 	// performers with dup names start from the end
 	performerIdx1WithDupName
@@ -171,6 +214,9 @@ const (
 	groupIdxWithParentAndScene
 	groupIdxWithChildWithScene
 	groupIdxWithGrandChildTag
+	groupIdxWithAudio
+	groupIdxWithParentAndAudio
+	groupIdxWithChildWithAudio
 	// groups with dup names start from the end
 	groupIdxWithDupName
 
@@ -204,6 +250,8 @@ const (
 	galleryIdxWithoutFile
 	galleryIdxWithPerformerParentTag
 	galleryIdxWithGrandChildTag
+	galleryIdxWithAudio
+	galleryIdxWithTwoAudios
 	// new indexes above
 	lastGalleryIdx
 
@@ -242,6 +290,11 @@ const (
 	tagIdx1WithGroup
 	tagIdx2WithGroup
 	tagIdx3WithGroup
+	tagIdxWithAudio
+	tagIdx1WithAudio
+	tagIdx2WithAudio
+	tagIdx3WithAudio
+	// new indexes above
 	tagIdx1WithNothing
 	tagIdx2WithNothing
 	totalTags
@@ -270,6 +323,11 @@ const (
 	studioIdxWithParentAndChild
 	studioIdxWithGrandParent
 	studioIdxWithNothing
+	studioIdxWithAudio
+	studioIdxWithTwoAudios
+	studioIdxWithAudioPerformer
+	studioIdx1WithTwoAudioPerformer
+	studioIdx2WithTwoAudioPerformer
 	totalStudios
 )
 
@@ -309,11 +367,13 @@ var (
 	folderIDs      []models.FolderID
 	fileIDs        []models.FileID
 	sceneFileIDs   []models.FileID
+	audioFileIDs   []models.FileID
 	imageFileIDs   []models.FileID
 	galleryFileIDs []models.FileID
 	chapterIDs     []int
 
 	sceneIDs       []int
+	audioIDs       []int
 	imageIDs       []int
 	performerIDs   []int
 	groupIDs       []int
@@ -349,6 +409,9 @@ func (m linkMap) reverseLookup(idx int) []int {
 		}
 	}
 
+	// `v` (see `m[k]`) ordering is not stable, sorting can prevent flakey tests for future devs
+	slices.Sort(result)
+
 	return result
 }
 
@@ -358,6 +421,7 @@ var (
 		folderIdxForObjectFiles:   folderIdxRoot,
 		folderIdxWithParentFolder: folderIdxWithSubFolder,
 		folderIdxWithSceneFiles:   folderIdxForObjectFiles,
+		folderIdxWithAudioFiles:   folderIdxForObjectFiles,
 		folderIdxWithImageFiles:   folderIdxForObjectFiles,
 		folderIdxWithGalleryFiles: folderIdxForObjectFiles,
 	}
@@ -406,6 +470,12 @@ var (
 		sceneIdxWithGallery: {galleryIdxWithScene},
 	}
 
+	audioGalleries = linkMap{
+		audioIdxWithGallery:      {galleryIdxWithAudio},
+		audioIdxWithTwoGalleries: {galleryIdxWithAudio, galleryIdxWithTwoAudios},
+		audioIdx2WithGallery:     {galleryIdxWithTwoAudios},
+	}
+
 	sceneGroups = linkMap{
 		sceneIdxWithGroup:           {groupIdxWithScene},
 		sceneIdxWithGroupWithParent: {groupIdxWithParentAndScene},
@@ -451,6 +521,44 @@ var (
 	// indexed by chapter
 	chapterSpecs = []chapterSpec{
 		{galleryIdxWithChapters, "Test1", 10},
+	}
+)
+
+var (
+	audioTags = linkMap{
+		audioIdxWithTag:       {tagIdxWithAudio},
+		audioIdxWithTwoTags:   {tagIdx1WithAudio, tagIdx2WithAudio},
+		audioIdxWithThreeTags: {tagIdx1WithAudio, tagIdx2WithAudio, tagIdx3WithAudio},
+	}
+
+	audioPerformers = linkMap{
+		audioIdxWithPerformer:           {performerIdxWithAudio},
+		audioIdxWithTwoPerformers:       {performerIdx1WithAudio, performerIdx2WithAudio},
+		audioIdxWithThreePerformers:     {performerIdx1WithAudio, performerIdx2WithAudio, performerIdx3WithAudio},
+		audioIdxWithPerformerTag:        {performerIdxWithTag},
+		audioIdxWithTwoPerformerTag:     {performerIdxWithTag, performerIdx2WithTag},
+		audioIdxWithPerformerTwoTags:    {performerIdxWithTwoTags},
+		audioIdx1WithPerformer:          {performerIdxWithTwoAudios},
+		audioIdx2WithPerformer:          {performerIdxWithTwoAudios},
+		audioIdxWithStudioPerformer:     {performerIdxWithAudioStudio},
+		audioIdx1WithTwoStudioPerformer: {performerIdxWithTwoAudioStudio},
+		audioIdx2WithTwoStudioPerformer: {performerIdxWithTwoAudioStudio},
+		audioIdxWithPerformerParentTag:  {performerIdxWithParentTag},
+	}
+
+	audioGroups = linkMap{
+		audioIdxWithGroup:           {groupIdxWithAudio},
+		audioIdxWithGroupWithParent: {groupIdxWithParentAndAudio},
+	}
+
+	audioStudios = map[int]int{
+		audioIdxWithStudio:              studioIdxWithAudio,
+		audioIdx1WithStudio:             studioIdxWithTwoAudios,
+		audioIdx2WithStudio:             studioIdxWithTwoAudios,
+		audioIdxWithStudioPerformer:     studioIdxWithAudioPerformer,
+		audioIdx1WithTwoStudioPerformer: studioIdx1WithTwoAudioPerformer,
+		audioIdx2WithTwoStudioPerformer: studioIdx2WithTwoAudioPerformer,
+		audioIdxWithGrandChildStudio:    studioIdxWithGrandParent,
 	}
 )
 
@@ -571,6 +679,7 @@ var (
 		{groupIdxWithGrandChild, groupIdxWithParentAndChild},
 		{groupIdxWithParentAndChild, groupIdxWithGrandParent},
 		{groupIdxWithChildWithScene, groupIdxWithParentAndScene},
+		{groupIdxWithChildWithAudio, groupIdxWithParentAndAudio},
 	}
 )
 
@@ -737,6 +846,10 @@ func populateDB() error {
 
 		if err := createScenes(ctx, totalScenes); err != nil {
 			return fmt.Errorf("error creating scenes: %s", err.Error())
+		}
+
+		if err := createAudios(ctx, totalAudios); err != nil {
+			return fmt.Errorf("error creating audios: %s", err.Error())
 		}
 
 		if err := createImages(ctx, totalImages); err != nil {
@@ -931,7 +1044,7 @@ func makeFile(i int) models.File {
 
 	ret = baseFile
 
-	if i >= fileIdxStartVideoFiles && i < fileIdxStartImageFiles {
+	if i >= fileIdxStartVideoFiles && i < fileIdxStartAudioFiles {
 		ret = &models.VideoFile{
 			BaseFile:   baseFile,
 			Format:     getFileStringValue(i, "format"),
@@ -942,6 +1055,15 @@ func makeFile(i int) models.File {
 			AudioCodec: getFileStringValue(i, "audioCodec"),
 			FrameRate:  getFileDuration(i) * 2,
 			BitRate:    int64(getFileDuration(i)) * 3,
+		}
+	} else if i >= fileIdxStartAudioFiles && i < fileIdxStartImageFiles {
+		ret = &models.AudioFile{
+			BaseFile:   baseFile,
+			Format:     "mp3",
+			Duration:   getDuration(i),
+			AudioCodec: "mp3",
+			SampleRate: 12,
+			BitRate:    123,
 		}
 	} else if i >= fileIdxStartImageFiles && i < fileIdxStartGalleryFiles {
 		ret = &models.ImageFile{
@@ -1069,7 +1191,7 @@ func getOCounter(index int) int {
 	return index % 3
 }
 
-func getSceneDuration(index int) float64 {
+func getDuration(index int) float64 {
 	duration := index + 1
 	duration = duration * 100
 
@@ -1144,13 +1266,13 @@ func makeSceneFile(i int) *models.VideoFile {
 			ParentFolderID: folderIDs[folderIdxWithSceneFiles],
 			Fingerprints:   fp,
 		},
-		Duration: getSceneDuration(i),
+		Duration: getDuration(i),
 		Height:   getHeight(i),
 		Width:    getWidth(i),
 	}
 }
 
-func getScenePlayDuration(index int) float64 {
+func getPlayDuration(index int) float64 {
 	if index%5 == 0 {
 		return 0
 	}
@@ -1158,7 +1280,7 @@ func getScenePlayDuration(index int) float64 {
 	return float64(index%5) * 123.4
 }
 
-func getSceneResumeTime(index int) float64 {
+func getResumeTime(index int) float64 {
 	if index%5 == 0 {
 		return 0
 	}
@@ -1205,8 +1327,8 @@ func makeScene(i int) *models.Scene {
 		TagIDs:       models.NewRelatedIDs(tids),
 		Groups:       models.NewRelatedGroups(groups),
 		StashIDs:     models.NewRelatedStashIDs(sceneStashIDs(i)),
-		PlayDuration: getScenePlayDuration(i),
-		ResumeTime:   getSceneResumeTime(i),
+		PlayDuration: getPlayDuration(i),
+		ResumeTime:   getResumeTime(i),
 	}
 }
 
@@ -1247,6 +1369,148 @@ func createScenes(ctx context.Context, n int) error {
 	}
 
 	return nil
+}
+
+// AUDIO
+
+func makeAudio(i int) *models.Audio {
+	title := getAudioTitle(i)
+	details := getAudioStringValue(i, "Details")
+
+	var studioID *int
+	if _, ok := audioStudios[i]; ok {
+		v := studioIDs[audioStudios[i]]
+		studioID = &v
+	}
+
+	gids := indexesToIDs(galleryIDs, audioGalleries[i])
+	pids := indexesToIDs(performerIDs, audioPerformers[i])
+	tids := indexesToIDs(tagIDs, audioTags[i])
+
+	mids := indexesToIDs(groupIDs, audioGroups[i])
+
+	groups := make([]models.GroupsAudios, len(mids))
+	for i, m := range mids {
+		groups[i] = models.GroupsAudios{
+			GroupID: m,
+		}
+	}
+
+	rating := getRating(i)
+
+	return &models.Audio{
+		Title:   title,
+		Details: details,
+		URLs: models.NewRelatedStrings([]string{
+			getAudioEmptyString(i, urlField),
+		}),
+		Rating:       getIntPtr(rating),
+		Date:         getObjectDate(i),
+		StudioID:     studioID,
+		GalleryIDs:   models.NewRelatedIDs(gids),
+		PerformerIDs: models.NewRelatedIDs(pids),
+		TagIDs:       models.NewRelatedIDs(tids),
+		Groups:       models.NewRelatedGroupsAudio(groups),
+		PlayDuration: getPlayDuration(i),
+		ResumeTime:   getResumeTime(i),
+	}
+}
+
+func getAudioCustomFields(index int) map[string]interface{} {
+	if index%5 == 0 {
+		return nil
+	}
+
+	return map[string]interface{}{
+		"string": getAudioStringValue(index, "custom"),
+		"int":    int64(index % 5),
+		"real":   float64(index) / 10,
+	}
+}
+
+func createAudios(ctx context.Context, n int) error {
+	sqb := db.Audio
+	fqb := db.File
+
+	for i := 0; i < n; i++ {
+		f := makeAudioFile(i)
+		if err := fqb.Create(ctx, f); err != nil {
+			return fmt.Errorf("creating audio file: %w", err)
+		}
+		audioFileIDs = append(audioFileIDs, f.ID)
+
+		audio := makeAudio(i)
+
+		if err := sqb.Create(ctx, audio, []models.FileID{f.ID}); err != nil {
+			return fmt.Errorf("Error creating audio %v+: %s", audio, err.Error())
+		}
+
+		if err := sqb.SetCustomFields(ctx, audio.ID, models.CustomFieldsInput{Full: getAudioCustomFields(i)}); err != nil {
+			return fmt.Errorf("Error setting custom fields for audio %d: %s", audio.ID, err.Error())
+		}
+
+		audioIDs = append(audioIDs, audio.ID)
+	}
+
+	return nil
+}
+
+func makeAudioFile(i int) *models.AudioFile {
+	fp := []models.Fingerprint{
+		{
+			Type:        models.FingerprintTypeMD5,
+			Fingerprint: getAudioStringValue(i, checksumField),
+		},
+	}
+
+	return &models.AudioFile{
+		BaseFile: &models.BaseFile{
+			Path:           getFilePath(folderIdxWithAudioFiles, getAudioBasename(i)),
+			Basename:       getAudioBasename(i),
+			ParentFolderID: folderIDs[folderIdxWithAudioFiles],
+			Fingerprints:   fp,
+		},
+		Format:     "mp3",
+		Duration:   getDuration(i),
+		AudioCodec: "mp3",
+		SampleRate: 12,
+		BitRate:    123,
+	}
+}
+
+func getAudioStringValue(index int, field string) string {
+	return getPrefixedStringValue("audio", index, field)
+}
+
+func getAudioStringPtr(index int, field string) *string {
+	v := getPrefixedStringValue("audio", index, field)
+	return &v
+}
+
+func getAudioNullStringPtr(index int, field string) *string {
+	return getStringPtrFromNullString(getPrefixedNullStringValue("audio", index, field))
+}
+
+func getAudioEmptyString(index int, field string) string {
+	v := getAudioNullStringPtr(index, field)
+	if v == nil {
+		return ""
+	}
+
+	return *v
+}
+
+func getAudioBasename(index int) string {
+	return getAudioStringValue(index, pathField)
+}
+
+func getAudioTitle(index int) string {
+	switch index {
+	case audioIdxWithSpacedName:
+		return spacedAudioTitle
+	default:
+		return getAudioStringValue(index, titleField)
+	}
 }
 
 func getImageStringValue(index int, field string) string {
@@ -1424,6 +1688,7 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 
 	if includeScenes {
 		ret.SceneIDs = models.NewRelatedIDs(indexesToIDs(sceneIDs, sceneGalleries.reverseLookup(i)))
+		ret.AudioIDs = models.NewRelatedIDs(indexesToIDs(audioIDs, audioGalleries.reverseLookup(i)))
 	}
 
 	return ret
@@ -1715,7 +1980,7 @@ func createPerformers(ctx context.Context, n int, o int) error {
 			PenisLength:   getPerformerPenisLength(i),
 			Circumcised:   getPerformerCircumcised(i),
 			Rating:        getIntPtr(getRating(i)),
-			IgnoreAutoTag: getIgnoreAutoTag(i),
+			IgnoreAutoTag: getIgnoreAutoTag(index),
 			TagIDs:        models.NewRelatedIDs(tids),
 		}
 

@@ -14,6 +14,20 @@ type GalleryReaderWriter struct {
 	mock.Mock
 }
 
+// AddAudioIDs provides a mock function with given fields: ctx, galleryID, audioIDs
+func (_m *GalleryReaderWriter) AddAudioIDs(ctx context.Context, galleryID int, audioIDs []int) error {
+	ret := _m.Called(ctx, galleryID, audioIDs)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, []int) error); ok {
+		r0 = rf(ctx, galleryID, audioIDs)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // AddFileID provides a mock function with given fields: ctx, id, fileID
 func (_m *GalleryReaderWriter) AddFileID(ctx context.Context, id int, fileID models.FileID) error {
 	ret := _m.Called(ctx, id, fileID)
@@ -172,6 +186,29 @@ func (_m *GalleryReaderWriter) Find(ctx context.Context, id int) (*models.Galler
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
 		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FindByAudioID provides a mock function with given fields: ctx, audioID
+func (_m *GalleryReaderWriter) FindByAudioID(ctx context.Context, audioID int) ([]*models.Gallery, error) {
+	ret := _m.Called(ctx, audioID)
+
+	var r0 []*models.Gallery
+	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.Gallery); ok {
+		r0 = rf(ctx, audioID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Gallery)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, audioID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -402,6 +439,29 @@ func (_m *GalleryReaderWriter) FindUserGalleryByTitle(ctx context.Context, title
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
 		r1 = rf(ctx, title)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetAudioIDs provides a mock function with given fields: ctx, relatedID
+func (_m *GalleryReaderWriter) GetAudioIDs(ctx context.Context, relatedID int) ([]int, error) {
+	ret := _m.Called(ctx, relatedID)
+
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(context.Context, int) []int); ok {
+		r0 = rf(ctx, relatedID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, relatedID)
 	} else {
 		r1 = ret.Error(1)
 	}

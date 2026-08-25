@@ -220,6 +220,29 @@ func (_m *TagReaderWriter) FindByAlias(ctx context.Context, alias string, nocase
 	return r0, r1
 }
 
+// FindByAudioID provides a mock function with given fields: ctx, audioID
+func (_m *TagReaderWriter) FindByAudioID(ctx context.Context, audioID int) ([]*models.Tag, error) {
+	ret := _m.Called(ctx, audioID)
+
+	var r0 []*models.Tag
+	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.Tag); ok {
+		r0 = rf(ctx, audioID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, audioID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByChildTagID provides a mock function with given fields: ctx, childID
 func (_m *TagReaderWriter) FindByChildTagID(ctx context.Context, childID int) ([]*models.Tag, error) {
 	ret := _m.Called(ctx, childID)

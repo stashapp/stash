@@ -737,6 +737,128 @@ func (t *scenesGroupsTable) modifyJoins(ctx context.Context, id int, v []models.
 	return nil
 }
 
+type audiosGroupsTable struct {
+	table
+}
+
+type groupsAudiosRow struct {
+	AudioID    null.Int `db:"audio_id"`
+	GroupID    null.Int `db:"group_id"`
+	AudioIndex null.Int `db:"audio_index"`
+}
+
+func (r groupsAudiosRow) resolve(audioID int) models.GroupsAudios {
+	return models.GroupsAudios{
+		GroupID:    int(r.GroupID.Int64),
+		AudioIndex: nullIntPtr(r.AudioIndex),
+	}
+}
+
+func (t *audiosGroupsTable) get(ctx context.Context, id int) ([]models.GroupsAudios, error) {
+	q := dialect.Select("group_id", "audio_index").From(t.table.table).Where(t.idColumn.Eq(id))
+
+	const single = false
+	var ret []models.GroupsAudios
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var v groupsAudiosRow
+		if err := rows.StructScan(&v); err != nil {
+			return err
+		}
+
+		ret = append(ret, v.resolve(id))
+
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("getting audio groups from %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return ret, nil
+}
+
+func (t *audiosGroupsTable) insertJoin(ctx context.Context, id int, v models.GroupsAudios) (sql.Result, error) {
+	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "group_id", "audio_index").Vals(
+		goqu.Vals{id, v.GroupID, intFromPtr(v.AudioIndex)},
+	)
+	ret, err := exec(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("inserting into %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return ret, nil
+}
+
+func (t *audiosGroupsTable) insertJoins(ctx context.Context, id int, v []models.GroupsAudios) error {
+	for _, fk := range v {
+		if _, err := t.insertJoin(ctx, id, fk); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (t *audiosGroupsTable) replaceJoins(ctx context.Context, id int, v []models.GroupsAudios) error {
+	if err := t.destroy(ctx, []int{id}); err != nil {
+		return err
+	}
+
+	return t.insertJoins(ctx, id, v)
+}
+
+func (t *audiosGroupsTable) addJoins(ctx context.Context, id int, v []models.GroupsAudios) error {
+	// get existing foreign keys
+	fks, err := t.get(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	// only add values that are not already present
+	var filtered []models.GroupsAudios
+	for _, vv := range v {
+		found := false
+
+		for _, e := range fks {
+			if vv.GroupID == e.GroupID {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			filtered = append(filtered, vv)
+		}
+	}
+	return t.insertJoins(ctx, id, filtered)
+}
+
+func (t *audiosGroupsTable) destroyJoins(ctx context.Context, id int, v []models.GroupsAudios) error {
+	for _, vv := range v {
+		q := dialect.Delete(t.table.table).Where(
+			t.idColumn.Eq(id),
+			t.table.table.Col("group_id").Eq(vv.GroupID),
+		)
+
+		if _, err := exec(ctx, q); err != nil {
+			return fmt.Errorf("destroying %s: %w", t.table.table.GetTable(), err)
+		}
+	}
+
+	return nil
+}
+
+func (t *audiosGroupsTable) modifyJoins(ctx context.Context, id int, v []models.GroupsAudios, mode models.RelationshipUpdateMode) error {
+	switch mode {
+	case models.RelationshipUpdateModeSet:
+		return t.replaceJoins(ctx, id, v)
+	case models.RelationshipUpdateModeAdd:
+		return t.addJoins(ctx, id, v)
+	case models.RelationshipUpdateModeRemove:
+		return t.destroyJoins(ctx, id, v)
+	}
+
+	return nil
+}
+
 type imageGalleriesTable struct {
 	joinTable
 }

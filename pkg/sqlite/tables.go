@@ -33,6 +33,14 @@ var (
 
 	sceneMarkersTagsJoinTable = goqu.T(sceneMarkersTagsTable)
 
+	audiosFilesJoinTable      = goqu.T(audiosFilesTable)
+	audiosTagsJoinTable       = goqu.T(audiosTagsTable)
+	audiosPerformersJoinTable = goqu.T(performersAudiosTable)
+	audiosGroupsJoinTable     = goqu.T(groupsAudiosTable)
+	audiosGalleriesJoinTable  = goqu.T(audiosGalleriesTable)
+	audiosURLsJoinTable       = goqu.T(audiosURLsTable)
+	audiosCustomFieldsTable   = goqu.T("audio_custom_fields")
+
 	performersAliasesJoinTable  = goqu.T(performersAliasesTable)
 	performersURLsJoinTable     = goqu.T(performerURLsTable)
 	performersTagsJoinTable     = goqu.T(performersTagsTable)
@@ -247,6 +255,79 @@ var (
 )
 
 var (
+	audioTableMgr = &table{
+		table:    goqu.T(audioTable),
+		idColumn: goqu.T(audioTable).Col(idColumn),
+	}
+
+	audiosFilesTableMgr = &relatedFilesTable{
+		table: table{
+			table:    audiosFilesJoinTable,
+			idColumn: audiosFilesJoinTable.Col(audioIDColumn),
+		},
+	}
+
+	audiosTagsTableMgr = &joinTable{
+		table: table{
+			table:    audiosTagsJoinTable,
+			idColumn: audiosTagsJoinTable.Col(audioIDColumn),
+		},
+		fkColumn:     audiosTagsJoinTable.Col(tagIDColumn),
+		foreignTable: tagTableMgr,
+		orderBy:      tagTableSort,
+	}
+
+	audiosPerformersTableMgr = &joinTable{
+		table: table{
+			table:    audiosPerformersJoinTable,
+			idColumn: audiosPerformersJoinTable.Col(audioIDColumn),
+		},
+		fkColumn: audiosPerformersJoinTable.Col(performerIDColumn),
+	}
+
+	audiosGroupsTableMgr = &audiosGroupsTable{
+		table: table{
+			table:    audiosGroupsJoinTable,
+			idColumn: audiosGroupsJoinTable.Col(audioIDColumn),
+		},
+	}
+
+	audiosGalleriesTableMgr = &joinTable{
+		table: table{
+			table:    audiosGalleriesJoinTable,
+			idColumn: audiosGalleriesJoinTable.Col(audioIDColumn),
+		},
+		fkColumn: audiosGalleriesJoinTable.Col(galleryIDColumn),
+	}
+
+	galleriesAudiosTableMgr = audiosGalleriesTableMgr.invert()
+
+	audiosURLsTableMgr = &orderedValueTable[string]{
+		table: table{
+			table:    audiosURLsJoinTable,
+			idColumn: audiosURLsJoinTable.Col(audioIDColumn),
+		},
+		valueColumn: audiosURLsJoinTable.Col(audioURLColumn),
+	}
+
+	audiosViewTableMgr = &viewHistoryTable{
+		table: table{
+			table:    goqu.T(audiosPlayDatesTable),
+			idColumn: goqu.T(audiosPlayDatesTable).Col(audioIDColumn),
+		},
+		dateColumn: goqu.T(audiosPlayDatesTable).Col(audioPlayDateColumn),
+	}
+
+	audiosOTableMgr = &viewHistoryTable{
+		table: table{
+			table:    goqu.T(audiosODatesTable),
+			idColumn: goqu.T(audiosODatesTable).Col(audioIDColumn),
+		},
+		dateColumn: goqu.T(audiosODatesTable).Col(audioODateColumn),
+	}
+)
+
+var (
 	fileTableMgr = &table{
 		table:    goqu.T(fileTable),
 		idColumn: goqu.T(fileTable).Col(idColumn),
@@ -255,6 +336,11 @@ var (
 	videoFileTableMgr = &table{
 		table:    goqu.T(videoFileTable),
 		idColumn: goqu.T(videoFileTable).Col(fileIDColumn),
+	}
+
+	audioFileTableMgr = &table{
+		table:    goqu.T(audioFileTable),
+		idColumn: goqu.T(audioFileTable).Col(fileIDColumn),
 	}
 
 	imageFileTableMgr = &table{

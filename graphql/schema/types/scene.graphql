@@ -60,7 +60,7 @@ type Scene {
   resume_time: Float
   "The total time a scene has spent playing"
   play_duration: Float
-  "The number ot times a scene has been played"
+  "The number of times a scene has been played"
   play_count: Int
 
   "Times a scene was played"
@@ -155,7 +155,7 @@ input SceneUpdateInput {
   resume_time: Float
   "The total time a scene has spent playing"
   play_duration: Float
-  "The number ot times a scene has been played"
+  "The number of times a scene has been played"
   play_count: Int
     @deprecated(
       reason: "Unsupported - Use sceneIncrementPlayCount/sceneDecrementPlayCount"

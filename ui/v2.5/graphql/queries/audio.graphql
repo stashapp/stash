@@ -1,0 +1,28 @@
+query FindAudios(
+  $filter: FindFilterType
+  $audio_filter: AudioFilterType
+  $ids: [ID!]
+) {
+  findAudios(filter: $filter, audio_filter: $audio_filter, ids: $ids) {
+    count
+    audios {
+      ...SlimAudioData
+    }
+  }
+}
+
+query FindAudiosMetadata(
+  $filter: FindFilterType
+  $audio_filter: AudioFilterType
+  $ids: [ID!]
+) {
+  findAudios(filter: $filter, audio_filter: $audio_filter, ids: $ids) {
+    filesize
+  }
+}
+
+query FindAudio($id: ID!, $checksum: String) {
+  findAudio(id: $id, checksum: $checksum) {
+    ...AudioData
+  }
+}

@@ -105,6 +105,7 @@ type tagRepositoryType struct {
 	stashIDs stashIDRepository
 
 	scenes     joinRepository
+	audios     joinRepository
 	images     joinRepository
 	galleries  joinRepository
 	groups     joinRepository
@@ -138,6 +139,14 @@ var (
 			},
 			fkColumn:     sceneIDColumn,
 			foreignTable: sceneTable,
+		},
+		audios: joinRepository{
+			repository: repository{
+				tableName: audiosTagsTable,
+				idColumn:  tagIDColumn,
+			},
+			fkColumn:     audioIDColumn,
+			foreignTable: audioTable,
 		},
 		images: joinRepository{
 			repository: repository{
@@ -474,6 +483,18 @@ func (qb *TagStore) FindBySceneID(ctx context.Context, sceneID int) ([]*models.T
 	return qb.queryTags(ctx, query, args)
 }
 
+func (qb *TagStore) FindByAudioID(ctx context.Context, audioID int) ([]*models.Tag, error) {
+	query := `
+		SELECT tags.* FROM tags
+		LEFT JOIN audios_tags as audios_join on audios_join.tag_id = tags.id
+		WHERE audios_join.audio_id = ?
+		GROUP BY tags.id
+	`
+	query += qb.getDefaultTagSort()
+	args := []interface{}{audioID}
+	return qb.queryTags(ctx, query, args)
+}
+
 func (qb *TagStore) FindByPerformerID(ctx context.Context, performerID int) ([]*models.Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
@@ -804,6 +825,9 @@ var tagSortOptions = sortOptions{
 	"scenes_count",
 	"scenes_duration",
 	"scenes_size",
+	"audios_count",
+	"audios_duration",
+	"audios_size",
 	"updated_at",
 }
 
@@ -827,6 +851,28 @@ func (qb *TagStore) sortByScenesSize(direction string) string {
 		LEFT JOIN %s ON %s.id = %s.file_id
 		WHERE %s.%s = %s.id
 	) %s`, fileTable, scenesTagsTable, sceneTable, sceneTable, scenesTagsTable, sceneIDColumn, scenesFilesTable, scenesFilesTable, sceneIDColumn, sceneTable, fileTable, fileTable, scenesFilesTable, scenesTagsTable, tagIDColumn, tagTable, getSortDirection(direction))
+}
+
+func (qb *TagStore) sortByAudiosDuration(direction string) string {
+	return fmt.Sprintf(` ORDER BY (
+		SELECT COALESCE(SUM(audio_files.duration), 0)
+		FROM %s
+		LEFT JOIN %s ON %s.id = %s.%s
+		LEFT JOIN %s ON %s.%s = %s.id
+		LEFT JOIN audio_files ON audio_files.file_id = %s.file_id
+		WHERE %s.%s = %s.id
+	) %s`, audiosTagsTable, audioTable, audioTable, audiosTagsTable, audioIDColumn, audiosFilesTable, audiosFilesTable, audioIDColumn, audioTable, audiosFilesTable, audiosTagsTable, tagIDColumn, tagTable, getSortDirection(direction))
+}
+
+func (qb *TagStore) sortByAudiosSize(direction string) string {
+	return fmt.Sprintf(` ORDER BY (
+		SELECT COALESCE(SUM(%s.size), 0)
+		FROM %s
+		LEFT JOIN %s ON %s.id = %s.%s
+		LEFT JOIN %s ON %s.%s = %s.id
+		LEFT JOIN %s ON %s.id = %s.file_id
+		WHERE %s.%s = %s.id
+	) %s`, fileTable, audiosTagsTable, audioTable, audioTable, audiosTagsTable, audioIDColumn, audiosFilesTable, audiosFilesTable, audioIDColumn, audioTable, fileTable, fileTable, audiosFilesTable, audiosTagsTable, tagIDColumn, tagTable, getSortDirection(direction))
 }
 
 func (qb *TagStore) getDefaultTagSort() string {
@@ -863,6 +909,12 @@ func (qb *TagStore) getTagSort(query *queryBuilder, findFilter *models.FindFilte
 		sortQuery += fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM scene_markers_tags WHERE tags.id = scene_markers_tags.tag_id)+(SELECT COUNT(*) FROM scene_markers WHERE tags.id = scene_markers.primary_tag_id) %s", getSortDirection(direction))
 	case "images_count":
 		sortQuery += getCountSort(tagTable, imagesTagsTable, tagIDColumn, direction)
+	case "audios_count":
+		sortQuery += getCountSort(tagTable, audiosTagsTable, tagIDColumn, direction)
+	case "audios_duration":
+		sortQuery += qb.sortByAudiosDuration(direction)
+	case "audios_size":
+		sortQuery += qb.sortByAudiosSize(direction)
 	case "galleries_count":
 		sortQuery += getCountSort(tagTable, galleriesTagsTable, tagIDColumn, direction)
 	case "performers_count":
@@ -974,6 +1026,7 @@ func (qb *TagStore) Merge(ctx context.Context, source []int, destination int) er
 		scenesTagsTable:      sceneIDColumn,
 		"scene_markers_tags": "scene_marker_id",
 		galleriesTagsTable:   galleryIDColumn,
+		audiosTagsTable:      audioIDColumn,
 		imagesTagsTable:      imageIDColumn,
 		"performers_tags":    "performer_id",
 		"studios_tags":       "studio_id",

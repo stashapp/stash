@@ -7,10 +7,10 @@ import (
 	"time"
 )
 
-// ScenePlayHistoryLoaderConfig captures the config to create a new ScenePlayHistoryLoader
-type ScenePlayHistoryLoaderConfig struct {
+// RelatedTimeLoaderConfig captures the config to create a new RelatedTimeLoader
+type RelatedTimeLoaderConfig struct {
 	// Fetch is a method that provides the data for the loader
-	Fetch func(keys []int) ([][]time.Time, []error)
+	Fetch func(keys []int) ([]*time.Time, []error)
 
 	// Wait is how long wait before sending a batch
 	Wait time.Duration
@@ -19,19 +19,19 @@ type ScenePlayHistoryLoaderConfig struct {
 	MaxBatch int
 }
 
-// NewScenePlayHistoryLoader creates a new ScenePlayHistoryLoader given a fetch, wait, and maxBatch
-func NewScenePlayHistoryLoader(config ScenePlayHistoryLoaderConfig) *ScenePlayHistoryLoader {
-	return &ScenePlayHistoryLoader{
+// NewRelatedTimeLoader creates a new RelatedTimeLoader given a fetch, wait, and maxBatch
+func NewRelatedTimeLoader(config RelatedTimeLoaderConfig) *RelatedTimeLoader {
+	return &RelatedTimeLoader{
 		fetch:    config.Fetch,
 		wait:     config.Wait,
 		maxBatch: config.MaxBatch,
 	}
 }
 
-// ScenePlayHistoryLoader batches and caches requests
-type ScenePlayHistoryLoader struct {
+// RelatedTimeLoader batches and caches requests
+type RelatedTimeLoader struct {
 	// this method provides the data for the loader
-	fetch func(keys []int) ([][]time.Time, []error)
+	fetch func(keys []int) ([]*time.Time, []error)
 
 	// how long to done before sending a batch
 	wait time.Duration
@@ -42,51 +42,51 @@ type ScenePlayHistoryLoader struct {
 	// INTERNAL
 
 	// lazily created cache
-	cache map[int][]time.Time
+	cache map[int]*time.Time
 
 	// the current batch. keys will continue to be collected until timeout is hit,
 	// then everything will be sent to the fetch method and out to the listeners
-	batch *scenePlayHistoryLoaderBatch
+	batch *relatedTimeLoaderBatch
 
 	// mutex to prevent races
 	mu sync.Mutex
 }
 
-type scenePlayHistoryLoaderBatch struct {
+type relatedTimeLoaderBatch struct {
 	keys    []int
-	data    [][]time.Time
+	data    []*time.Time
 	error   []error
 	closing bool
 	done    chan struct{}
 }
 
 // Load a Time by key, batching and caching will be applied automatically
-func (l *ScenePlayHistoryLoader) Load(key int) ([]time.Time, error) {
+func (l *RelatedTimeLoader) Load(key int) (*time.Time, error) {
 	return l.LoadThunk(key)()
 }
 
 // LoadThunk returns a function that when called will block waiting for a Time.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *ScenePlayHistoryLoader) LoadThunk(key int) func() ([]time.Time, error) {
+func (l *RelatedTimeLoader) LoadThunk(key int) func() (*time.Time, error) {
 	l.mu.Lock()
 	if it, ok := l.cache[key]; ok {
 		l.mu.Unlock()
-		return func() ([]time.Time, error) {
+		return func() (*time.Time, error) {
 			return it, nil
 		}
 	}
 	if l.batch == nil {
-		l.batch = &scenePlayHistoryLoaderBatch{done: make(chan struct{})}
+		l.batch = &relatedTimeLoaderBatch{done: make(chan struct{})}
 	}
 	batch := l.batch
 	pos := batch.keyIndex(l, key)
 	l.mu.Unlock()
 
-	return func() ([]time.Time, error) {
+	return func() (*time.Time, error) {
 		<-batch.done
 
-		var data []time.Time
+		var data *time.Time
 		if pos < len(batch.data) {
 			data = batch.data[pos]
 		}
@@ -111,14 +111,14 @@ func (l *ScenePlayHistoryLoader) LoadThunk(key int) func() ([]time.Time, error) 
 
 // LoadAll fetches many keys at once. It will be broken into appropriate sized
 // sub batches depending on how the loader is configured
-func (l *ScenePlayHistoryLoader) LoadAll(keys []int) ([][]time.Time, []error) {
-	results := make([]func() ([]time.Time, error), len(keys))
+func (l *RelatedTimeLoader) LoadAll(keys []int) ([]*time.Time, []error) {
+	results := make([]func() (*time.Time, error), len(keys))
 
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
 
-	times := make([][]time.Time, len(keys))
+	times := make([]*time.Time, len(keys))
 	errors := make([]error, len(keys))
 	for i, thunk := range results {
 		times[i], errors[i] = thunk()
@@ -129,13 +129,13 @@ func (l *ScenePlayHistoryLoader) LoadAll(keys []int) ([][]time.Time, []error) {
 // LoadAllThunk returns a function that when called will block waiting for a Times.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *ScenePlayHistoryLoader) LoadAllThunk(keys []int) func() ([][]time.Time, []error) {
-	results := make([]func() ([]time.Time, error), len(keys))
+func (l *RelatedTimeLoader) LoadAllThunk(keys []int) func() ([]*time.Time, []error) {
+	results := make([]func() (*time.Time, error), len(keys))
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
-	return func() ([][]time.Time, []error) {
-		times := make([][]time.Time, len(keys))
+	return func() ([]*time.Time, []error) {
+		times := make([]*time.Time, len(keys))
 		errors := make([]error, len(keys))
 		for i, thunk := range results {
 			times[i], errors[i] = thunk()
@@ -147,37 +147,36 @@ func (l *ScenePlayHistoryLoader) LoadAllThunk(keys []int) func() ([][]time.Time,
 // Prime the cache with the provided key and value. If the key already exists, no change is made
 // and false is returned.
 // (To forcefully prime the cache, clear the key first with loader.clear(key).prime(key, value).)
-func (l *ScenePlayHistoryLoader) Prime(key int, value []time.Time) bool {
+func (l *RelatedTimeLoader) Prime(key int, value *time.Time) bool {
 	l.mu.Lock()
 	var found bool
 	if _, found = l.cache[key]; !found {
 		// make a copy when writing to the cache, its easy to pass a pointer in from a loop var
 		// and end up with the whole cache pointing to the same value.
-		cpy := make([]time.Time, len(value))
-		copy(cpy, value)
-		l.unsafeSet(key, cpy)
+		cpy := *value
+		l.unsafeSet(key, &cpy)
 	}
 	l.mu.Unlock()
 	return !found
 }
 
 // Clear the value at key from the cache, if it exists
-func (l *ScenePlayHistoryLoader) Clear(key int) {
+func (l *RelatedTimeLoader) Clear(key int) {
 	l.mu.Lock()
 	delete(l.cache, key)
 	l.mu.Unlock()
 }
 
-func (l *ScenePlayHistoryLoader) unsafeSet(key int, value []time.Time) {
+func (l *RelatedTimeLoader) unsafeSet(key int, value *time.Time) {
 	if l.cache == nil {
-		l.cache = map[int][]time.Time{}
+		l.cache = map[int]*time.Time{}
 	}
 	l.cache[key] = value
 }
 
 // keyIndex will return the location of the key in the batch, if its not found
 // it will add the key to the batch
-func (b *scenePlayHistoryLoaderBatch) keyIndex(l *ScenePlayHistoryLoader, key int) int {
+func (b *relatedTimeLoaderBatch) keyIndex(l *RelatedTimeLoader, key int) int {
 	for i, existingKey := range b.keys {
 		if key == existingKey {
 			return i
@@ -201,7 +200,7 @@ func (b *scenePlayHistoryLoaderBatch) keyIndex(l *ScenePlayHistoryLoader, key in
 	return pos
 }
 
-func (b *scenePlayHistoryLoaderBatch) startTimer(l *ScenePlayHistoryLoader) {
+func (b *relatedTimeLoaderBatch) startTimer(l *RelatedTimeLoader) {
 	time.Sleep(l.wait)
 	l.mu.Lock()
 
@@ -217,7 +216,7 @@ func (b *scenePlayHistoryLoaderBatch) startTimer(l *ScenePlayHistoryLoader) {
 	b.end(l)
 }
 
-func (b *scenePlayHistoryLoaderBatch) end(l *ScenePlayHistoryLoader) {
+func (b *relatedTimeLoaderBatch) end(l *RelatedTimeLoader) {
 	b.data, b.error = l.fetch(b.keys)
 	close(b.done)
 }
