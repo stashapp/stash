@@ -26,12 +26,10 @@ import {
   faBars,
   faChartColumn,
   faFilm,
-  faHeart,
   faImage,
   faImages,
   faMapMarkerAlt,
   faPlayCircle,
-  faQuestionCircle,
   faSignOutAlt,
   faTag,
   faTimes,
@@ -52,47 +50,39 @@ interface IMenuItem {
 const messages = defineMessages({
   scenes: {
     id: "scenes",
-    defaultMessage: "Scenes",
+    defaultMessage: "vids",
   },
   images: {
     id: "images",
-    defaultMessage: "Images",
+    defaultMessage: "pics",
   },
   groups: {
     id: "groups",
-    defaultMessage: "Groups",
+    defaultMessage: "groups",
   },
   markers: {
     id: "markers",
-    defaultMessage: "Markers",
+    defaultMessage: "pins",
   },
   performers: {
     id: "performers",
-    defaultMessage: "Performers",
+    defaultMessage: "hoes",
   },
   studios: {
     id: "studios",
-    defaultMessage: "Studios",
+    defaultMessage: "studios",
   },
   tags: {
     id: "tags",
-    defaultMessage: "Tags",
+    defaultMessage: "tags",
   },
   galleries: {
     id: "galleries",
-    defaultMessage: "Galleries",
-  },
-  sceneTagger: {
-    id: "sceneTagger",
-    defaultMessage: "Scene Tagger",
-  },
-  donate: {
-    id: "donate",
-    defaultMessage: "Donate",
+    defaultMessage: "albums",
   },
   statistics: {
     id: "statistics",
-    defaultMessage: "Statistics",
+    defaultMessage: "stats",
   },
 });
 
@@ -296,22 +286,6 @@ export const MainNavbar: React.FC = () => {
   function renderUtilityButtons() {
     return (
       <>
-        <Nav.Link
-          className="nav-utility"
-          href="https://opencollective.com/stashapp"
-          target="_blank"
-          onClick={handleDismiss}
-        >
-          <Button
-            className="minimal donate"
-            title={intl.formatMessage({ id: "donate" })}
-          >
-            <Icon icon={faHeart} />
-            <span className="d-none d-sm-inline">
-              {intl.formatMessage(messages.donate)}
-            </span>
-          </Button>
-        </Nav.Link>
         <NavLink
           className="nav-utility"
           exact
@@ -333,13 +307,6 @@ export const MainNavbar: React.FC = () => {
         >
           <SettingsButton />
         </NavLink>
-        <Button
-          className="nav-utility minimal"
-          onClick={() => openManual()}
-          title={intl.formatMessage({ id: "help" })}
-        >
-          <Icon icon={faQuestionCircle} />
-        </Button>
         {maybeRenderLogout()}
       </>
     );
@@ -387,7 +354,7 @@ export const MainNavbar: React.FC = () => {
 
       <Navbar.Brand as="div" onClick={handleDismiss}>
         <Link to="/">
-          <Button className="minimal brand-link d-inline-block">Stash</Button>
+          <Button className="minimal brand-link d-inline-block">The Goon Lagoon</Button>
         </Link>
       </Navbar.Brand>
 

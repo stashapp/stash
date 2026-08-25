@@ -188,3 +188,27 @@ hr {
     background-color: transparent;
   }
 }
+
+/* [Global changes] Hide the Donate button */
+
+.btn-primary.btn.donate.minimal {
+display: none;
+}
+
+.card {
+    background-color: rgba(0, 0, 0, 0);
+    border-radius: 3px;
+    box-shadow: 0 0 0 1px rgb(239 23 190 / 68%), 0 0 rgba(16, 22, 26, 0), 0 0 rgba(16, 22, 26, 0);
+    padding: 20px;
+}
+
+.tag-item a {
+    background-color: #ffffff00;
+    color: #e5ff00;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    margin: 5px;
+    padding: 2px 6px;
+}
+

@@ -1,22 +1,22 @@
 {
-  "short_name": "Stash",
-  "name": "Stash: Porn Organizer",
-  "description": "Stash allows you to organize and view your own collection of adult video and image files. Think of it like a private PornHub site for your personal porn collection. ",
+  "short_name": "The Goon Lagoon",
+  "name": "The Goon Lagoon: The worst waterpark you will never visit.",
+  "description": "Come on in, the water is... questionable.",
   "icons": [
     {
-      "src": "stash_icon.svg",
+      "src": "gl_icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "stash_icon.png",
+      "src": "gl_icon.png",
       "sizes": "256x256 64x64 32x32 24x24 16x16",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "favicon.png",
+      "src": "gl-favicon.png",
       "sizes": "256x256 64x64 32x32 24x24 16x16",
       "type": "image/png",
       "purpose": "monochrome"
