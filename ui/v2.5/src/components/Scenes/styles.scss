@@ -565,6 +565,13 @@ input[type="range"].blue-slider {
     font-size: 0.85em;
   }
 
+  // keep the form mounted while a save is in flight, rather than swapping it
+  // out for a spinner, so scroll position isn't lost
+  .form-container.saving {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
   @include media-breakpoint-up(xl) {
     .custom-fields-input {
       .custom-fields-field {
