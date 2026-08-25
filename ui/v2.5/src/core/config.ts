@@ -55,6 +55,10 @@ export interface IUIConfig {
 
   abbreviateCounters?: boolean;
 
+  // if true, selecting a value in a confirmed selector (tags, performers,
+  // studio, galleries, groups, stash IDs) saves the edit form immediately
+  autoSaveConfirmedFields?: boolean;
+
   ratingSystemOptions?: RatingSystemOptions;
 
   // if true a background image will be display on header
