@@ -28,6 +28,7 @@ interface ISelectProps<T, IsMulti extends boolean>
   showDropdown?: boolean;
   groupHeader?: string;
   noOptionsMessageText?: string | null;
+  isAlreadySelected?: (inputValue: string) => boolean;
 }
 
 interface IFilterSelectProps<T, IsMulti extends boolean>
@@ -64,6 +65,7 @@ const SelectComponent = <T, IsMulti extends boolean>(
     placeholder,
     showDropdown = true,
     noOptionsMessageText: noOptionsMessage = "None",
+    isAlreadySelected,
   } = props;
 
   const styles: StylesConfig<Option<T>, IsMulti> = {
@@ -89,7 +91,10 @@ const SelectComponent = <T, IsMulti extends boolean>(
     value: selectedOptions ?? null,
     className: cx("react-select", props.className),
     classNamePrefix: "react-select",
-    noOptionsMessage: () => noOptionsMessage,
+    noOptionsMessage: ({ inputValue }: { inputValue: string }) =>
+      inputValue && isAlreadySelected?.(inputValue)
+        ? "Already selected"
+        : noOptionsMessage,
     placeholder: isDisabled ? "" : placeholder,
     components: {
       ...components,
@@ -233,6 +238,15 @@ export const FilterSelectComponent = <
         }
       : undefined;
 
+  // an exact match against the *selected* values (rather than the loaded
+  // search results) means the "no options" state is because the item is
+  // already added, not because it doesn't exist
+  const isAlreadySelected =
+    creatable && isValidNewOption
+      ? (inputValue: string) =>
+          !!values?.length && !isValidNewOption(inputValue, values)
+      : undefined;
+
   const debounceDelay = 100;
   const debounceLoadOptions = useDebounce((inputValue, callback) => {
     loadOptions(inputValue).then(callback);
@@ -248,6 +262,7 @@ export const FilterSelectComponent = <
       onCreateOption={onCreate}
       getNewOptionData={getNewOptionData}
       isValidNewOption={validNewOption}
+      isAlreadySelected={isAlreadySelected}
     />
   );
 };
