@@ -28,6 +28,7 @@ import { addUpdateStashID, getStashIDs } from "src/utils/stashIds";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { useConfigurationContext } from "src/hooks/Config";
+import { IUIConfig } from "src/core/config";
 import { IGroupEntry, SceneGroupTable } from "./SceneGroupTable";
 import {
   faSearch,
@@ -212,8 +213,36 @@ export const SceneEditPanel: React.FC<IProps> = ({
     onSubmit: submit,
   });
 
-  const { tags, updateTagsStateFromScraper, resetTagsState, tagsControl } =
-    useTagsEdit(scene.tags, (ids) => formik.setFieldValue("tag_ids", ids));
+  const {
+    tags,
+    onSetTags,
+    updateTagsStateFromScraper,
+    resetTagsState,
+    tagsControl,
+  } = useTagsEdit(scene.tags, (ids) => formik.setFieldValue("tag_ids", ids));
+
+  // auto-save applies only to fields whose value comes from an explicit
+  // selection, and never while creating a new scene
+  const autoSaveEnabled =
+    !isNew &&
+    ((stashConfig?.ui as IUIConfig)?.autoSaveConfirmedFields ?? false);
+
+  // set after a selection to submit once formik state has caught up
+  const [autoSaveRequested, setAutoSaveRequested] = useState(false);
+
+  function requestAutoSave() {
+    if (autoSaveEnabled) {
+      setAutoSaveRequested(true);
+    }
+  }
+
+  useEffect(() => {
+    if (!autoSaveRequested) return;
+    setAutoSaveRequested(false);
+    if (formik.dirty) {
+      formik.submitForm();
+    }
+  }, [autoSaveRequested, formik.dirty, formik.submitForm]);
 
   const coverImagePreview = useMemo(() => {
     const sceneImage = scene.paths?.screenshot;
@@ -245,6 +274,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       "gallery_ids",
       items.map((i) => i.id)
     );
+    requestAutoSave();
   }
 
   function onSetPerformers(items: Performer[]) {
@@ -253,11 +283,13 @@ export const SceneEditPanel: React.FC<IProps> = ({
       "performer_ids",
       items.map((item) => item.id)
     );
+    requestAutoSave();
   }
 
   function onSetStudio(item: Studio | null) {
     setStudio(item);
     formik.setFieldValue("studio_id", item ? item.id : null);
+    requestAutoSave();
   }
 
   useEffect(() => {
@@ -614,6 +646,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       "stash_ids",
       addUpdateStashID(formik.values.stash_ids, item)
     );
+    requestAutoSave();
   }
 
   const image = useMemo(() => {
@@ -737,6 +770,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }));
 
     formik.setFieldValue("groups", newGroups);
+    requestAutoSave();
   }
 
   function renderGroupsField() {
@@ -750,7 +784,14 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function renderTagsField() {
     const title = intl.formatMessage({ id: "tags" });
-    return renderField("tag_ids", title, tagsControl(), fullWidthProps);
+    const control = tagsControl({
+      onSelect: (items) => {
+        onSetTags(items);
+        requestAutoSave();
+      },
+    });
+
+    return renderField("tag_ids", title, control, fullWidthProps);
   }
 
   function renderDetailsField() {
