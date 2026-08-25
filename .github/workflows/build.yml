@@ -9,7 +9,11 @@ on:
   pull_request:
   release:
     types: [ published ]
-
+    
+permissions:
+  contents: write
+  packages: write
+  
 concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: true
