@@ -9,8 +9,8 @@ WORKDIR /stash
 COPY Makefile /stash/
 COPY ./graphql /stash/graphql/
 COPY ./ui /stash/ui/
-# pnpm install with npm
-RUN npm install -g pnpm
+# Use the exact pnpm version declared by the project to keep the lockfile valid.
+RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 RUN make pre-ui
 RUN make generate-ui
 ARG GITHASH
