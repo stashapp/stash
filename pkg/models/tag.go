@@ -16,6 +16,8 @@ type TagFilterType struct {
 	IsMissing *string `json:"is_missing"`
 	// Filter by number of scenes with this tag
 	SceneCount *HierarchicalCountInput `json:"scene_count"`
+	// Filter by number of audios with this tag
+	AudioCount *HierarchicalCountInput `json:"audio_count"`
 	// Filter by number of images with this tag
 	ImageCount *HierarchicalCountInput `json:"image_count"`
 	// Filter by number of galleries with this tag
@@ -46,6 +48,8 @@ type TagFilterType struct {
 	StashIDsEndpoint *StashIDsCriterionInput `json:"stash_ids_endpoint"`
 	// Filter by related scenes that meet this criteria
 	ScenesFilter *SceneFilterType `json:"scenes_filter"`
+	// Filter by related audios that meet this criteria
+	AudiosFilter *AudioFilterType `json:"audios_filter"`
 	// Filter by related images that meet this criteria
 	ImagesFilter *ImageFilterType `json:"images_filter"`
 	// Filter by related galleries that meet this criteria

@@ -5,7 +5,7 @@ import { GroupLink } from "../Shared/TagLink";
 
 export const GroupTag: React.FC<{
   group: Pick<GQL.GroupDataFragment, "id" | "name" | "front_image_path">;
-  linkType?: "scene" | "sub_group" | "details";
+  linkType?: "scene" | "audio" | "sub_group" | "details";
   description?: string;
 }> = ({ group, linkType, description }) => {
   return (

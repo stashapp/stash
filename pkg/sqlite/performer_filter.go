@@ -217,6 +217,7 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 
 		qb.tagCountCriterionHandler(filter.TagCount),
 		qb.sceneCountCriterionHandler(filter.SceneCount),
+		qb.audioCountCriterionHandler(filter.AudioCount),
 		qb.markerCountCriterionHandler(filter.MarkerCount),
 		qb.imageCountCriterionHandler(filter.ImageCount),
 		qb.galleryCountCriterionHandler(filter.GalleryCount),
@@ -243,6 +244,15 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 			relatedHandler: &sceneFilterHandler{filter.ScenesFilter},
 			joinFn: func(f *filterBuilder) {
 				performerRepository.scenes.innerJoin(f, "", "performers.id")
+			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "performers_audios.audio_id",
+			relatedRepo:    audioRepository.repository,
+			relatedHandler: &audioFilterHandler{filter.AudiosFilter},
+			joinFn: func(f *filterBuilder) {
+				performerRepository.audios.innerJoin(f, "", "performers.id")
 			},
 		},
 
@@ -456,6 +466,16 @@ func (qb *performerFilterHandler) markerCountCriterionHandler(count *models.IntC
 	}
 }
 
+func (qb *performerFilterHandler) audioCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
+	h := countCriterionHandlerBuilder{
+		primaryTable: performerTable,
+		joinTable:    performersAudiosTable,
+		primaryFK:    performerIDColumn,
+	}
+
+	return h.handler(count)
+}
+
 func (qb *performerFilterHandler) imageCountCriterionHandler(count *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
 		primaryTable: performerTable,
@@ -488,6 +508,11 @@ var selectPerformerOCountSQL = utils.StrFormat(
 		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
 		"LEFT JOIN {scenes_o_dates} ON {scenes_o_dates}.{scene_id} = {scenes}.id "+
 		"WHERE s.{performer_id} = {performers}.id "+
+		"UNION ALL "+
+		"SELECT COUNT({audios_o_dates}.{audio_o_date}) as o_counter from {performers_audios} a "+
+		"LEFT JOIN {audios} ON {audios}.id = a.{audio_id} "+
+		"LEFT JOIN {audios_o_dates} ON {audios_o_dates}.{audio_id} = {audios}.id "+
+		"WHERE a.{performer_id} = {performers}.id "+
 		")",
 	map[string]interface{}{
 		"performers_images": performersImagesTable,
@@ -500,6 +525,11 @@ var selectPerformerOCountSQL = utils.StrFormat(
 		"scene_id":          sceneIDColumn,
 		"scenes_o_dates":    scenesODatesTable,
 		"o_date":            sceneODateColumn,
+		"performers_audios": performersAudiosTable,
+		"audios":            audioTable,
+		"audio_id":          audioIDColumn,
+		"audios_o_dates":    audiosODatesTable,
+		"audio_o_date":      audioODateColumn,
 	},
 )
 

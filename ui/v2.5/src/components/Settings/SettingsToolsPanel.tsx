@@ -48,6 +48,19 @@ export const SettingsToolsPanel: React.FC = () => {
           />
         </SettingsToolsSection>
       </SettingSection>
+      <SettingSection headingID="config.tools.audio_tools">
+        <SettingsToolsSection>
+          <Setting
+            heading={
+              <Link to="/audioFilenameParser">
+                <Button>
+                  <FormattedMessage id="config.tools.audio_filename_parser.title" />
+                </Button>
+              </Link>
+            }
+          />
+        </SettingsToolsSection>
+      </SettingSection>
     </>
   );
 };

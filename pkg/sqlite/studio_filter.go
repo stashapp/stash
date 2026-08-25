@@ -83,6 +83,7 @@ func (qb *studioFilterHandler) criterionHandler() criterionHandler {
 		qb.isMissingCriterionHandler(studioFilter.IsMissing),
 		qb.tagCountCriterionHandler(studioFilter.TagCount),
 		qb.sceneCountCriterionHandler(studioFilter.SceneCount),
+		qb.audioCountCriterionHandler(studioFilter.AudioCount),
 		qb.imageCountCriterionHandler(studioFilter.ImageCount),
 		qb.galleryCountCriterionHandler(studioFilter.GalleryCount),
 		qb.groupCountCriterionHandler(studioFilter.GroupCount),
@@ -99,6 +100,15 @@ func (qb *studioFilterHandler) criterionHandler() criterionHandler {
 			relatedHandler: &sceneFilterHandler{studioFilter.ScenesFilter},
 			joinFn: func(f *filterBuilder) {
 				studioRepository.scenes.innerJoin(f, "", "studios.id")
+			},
+		},
+
+		&relatedFilterHandler{
+			relatedIDCol:   "audios.id",
+			relatedRepo:    audioRepository.repository,
+			relatedHandler: &audioFilterHandler{studioFilter.AudiosFilter},
+			joinFn: func(f *filterBuilder) {
+				studioRepository.audios.innerJoin(f, "", "studios.id")
 			},
 		},
 
@@ -174,6 +184,17 @@ func (qb *studioFilterHandler) sceneCountCriterionHandler(sceneCount *models.Int
 		if sceneCount != nil {
 			f.addLeftJoin("scenes", "", "scenes.studio_id = studios.id")
 			clause, args := getIntCriterionWhereClause("count(distinct scenes.id)", *sceneCount)
+
+			f.addHaving(clause, args...)
+		}
+	}
+}
+
+func (qb *studioFilterHandler) audioCountCriterionHandler(audioCount *models.IntCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if audioCount != nil {
+			f.addLeftJoin("audios", "", "audios.studio_id = studios.id")
+			clause, args := getIntCriterionWhereClause("count(distinct audios.id)", *audioCount)
 
 			f.addHaving(clause, args...)
 		}

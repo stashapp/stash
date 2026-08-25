@@ -10,6 +10,7 @@ import { ImageRecommendationRow } from "../Images/ImageRecommendationRow";
 import { GroupRecommendationRow } from "../Groups/GroupRecommendationRow";
 import { PerformerRecommendationRow } from "../Performers/PerformerRecommendationRow";
 import { SceneRecommendationRow } from "../Scenes/SceneRecommendationRow";
+import { AudioRecommendationRow } from "../Audios/AudioRecommendationRow";
 import { StudioRecommendationRow } from "../Studios/StudioRecommendationRow";
 import { TagRecommendationRow } from "../Tags/TagRecommendationRow";
 import { SceneMarkerRecommendationRow } from "../Scenes/SceneMarkerRecommendationRow";
@@ -31,6 +32,14 @@ const RecommendationRow: React.FC<IFilter> = ({ mode, filter, header }) => {
     case GQL.FilterMode.Scenes:
       return (
         <SceneRecommendationRow
+          isTouch={isTouch}
+          filter={filter}
+          header={header}
+        />
+      );
+    case GQL.FilterMode.Audios:
+      return (
+        <AudioRecommendationRow
           isTouch={isTouch}
           filter={filter}
           header={header}

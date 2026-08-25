@@ -39,6 +39,9 @@ fragment GalleryData on Gallery {
   scenes {
     ...SlimSceneData
   }
+  audios {
+    ...SlimAudioData
+  }
 
   custom_fields
 }

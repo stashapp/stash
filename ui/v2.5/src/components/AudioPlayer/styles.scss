@@ -1,0 +1,54 @@
+// The audio player is a video.js instance with no video track, so it has no
+// intrinsic aspect ratio to size itself from. video.js absolutely positions the
+// <video-js> element inside its container, so - as with .video-wrapper in the
+// scene player - the height has to be set on the wrapper or the player
+// collapses to nothing. The cover art is shown as the poster, so the box is
+// square rather than the 16:9 the scene player uses.
+$audioPlayerSize: 520px;
+
+.AudioPlayer {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0 auto;
+  max-width: $audioPlayerSize;
+  padding: 2rem 0;
+  width: 100%;
+
+  .audio-wrapper {
+    height: $audioPlayerSize;
+    max-height: 70vh;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+  }
+
+  .video-js {
+    background-color: $card-bg;
+    height: 100%;
+    width: 100%;
+  }
+
+  // the default cover is a transparent svg, so the poster needs the same
+  // background as the player or video.js's black shows through when paused
+  .vjs-poster {
+    background-color: $card-bg;
+    background-size: contain;
+  }
+
+  &.no-file {
+    display: none;
+  }
+}
+
+@media (max-width: 1199px) {
+  .AudioPlayer {
+    padding: 1rem 0;
+
+    .audio-wrapper {
+      height: 80vw;
+      max-height: $audioPlayerSize;
+    }
+  }
+}

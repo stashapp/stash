@@ -48,6 +48,16 @@ export const SettingsLibraryPanel: React.FC = () => {
         />
 
         <StringSetting
+          id="audio-extensions"
+          headingID="config.general.audio_ext_head"
+          subHeadingID="config.general.audio_ext_desc"
+          value={listToCommaDelimited(general.audioExtensions ?? undefined)}
+          onChange={(v) =>
+            saveGeneral({ audioExtensions: commaDelimitedToList(v) })
+          }
+        />
+
+        <StringSetting
           id="image-extensions"
           headingID="config.general.image_ext_head"
           subHeadingID="config.general.image_ext_desc"

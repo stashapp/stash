@@ -4,6 +4,7 @@ import (
 	"context"
 	"slices"
 
+	"github.com/stashapp/stash/pkg/audio"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/match"
@@ -16,6 +17,12 @@ type SceneQueryPerformerUpdater interface {
 	models.SceneQueryer
 	models.PerformerIDLoader
 	models.SceneUpdater
+}
+
+type AudioQueryPerformerUpdater interface {
+	models.AudioQueryer
+	models.PerformerIDLoader
+	models.AudioUpdater
 }
 
 type ImageQueryPerformerUpdater interface {
@@ -69,6 +76,36 @@ func (tagger *Tagger) PerformerScenes(ctx context.Context, p *models.Performer, 
 
 			if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
 				return scene.AddPerformer(ctx, rw, o, p.ID)
+			}); err != nil {
+				return false, err
+			}
+
+			return true, nil
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// PerformerAudios searches for audios whose path matches the provided performer name and tags the audio with the performer.
+// Performer aliases must be loaded.
+func (tagger *Tagger) PerformerAudios(ctx context.Context, p *models.Performer, paths []string, rw AudioQueryPerformerUpdater) error {
+	t := getPerformerTaggers(p, tagger.Cache)
+
+	for _, tt := range t {
+		if err := tt.tagAudios(ctx, paths, rw, func(o *models.Audio) (bool, error) {
+			if err := o.LoadPerformerIDs(ctx, rw); err != nil {
+				return false, err
+			}
+			existing := o.PerformerIDs.List()
+
+			if slices.Contains(existing, p.ID) {
+				return false, nil
+			}
+
+			if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
+				return audio.AddPerformer(ctx, rw, o, p.ID)
 			}); err != nil {
 				return false, err
 			}

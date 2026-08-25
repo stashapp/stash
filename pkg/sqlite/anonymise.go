@@ -90,6 +90,7 @@ func (db *Anonymiser) deleteBlobs() error {
 		func() error { return db.truncateColumn(studioTable, studioImageBlobColumn) },
 		func() error { return db.truncateColumn(performerTable, performerImageBlobColumn) },
 		func() error { return db.truncateColumn(sceneTable, sceneCoverBlobColumn) },
+		func() error { return db.truncateColumn(audioTable, audioCoverBlobColumn) },
 		func() error { return db.truncateColumn(groupTable, groupFrontImageBlobColumn) },
 		func() error { return db.truncateColumn(groupTable, groupBackImageBlobColumn) },
 

@@ -1,0 +1,741 @@
+package audio
+
+import (
+	"context"
+	"errors"
+	"testing"
+	"time"
+
+	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
+	"github.com/stashapp/stash/pkg/models/jsonschema"
+	"github.com/stashapp/stash/pkg/models/mocks"
+	"github.com/stashapp/stash/pkg/sliceutil"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
+
+const invalidImage = "aW1hZ2VCeXRlcw&&"
+
+var (
+	existingStudioID    = 101
+	existingGalleryID   = 102
+	existingPerformerID = 103
+	existingGroupID     = 104
+	existingTagID       = 105
+
+	existingStudioName = "existingStudioName"
+	existingStudioErr  = "existingStudioErr"
+	missingStudioName  = "missingStudioName"
+
+	existingPerformerName = "existingPerformerName"
+	existingPerformerErr  = "existingPerformerErr"
+	missingPerformerName  = "missingPerformerName"
+
+	existingGroupName = "existingGroupName"
+	existingGroupErr  = "existingGroupErr"
+	missingGroupName  = "missingGroupName"
+
+	existingTagName = "existingTagName"
+	existingTagErr  = "existingTagErr"
+	missingTagName  = "missingTagName"
+
+	existingGalleryFolderPath = "existingGalleryFolderPath"
+	existingGalleryZipPath    = "existingGalleryZipPath"
+	existingGalleryTitle      = "existingGalleryTitle"
+	existingGalleryErrPath    = "existingGalleryErrPath"
+	missingGalleryPath        = "missingGalleryPath"
+)
+
+var testCtx = context.Background()
+
+func TestImporterPreImport(t *testing.T) {
+	var (
+		title     = "title"
+		code      = "code"
+		details   = "details"
+		url1      = "url1"
+		url2      = "url2"
+		rating    = 3
+		organized = true
+
+		createdAt = time.Now().Add(-time.Hour)
+		updatedAt = time.Now().Add(-time.Minute)
+
+		resumeTime   = 1.234
+		playDuration = 2.345
+	)
+	tests := []struct {
+		name   string
+		input  jsonschema.Audio
+		output models.Audio
+	}{
+		{
+			"basic",
+			jsonschema.Audio{
+				Title:        title,
+				Code:         code,
+				Details:      details,
+				URLs:         []string{url1, url2},
+				Rating:       rating,
+				Organized:    organized,
+				CreatedAt:    json.JSONTime{Time: createdAt},
+				UpdatedAt:    json.JSONTime{Time: updatedAt},
+				ResumeTime:   resumeTime,
+				PlayDuration: playDuration,
+			},
+			models.Audio{
+				Title:        title,
+				Code:         code,
+				Details:      details,
+				URLs:         models.NewRelatedStrings([]string{url1, url2}),
+				Rating:       &rating,
+				Organized:    organized,
+				CreatedAt:    createdAt.Truncate(0),
+				UpdatedAt:    updatedAt.Truncate(0),
+				ResumeTime:   resumeTime,
+				PlayDuration: playDuration,
+
+				Files:        models.NewRelatedAudioFiles([]*models.AudioFile{}),
+				GalleryIDs:   models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				Groups:       models.NewRelatedGroupsAudio([]models.GroupsAudios{}),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			i := Importer{
+				Input: tt.input,
+			}
+
+			if err := i.PreImport(testCtx); err != nil {
+				t.Errorf("PreImport() error = %v", err)
+				return
+			}
+
+			assert.Equal(t, tt.output, i.audio)
+		})
+	}
+}
+
+func truncateTimes(t []time.Time) []time.Time {
+	return sliceutil.Map(t, func(t time.Time) time.Time { return t.Truncate(0) })
+}
+
+func TestImporterPreImportHistory(t *testing.T) {
+	var (
+		playTime1 = time.Now().Add(-time.Hour * 2)
+		playTime2 = time.Now().Add(-time.Minute * 2)
+		oTime1    = time.Now().Add(-time.Hour * 3)
+		oTime2    = time.Now().Add(-time.Minute * 3)
+	)
+	tests := []struct {
+		name                string
+		input               jsonschema.Audio
+		expectedPlayHistory []time.Time
+		expectedOHistory    []time.Time
+	}{
+		{
+			"basic",
+			jsonschema.Audio{
+				PlayHistory: []json.JSONTime{
+					{Time: playTime1},
+					{Time: playTime2},
+				},
+				OHistory: []json.JSONTime{
+					{Time: oTime1},
+					{Time: oTime2},
+				},
+			},
+			[]time.Time{playTime1, playTime2},
+			[]time.Time{oTime1, oTime2},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			i := Importer{
+				Input: tt.input,
+			}
+
+			if err := i.PreImport(testCtx); err != nil {
+				t.Errorf("PreImport() error = %v", err)
+				return
+			}
+
+			// convert histories to unix timestamps for comparison
+			eph := truncateTimes(tt.expectedPlayHistory)
+			vh := truncateTimes(i.viewHistory)
+
+			eoh := truncateTimes(tt.expectedOHistory)
+			oh := truncateTimes(i.oHistory)
+
+			assert.Equal(t, eph, vh, "view history mismatch")
+			assert.Equal(t, eoh, oh, "o history mismatch")
+		})
+	}
+}
+
+func TestImporterPreImportCoverImage(t *testing.T) {
+	i := Importer{
+		Input: jsonschema.Audio{
+			Cover: invalidImage,
+		},
+	}
+
+	err := i.PreImport(testCtx)
+	assert.NotNil(t, err)
+
+	i.Input.Cover = imageBase64
+
+	err = i.PreImport(testCtx)
+	assert.Nil(t, err)
+}
+
+func TestImporterPreImportWithStudio(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	i := Importer{
+		StudioWriter: db.Studio,
+		Input: jsonschema.Audio{
+			Studio: existingStudioName,
+		},
+	}
+
+	db.Studio.On("FindByName", testCtx, existingStudioName, false).Return(&models.Studio{
+		ID: existingStudioID,
+	}, nil).Once()
+	db.Studio.On("FindByName", testCtx, existingStudioErr, false).Return(nil, errors.New("FindByName error")).Once()
+
+	err := i.PreImport(testCtx)
+	assert.Nil(t, err)
+	assert.Equal(t, existingStudioID, *i.audio.StudioID)
+
+	i.Input.Studio = existingStudioErr
+	err = i.PreImport(testCtx)
+	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
+}
+
+func TestImporterPreImportWithGallery(t *testing.T) {
+	tests := []struct {
+		name string
+		ref  jsonschema.GalleryRef
+	}{
+		{
+			name: "by folder path",
+			ref:  jsonschema.GalleryRef{FolderPath: existingGalleryFolderPath},
+		},
+		{
+			name: "by zip file",
+			ref:  jsonschema.GalleryRef{ZipFiles: []string{missingGalleryPath, existingGalleryZipPath}},
+		},
+		{
+			name: "by title",
+			ref:  jsonschema.GalleryRef{Title: existingGalleryTitle},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db := mocks.NewDatabase()
+
+			i := Importer{
+				GalleryFinder: db.Gallery,
+				Input: jsonschema.Audio{
+					Galleries: []jsonschema.GalleryRef{tt.ref},
+				},
+			}
+
+			db.Gallery.On("FindByPath", testCtx, existingGalleryFolderPath).Return([]*models.Gallery{{
+				ID: existingGalleryID,
+			}}, nil).Maybe()
+			db.Gallery.On("FindByPath", testCtx, existingGalleryZipPath).Return([]*models.Gallery{{
+				ID: existingGalleryID,
+			}}, nil).Maybe()
+			db.Gallery.On("FindByPath", testCtx, missingGalleryPath).Return(nil, nil).Maybe()
+			db.Gallery.On("FindUserGalleryByTitle", testCtx, existingGalleryTitle).Return([]*models.Gallery{{
+				ID: existingGalleryID,
+			}}, nil).Maybe()
+
+			err := i.PreImport(testCtx)
+			assert.Nil(t, err)
+			assert.Equal(t, []int{existingGalleryID}, i.audio.GalleryIDs.List())
+
+			db.AssertExpectations(t)
+		})
+	}
+}
+
+func TestImporterPreImportWithGalleryError(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	i := Importer{
+		GalleryFinder: db.Gallery,
+		Input: jsonschema.Audio{
+			Galleries: []jsonschema.GalleryRef{{FolderPath: existingGalleryErrPath}},
+		},
+	}
+
+	db.Gallery.On("FindByPath", testCtx, existingGalleryErrPath).Return(nil, errors.New("FindByPath error")).Once()
+
+	err := i.PreImport(testCtx)
+	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
+}
+
+func TestImporterPreImportWithMissingGallery(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	i := Importer{
+		GalleryFinder: db.Gallery,
+		Input: jsonschema.Audio{
+			Galleries: []jsonschema.GalleryRef{{FolderPath: missingGalleryPath}},
+		},
+		MissingRefBehaviour: models.ImportMissingRefEnumFail,
+	}
+
+	db.Gallery.On("FindByPath", testCtx, missingGalleryPath).Return(nil, nil).Times(3)
+
+	err := i.PreImport(testCtx)
+	assert.NotNil(t, err)
+
+	// galleries are never created - both Ignore and Create should skip silently
+	i.MissingRefBehaviour = models.ImportMissingRefEnumIgnore
+	err = i.PreImport(testCtx)
+	assert.Nil(t, err)
+	assert.Empty(t, i.audio.GalleryIDs.List())
+
+	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
+	err = i.PreImport(testCtx)
+	assert.Nil(t, err)
+	assert.Empty(t, i.audio.GalleryIDs.List())
+
+	db.AssertExpectations(t)
+}
+
+func TestImporterPreImportWithMissingStudio(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	i := Importer{
+		StudioWriter: db.Studio,
+		Input: jsonschema.Audio{
+			Studio: missingStudioName,
+		},
+		MissingRefBehaviour: models.ImportMissingRefEnumFail,
+	}
+
+	db.Studio.On("FindByName", testCtx, missingStudioName, false).Return(nil, nil).Times(3)
+	db.Studio.On("Create", testCtx, mock.AnythingOfType("*models.CreateStudioInput")).Run(func(args mock.Arguments) {
+		s := args.Get(1).(*models.CreateStudioInput)
+		s.Studio.ID = existingStudioID
+	}).Return(nil)
+
+	err := i.PreImport(testCtx)
+	assert.NotNil(t, err)
+
+	i.MissingRefBehaviour = models.ImportMissingRefEnumIgnore
+	err = i.PreImport(testCtx)
+	assert.Nil(t, err)
+
+	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
+	err = i.PreImport(testCtx)
+	assert.Nil(t, err)
+	assert.Equal(t, existingStudioID, *i.audio.StudioID)
+
+	db.AssertExpectations(t)
+}
+
+func TestImporterPreImportWithMissingStudioCreateErr(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	i := Importer{
+		StudioWriter: db.Studio,
+		Input: jsonschema.Audio{
+			Studio: missingStudioName,
+		},
+		MissingRefBehaviour: models.ImportMissingRefEnumCreate,
+	}
+
+	db.Studio.On("FindByName", testCtx, missingStudioName, false).Return(nil, nil).Once()
+	db.Studio.On("Create", testCtx, mock.AnythingOfType("*models.CreateStudioInput")).Return(errors.New("Create error"))
+
+	err := i.PreImport(testCtx)
+	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
+}
+
+func TestImporterPreImportWithPerformer(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	i := Importer{
+		PerformerWriter:     db.Performer,
+		MissingRefBehaviour: models.ImportMissingRefEnumFail,
+		Input: jsonschema.Audio{
+			Performers: []string{
+				existingPerformerName,
+			},
+		},
+	}
+
+	db.Performer.On("FindByNames", testCtx, []string{existingPerformerName}, false).Return([]*models.Performer{
+		{
+			ID:   existingPerformerID,
+			Name: existingPerformerName,
+		},
+	}, nil).Once()
+	db.Performer.On("FindByNames", testCtx, []string{existingPerformerErr}, false).Return(nil, errors.New("FindByNames error")).Once()
+
+	err := i.PreImport(testCtx)
+	assert.Nil(t, err)
+	assert.Equal(t, []int{existingPerformerID}, i.audio.PerformerIDs.List())
+
+	i.Input.Performers = []string{existingPerformerErr}
+	err = i.PreImport(testCtx)
+	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
+}
+
+func TestImporterPreImportWithMissingPerformer(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	i := Importer{
+		PerformerWriter: db.Performer,
+		Input: jsonschema.Audio{
+			Performers: []string{
+				missingPerformerName,
+			},
+		},
+		MissingRefBehaviour: models.ImportMissingRefEnumFail,
+	}
+
+	db.Performer.On("FindByNames", testCtx, []string{missingPerformerName}, false).Return(nil, nil).Times(3)
+	db.Performer.On("Create", testCtx, mock.AnythingOfType("*models.CreatePerformerInput")).Run(func(args mock.Arguments) {
+		p := args.Get(1).(*models.CreatePerformerInput)
+		p.ID = existingPerformerID
+	}).Return(nil)
+
+	err := i.PreImport(testCtx)
+	assert.NotNil(t, err)
+
+	i.MissingRefBehaviour = models.ImportMissingRefEnumIgnore
+	err = i.PreImport(testCtx)
+	assert.Nil(t, err)
+
+	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
+	err = i.PreImport(testCtx)
+	assert.Nil(t, err)
+	assert.Equal(t, []int{existingPerformerID}, i.audio.PerformerIDs.List())
+
+	db.AssertExpectations(t)
+}
+
+func TestImporterPreImportWithMissingPerformerCreateErr(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	i := Importer{
+		PerformerWriter: db.Performer,
+		Input: jsonschema.Audio{
+			Performers: []string{
+				missingPerformerName,
+			},
+		},
+		MissingRefBehaviour: models.ImportMissingRefEnumCreate,
+	}
+
+	db.Performer.On("FindByNames", testCtx, []string{missingPerformerName}, false).Return(nil, nil).Once()
+	db.Performer.On("Create", testCtx, mock.AnythingOfType("*models.CreatePerformerInput")).Return(errors.New("Create error"))
+
+	err := i.PreImport(testCtx)
+	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
+}
+
+func TestImporterPreImportWithGroup(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	i := Importer{
+		GroupWriter:         db.Group,
+		MissingRefBehaviour: models.ImportMissingRefEnumFail,
+		Input: jsonschema.Audio{
+			Groups: []jsonschema.AudioGroup{
+				{
+					GroupName:  existingGroupName,
+					AudioIndex: 1,
+				},
+			},
+		},
+	}
+
+	db.Group.On("FindByName", testCtx, existingGroupName, false).Return(&models.Group{
+		ID:   existingGroupID,
+		Name: existingGroupName,
+	}, nil).Once()
+	db.Group.On("FindByName", testCtx, existingGroupErr, false).Return(nil, errors.New("FindByName error")).Once()
+
+	err := i.PreImport(testCtx)
+	assert.Nil(t, err)
+	assert.Equal(t, existingGroupID, i.audio.Groups.List()[0].GroupID)
+
+	i.Input.Groups[0].GroupName = existingGroupErr
+	err = i.PreImport(testCtx)
+	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
+}
+
+func TestImporterPreImportWithMissingGroup(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	i := Importer{
+		GroupWriter: db.Group,
+		Input: jsonschema.Audio{
+			Groups: []jsonschema.AudioGroup{
+				{
+					GroupName: missingGroupName,
+				},
+			},
+		},
+		MissingRefBehaviour: models.ImportMissingRefEnumFail,
+	}
+
+	db.Group.On("FindByName", testCtx, missingGroupName, false).Return(nil, nil).Times(3)
+	db.Group.On("Create", testCtx, mock.AnythingOfType("*models.Group")).Run(func(args mock.Arguments) {
+		m := args.Get(1).(*models.Group)
+		m.ID = existingGroupID
+	}).Return(nil)
+
+	err := i.PreImport(testCtx)
+	assert.NotNil(t, err)
+
+	i.MissingRefBehaviour = models.ImportMissingRefEnumIgnore
+	err = i.PreImport(testCtx)
+	assert.Nil(t, err)
+
+	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
+	err = i.PreImport(testCtx)
+	assert.Nil(t, err)
+	assert.Equal(t, existingGroupID, i.audio.Groups.List()[0].GroupID)
+
+	db.AssertExpectations(t)
+}
+
+func TestImporterPreImportWithMissingGroupCreateErr(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	i := Importer{
+		GroupWriter: db.Group,
+		Input: jsonschema.Audio{
+			Groups: []jsonschema.AudioGroup{
+				{
+					GroupName: missingGroupName,
+				},
+			},
+		},
+		MissingRefBehaviour: models.ImportMissingRefEnumCreate,
+	}
+
+	db.Group.On("FindByName", testCtx, missingGroupName, false).Return(nil, nil).Once()
+	db.Group.On("Create", testCtx, mock.AnythingOfType("*models.Group")).Return(errors.New("Create error"))
+
+	err := i.PreImport(testCtx)
+	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
+}
+
+func TestImporterPreImportWithTag(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	i := Importer{
+		TagWriter:           db.Tag,
+		MissingRefBehaviour: models.ImportMissingRefEnumFail,
+		Input: jsonschema.Audio{
+			Tags: []string{
+				existingTagName,
+			},
+		},
+	}
+
+	db.Tag.On("FindByNames", testCtx, []string{existingTagName}, false).Return([]*models.Tag{
+		{
+			ID:   existingTagID,
+			Name: existingTagName,
+		},
+	}, nil).Once()
+	db.Tag.On("FindByNames", testCtx, []string{existingTagErr}, false).Return(nil, errors.New("FindByNames error")).Once()
+
+	err := i.PreImport(testCtx)
+	assert.Nil(t, err)
+	assert.Equal(t, []int{existingTagID}, i.audio.TagIDs.List())
+
+	i.Input.Tags = []string{existingTagErr}
+	err = i.PreImport(testCtx)
+	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
+}
+
+func TestImporterPreImportWithMissingTag(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	i := Importer{
+		TagWriter: db.Tag,
+		Input: jsonschema.Audio{
+			Tags: []string{
+				missingTagName,
+			},
+		},
+		MissingRefBehaviour: models.ImportMissingRefEnumFail,
+	}
+
+	db.Tag.On("FindByNames", testCtx, []string{missingTagName}, false).Return(nil, nil).Times(3)
+	db.Tag.On("Create", testCtx, mock.AnythingOfType("*models.CreateTagInput")).Run(func(args mock.Arguments) {
+		t := args.Get(1).(*models.CreateTagInput)
+		t.Tag.ID = existingTagID
+	}).Return(nil)
+
+	err := i.PreImport(testCtx)
+	assert.NotNil(t, err)
+
+	i.MissingRefBehaviour = models.ImportMissingRefEnumIgnore
+	err = i.PreImport(testCtx)
+	assert.Nil(t, err)
+
+	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
+	err = i.PreImport(testCtx)
+	assert.Nil(t, err)
+	assert.Equal(t, []int{existingTagID}, i.audio.TagIDs.List())
+
+	db.AssertExpectations(t)
+}
+
+func TestImporterPreImportWithMissingTagCreateErr(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	i := Importer{
+		TagWriter: db.Tag,
+		Input: jsonschema.Audio{
+			Tags: []string{
+				missingTagName,
+			},
+		},
+		MissingRefBehaviour: models.ImportMissingRefEnumCreate,
+	}
+
+	db.Tag.On("FindByNames", testCtx, []string{missingTagName}, false).Return(nil, nil).Once()
+	db.Tag.On("Create", testCtx, mock.AnythingOfType("*models.CreateTagInput")).Return(errors.New("Create error"))
+
+	err := i.PreImport(testCtx)
+	assert.NotNil(t, err)
+
+	db.AssertExpectations(t)
+}
+
+func TestImporterPostImport(t *testing.T) {
+	db := mocks.NewDatabase()
+
+	vt := time.Now()
+	ot := vt.Add(time.Minute)
+
+	var (
+		okID              = 1
+		errViewHistoryID  = 2
+		errOHistoryID     = 3
+		errCustomFieldsID = 4
+		errImageID        = 5
+	)
+
+	var (
+		errImage        = errors.New("error updating cover image")
+		errViewHistory  = errors.New("error updating view history")
+		errOHistory     = errors.New("error updating o history")
+		errCustomFields = errors.New("error updating custom fields")
+	)
+
+	table := []struct {
+		name     string
+		importer Importer
+		err      bool
+	}{
+		{
+			name: "all set successfully",
+			importer: Importer{
+				ID:             okID,
+				coverImageData: []byte(imageBase64),
+				viewHistory:    []time.Time{vt},
+				oHistory:       []time.Time{ot},
+				customFields:   customFields,
+			},
+			err: false,
+		},
+		{
+			name: "cover image set with error",
+			importer: Importer{
+				ID:             errImageID,
+				coverImageData: []byte(invalidImage),
+			},
+			err: true,
+		},
+		{
+			name: "view history set with error",
+			importer: Importer{
+				ID:          errViewHistoryID,
+				viewHistory: []time.Time{vt},
+			},
+			err: true,
+		},
+		{
+			name: "o history set with error",
+			importer: Importer{
+				ID:       errOHistoryID,
+				oHistory: []time.Time{ot},
+			},
+			err: true,
+		},
+		{
+			name: "custom fields set with error",
+			importer: Importer{
+				ID:           errCustomFieldsID,
+				customFields: customFields,
+			},
+			err: true,
+		},
+	}
+
+	db.Audio.On("UpdateCover", testCtx, okID, []byte(imageBase64)).Return(nil).Once()
+	db.Audio.On("UpdateCover", testCtx, errImageID, []byte(invalidImage)).Return(errImage).Once()
+	db.Audio.On("AddViews", testCtx, okID, []time.Time{vt}).Return([]time.Time{vt}, nil).Once()
+	db.Audio.On("AddViews", testCtx, errViewHistoryID, []time.Time{vt}).Return(nil, errViewHistory).Once()
+	db.Audio.On("AddO", testCtx, okID, []time.Time{ot}).Return([]time.Time{ot}, nil).Once()
+	db.Audio.On("AddO", testCtx, errOHistoryID, []time.Time{ot}).Return(nil, errOHistory).Once()
+	db.Audio.On("SetCustomFields", testCtx, okID, models.CustomFieldsInput{
+		Full: customFields,
+	}).Return(nil).Once()
+	db.Audio.On("SetCustomFields", testCtx, errCustomFieldsID, models.CustomFieldsInput{
+		Full: customFields,
+	}).Return(errCustomFields).Once()
+
+	for _, tt := range table {
+		t.Run(tt.name, func(t *testing.T) {
+			i := tt.importer
+			i.ReaderWriter = db.Audio
+
+			err := i.PostImport(testCtx, i.ID)
+
+			if tt.err {
+				assert.NotNil(t, err, "expected error but got nil")
+			} else {
+				assert.Nil(t, err, "unexpected error: %v", err)
+			}
+		})
+	}
+}

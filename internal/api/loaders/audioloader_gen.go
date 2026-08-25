@@ -5,12 +5,14 @@ package loaders
 import (
 	"sync"
 	"time"
+
+	"github.com/stashapp/stash/pkg/models"
 )
 
-// SceneOHistoryLoaderConfig captures the config to create a new SceneOHistoryLoader
-type SceneOHistoryLoaderConfig struct {
+// AudioLoaderConfig captures the config to create a new AudioLoader
+type AudioLoaderConfig struct {
 	// Fetch is a method that provides the data for the loader
-	Fetch func(keys []int) ([][]time.Time, []error)
+	Fetch func(keys []int) ([]*models.Audio, []error)
 
 	// Wait is how long wait before sending a batch
 	Wait time.Duration
@@ -19,19 +21,19 @@ type SceneOHistoryLoaderConfig struct {
 	MaxBatch int
 }
 
-// NewSceneOHistoryLoader creates a new SceneOHistoryLoader given a fetch, wait, and maxBatch
-func NewSceneOHistoryLoader(config SceneOHistoryLoaderConfig) *SceneOHistoryLoader {
-	return &SceneOHistoryLoader{
+// NewAudioLoader creates a new AudioLoader given a fetch, wait, and maxBatch
+func NewAudioLoader(config AudioLoaderConfig) *AudioLoader {
+	return &AudioLoader{
 		fetch:    config.Fetch,
 		wait:     config.Wait,
 		maxBatch: config.MaxBatch,
 	}
 }
 
-// SceneOHistoryLoader batches and caches requests
-type SceneOHistoryLoader struct {
+// AudioLoader batches and caches requests
+type AudioLoader struct {
 	// this method provides the data for the loader
-	fetch func(keys []int) ([][]time.Time, []error)
+	fetch func(keys []int) ([]*models.Audio, []error)
 
 	// how long to done before sending a batch
 	wait time.Duration
@@ -42,51 +44,51 @@ type SceneOHistoryLoader struct {
 	// INTERNAL
 
 	// lazily created cache
-	cache map[int][]time.Time
+	cache map[int]*models.Audio
 
 	// the current batch. keys will continue to be collected until timeout is hit,
 	// then everything will be sent to the fetch method and out to the listeners
-	batch *sceneOHistoryLoaderBatch
+	batch *audioLoaderBatch
 
 	// mutex to prevent races
 	mu sync.Mutex
 }
 
-type sceneOHistoryLoaderBatch struct {
+type audioLoaderBatch struct {
 	keys    []int
-	data    [][]time.Time
+	data    []*models.Audio
 	error   []error
 	closing bool
 	done    chan struct{}
 }
 
-// Load a Time by key, batching and caching will be applied automatically
-func (l *SceneOHistoryLoader) Load(key int) ([]time.Time, error) {
+// Load a Audio by key, batching and caching will be applied automatically
+func (l *AudioLoader) Load(key int) (*models.Audio, error) {
 	return l.LoadThunk(key)()
 }
 
-// LoadThunk returns a function that when called will block waiting for a Time.
+// LoadThunk returns a function that when called will block waiting for a Audio.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *SceneOHistoryLoader) LoadThunk(key int) func() ([]time.Time, error) {
+func (l *AudioLoader) LoadThunk(key int) func() (*models.Audio, error) {
 	l.mu.Lock()
 	if it, ok := l.cache[key]; ok {
 		l.mu.Unlock()
-		return func() ([]time.Time, error) {
+		return func() (*models.Audio, error) {
 			return it, nil
 		}
 	}
 	if l.batch == nil {
-		l.batch = &sceneOHistoryLoaderBatch{done: make(chan struct{})}
+		l.batch = &audioLoaderBatch{done: make(chan struct{})}
 	}
 	batch := l.batch
 	pos := batch.keyIndex(l, key)
 	l.mu.Unlock()
 
-	return func() ([]time.Time, error) {
+	return func() (*models.Audio, error) {
 		<-batch.done
 
-		var data []time.Time
+		var data *models.Audio
 		if pos < len(batch.data) {
 			data = batch.data[pos]
 		}
@@ -111,73 +113,72 @@ func (l *SceneOHistoryLoader) LoadThunk(key int) func() ([]time.Time, error) {
 
 // LoadAll fetches many keys at once. It will be broken into appropriate sized
 // sub batches depending on how the loader is configured
-func (l *SceneOHistoryLoader) LoadAll(keys []int) ([][]time.Time, []error) {
-	results := make([]func() ([]time.Time, error), len(keys))
+func (l *AudioLoader) LoadAll(keys []int) ([]*models.Audio, []error) {
+	results := make([]func() (*models.Audio, error), len(keys))
 
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
 
-	times := make([][]time.Time, len(keys))
+	audios := make([]*models.Audio, len(keys))
 	errors := make([]error, len(keys))
 	for i, thunk := range results {
-		times[i], errors[i] = thunk()
+		audios[i], errors[i] = thunk()
 	}
-	return times, errors
+	return audios, errors
 }
 
-// LoadAllThunk returns a function that when called will block waiting for a Times.
+// LoadAllThunk returns a function that when called will block waiting for a Audios.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *SceneOHistoryLoader) LoadAllThunk(keys []int) func() ([][]time.Time, []error) {
-	results := make([]func() ([]time.Time, error), len(keys))
+func (l *AudioLoader) LoadAllThunk(keys []int) func() ([]*models.Audio, []error) {
+	results := make([]func() (*models.Audio, error), len(keys))
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
-	return func() ([][]time.Time, []error) {
-		times := make([][]time.Time, len(keys))
+	return func() ([]*models.Audio, []error) {
+		audios := make([]*models.Audio, len(keys))
 		errors := make([]error, len(keys))
 		for i, thunk := range results {
-			times[i], errors[i] = thunk()
+			audios[i], errors[i] = thunk()
 		}
-		return times, errors
+		return audios, errors
 	}
 }
 
 // Prime the cache with the provided key and value. If the key already exists, no change is made
 // and false is returned.
 // (To forcefully prime the cache, clear the key first with loader.clear(key).prime(key, value).)
-func (l *SceneOHistoryLoader) Prime(key int, value []time.Time) bool {
+func (l *AudioLoader) Prime(key int, value *models.Audio) bool {
 	l.mu.Lock()
 	var found bool
 	if _, found = l.cache[key]; !found {
 		// make a copy when writing to the cache, its easy to pass a pointer in from a loop var
 		// and end up with the whole cache pointing to the same value.
-		cpy := make([]time.Time, len(value))
-		copy(cpy, value)
-		l.unsafeSet(key, cpy)
+		cpy := *value
+		l.unsafeSet(key, &cpy)
 	}
 	l.mu.Unlock()
 	return !found
 }
 
 // Clear the value at key from the cache, if it exists
-func (l *SceneOHistoryLoader) Clear(key int) {
+func (l *AudioLoader) Clear(key int) {
 	l.mu.Lock()
 	delete(l.cache, key)
 	l.mu.Unlock()
 }
 
-func (l *SceneOHistoryLoader) unsafeSet(key int, value []time.Time) {
+func (l *AudioLoader) unsafeSet(key int, value *models.Audio) {
 	if l.cache == nil {
-		l.cache = map[int][]time.Time{}
+		l.cache = map[int]*models.Audio{}
 	}
 	l.cache[key] = value
 }
 
 // keyIndex will return the location of the key in the batch, if its not found
 // it will add the key to the batch
-func (b *sceneOHistoryLoaderBatch) keyIndex(l *SceneOHistoryLoader, key int) int {
+func (b *audioLoaderBatch) keyIndex(l *AudioLoader, key int) int {
 	for i, existingKey := range b.keys {
 		if key == existingKey {
 			return i
@@ -201,7 +202,7 @@ func (b *sceneOHistoryLoaderBatch) keyIndex(l *SceneOHistoryLoader, key int) int
 	return pos
 }
 
-func (b *sceneOHistoryLoaderBatch) startTimer(l *SceneOHistoryLoader) {
+func (b *audioLoaderBatch) startTimer(l *AudioLoader) {
 	time.Sleep(l.wait)
 	l.mu.Lock()
 
@@ -217,7 +218,7 @@ func (b *sceneOHistoryLoaderBatch) startTimer(l *SceneOHistoryLoader) {
 	b.end(l)
 }
 
-func (b *sceneOHistoryLoaderBatch) end(l *SceneOHistoryLoader) {
+func (b *audioLoaderBatch) end(l *AudioLoader) {
 	b.data, b.error = l.fetch(b.keys)
 	close(b.done)
 }

@@ -20,6 +20,7 @@ interface IAddSavedFilterModalProps {
 }
 
 const FilterModeToMessageID = {
+  [GQL.FilterMode.Audios]: "audios",
   [GQL.FilterMode.Galleries]: "galleries",
   [GQL.FilterMode.Images]: "images",
   [GQL.FilterMode.Movies]: "groups",

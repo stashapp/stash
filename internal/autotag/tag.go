@@ -4,6 +4,7 @@ import (
 	"context"
 	"slices"
 
+	"github.com/stashapp/stash/pkg/audio"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/match"
@@ -16,6 +17,12 @@ type SceneQueryTagUpdater interface {
 	models.SceneQueryer
 	models.TagIDLoader
 	models.SceneUpdater
+}
+
+type AudioQueryTagUpdater interface {
+	models.AudioQueryer
+	models.TagIDLoader
+	models.AudioUpdater
 }
 
 type ImageQueryTagUpdater interface {
@@ -67,6 +74,35 @@ func (tagger *Tagger) TagScenes(ctx context.Context, p *models.Tag, paths []stri
 
 			if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
 				return scene.AddTag(ctx, rw, o, p.ID)
+			}); err != nil {
+				return false, err
+			}
+
+			return true, nil
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// TagAudios searches for audios whose path matches the provided tag name and tags the audio with the tag.
+func (tagger *Tagger) TagAudios(ctx context.Context, p *models.Tag, paths []string, aliases []string, rw AudioQueryTagUpdater) error {
+	t := getTagTaggers(p, aliases, tagger.Cache)
+
+	for _, tt := range t {
+		if err := tt.tagAudios(ctx, paths, rw, func(o *models.Audio) (bool, error) {
+			if err := o.LoadTagIDs(ctx, rw); err != nil {
+				return false, err
+			}
+			existing := o.TagIDs.List()
+
+			if slices.Contains(existing, p.ID) {
+				return false, nil
+			}
+
+			if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
+				return audio.AddTag(ctx, rw, o, p.ID)
 			}); err != nil {
 				return false, err
 			}

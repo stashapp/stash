@@ -11,6 +11,8 @@ $sidebar-width: 250px;
 @import "styles/range";
 @import "styles/scrollbars";
 @import "sfw-mode.scss";
+@import "components/AudioPlayer/styles.scss";
+@import "components/Audios/styles.scss";
 @import "components/Changelog/styles.scss";
 @import "components/Galleries/styles.scss";
 @import "components/Help/styles.scss";

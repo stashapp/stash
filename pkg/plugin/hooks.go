@@ -31,6 +31,14 @@ type ScenesDestroyInput struct {
 	Path     string `json:"path"`
 }
 
+// Audio
+
+type AudiosDestroyInput struct {
+	models.AudiosDestroyInput
+	Checksum string `json:"checksum"`
+	Path     string `json:"path"`
+}
+
 type GalleryDestroyInput struct {
 	models.GalleryDestroyInput
 	Checksum string `json:"checksum"`

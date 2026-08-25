@@ -13,6 +13,7 @@ type Studio {
   image_path: String # Resolver
   
   scene_count(depth: Int): Int! # Resolver
+  audio_count(depth: Int): Int! # Resolver
   image_count(depth: Int): Int! # Resolver
   gallery_count(depth: Int): Int! # Resolver
   performer_count(depth: Int): Int! # Resolver

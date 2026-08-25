@@ -14,6 +14,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/remeh/sizedwaitgroup"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/audio"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -432,6 +433,7 @@ func (j *ScanJob) scanZipFile(ctx context.Context, f file.ScannedFile, progress 
 
 type extensionConfig struct {
 	vidExt []string
+	audExt []string
 	imgExt []string
 	zipExt []string
 }
@@ -439,6 +441,7 @@ type extensionConfig struct {
 func newExtensionConfig(c *config.Config) extensionConfig {
 	return extensionConfig{
 		vidExt: c.GetVideoExtensions(),
+		audExt: c.GetAudioExtensions(),
 		imgExt: c.GetImageExtensions(),
 		zipExt: c.GetGalleryExtensions(),
 	}
@@ -458,11 +461,17 @@ type sceneFinder interface {
 	FindByPrimaryFileID(ctx context.Context, fileID models.FileID) ([]*models.Scene, error)
 }
 
+type audioFinder interface {
+	fileCounter
+	FindByPrimaryFileID(ctx context.Context, fileID models.FileID) ([]*models.Audio, error)
+}
+
 // handlerRequiredFilter returns true if a File's handler needs to be executed despite the file not being updated.
 type handlerRequiredFilter struct {
 	extensionConfig
 	txnManager    txn.Manager
 	SceneFinder   sceneFinder
+	AudioFinder   audioFinder
 	ImageFinder   fileCounter
 	GalleryFinder galleryFinder
 
@@ -478,6 +487,7 @@ func newHandlerRequiredFilter(c *config.Config, repo models.Repository) *handler
 		extensionConfig:          newExtensionConfig(c),
 		txnManager:               repo.TxnManager,
 		SceneFinder:              repo.Scene,
+		AudioFinder:              repo.Audio,
 		ImageFinder:              repo.Image,
 		GalleryFinder:            repo.Gallery,
 		FolderCache:              lru.New[bool](processes * 2),
@@ -488,6 +498,7 @@ func newHandlerRequiredFilter(c *config.Config, repo models.Repository) *handler
 func (f *handlerRequiredFilter) Accept(ctx context.Context, ff models.File) bool {
 	path := ff.Base().Path
 	isVideoFile := useAsVideo(path)
+	isAudioFile := useAsAudio(path)
 	isImageFile := useAsImage(path)
 	isZipFile := fsutil.MatchExtension(path, f.zipExt)
 
@@ -497,6 +508,8 @@ func (f *handlerRequiredFilter) Accept(ctx context.Context, ff models.File) bool
 	case isVideoFile:
 		// return true if there are no scenes associated
 		counter = f.SceneFinder
+	case isAudioFile:
+		counter = f.AudioFinder
 	case isImageFile:
 		counter = f.ImageFinder
 	case isZipFile:
@@ -564,6 +577,7 @@ type scanFilter struct {
 	stashPaths        config.StashConfigs
 	generatedPath     string
 	videoExcludeRegex []*regexp.Regexp
+	audioExcludeRegex []*regexp.Regexp
 	imageExcludeRegex []*regexp.Regexp
 	minModTime        time.Time
 	stashIgnoreFilter *file.StashIgnoreFilter
@@ -576,6 +590,7 @@ func newScanFilter(c *config.Config, repo models.Repository, minModTime time.Tim
 		stashPaths:        c.GetStashPaths(),
 		generatedPath:     c.GetGeneratedPath(),
 		videoExcludeRegex: generateRegexps(c.GetExcludes()),
+		audioExcludeRegex: generateRegexps(c.GetAudioExcludes()),
 		imageExcludeRegex: generateRegexps(c.GetImageExcludes()),
 		minModTime:        minModTime,
 		stashIgnoreFilter: file.NewStashIgnoreFilter(),
@@ -606,10 +621,11 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo, 
 	}
 
 	isVideoFile := useAsVideo(path)
+	isAudioFile := useAsAudio(path)
 	isImageFile := useAsImage(path)
 	isZipFile := fsutil.MatchExtension(path, f.zipExt)
 
-	if !info.IsDir() && !isVideoFile && !isImageFile && !isZipFile {
+	if !info.IsDir() && !isVideoFile && !isAudioFile && !isImageFile && !isZipFile {
 		logger.Debugf("Skipping %s as it does not match any known file extensions", path)
 		return false
 	}
@@ -623,15 +639,21 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo, 
 	// shortcut: skip the directory entirely if it matches both exclusion patterns
 	// add a trailing separator so that it correctly matches against patterns like path/.*
 	pathExcludeTest := path + string(filepath.Separator)
-	if (matchFileRegex(pathExcludeTest, f.videoExcludeRegex)) && (s.ExcludeImage || matchFileRegex(pathExcludeTest, f.imageExcludeRegex)) {
-		logger.Debugf("Skipping directory %s as it matches video and image exclusion patterns", path)
+	if (matchFileRegex(pathExcludeTest, f.videoExcludeRegex)) &&
+		(s.ExcludeAudio || matchFileRegex(pathExcludeTest, f.audioExcludeRegex)) &&
+		(s.ExcludeImage || matchFileRegex(pathExcludeTest, f.imageExcludeRegex)) {
+		logger.Debugf("Skipping directory %s as it matches video, audio, and image exclusion patterns", path)
 		return false
 	}
 
-	if isVideoFile && (s.ExcludeVideo || matchFileRegex(path, f.videoExcludeRegex)) {
+	switch {
+	case isVideoFile && (s.ExcludeVideo || matchFileRegex(path, f.videoExcludeRegex)):
 		logger.Debugf("Skipping %s as it matches video exclusion patterns", path)
 		return false
-	} else if (isImageFile || isZipFile) && (s.ExcludeImage || matchFileRegex(path, f.imageExcludeRegex)) {
+	case isAudioFile && (s.ExcludeAudio || matchFileRegex(path, f.audioExcludeRegex)):
+		logger.Debugf("Skipping %s as it matches audio exclusion patterns", path)
+		return false
+	case (isImageFile || isZipFile) && (s.ExcludeImage || matchFileRegex(path, f.imageExcludeRegex)):
 		logger.Debugf("Skipping %s as it matches image exclusion patterns", path)
 		return false
 	}
@@ -652,6 +674,10 @@ func (c *scanConfig) GetCreateGalleriesFromFolders() bool {
 
 func videoFileFilter(ctx context.Context, f models.File) bool {
 	return useAsVideo(f.Base().Path)
+}
+
+func audioFileFilter(ctx context.Context, f models.File) bool {
+	return useAsAudio(f.Base().Path)
 }
 
 func imageFileFilter(ctx context.Context, f models.File) bool {
@@ -689,6 +715,14 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 				},
 				PluginCache: pluginCache,
 				Paths:       instance.Paths,
+			},
+		},
+		&file.FilteredHandler{
+			Filter: file.FilterFunc(audioFileFilter),
+			Handler: &audio.ScanHandler{
+				CreatorUpdater: r.Audio,
+				PluginCache:    pluginCache,
+				Paths:          mgr.Paths,
 			},
 		},
 		&file.FilteredHandler{

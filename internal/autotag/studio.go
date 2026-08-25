@@ -26,6 +26,21 @@ func addSceneStudio(ctx context.Context, sceneWriter models.SceneUpdater, o *mod
 	}
 	return true, nil
 }
+func addAudioStudio(ctx context.Context, audioWriter models.AudioUpdater, o *models.Audio, studioID int) (bool, error) {
+	// don't set if already set
+	if o.StudioID != nil {
+		return false, nil
+	}
+
+	// set the studio id
+	audioPartial := models.NewAudioPartial()
+	audioPartial.StudioID = models.NewOptionalInt(studioID)
+
+	if _, err := audioWriter.UpdatePartial(ctx, o.ID, audioPartial); err != nil {
+		return false, err
+	}
+	return true, nil
+}
 
 func addImageStudio(ctx context.Context, imageWriter models.ImageUpdater, i *models.Image, studioID int) (bool, error) {
 	// don't set if already set
@@ -95,6 +110,36 @@ func (tagger *Tagger) StudioScenes(ctx context.Context, p *models.Studio, paths 
 
 			if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
 				_, err := rw.UpdatePartial(ctx, o.ID, scenePartial)
+				return err
+			}); err != nil {
+				return false, err
+			}
+			return true, nil
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// StudioAudios searches for audios whose path matches the provided studio name and tags the audio with the studio, if studio is not already set on the audio.
+func (tagger *Tagger) StudioAudios(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw AudioFinderUpdater) error {
+	t := getStudioTagger(p, aliases, tagger.Cache)
+
+	for _, tt := range t {
+		if err := tt.tagAudios(ctx, paths, rw, func(o *models.Audio) (bool, error) {
+			// don't set if already set
+			if o.StudioID != nil {
+				return false, nil
+			}
+
+			// set the studio id
+			audioPartial := models.NewAudioPartial()
+			audioPartial.StudioID = models.NewOptionalInt(p.ID)
+
+			if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
+				_, err := rw.UpdatePartial(ctx, o.ID, audioPartial)
 				return err
 			}); err != nil {
 				return false, err

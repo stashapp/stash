@@ -171,6 +171,9 @@
   "appears_with": "Appears With",
   "ascending": "Ascending",
   "audio_codec": "Audio Codec",
+  "audio": "Audio",
+  "audio_code": "Studio Code",
+  "audios": "Audio",
   "average_resolution": "Average Resolution",
   "between_and": "and",
   "birth_year": "Birth Year",
@@ -462,6 +465,8 @@
       "sqlite_location": "File location for the SQLite database (requires restart). WARNING: storing the database on a different system to where the Stash server is run from (i.e. over the network) is unsupported!",
       "use_custom_sprite_interval_head": "Use custom sprite interval",
       "use_custom_sprite_interval_desc": "Enable the custom sprite interval according to the settings below.",
+      "audio_ext_desc": "Comma-delimited list of file extensions that will be identified as audio.",
+      "audio_ext_head": "Audio extensions",
       "video_ext_desc": "Comma-delimited list of file extensions that will be identified as videos.",
       "video_ext_head": "Video extensions",
       "video_head": "Video"
@@ -634,6 +639,10 @@
       "set_name_date_details_from_metadata_if_present": "Set name, date, details from embedded file metadata"
     },
     "tools": {
+      "audio_filename_parser": {
+        "title": "Audio filename parser"
+      },
+      "audio_tools": "Audio Tools",
       "graphql_playground": "GraphQL playground",
       "heading": "Tools",
       "scene_duplicate_checker": "Scene duplicate checker",
@@ -937,6 +946,7 @@
   "containing_group_count": "Containing Group Count",
   "containing_groups": "Containing Groups",
   "countables": {
+    "audios": "{count, plural, one {Audio} other {Audios}}",
     "files": "{count, plural, one {File} other {Files}}",
     "galleries": "{count, plural, one {Gallery} other {Galleries}}",
     "groups": "{count, plural, one {Group} other {Groups}}",
@@ -1237,9 +1247,11 @@
   },
   "group": "Group",
   "group_count": "Group Count",
+  "group_audio_number": "Audio Number",
   "group_scene_number": "Scene Number",
   "groups": "Groups",
   "hair_color": "Hair Colour",
+  "hertz": "{value} Hz",
   "handy_connection_status": {
     "connecting": "Connecting",
     "disconnected": "Disconnected",
@@ -1311,6 +1323,7 @@
     "stream": "Stream",
     "video_codec": "Video Codec"
   },
+  "kilobits_per_second": "{value} kbps",
   "megabits_per_second": "{value} mbps",
   "metadata": "Metadata",
   "name": "Name",
@@ -1436,6 +1449,7 @@
   "resume_time": "Resume Time",
   "scene": "Scene",
   "sceneTagger": "Scene Tagger",
+  "sample_rate": "Sample Rate",
   "scene_code": "Studio Code",
   "scene_marker_count": "Scene Marker Count",
   "scene_count": "Scene Count",
@@ -1585,6 +1599,9 @@
   },
   "statistics": "Statistics",
   "stats": {
+    "audios_duration": "Audio duration",
+    "audios_played": "Audio Played",
+    "audios_size": "Audio size",
     "image_size": "Images size",
     "scenes_duration": "Scenes duration",
     "scenes_played": "Scenes Played",
@@ -1717,6 +1734,7 @@
     "generating_screenshot": "Generating screenshot…",
     "screenshot_generated": "Screenshot generated",
     "image_index_too_large": "Error: Image index is larger than the number of images in the Gallery",
+    "merged_audios": "Merged audio",
     "merged_performers": "Merged performers",
     "merged_scenes": "Merged scenes",
     "merged_tags": "Merged tags",

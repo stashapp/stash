@@ -42,6 +42,7 @@ type addLinkFunc func(subjectID, otherID int) (bool, error)
 type addImageLinkFunc func(o *models.Image) (bool, error)
 type addGalleryLinkFunc func(o *models.Gallery) (bool, error)
 type addSceneLinkFunc func(o *models.Scene) (bool, error)
+type addAudioLinkFunc func(o *models.Audio) (bool, error)
 
 func (t *tagger) addError(otherType, otherName string, err error) error {
 	return fmt.Errorf("error adding %s '%s' to %s '%s': %s", otherType, otherName, t.Type, t.Name, err.Error())
@@ -124,6 +125,22 @@ func (t *tagger) tagScenes(ctx context.Context, paths []string, sceneReader mode
 
 		if added {
 			t.addLog("scene", p.DisplayName())
+		}
+
+		return nil
+	})
+}
+
+func (t *tagger) tagAudios(ctx context.Context, paths []string, audioReader models.AudioQueryer, addFunc addAudioLinkFunc) error {
+	return match.PathToAudiosFn(ctx, t.Name, paths, audioReader, func(ctx context.Context, p *models.Audio) error {
+		added, err := addFunc(p)
+
+		if err != nil {
+			return t.addError("audio", p.DisplayName(), err)
+		}
+
+		if added {
+			t.addLog("audio", p.DisplayName())
 		}
 
 		return nil

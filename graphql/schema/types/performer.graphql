@@ -42,6 +42,7 @@ type Performer {
 
   image_path: String # Resolver
   scene_count: Int! # Resolver
+  audio_count: Int! # Resolver
   image_count: Int! # Resolver
   gallery_count: Int! # Resolver
   group_count: Int! # Resolver

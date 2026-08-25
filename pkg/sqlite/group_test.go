@@ -1321,7 +1321,7 @@ func TestGroupQueryContainingGroups(t *testing.T) {
 				0,
 			},
 			"",
-			[]int{groupIdxWithParentAndChild, groupIdxWithParent, groupIdxWithGrandParent, groupIdxWithParentAndScene},
+			[]int{groupIdxWithParentAndChild, groupIdxWithParent, groupIdxWithGrandParent, groupIdxWithParentAndScene, groupIdxWithParentAndAudio},
 		},
 	}
 
@@ -1434,7 +1434,7 @@ func TestGroupQuerySubGroups(t *testing.T) {
 				0,
 			},
 			"",
-			[]int{groupIdxWithGrandChild, groupIdxWithChild, groupIdxWithParentAndChild, groupIdxWithChildWithScene},
+			[]int{groupIdxWithGrandChild, groupIdxWithChild, groupIdxWithParentAndChild, groupIdxWithChildWithScene, groupIdxWithChildWithAudio},
 		},
 	}
 
@@ -1489,7 +1489,7 @@ func TestGroupQueryContainingGroupCount(t *testing.T) {
 			1,
 			models.CriterionModifierEquals,
 			"",
-			[]int{groupIdxWithParent, groupIdxWithGrandParent, groupIdxWithParentAndChild, groupIdxWithParentAndScene},
+			[]int{groupIdxWithParent, groupIdxWithGrandParent, groupIdxWithParentAndChild, groupIdxWithParentAndScene, groupIdxWithParentAndAudio},
 		},
 		{
 			"not equals",
@@ -1510,7 +1510,7 @@ func TestGroupQueryContainingGroupCount(t *testing.T) {
 			0,
 			models.CriterionModifierGreaterThan,
 			"",
-			[]int{groupIdxWithParent, groupIdxWithGrandParent, groupIdxWithParentAndChild, groupIdxWithParentAndScene},
+			[]int{groupIdxWithParent, groupIdxWithGrandParent, groupIdxWithParentAndChild, groupIdxWithParentAndScene, groupIdxWithParentAndAudio},
 		},
 	}
 
@@ -1560,7 +1560,7 @@ func TestGroupQuerySubGroupCount(t *testing.T) {
 			1,
 			models.CriterionModifierEquals,
 			"",
-			[]int{groupIdxWithChild, groupIdxWithGrandChild, groupIdxWithParentAndChild, groupIdxWithChildWithScene},
+			[]int{groupIdxWithChild, groupIdxWithGrandChild, groupIdxWithParentAndChild, groupIdxWithChildWithScene, groupIdxWithChildWithAudio},
 		},
 		{
 			"not equals",
@@ -1581,7 +1581,7 @@ func TestGroupQuerySubGroupCount(t *testing.T) {
 			0,
 			models.CriterionModifierGreaterThan,
 			"",
-			[]int{groupIdxWithChild, groupIdxWithGrandChild, groupIdxWithParentAndChild, groupIdxWithChildWithScene},
+			[]int{groupIdxWithChild, groupIdxWithGrandChild, groupIdxWithParentAndChild, groupIdxWithChildWithScene, groupIdxWithChildWithAudio},
 		},
 	}
 
@@ -2311,6 +2311,77 @@ func TestGroupQueryCustomFields(t *testing.T) {
 			}
 		})
 	}
+}
+
+func queryGroupIDsWithOCount(ctx context.Context, t *testing.T, oCount int) []int {
+	t.Helper()
+
+	groupFilter := models.GroupFilterType{
+		OCounter: &models.IntCriterionInput{
+			Value:    oCount,
+			Modifier: models.CriterionModifierEquals,
+		},
+	}
+
+	return groupsToIDs(queryGroups(ctx, t, &groupFilter, nil))
+}
+
+func TestGroupQueryOCounter(t *testing.T) {
+	runWithRollbackTxn(t, "scene o-count", func(t *testing.T, ctx context.Context) {
+		groupID := groupIDs[groupIdxWithScene]
+
+		assert.NotContains(t, queryGroupIDsWithOCount(ctx, t, 1), groupID)
+
+		if _, err := db.Scene.AddO(ctx, sceneIDs[sceneIdxWithGroup], nil); err != nil {
+			t.Fatalf("Error adding scene o-date: %v", err)
+		}
+
+		assert.Contains(t, queryGroupIDsWithOCount(ctx, t, 1), groupID)
+	})
+
+	runWithRollbackTxn(t, "audio o-count", func(t *testing.T, ctx context.Context) {
+		groupID := groupIDs[groupIdxWithAudio]
+		audioID := audioIDs[audioIdxWithGroup]
+
+		assert.NotContains(t, queryGroupIDsWithOCount(ctx, t, 1), groupID)
+
+		if _, err := db.Audio.AddO(ctx, audioID, nil); err != nil {
+			t.Fatalf("Error adding audio o-date: %v", err)
+		}
+
+		assert.Contains(t, queryGroupIDsWithOCount(ctx, t, 1), groupID)
+
+		if _, err := db.Audio.AddO(ctx, audioID, nil); err != nil {
+			t.Fatalf("Error adding audio o-date: %v", err)
+		}
+
+		assert.Contains(t, queryGroupIDsWithOCount(ctx, t, 2), groupID)
+	})
+
+	runWithRollbackTxn(t, "scene and audio o-counts combined", func(t *testing.T, ctx context.Context) {
+		groupID := groupIDs[groupIdxWithScene]
+		audioID := audioIDs[audioIdxWithGroup]
+
+		// add the audio to the scene's group, so that both o-counts contribute
+		if _, err := db.Audio.UpdatePartial(ctx, audioID, models.AudioPartial{
+			GroupIDs: &models.UpdateGroupIDsAudio{
+				Groups: []models.GroupsAudios{{GroupID: groupID}},
+				Mode:   models.RelationshipUpdateModeAdd,
+			},
+		}); err != nil {
+			t.Fatalf("Error adding audio to group: %v", err)
+		}
+
+		if _, err := db.Scene.AddO(ctx, sceneIDs[sceneIdxWithGroup], nil); err != nil {
+			t.Fatalf("Error adding scene o-date: %v", err)
+		}
+		if _, err := db.Audio.AddO(ctx, audioID, nil); err != nil {
+			t.Fatalf("Error adding audio o-date: %v", err)
+		}
+
+		assert.NotContains(t, queryGroupIDsWithOCount(ctx, t, 1), groupID)
+		assert.Contains(t, queryGroupIDsWithOCount(ctx, t, 2), groupID)
+	})
 }
 
 // TODO Update

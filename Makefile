@@ -333,6 +333,15 @@ it:
 	$(eval GO_BUILD_TAGS += integration)
 	go test -tags "$(GO_BUILD_TAGS)" ./...
 
+# runs a single test. Includes integration flag.
+# Usage: make it-one PKG=./pkg/sqlite GO_TEST_FLAGS="-run 'audioQueryBuilder'"
+# 	PKG - mandatory, provide the relative package path
+# 	GO_TEST_FLAGS - optional. Commands to send. Useful to limit to a single test within a package
+.PHONY: it-one
+it-one:
+	$(eval GO_BUILD_TAGS += integration)
+	go test -tags "$(GO_BUILD_TAGS)" $(GO_TEST_FLAGS) $(PKG)
+
 # generates test mocks
 .PHONY: generate-test-mocks
 generate-test-mocks:

@@ -172,6 +172,8 @@ input ConfigGeneralInput {
   galleryCoverRegex: String
   "Array of video file extensions"
   videoExtensions: [String!]
+  "Array of audio file extensions"
+  audioExtensions: [String!]
   "Array of image file extensions"
   imageExtensions: [String!]
   "Array of gallery zip file extensions"
@@ -322,6 +324,8 @@ type ConfigGeneralResult {
   spriteScreenshotSize: Int!
   "Array of video file extensions"
   videoExtensions: [String!]!
+  "Array of audio file extensions"
+  audioExtensions: [String!]!
   "Array of image file extensions"
   imageExtensions: [String!]!
   "Array of gallery zip file extensions"
@@ -620,12 +624,14 @@ type Directory {
 input StashConfigInput {
   path: String!
   excludeVideo: Boolean!
+  excludeAudio: Boolean!
   excludeImage: Boolean!
 }
 
 type StashConfig {
   path: String!
   excludeVideo: Boolean!
+  excludeAudio: Boolean!
   excludeImage: Boolean!
 }
 

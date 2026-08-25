@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/audio"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/group"
@@ -43,6 +44,7 @@ type ExportTask struct {
 	fileNamingAlgorithm models.HashAlgorithm
 
 	scenes     *exportSpec
+	audios     *exportSpec
 	images     *exportSpec
 	performers *exportSpec
 	groups     *exportSpec
@@ -62,6 +64,7 @@ type ExportObjectTypeInput struct {
 
 type ExportObjectsInput struct {
 	Scenes              *ExportObjectTypeInput `json:"scenes"`
+	Audios              *ExportObjectTypeInput `json:"audios"`
 	Images              *ExportObjectTypeInput `json:"images"`
 	Studios             *ExportObjectTypeInput `json:"studios"`
 	Performers          *ExportObjectTypeInput `json:"performers"`
@@ -111,6 +114,7 @@ func CreateExportTask(a models.HashAlgorithm, input ExportObjectsInput) *ExportT
 		repository:          GetInstance().Repository,
 		fileNamingAlgorithm: a,
 		scenes:              newExportSpec(input.Scenes),
+		audios:              newExportSpec(input.Audios),
 		images:              newExportSpec(input.Images),
 		performers:          newExportSpec(input.Performers),
 		groups:              newExportSpec(groupSpec),
@@ -123,7 +127,7 @@ func CreateExportTask(a models.HashAlgorithm, input ExportObjectsInput) *ExportT
 
 func (t *ExportTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	// @manager.total = Scene.count + Gallery.count + Performer.count + Studio.count + Group.count
+	// @manager.total = Scene.count + Audio.count + Gallery.count + Performer.count + Studio.count + Group.count
 	workerCount := runtime.GOMAXPROCS(0) // set worker count to number of cpus available
 
 	startTime := time.Now()
@@ -166,6 +170,11 @@ func (t *ExportTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 				t.populateGroupScenes(ctx)
 			}
 
+			// only include group audios if includeDependencies is also set
+			if !t.audios.all && t.includeDependencies {
+				t.populateGroupAudios(ctx)
+			}
+
 			// always export gallery images
 			if !t.images.all {
 				t.populateGalleryImages(ctx)
@@ -173,6 +182,7 @@ func (t *ExportTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 		}
 
 		t.ExportScenes(ctx, workerCount)
+		t.ExportAudios(ctx, workerCount)
 		t.ExportImages(ctx, workerCount)
 		t.ExportGalleries(ctx, workerCount)
 		t.ExportGroups(ctx, workerCount)
@@ -235,6 +245,7 @@ func (t *ExportTask) zipFiles(w io.Writer) error {
 	walkWarn(t.json.json.Studios, t.zipWalkFunc(u.json.Studios, z))
 	walkWarn(t.json.json.Groups, t.zipWalkFunc(u.json.Groups, z))
 	walkWarn(t.json.json.Scenes, t.zipWalkFunc(u.json.Scenes, z))
+	walkWarn(t.json.json.Audios, t.zipWalkFunc(u.json.Audios, z))
 	walkWarn(t.json.json.Images, t.zipWalkFunc(u.json.Images, z))
 
 	return nil
@@ -317,6 +328,37 @@ func (t *ExportTask) populateGroupScenes(ctx context.Context) {
 	}
 }
 
+func (t *ExportTask) populateGroupAudios(ctx context.Context) {
+	r := t.repository
+	reader := r.Group
+	audioReader := r.Audio
+
+	var groups []*models.Group
+	var err error
+	all := t.full || (t.groups != nil && t.groups.all)
+	if all {
+		groups, err = reader.All(ctx)
+	} else if t.groups != nil && len(t.groups.IDs) > 0 {
+		groups, err = reader.FindMany(ctx, t.groups.IDs)
+	}
+
+	if err != nil {
+		logger.Errorf("[groups] failed to fetch groups: %v", err)
+	}
+
+	for _, m := range groups {
+		audios, err := audioReader.FindByGroupID(ctx, m.ID)
+		if err != nil {
+			logger.Errorf("[groups] <%s> failed to fetch audios for group: %v", m.Name, err)
+			continue
+		}
+
+		for _, s := range audios {
+			t.audios.IDs = sliceutil.AppendUnique(t.audios.IDs, s.ID)
+		}
+	}
+}
+
 func (t *ExportTask) populateGalleryImages(ctx context.Context) {
 	r := t.repository
 	reader := r.Gallery
@@ -394,6 +436,49 @@ func (t *ExportTask) ExportScenes(ctx context.Context, workers int) {
 	scenesWg.Wait()
 
 	logger.Infof("[scenes] export complete in %s. %d workers used.", time.Since(startTime), workers)
+}
+
+func (t *ExportTask) ExportAudios(ctx context.Context, workers int) {
+	var audiosWg sync.WaitGroup
+
+	audioReader := t.repository.Audio
+
+	var audios []*models.Audio
+	var err error
+	all := t.full || (t.audios != nil && t.audios.all)
+	if all {
+		audios, err = audioReader.All(ctx)
+	} else if t.audios != nil && len(t.audios.IDs) > 0 {
+		audios, err = audioReader.FindMany(ctx, t.audios.IDs)
+	}
+
+	if err != nil {
+		logger.Errorf("[audios] failed to fetch audios: %v", err)
+	}
+
+	jobCh := make(chan *models.Audio, workers*2) // make a buffered channel to feed workers
+
+	logger.Info("[audios] exporting")
+	startTime := time.Now()
+
+	for w := 0; w < workers; w++ { // create export Audio workers
+		audiosWg.Add(1)
+		go t.exportAudio(ctx, &audiosWg, jobCh)
+	}
+
+	for i, audio := range audios {
+		index := i + 1
+
+		if (i % 100) == 0 { // make progress easier to read
+			logger.Progressf("[audios] %d of %d", index, len(audios))
+		}
+		jobCh <- audio // feed workers
+	}
+
+	close(jobCh) // close channel so that workers will know no more jobs are available
+	audiosWg.Wait()
+
+	logger.Infof("[audios] export complete in %s. %d workers used.", time.Since(startTime), workers)
 }
 
 func (t *ExportTask) exportFile(f models.File) {
@@ -617,6 +702,114 @@ func (t *ExportTask) exportScene(ctx context.Context, wg *sync.WaitGroup, jobCha
 	}
 }
 
+func (t *ExportTask) exportAudio(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Audio) {
+	defer wg.Done()
+
+	r := t.repository
+	audioReader := r.Audio
+	studioReader := r.Studio
+	galleryReader := r.Gallery
+	groupReader := r.Group
+	performerReader := r.Performer
+	tagReader := r.Tag
+
+	for a := range jobChan {
+		audioHash := a.Checksum
+
+		if err := a.LoadRelationships(ctx, audioReader); err != nil {
+			logger.Errorf("[audios] <%s> error loading audio relationships: %v", audioHash, err)
+		}
+
+		newAudioJSON, err := audio.ToBasicJSON(ctx, audioReader, a)
+		if err != nil {
+			logger.Errorf("[audios] <%s> error getting audio JSON: %v", audioHash, err)
+			continue
+		}
+
+		// export files
+		for _, f := range a.Files.List() {
+			t.exportFile(f)
+		}
+
+		newAudioJSON.Studio, err = audio.GetStudioName(ctx, studioReader, a)
+		if err != nil {
+			logger.Errorf("[audios] <%s> error getting audio studio name: %v", audioHash, err)
+			continue
+		}
+
+		galleries, err := galleryReader.FindByAudioID(ctx, a.ID)
+		if err != nil {
+			logger.Errorf("[audios] <%s> error getting audio galleries: %v", audioHash, err)
+			continue
+		}
+
+		for _, g := range galleries {
+			if err := g.LoadFiles(ctx, galleryReader); err != nil {
+				logger.Errorf("[audios] <%s> error getting audio gallery files: %v", audioHash, err)
+				continue
+			}
+		}
+
+		newAudioJSON.Galleries = gallery.GetRefs(galleries)
+
+		newAudioJSON.ResumeTime = a.ResumeTime
+		newAudioJSON.PlayDuration = a.PlayDuration
+
+		performers, err := performerReader.FindByAudioID(ctx, a.ID)
+		if err != nil {
+			logger.Errorf("[audios] <%s> error getting audio performer names: %v", audioHash, err)
+			continue
+		}
+
+		newAudioJSON.Performers = performer.GetNames(performers)
+
+		newAudioJSON.Tags, err = audio.GetTagNames(ctx, tagReader, a)
+		if err != nil {
+			logger.Errorf("[audios] <%s> error getting audio tag names: %v", audioHash, err)
+			continue
+		}
+
+		newAudioJSON.Groups, err = audio.GetAudioGroupsJSON(ctx, groupReader, a)
+		if err != nil {
+			logger.Errorf("[audios] <%s> error getting audio groups JSON: %v", audioHash, err)
+			continue
+		}
+
+		if t.includeDependencies {
+			if a.StudioID != nil {
+				t.studios.IDs = sliceutil.AppendUnique(t.studios.IDs, *a.StudioID)
+			}
+
+			t.galleries.IDs = sliceutil.AppendUniques(t.galleries.IDs, gallery.GetIDs(galleries))
+
+			tagIDs, err := audio.GetDependentTagIDs(ctx, tagReader, a)
+			if err != nil {
+				logger.Errorf("[audios] <%s> error getting audio tags: %v", audioHash, err)
+				continue
+			}
+			t.tags.IDs = sliceutil.AppendUniques(t.tags.IDs, tagIDs)
+
+			groupIDs, err := audio.GetDependentGroupIDs(ctx, a)
+			if err != nil {
+				logger.Errorf("[audios] <%s> error getting audio groups: %v", audioHash, err)
+				continue
+			}
+			t.groups.IDs = sliceutil.AppendUniques(t.groups.IDs, groupIDs)
+
+			t.performers.IDs = sliceutil.AppendUniques(t.performers.IDs, performer.GetIDs(performers))
+		}
+
+		basename := filepath.Base(a.Path)
+		hash := a.Checksum
+
+		fn := newAudioJSON.Filename(a.ID, basename, hash)
+
+		if err := t.json.saveAudio(fn, newAudioJSON); err != nil {
+			logger.Errorf("[audios] <%s> failed to save json: %v", audioHash, err)
+		}
+	}
+}
+
 func (t *ExportTask) ExportImages(ctx context.Context, workers int) {
 	var imagesWg sync.WaitGroup
 
@@ -773,7 +966,7 @@ func (t *ExportTask) ExportGalleries(ctx context.Context, workers int) {
 	logger.Info("[galleries] exporting")
 	startTime := time.Now()
 
-	for w := 0; w < workers; w++ { // create export Scene workers
+	for w := 0; w < workers; w++ { // create export Gallery workers
 		galleriesWg.Add(1)
 		go t.exportGallery(ctx, &galleriesWg, jobCh)
 	}

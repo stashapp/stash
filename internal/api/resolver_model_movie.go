@@ -5,6 +5,7 @@ import (
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
+	"github.com/stashapp/stash/pkg/audio"
 	"github.com/stashapp/stash/pkg/group"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
@@ -182,6 +183,17 @@ func (r *groupResolver) SceneCount(ctx context.Context, obj *models.Group, depth
 	return ret, nil
 }
 
+func (r *groupResolver) AudioCount(ctx context.Context, obj *models.Group, depth *int) (ret int, err error) {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		ret, err = audio.CountByGroupID(ctx, r.repository.Audio, obj.ID, depth)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (r *groupResolver) PerformerCount(ctx context.Context, obj *models.Group, depth *int) (ret int, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = performer.CountByGroupID(ctx, r.repository.Performer, obj.ID, depth)
@@ -205,15 +217,34 @@ func (r *groupResolver) Scenes(ctx context.Context, obj *models.Group) (ret []*m
 	return ret, nil
 }
 
-func (r *groupResolver) OCounter(ctx context.Context, obj *models.Group) (ret *int, err error) {
-	var count int
+func (r *groupResolver) Audios(ctx context.Context, obj *models.Group) (ret []*models.Audio, err error) {
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		count, err = r.repository.Scene.OCountByGroupID(ctx, obj.ID)
+		var err error
+		ret, err = r.repository.Audio.FindByGroupID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
 	}
-	return &count, nil
+
+	return ret, nil
+}
+
+func (r *groupResolver) OCounter(ctx context.Context, obj *models.Group) (ret *int, err error) {
+	var res_scene int
+	var res_audio int
+	var res int
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+		res_scene, err = r.repository.Scene.OCountByGroupID(ctx, obj.ID)
+		if err != nil {
+			return err
+		}
+		res_audio, err = r.repository.Audio.OCountByGroupID(ctx, obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+	res = res_scene + res_audio
+	return &res, nil
 }
 
 func (r *groupResolver) CustomFields(ctx context.Context, obj *models.Group) (map[string]interface{}, error) {

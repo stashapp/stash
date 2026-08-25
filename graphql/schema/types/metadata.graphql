@@ -305,6 +305,7 @@ input ExportObjectTypeInput {
 
 input ExportObjectsInput {
   scenes: ExportObjectTypeInput
+  audios: ExportObjectTypeInput
   images: ExportObjectTypeInput
   studios: ExportObjectTypeInput
   performers: ExportObjectTypeInput

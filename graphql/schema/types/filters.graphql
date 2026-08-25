@@ -177,6 +177,8 @@ input PerformerFilterType {
   tag_count: IntCriterionInput
   "Filter by scene count"
   scene_count: IntCriterionInput
+  "Filter by audio count"
+  audio_count: IntCriterionInput
   "Filter by marker count (via scene)"
   marker_count: IntCriterionInput
   "Filter by image count"
@@ -216,6 +218,8 @@ input PerformerFilterType {
   death_date: DateCriterionInput
   "Filter by related scenes that meet this criteria"
   scenes_filter: SceneFilterType
+  "Filter by related audios that meet this criteria"
+  audios_filter: AudioFilterType
   "Filter by related images that meet this criteria"
   images_filter: ImageFilterType
   "Filter by related galleries that meet this criteria"
@@ -495,6 +499,8 @@ input StudioFilterType {
   favorite: Boolean
   "Filter by scene count"
   scene_count: IntCriterionInput
+  "Filter by audio count"
+  audio_count: IntCriterionInput
   "Filter by image count"
   image_count: IntCriterionInput
   "Filter by gallery count"
@@ -515,6 +521,8 @@ input StudioFilterType {
   organized: Boolean
   "Filter by related scenes that meet this criteria"
   scenes_filter: SceneFilterType
+  "Filter by related audios that meet this criteria"
+  audios_filter: AudioFilterType
   "Filter by related images that meet this criteria"
   images_filter: ImageFilterType
   "Filter by related galleries that meet this criteria"
@@ -558,6 +566,8 @@ input GalleryFilterType {
   has_chapters: String
   "Filter to only include galleries with these scenes"
   scenes: MultiCriterionInput
+  "Filter to only include galleries with these audios"
+  audios: MultiCriterionInput
   "Filter to only include galleries with this studio"
   studios: HierarchicalMultiCriterionInput
   "Filter to only include galleries with these tags"
@@ -591,6 +601,8 @@ input GalleryFilterType {
 
   "Filter by related scenes that meet this criteria"
   scenes_filter: SceneFilterType
+  "Filter by related audios that meet this criteria"
+  audios_filter: AudioFilterType
   "Filter by related images that meet this criteria"
   images_filter: ImageFilterType
   "Filter by related performers that meet this criteria"
@@ -634,6 +646,9 @@ input TagFilterType {
 
   "Filter by number of scenes with this tag"
   scene_count: HierarchicalCountInput
+
+  "Filter by number of audios with this tag"
+  audio_count: HierarchicalCountInput
 
   "Filter by number of images with this tag"
   image_count: HierarchicalCountInput
@@ -680,6 +695,8 @@ input TagFilterType {
 
   "Filter by related scenes that meet this criteria"
   scenes_filter: SceneFilterType
+  "Filter by related audios that meet this criteria"
+  audios_filter: AudioFilterType
   "Filter by related images that meet this criteria"
   images_filter: ImageFilterType
   "Filter by related galleries that meet this criteria"
@@ -777,6 +794,91 @@ input ImageFilterType {
   custom_fields: [CustomFieldCriterionInput!]
 }
 
+input AudioFilterType {
+  AND: AudioFilterType
+  OR: AudioFilterType
+  NOT: AudioFilterType
+
+  id: IntCriterionInput
+  title: StringCriterionInput
+  code: StringCriterionInput
+  details: StringCriterionInput
+
+  "Filter by file checksum"
+  checksum: StringCriterionInput
+  "Filter by path"
+  path: StringCriterionInput
+  "Filter by file count"
+  file_count: IntCriterionInput
+  # rating expressed as 1-100
+  rating100: IntCriterionInput
+  "Filter by organized"
+  organized: Boolean
+  "Filter by o-counter"
+  o_counter: IntCriterionInput
+  "Filter by sample rate"
+  sample_rate: IntCriterionInput
+  "Filter by bit rate"
+  bitrate: IntCriterionInput
+  "Filter by audio codec"
+  audio_codec: StringCriterionInput
+  "Filter by duration (in seconds)"
+  duration: IntCriterionInput
+  "Filter to only include audios missing this property"
+  is_missing: String
+  "Filter to only include audios with this studio"
+  studios: HierarchicalMultiCriterionInput
+  "Filter to only include audios with this group"
+  groups: HierarchicalMultiCriterionInput
+  "Filter to only include audios with these galleries"
+  galleries: MultiCriterionInput
+  "Filter to only include audios with these tags"
+  tags: HierarchicalMultiCriterionInput
+  "Filter by tag count"
+  tag_count: IntCriterionInput
+  "Filter to only include audios with performers with these tags"
+  performer_tags: HierarchicalMultiCriterionInput
+  "Filter audios that have performers that have been favorited"
+  performer_favorite: Boolean
+  "Filter audios by performer age at time of audio"
+  performer_age: IntCriterionInput
+  "Filter to only include audios with these performers"
+  performers: MultiCriterionInput
+  "Filter by performer count"
+  performer_count: IntCriterionInput
+  "Filter by url"
+  url: StringCriterionInput
+  "Filter by resume time"
+  resume_time: IntCriterionInput
+  "Filter by play count"
+  play_count: IntCriterionInput
+  "Filter by play duration (in seconds)"
+  play_duration: IntCriterionInput
+  "Filter by audio last played time"
+  last_played_at: TimestampCriterionInput
+  "Filter by date"
+  date: DateCriterionInput
+  "Filter by creation time"
+  created_at: TimestampCriterionInput
+  "Filter by last update time"
+  updated_at: TimestampCriterionInput
+
+  "Filter by related performers that meet this criteria"
+  performers_filter: PerformerFilterType
+  "Filter by related studios that meet this criteria"
+  studios_filter: StudioFilterType
+  "Filter by related tags that meet this criteria"
+  tags_filter: TagFilterType
+  "Filter by related groups that meet this criteria"
+  groups_filter: GroupFilterType
+  "Filter by related galleries that meet this criteria"
+  galleries_filter: GalleryFilterType
+  "Filter by related files that meet this criteria"
+  files_filter: FileFilterType
+
+  custom_fields: [CustomFieldCriterionInput!]
+}
+
 input FileFilterType {
   AND: FileFilterType
   OR: FileFilterType
@@ -799,14 +901,18 @@ input FileFilterType {
   hashes: [FingerprintFilterInput!]
 
   video_file_filter: VideoFileFilterInput
+  audio_file_filter: AudioFileFilterInput
   image_file_filter: ImageFileFilterInput
 
   scene_count: IntCriterionInput
+  audio_count: IntCriterionInput
   image_count: IntCriterionInput
   gallery_count: IntCriterionInput
 
   "Filter by related scenes that meet this criteria"
   scenes_filter: SceneFilterType
+  "Filter by related audios that meet this criteria"
+  audios_filter: AudioFilterType
   "Filter by related images that meet this criteria"
   images_filter: ImageFilterType
   "Filter by related galleries that meet this criteria"
@@ -861,6 +967,15 @@ input VideoFileFilterInput {
 
   interactive: Boolean
   interactive_speed: IntCriterionInput
+}
+input AudioFileFilterInput {
+  sample_rate: IntCriterionInput
+  bitrate: IntCriterionInput
+  format: StringCriterionInput
+  audio_codec: StringCriterionInput
+
+  "in seconds"
+  duration: IntCriterionInput
 }
 
 input ImageFileFilterInput {
@@ -980,6 +1095,7 @@ enum FilterMode {
   GROUPS
   TAGS
   IMAGES
+  AUDIOS
 }
 
 type SavedFilter {

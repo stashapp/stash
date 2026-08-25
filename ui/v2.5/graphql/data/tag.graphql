@@ -14,6 +14,8 @@ fragment TagData on Tag {
   image_path
   scene_count
   scene_count_all: scene_count(depth: -1)
+  audio_count
+  audio_count_all: audio_count(depth: -1)
   scene_marker_count
   scene_marker_count_all: scene_marker_count(depth: -1)
   image_count
@@ -77,6 +79,7 @@ fragment TagListData on Tag {
   image_path
   # Direct counts only - no recursive depth queries
   scene_count
+  audio_count
   scene_marker_count
   image_count
   gallery_count

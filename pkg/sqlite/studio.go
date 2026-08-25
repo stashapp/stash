@@ -103,6 +103,7 @@ type studioRepositoryType struct {
 	tags     joinRepository
 
 	scenes    repository
+	audios    repository
 	images    repository
 	galleries repository
 	groups    repository
@@ -122,6 +123,10 @@ var (
 		},
 		scenes: repository{
 			tableName: sceneTable,
+			idColumn:  studioIDColumn,
+		},
+		audios: repository{
+			tableName: audioTable,
 			idColumn:  studioIDColumn,
 		},
 		images: repository{
@@ -639,6 +644,26 @@ func (qb *StudioStore) sortByScenesSize(direction string) string {
 	) %s`, fileTable, sceneTable, scenesFilesTable, scenesFilesTable, sceneIDColumn, sceneTable, fileTable, fileTable, scenesFilesTable, sceneTable, studioIDColumn, studioTable, getSortDirection(direction))
 }
 
+func (qb *StudioStore) sortByAudiosDuration(direction string) string {
+	return fmt.Sprintf(` ORDER BY (
+		SELECT COALESCE(SUM(audio_files.duration), 0)
+		FROM %s
+		LEFT JOIN %s ON %s.%s = %s.id
+		LEFT JOIN audio_files ON audio_files.file_id = %s.file_id
+		WHERE %s.%s = %s.id
+	) %s`, audioTable, audiosFilesTable, audiosFilesTable, audioIDColumn, audioTable, audiosFilesTable, audioTable, studioIDColumn, studioTable, getSortDirection(direction))
+}
+
+func (qb *StudioStore) sortByAudiosSize(direction string) string {
+	return fmt.Sprintf(` ORDER BY (
+		SELECT COALESCE(SUM(%s.size), 0)
+		FROM %s
+		LEFT JOIN %s ON %s.%s = %s.id
+		LEFT JOIN %s ON %s.id = %s.file_id
+		WHERE %s.%s = %s.id
+	) %s`, fileTable, audioTable, audiosFilesTable, audiosFilesTable, audioIDColumn, audioTable, fileTable, fileTable, audiosFilesTable, audioTable, studioIDColumn, studioTable, getSortDirection(direction))
+}
+
 // used for sorting on performer latest scene
 var selectStudioLatestSceneSQL = utils.StrFormat(
 	"SELECT MAX(date) FROM ("+
@@ -691,8 +716,12 @@ func (qb *StudioStore) sortByOCounter(direction string) string {
 		), 0) + COALESCE((
 			SELECT SUM(o_counter) FROM %[5]s
 			WHERE %[5]s.%[2]s = %[1]s.id
+		), 0) + COALESCE((
+			SELECT COUNT(*) FROM %[6]s
+			INNER JOIN %[7]s ON %[6]s.id = %[7]s.audio_id
+			WHERE %[6]s.%[2]s = %[1]s.id
 		), 0)
-	) %[6]s`, studioTable, studioIDColumn, sceneTable, scenesODatesTable, imageTable, getSortDirection(direction))
+	) %[8]s`, studioTable, studioIDColumn, sceneTable, scenesODatesTable, imageTable, audioTable, audiosODatesTable, getSortDirection(direction))
 }
 
 func (qb *StudioStore) sortByOCounterAll(direction string) string {
@@ -710,8 +739,31 @@ func (qb *StudioStore) sortByOCounterAll(direction string) string {
 		), 0) + COALESCE((
 			SELECT SUM(o_counter) FROM %[5]s
 			WHERE %[5]s.%[2]s IN (SELECT id FROM sub_studios)
+		), 0) + COALESCE((
+			SELECT COUNT(*) FROM %[6]s
+			INNER JOIN %[7]s ON %[6]s.id = %[7]s.audio_id
+			WHERE %[6]s.%[2]s IN (SELECT id FROM sub_studios)
 		), 0)
-	) %[6]s`, studioTable, studioIDColumn, sceneTable, scenesODatesTable, imageTable, getSortDirection(direction))
+	) %[8]s`, studioTable, studioIDColumn, sceneTable, scenesODatesTable, imageTable, audioTable, audiosODatesTable, getSortDirection(direction))
+}
+
+// used for sorting on performer latest audio
+var selectStudioLatestAudioSQL = utils.StrFormat(
+	"SELECT MAX(date) FROM ("+
+		"SELECT {date} FROM {audios} s "+
+		"WHERE s.{studio_id} = {studios}.id"+
+		")",
+	map[string]interface{}{
+		"audios":    audioTable,
+		"studios":   studioTable,
+		"studio_id": studioIDColumn,
+		"date":      audioDateColumn,
+	},
+)
+
+func (qb *StudioStore) sortByLatestAudio(direction string) string {
+	// need to get the latest date from audios
+	return " ORDER BY (" + selectStudioLatestAudioSQL + ") " + direction
 }
 
 var studioSortOptions = sortOptions{
@@ -730,6 +782,9 @@ var studioSortOptions = sortOptions{
 	"scenes_duration",
 	"scenes_size",
 	"scene_markers_count",
+	"audios_count",
+	"audios_duration",
+	"audios_size",
 	"random",
 	"rating",
 	"tag_count",
@@ -762,6 +817,12 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 		sortQuery += qb.sortByScenesDuration(direction)
 	case "scenes_size":
 		sortQuery += qb.sortByScenesSize(direction)
+	case "audios_count":
+		sortQuery += getCountSort(studioTable, audioTable, studioIDColumn, direction)
+	case "audios_duration":
+		sortQuery += qb.sortByAudiosDuration(direction)
+	case "audios_size":
+		sortQuery += qb.sortByAudiosSize(direction)
 	case "images_count":
 		sortQuery += getCountSort(studioTable, imageTable, studioIDColumn, direction)
 	case "galleries_count":
@@ -772,6 +833,8 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 		sortQuery += fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM %s INNER JOIN %s ON %[1]s.scene_id = %[2]s.id WHERE %[2]s.%s = %s.id) %s", sceneMarkerTable, sceneTable, studioIDColumn, studioTable, getSortDirection(direction))
 	case "latest_scene":
 		sortQuery += qb.sortByLatestScene(direction)
+	case "latest_audio":
+		sortQuery += qb.sortByLatestAudio(direction)
 	case "o_counter":
 		sortQuery += qb.sortByOCounter(direction)
 	case "o_counter_all":

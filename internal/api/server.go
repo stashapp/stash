@@ -160,12 +160,14 @@ func Initialize() (*Server, error) {
 
 	pluginCache := mgr.PluginCache
 	sceneService := mgr.SceneService
+	audioService := mgr.AudioService
 	imageService := mgr.ImageService
 	galleryService := mgr.GalleryService
 	groupService := mgr.GroupService
 	resolver := &Resolver{
 		repository:     repo,
 		sceneService:   sceneService,
+		audioService:   audioService,
 		imageService:   imageService,
 		galleryService: galleryService,
 		groupService:   groupService,
@@ -214,6 +216,7 @@ func Initialize() (*Server, error) {
 
 	r.Mount("/performer", server.getPerformerRoutes())
 	r.Mount("/scene", server.getSceneRoutes())
+	r.Mount("/audio", server.getAudioRoutes())
 	r.Mount("/gallery", server.getGalleryRoutes())
 	r.Mount("/image", server.getImageRoutes())
 	r.Mount("/studio", server.getStudioRoutes())
@@ -365,6 +368,15 @@ func (s *Server) getSceneRoutes() chi.Router {
 		captionFinder:     repo.File,
 		sceneMarkerFinder: repo.SceneMarker,
 		tagFinder:         repo.Tag,
+	}.Routes()
+}
+
+func (s *Server) getAudioRoutes() chi.Router {
+	repo := s.manager.Repository
+	return audioRoutes{
+		routes:      routes{txnManager: repo.TxnManager},
+		audioFinder: repo.Audio,
+		fileGetter:  repo.File,
 	}.Routes()
 }
 

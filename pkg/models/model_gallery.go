@@ -34,6 +34,7 @@ type Gallery struct {
 
 	URLs         RelatedStrings `json:"urls"`
 	SceneIDs     RelatedIDs     `json:"scene_ids"`
+	AudioIDs     RelatedIDs     `json:"audio_ids"`
 	TagIDs       RelatedIDs     `json:"tag_ids"`
 	PerformerIDs RelatedIDs     `json:"performer_ids"`
 }
@@ -81,6 +82,7 @@ type GalleryPartial struct {
 	UpdatedAt OptionalTime
 
 	SceneIDs      *UpdateIDs
+	AudioIDs      *UpdateIDs
 	TagIDs        *UpdateIDs
 	PerformerIDs  *UpdateIDs
 	PrimaryFileID *FileID
@@ -134,6 +136,12 @@ func (g *Gallery) LoadPrimaryFile(ctx context.Context, l FileGetter) error {
 func (g *Gallery) LoadSceneIDs(ctx context.Context, l SceneIDLoader) error {
 	return g.SceneIDs.load(func() ([]int, error) {
 		return l.GetSceneIDs(ctx, g.ID)
+	})
+}
+
+func (g *Gallery) LoadAudioIDs(ctx context.Context, l AudioIDLoader) error {
+	return g.AudioIDs.load(func() ([]int, error) {
+		return l.GetAudioIDs(ctx, g.ID)
 	})
 }
 

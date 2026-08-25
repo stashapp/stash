@@ -24,8 +24,8 @@ func allowUnauthenticated(r *http.Request) bool {
 // authenticateSignedRequest checks if the request is a valid signed media request.
 // Returns the matched username and true if valid, or empty string and false otherwise.
 func authenticateSignedRequest(r *http.Request) (string, bool) {
-	// Only apply to scene stream paths (used by AirPlay/Chromecast devices that can't pass cookies)
-	if !strings.HasPrefix(r.URL.Path, "/scene/") {
+	// Only apply to media stream paths (used by AirPlay/Chromecast devices that can't pass cookies)
+	if !strings.HasPrefix(r.URL.Path, "/scene/") && !strings.HasPrefix(r.URL.Path, "/audio/") {
 		return "", false
 	}
 

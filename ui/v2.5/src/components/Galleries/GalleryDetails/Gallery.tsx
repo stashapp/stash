@@ -30,6 +30,7 @@ import { GalleryImagesPanel } from "./GalleryImagesPanel";
 import { GalleryAddPanel } from "./GalleryAddPanel";
 import { GalleryFileInfoPanel } from "./GalleryFileInfoPanel";
 import { GalleryScenesPanel } from "./GalleryScenesPanel";
+import { GalleryAudiosPanel } from "./GalleryAudiosPanel";
 import {
   faEllipsisV,
   faChevronRight,
@@ -272,6 +273,16 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
                 </Nav.Link>
               </Nav.Item>
             ) : undefined}
+            {gallery.audios.length >= 1 ? (
+              <Nav.Item>
+                <Nav.Link eventKey="gallery-audios-panel">
+                  <FormattedMessage
+                    id="countables.audios"
+                    values={{ count: gallery.audios.length }}
+                  />
+                </Nav.Link>
+              </Nav.Item>
+            ) : undefined}
             {path ? (
               <Nav.Item>
                 <Nav.Link eventKey="gallery-file-info-panel">
@@ -321,6 +332,11 @@ export const GalleryPage: React.FC<IProps> = ({ gallery, add }) => {
           {gallery.scenes.length > 0 && (
             <Tab.Pane eventKey="gallery-scenes-panel">
               <GalleryScenesPanel scenes={gallery.scenes} />
+            </Tab.Pane>
+          )}
+          {gallery.audios.length > 0 && (
+            <Tab.Pane eventKey="gallery-audios-panel">
+              <GalleryAudiosPanel audios={gallery.audios} />
             </Tab.Pane>
           )}
         </Tab.Content>
