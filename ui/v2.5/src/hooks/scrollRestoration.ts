@@ -42,13 +42,43 @@ function savePositions() {
   }
 }
 
-// how long to keep trying to restore the scroll position while the page
-// content is still loading in
-const restoreTimeout = 3000;
+let pendingLoads = 0;
 
-// how long to keep the restored position applied - the list components scroll
-// the page around as their contents settle
-const settleTime = 750;
+// Registers that a component is waiting on the content it is going to render.
+// A scroll restoration in progress waits for the content rather than for a
+// fixed amount of time - a slow query would otherwise run out the clock and
+// leave the page at the top, which is the very thing being fixed here.
+export function useContentLoading(loading: boolean) {
+  useEffect(() => {
+    if (!loading) return;
+
+    pendingLoads++;
+    return () => {
+      pendingLoads--;
+    };
+  }, [loading]);
+}
+
+// true while a component is waiting on its content
+function isContentLoading() {
+  return pendingLoads > 0;
+}
+
+// how long to keep trying once nothing is loading any more. This only applies
+// to pages that don't report their loading state - for those that do, the
+// restoration waits for the content however long it takes.
+const idleTimeout = 3000;
+
+// an absolute cap on a restoration, in case a page never finishes loading
+const maxRestoreTime = 30000;
+
+// how long to keep the restored position applied after the content has loaded
+// - the list components scroll the page around as their contents settle
+const settleTime = 250;
+
+// how often to re-check the deadlines. The restoration itself is driven by the
+// document resizing, so this doesn't need to be frequent.
+const tickInterval = 100;
 
 let restoreCount = 0;
 
@@ -64,57 +94,95 @@ export function isRestoringScroll() {
 // The position can't be applied while the document is still too short - which
 // is the case while the page content is being fetched and rendered - and once
 // it can be applied, the content rendering in may scroll it away again. Keep
-// it applied until the page has settled, the user scrolls themselves, or we
-// give up.
+// it applied until the content has loaded and the page has settled, the user
+// interacts, or we give up.
+//
+// Re-applying is driven by the document changing height, so the position is
+// restored as soon as the page is able to scroll there.
 //
 // Returns a function to abort the restoration.
 export function scrollToWhenReady(target: number) {
   const start = Date.now();
-  let reached: number | undefined;
-  let frame = 0;
+  // the last time content was seen loading - the give-up clock runs from here
+  let idleSince = start;
+  let settledSince: number | undefined;
   let stopped = false;
 
   restoreCount++;
+
+  const observer = new ResizeObserver(() => tick());
+  const timer = window.setInterval(() => tick(), tickInterval);
 
   function stop() {
     if (stopped) return;
     stopped = true;
     restoreCount--;
-    cancelAnimationFrame(frame);
+    observer.disconnect();
+    window.clearInterval(timer);
     window.removeEventListener("wheel", stop);
     window.removeEventListener("touchstart", stop);
+    window.removeEventListener("pointerdown", stop);
     window.removeEventListener("keydown", stop);
   }
 
-  function attempt() {
-    const now = Date.now();
-
+  // Applies the position, returning whether the page was able to scroll there.
+  function apply() {
     if (Math.abs(window.scrollY - target) > 1) {
       window.scrollTo(0, target);
     }
 
-    if (Math.abs(window.scrollY - target) <= 1) {
-      // applied - keep it that way until the page has settled
-      if (reached === undefined) reached = now;
-      if (now - reached > settleTime) {
-        stop();
-        return;
-      }
-    } else if (now - start > restoreTimeout) {
-      // the page never got tall enough - give up
+    return Math.abs(window.scrollY - target) <= 1;
+  }
+
+  function tick() {
+    if (stopped) return;
+
+    const now = Date.now();
+    const loading = isContentLoading();
+    if (loading) idleSince = now;
+
+    const applied = apply();
+
+    if (applied && !loading) {
+      // applied and the content is in - keep the position applied until the
+      // page has settled
+      if (settledSince === undefined) settledSince = now;
+      if (now - settledSince > settleTime) stop();
+      return;
+    }
+
+    settledSince = undefined;
+
+    if (!loading && now - idleSince > idleTimeout) {
+      // nothing is loading and the page never got tall enough - give up
       stop();
       return;
     }
 
-    frame = requestAnimationFrame(attempt);
+    if (now - start > maxRestoreTime) {
+      // the content never arrived - give up rather than suppress the automatic
+      // scrolling indefinitely
+      stop();
+    }
   }
 
-  // abandon the restoration if the user scrolls in the meantime
+  // abandon the restoration if the user interacts in the meantime
   window.addEventListener("wheel", stop, { passive: true });
   window.addEventListener("touchstart", stop, { passive: true });
+  window.addEventListener("pointerdown", stop, { passive: true });
   window.addEventListener("keydown", stop);
 
-  attempt();
+  // apply synchronously so that a position that is already reachable - the
+  // content was cached, say - is restored before the page is painted
+  tick();
+  if (stopped) return stop;
+
+  // re-apply whenever the document grows, so that the position is restored as
+  // soon as the content makes the page tall enough. Both elements are observed
+  // because custom CSS may pin the height of either one; if neither reports,
+  // the interval still drives the restoration.
+  observer.observe(document.documentElement);
+  observer.observe(document.body);
 
   return stop;
 }
