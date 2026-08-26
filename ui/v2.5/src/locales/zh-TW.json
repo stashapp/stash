@@ -1488,7 +1488,8 @@
         "clipboard_access_denied": "剪貼簿存取遭拒，請檢查瀏覽器權限",
         "clipboard_image_pasted": "已從剪貼簿貼上圖片",
         "clipboard_no_image": "剪貼簿中無圖片",
-        "merged_performers": "已合併演員"
+        "merged_performers": "已合併演員",
+        "screenshot_generated": "已產生截圖"
     },
     "total": "總計",
     "true": "是",
@@ -1737,6 +1738,13 @@
             "fields_will_not_be_changed": "更新{entity}時，這些欄位將不會被變更。",
             "no_fields_are_excluded": "未排除任何欄位",
             "no_instances_found": "找不到任何實例"
+        },
+        "performers": {
+            "birthdate": "符合的演員資料出生日期與現有資料不同。",
+            "country": "符合的演員資料出生國家與現有資料不同。",
+            "ethnicity": "符合的演員資料出生人種與現有資料不同。",
+            "gender": "符合的演員資料性別與現有資料不同。",
+            "stash_mismatch": "符合的演員資料與現有的 stash-id 不同。"
         }
     },
     "scene_marker_count": "章節標記數量",
