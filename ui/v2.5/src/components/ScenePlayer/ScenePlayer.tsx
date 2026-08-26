@@ -603,7 +603,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       // into the player
       if (!file) return;
       const fingerprint = getFileFingerprint(file.fingerprints);
-      if (scene.id === sceneId.current && fingerprint === fileFingerprint.current)
+      if (
+        scene.id === sceneId.current &&
+        fingerprint === fileFingerprint.current
+      )
         return;
 
       sceneId.current = scene.id;
