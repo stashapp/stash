@@ -236,12 +236,26 @@ func (db *Database) Close() error {
 
 func (db *Database) open(disableForeignKeys bool, writable bool) (*sqlx.DB, error) {
 	// https://github.com/mattn/go-sqlite3
-	url := "file:" + db.dbPath + "?_journal=WAL&_sync=NORMAL&_busy_timeout=50"
+	url := db.connectionURL(disableForeignKeys, writable)
+
+	conn, err := sqlx.Open(sqlite3Driver, url)
+	if err != nil {
+		return nil, fmt.Errorf("db.Open(): %w", err)
+	}
+
+	return conn, nil
+}
+
+func (db *Database) connectionURL(disableForeignKeys bool, writable bool) string {
+	url := "file:" + db.dbPath + "?_sync=NORMAL&_busy_timeout=50"
 	if !disableForeignKeys {
 		url += "&_fk=true"
 	}
 
 	if writable {
+		// journal_mode is a database-wide setting. Do not set it while opening
+		// read-only connections: doing so can contend with an active writer.
+		url += "&_journal=WAL"
 		url += "&_txlock=immediate"
 	} else {
 		url += "&mode=ro"
@@ -253,12 +267,7 @@ func (db *Database) open(disableForeignKeys bool, writable bool) (*sqlx.DB, erro
 		url += "&_cache_size=" + cacheSize
 	}
 
-	conn, err := sqlx.Open(sqlite3Driver, url)
-	if err != nil {
-		return nil, fmt.Errorf("db.Open(): %w", err)
-	}
-
-	return conn, nil
+	return url
 }
 
 func (db *Database) initialise() error {
