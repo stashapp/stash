@@ -473,13 +473,12 @@ $sceneTabWidth: 450px;
     .vjs-control-bar .vjs-control:has(.vjs-progress-holder) {
       width: 100%;
     }
-  }
 
-  // floating play/pause + jog buttons over the video, mobile only - on
-  // desktop the +/-10s buttons stay as regular control-bar buttons instead.
-  // See the container-query comment above: keyed off the player's own
-  // width, not the viewport's.
-  @container scene-player (max-width: 768px) {
+    // floating play/pause + jog buttons over the video - on desktop the
+    // +/-10s buttons stay as regular control-bar buttons instead. Breaks
+    // here rather than alongside the rest of the mobile layout below
+    // (768px) since these two are the ones that most benefit from a
+    // bigger touch target the earliest.
     &.vjs-has-started .vjs-big-button-group {
       display: flex;
       opacity: 1;
@@ -502,16 +501,33 @@ $sceneTabWidth: 450px;
       content: "\f103";
     }
 
-    .vjs-vtt-thumbnail-display {
-      bottom: 2.8em;
-    }
-
-    // the floating group above takes over jogging on mobile
+    // the floating group above takes over jogging once it's shown
     .vjs-control-bar .vjs-seek-button {
       display: none;
     }
 
-    // ...and all 3 AB-loop buttons - the floating group's A/B buttons and
+    // the desktop bottom: 6em (below) is a fixed, font-size-relative gap
+    // above the bar - fine against a tall desktop video, but .video-wrapper
+    // shrinks with viewport width (height: 56.25vw) while this doesn't, so
+    // the same gap reads as floating way too high above a shorter video
+    .vjs-vtt-thumbnail-display {
+      bottom: 3.5em;
+    }
+  }
+
+  // the rest of the mobile layout - on desktop the AB-loop buttons stay in
+  // the control bar instead. See the container-query comment above: keyed
+  // off the player's own width, not the viewport's.
+  @container scene-player (max-width: 768px) {
+    // anchored to .vjs-progress-control's own bottom edge (it's appended
+    // inside it, see vtt-thumbnails.ts), which shrinks by 1em at this same
+    // breakpoint (height: 3em -> 2em, below) - offset down to match, or
+    // this floats a full extra em above where the bar actually is
+    .vjs-vtt-thumbnail-display {
+      bottom: 1.8em;
+    }
+
+    // all 3 AB-loop buttons - the floating group's A/B buttons and
     // vjs-ab-loop-toggle below take over on mobile, so hide the vendor's
     // own text buttons entirely here
     .vjs-control-bar .abLoopButton.start,
