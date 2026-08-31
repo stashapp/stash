@@ -236,6 +236,7 @@ func (db *Database) Close() error {
 
 func (db *Database) open(disableForeignKeys bool, writable bool) (*sqlx.DB, error) {
 	// https://github.com/mattn/go-sqlite3
+	// 5s timeout is the default.
 	url := "file:" + db.dbPath + "?_journal=WAL&_sync=NORMAL&_busy_timeout=5000"
 	if !disableForeignKeys {
 		url += "&_fk=true"
