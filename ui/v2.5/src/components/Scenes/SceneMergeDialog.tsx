@@ -88,6 +88,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
   const [date, setDate] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(dest.date)
   );
+  const [productionDate, setProductionDate] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(dest.production_date)
+  );
 
   const [rating, setRating] = useState(
     new ZeroableScrapeResult<number>(dest.rating100)
@@ -203,6 +206,13 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     setURL(new ScrapeResult(dest.urls, uniq(all.flatMap((s) => s.urls))));
     setDate(
       new ScrapeResult(dest.date, sources.find((s) => s.date)?.date, !dest.date)
+    );
+    setProductionDate(
+      new ScrapeResult(
+        dest.production_date,
+        sources.find((s) => s.production_date)?.production_date,
+        !dest.production_date
+      )
     );
 
     const foundStudio = sources.find((s) => s.studio)?.studio;
@@ -347,6 +357,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
         code,
         url,
         date,
+        productionDate,
         rating,
         oCounter,
         galleries,
@@ -365,6 +376,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     code,
     url,
     date,
+    productionDate,
     rating,
     oCounter,
     galleries,
@@ -425,6 +437,13 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           placeholder="YYYY-MM-DD"
           result={date}
           onChange={(value) => setDate(value)}
+        />
+        <ScrapedInputGroupRow
+          field="production_date"
+          title={intl.formatMessage({ id: "production_date" })}
+          placeholder="YYYY-MM-DD"
+          result={productionDate}
+          onChange={(value) => setProductionDate(value)}
         />
         <ScrapeDialogRow
           field="rating"
@@ -630,6 +649,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
         code: code.getNewValue(),
         urls: url.getNewValue(),
         date: date.getNewValue(),
+        production_date: productionDate.getNewValue(),
         rating100: rating.getNewValue(),
         o_counter: oCounter.getNewValue(),
         play_count: playCount.getNewValue(),
