@@ -43,9 +43,9 @@ import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
 import { languageMap } from "src/utils/caption";
 import { VIDEO_PLAYER_ID } from "./util";
 
-// @ts-ignore
+// @ts-expect-error
 import airplay from "@silvermine/videojs-airplay";
-// @ts-ignore
+// @ts-expect-error
 import chromecast from "@silvermine/videojs-chromecast";
 import abLoopPlugin from "videojs-abloop";
 import ScreenUtils from "src/utils/screen";
@@ -269,6 +269,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
     const started = useRef(false);
     const auto = useRef(false);
+    // durable autostart intent: unlike `auto`, this is not consumed by the
+    // one-shot play effect, so it survives source failover (e.g. transcode fallback)
+    const autostartIntent = useRef(false);
     const interactiveReady = useRef(false);
     const minimumPlayPercent = uiConfig?.minimumPlayPercent ?? 0;
     const trackActivity = uiConfig?.trackActivity ?? true;
@@ -418,7 +421,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
       const vjs = videojs(videoEl, options);
 
-      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+      /* biome-ignore lint/suspicious/noExplicitAny: intentional */
       const settings = (vjs as any).textTrackSettings;
       settings.setValues({
         backgroundColor: "#000",
@@ -442,8 +445,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       // showAbLoopControls is necessary to re-init the player when the config changes
       // Note: interfaceConfig?.autostartVideo is intentionally excluded to prevent
       // player re-initialization when toggling autostart (which would interrupt playback)
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [uiConfig?.showAbLoopControls, uiConfig?.enableChromecast]);
+      // XXbiome-ignore lint/correctness/useExhaustiveDependencies: intentional
+    }, [
+      uiConfig?.showAbLoopControls,
+      uiConfig?.enableChromecast,
+      interfaceConfig?.autostartVideo,
+    ]);
 
     useEffect(() => {
       const player = getPlayer();
@@ -655,11 +662,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         return languageCode;
       }
 
-      if (scene.captions && scene.captions.length > 0) {
+      if (scene.paths.caption && scene.captions && scene.captions.length > 0) {
         const languageCode = getDefaultLanguageCode();
         let hasDefault = false;
 
-        for (let caption of scene.captions) {
+        for (const caption of scene.captions) {
           const lang = caption.language_code;
           let label = lang;
           if (languageMap.has(lang)) {
@@ -667,13 +674,17 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
           }
 
           label = label + " (" + caption.caption_type + ")";
-          const setAsDefault = !hasDefault && languageCode == lang;
+          const setAsDefault = !hasDefault && languageCode === lang;
           if (setAsDefault) {
             hasDefault = true;
           }
+          const captionURL = new URL(scene.paths.caption, window.location.href);
+          captionURL.searchParams.set("lang", lang);
+          captionURL.searchParams.set("type", caption.caption_type);
+
           sourceSelector.addTextTrack(
             {
-              src: `${scene.paths.caption}?lang=${lang}&type=${caption.caption_type}`,
+              src: captionURL.toString(),
               kind: "captions",
               srclang: lang,
               label: label,
@@ -710,6 +721,15 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         buttonEnabled ||
         (interfaceConfig?.autostartVideo ?? false) ||
         _initialTimestamp > 0;
+      autostartIntent.current = auto.current;
+
+      // let the source selector know whether playback is intended, so it doesn't
+      // auto-start during source failover/preload (e.g. transcode fallback in Safari).
+      // uses autostartIntent (not auto) because auto is cleared by the one-shot play
+      // effect before failover occurs; started covers mid-playback source swaps.
+      sourceSelector.setShouldAutoplay(
+        () => autostartIntent.current || started.current
+      );
 
       player.ready(() => {
         player.vttThumbnails().src(scene.paths.vtt ?? null);
@@ -847,7 +867,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     }, [
       getPlayer,
       scene,
-      vrTag,
       trackActivity,
       minimumPlayPercent,
       sceneIncrementPlayCount,
@@ -962,7 +981,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
         return;
       }
-      if (event.key == " ") {
+      if (event.key === " ") {
         event.preventDefault();
         event.stopPropagation();
         if (player.paused()) {
@@ -973,8 +992,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       }
     }
 
-    const isPortrait =
-      file && file.height && file.width && file.height > file.width;
+    const isPortrait = file?.height && file?.width && file.height > file.width;
 
     return (
       <div

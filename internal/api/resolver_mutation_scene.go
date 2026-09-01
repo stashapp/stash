@@ -1331,11 +1331,12 @@ func (r *mutationResolver) SceneDeleteO(ctx context.Context, id string, t []*tim
 }
 
 func (r *mutationResolver) SceneGenerateScreenshot(ctx context.Context, id string, at *float64) (string, error) {
+	var jobID int
 	if at != nil {
-		manager.GetInstance().GenerateScreenshot(ctx, id, *at)
+		jobID = manager.GetInstance().GenerateScreenshot(ctx, id, *at)
 	} else {
-		manager.GetInstance().GenerateDefaultScreenshot(ctx, id)
+		jobID = manager.GetInstance().GenerateDefaultScreenshot(ctx, id)
 	}
 
-	return "todo", nil
+	return strconv.Itoa(jobID), nil
 }

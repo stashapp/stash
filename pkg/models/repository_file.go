@@ -92,3 +92,7 @@ type FileReaderWriter interface {
 	FileReader
 	FileWriter
 }
+
+type IDsFromFileIDsLoader interface {
+	GetManyIDsByFileIDs(ctx context.Context, fileIDs []FileID) ([][]int, error)
+}

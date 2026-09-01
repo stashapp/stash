@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   OptionProps,
+  ValueContainerProps,
   components as reactSelectComponents,
   MultiValueGenericProps,
   SingleValueProps,
@@ -82,6 +83,10 @@ const _PerformerSelect: React.FC<
       hoverPlacementLabel?: Placement;
       hoverPlacementOptions?: Placement;
       excludeIds?: string[];
+      wrapValueContainer?: (
+        children: React.ReactNode,
+        performer: Performer
+      ) => React.ReactNode;
     }
 > = (props) => {
   const [createPerformer] = usePerformerCreate();
@@ -139,7 +144,7 @@ const _PerformerSelect: React.FC<
 
     const { object } = optionProps.data;
 
-    let { name } = object;
+    const { name } = object;
 
     // if name does not match the input value but an alias does, show the alias
     const { inputValue } = optionProps.selectProps;
@@ -273,6 +278,19 @@ const _PerformerSelect: React.FC<
     return <reactSelectComponents.SingleValue {...thisOptionProps} />;
   };
 
+  const PerformerValueContainer = (
+    vcProps: ValueContainerProps<Option, boolean>
+  ) => {
+    const selected = vcProps.getValue()[0]?.object;
+    const container = <reactSelectComponents.ValueContainer {...vcProps} />;
+
+    if (!props.wrapValueContainer || !selected) {
+      return container;
+    }
+
+    return <>{props.wrapValueContainer(container, selected)}</>;
+  };
+
   const onCreate = async (name: string) => {
     const result = await createPerformer({
       variables: { input: { name } },
@@ -330,6 +348,9 @@ const _PerformerSelect: React.FC<
         Option: PerformerOption,
         MultiValueLabel: PerformerMultiValueLabel,
         SingleValue: PerformerValueLabel,
+        ...(props.wrapValueContainer
+          ? { ValueContainer: PerformerValueContainer }
+          : undefined),
       }}
       isMulti={props.isMulti ?? false}
       creatable={props.creatable ?? defaultCreatable}
@@ -367,14 +388,14 @@ const _PerformerIDSelect: React.FC<IFilterProps & IFilterIDProps<Performer>> = (
     onSelectValues?.(items);
   }
 
-  async function loadObjectsByID(idsToLoad: string[]): Promise<Performer[]> {
-    const query = await queryFindPerformersByIDForSelect(idsToLoad);
-    const { performers: loadedPerformers } = query.data.findPerformers;
-
-    return loadedPerformers;
-  }
-
   useEffect(() => {
+    async function loadObjectsByID(idsToLoad: string[]): Promise<Performer[]> {
+      const query = await queryFindPerformersByIDForSelect(idsToLoad);
+      const { performers: loadedPerformers } = query.data.findPerformers;
+
+      return loadedPerformers;
+    }
+
     if (!idsChanged) {
       return;
     }

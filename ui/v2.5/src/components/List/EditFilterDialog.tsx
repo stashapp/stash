@@ -36,7 +36,11 @@ import {
 import { useFocusOnce } from "src/utils/focus";
 import Mousetrap from "mousetrap";
 import ScreenUtils from "src/utils/screen";
-import { LoadFilterDialog, SaveFilterDialog } from "./SavedFilterList";
+import {
+  LoadFilterDialog,
+  notifySavedFilterLoaded,
+  SaveFilterDialog,
+} from "./SavedFilterList";
 import { SearchTermInput } from "./ListFilter";
 
 interface ICriterionList {
@@ -101,6 +105,7 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
     }
   }
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally triggering on criterion change
   useEffect(() => {
     // scrolling to the current criterion doesn't work well when the
     // dialog is already open, so limit to when we click on the
@@ -151,7 +156,9 @@ const CriterionOptionList: React.FC<ICriterionList> = ({
               icon={type === c.type ? faChevronDown : faChevronRight}
             />
             <FormattedMessage
-              id={!sfwContentMode ? c.messageID : c.sfwMessageID ?? c.messageID}
+              id={
+                !sfwContentMode ? c.messageID : (c.sfwMessageID ?? c.messageID)
+              }
             />
           </span>
           {criteria.some((cc) => c.type === cc) && (
@@ -271,11 +278,13 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
       .sort((a, b) => {
         return intl
           .formatMessage({
-            id: !sfwContentMode ? a.messageID : a.sfwMessageID ?? a.messageID,
+            id: !sfwContentMode ? a.messageID : (a.sfwMessageID ?? a.messageID),
           })
           .localeCompare(
             intl.formatMessage({
-              id: !sfwContentMode ? b.messageID : b.sfwMessageID ?? b.messageID,
+              id: !sfwContentMode
+                ? b.messageID
+                : (b.sfwMessageID ?? b.messageID),
             })
           );
       });
@@ -314,7 +323,7 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     return criterionOptions.filter((c) => {
       return intl
         .formatMessage({
-          id: !sfwContentMode ? c.messageID : c.sfwMessageID ?? c.messageID,
+          id: !sfwContentMode ? c.messageID : (c.sfwMessageID ?? c.messageID),
         })
         .toLowerCase()
         .includes(trimmedSearch);
@@ -475,6 +484,11 @@ export const EditFilterDialog: React.FC<IEditFilterProps> = ({
     newFilter.randomSeed = -1;
 
     onApply(newFilter);
+    notifySavedFilterLoaded({
+      filter: newFilter,
+      savedFilter: f,
+      source: "dialog",
+    });
   }
 
   async function onSaveFilter(name: string, id?: string) {

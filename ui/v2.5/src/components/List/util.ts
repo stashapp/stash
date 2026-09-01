@@ -66,7 +66,7 @@ export function useFilterURL(
 
     // the query has changed, update filter if necessary
     setFilter((prevFilter) => {
-      let newFilter = prevFilter.empty();
+      const newFilter = prevFilter.empty();
       newFilter.configureFromQueryString(location.search);
       if (!isEqual(newFilter, prevFilter)) {
         // filter may have changed if random seed was set, update the URL
@@ -510,7 +510,7 @@ export function useCachedQueryResult<T extends QueryResult>(
 export interface IQueryResultHook<
   T extends QueryResult,
   E extends IHasID = IHasID,
-  M = unknown
+  M = unknown,
 > {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   useResult: (filter: ListFilterModel) => T;
@@ -522,7 +522,7 @@ export interface IQueryResultHook<
 export function useQueryResult<
   T extends QueryResult,
   E extends IHasID = IHasID,
-  M = unknown
+  M = unknown,
 >(
   props: IQueryResultHook<T, E, M> & {
     filter: ListFilterModel;

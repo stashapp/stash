@@ -1,5 +1,5 @@
 import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
-import React, { useMemo, useState } from "react";
+import React, { MouseEvent, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { GridCard } from "../Shared/GridCard/GridCard";
 import { HoverPopover } from "../Shared/HoverPopover";
@@ -10,52 +10,62 @@ import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import NavUtils from "src/utils/navigation";
 import { RatingBanner } from "../Shared/RatingBanner";
-import { faBox, faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBox,
+  faPlayCircle,
+  faSearch,
+  faTag,
+} from "@fortawesome/free-solid-svg-icons";
 import { galleryTitle } from "src/core/galleries";
 import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
 import { GalleryPreviewScrubber } from "./GalleryPreviewScrubber";
 import cx from "classnames";
-import { useHistory } from "react-router-dom";
 import { PatchComponent } from "src/patch";
 
 interface IGalleryPreviewProps {
   gallery: GQL.SlimGalleryDataFragment;
   onScrubberClick?: (index: number) => void;
+  onPreview?: (ev: MouseEvent) => void;
   disabled?: boolean;
 }
 
-export const GalleryPreview: React.FC<IGalleryPreviewProps> = ({
-  gallery,
-  onScrubberClick,
-  disabled,
-}) => {
-  const [imgSrc, setImgSrc] = useState<string | undefined>(
-    gallery.paths.cover ?? undefined
-  );
+export const GalleryPreview: React.FC<IGalleryPreviewProps> = React.memo(
+  ({ gallery, onScrubberClick, onPreview, disabled }) => {
+    const [imgSrc, setImgSrc] = useState<string | undefined>(
+      gallery.paths.cover ?? undefined
+    );
 
-  return (
-    <div className={cx("gallery-card-cover")}>
-      {!!imgSrc && (
-        <img
-          loading="lazy"
-          className="gallery-card-image"
-          alt={gallery.title ?? ""}
-          src={imgSrc}
-        />
-      )}
-      {gallery.image_count > 0 && (
-        <GalleryPreviewScrubber
-          previewPath={gallery.paths.preview}
-          defaultPath={gallery.paths.cover ?? ""}
-          imageCount={gallery.image_count}
-          onClick={onScrubberClick}
-          onPathChanged={setImgSrc}
-          disabled={disabled}
-        />
-      )}
-    </div>
-  );
-};
+    return (
+      <div className={cx("gallery-card-cover")}>
+        {!!imgSrc && (
+          <img
+            loading="lazy"
+            className="gallery-card-image"
+            alt={gallery.title ?? ""}
+            src={imgSrc}
+          />
+        )}
+        {gallery.image_count > 0 && (
+          <GalleryPreviewScrubber
+            previewPath={gallery.paths.preview}
+            defaultPath={gallery.paths.cover ?? ""}
+            imageCount={gallery.image_count}
+            onClick={onScrubberClick}
+            onPathChanged={setImgSrc}
+            disabled={disabled}
+          />
+        )}
+        {onPreview && gallery.image_count > 0 ? (
+          <div className="preview-button">
+            <Button onClick={onPreview}>
+              <Icon icon={faSearch} />
+            </Button>
+          </div>
+        ) : undefined}
+      </div>
+    );
+  }
+);
 
 interface IGalleryCardProps {
   gallery: GQL.SlimGalleryDataFragment;
@@ -64,11 +74,11 @@ interface IGalleryCardProps {
   selected?: boolean | undefined;
   zoomIndex?: number;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
+  onPreview?: (index: number, ev?: MouseEvent) => void;
 }
 
-const GalleryCardPopovers = PatchComponent(
-  "GalleryCard.Popovers",
-  (props: IGalleryCardProps) => {
+const GalleryCardPopovers = React.memo(
+  PatchComponent("GalleryCard.Popovers", (props: IGalleryCardProps) => {
     function maybeRenderScenePopoverButton() {
       if (props.gallery.scenes.length === 0) return;
 
@@ -176,12 +186,11 @@ const GalleryCardPopovers = PatchComponent(
     }
 
     return <>{maybeRenderPopoverButtonGroup()}</>;
-  }
+  })
 );
 
-const GalleryCardDetails = PatchComponent(
-  "GalleryCard.Details",
-  (props: IGalleryCardProps) => {
+const GalleryCardDetails = React.memo(
+  PatchComponent("GalleryCard.Details", (props: IGalleryCardProps) => {
     return (
       <div className="gallery-card__details">
         <span className="gallery-card__date">{props.gallery.date}</span>
@@ -192,12 +201,11 @@ const GalleryCardDetails = PatchComponent(
         />
       </div>
     );
-  }
+  })
 );
 
-const GalleryCardOverlays = PatchComponent(
-  "GalleryCard.Overlays",
-  (props: IGalleryCardProps) => {
+const GalleryCardOverlays = React.memo(
+  PatchComponent("GalleryCard.Overlays", (props: IGalleryCardProps) => {
     const ret = useMemo(() => {
       return (
         <StudioOverlay
@@ -208,32 +216,29 @@ const GalleryCardOverlays = PatchComponent(
     }, [props.gallery.studio, props.selecting]);
 
     return ret;
-  }
+  })
 );
 
-const GalleryCardImage = PatchComponent(
-  "GalleryCard.Image",
-  (props: IGalleryCardProps) => {
-    const history = useHistory();
+const GalleryCardImage = React.memo(
+  PatchComponent("GalleryCard.Image", (props: IGalleryCardProps) => {
+    const onPreview = props.selecting ? undefined : props.onPreview;
 
     return (
       <>
         <GalleryPreview
           gallery={props.gallery}
-          onScrubberClick={(i) => {
-            history.push(`/galleries/${props.gallery.id}/images/${i}`);
-          }}
+          onScrubberClick={onPreview ? (i) => onPreview(i) : undefined}
+          onPreview={onPreview ? (ev) => onPreview(0, ev) : undefined}
           disabled={props.selecting}
         />
         <RatingBanner rating={props.gallery.rating100} />
       </>
     );
-  }
+  })
 );
 
-export const GalleryCard = PatchComponent(
-  "GalleryCard",
-  (props: IGalleryCardProps) => {
+export const GalleryCard = React.memo(
+  PatchComponent("GalleryCard", (props: IGalleryCardProps) => {
     return (
       <GridCard
         className={`gallery-card zoom-${props.zoomIndex}`}
@@ -250,5 +255,5 @@ export const GalleryCard = PatchComponent(
         onSelectedChanged={props.onSelectedChanged}
       />
     );
-  }
+  })
 );

@@ -42,13 +42,13 @@ func (qb *sceneFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 		return
 	}
 
+	f.handleCriterion(ctx, qb.criterionHandler())
+
 	sf := sceneFilter.SubFilter()
 	if sf != nil {
 		sub := &sceneFilterHandler{sf}
 		handleSubFilter(ctx, sub, f, sceneFilter.OperatorFilter)
 	}
-
-	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
 func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
@@ -110,7 +110,10 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 
 		&phashDistanceCriterionHandler{
 			joinFn: func(f *filterBuilder) {
-				const joinType = joinTypeInner
+				joinType := joinTypeInner
+				if sceneFilter.PhashDistance.Modifier == models.CriterionModifierIsNull {
+					joinType = joinTypeLeft
+				}
 				qb.addSceneFilesTable(f, joinType)
 				f.addJoin(joinType, fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
 			},

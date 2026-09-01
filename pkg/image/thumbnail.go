@@ -66,6 +66,11 @@ func NewThumbnailEncoder(ffmpegEncoder *ffmpeg.FFMpeg, ffProbe *ffmpeg.FFProbe, 
 // It returns nil and an error if an error occurs reading, decoding or encoding
 // the image, or if the image is not suitable for thumbnails.
 func (e *ThumbnailEncoder) GetThumbnail(f models.File, maxSize int) ([]byte, error) {
+	// Video-backed image clips can be large, so avoid buffering the whole file.
+	if _, ok := f.(*models.VideoFile); ok {
+		return e.ffmpegImageThumbnailPath(f.Base().Path, maxSize)
+	}
+
 	reader, err := f.Open(&file.OsFS{})
 	if err != nil {
 		return nil, err
@@ -106,11 +111,6 @@ func (e *ThumbnailEncoder) GetThumbnail(f models.File, maxSize int) ([]byte, err
 			}
 			return e.ffmpegImageThumbnailPath(f.Base().Path, maxSize)
 		}
-	}
-
-	// Videofiles can only be thumbnailed with ffmpeg
-	if _, ok := f.(*models.VideoFile); ok {
-		return e.ffmpegImageThumbnail(buf, maxSize)
 	}
 
 	// vips has issues loading files from stdin on Windows

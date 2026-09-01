@@ -1,4 +1,4 @@
-/* eslint-disable import/extensions */
+/* XXbiome-ignore import/extensions: intentional */
 import { shouldPolyfill as shouldPolyfillCanonicalLocales } from "@formatjs/intl-getcanonicallocales/should-polyfill.js";
 import { shouldPolyfill as shouldPolyfillLocale } from "@formatjs/intl-locale/should-polyfill.js";
 import { shouldPolyfill as shouldPolyfillNumberformat } from "@formatjs/intl-numberformat/should-polyfill.js";

@@ -101,7 +101,7 @@ const ImageWall: React.FC<IImageWallProps> = ({
 
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  let photos: {
+  const photos: {
     src: string;
     srcSet?: string | string[] | undefined;
     sizes?: string | string[] | undefined;
@@ -112,9 +112,9 @@ const ImageWall: React.FC<IImageWallProps> = ({
   }[] = [];
 
   images.forEach((image, index) => {
-    let imageData = {
+    const imageData = {
       src:
-        image.paths.preview != ""
+        image.paths.preview !== ""
           ? image.paths.preview!
           : image.paths.thumbnail!,
       width: image.visual_files?.[0]?.width ?? 0,
@@ -129,15 +129,15 @@ const ImageWall: React.FC<IImageWallProps> = ({
   });
 
   const showLightboxOnClick = useCallback(
-    (event, { index }) => {
+    (_event, { index }) => {
       handleImageOpen(index);
     },
     [handleImageOpen]
   );
 
   function columns(containerWidth: number) {
-    let preferredSize = zoomWidths[zoomIndex];
-    let columnCount = containerWidth / preferredSize;
+    const preferredSize = zoomWidths[zoomIndex];
+    const columnCount = containerWidth / preferredSize;
     return Math.round(columnCount);
   }
 
@@ -196,8 +196,8 @@ const ImageWall: React.FC<IImageWallProps> = ({
           photos={photos}
           renderImage={renderImage}
           onClick={showLightboxOnClick}
-          margin={uiConfig?.imageWallOptions?.margin!}
-          direction={uiConfig?.imageWallOptions?.direction!}
+          margin={uiConfig?.imageWallOptions?.margin}
+          direction={uiConfig?.imageWallOptions?.direction}
           columns={columns}
           targetRowHeight={targetRowHeight}
         />
@@ -212,6 +212,7 @@ interface IImageListImages {
   selectedIds: Set<string>;
   onChangePage: (page: number) => void;
   pageCount: number;
+  totalCount: number;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
   slideshowRunning: boolean;
   setSlideshowRunning: (running: boolean) => void;
@@ -226,6 +227,7 @@ const ImageList: React.FC<IImageListImages> = PatchComponent(
     selectedIds,
     onChangePage,
     pageCount,
+    totalCount,
     onSelectChange,
     slideshowRunning,
     setSlideshowRunning,
@@ -269,12 +271,14 @@ const ImageList: React.FC<IImageListImages> = PatchComponent(
         page: filter.currentPage,
         pages: pageCount,
         pageSize: filter.itemsPerPage,
+        totalCount,
         slideshowEnabled: slideshowRunning,
         onClose: handleClose,
       };
     }, [
       images,
       pageCount,
+      totalCount,
       filter.currentPage,
       filter.itemsPerPage,
       slideshowRunning,
@@ -331,7 +335,7 @@ const ImageList: React.FC<IImageListImages> = PatchComponent(
     }
 
     // should not happen
-    return <></>;
+    return null;
   }
 );
 
@@ -740,6 +744,7 @@ export const FilteredImageList = PatchComponent(
         />
 
         <FilterTags
+          view={view}
           criteria={filter.criteria}
           onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
           onRemoveCriterion={removeCriterion}
@@ -769,6 +774,7 @@ export const FilteredImageList = PatchComponent(
             onChangePage={setPage}
             onSelectChange={onSelectChange}
             pageCount={pageCount}
+            totalCount={totalCount}
             selectedIds={selectedIds}
             slideshowRunning={slideshowRunning}
             setSlideshowRunning={setSlideshowRunning}

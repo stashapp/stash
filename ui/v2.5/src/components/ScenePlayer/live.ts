@@ -15,7 +15,7 @@ interface ICue extends TextTrackCue {
 const loadDelay = 200;
 
 function offsetMiddleware(player: VideoJsPlayer) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- allow access to private tech methods
+  // biome-ignore lint/suspicious/noExplicitAny: allow access to private tech methods
   let tech: any;
   let source: ISource;
   let offsetStart: number | undefined;
@@ -152,7 +152,7 @@ function offsetMiddleware(player: VideoJsPlayer) {
       }
 
       // types for createTimeRanges are incorrect, should be number[][] not TimeRange[]
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: intentional
       return videojs.createTimeRanges(timeRanges as any);
     },
     currentTime(seconds: number) {

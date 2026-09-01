@@ -207,13 +207,21 @@ func (j *ScanJob) queueFileFunc(ctx context.Context, f models.FS, zipFile *file.
 			return err
 		}
 
+		// #4425 - store the NFC-normalized path so search matches user input.
+		// Filtering and filesystem access above use the original path; zip
+		// entries are matched byte-exact so are left unnormalized.
+		storedPath := path
+		if zipFile == nil {
+			storedPath = fsutil.NormalizePath(path)
+		}
+
 		ff := file.ScannedFile{
 			BaseFile: &models.BaseFile{
 				DirEntry: models.DirEntry{
 					ModTime: file.ModTime(info),
 				},
-				Path:     path,
-				Basename: filepath.Base(path),
+				Path:     storedPath,
+				Basename: filepath.Base(storedPath),
 				Size:     size,
 			},
 			FS:   f,
@@ -381,9 +389,11 @@ func (j *ScanJob) handleFile(ctx context.Context, f file.ScannedFile, progress *
 	// handle rename should have already handled the contents of the zip file
 	// so shouldn't need to scan it again.
 	// Only scan zip contents if the file is new, the fingerprint changed,
-	// or if a force rescan was requested.
+	// if a force rescan was requested, or if the handler was required because
+	// a related object (e.g. a deleted gallery) is missing and needs to be
+	// recreated from the contents.
 
-	if j.scanner.IsZipFile(f.Info.Name()) && (r.New || r.FingerprintChanged || j.scanner.Rescan) {
+	if j.scanner.IsZipFile(f.Info.Name()) && (r.New || r.FingerprintChanged || j.scanner.Rescan || r.HandlerRequired) {
 		ff := r.File
 		f.BaseFile = ff.Base()
 
@@ -590,7 +600,7 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo, 
 	}
 
 	// Check .stashignore files, bounded to the library root.
-	if !f.stashIgnoreFilter.Accept(ctx, path, info, s.Path, zipFilePath) {
+	if !f.stashIgnoreFilter.Accept(ctx, path, info, f.stashPaths.GetStashRootFromDirPath(path), zipFilePath) {
 		logger.Debugf("Skipping %s due to .stashignore", path)
 		return false
 	}

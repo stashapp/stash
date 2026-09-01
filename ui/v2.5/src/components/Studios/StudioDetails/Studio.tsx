@@ -48,6 +48,7 @@ import { ExternalLinkButtons } from "src/components/Shared/ExternalLinksButton";
 import { AliasList } from "src/components/Shared/DetailsPage/AliasList";
 import { HeaderImage } from "src/components/Shared/DetailsPage/HeaderImage";
 import { goBackOrReplace } from "src/utils/history";
+import { PatchComponent } from "src/patch";
 import { OCounterButton } from "src/components/Shared/CountButton";
 import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
 
@@ -99,16 +100,16 @@ const StudioTabs: React.FC<{
 
   const populatedDefaultTab = useMemo(() => {
     let ret: TabKey = "scenes";
-    if (sceneCount == 0) {
-      if (galleryCount != 0) {
+    if (sceneCount === 0) {
+      if (galleryCount !== 0) {
         ret = "galleries";
-      } else if (imageCount != 0) {
+      } else if (imageCount !== 0) {
         ret = "images";
-      } else if (performerCount != 0) {
+      } else if (performerCount !== 0) {
         ret = "performers";
-      } else if (groupCount != 0) {
+      } else if (groupCount !== 0) {
         ret = "groups";
-      } else if (studio.child_studios.length != 0) {
+      } else if (studio.child_studios.length !== 0) {
         ret = "childstudios";
       }
     }
@@ -123,7 +124,7 @@ const StudioTabs: React.FC<{
     studio,
   ]);
 
-  const { setTabKey } = useTabKey({
+  const { activeTabKey, setTabKey } = useTabKey({
     tabKey,
     validTabs,
     defaultTabKey: populatedDefaultTab,
@@ -153,7 +154,7 @@ const StudioTabs: React.FC<{
       id="studio-tabs"
       mountOnEnter
       unmountOnExit
-      activeKey={tabKey}
+      activeKey={activeTabKey}
       onSelect={setTabKey}
     >
       <Tab
@@ -168,7 +169,7 @@ const StudioTabs: React.FC<{
       >
         {contentSwitch}
         <StudioScenesPanel
-          active={tabKey === "scenes"}
+          active={activeTabKey === "scenes"}
           studio={studio}
           showChildStudioContent={showAllDetails}
         />
@@ -185,7 +186,7 @@ const StudioTabs: React.FC<{
       >
         {contentSwitch}
         <StudioGalleriesPanel
-          active={tabKey === "galleries"}
+          active={activeTabKey === "galleries"}
           studio={studio}
           showChildStudioContent={showAllDetails}
         />
@@ -202,7 +203,7 @@ const StudioTabs: React.FC<{
       >
         {contentSwitch}
         <StudioImagesPanel
-          active={tabKey === "images"}
+          active={activeTabKey === "images"}
           studio={studio}
           showChildStudioContent={showAllDetails}
         />
@@ -219,7 +220,7 @@ const StudioTabs: React.FC<{
       >
         {contentSwitch}
         <StudioPerformersPanel
-          active={tabKey === "performers"}
+          active={activeTabKey === "performers"}
           studio={studio}
           showChildStudioContent={showAllDetails}
         />
@@ -236,7 +237,7 @@ const StudioTabs: React.FC<{
       >
         {contentSwitch}
         <StudioGroupsPanel
-          active={tabKey === "groups"}
+          active={activeTabKey === "groups"}
           studio={studio}
           showChildStudioContent={showAllDetails}
         />
@@ -252,7 +253,7 @@ const StudioTabs: React.FC<{
         }
       >
         <StudioChildrenPanel
-          active={tabKey === "childstudios"}
+          active={activeTabKey === "childstudios"}
           studio={studio}
         />
       </Tab>
@@ -260,316 +261,322 @@ const StudioTabs: React.FC<{
   );
 };
 
-const StudioPage: React.FC<IProps> = ({ studio, tabKey }) => {
-  const history = useHistory();
-  const Toast = useToast();
-  const intl = useIntl();
+const StudioPage: React.FC<IProps> = PatchComponent(
+  "StudioPage",
+  ({ studio, tabKey }) => {
+    const history = useHistory();
+    const Toast = useToast();
+    const intl = useIntl();
 
-  // Configuration settings
-  const { configuration } = useConfigurationContext();
-  const uiConfig = configuration?.ui;
-  const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
-  const enableBackgroundImage = uiConfig?.enableStudioBackgroundImage ?? false;
-  const showAllDetails = uiConfig?.showAllDetails ?? true;
-  const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
+    // Configuration settings
+    const { configuration } = useConfigurationContext();
+    const uiConfig = configuration?.ui;
+    const abbreviateCounter = uiConfig?.abbreviateCounters ?? false;
+    const enableBackgroundImage =
+      uiConfig?.enableStudioBackgroundImage ?? false;
+    const showAllDetails = uiConfig?.showAllDetails ?? true;
+    const compactExpandedDetails = uiConfig?.compactExpandedDetails ?? false;
 
-  const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
-  const loadStickyHeader = useLoadStickyHeader();
+    const [collapsed, setCollapsed] = useState<boolean>(!showAllDetails);
+    const loadStickyHeader = useLoadStickyHeader();
 
-  // Editing state
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+    // Editing state
+    const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
-  // Editing studio state
-  const [image, setImage] = useState<string | null>();
-  const [encodingImage, setEncodingImage] = useState<boolean>(false);
+    // Editing studio state
+    const [image, setImage] = useState<string | null>();
+    const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
-  const [updateStudio] = useStudioUpdate();
-  const [deleteStudio] = useStudioDestroy({ id: studio.id });
+    const [updateStudio] = useStudioUpdate();
+    const [deleteStudio] = useStudioDestroy({ id: studio.id });
 
-  const showAllCounts = uiConfig?.showChildStudioContent;
+    const showAllCounts = uiConfig?.showChildStudioContent;
 
-  const studioImage = useMemo(() => {
-    const existingPath = studio.image_path;
-    if (isEditing) {
-      if (image === null && existingPath) {
-        const studioImageURL = new URL(existingPath);
-        studioImageURL.searchParams.set("default", "true");
-        return studioImageURL.toString();
-      } else if (image) {
-        return image;
+    const studioImage = useMemo(() => {
+      const existingPath = studio.image_path;
+      if (isEditing) {
+        if (image === null && existingPath) {
+          const studioImageURL = new URL(existingPath);
+          studioImageURL.searchParams.set("default", "true");
+          return studioImageURL.toString();
+        } else if (image) {
+          return image;
+        }
+      }
+
+      return existingPath;
+    }, [isEditing, image, studio.image_path]);
+
+    function setFavorite(v: boolean) {
+      if (studio.id) {
+        updateStudio({
+          variables: {
+            input: {
+              id: studio.id,
+              favorite: v,
+            },
+          },
+        });
       }
     }
 
-    return existingPath;
-  }, [isEditing, image, studio.image_path]);
+    const [organizedLoading, setOrganizedLoading] = useState(false);
 
-  function setFavorite(v: boolean) {
-    if (studio.id) {
-      updateStudio({
-        variables: {
-          input: {
-            id: studio.id,
-            favorite: v,
+    async function onOrganizedClick() {
+      if (!studio.id) return;
+
+      setOrganizedLoading(true);
+      try {
+        await updateStudio({
+          variables: {
+            input: {
+              id: studio.id,
+              organized: !studio.organized,
+            },
           },
-        },
-      });
+        });
+      } catch (e) {
+        Toast.error(e);
+      } finally {
+        setOrganizedLoading(false);
+      }
     }
-  }
 
-  const [organizedLoading, setOrganizedLoading] = useState(false);
+    // set up hotkeys
+    useEffect(() => {
+      Mousetrap.bind("e", () => toggleEditing());
+      Mousetrap.bind("d d", () => {
+        setIsDeleteAlertOpen(true);
+      });
+      Mousetrap.bind(",", () => setCollapsed(!collapsed));
+      Mousetrap.bind("f", () => setFavorite(!studio.favorite));
 
-  async function onOrganizedClick() {
-    if (!studio.id) return;
+      return () => {
+        Mousetrap.unbind("e");
+        Mousetrap.unbind("d d");
+        Mousetrap.unbind(",");
+        Mousetrap.unbind("f");
+      };
+    });
 
-    setOrganizedLoading(true);
-    try {
+    useRatingKeybinds(
+      true,
+      configuration?.ui.ratingSystemOptions?.type,
+      setRating
+    );
+
+    async function onSave(input: GQL.StudioCreateInput) {
       await updateStudio({
         variables: {
           input: {
             id: studio.id,
-            organized: !studio.organized,
+            ...input,
           },
         },
       });
-    } catch (e) {
-      Toast.error(e);
-    } finally {
-      setOrganizedLoading(false);
+      toggleEditing(false);
+      Toast.success(
+        intl.formatMessage(
+          { id: "toast.updated_entity" },
+          { entity: intl.formatMessage({ id: "studio" }).toLocaleLowerCase() }
+        )
+      );
     }
-  }
 
-  // set up hotkeys
-  useEffect(() => {
-    Mousetrap.bind("e", () => toggleEditing());
-    Mousetrap.bind("d d", () => {
-      setIsDeleteAlertOpen(true);
+    async function onAutoTag() {
+      if (!studio.id) return;
+      try {
+        await mutateMetadataAutoTag({ studios: [studio.id] });
+        Toast.success(intl.formatMessage({ id: "toast.started_auto_tagging" }));
+      } catch (e) {
+        Toast.error(e);
+      }
+    }
+
+    async function onDelete() {
+      try {
+        await deleteStudio();
+      } catch (e) {
+        Toast.error(e);
+        return;
+      }
+
+      goBackOrReplace(history, "/studios");
+    }
+
+    function renderDeleteAlert() {
+      return (
+        <ModalComponent
+          show={isDeleteAlertOpen}
+          icon={faTrashAlt}
+          accept={{
+            text: intl.formatMessage({ id: "actions.delete" }),
+            variant: "danger",
+            onClick: onDelete,
+          }}
+          cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
+        >
+          <p>
+            <FormattedMessage
+              id="dialogs.delete_confirm"
+              values={{
+                entityName:
+                  studio.name ??
+                  intl.formatMessage({ id: "studio" }).toLocaleLowerCase(),
+              }}
+            />
+          </p>
+        </ModalComponent>
+      );
+    }
+
+    function toggleEditing(value?: boolean) {
+      if (value !== undefined) {
+        setIsEditing(value);
+      } else {
+        setIsEditing((e) => !e);
+      }
+      setImage(undefined);
+    }
+
+    function setRating(v: number | null) {
+      if (studio.id) {
+        updateStudio({
+          variables: {
+            input: {
+              id: studio.id,
+              rating100: v,
+            },
+          },
+        });
+      }
+    }
+
+    const headerClassName = cx("detail-header", {
+      edit: isEditing,
+      collapsed,
+      "full-width": !collapsed && !compactExpandedDetails,
     });
-    Mousetrap.bind(",", () => setCollapsed(!collapsed));
-    Mousetrap.bind("f", () => setFavorite(!studio.favorite));
 
-    return () => {
-      Mousetrap.unbind("e");
-      Mousetrap.unbind("d d");
-      Mousetrap.unbind(",");
-      Mousetrap.unbind("f");
-    };
-  });
-
-  useRatingKeybinds(
-    true,
-    configuration?.ui.ratingSystemOptions?.type,
-    setRating
-  );
-
-  async function onSave(input: GQL.StudioCreateInput) {
-    await updateStudio({
-      variables: {
-        input: {
-          id: studio.id,
-          ...input,
-        },
-      },
-    });
-    toggleEditing(false);
-    Toast.success(
-      intl.formatMessage(
-        { id: "toast.updated_entity" },
-        { entity: intl.formatMessage({ id: "studio" }).toLocaleLowerCase() }
-      )
-    );
-  }
-
-  async function onAutoTag() {
-    if (!studio.id) return;
-    try {
-      await mutateMetadataAutoTag({ studios: [studio.id] });
-      Toast.success(intl.formatMessage({ id: "toast.started_auto_tagging" }));
-    } catch (e) {
-      Toast.error(e);
-    }
-  }
-
-  async function onDelete() {
-    try {
-      await deleteStudio();
-    } catch (e) {
-      Toast.error(e);
-      return;
-    }
-
-    goBackOrReplace(history, "/studios");
-  }
-
-  function renderDeleteAlert() {
     return (
-      <ModalComponent
-        show={isDeleteAlertOpen}
-        icon={faTrashAlt}
-        accept={{
-          text: intl.formatMessage({ id: "actions.delete" }),
-          variant: "danger",
-          onClick: onDelete,
-        }}
-        cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
-      >
-        <p>
-          <FormattedMessage
-            id="dialogs.delete_confirm"
-            values={{
-              entityName:
-                studio.name ??
-                intl.formatMessage({ id: "studio" }).toLocaleLowerCase(),
-            }}
+      <div id="studio-page" className="row">
+        <Helmet>
+          <title>{studio.name ?? intl.formatMessage({ id: "studio" })}</title>
+        </Helmet>
+
+        <div className={headerClassName}>
+          <BackgroundImage
+            imagePath={studio.image_path ?? undefined}
+            show={enableBackgroundImage && !isEditing}
           />
-        </p>
-      </ModalComponent>
-    );
-  }
-
-  function toggleEditing(value?: boolean) {
-    if (value !== undefined) {
-      setIsEditing(value);
-    } else {
-      setIsEditing((e) => !e);
-    }
-    setImage(undefined);
-  }
-
-  function setRating(v: number | null) {
-    if (studio.id) {
-      updateStudio({
-        variables: {
-          input: {
-            id: studio.id,
-            rating100: v,
-          },
-        },
-      });
-    }
-  }
-
-  const headerClassName = cx("detail-header", {
-    edit: isEditing,
-    collapsed,
-    "full-width": !collapsed && !compactExpandedDetails,
-  });
-
-  return (
-    <div id="studio-page" className="row">
-      <Helmet>
-        <title>{studio.name ?? intl.formatMessage({ id: "studio" })}</title>
-      </Helmet>
-
-      <div className={headerClassName}>
-        <BackgroundImage
-          imagePath={studio.image_path ?? undefined}
-          show={enableBackgroundImage && !isEditing}
-        />
-        <div className="detail-container">
-          <HeaderImage encodingImage={encodingImage}>
-            {studioImage && (
-              <DetailImage
-                className="logo"
-                alt={studio.name}
-                src={studioImage}
-              />
-            )}
-          </HeaderImage>
-          <div className="row">
-            <div className="studio-head col">
-              <DetailTitle name={studio.name ?? ""} classNamePrefix="studio">
-                {!isEditing && (
-                  <ExpandCollapseButton
-                    collapsed={collapsed}
-                    setCollapsed={(v) => setCollapsed(v)}
-                  />
-                )}
-                <span className="name-icons">
-                  <FavoriteIcon
-                    favorite={studio.favorite}
-                    onToggleFavorite={(v) => setFavorite(v)}
-                  />
-                  <OrganizedButton
-                    loading={organizedLoading}
-                    organized={studio.organized}
-                    onClick={onOrganizedClick}
-                  />
-                  <ExternalLinkButtons urls={studio.urls} />
-                </span>
-              </DetailTitle>
-
-              <AliasList aliases={studio.aliases} />
-              <div className="quality-group">
-                <RatingSystem
-                  value={studio.rating100}
-                  onSetRating={(value) => setRating(value)}
-                  clickToRate
-                  withoutContext
-                />
-                {!!studio.o_counter && (
-                  <OCounterButton value={studio.o_counter} />
-                )}
-              </div>
-              {!isEditing && (
-                <StudioDetailsPanel
-                  studio={studio}
-                  collapsed={collapsed}
-                  fullWidth={!collapsed && !compactExpandedDetails}
+          <div className="detail-container">
+            <HeaderImage encodingImage={encodingImage}>
+              {studioImage && (
+                <DetailImage
+                  className="logo"
+                  alt={studio.name}
+                  src={studioImage}
                 />
               )}
-              {isEditing ? (
-                <StudioEditPanel
+            </HeaderImage>
+            <div className="row">
+              <div className="studio-head col">
+                <DetailTitle name={studio.name ?? ""} classNamePrefix="studio">
+                  {!isEditing && (
+                    <ExpandCollapseButton
+                      collapsed={collapsed}
+                      setCollapsed={(v) => setCollapsed(v)}
+                    />
+                  )}
+                  <span className="name-icons">
+                    <FavoriteIcon
+                      favorite={studio.favorite}
+                      onToggleFavorite={(v) => setFavorite(v)}
+                    />
+                    <OrganizedButton
+                      loading={organizedLoading}
+                      organized={studio.organized}
+                      onClick={onOrganizedClick}
+                    />
+                    <ExternalLinkButtons urls={studio.urls} />
+                  </span>
+                </DetailTitle>
+
+                <AliasList aliases={studio.aliases} />
+                <div className="quality-group">
+                  <RatingSystem
+                    value={studio.rating100}
+                    onSetRating={(value) => setRating(value)}
+                    clickToRate
+                    withoutContext
+                  />
+                  {showAllCounts && studio.o_counter_all ? (
+                    <OCounterButton value={studio.o_counter_all} />
+                  ) : !showAllCounts && studio.o_counter ? (
+                    <OCounterButton value={studio.o_counter} />
+                  ) : null}
+                </div>
+                {!isEditing && (
+                  <StudioDetailsPanel
+                    studio={studio}
+                    collapsed={collapsed}
+                    fullWidth={!collapsed && !compactExpandedDetails}
+                  />
+                )}
+                {isEditing ? (
+                  <StudioEditPanel
+                    studio={studio}
+                    onSubmit={onSave}
+                    onCancel={() => toggleEditing()}
+                    onDelete={onDelete}
+                    setImage={setImage}
+                    setEncodingImage={setEncodingImage}
+                  />
+                ) : (
+                  <DetailsEditNavbar
+                    objectName={
+                      studio.name ?? intl.formatMessage({ id: "studio" })
+                    }
+                    isNew={false}
+                    isEditing={isEditing}
+                    onToggleEdit={() => toggleEditing()}
+                    onSave={() => {}}
+                    onImageChange={() => {}}
+                    onClearImage={() => {}}
+                    onAutoTag={onAutoTag}
+                    autoTagDisabled={studio.ignore_auto_tag}
+                    onDelete={onDelete}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {!isEditing && loadStickyHeader && (
+          <CompressedStudioDetailsPanel studio={studio} />
+        )}
+
+        <div className="detail-body">
+          <div className="studio-body">
+            <div className="studio-tabs">
+              {!isEditing && (
+                <StudioTabs
                   studio={studio}
-                  onSubmit={onSave}
-                  onCancel={() => toggleEditing()}
-                  onDelete={onDelete}
-                  setImage={setImage}
-                  setEncodingImage={setEncodingImage}
-                />
-              ) : (
-                <DetailsEditNavbar
-                  objectName={
-                    studio.name ?? intl.formatMessage({ id: "studio" })
-                  }
-                  isNew={false}
-                  isEditing={isEditing}
-                  onToggleEdit={() => toggleEditing()}
-                  onSave={() => {}}
-                  onImageChange={() => {}}
-                  onClearImage={() => {}}
-                  onAutoTag={onAutoTag}
-                  autoTagDisabled={studio.ignore_auto_tag}
-                  onDelete={onDelete}
+                  tabKey={tabKey}
+                  abbreviateCounter={abbreviateCounter}
+                  showAllCounts={showAllCounts}
                 />
               )}
             </div>
           </div>
         </div>
+        {renderDeleteAlert()}
       </div>
-
-      {!isEditing && loadStickyHeader && (
-        <CompressedStudioDetailsPanel studio={studio} />
-      )}
-
-      <div className="detail-body">
-        <div className="studio-body">
-          <div className="studio-tabs">
-            {!isEditing && (
-              <StudioTabs
-                studio={studio}
-                tabKey={tabKey}
-                abbreviateCounter={abbreviateCounter}
-                showAllCounts={showAllCounts}
-              />
-            )}
-          </div>
-        </div>
-      </div>
-      {renderDeleteAlert()}
-    </div>
-  );
-};
+    );
+  }
+);
 
 const StudioLoader: React.FC<RouteComponentProps<IStudioParams>> = ({
   location,

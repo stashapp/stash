@@ -44,13 +44,13 @@ func (qb *galleryFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 		return
 	}
 
+	f.handleCriterion(ctx, qb.criterionHandler())
+
 	sf := galleryFilter.SubFilter()
 	if sf != nil {
 		sub := &galleryFilterHandler{sf}
 		handleSubFilter(ctx, sub, f, galleryFilter.OperatorFilter)
 	}
-
-	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
 func (qb *galleryFilterHandler) criterionHandler() criterionHandler {
@@ -332,7 +332,7 @@ func (qb *galleryFilterHandler) parentFolderCriterionHandler(folder *models.Hier
 				return
 			}
 
-			f.addWhere(fmt.Sprintf("files.parent_folder_id NOT IN (SELECT column2 FROM (%s)) OR folders.parent_folder_id IS NULL", valuesClause))
+			f.addWhere(fmt.Sprintf("files.parent_folder_id NOT IN (SELECT column2 FROM (%s)) OR files.parent_folder_id IS NULL", valuesClause))
 			f.addWhere(fmt.Sprintf("gallery_folder.parent_folder_id NOT IN (SELECT column2 FROM (%s)) OR gallery_folder.parent_folder_id IS NULL", valuesClause))
 		}
 	}

@@ -27,7 +27,7 @@ Stash provides the following built-in scrapers:
 | Scraper | Description |
 |---|--|
 | Freeones | `search` Performer scraper for freeones.xxx. |
-| Auto Tag | Scene `fragment` scraper that matches existing performers, studio and tags using the filename. |
+| Auto Tag | Scene, gallery and image `fragment` scrapers that matches existing performers, studio and tags using the filename. |
 
 ## Managing scrapers
 
@@ -91,7 +91,9 @@ Enter the URL in the `edit` tab of an Item. If a scraper is installed that suppo
 
 ## Tagger view
 
-The Tagger view is accessed from the scenes page. It allows the user to run scrapers on all items on the current page. The Tagger presents the user with potential matches for an item from a selected stash-box instance or metadata source if supported. The user needs to select the correct metadata information to save. 
+The Tagger view is available from supported list pages. Scenes can use stash-boxes and compatible metadata scrapers. Performers, studios, and tags use a configured stash-box instance.
+
+The Tagger presents the user with potential matches for an item from a selected stash-box instance or metadata source if supported. The user needs to select the correct metadata information to save.
 
 When used in combination with stash-box, the user can optionally submit scene fingerprints to contribute to a stash-box instance. A scene fingerprint consists of any generated hashes (`phash`, `oshash`, `md5`) and the scene duration. Fingerprint submissions are associated with your stash-box account. Submitting fingerprints assists others in matching their files, because stash-box returns a count of matching user submitted fingerprints with every potential match.
 
@@ -99,8 +101,11 @@ When used in combination with stash-box, the user can optionally submit scene fi
 |---|:---:|:---:|
 | gallery | | |
 | group | | |
+| image | | |
 | performer | ✔️ | |
 | scene | ✔️ | ✔️ |
+| studio | ✔️ | |
+| tag | ✔️ | |
 
 ## Identify task
 

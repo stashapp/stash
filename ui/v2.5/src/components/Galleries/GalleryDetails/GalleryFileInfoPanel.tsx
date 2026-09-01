@@ -24,7 +24,7 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
   props: IFileInfoPanelProps
 ) => {
   const checksum = props.file?.fingerprints.find((f) => f.type === "md5");
-  const path = props.folder ? props.folder.path : props.file?.path ?? "";
+  const path = props.folder ? props.folder.path : (props.file?.path ?? "");
   const id = props.folder ? "folder" : "path";
 
   return (
@@ -99,7 +99,7 @@ export const GalleryFileInfoPanel: React.FC<IGalleryFileInfoPanelProps> = (
     }
 
     if (props.gallery.files.length === 0) {
-      return <></>;
+      return null;
     }
 
     if (props.gallery.files.length === 1) {

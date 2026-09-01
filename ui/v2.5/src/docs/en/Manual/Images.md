@@ -13,6 +13,8 @@ For best results, images in zip file should be stored without compression (copy,
 
 > **⚠️ Note:** AVIF files in ZIP archives are currently unsupported.
 
+> **ℹ️ Note:** JPEG XL (`.jxl`) is supported, including inside ZIP archives, and requires an FFmpeg built with `libjxl` (or [libvips](https://www.libvips.org/)). Perceptual hashes are not generated for JXL inside ZIP archives.
+
 If a filename of an image in the gallery zip file ends with `cover.jpg`, it will be treated like a cover and presented first in the gallery view page and as a gallery cover in the gallery list view. If more than one images match the name the first one found in natural sort order is selected.
 
 You can also manually select any image from a gallery as its cover. On the gallery details page, select the desired cover image, and then select **Set as Cover** in the ⋯ menu.
@@ -28,3 +30,9 @@ A clip/gif will be a stillframe in the wall and grid view by default. To view th
 
 If you want the loop to be used as a preview on the wall and grid view, you will have to generate them. 
 You can do this as you scan for the new clip file by activating **Generate previews for image clips** on the scan settings, or do it after by going to the **Generated Content** section in the task section of your settings, activating **Image clip previews** and clicking generate. This takes a while, as the files are transcoded.
+
+## Sorting by performer age
+
+Images can be sorted by **Performer Age**. This sorts by how old the image's performer(s) were on the image's own date: ascending order uses the youngest performer, descending order uses the oldest.
+
+Because the age is calculated from the image's date, this sort only works for images that have a date set (and performers with a birthdate). Images with no date, or with no performers, have no age to compare and are always sorted last regardless of direction. If your images appear unsorted when using this option, check that they have a date set.
