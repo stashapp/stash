@@ -38,6 +38,7 @@ import {
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import { lazyComponent } from "src/utils/lazyComponent";
+import { sceneAgeFromDate } from "src/utils/scene";
 import isEqual from "lodash-es/isEqual";
 import {
   yupDateString,
@@ -714,19 +715,18 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }
 
   function renderPerformersField() {
-    // performer ages are calculated from the production date where one is set,
-    // since that is when the scene was actually shot
-    const date = (() => {
-      const validateField = (field: string) => {
-        try {
-          return schema.validateSyncAt(field, formik.values);
-        } catch (_e) {
-          return undefined;
-        }
-      };
+    const validateField = (field: string) => {
+      try {
+        return schema.validateSyncAt(field, formik.values);
+      } catch (_e) {
+        return undefined;
+      }
+    };
 
-      return validateField("production_date") || validateField("date");
-    })();
+    const date = sceneAgeFromDate(
+      validateField("production_date"),
+      validateField("date")
+    );
 
     const title = intl.formatMessage({ id: "performers" });
     const control = (

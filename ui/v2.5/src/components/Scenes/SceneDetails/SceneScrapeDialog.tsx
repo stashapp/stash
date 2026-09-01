@@ -11,6 +11,7 @@ import { useIntl } from "react-intl";
 import { uniq } from "lodash-es";
 import { Performer } from "src/components/Performers/PerformerSelect";
 import { sortStoredIdObjects } from "src/utils/data";
+import { sceneAgeFromDate } from "src/utils/scene";
 import {
   ObjectListScrapeResult,
   ObjectScrapeResult,
@@ -219,15 +220,6 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     };
   }
 
-  // performer ages are calculated from the production date where one is set,
-  // since that is when the scene was actually shot
-  function ageFromDate() {
-    const currentValue = (result: ScrapeResult<string>) =>
-      result.useNewValue ? result.newValue : result.originalValue;
-
-    return currentValue(production_date) || currentValue(date);
-  }
-
   function renderScrapeRows() {
     return (
       <>
@@ -284,7 +276,10 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
           onChange={(value) => setPerformers(value)}
           newObjects={newPerformers}
           onCreateNew={createNewPerformer}
-          ageFromDate={ageFromDate()}
+          ageFromDate={sceneAgeFromDate(
+            production_date.currentValue(),
+            date.currentValue()
+          )}
         />
         <ScrapedGroupsRow
           field="groups"

@@ -2,6 +2,7 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
+import { sceneAgeFromDate } from "src/utils/scene";
 import { TagLink } from "src/components/Shared/TagLink";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
@@ -49,10 +50,10 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
     if (props.scene.performers.length === 0) return;
     const performers = sortPerformers(props.scene.performers);
 
-    // performer ages are calculated from the production date where one is set,
-    // since that is when the scene was actually shot
-    const ageFromDate =
-      props.scene.production_date || props.scene.date || undefined;
+    const ageFromDate = sceneAgeFromDate(
+      props.scene.production_date,
+      props.scene.date
+    );
 
     const cards = performers.map((performer) => (
       <PerformerCard

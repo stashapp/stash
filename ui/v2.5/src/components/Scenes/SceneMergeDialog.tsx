@@ -7,6 +7,7 @@ import { GallerySelect } from "../Shared/Select";
 import * as FormUtils from "src/utils/form";
 import ImageUtils from "src/utils/image";
 import TextUtils from "src/utils/text";
+import { sceneAgeFromDate } from "src/utils/scene";
 import {
   mutateSceneMerge,
   queryFindFullScenesByID,
@@ -391,15 +392,6 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     hasCustomFieldValues,
   ]);
 
-  // performer ages are calculated from the production date where one is set,
-  // since that is when the scene was actually shot
-  function ageFromDate() {
-    const currentValue = (result: ScrapeResult<string>) =>
-      result.useNewValue ? result.newValue : result.originalValue;
-
-    return currentValue(productionDate) || currentValue(date);
-  }
-
   function renderScrapeRows() {
     if (loading) {
       return (
@@ -565,7 +557,10 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           title={intl.formatMessage({ id: "performers" })}
           result={performers}
           onChange={(value) => setPerformers(value)}
-          ageFromDate={ageFromDate()}
+          ageFromDate={sceneAgeFromDate(
+            productionDate.currentValue(),
+            date.currentValue()
+          )}
         />
         <ScrapedGroupsRow
           field="groups"
