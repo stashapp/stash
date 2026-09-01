@@ -20,6 +20,7 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func loadSceneRelationships(ctx context.Context, expected models.Scene, actual *models.Scene) error {
@@ -5607,5 +5608,90 @@ func TestSceneStore_CountUniqueViews(t *testing.T) {
 		assert.Equal(t, currentCount+1, newCount)
 
 		return nil
+	})
+}
+
+func TestSceneQueryPerformerAgeUsesProductionDate(t *testing.T) {
+	runWithRollbackTxn(t, "performer age uses production date", func(t *testing.T, ctx context.Context) {
+		assert := assert.New(t)
+
+		birthdate, err := models.ParseDate("1990-01-01")
+		require.NoError(t, err)
+		releaseDate, err := models.ParseDate("2020-01-01")
+		require.NoError(t, err)
+		productionDate, err := models.ParseDate("2010-01-01")
+		require.NoError(t, err)
+
+		performer := models.Performer{
+			Name:      "performer-production-date-age",
+			Birthdate: &birthdate,
+		}
+		require.NoError(t, db.Performer.Create(ctx, &models.CreatePerformerInput{Performer: &performer}))
+
+		// shot ten years before it was released - the performer was 20 at the
+		// time, not 30
+		withProductionDate := models.Scene{
+			Title:          "scene-with-production-date",
+			Date:           &releaseDate,
+			ProductionDate: &productionDate,
+			PerformerIDs:   models.NewRelatedIDs([]int{performer.ID}),
+		}
+		require.NoError(t, db.Scene.Create(ctx, &withProductionDate, nil))
+
+		// no production date - falls back to the release date
+		withoutProductionDate := models.Scene{
+			Title:        "scene-without-production-date",
+			Date:         &releaseDate,
+			PerformerIDs: models.NewRelatedIDs([]int{performer.ID}),
+		}
+		require.NoError(t, db.Scene.Create(ctx, &withoutProductionDate, nil))
+
+		queryIDs := func(age int) []int {
+			sceneFilter := models.SceneFilterType{
+				PerformerAge: &models.IntCriterionInput{
+					Value:    age,
+					Modifier: models.CriterionModifierEquals,
+				},
+			}
+
+			scenes := queryScene(ctx, t, db.Scene, &sceneFilter, nil)
+			ids := make([]int, len(scenes))
+			for i, s := range scenes {
+				ids[i] = s.ID
+			}
+			return ids
+		}
+
+		atTwenty := queryIDs(20)
+		assert.Contains(atTwenty, withProductionDate.ID)
+		assert.NotContains(atTwenty, withoutProductionDate.ID)
+
+		atThirty := queryIDs(30)
+		assert.Contains(atThirty, withoutProductionDate.ID)
+		assert.NotContains(atThirty, withProductionDate.ID)
+
+		// the performer_age sort must use the same date, so the scene shot
+		// earlier sorts as the younger one
+		findIndex := func(scenes []*models.Scene, id int) int {
+			for i, s := range scenes {
+				if s.ID == id {
+					return i
+				}
+			}
+			return -1
+		}
+
+		asc := models.SortDirectionEnumAsc
+		sortBy := "performer_age"
+		sorted := queryScene(ctx, t, db.Scene, nil, &models.FindFilterType{
+			Sort:      &sortBy,
+			Direction: &asc,
+		})
+
+		withIdx := findIndex(sorted, withProductionDate.ID)
+		withoutIdx := findIndex(sorted, withoutProductionDate.ID)
+		assert.NotEqual(-1, withIdx)
+		assert.NotEqual(-1, withoutIdx)
+		assert.Less(withIdx, withoutIdx)
 	})
 }
