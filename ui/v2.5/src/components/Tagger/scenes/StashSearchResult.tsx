@@ -650,6 +650,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     }
   };
 
+  // labelled, unlike the date field above it, so that the two dates rendered
+  // next to each other can be told apart
   const maybeRenderProductionDateField = () => {
     if (isActive && scene.production_date) {
       return (
@@ -658,7 +660,6 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             exclude={excludedFields[fields.production_date]}
             setExclude={(v) => setExcludedField(fields.production_date, v)}
           >
-            {/* labelled, unlike the date above, so the two dates can be told apart */}
             <FormattedMessage id="production_date" />: {scene.production_date}
           </OptionalField>
         </h5>
