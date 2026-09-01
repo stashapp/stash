@@ -96,7 +96,9 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
           {props.scene.production_date && (
             <h6>
               <FormattedMessage id="production_date" />:{" "}
-              {TextUtils.formatDate(intl, props.scene.production_date)}
+              {/* fuzzy, so that a year- or month-only production date isn't
+                  rendered as the first of the month */}
+              {TextUtils.formatFuzzyDate(intl, props.scene.production_date)}
             </h6>
           )}
           {props.scene.code && (
