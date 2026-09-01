@@ -327,17 +327,22 @@ func (f stashVideoFile) SceneFileType() models.SceneFileType {
 	return ret
 }
 
+// Fields listed here are requested from the remote stash server, so a field
+// that the remote server does not know about fails GraphQL validation and the
+// whole scrape errors out rather than degrading. production_date is therefore
+// deliberately absent: adding it would break this scraper against every
+// currently released stash version. It can be added once the field is widely
+// deployed, or once this scraper negotiates the remote schema.
 type scrapedSceneStash struct {
-	ID             string                   `graphql:"id" json:"id"`
-	Title          *string                  `graphql:"title" json:"title"`
-	Details        *string                  `graphql:"details" json:"details"`
-	URLs           []string                 `graphql:"urls" json:"urls"`
-	Date           *string                  `graphql:"date" json:"date"`
-	ProductionDate *string                  `graphql:"production_date" json:"production_date"`
-	Files          []stashVideoFile         `graphql:"files" json:"files"`
-	Studio         *scrapedStudioStash      `graphql:"studio" json:"studio"`
-	Tags           []*scrapedTagStash       `graphql:"tags" json:"tags"`
-	Performers     []*scrapedPerformerStash `graphql:"performers" json:"performers"`
+	ID         string                   `graphql:"id" json:"id"`
+	Title      *string                  `graphql:"title" json:"title"`
+	Details    *string                  `graphql:"details" json:"details"`
+	URLs       []string                 `graphql:"urls" json:"urls"`
+	Date       *string                  `graphql:"date" json:"date"`
+	Files      []stashVideoFile         `graphql:"files" json:"files"`
+	Studio     *scrapedStudioStash      `graphql:"studio" json:"studio"`
+	Tags       []*scrapedTagStash       `graphql:"tags" json:"tags"`
+	Performers []*scrapedPerformerStash `graphql:"performers" json:"performers"`
 }
 
 func (s *stashScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
