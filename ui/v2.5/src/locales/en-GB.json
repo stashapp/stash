@@ -990,7 +990,6 @@
     "value": "Value"
   },
   "date": "Date",
-  "production_date": "Production Date",
   "date_format": "YYYY-MM-DD",
   "datetime_format": "YYYY-MM-DD HH:MM",
   "death_date": "Death Date",
@@ -1425,6 +1424,7 @@
   "plays": "{value} plays",
   "primary_file": "Primary file",
   "primary_tag": "Primary Tag",
+  "production_date": "Production Date",
   "queue": "Queue",
   "random": "Random",
   "rating": "Rating",

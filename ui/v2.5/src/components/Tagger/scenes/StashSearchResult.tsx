@@ -657,7 +657,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             exclude={excludedFields[fields.production_date]}
             setExclude={(v) => setExcludedField(fields.production_date, v)}
           >
-            {scene.production_date}
+            {/* labelled, unlike the date above, so the two dates can be told apart */}
+            <FormattedMessage id="production_date" />: {scene.production_date}
           </OptionalField>
         </h5>
       );
