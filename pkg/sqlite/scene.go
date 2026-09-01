@@ -41,6 +41,13 @@ const (
 	sceneCoverBlobColumn = "cover_blob"
 )
 
+// sceneAgeDateExpr is the scene date used when calculating a performer's age
+// for a scene. The production date is when the scene was actually shot, so it
+// is preferred over the release date where one is set. NULLIF is needed because
+// dates are stored as empty strings in some older databases, and an empty
+// production date must not mask a valid release date.
+const sceneAgeDateExpr = "COALESCE(NULLIF(scenes.production_date, ''), scenes.date)"
+
 type sceneRow struct {
 	ID                      int         `db:"id" goqu:"skipinsert"`
 	Title                   zero.String `db:"title"`
@@ -1330,8 +1337,9 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 			fallback = "9223372036854775807"
 		}
 		query.sortAndPagination += fmt.Sprintf(
-			" ORDER BY (SELECT COALESCE(%s(JulianDay(scenes.date) - JulianDay(performers.birthdate)), %s) FROM %s as performers INNER JOIN %s AS aggregation WHERE performers.id = aggregation.%s AND aggregation.%s = %s.id) %s",
+			" ORDER BY (SELECT COALESCE(%s(JulianDay(%s) - JulianDay(performers.birthdate)), %s) FROM %s as performers INNER JOIN %s AS aggregation WHERE performers.id = aggregation.%s AND aggregation.%s = %s.id) %s",
 			aggregation,
+			sceneAgeDateExpr,
 			fallback,
 			performerTable,
 			performersScenesTable,

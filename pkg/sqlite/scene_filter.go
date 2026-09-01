@@ -598,10 +598,10 @@ func (qb *sceneFilterHandler) performerAgeCriterionHandler(performerAge *models.
 			f.addInnerJoin("performers_scenes", "", "scenes.id = performers_scenes.scene_id")
 			f.addInnerJoin("performers", "", "performers_scenes.performer_id = performers.id")
 
-			f.addWhere("scenes.date != '' AND performers.birthdate != ''")
-			f.addWhere("scenes.date IS NOT NULL AND performers.birthdate IS NOT NULL")
+			f.addWhere(sceneAgeDateExpr + " != '' AND performers.birthdate != ''")
+			f.addWhere(sceneAgeDateExpr + " IS NOT NULL AND performers.birthdate IS NOT NULL")
 
-			ageCalc := "cast(strftime('%Y.%m%d', scenes.date) - strftime('%Y.%m%d', performers.birthdate) as int)"
+			ageCalc := "cast(strftime('%Y.%m%d', " + sceneAgeDateExpr + ") - strftime('%Y.%m%d', performers.birthdate) as int)"
 			whereClause, args := getIntWhereClause(ageCalc, performerAge.Modifier, performerAge.Value, performerAge.Value2)
 			f.addWhere(whereClause, args...)
 		}

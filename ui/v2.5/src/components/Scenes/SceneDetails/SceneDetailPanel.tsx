@@ -48,13 +48,17 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   function renderPerformers() {
     if (props.scene.performers.length === 0) return;
     const performers = sortPerformers(props.scene.performers);
+
+    // performer ages are calculated from the production date where one is set,
+    // since that is when the scene was actually shot
+    const ageFromDate =
+      props.scene.production_date || props.scene.date || undefined;
+
     const cards = performers.map((performer) => (
       <PerformerCard
         key={performer.id}
         performer={performer}
-        ageFromDate={
-          props.scene.production_date ?? props.scene.date ?? undefined
-        }
+        ageFromDate={ageFromDate}
       />
     ));
 

@@ -391,6 +391,15 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     hasCustomFieldValues,
   ]);
 
+  // performer ages are calculated from the production date where one is set,
+  // since that is when the scene was actually shot
+  function ageFromDate() {
+    const currentValue = (result: ScrapeResult<string>) =>
+      result.useNewValue ? result.newValue : result.originalValue;
+
+    return currentValue(productionDate) || currentValue(date);
+  }
+
   function renderScrapeRows() {
     if (loading) {
       return (
@@ -556,7 +565,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           title={intl.formatMessage({ id: "performers" })}
           result={performers}
           onChange={(value) => setPerformers(value)}
-          ageFromDate={date.useNewValue ? date.newValue : date.originalValue}
+          ageFromDate={ageFromDate()}
         />
         <ScrapedGroupsRow
           field="groups"

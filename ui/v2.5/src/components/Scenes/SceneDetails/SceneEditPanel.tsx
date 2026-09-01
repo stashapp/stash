@@ -714,12 +714,18 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }
 
   function renderPerformersField() {
+    // performer ages are calculated from the production date where one is set,
+    // since that is when the scene was actually shot
     const date = (() => {
-      try {
-        return schema.validateSyncAt("date", formik.values);
-      } catch (_e) {
-        return undefined;
-      }
+      const validateField = (field: string) => {
+        try {
+          return schema.validateSyncAt(field, formik.values);
+        } catch (_e) {
+          return undefined;
+        }
+      };
+
+      return validateField("production_date") || validateField("date");
     })();
 
     const title = intl.formatMessage({ id: "performers" });
