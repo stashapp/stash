@@ -78,7 +78,7 @@ $sceneTabWidth: 450px;
     justify-content: space-around;
     opacity: 0;
     position: absolute;
-    top: calc(50% - 40px);
+    top: calc(50% - 65px);
     width: 100%;
     z-index: 1;
 
@@ -92,6 +92,88 @@ $sceneTabWidth: 450px;
         line-height: 80px;
       }
     }
+
+    // SVG icons via mask-image (rather than a font-glyph/::before letter or
+    // a plain background-image) so vjs-ab-bound-active below can recolor
+    // them - the same idiom .vjs-ab-loop-toggle further down uses for the
+    // same reason. Hidden until AB-looping is actually on; see
+    // &.vjs-ab-loop-enabled below.
+    .vjs-ab-start-button,
+    .vjs-ab-end-button {
+      background-color: rgba(255, 255, 255, 0.9);
+      display: none;
+      -webkit-mask-position: center;
+      mask-position: center;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-size: 45%;
+      mask-size: 45%;
+
+      .vjs-icon-placeholder {
+        display: none;
+      }
+
+      // signals that this bound has actually been set, rather than just
+      // sitting at the vendor plugin's start:0/end:false defaults
+      &.vjs-ab-bound-active {
+        background-color: $link-color;
+      }
+    }
+
+    .vjs-ab-start-button {
+      -webkit-mask-image: url("/ab-start.svg");
+      mask-image: url("/ab-start.svg");
+    }
+
+    .vjs-ab-end-button {
+      -webkit-mask-image: url("/ab-end.svg");
+      mask-image: url("/ab-end.svg");
+    }
+  }
+
+  // the floating start/end buttons only make sense once AB-looping is
+  // actually on - tapping them beforehand would silently arm a loop that
+  // isn't running, with no "LOOP ON" label here (unlike desktop) to explain
+  // why nothing happened. vjs-ab-loop-enabled is toggled on the player by
+  // the abLoopPlugin.onOptionsChange bridge in ScenePlayer.tsx.
+  &.vjs-ab-loop-enabled .vjs-big-button-group {
+    .vjs-ab-start-button,
+    .vjs-ab-end-button {
+      display: block;
+    }
+  }
+
+  // hidden by default (desktop keeps the vendor plugin's own "LOOP ON"/
+  // "Loop off" text button); shown on mobile instead - see the
+  // max-width: 768px block below, which also hides that vendor button
+  .vjs-ab-loop-toggle {
+    display: none;
+  }
+
+  // highlights the active AB-loop range on the progress bar (see
+  // ab-loop-range.ts); shown at all widths, desktop and mobile alike
+  .vjs-ab-loop-range {
+    background-color: rgba($link-color, 0.85);
+    border-radius: 1px;
+    height: 100%;
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+  }
+
+  // pinpoints an individually-set A/B point on the progress bar,
+  // independent of whether the other point has been set too (see
+  // ab-loop-range.ts's refresh()) - the same $link-color as
+  // .vjs-ab-loop-range and the active-state buttons above, so all three
+  // read as one visual language
+  .vjs-ab-loop-marker {
+    background-color: $link-color;
+    height: 100%;
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    width: 3px;
+    z-index: 0;
   }
 
   .vjs-airplay-button .vjs-icon-placeholder,
@@ -176,6 +258,20 @@ $sceneTabWidth: 450px;
     }
   }
 
+  .vjs-progress-control {
+    bottom: 2.5em;
+    height: 3em;
+    position: absolute;
+    width: 100%;
+
+    .vjs-progress-holder {
+      margin: 0 15px;
+    }
+  }
+
+  // current/total time, inline in the button row as usual on desktop; on
+  // mobile they instead float above either end of the progress bar - see
+  // the max-width: 768px block below, which overrides the position
   .vjs-time-control {
     align-items: center;
     display: flex;
@@ -191,21 +287,6 @@ $sceneTabWidth: 450px;
 
   .vjs-duration {
     margin-right: auto;
-  }
-
-  .vjs-remaining-time {
-    display: none;
-  }
-
-  .vjs-progress-control {
-    bottom: 2.5em;
-    height: 3em;
-    position: absolute;
-    width: 100%;
-
-    .vjs-progress-holder {
-      margin: 0 15px;
-    }
   }
 
   /* stylelint-disable declaration-no-important */
@@ -361,41 +442,168 @@ $sceneTabWidth: 450px;
     transform: scale(-1, 1);
   }
 
-  @media (pointer: coarse) {
-    &.vjs-touch-enabled {
-      &.vjs-has-started .vjs-big-button-group {
-        display: flex;
-        opacity: 1;
-        visibility: visible;
+  // the vendor abLoop buttons need to fit their own text ("0:00.0",
+  // "LOOP ON", ...), not the fixed width every other .vjs-control gets -
+  // .vjs-control.abLoopButton (3 classes) rather than just .abLoopButton
+  // so this reliably outranks the width rules below regardless of source
+  // order, on both the vendor buttons themselves
+  .vjs-control-bar .vjs-control.abLoopButton {
+    padding: 10px;
+    white-space: nowrap;
+    width: fit-content;
+  }
+
+  // trim control width and the AB-loop vendor buttons' padding between here
+  // and the full mobile breakpoint below - without this, the growing
+  // number of controls in the bar overflows before the mobile layout
+  // (which hides/relocates several of them) kicks in to compensate.
+  // Keyed off the player's own rendered width (.scene-player-container,
+  // see its container-type there) rather than the viewport's - expanding
+  // .scene-tabs narrows the player without the viewport changing size at
+  // all, and controls need to respond to that too.
+  @container scene-player (max-width: 992px) {
+    .vjs-control-bar .vjs-control {
+      width: 3.2em;
+    }
+
+    .vjs-control-bar .vjs-control.abLoopButton {
+      padding: 6px;
+    }
+
+    .vjs-control-bar .vjs-control:has(.vjs-progress-holder) {
+      width: 100%;
+    }
+
+    // floating play/pause + jog buttons over the video - on desktop the
+    // +/-10s buttons stay as regular control-bar buttons instead. Breaks
+    // here rather than alongside the rest of the mobile layout below
+    // (768px) since these two are the ones that most benefit from a
+    // bigger touch target the earliest.
+    &.vjs-has-started .vjs-big-button-group {
+      display: flex;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    &.vjs-has-started.vjs-user-inactive.vjs-playing .vjs-big-button-group {
+      opacity: 0;
+      pointer-events: none;
+      transition: visibility 1s, opacity 1s;
+      visibility: visible;
+    }
+
+    .vjs-big-play-pause-button .vjs-icon-placeholder::before {
+      content: "\f101";
+      font-family: VideoJS;
+    }
+
+    &.vjs-playing .vjs-big-play-pause-button .vjs-icon-placeholder::before {
+      content: "\f103";
+    }
+
+    // the floating group above takes over jogging once it's shown
+    .vjs-control-bar .vjs-seek-button {
+      display: none;
+    }
+
+    // the desktop bottom: 6em (below) is a fixed, font-size-relative gap
+    // above the bar - fine against a tall desktop video, but .video-wrapper
+    // shrinks with viewport width (height: 56.25vw) while this doesn't, so
+    // the same gap reads as floating way too high above a shorter video
+    .vjs-vtt-thumbnail-display {
+      bottom: 3.5em;
+    }
+  }
+
+  // the rest of the mobile layout - on desktop the AB-loop buttons stay in
+  // the control bar instead. See the container-query comment above: keyed
+  // off the player's own width, not the viewport's.
+  @container scene-player (max-width: 768px) {
+    // anchored to .vjs-progress-control's own bottom edge (it's appended
+    // inside it, see vtt-thumbnails.ts), which shrinks by 1em at this same
+    // breakpoint (height: 3em -> 2em, below) - offset down to match, or
+    // this floats a full extra em above where the bar actually is
+    .vjs-vtt-thumbnail-display {
+      bottom: 1.8em;
+    }
+
+    // all 3 AB-loop buttons - the floating group's A/B buttons and
+    // vjs-ab-loop-toggle below take over on mobile, so hide the vendor's
+    // own text buttons entirely here
+    .vjs-control-bar .abLoopButton.start,
+    .vjs-control-bar .abLoopButton.end,
+    .vjs-control-bar .abLoopButton.enabled {
+      display: none;
+    }
+
+    // the mobile-only AB-loop enable/disable icon button (ab-loop-toggle.ts)
+    // - a real Button with the normal icon-placeholder/control-text
+    // structure, so the icon is masked onto vjs-icon-placeholder itself
+    // rather than the button root
+    .vjs-ab-loop-toggle {
+      align-items: center;
+      display: inline-block;
+      display: flex;
+      justify-content: center;
+
+      .vjs-icon-placeholder {
+        background-color: #fff;
+        display: inline-block;
+        height: 18px;
+        -webkit-mask-image: url("/ab-loop-toggle.svg");
+        mask-image: url("/ab-loop-toggle.svg");
+        -webkit-mask-position: center;
+        mask-position: center;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        width: 18px;
       }
 
-      &.vjs-has-started.vjs-user-inactive.vjs-playing .vjs-big-button-group {
-        opacity: 0;
-        pointer-events: none;
-        transition: visibility 1s, opacity 1s;
-        visibility: visible;
+      &.vjs-ab-loop-active .vjs-icon-placeholder {
+        background-color: $link-color;
       }
+    }
 
-      .vjs-big-play-pause-button .vjs-icon-placeholder::before {
-        content: "\f101";
-        font-family: VideoJS;
-      }
+    // current/total time, floated above either end of the progress bar.
+    // Shares the same bottom/height band as .vjs-progress-control, but
+    // aligned to the top of it (the bar is pushed to the bottom of that
+    // band) so the two don't overlap.
+    .vjs-progress-control {
+      align-items: flex-end;
+    }
 
-      &.vjs-playing .vjs-big-play-pause-button .vjs-icon-placeholder::before {
-        content: "\f103";
-      }
+    .vjs-current-time,
+    .vjs-duration {
+      align-items: flex-start;
+      bottom: 3.5em;
+      display: flex;
+      height: 3em;
+      pointer-events: none;
+      position: absolute;
+      z-index: 1;
 
-      .vjs-vtt-thumbnail-display {
-        bottom: 2.8em;
-      }
-
-      // hide the regular seek buttons on touch screens
-      .vjs-control-bar .vjs-seek-button {
+      .vjs-control-text {
         display: none;
       }
     }
+
+    .vjs-current-time {
+      left: 15px;
+    }
+
+    .vjs-duration {
+      right: 15px;
+    }
+
+    // the "/" divider only makes sense between the two when they're
+    // adjacent, not floating at opposite ends of the progress bar
+    .vjs-time-divider {
+      display: none;
+    }
   }
-  @media (max-width: 576px) {
+  @container scene-player (max-width: 576px) {
     .vjs-control-bar {
       .vjs-autostart-button {
         display: none;
@@ -404,7 +612,7 @@ $sceneTabWidth: 450px;
   }
 
   // make controls a little more compact on smaller screens
-  @media (max-width: 768px) {
+  @container scene-player (max-width: 768px) {
     .vjs-control-bar {
       .vjs-control {
         width: 2.5em;
@@ -412,10 +620,18 @@ $sceneTabWidth: 450px;
 
       .vjs-progress-control {
         height: 2em;
+        padding-bottom: 10px;
         width: 100%;
       }
 
+      // video.js's own customControlSpacer (which would normally push
+      // everything from here on out to the right edge) only kicks in at
+      // its own internal vjs-layout-x-small breakpoint, which we don't
+      // reliably hit here - so push the whole trailing cluster
+      // (1x / settings / AB-loop toggle / fullscreen) right ourselves.
+      // It's the first of that group, so this is enough on its own.
       .vjs-playback-rate {
+        margin-left: auto;
         width: 3em;
       }
 
@@ -455,17 +671,9 @@ $sceneTabWidth: 450px;
       }
     }
 
-    .vjs-time-control {
-      font-size: 12px;
-    }
-
     .vjs-big-button-group .vjs-button {
       font-size: 2em;
       width: 50px;
-    }
-
-    .vjs-current-time {
-      margin-left: 1em;
     }
   }
 }
@@ -478,6 +686,13 @@ $sceneTabWidth: 450px;
 }
 
 .scene-player-container {
+  // named so the player's own responsive rules (video-js's `@container
+  // scene-player (...)` queries below) can react to how much width the
+  // player actually has, rather than the viewport's - the two diverge
+  // whenever .scene-tabs is expanded rather than collapsed, since that
+  // narrows this container without the viewport itself getting any
+  // smaller
+  container: scene-player / inline-size;
   padding-right: 15px;
 }
 
