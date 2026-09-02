@@ -605,7 +605,6 @@ func (m ScrapedMovie) ScrapedGroup() ScrapedGroup {
 	ret := ScrapedGroup{
 		StoredID:   m.StoredID,
 		Name:       m.Name,
-		Aliases:    m.Aliases,
 		Duration:   m.Duration,
 		Date:       m.Date,
 		Rating:     m.Rating,
@@ -622,6 +621,11 @@ func (m ScrapedMovie) ScrapedGroup() ScrapedGroup {
 		ret.URLs = []string{*m.URL}
 	}
 
+	// Movies are largely deprecated; these are just gluing fixes.
+	if m.Aliases != nil {
+		ret.Aliases = []string{*m.Aliases}
+	}
+
 	return ret
 }
 
@@ -629,7 +633,7 @@ func (m ScrapedMovie) ScrapedGroup() ScrapedGroup {
 type ScrapedGroup struct {
 	StoredID *string        `json:"stored_id"`
 	Name     *string        `json:"name"`
-	Aliases  *string        `json:"aliases"`
+	Aliases  []string       `json:"aliases"`
 	Duration *string        `json:"duration"`
 	Date     *string        `json:"date"`
 	Rating   *string        `json:"rating"`
@@ -651,7 +655,6 @@ func (g ScrapedGroup) ScrapedMovie() ScrapedMovie {
 	ret := ScrapedMovie{
 		StoredID:   g.StoredID,
 		Name:       g.Name,
-		Aliases:    g.Aliases,
 		Duration:   g.Duration,
 		Date:       g.Date,
 		Rating:     g.Rating,
@@ -666,6 +669,11 @@ func (g ScrapedGroup) ScrapedMovie() ScrapedMovie {
 
 	if len(g.URLs) > 0 {
 		ret.URL = &g.URLs[0]
+	}
+
+	// Movies are largely deprecated; these are just gluing fixes.
+	if len(g.Aliases) > 0 {
+		ret.Aliases = &g.Aliases[0]
 	}
 
 	return ret

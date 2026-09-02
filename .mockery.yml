@@ -1,4 +1,27 @@
-dir: ./pkg/models
-name: ".*ReaderWriter"
-outpkg: mocks
-output: ./pkg/models/mocks
+with-expecter: false
+packages:
+  github.com/stashapp/stash/pkg/models:
+    config:
+      dir: ./pkg/models/mocks
+      filename: "{{.InterfaceName}}.go"
+      outpkg: mocks
+    interfaces:
+      FileReaderWriter:
+      FolderReaderWriter:
+      GalleryReaderWriter:
+      GalleryChapterReaderWriter:
+      ImageReaderWriter:
+      GroupReaderWriter:
+      PerformerReaderWriter:
+      SceneReaderWriter:
+      SceneMarkerReaderWriter:
+      StudioReaderWriter:
+      TagReaderWriter:
+      SavedFilterReaderWriter:
+  github.com/stashapp/stash/internal/manager:
+    config:
+      dir: ./internal/manager/mocks
+      filename: "{{.InterfaceName}}.go"
+      outpkg: mocks
+    interfaces:
+      GroupService:

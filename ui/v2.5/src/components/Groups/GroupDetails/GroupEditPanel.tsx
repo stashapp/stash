@@ -22,6 +22,7 @@ import { formikUtils } from "src/utils/form";
 import {
   yupDateString,
   yupFormikValidate,
+  yupRequiredStringArray,
   yupUniqueStringList,
 } from "src/utils/yup";
 import { Studio, StudioSelect } from "src/components/Studios/StudioSelect";
@@ -71,7 +72,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
 
   const schema = yup.object({
     name: yup.string().required(),
-    aliases: yup.string().ensure(),
+    aliases: yupRequiredStringArray(intl).defined(),
     duration: yup.number().integer().min(0).nullable().defined(),
     date: yupDateString(intl),
     studio_id: yup.string().required().nullable(),
@@ -94,7 +95,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
 
   const initialValues = {
     name: group?.name ?? "",
-    aliases: group?.aliases ?? "",
+    aliases: group?.aliases ?? [],
     duration: group?.duration ?? null,
     date: group?.date ?? "",
     studio_id: group?.studio?.id ?? null,
@@ -403,6 +404,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
     renderInputField,
     renderDateField,
     renderDurationField,
+    renderStringListField,
     renderURLListField,
   } = formikUtils(intl, formik);
 
@@ -472,7 +474,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
 
       <Form noValidate onSubmit={formik.handleSubmit} id="group-edit">
         {renderInputField("name")}
-        {renderInputField("aliases")}
+        {renderStringListField("aliases")}
         {renderDurationField("duration")}
         {renderDateField("date")}
         {renderContainingGroupsField()}

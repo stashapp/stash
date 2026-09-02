@@ -812,7 +812,7 @@ func TestMappedResultScrapedGroup(t *testing.T) {
 			name: "full group",
 			data: mappedResult{
 				"Name":       "Group Title",
-				"Aliases":    "Group Alias",
+				"Aliases":    []string{"Group Alias", "Group Alias 2"},
 				"URL":        "https://example.com/group",
 				"URLs":       []string{"url1", "url2"},
 				"Duration":   "240 minutes",
@@ -825,7 +825,7 @@ func TestMappedResultScrapedGroup(t *testing.T) {
 			validate: func(t *testing.T, g *models.ScrapedGroup) {
 				assert.NotNil(t, g)
 				assert.Equal(t, "Group Title", *g.Name)
-				assert.Equal(t, "Group Alias", *g.Aliases)
+				assert.Equal(t, []string{"Group Alias", "Group Alias 2"}, g.Aliases)
 				assert.Equal(t, "https://example.com/group", *g.URL)
 				assert.Equal(t, []string{"url1", "url2"}, g.URLs)
 				assert.Equal(t, "240 minutes", *g.Duration)

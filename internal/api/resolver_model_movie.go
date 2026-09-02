@@ -228,3 +228,28 @@ func (r *groupResolver) CustomFields(ctx context.Context, obj *models.Group) (ma
 
 	return m, nil
 }
+
+func (r *groupResolver) Aliases(ctx context.Context, obj *models.Group) ([]string, error) {
+	if !obj.Aliases.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadAliases(ctx, r.repository.Group)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	return obj.Aliases.List(), nil
+}
+
+// movieResolver.Aliases overrides groupResolver.Aliases to return a single string
+// for backward compatibility with the deprecated Movie type.
+func (r *movieResolver) Aliases(ctx context.Context, obj *models.Group) (*string, error) {
+	aliases, err := r.groupResolver.Aliases(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
+	if len(aliases) == 0 {
+		return nil, nil
+	}
+	return &aliases[0], nil
+}

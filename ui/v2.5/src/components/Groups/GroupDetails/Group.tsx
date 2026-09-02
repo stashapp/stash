@@ -176,10 +176,7 @@ const GroupPage: React.FC<IProps> = PatchComponent(
     const [backImage, setBackImage] = useState<string | null>();
     const [encodingImage, setEncodingImage] = useState<boolean>(false);
 
-    const aliases = useMemo(
-      () => (group.aliases ? [group.aliases] : []),
-      [group.aliases]
-    );
+    const aliases = useMemo(() => group.aliases ?? [], [group.aliases]);
 
     const isDefaultImage = group.front_image_path?.includes("default=true");
 

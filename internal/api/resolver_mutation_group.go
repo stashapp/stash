@@ -27,7 +27,7 @@ func groupFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*mo
 	newGroup := newGroupInput.Group
 
 	newGroup.Name = strings.TrimSpace(input.Name)
-	newGroup.Aliases = translator.string(input.Aliases)
+	newGroup.Aliases = models.NewRelatedStrings(stringslice.UniqueExcludeFold(stringslice.TrimSpace(input.Aliases), newGroup.Name))
 	newGroup.Duration = input.Duration
 	newGroup.Rating = input.Rating100
 	newGroup.Director = translator.string(input.Director)
@@ -118,7 +118,9 @@ func groupPartialFromGroupUpdateInput(translator changesetTranslator, input Grou
 	updatedGroup := models.NewGroupPartial()
 
 	updatedGroup.Name = translator.optionalString(input.Name, "name")
-	updatedGroup.Aliases = translator.optionalString(input.Aliases, "aliases")
+
+	aliases := stringslice.TrimSpace(input.Aliases)
+	updatedGroup.Aliases = translator.updateStrings(aliases, "aliases")
 	updatedGroup.Duration = translator.optionalInt(input.Duration, "duration")
 	updatedGroup.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedGroup.Director = translator.optionalString(input.Director, "director")
@@ -198,6 +200,32 @@ func (r *mutationResolver) GroupUpdate(ctx context.Context, input GroupUpdateInp
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Group
+
+		// make sure to deduplicate and exclude name from aliases
+		// in update flow
+		if updatedGroup.Aliases != nil {
+			g, err := qb.Find(ctx, groupID)
+			if err != nil {
+				return err
+			}
+			if g != nil {
+				if err := g.LoadAliases(ctx, qb); err != nil {
+					return err
+				}
+
+				effectiveAliases := updatedGroup.Aliases.Apply(g.Aliases.List())
+				name := g.Name
+				if updatedGroup.Name.Set {
+					name = updatedGroup.Name.Value
+				}
+
+				sanitized := stringslice.UniqueExcludeFold(effectiveAliases, name)
+				updatedGroup.Aliases.Values = sanitized
+				updatedGroup.Aliases.Mode = models.RelationshipUpdateModeSet
+			}
+		}
+
 		frontImage := group.ImageInput{
 			Image: frontimageData,
 			Set:   frontImageIncluded,
