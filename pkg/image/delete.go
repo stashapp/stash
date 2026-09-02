@@ -3,6 +3,7 @@ package image
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -168,7 +169,8 @@ func (s *Service) destroyImage(ctx context.Context, i *models.Image, fileDeleter
 	return s.Repository.Destroy(ctx, i.ID)
 }
 
-// deleteFiles deletes files for the image from the database and file system, if they are not in use by other images
+// deleteFiles deletes files for the image from the database and file system, if they are not in use by other images.
+// For files inside a zip archive, the entry is removed from the zip rather than deleting the zip itself.
 func (s *Service) deleteFiles(ctx context.Context, i *models.Image, fileDeleter *FileDeleter) error {
 	if err := i.LoadFiles(ctx, s.Repository); err != nil {
 		return err
@@ -186,16 +188,40 @@ func (s *Service) deleteFiles(ctx context.Context, i *models.Image, fileDeleter 
 			continue
 		}
 
-		// don't delete files in zip archives
-		const deleteFile = true
-		if f.Base().ZipFileID == nil {
+		if f.Base().ZipFileID != nil {
+			logger.Infof("Removing image from zip: %s", f.Base().Path)
+			if err := file.Destroy(ctx, s.File, f, fileDeleter.Deleter, false); err != nil {
+				return err
+			}
+			if err := s.removeEntryFromZip(f, fileDeleter); err != nil {
+				return err
+			}
+		} else {
 			logger.Info("Deleting image file: ", f.Base().Path)
+			const deleteFile = true
 			if err := file.Destroy(ctx, s.File, f, fileDeleter.Deleter, deleteFile); err != nil {
 				return err
 			}
 		}
 	}
 
+	return nil
+}
+
+// removeEntryFromZip queues removal of f's entry from its containing zip archive.
+func (s *Service) removeEntryFromZip(f models.File, fileDeleter *FileDeleter) error {
+	zipFile := f.Base().ZipFile
+	if zipFile == nil {
+		return fmt.Errorf("zip file not loaded for %s", f.Base().Path)
+	}
+
+	zipPath := zipFile.Base().Path
+	entryRelPath, err := filepath.Rel(zipPath, f.Base().Path)
+	if err != nil {
+		return fmt.Errorf("computing zip entry path: %w", err)
+	}
+
+	fileDeleter.Deleter.ZipEntry(zipPath, filepath.ToSlash(entryRelPath))
 	return nil
 }
 
@@ -218,13 +244,10 @@ func (s *Service) destroyFileEntries(ctx context.Context, i *models.Image) error
 			continue
 		}
 
-		// don't destroy files in zip archives
-		if f.Base().ZipFileID == nil {
-			const deleteFile = false
-			logger.Info("Destroying image file entry: ", f.Base().Path)
-			if err := file.Destroy(ctx, s.File, f, nil, deleteFile); err != nil {
-				return err
-			}
+		const deleteFile = false
+		logger.Info("Destroying image file entry: ", f.Base().Path)
+		if err := file.Destroy(ctx, s.File, f, nil, deleteFile); err != nil {
+			return err
 		}
 	}
 

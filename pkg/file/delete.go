@@ -70,6 +70,7 @@ type Deleter struct {
 	dirs           []string
 	TrashPath      string            // if set, files will be moved to this directory instead of being permanently deleted
 	trashedPaths   map[string]string // map of original path -> trash path (only used when TrashPath is set)
+	zipEntries     map[string][]string // zipPath -> entries to remove; rewrites happen at Commit
 }
 
 func NewDeleter() *Deleter {
@@ -173,6 +174,16 @@ func (d *Deleter) dirsInternal(paths []string, bypassTrash bool) error {
 	return nil
 }
 
+// ZipEntry marks a single entry within a zip for removal.
+// On Commit, each zip with pending entries is rewritten exactly once without those entries.
+// entryRelPath must be the relative path of the entry within the zip using forward slashes.
+func (d *Deleter) ZipEntry(zipPath, entryRelPath string) {
+	if d.zipEntries == nil {
+		d.zipEntries = make(map[string][]string)
+	}
+	d.zipEntries[zipPath] = append(d.zipEntries[zipPath], entryRelPath)
+}
+
 // Rollback tries to rename all marked files and directories back to their
 // original names and clears the marked list. Any errors encountered are
 // logged. All files will be attempted regardless of any errors occurred.
@@ -186,6 +197,7 @@ func (d *Deleter) Rollback() {
 	d.files = nil
 	d.dirs = nil
 	d.trashedPaths = make(map[string]string)
+	d.zipEntries = nil
 }
 
 // Commit deletes all files marked for deletion and clears the marked list.
@@ -212,9 +224,23 @@ func (d *Deleter) Commit() {
 		}
 	}
 
+	// Rewrite each zip that has pending entry removals.
+	for zipPath, entries := range d.zipEntries {
+		tmpPath, err := RemoveEntriesFromZip(zipPath, entries)
+		if err != nil {
+			logger.Warnf("Error rewriting zip %q: %v", zipPath, err)
+			continue
+		}
+		if err := d.RenamerRemover.Rename(tmpPath, zipPath); err != nil {
+			_ = d.RenamerRemover.Remove(tmpPath)
+			logger.Warnf("Error applying zip rewrite for %q: %v", zipPath, err)
+		}
+	}
+
 	d.files = nil
 	d.dirs = nil
 	d.trashedPaths = make(map[string]string)
+	d.zipEntries = nil
 }
 
 func (d *Deleter) renameForDelete(path string, bypassTrash bool) error {
