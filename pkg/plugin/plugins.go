@@ -53,6 +53,11 @@ type PluginUI struct {
 	// Content Security Policy configuration for the plugin.
 	CSP PluginCSP `json:"csp"`
 
+	// CSPSettings indicates whether the plugin has opted in to the csp_
+	// setting prefix mechanism. When true, settings with keys starting
+	// with "csp_" are treated as connect-src URLs for the CSP header.
+	CSPSettings bool `json:"csp_settings"`
+
 	// External Javascript files that will be injected into the stash UI.
 	ExternalScript []string `json:"external_script"`
 

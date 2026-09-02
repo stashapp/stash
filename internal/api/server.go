@@ -9,12 +9,15 @@ import (
 	"io"
 	"io/fs"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
 	"runtime/debug"
+	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	gqlHandler "github.com/99designs/gqlgen/graphql/handler"
@@ -552,6 +555,60 @@ func isURL(s string) bool {
 	return strings.HasPrefix(s, "http://") || strings.HasPrefix(s, "https://")
 }
 
+const cspSettingPrefix = "csp_"
+
+// cspConnectSrcFromSettings returns validated http(s) connect-src URLs from
+// the plugin's settings, plus the keys that were skipped as invalid.
+// Settings keys beginning with "csp_" are treated as connect-src sources.
+func cspConnectSrcFromSettings(settings map[string]interface{}) (valid []string, skipped map[string]string) {
+	for k, v := range settings {
+		if !strings.HasPrefix(k, cspSettingPrefix) {
+			continue
+		}
+		s, ok := v.(string)
+		if !ok || !isValidConnectSrcURL(s) {
+			if skipped == nil {
+				skipped = make(map[string]string)
+			}
+			skipped[k] = fmt.Sprintf("%v", v)
+			continue
+		}
+		valid = append(valid, s)
+	}
+
+	// settings is a map, so sort to keep the emitted header stable between requests
+	sort.Strings(valid)
+
+	return valid, skipped
+}
+
+// warnedCSPSettings tracks the invalid csp_ settings already logged, so that a
+// misconfigured plugin does not emit a warning on every page request. The value
+// is re-logged if the user changes the setting to another invalid value.
+var warnedCSPSettings sync.Map
+
+func warnInvalidCSPSettings(pluginID string, skipped map[string]string) {
+	for key, value := range skipped {
+		k := pluginID + "\x00" + key
+		if prev, ok := warnedCSPSettings.Load(k); ok && prev == value {
+			continue
+		}
+		warnedCSPSettings.Store(k, value)
+		logger.Warnf("plugin %q: ignoring setting %q: not a valid connect-src URL", pluginID, key)
+	}
+}
+
+func isValidConnectSrcURL(s string) bool {
+	if strings.ContainsAny(s, " ,\t\r\n;\"'") {
+		return false
+	}
+	u, err := url.Parse(s)
+	if err != nil {
+		return false
+	}
+	return (u.Scheme == "http" || u.Scheme == "https") && u.Host != "" && u.Hostname() != "" && u.User == nil && !strings.Contains(u.Host, "*")
+}
+
 func setPageSecurityHeaders(w http.ResponseWriter, r *http.Request, plugins []*plugin.Plugin) {
 	c := config.GetInstance()
 
@@ -609,6 +666,16 @@ func setPageSecurityHeaders(w http.ResponseWriter, r *http.Request, plugins []*p
 		}
 
 		connectSrcSlice = append(connectSrcSlice, ui.CSP.ConnectSrc...)
+
+		// only read plugin settings if the plugin opted in to the csp_ prefix
+		if ui.CSPSettings {
+			if settings := c.GetPluginConfiguration(plugin.ID); settings != nil {
+				valid, skipped := cspConnectSrcFromSettings(settings)
+				connectSrcSlice = append(connectSrcSlice, valid...)
+				warnInvalidCSPSettings(plugin.ID, skipped)
+			}
+		}
+
 		scriptSrcSlice = append(scriptSrcSlice, ui.CSP.ScriptSrc...)
 		styleSrcSlice = append(styleSrcSlice, ui.CSP.StyleSrc...)
 	}
