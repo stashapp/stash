@@ -427,7 +427,8 @@ type Mutation {
   destroyFiles(ids: [ID!]!): Boolean!
 
   fileSetFingerprints(input: FileSetFingerprintsInput!): Boolean!
-  "Reveal the file in the system file manager"
+  fileSetVRMetadata(input: FileSetVRMetadataInput!): Boolean!
+  "Reveal file system file manager"
   revealFileInFileManager(id: ID!): Boolean!
   "Reveal the folder in the system file manager"
   revealFolderInFileManager(id: ID!): Boolean!
