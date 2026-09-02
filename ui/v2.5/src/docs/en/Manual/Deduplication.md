@@ -9,3 +9,13 @@ To achieve this stash needs to generate what's called a phash, or perceptual has
 The dupe checker can be run with four different levels of accuracy. `Exact` looks for scenes that have exactly the same phash. This is a fast and accurate operation that should not yield any false positives except in very rare cases. The other accuracy levels look for duplicate files within a set distance of each other. This means the scenes don't have exactly the same phash, but are very similar. `High` and `Medium` should still yield very good results with few or no false positives. `Low` is likely to produce some false positives, but might still be useful for finding dupes.
 
 > **⚠️ Note:** To generate a pHash Stash requires an uncorrupted file. If any errors are encountered during sprite generation the pHash will not be generated. This is to prevent false positives.
+
+## Selecting duplicates
+
+The `Select Options…` dropdown provides shortcuts for bulk-selecting files across every duplicate group on the current page. Each option selects every file in a group *except* the one to keep, so the selection can be reviewed and then deleted:
+
+- **Largest file** and **highest resolution** keep the largest file, or the file with the highest resolution.
+- **Oldest / youngest** keep the file with the oldest or youngest modification time.
+- **Preferred codec** keeps the file matching the codec chosen in the `Preferred Video Codec` dropdown, which lists the codecs detected among the current duplicate results. Groups that contain no file with the preferred codec are left untouched, so nothing is selected when there is no matching file to keep.
+
+The `Only select if all codecs match in the duplicate group` checkbox is a safety option for the size, resolution and age selections: when enabled, groups whose files use different codecs are skipped, so you don't accidentally select a file that was encoded with a different codec. It does not apply to the preferred-codec selection, which is codec-aware by design.
