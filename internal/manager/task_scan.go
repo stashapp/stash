@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"runtime/debug"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler/lru"
@@ -35,9 +36,78 @@ type ScanJob struct {
 	subscriptions *subscriptionManager
 
 	fileQueue chan file.ScannedFile
+	dirQueue  chan file.ScannedFile
 	count     int
 
 	unmatchedCaptionFiles utils.MutexField[[]string]
+
+	// unchangedDirs records directories whose set of direct children has not
+	// changed since the last scan. Files directly inside these directories are
+	// skipped to avoid unnecessary DB lookups. Subdirectories are still walked
+	// recursively so that deeper changes (new files, renamed dirs) are found.
+	unchangedDirs sync.Map
+
+	// skipUnchangedFolders is set per-path before walking; false for network
+	// filesystems where ModTime may not be reliable.
+	skipUnchangedFolders bool
+
+	// dirCheckAttempts and dirCheckHits track the rolling hit rate of
+	// CheckFolder calls. shouldCheckFolder uses these to gate calls once the
+	// hit rate drops below checkFolderThreshold.
+	dirCheckAttempts     atomic.Int64
+	dirCheckHits         atomic.Int64
+	checkFolderThreshold float64
+}
+
+// CheckFolder hit-rate gating — assumptions and context:
+//
+//   - After warmup, cumulative hits/attempts proxies whether more CheckFolder
+//     calls pay off; walk order can skew this (single global ratio).
+//
+//   - A hit is CheckFolder returning unchanged: DB's folder ModTime equals this
+//     directory's ModTime from disk (see Scanner.CheckFolder). Skipping enqueue for
+//     direct files then assumes that invariant means nothing relevant changed among
+//     those children. This is safe for local filesystems, but not for network or
+//     coarse-modtime filesystems.
+//
+//   - When hits are rare (cold scan / folders absent or changed in DB), extra
+//     CheckFolder calls are mostly overhead versus processing dirs/files without this
+//     shortcut.
+//
+//   - Warmup assumes the first dirCheckWarmup CheckFolder calls are a representative
+//     sample of folder outcomes for this walk. It is treated as forecasting the whole
+//     job's hit rate. After warmup, a low cumulative rate stops further CheckFolder
+//     (e.g. first scan where almost every folder is new).
+//
+// Basic idea: we always CheckFolder until `dirCheckWarmup` folders have been checked,
+// then we continue to do so as long as the hit rate remains >= checkFolderHitRateThreshold
+const (
+	// dirCheckWarmup is the number of CheckFolder calls made before the
+	// hit-rate signal is trusted. Keeps the first few directories enabled
+	// unconditionally so the estimate is not dominated by noise.
+	dirCheckWarmup = 50
+
+	// checkFolderHitRateThreshold is the minimum hit rate below which
+	// CheckFolder is skipped. Derived from benchmarks: break-even is ~0.50
+	// (C_check_windows ≈ 139ms, C_save_per_dir ≈ 280ms); 0.30 is conservative,
+	// favouring the warm-scan optimisation in mixed-state libraries.
+	checkFolderHitRateThreshold = 0.30
+)
+
+// shouldCheckFolder returns true when calling CheckFolder is expected to pay
+// for itself. It is always true during the warm-up window. After that it
+// returns true only while the cumulative hit rate is at or above the threshold.
+// Returns false unconditionally when the modtime optimisation is disabled
+// (network FS) or when a forced rescan is requested (Rescan flag).
+func (j *ScanJob) shouldCheckFolder() bool {
+	if !j.skipUnchangedFolders || j.scanner.Rescan {
+		return false
+	}
+	total := j.dirCheckAttempts.Load()
+	if total < dirCheckWarmup {
+		return true
+	}
+	return float64(j.dirCheckHits.Load())/float64(total) >= j.checkFolderThreshold
 }
 
 func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
@@ -95,14 +165,14 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
 }
 
 func (j *ScanJob) runJob(ctx context.Context, paths []string, nTasks int, progress *job.Progress) {
-	var wg sync.WaitGroup
-	wg.Add(1)
-
 	j.fileQueue = make(chan file.ScannedFile, scanQueueSize)
+	j.dirQueue = make(chan file.ScannedFile, scanQueueSize)
 
+	var walkWg sync.WaitGroup
+	walkWg.Add(1)
 	go func() {
 		defer func() {
-			wg.Done()
+			walkWg.Done()
 
 			// handle panics in goroutine
 			if p := recover(); p != nil {
@@ -123,7 +193,27 @@ func (j *ScanJob) runJob(ctx context.Context, paths []string, nTasks int, progre
 		logger.Infof("Finished adding files to queue. %d files queued", j.count)
 	}()
 
-	defer wg.Wait()
+	// dir writer: single goroutine drains dirQueue sequentially, preserving DFS
+	// order so parent directories are always committed before their children.
+	var dirWg sync.WaitGroup
+	dirWg.Add(1)
+	go func() {
+		defer func() {
+			dirWg.Done()
+
+			if p := recover(); p != nil {
+				logger.Errorf("panic while processing dir queue: %v", p)
+				logger.Errorf(string(debug.Stack()))
+			}
+		}()
+
+		for d := range j.dirQueue {
+			j.processQueueItem(ctx, d, progress)
+		}
+	}()
+
+	defer walkWg.Wait()
+	defer dirWg.Wait()
 
 	j.processQueue(ctx, nTasks, progress)
 }
@@ -135,6 +225,7 @@ func (j *ScanJob) queueFiles(ctx context.Context, paths []string, progress *job.
 
 	defer func() {
 		close(j.fileQueue)
+		close(j.dirQueue)
 
 		progress.AddTotal(j.count)
 		progress.Definite()
@@ -142,7 +233,32 @@ func (j *ScanJob) queueFiles(ctx context.Context, paths []string, progress *job.
 
 	var err error
 	progress.ExecuteTask("Walking directory tree", func() {
+		j.dirCheckAttempts.Store(0)
+		j.dirCheckHits.Store(0)
+
 		for _, p := range paths {
+			skipUnchanged := true
+			isNet, netErr := fsutil.IsNetworkFS(p)
+			if netErr != nil {
+				logger.Warnf("Could not detect FS type for %s, disabling folder skip optimisation: %v", p, netErr)
+				skipUnchanged = false
+			} else if isNet {
+				logger.Infof("Network filesystem detected for %s; disabling folder ModTime skip optimisation", p)
+				skipUnchanged = false
+			}
+			if skipUnchanged {
+				coarse, coarseErr := fsutil.CoarseModtimeFilesystem(p)
+				if coarseErr != nil {
+					logger.Warnf("Could not detect coarse-modtime filesystem for %s, disabling folder skip optimisation: %v", p, coarseErr)
+					skipUnchanged = false
+				} else if coarse {
+					logger.Infof("FAT/exFAT or coarse-modtime filesystem detected for %s; disabling folder ModTime skip optimisation", p)
+					skipUnchanged = false
+				}
+			}
+			j.skipUnchangedFolders = skipUnchanged
+			j.checkFolderThreshold = checkFolderHitRateThreshold
+
 			err = file.SymWalk(fs, p, j.queueFileFunc(ctx, fs, nil, progress))
 			if err != nil {
 				return
@@ -234,17 +350,34 @@ func (j *ScanJob) queueFileFunc(ctx context.Context, f models.FS, zipFile *file.
 		}
 
 		if info.IsDir() {
-			// handle folders immediately
-			if err := j.handleFolder(ctx, ff, progress); err != nil {
-				if !errors.Is(err, context.Canceled) {
-					logger.Errorf("error processing %q: %v", path, err)
+			if j.shouldCheckFolder() {
+				j.dirCheckAttempts.Add(1)
+				_, unchanged, err := j.scanner.CheckFolder(ctx, ff)
+				if err != nil {
+					if !errors.Is(err, context.Canceled) {
+						logger.Errorf("error checking folder %q: %v", path, err)
+					}
+					return fs.SkipDir
 				}
-
-				// skip the directory since we won't be able to process the files anyway
-				return fs.SkipDir
+				if unchanged {
+					j.dirCheckHits.Add(1)
+					j.unchangedDirs.Store(ff.Path, struct{}{})
+					return nil
+				}
 			}
-
+			j.dirQueue <- ff
 			return nil
+		}
+
+		// Skip files whose containing directory is known-unchanged. Their set
+		// of direct children has not changed, so no file was added here. We
+		// still walked into the parent to allow deeper subdirectories to be
+		// checked. Use Rescan to force re-examining file content.
+		if j.skipUnchangedFolders && !j.scanner.Rescan {
+			if _, isUnchanged := j.unchangedDirs.Load(filepath.Dir(path)); isUnchanged {
+				logger.Tracef("Skipping file %s in unchanged directory", path)
+				return nil
+			}
 		}
 
 		// if zip file is present, we handle immediately
@@ -327,9 +460,17 @@ func (j *ScanJob) handleFolder(ctx context.Context, f file.ScannedFile, progress
 		defer progress.Increment()
 	}
 
-	_, err := j.scanner.ScanFolder(ctx, f)
+	_, changed, err := j.scanner.ScanFolder(ctx, f)
 	if err != nil {
 		return err
+	}
+
+	// Record unchanged directories so their direct file children can be
+	// skipped. We never return fs.SkipDir here: subdirectories must still be
+	// walked because their own modtime may have changed (a new file added to
+	// /a/b only updates /a/b/'s modtime, not /a/'s).
+	if !changed && j.skipUnchangedFolders && !j.scanner.Rescan {
+		j.unchangedDirs.Store(f.Path, struct{}{})
 	}
 
 	return nil
@@ -569,6 +710,29 @@ type scanFilter struct {
 	stashIgnoreFilter *file.StashIgnoreFilter
 }
 
+// shouldSkipDir returns true if dir matches the video (and image) exclude patterns
+// and no configured stash root is at or beneath dir.
+func shouldSkipDir(dir string, s *config.StashConfig, allPaths config.StashConfigs, videoRE, imageRE []*regexp.Regexp) bool {
+	test := dir + string(filepath.Separator)
+
+	if !matchFileRegex(test, videoRE) {
+		return false
+	}
+
+	if !s.ExcludeImage && !matchFileRegex(test, imageRE) {
+		return false
+	}
+
+	cleanDir := filepath.Clean(dir)
+	for _, sc := range allPaths {
+		if fsutil.IsPathInDir(cleanDir, filepath.Clean(sc.Path)) {
+			return false
+		}
+	}
+
+	return true
+}
+
 func newScanFilter(c *config.Config, repo models.Repository, minModTime time.Time) *scanFilter {
 	return &scanFilter{
 		extensionConfig:   newExtensionConfig(c),
@@ -620,11 +784,8 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo, 
 		return false
 	}
 
-	// shortcut: skip the directory entirely if it matches both exclusion patterns
-	// add a trailing separator so that it correctly matches against patterns like path/.*
-	pathExcludeTest := path + string(filepath.Separator)
-	if (matchFileRegex(pathExcludeTest, f.videoExcludeRegex)) && (s.ExcludeImage || matchFileRegex(pathExcludeTest, f.imageExcludeRegex)) {
-		logger.Debugf("Skipping directory %s as it matches video and image exclusion patterns", path)
+	if info.IsDir() && shouldSkipDir(path, s, f.stashPaths, f.videoExcludeRegex, f.imageExcludeRegex) {
+		logger.Debugf("Skipping directory %s as it matches exclude patterns", path)
 		return false
 	}
 

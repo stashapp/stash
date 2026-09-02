@@ -9,6 +9,10 @@ https://docs.docker.com/engine/install/
 
 On some distributions, `docker compose` is shipped separately, usually as `docker-cli-compose`. docker-compose is not recommended.
 
+### Library storage (bind mounts)
+
+For reliable metadata scans and best performance on warm rescans, **mount your media library from the host** into the container (as in the sample `docker-compose.yml`: a host path on the left, container path on the right). That keeps the library on your normal disk filesystem (for example ext4, xfs, or NTFS on the host). Stash enables folder modtime-based scan optimizations when it trusts directory timestamps from the filesystem at the library path; bind mounts preserve those semantics.
+
 ### Get the docker-compose.yml file
 
 Now you can either navigate to the [docker-compose.yml](https://raw.githubusercontent.com/stashapp/stash/develop/docker/production/docker-compose.yml) in the repository, or if you have curl, you can make your Linux console do it for you:
