@@ -19,7 +19,6 @@
     "browse_for_image": "Browse for image…",
     "cancel": "Cancel",
     "choose_date": "Choose a date",
-    "clean": "Clean",
     "clean_generated": "Clean generated files",
     "clear": "Clear",
     "clear_back_image": "Clear back image",
@@ -125,9 +124,9 @@
     "select_none": "Select None",
     "invert_selection": "Invert Selection",
     "selective_auto_tag": "Selective auto tag",
-    "selective_clean": "Selective clean",
     "selective_generate": "Selective generate",
     "selective_scan": "Selective scan",
+    "selective_verify": "Selective verify",
     "set_as_default": "Set as default",
     "set_as_performer_image": "Set as performer image",
     "set_back_image": "Back image…",
@@ -151,14 +150,16 @@
     "submit_update": "Submit update",
     "swap": "Swap",
     "tasks": {
-      "clean_confirm_message": "Are you sure you want to Clean? This will delete database information and generated content for all scenes and galleries that are no longer found in the filesystem.",
-      "dry_mode_selected": "Dry Mode selected. No actual deleting will take place, only logging.",
-      "import_warning": "Are you sure you want to import? This will delete the database and re-import from your exported metadata."
+      "dry_mode_selected": "Dry Mode selected. No changes to the database will be made, only logging.",
+      "import_warning": "Are you sure you want to import? This will delete the database and re-import from your exported metadata.",
+      "purge_missing_confirm_message": "Are you sure you want to purge files and folders marked missing? This will delete database information and generated content for all files and folders that are marked as missing in the database.",
+      "verify_purge_confirm_message": "Are you sure you want to purge files and folders found missing? This will delete database information and generated content for all files and folders that are no longer found in the filesystem."
     },
     "temp_disable": "Disable temporarily…",
     "temp_enable": "Enable temporarily…",
     "unset": "Unset",
     "use_default": "Use default",
+    "verify_files": "Verify files",
     "view_history": "View history",
     "view_random": "View Random"
   },
@@ -554,6 +555,7 @@
       "data_management": "Data management",
       "defaults_set": "Defaults have been set and will be used when clicking the {action} button on the Tasks page.",
       "dont_include_file_extension_as_part_of_the_title": "Don't include file extension as part of the title",
+      "dry_run": "Dry run only. Don't make any changes to the database.",
       "empty_queue": "No tasks are currently running.",
       "export_to_json": "Exports the database content into JSON format in the metadata directory.",
       "generate": {
@@ -624,6 +626,8 @@
       "optimise_database": "Attempt to improve performance by analysing and then rebuilding the entire database file.",
       "optimise_database_warning": "Warning: while this task is running, any operations that modify the database will fail, and depending on your database size, it could take several minutes to complete. It also requires at the very minimum as much free disk space as your database is large, but 1.5x is recommended.",
       "plugin_tasks": "Plugin Tasks",
+      "purge_missing": "Purge missing",
+      "purge_missing_desc": "Permanently remove files and folders marked missing from the database. Removes associated objects and generated files. This is a destructive action.",
       "rescan": "Rescan files",
       "rescan_tooltip": "Rescan every file in the path. Used to force update file metadata and rescan zip files.",
       "scan": {
@@ -631,7 +635,12 @@
         "scanning_paths": "Scanning the following paths"
       },
       "scan_for_content_desc": "Scan for new content and add it to the database.",
-      "set_name_date_details_from_metadata_if_present": "Set name, date, details from embedded file metadata"
+      "selective_purge_missing": "Selective purge",
+      "set_name_date_details_from_metadata_if_present": "Set name, date, details from embedded file metadata",
+      "verify_check_zip_contents": "Verify zip file contents",
+      "verify_check_zip_contents_desc": "Include files inside zip files when verifying. Only required if files within zip files have been deleted in place.",
+      "verify_files_desc": "Verify files in the database against file system, marking any missing files.",
+      "verify_purge_missing": "Permanently remove missing files from the database."
     },
     "tools": {
       "graphql_playground": "GraphQL playground",

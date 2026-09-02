@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"slices"
+	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -24,6 +25,7 @@ type folderRow struct {
 	Path           string          `db:"path"`
 	ZipFileID      null.Int        `db:"zip_file_id"`
 	ParentFolderID null.Int        `db:"parent_folder_id"`
+	MissingSince   NullTimestamp   `db:"missing_since"`
 	ModTime        Timestamp       `db:"mod_time"`
 	CreatedAt      Timestamp       `db:"created_at"`
 	UpdatedAt      Timestamp       `db:"updated_at"`
@@ -36,6 +38,7 @@ func (r *folderRow) fromFolder(o models.Folder) {
 	r.Path = o.Path
 	r.ZipFileID = nullIntFromFileIDPtr(o.ZipFileID)
 	r.ParentFolderID = nullIntFromFolderIDPtr(o.ParentFolderID)
+	r.MissingSince = NullTimestampFromTimePtr(o.MissingSince)
 	r.ModTime = Timestamp{Timestamp: o.ModTime}
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
@@ -53,8 +56,9 @@ func (r *folderQueryRow) resolve() *models.Folder {
 	ret := &models.Folder{
 		ID: r.ID,
 		DirEntry: models.DirEntry{
-			ZipFileID: nullIntFileIDPtr(r.ZipFileID),
-			ModTime:   r.ModTime.Timestamp,
+			ZipFileID:    nullIntFileIDPtr(r.ZipFileID),
+			ModTime:      r.ModTime.Timestamp,
+			MissingSince: r.MissingSince.TimePtr(),
 		},
 		Path:           string(r.Path),
 		ParentFolderID: nullIntFolderIDPtr(r.ParentFolderID),
@@ -149,6 +153,29 @@ func (qb *FolderStore) Update(ctx context.Context, updatedObject *models.Folder)
 	return nil
 }
 
+func (qb *FolderStore) SetMissing(ctx context.Context, id models.FolderID, missingSince *time.Time) error {
+	if err := qb.tableMgr.checkIDExists(ctx, int(id)); err != nil {
+		return err
+	}
+
+	table := qb.tableMgr.table
+
+	var timestampValue NullTimestamp
+	if missingSince != nil {
+		timestampValue = NullTimestamp{Timestamp: *missingSince, Valid: true}
+	}
+
+	q := dialect.Update(table).Set(goqu.Record{
+		"missing_since": timestampValue,
+	}).Where(qb.tableMgr.byID(id))
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("updating %s: %w", table.GetTable(), err)
+	}
+
+	return nil
+}
+
 func (qb *FolderStore) Destroy(ctx context.Context, id models.FolderID) error {
 	return qb.tableMgr.destroyExisting(ctx, []int{int(id)})
 }
@@ -169,6 +196,7 @@ func (qb *FolderStore) selectDataset() *goqu.SelectDataset {
 		table.Col("path"),
 		table.Col("zip_file_id"),
 		table.Col("parent_folder_id"),
+		table.Col("missing_since"),
 		table.Col("mod_time"),
 		table.Col("created_at"),
 		table.Col("updated_at"),
@@ -493,6 +521,45 @@ func (qb *FolderStore) CountAllInPaths(ctx context.Context, p []string) (int, er
 	return count(ctx, q)
 }
 
+func (qb *FolderStore) FindMissingInPaths(ctx context.Context, p []string, missingSinceBefore *time.Time, limit, offset int) ([]*models.Folder, error) {
+	q := qb.selectDataset().Prepared(true)
+	q = qb.allInPaths(q, p)
+
+	if missingSinceBefore != nil {
+		v := missingSinceBefore.Format(time.RFC3339)
+		q = q.Where(qb.table().Col("missing_since").Lt(v))
+	} else {
+		q = q.Where(qb.table().Col("missing_since").IsNotNull())
+	}
+
+	if limit > -1 {
+		q = q.Limit(uint(limit))
+	}
+
+	q = q.Offset(uint(offset))
+
+	ret, err := qb.getMany(ctx, q)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("getting folders in path %s: %w", p, err)
+	}
+
+	return ret, nil
+}
+
+func (qb *FolderStore) CountMissingInPaths(ctx context.Context, p []string, missingSinceBefore *time.Time) (int, error) {
+	q := qb.countDataset().Prepared(true)
+	q = qb.allInPaths(q, p)
+
+	if missingSinceBefore != nil {
+		v := missingSinceBefore.Format(time.RFC3339)
+		q = q.Where(qb.table().Col("missing_since").Lt(v))
+	} else {
+		q = q.Where(qb.table().Col("missing_since").IsNotNull())
+	}
+
+	return count(ctx, q)
+}
+
 // func (qb *FolderStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*file.Folder, error) {
 // 	table := qb.table()
 
@@ -638,6 +705,7 @@ var folderSortOptions = sortOptions{
 	"path",
 	"basename",
 	"random",
+	"missing_since",
 	"updated_at",
 }
 
