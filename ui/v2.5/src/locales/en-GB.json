@@ -860,6 +860,16 @@
           "vr_tag": {
             "description": "The VR button will only be displayed for scenes with this tag.",
             "heading": "VR tag"
+          },
+          "default_streaming_resolution": {
+            "heading": "Default streaming resolution",
+            "description": "Resolution automatically selected when streaming a scene.",
+            "original": "Original"
+          },
+          "default_stream_type": {
+            "heading": "Default stream type",
+            "description": "Media type automatically selected when streaming a scene.",
+            "no_preference": "No preference"
           }
         }
       },
