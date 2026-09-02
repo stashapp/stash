@@ -1,19 +1,27 @@
 import React from "react";
 import { useIntl } from "react-intl";
+import { Button } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
+import { SortDirectionEnum } from "src/core/generated-graphql";
 import { useStudioUpdate } from "src/core/StashService";
 import { useTableColumns } from "src/hooks/useTableColumns";
 import { useConfigurationContext } from "src/hooks/Config";
 import { ListTable, IColumn } from "../List/ListTable";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
+import { Icon } from "../Shared/Icon";
 import { Link } from "react-router-dom";
 import NavUtils from "src/utils/navigation";
+import { faHeart } from "@fortawesome/free-solid-svg-icons";
+import cx from "classnames";
 import "./StudioListTable.scss";
 
 interface IStudioListTableProps {
   studios: GQL.StudioDataFragment[];
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
+  onSort?: (value: string) => void;
+  sortBy?: string;
+  sortDirection?: SortDirectionEnum;
 }
 
 const TABLE_NAME = "studios";
@@ -22,6 +30,9 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
   studios,
   selectedIds,
   onSelectChange,
+  onSort,
+  sortBy,
+  sortDirection,
 }) => {
   const intl = useIntl();
   const [updateStudio] = useStudioUpdate();
@@ -35,6 +46,19 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
           input: {
             id: studioId,
             rating100: v,
+          },
+        },
+      });
+    }
+  }
+
+  function setFavorite(v: boolean, studioId: string) {
+    if (studioId) {
+      updateStudio({
+        variables: {
+          input: {
+            id: studioId,
+            favorite: v,
           },
         },
       });
@@ -113,6 +137,15 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
     </Link>
   );
 
+  const FavoriteCell = (studio: GQL.StudioDataFragment) => (
+    <Button
+      className={cx("minimal", studio.favorite ? "favorite" : "not-favorite")}
+      onClick={() => setFavorite(!studio.favorite, studio.id)}
+    >
+      <Icon icon={faHeart} />
+    </Button>
+  );
+
   const OCountCell = (studio: GQL.StudioDataFragment) => (
     <span>{showChildContent ? studio.o_counter_all : studio.o_counter}</span>
   );
@@ -126,7 +159,11 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
     const childLink =
       studio.child_studios && studio.child_studios.length > 0 ? (
         <Link to={NavUtils.makeChildStudiosUrl(studio)}>
-          {studio.child_studios.length}
+          {studio.child_studios.length}{" "}
+          {intl.formatMessage(
+            { id: "sub_studios" },
+            { count: studio.child_studios.length }
+          )}
         </Link>
       ) : null;
     return (
@@ -143,6 +180,7 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
     label: string;
     defaultShow?: boolean;
     mandatory?: boolean;
+    sortable?: boolean;
     render?: (studio: GQL.StudioDataFragment, index: number) => React.ReactNode;
   }
 
@@ -151,6 +189,7 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
       value: "image",
       label: intl.formatMessage({ id: "image" }),
       defaultShow: true,
+      sortable: false,
       render: ImageCell,
     },
     {
@@ -164,6 +203,7 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
       value: "aliases",
       label: intl.formatMessage({ id: "aliases" }),
       defaultShow: true,
+      sortable: false,
       render: AliasesCell,
     },
     {
@@ -171,6 +211,12 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
       label: intl.formatMessage({ id: "rating" }),
       defaultShow: true,
       render: RatingCell,
+    },
+    {
+      value: "favourite",
+      label: intl.formatMessage({ id: "favourite" }),
+      defaultShow: true,
+      render: FavoriteCell,
     },
     {
       value: "scene_count",
@@ -206,12 +252,14 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
       value: "performer_count",
       label: intl.formatMessage({ id: "performers" }),
       defaultShow: true,
+      sortable: false,
       render: PerformerCountCell,
     },
     {
       value: "related",
       label: intl.formatMessage({ id: "related_studios" }),
       defaultShow: true,
+      sortable: false,
       render: RelatedCell,
     },
   ];
@@ -254,6 +302,9 @@ export const StudioListTable: React.FC<IStudioListTableProps> = ({
       selectedIds={selectedIds}
       onSelectChange={onSelectChange}
       renderCell={renderCell}
+      onSort={onSort}
+      sortBy={sortBy}
+      sortDirection={sortDirection}
     />
   );
 };

@@ -3,6 +3,7 @@ import { useIntl } from "react-intl";
 import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
+import { SortDirectionEnum } from "src/core/generated-graphql";
 import { Icon } from "../Shared/Icon";
 import NavUtils from "src/utils/navigation";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
@@ -25,6 +26,9 @@ interface IPerformerListTableProps {
   performers: GQL.PerformerDataFragment[];
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
+  onSort?: (value: string) => void;
+  sortBy?: string;
+  sortDirection?: SortDirectionEnum;
 }
 
 const TABLE_NAME = "performers";
@@ -217,6 +221,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     label: string;
     defaultShow?: boolean;
     mandatory?: boolean;
+    sortable?: boolean;
     render?: (
       scene: GQL.PerformerDataFragment,
       index: number
@@ -228,6 +233,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
       value: "image",
       label: intl.formatMessage({ id: "image" }),
       defaultShow: true,
+      sortable: false,
       render: ImageCell,
     },
     {
@@ -241,12 +247,14 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
       value: "aliases",
       label: intl.formatMessage({ id: "aliases" }),
       defaultShow: true,
+      sortable: false,
       render: AliasesCell,
     },
     {
       value: "gender",
       label: intl.formatMessage({ id: "gender" }),
       defaultShow: true,
+      sortable: false,
       render: GenderCell,
     },
     {
@@ -264,6 +272,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     {
       value: "death_date",
       label: intl.formatMessage({ id: "death_date" }),
+      sortable: false,
       render: DeathdateCell,
     },
     {
@@ -276,22 +285,26 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
       value: "country",
       label: intl.formatMessage({ id: "country" }),
       defaultShow: true,
+      sortable: false,
       render: CountryCell,
     },
     {
       value: "ethnicity",
       label: intl.formatMessage({ id: "ethnicity" }),
       defaultShow: true,
+      sortable: false,
       render: EthnicityCell,
     },
     {
       value: "hair_color",
       label: intl.formatMessage({ id: "hair_color" }),
+      sortable: false,
       render: HairColorCell,
     },
     {
       value: "eye_color",
       label: intl.formatMessage({ id: "eye_color" }),
+      sortable: false,
       render: EyeColorCell,
     },
     {
@@ -312,6 +325,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     {
       value: "circumcised",
       label: intl.formatMessage({ id: "circumcised" }),
+      sortable: false,
       render: CircumcisedCell,
     },
     {
@@ -322,12 +336,14 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     {
       value: "fake_tits",
       label: intl.formatMessage({ id: "fake_tits" }),
+      sortable: false,
       render: FakeTitsCell,
     },
     {
       value: "career_length",
       label: intl.formatMessage({ id: "career_length" }),
       defaultShow: true,
+      sortable: false,
       render: CareerLengthCell,
     },
     {
@@ -395,6 +411,9 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
       selectedIds={props.selectedIds}
       onSelectChange={props.onSelectChange}
       renderCell={renderCell}
+      onSort={props.onSort}
+      sortBy={props.sortBy}
+      sortDirection={props.sortDirection}
     />
   );
 };

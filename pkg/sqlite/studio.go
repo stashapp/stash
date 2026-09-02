@@ -722,6 +722,7 @@ var studioSortOptions = sortOptions{
 	"images_count",
 	"latest_scene",
 	"name",
+	"favorite",
 	"o_counter",
 	"o_counter_all",
 	"performer_count",

@@ -823,6 +823,7 @@ var performerSortOptions = sortOptions{
 	"play_count",
 	"random",
 	"rating",
+	"favorite",
 	"scenes_count",
 	"scenes_duration",
 	"scenes_size",
@@ -871,6 +872,9 @@ func (qb *PerformerStore) getPerformerSort(findFilter *models.FindFilterType) (s
 		sortQuery += qb.sortByLastOAt(direction)
 	case "latest_scene":
 		sortQuery += qb.sortByLatestScene(direction)
+	case "birthdate":
+		colName := getColumn(performerTable, "birthdate")
+		sortQuery += " ORDER BY " + colName + " IS NULL, " + colName + " " + getSortDirection(direction)
 	default:
 		sortQuery += getSort(sort, direction, "performers")
 	}
