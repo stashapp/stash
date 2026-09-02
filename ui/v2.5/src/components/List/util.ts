@@ -11,6 +11,7 @@ import { usePrevious } from "src/hooks/state";
 import * as GQL from "src/core/generated-graphql";
 import { DisplayMode } from "src/models/list-filter/types";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
+import { useInterfaceLocalForage } from "src/hooks/LocalForage";
 
 function locationEquals(
   loc1: ReturnType<typeof useLocation> | undefined,
@@ -19,6 +20,15 @@ function locationEquals(
   return loc1 && loc1.pathname === loc2.pathname && loc1.search === loc2.search;
 }
 
+/**
+ * Sync a filter to/from the URL query string.
+ * When the filter changes, the URL is updated via `history.replace`.
+ * When the location changes, the filter is re-parsed from the query string.
+ * @param filter - Current filter state.
+ * @param setFilter - Raw React state setter (not the URL-synced wrapper).
+ * @param options.defaultFilter - Fallback filter used when the URL has no query string.
+ * @param options.active - Whether URL sync is active (e.g. false for hidden detail panels).
+ */
 export function useFilterURL(
   filter: ListFilterModel,
   setFilter: React.Dispatch<React.SetStateAction<ListFilterModel>>,
@@ -93,6 +103,12 @@ export function useFilterURL(
   return { setFilter: updateFilter };
 }
 
+/**
+ * Load a user's saved default filter for the given view from server config.
+ * Falls back to the empty filter if no saved default exists.
+ * @param emptyFilter - A base filter to clone and apply saved options onto.
+ * @param view - The view to look up a saved default for.
+ */
 export function useDefaultFilter(emptyFilter: ListFilterModel, view?: View) {
   const { configuration: config } = useConfigurationContext();
 
@@ -137,6 +153,7 @@ function useEmptyFilter(props: {
   return emptyFilter;
 }
 
+/** Props shared by all filtered-list hooks. */
 export interface IFilterStateHook {
   filterMode: GQL.FilterMode;
   defaultFilter?: ListFilterModel;
@@ -145,6 +162,16 @@ export interface IFilterStateHook {
   useURL?: boolean;
 }
 
+/**
+ * Top-level hook that wires together filter state, URL sync, default filters,
+ * and persisted display-mode for a filtered list page.
+ * @param props.filterMode - The GraphQL FilterMode enum value.
+ * @param props.defaultSort - Default sort field name.
+ * @param props.config - Server configuration (injected by the caller).
+ * @param props.view - The current view, used for saved defaults and display-mode persistence.
+ * @param props.useURL - Whether to sync filter state to/from the URL query string.
+ * @param props.defaultFilter - Optional override default filter.
+ */
 export function useFilterState(
   props: IFilterStateHook & {
     config?: GQL.ConfigDataFragment;
@@ -176,9 +203,57 @@ export function useFilterState(
     active: useURL,
   });
 
+  const location = useLocation();
+  const [
+    { data: interfaceData, loading: interfaceLoading },
+    setInterfaceLocalForage,
+  ] = useInterfaceLocalForage();
+
+  // on mount, restore persisted displayMode if URL doesn't specify one
+  useEffect(() => {
+    if (interfaceLoading || !interfaceData || !view) return;
+    const persisted = interfaceData.viewConfig?.[view]?.displayMode;
+    if (persisted === undefined) return;
+    if (location.search.includes("disp=")) return;
+
+    setFilter((cv) => {
+      if (cv.displayMode === persisted) return cv;
+      return cv.setDisplayMode(persisted);
+    });
+  }, [view, interfaceData, interfaceLoading, location.search, setFilter]);
+
+  // persist displayMode on change
+  const prevDisplayMode = usePrevious(filter.displayMode);
+  useEffect(() => {
+    if (!view || interfaceLoading) return;
+    if (prevDisplayMode === undefined) return;
+    if (filter.displayMode === prevDisplayMode) return;
+
+    setInterfaceLocalForage((prev) => ({
+      ...prev,
+      viewConfig: {
+        ...prev.viewConfig,
+        [view]: {
+          ...prev.viewConfig?.[view],
+          displayMode: filter.displayMode,
+        },
+      },
+    }));
+  }, [
+    view,
+    filter.displayMode,
+    prevDisplayMode,
+    interfaceLoading,
+    setInterfaceLocalForage,
+  ]);
+
   return { filter, setFilter };
 }
 
+/**
+ * Convenience wrapper around common filter mutations (page, display mode, zoom, criteria).
+ * All returned callbacks are memoised and stable.
+ */
 export function useFilterOperations(props: {
   filter: ListFilterModel;
   setFilter: (
@@ -233,6 +308,11 @@ export function useFilterOperations(props: {
   };
 }
 
+/**
+ * Bind keyboard shortcuts for list navigation (left/right for pagination,
+ * "f" for filter, "s a/n/i" for select-all/none/invert).
+ * Shortcuts are scoped to the component lifecycle.
+ */
 export function useListKeyboardShortcuts(props: {
   currentPage?: number;
   onChangePage?: (page: number) => void;
@@ -321,6 +401,11 @@ export function useListKeyboardShortcuts(props: {
   }, [onSelectAll, onSelectNone, onInvertSelection]);
 }
 
+/**
+ * Track multi-select state for a list of items with shift-click support.
+ * @param items - The current page of items.
+ * @returns Selected items, selected IDs set, and selection helper callbacks.
+ */
 export function useListSelect<T extends IHasID = IHasID>(items: T[]) {
   const [itemsSelected, setItemsSelected] = useState<T[]>([]);
   const [lastClickedId, setLastClickedId] = useState<string>();
@@ -461,6 +546,7 @@ export function useListSelect<T extends IHasID = IHasID>(items: T[]) {
   };
 }
 
+/** Inferred return type of {@link useListSelect}. */
 export type IListSelect<T extends IHasID = IHasID> = ReturnType<
   typeof useListSelect<T>
 >;
@@ -481,9 +567,12 @@ function totalCountImpacted(
   );
 }
 
-// this hook caches a query result and count, and only updates it when the filter changes
-// in a way that would impact the result count
-// it is used to prevent the result count/pagination from flickering when changing pages or sorting
+/**
+ * Cache a query result and only update when the filter changes in a way that
+ * affects the total count. Prevents pagination flicker during page/sort changes.
+ * @param filter - The current filter.
+ * @param result - The latest Apollo query result.
+ */
 export function useCachedQueryResult<T extends QueryResult>(
   filter: ListFilterModel,
   result: T
@@ -507,6 +596,7 @@ export function useCachedQueryResult<T extends QueryResult>(
   return cachedResult;
 }
 
+/** Configuration for a list query result hook. */
 export interface IQueryResultHook<
   T extends QueryResult,
   E extends IHasID = IHasID,
@@ -519,6 +609,16 @@ export interface IQueryResultHook<
   getItems: (data: T) => E[];
 }
 
+/**
+ * Execute a GraphQL query driven by a ListFilterModel and return paginated
+ * results with caching metadata info (total count without page/sort offset).
+ * @param props.filterHook - Optional transform applied to the filter before querying.
+ * @param props.useResult - Apollo hook that maps a filter to a query result.
+ * @param props.useMetadataInfo - Optional hook for fetching unfiltered metadata counts.
+ * @param props.getCount - Extract total count from the query result.
+ * @param props.getItems - Extract item list from the query result.
+ * @param props.filter - The current filter.
+ */
 export function useQueryResult<
   T extends QueryResult,
   E extends IHasID = IHasID,
@@ -569,8 +669,14 @@ export function useQueryResult<
   };
 }
 
-// this hook collects the common logic when closing the edit/delete dialog
-// if applied is true, then the list should be refetched and selection cleared
+/**
+ * Collect common logic for closing an edit/delete dialog: close the modal,
+ * clear selection, and refetch the list if changes were applied.
+ * @param props.onSelectNone - Clear current selection.
+ * @param props.closeModal - Close the dialog.
+ * @param props.result - Apollo query result to refetch.
+ * @returns A callback to invoke with `true` if changes were applied.
+ */
 export function useCloseEditDelete(props: {
   onSelectNone: () => void;
   closeModal: () => void;
@@ -594,13 +700,16 @@ export function useCloseEditDelete(props: {
   return onCloseEditDelete;
 }
 
+/**
+ * Scroll to the top of the page (or below the detail header) when the page changes.
+ * Only scrolls when `loading` is false and the page has actually changed.
+ */
 export function useScrollToTopOnPageChange(
   currentPage: number,
   loading: boolean
 ) {
   const prevPage = usePrevious(currentPage);
 
-  // scroll to the top of the page when the page changes
   // only scroll to top if the page has changed and is not loading
   useEffect(() => {
     if (loading || currentPage === prevPage || prevPage === undefined) {
@@ -618,7 +727,10 @@ export function useScrollToTopOnPageChange(
   }, [prevPage, currentPage, loading]);
 }
 
-// handle case where page is more than there are pages
+/**
+ * Ensure the current page does not exceed the total number of pages.
+ * If it does, clamp to the last page.
+ */
 export function useEnsureValidPage(
   filter: ListFilterModel,
   totalCount: number,
