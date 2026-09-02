@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -375,8 +376,25 @@ func coalesce(column string) string {
 	return fmt.Sprintf("COALESCE(%s, '')", column)
 }
 
+// wraps a string with wildcard characters for use in LIKE queries
 func like(v string) string {
 	return "%" + v + "%"
+}
+
+// wraps a string with wildcard characters and converts it to lowercase
+// for use in case-insensitive LIKE queries with the lower_unicode() SQL function.
+func likeLower(v string) string {
+	return "%" + strings.ToLower(v) + "%"
+}
+
+// isASCII reports whether s contains only ASCII bytes.
+func isASCII(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] >= utf8.RuneSelf {
+			return false
+		}
+	}
+	return true
 }
 
 type sqlTable string

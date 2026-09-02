@@ -208,12 +208,36 @@ func (qb *queryBuilder) addFilter(f *filterBuilder) error {
 func (qb *queryBuilder) parseQueryString(columns []string, q string) {
 	specs := models.ParseSearchString(q)
 
+	// helper to wrap column with coalesce if it doesn't already have it
+	wrapColumn := func(column string) string {
+		// if column already has COALESCE or CAST, don't wrap again
+		if strings.HasPrefix(strings.ToUpper(strings.TrimSpace(column)), "COALESCE") ||
+			strings.HasPrefix(strings.ToUpper(strings.TrimSpace(column)), "CAST") {
+			return column
+		}
+		return coalesce(column)
+	}
+
+	// likeClause returns the LIKE predicate for a single column/term pair
+	// and records the bound argument.
+	// The built-in LIKE is already case-insensitive for ASCII, so pure-ASCII
+	// terms keep it and pay no per-row cost; only terms containing non-ASCII
+	// characters go through lower_unicode(), which calls back into Go for
+	// every scanned row.
+	likeClause := func(column, term, op string) string {
+		if isASCII(term) {
+			qb.addArg(like(term))
+			return wrapColumn(column) + " " + op + " ?"
+		}
+		qb.addArg(likeLower(term))
+		return "lower_unicode(" + wrapColumn(column) + ") " + op + " ?"
+	}
+
 	for _, t := range specs.MustHave {
 		var clauses []string
 
 		for _, column := range columns {
-			clauses = append(clauses, column+" LIKE ?")
-			qb.addArg(like(t))
+			clauses = append(clauses, likeClause(column, t, "LIKE"))
 		}
 
 		qb.addWhere("(" + strings.Join(clauses, " OR ") + ")")
@@ -221,8 +245,7 @@ func (qb *queryBuilder) parseQueryString(columns []string, q string) {
 
 	for _, t := range specs.MustNot {
 		for _, column := range columns {
-			qb.addWhere(coalesce(column) + " NOT LIKE ?")
-			qb.addArg(like(t))
+			qb.addWhere(likeClause(column, t, "NOT LIKE"))
 		}
 	}
 
@@ -231,8 +254,7 @@ func (qb *queryBuilder) parseQueryString(columns []string, q string) {
 
 		for _, column := range columns {
 			for _, v := range set {
-				clauses = append(clauses, column+" LIKE ?")
-				qb.addArg(like(v))
+				clauses = append(clauses, likeClause(column, v, "LIKE"))
 			}
 		}
 
