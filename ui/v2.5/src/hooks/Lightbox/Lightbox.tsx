@@ -18,7 +18,7 @@ import useInterval from "../Interval";
 import usePageVisibility from "../PageVisibility";
 import { useToast } from "../Toast";
 import { FormattedMessage, useIntl } from "react-intl";
-import { LightboxImage } from "./LightboxImage";
+import { LightboxImage, maxZoomForPixels } from "./LightboxImage";
 import { useConfigurationContext } from "../Config";
 import { Link } from "react-router-dom";
 import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
@@ -190,8 +190,17 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [zoom, setZoom] = useState(1);
 
   function updateZoom(v: number) {
+    // Per-image cap (large images on phones get a smaller ceiling - see
+    // maxZoomForPixels) so a runaway scroll/keyboard zoom can't grow the image
+    // into a giant composited layer that crashes the tab. Uses the current
+    // image's natural dimensions, same source the carousel passes to each tile.
+    const ci = index === null ? initialIndex : index;
+    const vf = images[ci]?.visual_files?.[0];
+    const maxZoom = maxZoomForPixels((vf?.width ?? 0) * (vf?.height ?? 0));
     if (v < MIN_ZOOM) {
       setZoom(MIN_ZOOM);
+    } else if (v > maxZoom) {
+      setZoom(maxZoom);
     } else if (Math.abs(v - 1) < ZOOM_NONE_EPSILON) {
       // "snap to 1" effect: if new zoom is close to 1, set to 1
       setZoom(1);
@@ -1037,6 +1046,14 @@ export const LightboxComponent: React.FC<IProps> = ({
                     debouncedScrollReset={debouncedScrollReset}
                     onLeft={handleLeft}
                     onRight={handleRight}
+                    onSwipeDelete={
+                      currentImage?.id !== undefined
+                        ? () => setIsDeleteDialogOpen(true)
+                        : undefined
+                    }
+                    onSwipeClose={close}
+                    onResetPosition={() => setResetPosition((r) => !r)}
+                    navigationEnabled={!!allowNavigation}
                     isVideo={isVideo(image.visual_files?.[0] ?? {})}
                   />
                 ) : undefined}
