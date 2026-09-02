@@ -32,6 +32,7 @@ type ScanCreatorUpdater interface {
 	Create(ctx context.Context, newScene *models.Scene, fileIDs []models.FileID) error
 	UpdatePartial(ctx context.Context, id int, updatedScene models.ScenePartial) (*models.Scene, error)
 	AddFileID(ctx context.Context, id int, fileID models.FileID) error
+	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
 }
 
 type ScanGalleryFinderUpdater interface {
@@ -126,12 +127,20 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 	}
 
 	if oldFile != nil {
-		// migrate hashes from the old file to the new
 		oldHash := GetHash(oldFile, h.FileNamingAlgorithm)
 		newHash := GetHash(f, h.FileNamingAlgorithm)
 
 		if oldHash != "" && newHash != "" && oldHash != newHash {
-			MigrateHash(h.Paths, oldHash, newHash)
+			// content changed at the same path - remove the old hash's
+			// generated files instead of renaming them onto the new hash,
+			// so stale content doesn't pass as valid for the new content
+			InvalidateGeneratedFiles(h.Paths, oldHash)
+
+			for _, s := range existing {
+				if err := h.CreatorUpdater.UpdateCover(ctx, s.ID, nil); err != nil {
+					logger.Errorf("Error clearing outdated cover for %s: %v", s.DisplayName(), err)
+				}
+			}
 		}
 	}
 
