@@ -23,6 +23,7 @@ import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { OperationButton } from "src/components/Shared/OperationButton";
 import * as FormUtils from "src/utils/form";
 import { genderList, stringToGender } from "src/utils/gender";
+import { sceneAgeFromDate } from "src/utils/scene";
 import { IScrapedScene, TaggerStateContext } from "../context";
 import { OptionalField } from "../IncludeButton";
 import { SceneTaggerModalsState } from "./sceneTaggerModals";
@@ -390,6 +391,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       title: resolveField("title", stashScene.title, scene.title),
       details: resolveField("details", stashScene.details, scene.details),
       date: resolveField("date", stashScene.date, scene.date),
+      production_date: resolveField(
+        "production_date",
+        stashScene.production_date,
+        scene.production_date
+      ),
       performer_ids: uniq(
         stashScene.performers.map((p) => p.id).concat(filteredPerformerIDs)
       ),
@@ -527,6 +533,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     cover_image: "cover_image",
     title: "title",
     date: "date",
+    production_date: "production_date",
     url: "url",
     details: "details",
     studio: "studio",
@@ -643,6 +650,23 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     }
   };
 
+  // labelled, unlike the date field above it, so that the two dates rendered
+  // next to each other can be told apart
+  const maybeRenderProductionDateField = () => {
+    if (isActive && scene.production_date) {
+      return (
+        <h5>
+          <OptionalField
+            exclude={excludedFields[fields.production_date]}
+            setExclude={(v) => setExcludedField(fields.production_date, v)}
+          >
+            <FormattedMessage id="production_date" />: {scene.production_date}
+          </OptionalField>
+        </h5>
+      );
+    }
+  };
+
   const maybeRenderDirector = () => {
     if (scene.director) {
       return (
@@ -740,6 +764,17 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     setPerformerIDs(newPerformerIDs);
   }
 
+  // the value the scene will end up with for a date field: the scraped value,
+  // unless it is empty or the user has excluded it, in which case the scene
+  // keeps the value it already has
+  function resolvedDate(
+    scrapedValue: string | undefined | null,
+    stashValue: string | undefined | null,
+    excluded: boolean
+  ) {
+    return !scrapedValue || excluded ? stashValue : scrapedValue;
+  }
+
   const renderPerformerField = () => (
     <div className="mt-2">
       <div>
@@ -757,11 +792,18 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
                 currentSource?.sourceInput.stash_box_endpoint ?? undefined
               }
               key={`${performer.name ?? performer.remote_site_id ?? ""}`}
-              ageFromDate={
-                !scene.date || excludedFields.date
-                  ? stashScene.date
-                  : scene.date
-              }
+              ageFromDate={sceneAgeFromDate(
+                resolvedDate(
+                  scene.production_date,
+                  stashScene.production_date,
+                  excludedFields[fields.production_date]
+                ),
+                resolvedDate(
+                  scene.date,
+                  stashScene.date,
+                  excludedFields[fields.date]
+                )
+              )}
             />
           ))}
         </Form.Group>
@@ -850,6 +892,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
             {maybeRenderStudioCode()}
             {maybeRenderDateField()}
+            {maybeRenderProductionDateField()}
             {getDurationStatus(scene, stashSceneFile?.duration)}
             {getFingerprintStatus(scene, stashScene)}
           </div>

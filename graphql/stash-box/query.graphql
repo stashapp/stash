@@ -115,6 +115,7 @@ fragment SceneFragment on Scene {
   director
   duration
   date
+  production_date
   urls {
     ...URLFragment
   }

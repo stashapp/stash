@@ -38,6 +38,7 @@ import {
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import { lazyComponent } from "src/utils/lazyComponent";
+import { sceneAgeFromDate } from "src/utils/scene";
 import isEqual from "lodash-es/isEqual";
 import {
   yupDateString,
@@ -152,6 +153,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     code: yup.string().ensure(),
     urls: yupUniqueStringList(intl),
     date: yupDateString(intl),
+    production_date: yupDateString(intl),
     director: yup.string().ensure(),
     gallery_ids: yup.array(yup.string().required()).defined(),
     studio_id: yup.string().required().nullable(),
@@ -177,6 +179,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       code: scene.code ?? "",
       urls: scene.urls ?? [],
       date: scene.date ?? "",
+      production_date: scene.production_date ?? "",
       director: scene.director ?? "",
       gallery_ids: (scene.galleries ?? []).map((g) => g.id),
       studio_id: scene.studio?.id ?? null,
@@ -373,6 +376,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     try {
       const input: GQL.ScrapedSceneInput = {
         date: fragment.date,
+        production_date: fragment.production_date,
         code: fragment.code,
         details: fragment.details,
         director: fragment.director,
@@ -503,6 +507,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
     if (updatedScene.date) {
       formik.setFieldValue("date", updatedScene.date);
+    }
+
+    if (updatedScene.production_date) {
+      formik.setFieldValue("production_date", updatedScene.production_date);
     }
 
     if (updatedScene.urls) {
@@ -707,13 +715,18 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }
 
   function renderPerformersField() {
-    const date = (() => {
+    const validateField = (field: string) => {
       try {
-        return schema.validateSyncAt("date", formik.values);
+        return schema.validateSyncAt(field, formik.values);
       } catch (_e) {
         return undefined;
       }
-    })();
+    };
+
+    const date = sceneAgeFromDate(
+      validateField("production_date"),
+      validateField("date")
+    );
 
     const title = intl.formatMessage({ id: "performers" });
     const control = (
@@ -870,6 +883,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
             )}
 
             {renderDateField("date")}
+            {renderDateField("production_date")}
             {renderInputField("director")}
 
             {renderGalleriesField()}

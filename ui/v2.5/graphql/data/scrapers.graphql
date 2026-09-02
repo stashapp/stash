@@ -177,6 +177,7 @@ fragment ScrapedSceneData on ScrapedScene {
   director
   urls
   date
+  production_date
   image
   remote_site_id
 
@@ -264,6 +265,7 @@ fragment ScrapedStashBoxSceneData on ScrapedScene {
   director
   url
   date
+  production_date
   image
   remote_site_id
   duration
