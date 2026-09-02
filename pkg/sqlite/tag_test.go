@@ -249,6 +249,19 @@ func TestTagQuerySort(t *testing.T) {
 		tags = queryTags(ctx, t, sqb, nil, findFilter)
 		assert.Equal(tagIDs[tagIdx1WithGroup], tags[0].ID)
 
+		// sort by rating, descending. NULL ratings sort last, so every
+		// non-null rating must be non-increasing down the result set.
+		sortBy = "rating"
+		tags = queryTags(ctx, t, sqb, nil, findFilter)
+		prev := math.MaxInt64
+		for _, tag := range tags {
+			if tag.Rating == nil {
+				continue
+			}
+			assert.LessOrEqual(*tag.Rating, prev, "tags not sorted by rating descending")
+			prev = *tag.Rating
+		}
+
 		return nil
 	})
 }
@@ -1867,6 +1880,87 @@ func TestTagQueryCustomFields(t *testing.T) {
 		ids := tagsToIDs(tags)
 		assert.Contains(ids, tagIDs[tagIdxWithGallery])
 		assert.Len(tags, 1)
+	})
+}
+
+func TestTagUpdateRating100(t *testing.T) {
+	if err := withTxn(func(ctx context.Context) error {
+		qb := db.Tag
+
+		// create tag to test against
+		const name = "TestTagUpdateRating100"
+		tag := models.CreateTagInput{
+			Tag: &models.Tag{
+				Name: name,
+			},
+		}
+		err := qb.Create(ctx, &tag)
+		if err != nil {
+			return fmt.Errorf("Error creating tag: %s", err.Error())
+		}
+
+		// update rating100
+		rating100 := 75
+		partial := models.TagPartial{
+			Rating: models.NewOptionalInt(rating100),
+		}
+		_, err = qb.UpdatePartial(ctx, tag.ID, partial)
+		if err != nil {
+			return fmt.Errorf("Error updating tag rating100: %s", err.Error())
+		}
+
+		// ensure rating100 is set
+		storedTag, err := qb.Find(ctx, tag.ID)
+		if err != nil {
+			return fmt.Errorf("Error getting tag: %s", err.Error())
+		}
+		assert.Equal(t, rating100, *storedTag.Rating)
+
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestTagQueryRating100(t *testing.T) {
+	const rating = 60
+	ratingCriterion := models.IntCriterionInput{
+		Value:    rating,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyTagsRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyTagsRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyTagsRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierLessThan
+	verifyTagsRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierIsNull
+	verifyTagsRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotNull
+	verifyTagsRating100(t, ratingCriterion)
+}
+
+func verifyTagsRating100(t *testing.T, ratingCriterion models.IntCriterionInput) {
+	withTxn(func(ctx context.Context) error {
+		qb := db.Tag
+		tagFilter := models.TagFilterType{
+			Rating100: &ratingCriterion,
+		}
+
+		tags := queryTags(ctx, t, qb, &tagFilter, nil)
+
+		for _, tag := range tags {
+			verifyIntPtr(t, tag.Rating, ratingCriterion)
+		}
+
+		return nil
 	})
 }
 

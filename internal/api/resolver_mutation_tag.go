@@ -41,6 +41,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 	newTag.Favorite = translator.bool(input.Favorite)
 	newTag.Description = translator.string(input.Description)
 	newTag.IgnoreAutoTag = translator.bool(input.IgnoreAutoTag)
+	newTag.Rating = input.Rating100
 
 	var stashIDInputs models.StashIDInputs
 	for _, sid := range input.StashIds {
@@ -110,6 +111,7 @@ func tagPartialFromInput(input TagUpdateInput, translator changesetTranslator) (
 	updatedTag.Favorite = translator.optionalBool(input.Favorite, "favorite")
 	updatedTag.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
 	updatedTag.Description = translator.optionalString(input.Description, "description")
+	updatedTag.Rating = translator.optionalInt(input.Rating100, "rating100")
 
 	updatedTag.Aliases = translator.updateStrings(input.Aliases, "aliases")
 
@@ -229,12 +231,13 @@ func (r *mutationResolver) BulkTagUpdate(ctx context.Context, input BulkTagUpdat
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	// Populate scene from the input
+	// Populate tag from the input
 	updatedTag := models.NewTagPartial()
 
 	updatedTag.Description = translator.optionalString(input.Description, "description")
 	updatedTag.Favorite = translator.optionalBool(input.Favorite, "favorite")
 	updatedTag.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
+	updatedTag.Rating = translator.optionalInt(input.Rating100, "rating100")
 
 	updatedTag.Aliases = translator.updateStringsBulk(input.Aliases, "aliases")
 
