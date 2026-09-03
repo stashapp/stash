@@ -103,6 +103,9 @@ ui:
     connect-src:
       - http://alloweddomain.com
 
+    media-src:
+      - http://alloweddomain.com
+
 # map of setting names to be displayed in the plugins page in the UI
 settings:
   # internal name
