@@ -19,6 +19,7 @@ import { Icon } from "src/components/Shared/Icon";
 import { SuccessIcon } from "src/components/Shared/SuccessIcon";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { TagSelect } from "src/components/Shared/Select";
+import TextUtils from "src/utils/text";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { OperationButton } from "src/components/Shared/OperationButton";
 import * as FormUtils from "src/utils/form";
@@ -553,11 +554,22 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             }
             setExclude={(v) => setExcludedField(fields.cover_image, v)}
           >
-            <img
-              src={scene.image}
-              alt=""
-              className="align-self-center scene-image"
-            />
+            <div className="scene-image-overlay-container">
+              <img
+                src={scene.image}
+                alt=""
+                className="align-self-center scene-image"
+              />
+              {scene.duration ? (
+                <div className="scene-specs-overlay">
+                  <span className="overlay-duration">
+                    {TextUtils.secondsToTimestamp(scene.duration)}
+                  </span>
+                </div>
+              ) : (
+                ""
+              )}
+            </div>
           </OptionalField>
         </div>
       );

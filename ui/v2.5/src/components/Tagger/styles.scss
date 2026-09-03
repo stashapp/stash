@@ -18,10 +18,16 @@
   .scene-card-preview {
     border-radius: 3px;
     color: $text-color;
-    height: 100px;
+    height: 10rem;
     margin-bottom: 0;
     overflow: hidden;
-    width: auto;
+    width: 14rem;
+
+    &-image,
+    &-video {
+      object-fit: contain;
+      object-position: center;
+    }
   }
 
   .sprite-button {
@@ -205,10 +211,23 @@
 }
 
 .scene-image {
-  max-height: 10rem;
-  max-width: 14rem;
-  min-width: 168px;
+  max-height: 100%;
+  max-width: 100%;
   object-fit: contain;
+}
+
+.scene-image-overlay-container {
+  align-items: center;
+  display: flex;
+  height: 10rem;
+  justify-content: center;
+  position: relative;
+  width: 14rem;
+
+  .scene-specs-overlay {
+    bottom: 0.3rem;
+    right: 0.4rem;
+  }
 }
 
 .scene-metadata {
@@ -485,8 +504,8 @@ li:not(.active) {
     display: none;
   }
 
-  .scene-image {
-    padding-left: 1rem;
+  .scene-image-overlay-container {
+    margin-left: 1rem;
   }
 }
 
