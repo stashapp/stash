@@ -264,6 +264,28 @@
   justify-content: space-between;
 }
 
+.scraper-url-conflict-badge {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.scraper-conflict-sides {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.scraper-conflict-side {
+  flex: 1 1 0;
+}
+
+.scraper-conflict-side-heading {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+
 .job-table.card {
   background-color: $card-bg;
   height: 10em;
