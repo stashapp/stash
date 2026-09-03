@@ -159,7 +159,7 @@ Mappings that try to go outside of the directory containing the plugin configura
 ignored.
 
 The `csp` field contains overrides to the content security policies. The URLs in `script-src`,
-`style-src` and `connect-src` will be added to the applicable content security policy.
+`style-src`, `connect-src` and `media-src` will be added to the applicable content security policy.
 
 See [External Plugins](/help/ExternalPlugins.md) for details for making plugins with external tasks.
 
