@@ -1124,6 +1124,153 @@ func Test_GalleryIdentifier_addTagToGallery(t *testing.T) {
 	}
 }
 
+func Test_GalleryIdentifier_modifyGallery(t *testing.T) {
+	const galleryID = 1
+	scrapedTitle := "scrapedTitle"
+	scrapedCode := "scrapedCode"
+	invalidID := "invalid"
+
+	tests := []struct {
+		name     string
+		gallery  *models.Gallery
+		scraped  *models.ScrapedGallery
+		executor GalleryUpdatePostHookExecutor
+		setup    func(db *mocks.Database)
+		wantErr  bool
+	}{
+		{
+			name: "load URLs error",
+			gallery: &models.Gallery{
+				ID:           galleryID,
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+			},
+			setup: func(db *mocks.Database) {
+				db.Gallery.On("GetURLs", mock.Anything, galleryID).Return(nil, errors.New("load URLs error"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "load performers error",
+			gallery: &models.Gallery{
+				ID:     galleryID,
+				URLs:   models.NewRelatedStrings([]string{}),
+				TagIDs: models.NewRelatedIDs([]int{}),
+			},
+			setup: func(db *mocks.Database) {
+				db.Gallery.On("GetPerformerIDs", mock.Anything, galleryID).Return(nil, errors.New("load performers error"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "load tags error",
+			gallery: &models.Gallery{
+				ID:           galleryID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+			},
+			setup: func(db *mocks.Database) {
+				db.Gallery.On("GetTagIDs", mock.Anything, galleryID).Return(nil, errors.New("load tags error"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "updater error",
+			gallery: &models.Gallery{
+				ID:           galleryID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+			},
+			scraped: &models.ScrapedGallery{
+				Studio: &models.ScrapedStudio{StoredID: &invalidID},
+			},
+			wantErr: true,
+		},
+		{
+			name: "empty update",
+			gallery: &models.Gallery{
+				ID:           galleryID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+			},
+			scraped: &models.ScrapedGallery{},
+		},
+		{
+			name: "update error",
+			gallery: &models.Gallery{
+				ID:           galleryID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+			},
+			scraped: &models.ScrapedGallery{Title: &scrapedTitle},
+			setup: func(db *mocks.Database) {
+				db.Gallery.On("UpdatePartial", mock.Anything, galleryID, mock.AnythingOfType("models.GalleryPartial")).Return(nil, errors.New("update error"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "success with title",
+			gallery: &models.Gallery{
+				ID:           galleryID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+			},
+			scraped: &models.ScrapedGallery{Title: &scrapedTitle},
+			setup: func(db *mocks.Database) {
+				db.Gallery.On("UpdatePartial", mock.Anything, galleryID, mock.AnythingOfType("models.GalleryPartial")).Return(&models.Gallery{ID: galleryID}, nil)
+			},
+		},
+		{
+			name: "success without title",
+			gallery: &models.Gallery{
+				ID:           galleryID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+			},
+			scraped:  &models.ScrapedGallery{Code: &scrapedCode},
+			executor: mockHookExecutor{},
+			setup: func(db *mocks.Database) {
+				db.Gallery.On("UpdatePartial", mock.Anything, galleryID, mock.AnythingOfType("models.GalleryPartial")).Return(&models.Gallery{ID: galleryID}, nil)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db := mocks.NewDatabase()
+			if tt.setup != nil {
+				tt.setup(db)
+			}
+
+			identifier := GalleryIdentifier{
+				TxnManager:           db,
+				GalleryReaderUpdater: db.Gallery,
+				StudioReaderWriter:   db.Studio,
+				PerformerCreator:     db.Performer,
+				TagFinderCreator:     db.Tag,
+				PostHookExecutor:     tt.executor,
+			}
+			result := &galleryScrapeResult{
+				source: GalleryScraperSource{},
+				result: tt.scraped,
+			}
+
+			err := identifier.modifyGallery(testCtx, tt.gallery, result)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
 // mockGalleryScraper implements GalleryScraper for testing.
 type mockGalleryScraper struct {
 	results map[int][]*models.ScrapedGallery
