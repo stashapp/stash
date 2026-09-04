@@ -1012,6 +1012,118 @@ func Test_getGalleryUpdater_errorsAndSourceOptions(t *testing.T) {
 	}
 }
 
+func Test_GalleryIdentifier_addTagToGallery(t *testing.T) {
+	const (
+		galleryID = 1
+		tagID     = 2
+	)
+	tagIDStr := strconv.Itoa(tagID)
+	tagName := "Skipped"
+
+	tests := []struct {
+		name     string
+		tagToAdd string
+		gallery  *models.Gallery
+		setup    func(db *mocks.Database)
+		wantErr  bool
+	}{
+		{
+			name:     "invalid tag ID",
+			tagToAdd: "invalid",
+			gallery:  &models.Gallery{ID: galleryID},
+			wantErr:  true,
+		},
+		{
+			name:     "load tag IDs error",
+			tagToAdd: tagIDStr,
+			gallery:  &models.Gallery{ID: galleryID},
+			setup: func(db *mocks.Database) {
+				db.Gallery.On("GetTagIDs", mock.Anything, galleryID).Return(nil, errors.New("load tag IDs error"))
+			},
+			wantErr: true,
+		},
+		{
+			name:     "tag already present",
+			tagToAdd: tagIDStr,
+			gallery: &models.Gallery{
+				ID:     galleryID,
+				TagIDs: models.NewRelatedIDs([]int{tagID}),
+			},
+		},
+		{
+			name:     "add tag error",
+			tagToAdd: tagIDStr,
+			gallery: &models.Gallery{
+				ID:     galleryID,
+				TagIDs: models.NewRelatedIDs([]int{}),
+			},
+			setup: func(db *mocks.Database) {
+				db.Gallery.On("UpdatePartial", mock.Anything, galleryID, mock.AnythingOfType("models.GalleryPartial")).Return(nil, errors.New("add tag error"))
+			},
+			wantErr: true,
+		},
+		{
+			name:     "find tag error",
+			tagToAdd: tagIDStr,
+			gallery: &models.Gallery{
+				ID:     galleryID,
+				TagIDs: models.NewRelatedIDs([]int{}),
+			},
+			setup: func(db *mocks.Database) {
+				db.Gallery.On("UpdatePartial", mock.Anything, galleryID, mock.AnythingOfType("models.GalleryPartial")).Return(&models.Gallery{ID: galleryID}, nil)
+				db.Tag.On("Find", mock.Anything, tagID).Return(nil, errors.New("find tag error"))
+			},
+		},
+		{
+			name:     "find tag nil",
+			tagToAdd: tagIDStr,
+			gallery: &models.Gallery{
+				ID:     galleryID,
+				TagIDs: models.NewRelatedIDs([]int{}),
+			},
+			setup: func(db *mocks.Database) {
+				db.Gallery.On("UpdatePartial", mock.Anything, galleryID, mock.AnythingOfType("models.GalleryPartial")).Return(&models.Gallery{ID: galleryID}, nil)
+				db.Tag.On("Find", mock.Anything, tagID).Return(nil, nil)
+			},
+		},
+		{
+			name:     "success",
+			tagToAdd: tagIDStr,
+			gallery: &models.Gallery{
+				ID:     galleryID,
+				TagIDs: models.NewRelatedIDs([]int{}),
+			},
+			setup: func(db *mocks.Database) {
+				db.Gallery.On("UpdatePartial", mock.Anything, galleryID, mock.AnythingOfType("models.GalleryPartial")).Return(&models.Gallery{ID: galleryID}, nil)
+				db.Tag.On("Find", mock.Anything, tagID).Return(&models.Tag{ID: tagID, Name: tagName}, nil)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db := mocks.NewDatabase()
+			if tt.setup != nil {
+				tt.setup(db)
+			}
+
+			identifier := GalleryIdentifier{
+				TxnManager:           db,
+				GalleryReaderUpdater: db.Gallery,
+				TagFinderCreator:     db.Tag,
+			}
+
+			err := identifier.addTagToGallery(testCtx, tt.gallery, tt.tagToAdd)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
 // mockGalleryScraper implements GalleryScraper for testing.
 type mockGalleryScraper struct {
 	results map[int][]*models.ScrapedGallery
