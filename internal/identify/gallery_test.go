@@ -887,6 +887,131 @@ func Test_GalleryIdentifier_Identify(t *testing.T) {
 	db.Gallery.AssertNumberOfCalls(t, "GetTagIDs", 1)
 }
 
+func Test_getGalleryUpdater_errorsAndSourceOptions(t *testing.T) {
+	boolTrue := true
+	createMissing := true
+	singleName := "Single"
+	validTagID := "2"
+	skipTagID := 3
+	skipTagIDStr := strconv.Itoa(skipTagID)
+	invalidID := "invalid"
+
+	tests := []struct {
+		name    string
+		options *MetadataOptions
+		scraped *models.ScrapedGallery
+		wantIDs []int
+		wantErr bool
+	}{
+		{
+			name: "source options with skipped performer tag",
+			options: &MetadataOptions{
+				FieldOptions: []*FieldOptions{
+					{
+						Field:         "performers",
+						Strategy:      FieldStrategyMerge,
+						CreateMissing: &createMissing,
+					},
+				},
+				SkipSingleNamePerformers:   &boolTrue,
+				SkipSingleNamePerformerTag: &skipTagIDStr,
+			},
+			scraped: &models.ScrapedGallery{
+				Performers: []*models.ScrapedPerformer{{Name: &singleName}},
+				Tags:       []*models.ScrapedTag{{StoredID: &validTagID}},
+			},
+			wantIDs: []int{2, skipTagID},
+		},
+		{
+			name: "invalid skipped performer tag",
+			options: &MetadataOptions{
+				FieldOptions: []*FieldOptions{
+					{
+						Field:         "performers",
+						Strategy:      FieldStrategyMerge,
+						CreateMissing: &createMissing,
+					},
+				},
+				SkipSingleNamePerformers:   &boolTrue,
+				SkipSingleNamePerformerTag: &invalidID,
+			},
+			scraped: &models.ScrapedGallery{
+				Performers: []*models.ScrapedPerformer{{Name: &singleName}},
+			},
+			wantErr: true,
+		},
+		{
+			name: "skipped performer without tag",
+			options: &MetadataOptions{
+				FieldOptions: []*FieldOptions{
+					{
+						Field:         "performers",
+						Strategy:      FieldStrategyMerge,
+						CreateMissing: &createMissing,
+					},
+				},
+				SkipSingleNamePerformers: &boolTrue,
+			},
+			scraped: &models.ScrapedGallery{
+				Performers: []*models.ScrapedPerformer{{Name: &singleName}},
+			},
+		},
+		{
+			name:    "studio error",
+			scraped: &models.ScrapedGallery{Studio: &models.ScrapedStudio{StoredID: &invalidID}},
+			wantErr: true,
+		},
+		{
+			name:    "performer error",
+			scraped: &models.ScrapedGallery{Performers: []*models.ScrapedPerformer{{StoredID: &invalidID}}},
+			wantErr: true,
+		},
+		{
+			name:    "tag error",
+			scraped: &models.ScrapedGallery{Tags: []*models.ScrapedTag{{StoredID: &invalidID}}},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db := mocks.NewDatabase()
+			identifier := GalleryIdentifier{
+				GalleryReaderUpdater: db.Gallery,
+				StudioReaderWriter:   db.Studio,
+				PerformerCreator:     db.Performer,
+				TagFinderCreator:     db.Tag,
+			}
+			gallery := &models.Gallery{
+				ID:           1,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+			}
+			result := &galleryScrapeResult{
+				source: GalleryScraperSource{Options: tt.options},
+				result: tt.scraped,
+			}
+
+			updater, err := identifier.getGalleryUpdater(testCtx, gallery, result)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.Nil(t, updater)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, updater)
+				if tt.wantIDs == nil {
+					assert.Nil(t, updater.Partial.TagIDs)
+				} else {
+					assert.NotNil(t, updater.Partial.TagIDs)
+					assert.Equal(t, tt.wantIDs, updater.Partial.TagIDs.IDs)
+				}
+			}
+		})
+	}
+}
+
 // mockGalleryScraper implements GalleryScraper for testing.
 type mockGalleryScraper struct {
 	results map[int][]*models.ScrapedGallery
