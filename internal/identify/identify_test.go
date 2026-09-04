@@ -283,6 +283,166 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 	}
 }
 
+func TestSceneIdentifier_modifyScene_paths(t *testing.T) {
+	const sceneID = 1
+	scrapedTitle := "scrapedTitle"
+	scrapedCode := "scrapedCode"
+	invalidID := "invalid"
+	boolFalse := false
+	sourceOptions := &MetadataOptions{SetCoverImage: &boolFalse}
+
+	tests := []struct {
+		name     string
+		scene    *models.Scene
+		scraped  *models.ScrapedScene
+		executor SceneUpdatePostHookExecutor
+		setup    func(db *mocks.Database)
+		wantErr  bool
+	}{
+		{
+			name: "load URLs error",
+			scene: &models.Scene{
+				ID:           sceneID,
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+			},
+			setup: func(db *mocks.Database) {
+				db.Scene.On("GetURLs", mock.Anything, sceneID).Return(nil, errors.New("load URLs error"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "load performers error",
+			scene: &models.Scene{
+				ID:       sceneID,
+				URLs:     models.NewRelatedStrings([]string{}),
+				TagIDs:   models.NewRelatedIDs([]int{}),
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{}),
+			},
+			setup: func(db *mocks.Database) {
+				db.Scene.On("GetPerformerIDs", mock.Anything, sceneID).Return(nil, errors.New("load performers error"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "load tags error",
+			scene: &models.Scene{
+				ID:           sceneID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+			},
+			setup: func(db *mocks.Database) {
+				db.Scene.On("GetTagIDs", mock.Anything, sceneID).Return(nil, errors.New("load tags error"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "load stash IDs error",
+			scene: &models.Scene{
+				ID:           sceneID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+			},
+			setup: func(db *mocks.Database) {
+				db.Scene.On("GetStashIDs", mock.Anything, sceneID).Return(nil, errors.New("load stash IDs error"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "updater error",
+			scene: &models.Scene{
+				ID:           sceneID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+			},
+			scraped: &models.ScrapedScene{
+				Studio: &models.ScrapedStudio{StoredID: &invalidID},
+			},
+			wantErr: true,
+		},
+		{
+			name: "update error",
+			scene: &models.Scene{
+				ID:           sceneID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+			},
+			scraped: &models.ScrapedScene{Title: &scrapedTitle},
+			setup: func(db *mocks.Database) {
+				db.Scene.On("UpdatePartial", mock.Anything, sceneID, mock.AnythingOfType("models.ScenePartial")).Return(nil, errors.New("update error"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "success with title",
+			scene: &models.Scene{
+				ID:           sceneID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+			},
+			scraped:  &models.ScrapedScene{Title: &scrapedTitle},
+			executor: mockHookExecutor{},
+			setup: func(db *mocks.Database) {
+				db.Scene.On("UpdatePartial", mock.Anything, sceneID, mock.AnythingOfType("models.ScenePartial")).Return(&models.Scene{ID: sceneID}, nil)
+			},
+		},
+		{
+			name: "success without title",
+			scene: &models.Scene{
+				ID:           sceneID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+			},
+			scraped:  &models.ScrapedScene{Code: &scrapedCode},
+			executor: mockHookExecutor{},
+			setup: func(db *mocks.Database) {
+				db.Scene.On("UpdatePartial", mock.Anything, sceneID, mock.AnythingOfType("models.ScenePartial")).Return(&models.Scene{ID: sceneID}, nil)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db := mocks.NewDatabase()
+			if tt.setup != nil {
+				tt.setup(db)
+			}
+
+			identifier := SceneIdentifier{
+				TxnManager:                  db,
+				SceneReaderUpdater:          db.Scene,
+				StudioReaderWriter:          db.Studio,
+				PerformerCreator:            db.Performer,
+				TagFinderCreator:            db.Tag,
+				SceneUpdatePostHookExecutor: tt.executor,
+			}
+			result := &scrapeResult{
+				source: ScraperSource{Options: sourceOptions},
+				result: tt.scraped,
+			}
+
+			err := identifier.modifyScene(testCtx, tt.scene, result)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
 func Test_getFieldOptions(t *testing.T) {
 	const (
 		inFirst  = "inFirst"
