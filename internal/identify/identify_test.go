@@ -10,6 +10,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -358,6 +359,213 @@ func TestMultipleMatchesFoundError_Error(t *testing.T) {
 	}
 
 	assert.Equal(t, "multiple matches found for Test Source", err.Error())
+}
+
+func Test_mergeSharedMetadataOptions(t *testing.T) {
+	boolFalse := false
+	emptyTag := ""
+	tag := "tag"
+	genders := []models.GenderEnum{models.GenderEnumFemale}
+
+	base := MetadataOptions{
+		SetOrganized:               &boolFalse,
+		IncludeMalePerformers:      &boolFalse,
+		PerformerGenders:           genders,
+		SkipMultipleMatches:        &boolFalse,
+		SkipMultipleMatchTag:       &emptyTag,
+		SkipSingleNamePerformers:   &boolFalse,
+		SkipSingleNamePerformerTag: &emptyTag,
+	}
+
+	assert.Equal(t, base, mergeSharedMetadataOptions(base, nil))
+
+	override := &MetadataOptions{
+		SetOrganized:               &boolFalse,
+		IncludeMalePerformers:      &boolFalse,
+		PerformerGenders:           genders,
+		SkipMultipleMatches:        &boolFalse,
+		SkipMultipleMatchTag:       &tag,
+		SkipSingleNamePerformers:   &boolFalse,
+		SkipSingleNamePerformerTag: &tag,
+	}
+
+	assert.Equal(t, *override, mergeSharedMetadataOptions(base, override))
+}
+
+func Test_getSceneUpdater_errorsAndSourceOptions(t *testing.T) {
+	const sceneID = 1
+
+	var (
+		boolFalse     = false
+		boolTrue      = true
+		createMissing = true
+		singleName    = "Single"
+		studioID      = "1"
+		tagID         = "2"
+		skipTagID     = 3
+		invalidID     = "invalid"
+		remoteSiteID  = "remote"
+		emptyImage    = ""
+		invalidImage  = "data:image/png;base64,%%%%"
+	)
+
+	skipTagIDStr := strconv.Itoa(skipTagID)
+
+	tests := []struct {
+		name     string
+		options  *MetadataOptions
+		scraped  *models.ScrapedScene
+		setup    func(db *mocks.Database)
+		wantErr  bool
+		validate func(t *testing.T, updater *scene.UpdateSet)
+	}{
+		{
+			name: "source options with skipped performer tag and stash IDs",
+			options: &MetadataOptions{
+				SetCoverImage: &boolFalse,
+				FieldOptions: []*FieldOptions{
+					{
+						Field:         "performers",
+						Strategy:      FieldStrategyMerge,
+						CreateMissing: &createMissing,
+					},
+				},
+				SkipSingleNamePerformers:   &boolTrue,
+				SkipSingleNamePerformerTag: &skipTagIDStr,
+			},
+			scraped: &models.ScrapedScene{
+				Studio:       &models.ScrapedStudio{StoredID: &studioID},
+				Performers:   []*models.ScrapedPerformer{{Name: &singleName}},
+				Tags:         []*models.ScrapedTag{{StoredID: &tagID}},
+				RemoteSiteID: &remoteSiteID,
+			},
+			validate: func(t *testing.T, updater *scene.UpdateSet) {
+				assert.True(t, updater.Partial.StudioID.Set)
+				assert.Equal(t, []int{2, skipTagID}, updater.Partial.TagIDs.IDs)
+				assert.Len(t, updater.Partial.StashIDs.StashIDs, 1)
+				assert.Equal(t, "endpoint", updater.Partial.StashIDs.StashIDs[0].Endpoint)
+				assert.Equal(t, remoteSiteID, updater.Partial.StashIDs.StashIDs[0].StashID)
+			},
+		},
+		{
+			name: "invalid skipped performer tag",
+			options: &MetadataOptions{
+				SetCoverImage: &boolFalse,
+				FieldOptions: []*FieldOptions{
+					{
+						Field:         "performers",
+						Strategy:      FieldStrategyMerge,
+						CreateMissing: &createMissing,
+					},
+				},
+				SkipSingleNamePerformers:   &boolTrue,
+				SkipSingleNamePerformerTag: &invalidID,
+			},
+			scraped: &models.ScrapedScene{
+				Performers: []*models.ScrapedPerformer{{Name: &singleName}},
+			},
+			wantErr: true,
+		},
+		{
+			name: "skipped performer without tag",
+			options: &MetadataOptions{
+				SetCoverImage: &boolFalse,
+				FieldOptions: []*FieldOptions{
+					{
+						Field:         "performers",
+						Strategy:      FieldStrategyMerge,
+						CreateMissing: &createMissing,
+					},
+				},
+				SkipSingleNamePerformers: &boolTrue,
+			},
+			scraped: &models.ScrapedScene{
+				Performers: []*models.ScrapedPerformer{{Name: &singleName}},
+			},
+			validate: func(t *testing.T, updater *scene.UpdateSet) {
+				assert.Nil(t, updater.Partial.PerformerIDs)
+				assert.Nil(t, updater.Partial.TagIDs)
+			},
+		},
+		{
+			name:    "studio error",
+			options: &MetadataOptions{SetCoverImage: &boolFalse},
+			scraped: &models.ScrapedScene{Studio: &models.ScrapedStudio{StoredID: &invalidID}},
+			wantErr: true,
+		},
+		{
+			name:    "performer error",
+			options: &MetadataOptions{SetCoverImage: &boolFalse},
+			scraped: &models.ScrapedScene{Performers: []*models.ScrapedPerformer{{StoredID: &invalidID}}},
+			wantErr: true,
+		},
+		{
+			name:    "tag error",
+			options: &MetadataOptions{SetCoverImage: &boolFalse},
+			scraped: &models.ScrapedScene{Tags: []*models.ScrapedTag{{StoredID: &invalidID}}},
+			wantErr: true,
+		},
+		{
+			name:    "cover called with empty image",
+			options: &MetadataOptions{SetCoverImage: &boolTrue},
+			scraped: &models.ScrapedScene{Image: &emptyImage},
+			validate: func(t *testing.T, updater *scene.UpdateSet) {
+				assert.Nil(t, updater.CoverImage)
+			},
+		},
+		{
+			name:    "cover error",
+			options: &MetadataOptions{SetCoverImage: &boolTrue},
+			scraped: &models.ScrapedScene{Image: &invalidImage},
+			setup: func(db *mocks.Database) {
+				db.Scene.On("GetCover", testCtx, sceneID).Return(nil, nil)
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db := mocks.NewDatabase()
+			if tt.setup != nil {
+				tt.setup(db)
+			}
+
+			identifier := SceneIdentifier{
+				SceneReaderUpdater: db.Scene,
+				StudioReaderWriter: db.Studio,
+				PerformerCreator:   db.Performer,
+				TagFinderCreator:   db.Tag,
+			}
+			sceneObj := &models.Scene{
+				ID:           sceneID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+			}
+			result := &scrapeResult{
+				source: ScraperSource{
+					Options:    tt.options,
+					RemoteSite: "endpoint",
+				},
+				result: tt.scraped,
+			}
+
+			updater, err := identifier.getSceneUpdater(testCtx, sceneObj, result)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.Nil(t, updater)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, updater)
+				if tt.validate != nil {
+					tt.validate(t, updater)
+				}
+			}
+		})
+	}
 }
 
 func Test_getScenePartial(t *testing.T) {
