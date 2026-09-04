@@ -572,7 +572,6 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 		remoteSiteID  *string
 		setUpdateTime bool
 		want          []models.StashID
-		wantErr       bool
 	}{
 		{
 			"ignore",
@@ -584,7 +583,6 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			&remoteSiteID,
 			false,
 			nil,
-			false,
 		},
 		{
 			"no endpoint",
@@ -594,7 +592,6 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			&remoteSiteID,
 			false,
 			nil,
-			false,
 		},
 		{
 			"no site id",
@@ -604,7 +601,6 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			nil,
 			false,
 			nil,
-			false,
 		},
 		{
 			"merge existing",
@@ -614,7 +610,6 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			&remoteSiteID,
 			false,
 			nil,
-			false,
 		},
 		{
 			"merge existing set update time",
@@ -630,7 +625,6 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 					UpdatedAt: setTime,
 				},
 			},
-			false,
 		},
 		{
 			"merge existing new value",
@@ -646,7 +640,6 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 					UpdatedAt: setTime,
 				},
 			},
-			false,
 		},
 		{
 			"merge add",
@@ -667,7 +660,6 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 					UpdatedAt: setTime,
 				},
 			},
-			false,
 		},
 		{
 			"overwrite",
@@ -685,7 +677,6 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 					UpdatedAt: setTime,
 				},
 			},
-			false,
 		},
 		{
 			"overwrite same",
@@ -697,7 +688,6 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 			&remoteSiteID,
 			false,
 			nil,
-			false,
 		},
 		{
 			"overwrite same set update time",
@@ -715,7 +705,6 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 					UpdatedAt: setTime,
 				},
 			},
-			false,
 		},
 	}
 	for _, tt := range tests {
@@ -731,12 +720,7 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 				},
 			}
 
-			got, err := tr.stashIDs(testCtx, tt.setUpdateTime)
-
-			if (err != nil) != tt.wantErr {
-				t.Errorf("sceneRelationships.stashIDs() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			got := tr.stashIDs(testCtx, tt.setUpdateTime)
 
 			// massage updatedAt times to be consistent for comparison
 			for i := range got {
