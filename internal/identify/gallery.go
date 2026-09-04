@@ -81,13 +81,7 @@ type GalleryIdentifier struct {
 }
 
 func (t *GalleryIdentifier) Identify(ctx context.Context, galleryObj *models.Gallery) error {
-	result, err := t.scrapeGallery(ctx, galleryObj)
-	var multipleMatchErr *MultipleMatchesFoundError
-	if err != nil {
-		if !errors.As(err, &multipleMatchErr) {
-			return err
-		}
-	}
+	result, multipleMatchErr := t.scrapeGallery(ctx, galleryObj)
 
 	if result == nil {
 		if multipleMatchErr != nil {
@@ -124,7 +118,7 @@ type galleryScrapeResult struct {
 	source GalleryScraperSource
 }
 
-func (t *GalleryIdentifier) scrapeGallery(ctx context.Context, galleryObj *models.Gallery) (*galleryScrapeResult, error) {
+func (t *GalleryIdentifier) scrapeGallery(ctx context.Context, galleryObj *models.Gallery) (*galleryScrapeResult, *MultipleMatchesFoundError) {
 	for _, source := range t.Sources {
 		results, err := source.Scraper.ScrapeGalleries(ctx, galleryObj.ID)
 		if err != nil {

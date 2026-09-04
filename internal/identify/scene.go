@@ -62,7 +62,7 @@ func (g sceneRelationships) resolver() relationshipResolver {
 // returns nil if not applicable or no changes were made
 // if setUpdateTime is true, then the updated_at field will be set to the current time
 // for the applicable matching stash ID
-func (g sceneRelationships) stashIDs(ctx context.Context, setUpdateTime bool) ([]models.StashID, error) {
+func (g sceneRelationships) stashIDs(ctx context.Context, setUpdateTime bool) []models.StashID {
 	updateTime := time.Now()
 
 	remoteSiteID := g.result.result.RemoteSiteID
@@ -73,7 +73,7 @@ func (g sceneRelationships) stashIDs(ctx context.Context, setUpdateTime bool) ([
 
 	// just check if ignored
 	if remoteSiteID == nil || endpoint == "" || !shouldSetSingleValueField(fieldStrategy, false) {
-		return nil, nil
+		return nil
 	}
 
 	strategy := FieldStrategyMerge
@@ -95,14 +95,14 @@ func (g sceneRelationships) stashIDs(ctx context.Context, setUpdateTime bool) ([
 		if endpoint == stashID.Endpoint {
 			// if stashID is the same, then don't set
 			if !setUpdateTime && stashID.StashID == *remoteSiteID {
-				return nil, nil
+				return nil
 			}
 
 			// replace the stash id and return
 			stashID.StashID = *remoteSiteID
 			stashID.UpdatedAt = updateTime
 			stashIDs[i] = stashID
-			return stashIDs, nil
+			return stashIDs
 		}
 	}
 
@@ -116,10 +116,10 @@ func (g sceneRelationships) stashIDs(ctx context.Context, setUpdateTime bool) ([
 	// don't return if nothing was changed
 	// if we're setting update time, then we always return
 	if !setUpdateTime && stashIDs.HasSameStashIDs(originalStashIDs) {
-		return nil, nil
+		return nil
 	}
 
-	return stashIDs, nil
+	return stashIDs
 }
 
 func (g sceneRelationships) cover(ctx context.Context) ([]byte, error) {
