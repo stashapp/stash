@@ -253,3 +253,56 @@ func TestIdentifyJob_Execute(t *testing.T) {
 		})
 	}
 }
+
+func Test_supportsGalleryFragment(t *testing.T) {
+	tests := []struct {
+		name    string
+		scraper *scraper.Scraper
+		want    bool
+	}{
+		{
+			name:    "nil scraper",
+			scraper: nil,
+			want:    false,
+		},
+		{
+			name: "gallery spec is nil",
+			scraper: &scraper.Scraper{
+				ID:   "scene-only",
+				Name: "Scene Only",
+				Scene: &scraper.ScraperSpec{
+					SupportedScrapes: []scraper.ScrapeType{scraper.ScrapeTypeFragment},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "gallery spec does not support fragment scraping",
+			scraper: &scraper.Scraper{
+				ID:   "gallery-url-only",
+				Name: "Gallery URL Only",
+				Gallery: &scraper.ScraperSpec{
+					SupportedScrapes: []scraper.ScrapeType{scraper.ScrapeTypeURL},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "gallery spec supports fragment scraping",
+			scraper: &scraper.Scraper{
+				ID:   "gallery-fragment",
+				Name: "Gallery Fragment",
+				Gallery: &scraper.ScraperSpec{
+					SupportedScrapes: []scraper.ScrapeType{scraper.ScrapeTypeFragment},
+				},
+			},
+			want: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, supportsGalleryFragment(tt.scraper))
+		})
+	}
+}

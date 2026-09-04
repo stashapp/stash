@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/stashapp/stash/internal/identify"
@@ -427,6 +428,11 @@ func (j *IdentifyJob) getGallerySources() ([]identify.GalleryScraperSource, erro
 			return nil, fmt.Errorf("%w: scraper with id %q", models.ErrNotFound, scraperID)
 		}
 
+		if !supportsGalleryFragment(s) {
+			logger.Warnf("Skipping scraper %s for gallery identify: gallery fragment scraping not supported", s.Name)
+			continue
+		}
+
 		src := identify.GalleryScraperSource{
 			Name: s.Name,
 			Scraper: galleryScraperSource{
@@ -440,6 +446,14 @@ func (j *IdentifyJob) getGallerySources() ([]identify.GalleryScraperSource, erro
 	}
 
 	return ret, nil
+}
+
+func supportsGalleryFragment(s *scraper.Scraper) bool {
+	if s == nil || s.Gallery == nil {
+		return false
+	}
+
+	return slices.Contains(s.Gallery.SupportedScrapes, scraper.ScrapeTypeFragment)
 }
 
 func (j *IdentifyJob) getStashBox(src *scraper.Source) (*models.StashBox, error) {
