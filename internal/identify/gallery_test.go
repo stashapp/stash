@@ -856,7 +856,6 @@ func Test_GalleryIdentifier_Identify(t *testing.T) {
 		ID:       galleryID,
 		Title:    "originalTitle",
 		Code:     "originalCode",
-		URLs:     models.NewRelatedStrings([]string{"originalURL"}),
 		StudioID: nil,
 	}
 
