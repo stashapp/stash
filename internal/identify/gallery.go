@@ -34,150 +34,26 @@ type galleryRelationships struct {
 }
 
 func (r galleryRelationships) studio(ctx context.Context) (*int, error) {
-	existingID := r.gallery.StudioID
-	fieldStrategy := r.fieldOptions["studio"]
-	createMissing := fieldStrategy != nil && utils.IsTrue(fieldStrategy.CreateMissing)
-
-	scraped := r.scraped.Studio
-	endpoint := r.remoteSite
-
-	if scraped == nil || !shouldSetSingleValueField(fieldStrategy, existingID != nil) {
-		return nil, nil
-	}
-
-	if scraped.StoredID != nil {
-		// existing studio, just set it
-		studioID, err := parseStudioID(*scraped.StoredID)
-		if err != nil {
-			return nil, err
-		}
-
-		// only return value if different to current
-		if existingID == nil || *existingID != studioID {
-			return &studioID, nil
-		}
-	} else if createMissing {
-		return createMissingStudio(ctx, endpoint, r.studioReaderWriter, scraped)
-	}
-
-	return nil, nil
+	return r.resolver().studio(ctx, r.gallery.StudioID, r.scraped.Studio)
 }
 
 func (r galleryRelationships) performers(ctx context.Context, allowedGenders []models.GenderEnum) ([]int, error) {
-	fieldStrategy := r.fieldOptions["performers"]
-	scraped := r.scraped.Performers
-
-	// just check if ignored
-	if len(scraped) == 0 || !shouldSetSingleValueField(fieldStrategy, false) {
-		return nil, nil
-	}
-
-	createMissing := fieldStrategy != nil && utils.IsTrue(fieldStrategy.CreateMissing)
-	strategy := FieldStrategyMerge
-	if fieldStrategy != nil {
-		strategy = fieldStrategy.Strategy
-	}
-
-	endpoint := r.remoteSite
-
-	var performerIDs []int
-	originalPerformerIDs := r.gallery.PerformerIDs.List()
-
-	if strategy == FieldStrategyMerge {
-		// add to existing
-		performerIDs = originalPerformerIDs
-	}
-
-	singleNamePerformerSkipped := false
-
-	for _, p := range scraped {
-		if performerGenderExcluded(allowedGenders, p.Gender) {
-			continue
-		}
-
-		performerID, err := getPerformerID(ctx, endpoint, r.performerCreator, p, createMissing, r.skipSingleNamePerformers)
-		if err != nil {
-			if errors.Is(err, ErrSkipSingleNamePerformer) {
-				singleNamePerformerSkipped = true
-				continue
-			}
-			return nil, err
-		}
-
-		if performerID != nil {
-			performerIDs = sliceutil.AppendUnique(performerIDs, *performerID)
-		}
-	}
-
-	// don't return if nothing was added
-	if sliceutil.SliceSame(originalPerformerIDs, performerIDs) {
-		if singleNamePerformerSkipped {
-			return nil, ErrSkipSingleNamePerformer
-		}
-		return nil, nil
-	}
-
-	if singleNamePerformerSkipped {
-		return performerIDs, ErrSkipSingleNamePerformer
-	}
-	return performerIDs, nil
+	return r.resolver().performers(ctx, r.gallery.PerformerIDs.List(), r.scraped.Performers, allowedGenders)
 }
 
 func (r galleryRelationships) tags(ctx context.Context) ([]int, error) {
-	fieldStrategy := r.fieldOptions["tags"]
-	scraped := r.scraped.Tags
-	target := r.gallery
+	return r.resolver().tags(ctx, r.gallery.TagIDs.List(), r.scraped.Tags)
+}
 
-	// just check if ignored
-	if len(scraped) == 0 || !shouldSetSingleValueField(fieldStrategy, false) {
-		return nil, nil
+func (r galleryRelationships) resolver() relationshipResolver {
+	return relationshipResolver{
+		endpoint:                 r.remoteSite,
+		fieldOptions:             r.fieldOptions,
+		skipSingleNamePerformers: r.skipSingleNamePerformers,
+		studioReaderWriter:       r.studioReaderWriter,
+		performerCreator:         r.performerCreator,
+		tagCreator:               r.tagCreator,
 	}
-
-	createMissing := fieldStrategy != nil && utils.IsTrue(fieldStrategy.CreateMissing)
-	strategy := FieldStrategyMerge
-	if fieldStrategy != nil {
-		strategy = fieldStrategy.Strategy
-	}
-
-	var tagIDs []int
-	originalTagIDs := target.TagIDs.List()
-
-	if strategy == FieldStrategyMerge {
-		// add to existing
-		tagIDs = originalTagIDs
-	}
-
-	endpoint := r.remoteSite
-
-	for _, t := range scraped {
-		if t.StoredID != nil {
-			// existing tag, just add it
-			tagID, err := parseTagID(*t.StoredID)
-			if err != nil {
-				return nil, err
-			}
-
-			tagIDs = sliceutil.AppendUnique(tagIDs, tagID)
-		} else if createMissing {
-			newTag := t.ToTag(endpoint, nil)
-
-			err := r.tagCreator.Create(ctx, &models.CreateTagInput{
-				Tag: newTag,
-			})
-			if err != nil {
-				return nil, fmt.Errorf("error creating tag: %w", err)
-			}
-
-			tagIDs = append(tagIDs, newTag.ID)
-		}
-	}
-
-	// don't return if nothing was added
-	if sliceutil.SliceSame(originalTagIDs, tagIDs) {
-		return nil, nil
-	}
-
-	return tagIDs, nil
 }
 
 type GalleryScraper interface {
@@ -460,53 +336,12 @@ func (t *GalleryIdentifier) addTagToGallery(ctx context.Context, g *models.Galle
 func getGalleryPartial(gallery *models.Gallery, scraped *models.ScrapedGallery, fieldOptions map[string]*FieldOptions, setOrganized bool) models.GalleryPartial {
 	partial := models.GalleryPartial{}
 
-	if scraped.Title != nil && (gallery.Title != *scraped.Title) {
-		if shouldSetSingleValueField(fieldOptions["title"], gallery.Title != "") {
-			partial.Title = models.NewOptionalString(*scraped.Title)
-		}
-	}
-	if scraped.Code != nil && (gallery.Code != *scraped.Code) {
-		if shouldSetSingleValueField(fieldOptions["code"], gallery.Code != "") {
-			partial.Code = models.NewOptionalString(*scraped.Code)
-		}
-	}
-	if scraped.Details != nil && (gallery.Details != *scraped.Details) {
-		if shouldSetSingleValueField(fieldOptions["details"], gallery.Details != "") {
-			partial.Details = models.NewOptionalString(*scraped.Details)
-		}
-	}
-	if scraped.Photographer != nil && (gallery.Photographer != *scraped.Photographer) {
-		if shouldSetSingleValueField(fieldOptions["photographer"], gallery.Photographer != "") {
-			partial.Photographer = models.NewOptionalString(*scraped.Photographer)
-		}
-	}
-	if scraped.Date != nil && (gallery.Date == nil || gallery.Date.String() != *scraped.Date) {
-		if shouldSetSingleValueField(fieldOptions["date"], gallery.Date != nil) {
-			d, err := models.ParseDate(*scraped.Date)
-			if err == nil {
-				partial.Date = models.NewOptionalDate(d)
-			}
-		}
-	}
-	if len(scraped.URLs) > 0 && shouldSetSingleValueField(fieldOptions["url"], false) {
-		switch getFieldStrategy(fieldOptions["url"]) {
-		case FieldStrategyOverwrite:
-			if !sliceutil.SliceSame(scraped.URLs, gallery.URLs.List()) {
-				partial.URLs = &models.UpdateStrings{
-					Values: scraped.URLs,
-					Mode:   models.RelationshipUpdateModeSet,
-				}
-			}
-		case FieldStrategyMerge:
-			urls := sliceutil.AppendUniques(gallery.URLs.List(), scraped.URLs)
-			if len(urls) != len(gallery.URLs.List()) {
-				partial.URLs = &models.UpdateStrings{
-					Values: urls,
-					Mode:   models.RelationshipUpdateModeSet,
-				}
-			}
-		}
-	}
+	setOptionalString(&partial.Title, gallery.Title, scraped.Title, fieldOptions["title"])
+	setOptionalString(&partial.Code, gallery.Code, scraped.Code, fieldOptions["code"])
+	setOptionalString(&partial.Details, gallery.Details, scraped.Details, fieldOptions["details"])
+	setOptionalString(&partial.Photographer, gallery.Photographer, scraped.Photographer, fieldOptions["photographer"])
+	setPartialDate(&partial.Date, scraped.Date, gallery.Date, fieldOptions["date"], "date")
+	setOptionalURLs(&partial.URLs, gallery.URLs.List(), scraped.URLs, fieldOptions["url"])
 
 	if setOrganized && !gallery.Organized {
 		partial.Organized = models.NewOptionalBool(true)

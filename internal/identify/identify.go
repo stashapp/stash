@@ -449,76 +449,16 @@ func getFieldOptions(options []MetadataOptions) map[string]*FieldOptions {
 	return ret
 }
 
-// setPartialDate sets target from the scraped date value, if the field strategy
-// allows it and the scraped value differs from the existing one. fieldName is
-// used for logging only. Parse failures are logged and target is left unset,
-// rather than failing the whole identify operation over one bad field.
-func setPartialDate(target *models.OptionalDate, scrapedDate *string, existing *models.Date, options *FieldOptions, fieldName string) {
-	if scrapedDate == nil || (existing != nil && existing.String() == *scrapedDate) {
-		return
-	}
-
-	if !shouldSetSingleValueField(options, existing != nil) {
-		return
-	}
-
-	d, err := models.ParseDate(*scrapedDate)
-	if err != nil {
-		logger.Warnf("Ignoring scraped %s %q: %v", fieldName, *scrapedDate, err)
-		return
-	}
-
-	*target = models.NewOptionalDate(d)
-}
-
 func getScenePartial(scene *models.Scene, scraped *models.ScrapedScene, fieldOptions map[string]*FieldOptions, setOrganized bool) models.ScenePartial {
 	partial := models.ScenePartial{}
 
-	if scraped.Title != nil && (scene.Title != *scraped.Title) {
-		if shouldSetSingleValueField(fieldOptions["title"], scene.Title != "") {
-			partial.Title = models.NewOptionalString(*scraped.Title)
-		}
-	}
+	setOptionalString(&partial.Title, scene.Title, scraped.Title, fieldOptions["title"])
 	setPartialDate(&partial.Date, scraped.Date, scene.Date, fieldOptions["date"], "date")
 	setPartialDate(&partial.ProductionDate, scraped.ProductionDate, scene.ProductionDate, fieldOptions["production_date"], "production date")
-	if scraped.Details != nil && (scene.Details != *scraped.Details) {
-		if shouldSetSingleValueField(fieldOptions["details"], scene.Details != "") {
-			partial.Details = models.NewOptionalString(*scraped.Details)
-		}
-	}
-	if len(scraped.URLs) > 0 && shouldSetSingleValueField(fieldOptions["url"], false) {
-		// if overwrite, then set over the top
-		switch getFieldStrategy(fieldOptions["url"]) {
-		case FieldStrategyOverwrite:
-			// only overwrite if not equal
-			if len(sliceutil.Exclude(scraped.URLs, scene.URLs.List())) != 0 {
-				partial.URLs = &models.UpdateStrings{
-					Values: scraped.URLs,
-					Mode:   models.RelationshipUpdateModeSet,
-				}
-			}
-		case FieldStrategyMerge:
-			// if merge, add if not already present
-			urls := sliceutil.AppendUniques(scene.URLs.List(), scraped.URLs)
-
-			if len(urls) != len(scene.URLs.List()) {
-				partial.URLs = &models.UpdateStrings{
-					Values: urls,
-					Mode:   models.RelationshipUpdateModeSet,
-				}
-			}
-		}
-	}
-	if scraped.Director != nil && (scene.Director != *scraped.Director) {
-		if shouldSetSingleValueField(fieldOptions["director"], scene.Director != "") {
-			partial.Director = models.NewOptionalString(*scraped.Director)
-		}
-	}
-	if scraped.Code != nil && (scene.Code != *scraped.Code) {
-		if shouldSetSingleValueField(fieldOptions["code"], scene.Code != "") {
-			partial.Code = models.NewOptionalString(*scraped.Code)
-		}
-	}
+	setOptionalString(&partial.Details, scene.Details, scraped.Details, fieldOptions["details"])
+	setOptionalURLs(&partial.URLs, scene.URLs.List(), scraped.URLs, fieldOptions["url"])
+	setOptionalString(&partial.Director, scene.Director, scraped.Director, fieldOptions["director"])
+	setOptionalString(&partial.Code, scene.Code, scraped.Code, fieldOptions["code"])
 
 	if setOrganized && !scene.Organized {
 		partial.Organized = models.NewOptionalBool(true)

@@ -502,6 +502,23 @@ func Test_getScenePartial(t *testing.T) {
 			models.ScenePartial{},
 		},
 		{
+			"overwrite url removal",
+			args{
+				originalScene,
+				&models.ScrapedScene{
+					URLs: []string{scrapedURL},
+				},
+				overwriteAll,
+				false,
+			},
+			models.ScenePartial{
+				URLs: &models.UpdateStrings{
+					Values: []string{scrapedURL},
+					Mode:   models.RelationshipUpdateModeSet,
+				},
+			},
+		},
+		{
 			"set organized",
 			args{
 				originalScene,
