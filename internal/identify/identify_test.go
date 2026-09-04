@@ -47,6 +47,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 		found2ID
 		multiFoundID
 		multiFound2ID
+		multiInvalidTagID
 		errUpdateID
 	)
 
@@ -58,6 +59,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 	var (
 		scrapedTitle  = "scrapedTitle"
 		scrapedTitle2 = "scrapedTitle2"
+		invalidTagID  = "invalid"
 
 		boolFalse = false
 		boolTrue  = true
@@ -105,6 +107,14 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 						},
 					},
 					multiFound2ID: {
+						{
+							Title: &scrapedTitle,
+						},
+						{
+							Title: &scrapedTitle2,
+						},
+					},
+					multiInvalidTagID: {
 						{
 							Title: &scrapedTitle,
 						},
@@ -188,6 +198,15 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 				SkipMultipleMatchTag: &skipMultipleTagIDStr,
 			},
 			false,
+		},
+		{
+			"multiple found - invalid tag",
+			multiInvalidTagID,
+			&MetadataOptions{
+				SkipMultipleMatches:  &boolTrue,
+				SkipMultipleMatchTag: &invalidTagID,
+			},
+			true,
 		},
 	}
 
