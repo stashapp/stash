@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"slices"
 	"strconv"
 	"testing"
 
@@ -1271,11 +1272,155 @@ func Test_GalleryIdentifier_modifyGallery(t *testing.T) {
 	}
 }
 
+func Test_GalleryIdentifier_Identify_paths(t *testing.T) {
+	const (
+		errID = iota
+		missingID
+		foundID
+		errUpdateID
+		multiID
+		multiTagID
+		multiInvalidTagID
+	)
+
+	var (
+		skipTagID     = 1
+		skipTagIDStr  = strconv.Itoa(skipTagID)
+		scrapedTitle  = "scrapedTitle"
+		scrapedTitle2 = "scrapedTitle2"
+		invalidTagID  = "invalid"
+		boolTrue      = true
+	)
+
+	skipMultiple := &MetadataOptions{SkipMultipleMatches: &boolTrue}
+	sources := []GalleryScraperSource{
+		{
+			Name:    "test-gallery-scraper",
+			Options: skipMultiple,
+			Scraper: mockGalleryScraper{
+				errIDs: []int{errID},
+				results: map[int][]*models.ScrapedGallery{
+					foundID: {{
+						Title: &scrapedTitle,
+					}},
+					errUpdateID: {{
+						Title: &scrapedTitle,
+					}},
+					multiID: {
+						{Title: &scrapedTitle},
+						{Title: &scrapedTitle2},
+					},
+					multiTagID: {
+						{Title: &scrapedTitle},
+						{Title: &scrapedTitle2},
+					},
+					multiInvalidTagID: {
+						{Title: &scrapedTitle},
+						{Title: &scrapedTitle2},
+					},
+				},
+			},
+		},
+	}
+
+	db := mocks.NewDatabase()
+	db.Gallery.On("UpdatePartial", mock.Anything, mock.MatchedBy(func(id int) bool {
+		return id == errUpdateID
+	}), mock.AnythingOfType("models.GalleryPartial")).Return(nil, errors.New("update error"))
+	db.Gallery.On("UpdatePartial", mock.Anything, mock.MatchedBy(func(id int) bool {
+		return id != errUpdateID
+	}), mock.AnythingOfType("models.GalleryPartial")).Return(&models.Gallery{ID: foundID}, nil)
+	db.Tag.On("Find", mock.Anything, skipTagID).Return(&models.Tag{
+		ID:   skipTagID,
+		Name: skipTagIDStr,
+	}, nil)
+
+	tests := []struct {
+		name      string
+		galleryID int
+		options   *MetadataOptions
+		wantErr   bool
+	}{
+		{
+			name:      "error scraping",
+			galleryID: errID,
+		},
+		{
+			name:      "not found",
+			galleryID: missingID,
+		},
+		{
+			name:      "found",
+			galleryID: foundID,
+		},
+		{
+			name:      "error modifying",
+			galleryID: errUpdateID,
+			wantErr:   true,
+		},
+		{
+			name:      "multiple found",
+			galleryID: multiID,
+		},
+		{
+			name:      "multiple found with tag",
+			galleryID: multiTagID,
+			options: &MetadataOptions{
+				SkipMultipleMatchTag: &skipTagIDStr,
+			},
+		},
+		{
+			name:      "multiple found with invalid tag",
+			galleryID: multiInvalidTagID,
+			options: &MetadataOptions{
+				SkipMultipleMatchTag: &invalidTagID,
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			identifier := GalleryIdentifier{
+				TxnManager:           db,
+				GalleryReaderUpdater: db.Gallery,
+				StudioReaderWriter:   db.Studio,
+				PerformerCreator:     db.Performer,
+				TagFinderCreator:     db.Tag,
+				Sources:              sources,
+				PostHookExecutor:     mockHookExecutor{},
+			}
+			if tt.options != nil {
+				identifier.DefaultOptions = tt.options
+			}
+
+			gallery := &models.Gallery{
+				ID:           tt.galleryID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+			}
+
+			err := identifier.Identify(testCtx, gallery)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
 // mockGalleryScraper implements GalleryScraper for testing.
 type mockGalleryScraper struct {
+	errIDs  []int
 	results map[int][]*models.ScrapedGallery
 }
 
 func (m mockGalleryScraper) ScrapeGalleries(ctx context.Context, galleryID int) ([]*models.ScrapedGallery, error) {
+	if slices.Contains(m.errIDs, galleryID) {
+		return nil, errors.New("scrape gallery error")
+	}
 	return m.results[galleryID], nil
 }
