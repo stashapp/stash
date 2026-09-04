@@ -56,6 +56,8 @@ The scraping types and their required fields are outlined in the following table
 
 URL-based scraping accepts multiple scrape configurations, and each configuration requires a `url` field. stash iterates through these configurations, attempting to match the entered URL against the `url` fields in the configuration. It executes the first scraping configuration where the entered URL contains the value of the `url` field. 
 
+If another installed scraper declares a `url` value that is a substring of (or identical to) one of yours, Stash cannot reliably determine which scraper to use, and users will see a URL conflict warning in `Settings > Metadata Providers`. Avoid declaring broader `url` patterns than necessary, and prefer a single consolidated scraper over multiple scrapers covering overlapping domains.
+
 ## Actions
 
 ### Script

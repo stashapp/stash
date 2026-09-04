@@ -51,6 +51,32 @@ type Scraper {
   group: ScraperSpec
 }
 
+"An installed package that may provide a scraper involved in a ScraperURLConflict"
+type ScraperURLConflictPackage {
+  package: Package!
+  "IDs of other scrapers installed as part of the same package, which would also be affected by uninstalling it"
+  sibling_scraper_ids: [String!]!
+}
+
+"""
+Describes two installed scrapers whose URL patterns for the same content type
+overlap, such that Stash cannot deterministically choose between them when
+scraping by URL.
+"""
+type ScraperURLConflict {
+  type: ScrapeContentType!
+  scraper_id: ID!
+  pattern: String!
+  """
+  The installed package believed to provide this scraper, if one could be
+  found with a matching id. Null if no such package was found.
+  """
+  scraper_package: ScraperURLConflictPackage
+  other_scraper_id: ID!
+  other_pattern: String!
+  other_scraper_package: ScraperURLConflictPackage
+}
+
 type ScrapedStudio {
   "Set if studio matched"
   stored_id: ID
