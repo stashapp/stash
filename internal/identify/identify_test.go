@@ -34,6 +34,9 @@ type mockHookExecutor struct {
 func (s mockHookExecutor) ExecuteSceneUpdatePostHooks(ctx context.Context, input models.SceneUpdateInput, inputFields []string) {
 }
 
+func (s mockHookExecutor) ExecuteGalleryUpdatePostHooks(ctx context.Context, input models.GalleryUpdateInput, inputFields []string) {
+}
+
 func TestSceneIdentifier_Identify(t *testing.T) {
 	const (
 		errID1 = iota

@@ -383,6 +383,15 @@ func (c Cache) ExecuteSceneUpdatePostHooks(ctx context.Context, input models.Sce
 	c.ExecutePostHooks(ctx, id, hook.SceneUpdatePost, input, inputFields)
 }
 
+func (c Cache) ExecuteGalleryUpdatePostHooks(ctx context.Context, input models.GalleryUpdateInput, inputFields []string) {
+	id, err := strconv.Atoi(input.ID)
+	if err != nil {
+		logger.Errorf("error converting id in GalleryUpdatePostHooks: %v", err)
+		return
+	}
+	c.ExecutePostHooks(ctx, id, hook.GalleryUpdatePost, input, inputFields)
+}
+
 // maxCyclicLoopDepth is the maximum number of identical plugin hook calls that
 // can be made before a cyclic loop is detected. It is set to an arbitrary value
 // that should not be hit under normal circumstances.

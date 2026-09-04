@@ -5,9 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"slices"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -54,9 +51,9 @@ func (g sceneRelationships) studio(ctx context.Context) (*int, error) {
 
 	if scraped.StoredID != nil {
 		// existing studio, just set it
-		studioID, err := strconv.Atoi(*scraped.StoredID)
+		studioID, err := parseStudioID(*scraped.StoredID)
 		if err != nil {
-			return nil, fmt.Errorf("error converting studio ID %s: %w", *scraped.StoredID, err)
+			return nil, err
 		}
 
 		// only return value if different to current
@@ -98,11 +95,8 @@ func (g sceneRelationships) performers(ctx context.Context, allowedGenders []mod
 	singleNamePerformerSkipped := false
 
 	for _, p := range scraped {
-		if allowedGenders != nil && p.Gender != nil {
-			gender := models.GenderEnum(strings.ToUpper(*p.Gender))
-			if !slices.Contains(allowedGenders, gender) {
-				continue
-			}
+		if performerGenderExcluded(allowedGenders, p.Gender) {
+			continue
 		}
 
 		performerID, err := getPerformerID(ctx, endpoint, g.performerCreator, p, createMissing, g.skipSingleNamePerformers)
@@ -162,12 +156,12 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 	for _, t := range scraped {
 		if t.StoredID != nil {
 			// existing tag, just add it
-			tagID, err := strconv.ParseInt(*t.StoredID, 10, 64)
+			tagID, err := parseTagID(*t.StoredID)
 			if err != nil {
-				return nil, fmt.Errorf("error converting tag ID %s: %w", *t.StoredID, err)
+				return nil, err
 			}
 
-			tagIDs = sliceutil.AppendUnique(tagIDs, int(tagID))
+			tagIDs = sliceutil.AppendUnique(tagIDs, tagID)
 		} else if createMissing {
 			newTag := t.ToTag(endpoint, nil)
 
