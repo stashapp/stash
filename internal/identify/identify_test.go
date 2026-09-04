@@ -352,6 +352,14 @@ func Test_getFieldOptions(t *testing.T) {
 	}
 }
 
+func TestMultipleMatchesFoundError_Error(t *testing.T) {
+	err := &MultipleMatchesFoundError{
+		Source: ScraperSource{Name: "Test Source"},
+	}
+
+	assert.Equal(t, "multiple matches found for Test Source", err.Error())
+}
+
 func Test_getScenePartial(t *testing.T) {
 	var (
 		originalTitle   = "originalTitle"
