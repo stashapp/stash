@@ -29,7 +29,7 @@ const MMddyyRegex = new RegExp(
   `(${months.join("|")})\\.?.(\\d{1,2}),?.(\\d{4})`,
   "i"
 );
-const javcodeRegex = /([a-zA-Z|tT28|tT38]+-\d+[zZeE]?)/;
+const javcodeRegex = /((?i:3DSVR|T28|T38|\d{1,2}ID|CPZ69|CPZ69-H|D1|WVR\w{1,2}|MBR-\w{1,2}|MMR-\w{1,2}|SRE-\w{1,2}|SRN-\w{1,2}|SVBD-\w{1,2}|PA0|[A-Z]+)-?(?i:\d+[A-Z]?))/;
 
 const handleSpecialStrings = (input: string): string => {
   let output = input;
