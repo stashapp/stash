@@ -821,6 +821,109 @@ func (t *relatedFilesTable) insertJoin(ctx context.Context, id int, primary bool
 	return nil
 }
 
+// insertJoinWithRange inserts a join row carrying a scene file range.
+// Unlike insertJoins, it does not affect rows belonging to other scenes.
+func (t *relatedFilesTable) insertJoinWithRange(ctx context.Context, id int, primary bool, fileID models.FileID, startTime, endTime *float64) error {
+	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "primary", "file_id", "start_time", "end_time").Vals(
+		goqu.Vals{id, primary, fileID, startTime, endTime},
+	)
+	_, err := exec(ctx, q)
+	if err != nil {
+		return fmt.Errorf("inserting into %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return nil
+}
+
+// getRanges returns the file ranges (non-null bounds only) for the given scene.
+func (t *relatedFilesTable) getRanges(ctx context.Context, id int) ([]models.SceneFileRange, error) {
+	table := t.table.table
+
+	q := dialect.Select(
+		table.Col(fileIDColumn),
+		table.Col("start_time"),
+		table.Col("end_time"),
+	).From(table).Where(
+		t.idColumn.Eq(id),
+		goqu.Or(
+			table.Col("start_time").IsNotNull(),
+			table.Col("end_time").IsNotNull(),
+		),
+	)
+
+	var ret []models.SceneFileRange
+	if err := queryFunc(ctx, q, false, func(rows *sqlx.Rows) error {
+		var r sceneFileRangeRow
+		if err := rows.StructScan(&r); err != nil {
+			return err
+		}
+
+		ret = append(ret, r.toSceneFileRange())
+
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("getting file ranges from %s: %w", table.GetTable(), err)
+	}
+
+	return ret, nil
+}
+
+// setRange updates the range columns for the given scene/file join row.
+// Both bounds may be nil to clear the range.
+func (t *relatedFilesTable) setRange(ctx context.Context, id int, fileID models.FileID, startTime, endTime *float64) error {
+	table := t.table.table
+
+	q := dialect.Update(table).Prepared(true).Set(goqu.Record{
+		"start_time": startTime,
+		"end_time":   endTime,
+	}).Where(t.idColumn.Eq(id), table.Col(fileIDColumn).Eq(fileID))
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("setting file range in %s: %w", table.GetTable(), err)
+	}
+
+	return nil
+}
+
+// hasUnrangedScene returns true if a scene other than excludeSceneID is
+// joined to the file without a range.
+func (t *relatedFilesTable) hasUnrangedScene(ctx context.Context, fileID models.FileID, excludeSceneID int) (bool, error) {
+	table := t.table.table
+
+	q := dialect.Select(goqu.COUNT("*")).From(table).Where(
+		table.Col(fileIDColumn).Eq(fileID),
+		t.idColumn.Neq(excludeSceneID),
+		table.Col("start_time").IsNull(),
+		table.Col("end_time").IsNull(),
+	)
+
+	var count int
+	if err := querySimple(ctx, q, &count); err != nil {
+		return false, fmt.Errorf("checking unranged scenes in %s: %w", table.GetTable(), err)
+	}
+
+	return count > 0, nil
+}
+
+type sceneFileRangeRow struct {
+	FileID    models.FileID `db:"file_id"`
+	StartTime null.Float    `db:"start_time"`
+	EndTime   null.Float    `db:"end_time"`
+}
+
+func (r sceneFileRangeRow) toSceneFileRange() models.SceneFileRange {
+	ret := models.SceneFileRange{FileID: r.FileID}
+	if r.StartTime.Valid {
+		v := r.StartTime.Float64
+		ret.StartTime = &v
+	}
+	if r.EndTime.Valid {
+		v := r.EndTime.Float64
+		ret.EndTime = &v
+	}
+	return ret
+}
+
 func (t *relatedFilesTable) insertJoins(ctx context.Context, id int, firstPrimary bool, fileIDs []models.FileID) error {
 	for i, fk := range fileIDs {
 		if err := t.insertJoin(ctx, id, firstPrimary && i == 0, fk); err != nil {

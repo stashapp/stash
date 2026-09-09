@@ -198,3 +198,11 @@ func (u *UpdateGroupDescriptions) applyRemove(existing []GroupIDDescription) []G
 
 	return ret
 }
+
+// UpdateSceneFileRanges replaces the file ranges of a scene.
+// Mode is currently always SET; the field exists to mirror the other
+// relationship update types and to leave room for ADD/REMOVE modes.
+type UpdateSceneFileRanges struct {
+	Ranges []SceneFileRange
+	Mode   RelationshipUpdateMode
+}

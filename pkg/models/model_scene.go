@@ -25,6 +25,8 @@ type Scene struct {
 	// transient - not persisted
 	Files         RelatedVideoFiles
 	PrimaryFileID *FileID
+	// transient - file ranges for the scene's files; not persisted on the scenes table
+	FileRanges RelatedSceneFileRanges
 	// transient - path of primary file - empty if no files
 	Path string
 	// transient - oshash of primary file - empty if no files
@@ -58,6 +60,7 @@ type CreateSceneInput struct {
 	*Scene
 
 	FileIDs      []FileID
+	FileRanges   []SceneFileRange
 	CoverImage   []byte
 	CustomFields CustomFieldMap `json:"custom_fields"`
 }
@@ -93,6 +96,9 @@ type ScenePartial struct {
 	GroupIDs      *UpdateGroupIDs
 	StashIDs      *UpdateStashIDs
 	PrimaryFileID *FileID
+	// FileRanges replaces all file ranges for the scene when set.
+	// An empty (non-nil) value clears all ranges.
+	FileRanges *UpdateSceneFileRanges
 }
 
 func NewScenePartial() ScenePartial {
@@ -111,6 +117,12 @@ func (s *Scene) LoadURLs(ctx context.Context, l URLLoader) error {
 func (s *Scene) LoadFiles(ctx context.Context, l VideoFileLoader) error {
 	return s.Files.load(func() ([]*VideoFile, error) {
 		return l.GetFiles(ctx, s.ID)
+	})
+}
+
+func (s *Scene) LoadFileRanges(ctx context.Context, l SceneFileRangeLoader) error {
+	return s.FileRanges.load(func() ([]SceneFileRange, error) {
+		return l.GetFileRanges(ctx, s.ID)
 	})
 }
 

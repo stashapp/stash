@@ -1468,6 +1468,31 @@ func (qb *SceneStore) AddFileID(ctx context.Context, id int, fileID models.FileI
 	return scenesFilesTableMgr.insertJoins(ctx, id, firstPrimary, []models.FileID{fileID})
 }
 
+func (qb *SceneStore) GetFileRanges(ctx context.Context, sceneID int) ([]models.SceneFileRange, error) {
+	return scenesFilesTableMgr.getRanges(ctx, sceneID)
+}
+
+func (qb *SceneStore) FileSharedWithUnrangedScene(ctx context.Context, fileID models.FileID, excludeSceneID int) (bool, error) {
+	return scenesFilesTableMgr.hasUnrangedScene(ctx, fileID, excludeSceneID)
+}
+
+func (qb *SceneStore) SetFileRange(ctx context.Context, sceneID int, fileID models.FileID, startTime, endTime *float64) error {
+	return scenesFilesTableMgr.setRange(ctx, sceneID, fileID, startTime, endTime)
+}
+
+// AddFileWithRange joins the file to the scene with the given range.
+// Unlike AssignFiles, existing joins for the file in other scenes are preserved.
+// The file is marked primary only if the scene currently has no files.
+func (qb *SceneStore) AddFileWithRange(ctx context.Context, sceneID int, fileID models.FileID, startTime, endTime *float64) error {
+	existingFileIDs, err := sceneRepository.files.get(ctx, sceneID)
+	if err != nil {
+		return err
+	}
+
+	primary := len(existingFileIDs) == 0
+	return scenesFilesTableMgr.insertJoinWithRange(ctx, sceneID, primary, fileID, startTime, endTime)
+}
+
 func (qb *SceneStore) GetPerformerIDs(ctx context.Context, id int) ([]int, error) {
 	return sceneRepository.performers.getIDs(ctx, id)
 }

@@ -90,12 +90,27 @@ func (r *sceneResolver) Files(ctx context.Context, obj *models.Scene) ([]*VideoF
 		return nil, err
 	}
 
+	// load the scene's file ranges so they can be exposed on the files
+	if err := obj.LoadFileRanges(ctx, r.repository.Scene); err != nil {
+		return nil, err
+	}
+
+	rangesByFile := make(map[models.FileID]models.SceneFileRange)
+	for _, rr := range obj.FileRanges.List() {
+		rangesByFile[rr.FileID] = rr
+	}
+
 	ret := make([]*VideoFile, len(files))
 
 	for i, f := range files {
-		ret[i] = &VideoFile{
+		af := &VideoFile{
 			VideoFile: f,
 		}
+		if rr, ok := rangesByFile[f.ID]; ok {
+			af.StartTime = rr.StartTime
+			af.EndTime = rr.EndTime
+		}
+		ret[i] = af
 	}
 
 	return ret, nil

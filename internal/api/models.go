@@ -64,6 +64,11 @@ func (f *GalleryFile) Fingerprints() []models.Fingerprint {
 
 type VideoFile struct {
 	*models.VideoFile
+
+	// scene-relative playable range; populated only when the file is
+	// resolved through scene.files. Nil bounds mean open/whole-file.
+	StartTime *float64
+	EndTime   *float64
 }
 
 func (VideoFile) IsBaseFile() {}

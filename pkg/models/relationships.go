@@ -430,6 +430,42 @@ func (r *RelatedVideoFiles) loadPrimary(fn func() (*VideoFile, error)) error {
 	return nil
 }
 
+type RelatedSceneFileRanges struct {
+	ranges []SceneFileRange
+}
+
+func NewRelatedSceneFileRanges(r []SceneFileRange) RelatedSceneFileRanges {
+	return RelatedSceneFileRanges{ranges: r}
+}
+
+// Loaded returns true if the relationship has been loaded.
+func (r RelatedSceneFileRanges) Loaded() bool {
+	return r.ranges != nil
+}
+
+// List returns the related file ranges. Panics if the relationship has not been loaded.
+func (r RelatedSceneFileRanges) List() []SceneFileRange {
+	if !r.Loaded() {
+		panic("relationship has not been loaded")
+	}
+
+	return r.ranges
+}
+
+func (r *RelatedSceneFileRanges) Set(v []SceneFileRange) {
+	r.ranges = v
+}
+
+func (r *RelatedSceneFileRanges) load(fn func() ([]SceneFileRange, error)) error {
+	if r.Loaded() {
+		return nil
+	}
+
+	var err error
+	r.ranges, err = fn()
+	return err
+}
+
 type RelatedFiles struct {
 	primaryFile   File
 	files         []File

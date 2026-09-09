@@ -175,6 +175,13 @@ type SceneGroupInput struct {
 	SceneIndex *int   `json:"scene_index"`
 }
 
+type SceneFileRangeInput struct {
+	// defaults to the scene's primary file when unset
+	FileID    *string  `json:"file_id"`
+	StartTime *float64 `json:"start_time"`
+	EndTime   *float64 `json:"end_time"`
+}
+
 type SceneCreateInput struct {
 	Title          *string           `json:"title"`
 	Code           *string           `json:"code"`
@@ -198,8 +205,11 @@ type SceneCreateInput struct {
 	// The first id will be assigned as primary.
 	// Files will be reassigned from existing scenes if applicable.
 	// Files must not already be primary for another scene.
-	FileIds      []string       `json:"file_ids"`
-	CustomFields map[string]any `json:"custom_fields,omitempty"`
+	FileIds []string `json:"file_ids"`
+	// Time ranges for the scene's files. A file given a range may be shared
+	// with other scenes; ranges must reference files in file_ids.
+	FileRanges   []*SceneFileRangeInput `json:"file_ranges"`
+	CustomFields map[string]any         `json:"custom_fields,omitempty"`
 }
 
 type SceneUpdateInput struct {
@@ -225,11 +235,14 @@ type SceneUpdateInput struct {
 	// This should be a URL or a base64 encoded data URL
 	CoverImage    *string        `json:"cover_image"`
 	StashIds      []StashIDInput `json:"stash_ids"`
-	ResumeTime    *float64       `json:"resume_time"`
-	PlayDuration  *float64       `json:"play_duration"`
-	PlayCount     *int           `json:"play_count"`
-	PrimaryFileID *string        `json:"primary_file_id"`
-	CustomFields  *CustomFieldsInput
+	ResumeTime    *float64             `json:"resume_time"`
+	PlayDuration  *float64             `json:"play_duration"`
+	PlayCount     *int                 `json:"play_count"`
+	PrimaryFileID *string              `json:"primary_file_id"`
+	// Replaces the time ranges for the scene's files when set.
+	// An empty list clears all ranges.
+	FileRanges  []*SceneFileRangeInput `json:"file_ranges"`
+	CustomFields *CustomFieldsInput
 }
 
 type SceneDestroyInput struct {

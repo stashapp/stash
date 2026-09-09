@@ -35,9 +35,17 @@ func (s *Service) Create(ctx context.Context, input models.CreateSceneInput) (*m
 		}
 	}
 
-	for _, f := range input.FileIDs {
-		if err := s.AssignFile(ctx, newScene.ID, f); err != nil {
-			return nil, fmt.Errorf("assigning file %d to new scene: %w", f, err)
+	if len(input.FileRanges) > 0 {
+		// files with ranges are joined without exclusivity, so that multiple
+		// scenes can reference the same file
+		if err := s.assignFilesWithRanges(ctx, newScene.ID, input.FileIDs, input.FileRanges); err != nil {
+			return nil, fmt.Errorf("assigning files to new scene: %w", err)
+		}
+	} else {
+		for _, f := range input.FileIDs {
+			if err := s.AssignFile(ctx, newScene.ID, f); err != nil {
+				return nil, fmt.Errorf("assigning file %d to new scene: %w", f, err)
+			}
 		}
 	}
 

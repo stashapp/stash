@@ -93,6 +93,19 @@ type VideoFile implements BaseFile {
   frame_rate: Float!
   bit_rate: Int!
 
+  """
+  Start of the scene's playable range within this file, in seconds.
+  Populated only when queried through scene.files; null when the scene
+  covers the whole file or the file is not queried in scene context.
+  """
+  start_time: Float
+  """
+  End of the scene's playable range within this file, in seconds.
+  Populated only when queried through scene.files; null when the scene
+  covers the whole file or the file is not queried in scene context.
+  """
+  end_time: Float
+
   scenes: [Scene!]!
 
   created_at: Time!

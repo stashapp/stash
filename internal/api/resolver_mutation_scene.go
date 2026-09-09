@@ -42,6 +42,11 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 		return nil, fmt.Errorf("converting file ids: %w", err)
 	}
 
+	fileRanges, err := fileRangesFromInput(input.FileRanges, fileIDs)
+	if err != nil {
+		return nil, err
+	}
+
 	// Populate a new scene from the input
 	newScene := models.NewScene()
 
@@ -113,6 +118,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 		ret, err = r.Resolver.sceneService.Create(ctx, models.CreateSceneInput{
 			Scene:        &newScene,
 			FileIDs:      fileIDs,
+			FileRanges:   fileRanges,
 			CoverImage:   coverImageData,
 			CustomFields: customFields,
 		})
@@ -272,6 +278,15 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		return nil, fmt.Errorf("scene with id %d not found", sceneID)
 	}
 
+	// file ranges are handled separately after the partial update
+	var fileRangeInput []scene.FileRangeInput
+	if translator.hasField("file_ranges") {
+		fileRangeInput, err = updateFileRangesFromInput(input.FileRanges)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	// Populate scene from the input
 	updatedScene, err := scenePartialFromInput(input, translator)
 	if err != nil {
@@ -333,6 +348,12 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 	scene, err := qb.UpdatePartial(ctx, sceneID, *updatedScene)
 	if err != nil {
 		return nil, err
+	}
+
+	if fileRangeInput != nil {
+		if err := r.Resolver.sceneService.UpdateFileRanges(ctx, sceneID, fileRangeInput); err != nil {
+			return nil, fmt.Errorf("updating file ranges: %w", err)
+		}
 	}
 
 	if coverImageIncluded {
@@ -1339,4 +1360,86 @@ func (r *mutationResolver) SceneGenerateScreenshot(ctx context.Context, id strin
 	}
 
 	return strconv.Itoa(jobID), nil
+}
+
+// fileRangesFromInput converts GraphQL range inputs to model ranges for
+// sceneCreate. A nil FileID in the input refers to the first (primary) file.
+func fileRangesFromInput(input []*models.SceneFileRangeInput, fileIDs []models.FileID) ([]models.SceneFileRange, error) {
+	if len(input) == 0 {
+		return nil, nil
+	}
+
+	var primary *models.FileID
+	if len(fileIDs) > 0 {
+		p := fileIDs[0]
+		primary = &p
+	}
+
+	ret := make([]models.SceneFileRange, len(input))
+	for i, ri := range input {
+		if ri == nil {
+			return nil, errors.New("empty file range entry")
+		}
+
+		var fileID *models.FileID
+		if ri.FileID != nil {
+			v, err := strconv.Atoi(*ri.FileID)
+			if err != nil {
+				return nil, fmt.Errorf("converting file id: %w", err)
+			}
+			f := models.FileID(v)
+			fileID = &f
+		}
+
+		resolved, err := (scene.FileRangeInput{
+			FileID:    fileID,
+			StartTime: ri.StartTime,
+			EndTime:   ri.EndTime,
+		}).ResolveFileID(primary)
+		if err != nil {
+			return nil, err
+		}
+
+		ret[i] = models.SceneFileRange{
+			FileID:    resolved,
+			StartTime: ri.StartTime,
+			EndTime:   ri.EndTime,
+		}
+	}
+
+	return ret, nil
+}
+
+// updateFileRangesFromInput converts GraphQL range inputs to service inputs
+// for sceneUpdate. A nil FileID is left nil so it resolves to the scene's
+// primary file at update time.
+func updateFileRangesFromInput(input []*models.SceneFileRangeInput) ([]scene.FileRangeInput, error) {
+	if input == nil {
+		return nil, nil
+	}
+
+	ret := make([]scene.FileRangeInput, len(input))
+	for i, ri := range input {
+		if ri == nil {
+			return nil, errors.New("empty file range entry")
+		}
+
+		var fileID *models.FileID
+		if ri.FileID != nil {
+			v, err := strconv.Atoi(*ri.FileID)
+			if err != nil {
+				return nil, fmt.Errorf("converting file id: %w", err)
+			}
+			f := models.FileID(v)
+			fileID = &f
+		}
+
+		ret[i] = scene.FileRangeInput{
+			FileID:    fileID,
+			StartTime: ri.StartTime,
+			EndTime:   ri.EndTime,
+		}
+	}
+
+	return ret, nil
 }

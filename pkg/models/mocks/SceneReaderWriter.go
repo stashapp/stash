@@ -30,6 +30,20 @@ func (_m *SceneReaderWriter) AddFileID(ctx context.Context, id int, fileID model
 	return r0
 }
 
+// AddFileWithRange provides a mock function with given fields: ctx, sceneID, fileID, startTime, endTime
+func (_m *SceneReaderWriter) AddFileWithRange(ctx context.Context, sceneID int, fileID models.FileID, startTime *float64, endTime *float64) error {
+	ret := _m.Called(ctx, sceneID, fileID, startTime, endTime)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, models.FileID, *float64, *float64) error); ok {
+		r0 = rf(ctx, sceneID, fileID, startTime, endTime)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // AddGalleryIDs provides a mock function with given fields: ctx, sceneID, galleryIDs
 func (_m *SceneReaderWriter) AddGalleryIDs(ctx context.Context, sceneID int, galleryIDs []int) error {
 	ret := _m.Called(ctx, sceneID, galleryIDs)
@@ -404,6 +418,27 @@ func (_m *SceneReaderWriter) Duration(ctx context.Context) (float64, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
 		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FileSharedWithUnrangedScene provides a mock function with given fields: ctx, fileID, excludeSceneID
+func (_m *SceneReaderWriter) FileSharedWithUnrangedScene(ctx context.Context, fileID models.FileID, excludeSceneID int) (bool, error) {
+	ret := _m.Called(ctx, fileID, excludeSceneID)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(context.Context, models.FileID, int) bool); ok {
+		r0 = rf(ctx, fileID, excludeSceneID)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, models.FileID, int) error); ok {
+		r1 = rf(ctx, fileID, excludeSceneID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -793,6 +828,29 @@ func (_m *SceneReaderWriter) GetCustomFieldsBulk(ctx context.Context, ids []int)
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
 		r1 = rf(ctx, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetFileRanges provides a mock function with given fields: ctx, relatedID
+func (_m *SceneReaderWriter) GetFileRanges(ctx context.Context, relatedID int) ([]models.SceneFileRange, error) {
+	ret := _m.Called(ctx, relatedID)
+
+	var r0 []models.SceneFileRange
+	if rf, ok := ret.Get(0).(func(context.Context, int) []models.SceneFileRange); ok {
+		r0 = rf(ctx, relatedID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]models.SceneFileRange)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, relatedID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1408,6 +1466,20 @@ func (_m *SceneReaderWriter) SetCustomFields(ctx context.Context, id int, fields
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, int, models.CustomFieldsInput) error); ok {
 		r0 = rf(ctx, id, fields)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// SetFileRange provides a mock function with given fields: ctx, sceneID, fileID, startTime, endTime
+func (_m *SceneReaderWriter) SetFileRange(ctx context.Context, sceneID int, fileID models.FileID, startTime *float64, endTime *float64) error {
+	ret := _m.Called(ctx, sceneID, fileID, startTime, endTime)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, models.FileID, *float64, *float64) error); ok {
+		r0 = rf(ctx, sceneID, fileID, startTime, endTime)
 	} else {
 		r0 = ret.Error(0)
 	}

@@ -111,3 +111,11 @@ func (r *videoFileResolver) ZipFile(ctx context.Context, obj *VideoFile) (*Basic
 func (r *basicFileResolver) ZipFile(ctx context.Context, obj *BasicFile) (*BasicFile, error) {
 	return zipFileResolver(ctx, obj.ZipFileID)
 }
+
+func (r *videoFileResolver) StartTime(ctx context.Context, obj *VideoFile) (*float64, error) {
+	return obj.StartTime, nil
+}
+
+func (r *videoFileResolver) EndTime(ctx context.Context, obj *VideoFile) (*float64, error) {
+	return obj.EndTime, nil
+}

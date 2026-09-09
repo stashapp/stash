@@ -105,6 +105,8 @@ type SceneReader interface {
 	SceneGroupLoader
 	StashIDLoader
 	VideoFileLoader
+	SceneFileRangeLoader
+	SceneFileSharingChecker
 	CustomFieldsReader
 
 	All(ctx context.Context) ([]*Scene, error)
@@ -137,6 +139,7 @@ type SceneWriter interface {
 	AddFileID(ctx context.Context, id int, fileID FileID) error
 	AddGalleryIDs(ctx context.Context, sceneID int, galleryIDs []int) error
 	AssignFiles(ctx context.Context, sceneID int, fileID []FileID) error
+	SceneFileRangeWriter
 
 	OHistoryWriter
 	ViewHistoryWriter
