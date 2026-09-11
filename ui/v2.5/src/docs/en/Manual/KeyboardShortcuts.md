@@ -143,19 +143,17 @@
 | `Escape` | Close lightbox |
 | `d d` | Delete current image |
 
-### Touch gestures
-
-On touch devices the lightbox also supports gestures:
+## Lightbox touch gestures
 
 | Gesture | Action |
-|---------|--------|
-| Swipe left / right | Next / previous image |
-| Swipe up | Delete current image (opens the confirmation dialog) |
-| Swipe down | Close the lightbox |
-| Double-tap | Toggle zoom (fit ↔ zoomed in) |
-| Pinch | Zoom in / out |
-
-While zoomed in, dragging pans the image (stopping at its edges) instead of switching, deleting or closing.
+|-------------------|--------|
+| `Swipe left` | Next image |
+| `Swipe right` | Previous image |
+| `Swipe up` | Delete current image |
+| `Swipe down` | Close the lightbox |
+| `Double-tap` | Toggle zoom |
+| `Pinch` | Zoom in/out |
+| `Drag (while zoomed in)` | Pan image |
 
 ## Groups page shortcuts
 
