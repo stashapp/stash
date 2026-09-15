@@ -1083,7 +1083,11 @@ declare namespace PluginApi {
       set useStashHostedFunscript(useStashHostedFunscript: boolean);
       get useStashHostedFunscript(): boolean;
       set scriptOffset(offset: number);
-      uploadScript(funscriptPath: string, apiKey?: string): Promise<void>;
+      uploadScript(
+        funscriptPath: string,
+        apiKey?: string,
+        interactiveCsvPath?: string
+      ): Promise<void>;
       sync(): Promise<number>;
       setServerTimeOffset(offset: number): void;
       play(position: number): Promise<void>;
@@ -1100,7 +1104,10 @@ declare namespace PluginApi {
       currentScript?: string;
       error?: string;
       initialise: () => Promise<void>;
-      uploadScript: (funscriptPath: string) => Promise<void>;
+      uploadScript: (
+        funscriptPath: string,
+        interactiveCsvPath?: string
+      ) => Promise<void>;
       sync: () => Promise<void>;
     };
 
