@@ -57,7 +57,7 @@ func (rs pluginRoutes) Assets(w http.ResponseWriter, r *http.Request) {
 	dir = filepath.Join(pluginDir, filepath.FromSlash(dir))
 
 	// ensure directory is still within the plugin directory
-	if !strings.HasPrefix(dir, pluginDir) {
+	if !strings.HasPrefix(dir, pluginDir+string(filepath.Separator)) && dir != pluginDir {
 		http.NotFound(w, r)
 		return
 	}
