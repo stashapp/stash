@@ -127,6 +127,14 @@ class VRMenuPlugin extends videojs.getPlugin("plugin") {
 
     this.vr = this.player.vr();
 
+    // videojs-vr creates its textures without a colour space, so three.js
+    // treats the sRGB video as linear and gamma-encodes it a second time on
+    // output, leaving the video washed out. The plugin recreates the texture
+    // on init (including its own loadedmetadata handler, registered before
+    // ours), so re-tag it after each init, before the next frame renders.
+    this.vr.on("initialized", () => this.fixTextureColorSpace());
+    player.on("loadedmetadata", () => this.fixTextureColorSpace());
+
     this.menu.on("typeselected", (_, type: VRType) => {
       this.loadVR(type);
     });
@@ -142,6 +150,15 @@ class VRMenuPlugin extends videojs.getPlugin("plugin") {
     const projection = vrTypeProjection[type];
     this.vr?.setProjection(projection);
     this.vr?.init();
+  }
+
+  private fixTextureColorSpace() {
+    for (const texture of [this.vr?.videoTexture, this.vr?.posterTexture]) {
+      if (texture && texture.colorSpace !== "srgb") {
+        texture.colorSpace = "srgb";
+        texture.needsUpdate = true;
+      }
+    }
   }
 
   private addButton() {
