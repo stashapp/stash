@@ -560,7 +560,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
                 alt=""
                 className="align-self-center scene-image"
               />
-              {scene.duration && (
+              {!!scene.duration && (
                 <div className="scene-specs-overlay">
                   <span className="overlay-duration">
                     {TextUtils.secondsToTimestamp(scene.duration)}
