@@ -31,11 +31,15 @@ export interface ICustomFilter extends ITypename {
   direction: SortDirectionEnum;
 }
 
+export interface ITagCloud extends ITypename {
+  __typename: "TagCloud";
+}
+
 export type DefaultFilters = {
   [P in View]?: SavedFilterDataFragment;
 };
 
-export type FrontPageContent = ISavedFilterRow | ICustomFilter;
+export type FrontPageContent = ISavedFilterRow | ICustomFilter | ITagCloud;
 
 export const defaultMaxOptionsShown = 200;
 export const defaultPreviewVolume = 25;
