@@ -65,9 +65,19 @@
 
   .package-id,
   .package-date,
-  .package-latest-date {
+  .package-latest-date,
+  .package-matched-via {
     color: $muted-gray;
     font-size: 0.8rem;
+  }
+
+  .package-matched-via {
+    display: block;
+    overflow-wrap: anywhere;
+
+    .package-matched-value {
+      color: $text-color;
+    }
   }
 
   .package-id,

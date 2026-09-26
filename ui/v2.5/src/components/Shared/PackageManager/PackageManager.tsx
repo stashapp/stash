@@ -18,6 +18,7 @@ import { AlertModal } from "../Alert";
 import { LoadingIndicator } from "../LoadingIndicator";
 import { ApolloError } from "@apollo/client";
 import { ClearableInput } from "../ClearableInput";
+import { ISearchablePackage, matchPackage } from "./packageSearch";
 
 function packageKey(
   pkg: Pick<GQL.Package, "package_id" | "sourceURL">
@@ -46,21 +47,38 @@ function displayDate(intl: IntlShape, date: string | undefined | null) {
   })}`;
 }
 
-interface IPackage {
-  package_id: string;
-  name: string;
-}
-
-function filterPackages<T extends IPackage>(packages: T[], filter: string) {
+function filterPackages<T extends ISearchablePackage>(
+  packages: T[],
+  filter: string
+) {
   if (!filter) return packages;
 
-  return packages.filter((pkg) => {
-    return (
-      pkg.name.toLowerCase().includes(filter.toLowerCase()) ||
-      pkg.package_id.toLowerCase().includes(filter.toLowerCase())
-    );
-  });
+  return packages.filter((pkg) => matchPackage(pkg, filter) !== undefined);
 }
+
+const PackageNameCell: React.FC<{
+  pkg: ISearchablePackage;
+  filter: string;
+}> = ({ pkg, filter }) => {
+  const via = filter ? matchPackage(pkg, filter)?.via : undefined;
+
+  return (
+    <>
+      <span className="package-name">{pkg.name}</span>
+      <span className="package-id">{pkg.package_id}</span>
+      {via && (
+        <span className="package-matched-via">
+          <FormattedMessage
+            id="package_manager.matched_via"
+            values={{
+              match: <span className="package-matched-value">{via}</span>,
+            }}
+          />
+        </span>
+      )}
+    </>
+  );
+};
 
 export type InstalledPackage = Omit<GQL.Package, "requires">;
 
@@ -75,10 +93,11 @@ function hasUpgrade(pkg: InstalledPackage) {
 const InstalledPackageRow: React.FC<{
   loading?: boolean;
   pkg: InstalledPackage;
+  filter: string;
   selected: boolean;
   togglePackage: () => void;
   updatesLoaded: boolean;
-}> = ({ loading, pkg, selected, togglePackage, updatesLoaded }) => {
+}> = ({ loading, pkg, filter, selected, togglePackage, updatesLoaded }) => {
   const intl = useIntl();
 
   const updateAvailable = useMemo(() => {
@@ -96,8 +115,7 @@ const InstalledPackageRow: React.FC<{
         />
       </td>
       <td>
-        <span className="package-name">{pkg.name}</span>
-        <span className="package-id">{pkg.package_id}</span>
+        <PackageNameCell pkg={pkg} filter={filter} />
       </td>
       <td>
         <span className="package-version">
@@ -204,6 +222,7 @@ const InstalledPackagesList: React.FC<{
         key={packageKey(pkg)}
         loading={loading}
         pkg={pkg}
+        filter={filter}
         selected={checkedMap[packageKey(pkg)] ?? false}
         togglePackage={() => togglePackage(pkg)}
         updatesLoaded={updatesLoaded}
@@ -614,6 +633,7 @@ export type RemotePackage = Omit<GQL.Package, "requires"> & {
 const AvailablePackageRow: React.FC<{
   disabled?: boolean;
   pkg: RemotePackage;
+  filter: string;
   requiredBy: RemotePackage[];
   selected: boolean;
   togglePackage: () => void;
@@ -621,6 +641,7 @@ const AvailablePackageRow: React.FC<{
 }> = ({
   disabled,
   pkg,
+  filter,
   requiredBy,
   selected,
   togglePackage,
@@ -651,8 +672,7 @@ const AvailablePackageRow: React.FC<{
         />
       </td>
       <td className="package-cell" onClick={() => togglePackage()}>
-        <span className="package-name">{pkg.name}</span>
-        <span className="package-id">{pkg.package_id}</span>
+        <PackageNameCell pkg={pkg} filter={filter} />
       </td>
       <td>
         <span className="package-version">
@@ -828,6 +848,7 @@ const SourcePackagesList: React.FC<{
         key={pkg.package_id}
         disabled={disabled}
         pkg={pkg}
+        filter={filter}
         requiredBy={selectedPackages.filter((p) =>
           p.requires.some((r) => r.package_id === pkg.package_id)
         )}
