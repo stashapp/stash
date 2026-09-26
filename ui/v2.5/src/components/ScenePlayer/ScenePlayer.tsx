@@ -207,21 +207,11 @@ type MarkerFragment = Pick<GQL.SceneMarker, "title" | "seconds"> & {
 
 type FileFingerprint = Pick<GQL.Fingerprint, "type" | "value">;
 
-// True if every fingerprint type present in BOTH a and b has the same
-// value. Not "the whole set must be equal": a fingerprint type can show
-// up later (e.g. a phash finishing generation in the background) without
-// the file's actual bytes changing, and file size/mod_time aren't safe
-// substitutes either - a touch, a non-timestamp-preserving copy, or a
-// backup restore can bump those without touching content. A fingerprint
-// type that IS present in both, though, is an actual content hash - if
-// every one we can compare agrees, the content hasn't changed. If both
-// sides are simply empty (e.g. fingerprinting hasn't finished yet),
-// there's no evidence of a change either, so treat that as matching too
-// - otherwise a scene whose file has no fingerprints yet would get its
-// player reset on every unrelated re-render (e.g. periodic resume_time
-// saves during normal playback). Any other case with nothing in common
-// is treated as changed (safer to re-check than to silently keep stale
-// sources).
+// True if every fingerprint type present in both a and b matches. Only
+// comparing shared types avoids false positives from a type added later
+// (e.g. phash) or mtime/size drifting without content changing. Two
+// empty sets count as matching, so an unfingerprinted file doesn't
+// re-trigger on every unrelated re-render.
 function fingerprintsMatch(a: FileFingerprint[], b: FileFingerprint[]) {
   if (a.length === 0 && b.length === 0) {
     return true;
@@ -616,11 +606,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       const player = getPlayer();
       if (!player) return;
 
-      // don't re-initialise the player unless the scene or its underlying
-      // file has changed - same scene id but non-matching fingerprints
-      // means the file itself was edited in place (e.g. trimmed) without
-      // the scene id changing, and still needs new sources/duration
-      // pushed into the player
+      // don't re-initialise unless the scene changed, or the file was
+      // edited in place under the same scene id (fingerprints differ)
       if (!file) return;
       if (
         scene.id === sceneId.current &&
