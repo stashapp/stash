@@ -54,8 +54,6 @@ func MigrateHash(p *paths.Paths, oldHash string, newHash string) {
 // where the old hash's generated files are no longer valid and should be
 // deleted rather than renamed onto the new hash.
 func InvalidateGeneratedFiles(p *paths.Paths, hash string) {
-	removeSceneFolder(filepath.Join(p.Generated.Markers, hash))
-
 	scenePaths := p.Scene
 	removeSceneFile(scenePaths.GetVideoPreviewPath(hash))
 	removeSceneFile(scenePaths.GetWebpPreviewPath(hash))
@@ -67,61 +65,56 @@ func InvalidateGeneratedFiles(p *paths.Paths, hash string) {
 	removeSceneFolder(p.SceneMarkers.GetFolderPath(hash))
 }
 
-func removeSceneFile(path string) {
-	exists, err := fsutil.FileExists(path)
+// existsForAction reports whether path exists, ready to be renamed or
+// removed, tolerating the check itself reporting IsNotExist as "doesn't
+// exist" rather than an error.
+func existsForAction(existsFn func(string) (bool, error), path string) bool {
+	exists, err := existsFn(path)
 	if err != nil && !os.IsNotExist(err) {
 		logger.Errorf("Error checking existence of %s: %s", path, err.Error())
+		return false
+	}
+
+	return exists
+}
+
+func removeSceneFile(path string) {
+	if !existsForAction(fsutil.FileExists, path) {
 		return
 	}
 
-	if exists {
-		logger.Infof("removing outdated generated file %s", path)
-		if err := os.Remove(path); err != nil {
-			logger.Errorf("error removing %s: %s", path, err.Error())
-		}
+	logger.Infof("removing outdated generated file %s", path)
+	if err := os.Remove(path); err != nil {
+		logger.Errorf("error removing %s: %s", path, err.Error())
 	}
 }
 
 func removeSceneFolder(path string) {
-	exists, err := fsutil.DirExists(path)
-	if err != nil && !os.IsNotExist(err) {
-		logger.Errorf("Error checking existence of %s: %s", path, err.Error())
+	if !existsForAction(fsutil.DirExists, path) {
 		return
 	}
 
-	if exists {
-		logger.Infof("removing outdated generated folder %s", path)
-		if err := os.RemoveAll(path); err != nil {
-			logger.Errorf("error removing %s: %s", path, err.Error())
-		}
+	logger.Infof("removing outdated generated folder %s", path)
+	if err := os.RemoveAll(path); err != nil {
+		logger.Errorf("error removing %s: %s", path, err.Error())
 	}
 }
 
 func migrateSceneFiles(oldName, newName string) {
-	oldExists, err := fsutil.FileExists(oldName)
-	if err != nil && !os.IsNotExist(err) {
-		logger.Errorf("Error checking existence of %s: %s", oldName, err.Error())
+	if !existsForAction(fsutil.FileExists, oldName) {
 		return
 	}
 
-	if oldExists {
-		logger.Infof("renaming %s to %s", oldName, newName)
-		if err := os.Rename(oldName, newName); err != nil {
-			logger.Errorf("error renaming %s to %s: %s", oldName, newName, err.Error())
-		}
+	logger.Infof("renaming %s to %s", oldName, newName)
+	if err := os.Rename(oldName, newName); err != nil {
+		logger.Errorf("error renaming %s to %s: %s", oldName, newName, err.Error())
 	}
 }
 
 // #2481: migrate vtt file contents in addition to renaming
 func migrateVttFile(vttPath, oldSpritePath, newSpritePath string) {
 	// #3356 - don't try to migrate if the file doesn't exist
-	exists, err := fsutil.FileExists(vttPath)
-	if err != nil && !os.IsNotExist(err) {
-		logger.Errorf("Error checking existence of %s: %s", vttPath, err.Error())
-		return
-	}
-
-	if !exists {
+	if !existsForAction(fsutil.FileExists, vttPath) {
 		return
 	}
 
@@ -143,16 +136,12 @@ func migrateVttFile(vttPath, oldSpritePath, newSpritePath string) {
 }
 
 func migrateSceneFolder(oldName, newName string) {
-	oldExists, err := fsutil.DirExists(oldName)
-	if err != nil && !os.IsNotExist(err) {
-		logger.Errorf("Error checking existence of %s: %s", oldName, err.Error())
+	if !existsForAction(fsutil.DirExists, oldName) {
 		return
 	}
 
-	if oldExists {
-		logger.Infof("renaming %s to %s", oldName, newName)
-		if err := os.Rename(oldName, newName); err != nil {
-			logger.Errorf("error renaming %s to %s: %s", oldName, newName, err.Error())
-		}
+	logger.Infof("renaming %s to %s", oldName, newName)
+	if err := os.Rename(oldName, newName); err != nil {
+		logger.Errorf("error renaming %s to %s: %s", oldName, newName, err.Error())
 	}
 }

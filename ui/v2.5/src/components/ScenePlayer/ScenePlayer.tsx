@@ -205,13 +205,33 @@ type MarkerFragment = Pick<GQL.SceneMarker, "title" | "seconds"> & {
   tags: Array<Pick<GQL.Tag, "name">>;
 };
 
-function getFileFingerprint(
-  fingerprints: Pick<GQL.Fingerprint, "type" | "value">[]
-) {
-  return fingerprints
-    .map((fp) => `${fp.type}:${fp.value}`)
-    .sort()
-    .join(",");
+type FileFingerprint = Pick<GQL.Fingerprint, "type" | "value">;
+
+// True if every fingerprint type present in BOTH a and b has the same
+// value. Not "the whole set must be equal": a fingerprint type can show
+// up later (e.g. a phash finishing generation in the background) without
+// the file's actual bytes changing, and file size/mod_time aren't safe
+// substitutes either - a touch, a non-timestamp-preserving copy, or a
+// backup restore can bump those without touching content. A fingerprint
+// type that IS present in both, though, is an actual content hash - if
+// every one we can compare agrees, the content hasn't changed. If both
+// sides are simply empty (e.g. fingerprinting hasn't finished yet),
+// there's no evidence of a change either, so treat that as matching too
+// - otherwise a scene whose file has no fingerprints yet would get its
+// player reset on every unrelated re-render (e.g. periodic resume_time
+// saves during normal playback). Any other case with nothing in common
+// is treated as changed (safer to re-check than to silently keep stale
+// sources).
+function fingerprintsMatch(a: FileFingerprint[], b: FileFingerprint[]) {
+  if (a.length === 0 && b.length === 0) {
+    return true;
+  }
+  const bByType = new Map(b.map((fp) => [fp.type, fp.value]));
+  const common = a.filter((fp) => bByType.has(fp.type));
+  if (common.length === 0) {
+    return false;
+  }
+  return common.every((fp) => fp.value === bByType.get(fp.type));
 }
 
 function getMarkerTitle(marker: MarkerFragment) {
@@ -258,7 +278,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     const videoRef = useRef<HTMLDivElement>(null);
     const [_player, setPlayer] = useState<VideoJsPlayer>();
     const sceneId = useRef<string>();
-    const fileFingerprint = useRef<string>();
+    const fileFingerprints = useRef<FileFingerprint[]>();
     const [sceneSaveActivity] = useSceneSaveActivity();
     const [sceneIncrementPlayCount] = useSceneIncrementPlayCount();
     const [updateInterfaceConfig] = useConfigureInterface();
@@ -448,9 +468,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         videoEl.remove();
         setPlayer(undefined);
 
-        // reset sceneId/fileFingerprint to force reload sources
+        // reset sceneId/fileFingerprints to force reload sources
         sceneId.current = undefined;
-        fileFingerprint.current = undefined;
+        fileFingerprints.current = undefined;
       };
       // empty deps - only init once
       // showAbLoopControls is necessary to re-init the player when the config changes
@@ -597,20 +617,20 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       if (!player) return;
 
       // don't re-initialise the player unless the scene or its underlying
-      // file has changed - same scene id but different fingerprints means
-      // the file itself was edited in place (e.g. trimmed) without the
-      // scene id changing, and still needs new sources/duration pushed
-      // into the player
+      // file has changed - same scene id but non-matching fingerprints
+      // means the file itself was edited in place (e.g. trimmed) without
+      // the scene id changing, and still needs new sources/duration
+      // pushed into the player
       if (!file) return;
-      const fingerprint = getFileFingerprint(file.fingerprints);
       if (
         scene.id === sceneId.current &&
-        fingerprint === fileFingerprint.current
+        fileFingerprints.current &&
+        fingerprintsMatch(file.fingerprints, fileFingerprints.current)
       )
         return;
 
       sceneId.current = scene.id;
-      fileFingerprint.current = fingerprint;
+      fileFingerprints.current = file.fingerprints;
 
       setReady(false);
 
