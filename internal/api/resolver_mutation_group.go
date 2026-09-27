@@ -27,7 +27,17 @@ func groupFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*mo
 	newGroup := newGroupInput.Group
 
 	newGroup.Name = strings.TrimSpace(input.Name)
-	newGroup.Aliases = models.NewRelatedStrings(stringslice.UniqueExcludeFold(stringslice.TrimSpace(input.Aliases), newGroup.Name))
+
+	var aliases []string
+	if input.AliasList != nil {
+		aliases = input.AliasList
+	} else if input.Aliases != nil {
+		// aliases is deprecated in favour of alias_list. Group names can
+		// legitimately contain commas, so the value is treated as a single
+		// alias rather than being split on commas.
+		aliases = []string{*input.Aliases}
+	}
+	newGroup.Aliases = models.NewRelatedStrings(stringslice.UniqueExcludeFold(stringslice.TrimSpace(aliases), newGroup.Name))
 	newGroup.Duration = input.Duration
 	newGroup.Rating = input.Rating100
 	newGroup.Director = translator.string(input.Director)
@@ -119,8 +129,14 @@ func groupPartialFromGroupUpdateInput(translator changesetTranslator, input Grou
 
 	updatedGroup.Name = translator.optionalString(input.Name, "name")
 
-	aliases := stringslice.TrimSpace(input.Aliases)
-	updatedGroup.Aliases = translator.updateStrings(aliases, "aliases")
+	if translator.hasField("alias_list") {
+		updatedGroup.Aliases = translator.updateStrings(input.AliasList, "alias_list")
+	} else if translator.hasField("aliases") {
+		// aliases is deprecated in favour of alias_list. Treated as a single
+		// alias rather than being split on commas (group names can contain
+		// commas).
+		updatedGroup.Aliases = translator.updateStrings([]string{*input.Aliases}, "aliases")
+	}
 	updatedGroup.Duration = translator.optionalInt(input.Duration, "duration")
 	updatedGroup.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedGroup.Director = translator.optionalString(input.Director, "director")

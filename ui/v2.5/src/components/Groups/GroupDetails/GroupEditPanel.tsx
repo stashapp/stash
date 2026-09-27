@@ -72,7 +72,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
 
   const schema = yup.object({
     name: yup.string().required(),
-    aliases: yupRequiredStringArray(intl).defined(),
+    alias_list: yupRequiredStringArray(intl).defined(),
     duration: yup.number().integer().min(0).nullable().defined(),
     date: yupDateString(intl),
     studio_id: yup.string().required().nullable(),
@@ -95,7 +95,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
 
   const initialValues = {
     name: group?.name ?? "",
-    aliases: group?.aliases ?? [],
+    alias_list: group?.alias_list ?? [],
     duration: group?.duration ?? null,
     date: group?.date ?? "",
     studio_id: group?.studio?.id ?? null,
@@ -181,7 +181,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
     }
 
     if (state.aliases) {
-      formik.setFieldValue("aliases", state.aliases);
+      formik.setFieldValue("alias_list", state.aliases);
     }
 
     if (state.duration) {
@@ -474,7 +474,7 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
 
       <Form noValidate onSubmit={formik.handleSubmit} id="group-edit">
         {renderInputField("name")}
-        {renderStringListField("aliases")}
+        {renderStringListField("alias_list", "aliases")}
         {renderDurationField("duration")}
         {renderDateField("date")}
         {renderContainingGroupsField()}

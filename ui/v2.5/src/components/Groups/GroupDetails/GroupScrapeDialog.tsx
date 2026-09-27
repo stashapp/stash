@@ -43,10 +43,10 @@ export const GroupScrapeDialog: React.FC<IGroupScrapeDialogProps> = ({
   );
   const [aliases, setAliases] = useState<ScrapeResult<string[]>>(
     new ScrapeResult<string[]>(
-      group.aliases,
+      group.alias_list,
       scraped.aliases
-        ? uniq((group.aliases ?? []).concat(scraped.aliases))
-        : group.aliases
+        ? uniq((group.alias_list ?? []).concat(scraped.aliases))
+        : group.alias_list
     )
   );
   const [duration, setDuration] = useState<ScrapeResult<string>>(

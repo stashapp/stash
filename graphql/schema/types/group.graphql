@@ -7,7 +7,8 @@ type GroupDescription {
 type Group {
   id: ID!
   name: String!
-  aliases: [String!]
+  aliases: String @deprecated(reason: "Use alias_list")
+  alias_list: [String!]!
   "Duration in seconds"
   duration: Int
   date: String
@@ -41,8 +42,9 @@ input GroupDescriptionInput {
 
 input GroupCreateInput {
   name: String!
+  aliases: String @deprecated(reason: "Use alias_list")
   "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
-  aliases: [String!]
+  alias_list: [String!]
   "Duration in seconds"
   duration: Int
   date: String
@@ -68,8 +70,9 @@ input GroupCreateInput {
 input GroupUpdateInput {
   id: ID!
   name: String
+  aliases: String @deprecated(reason: "Use alias_list")
   "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
-  aliases: [String!]
+  alias_list: [String!]
   duration: Int
   date: String
   # rating expressed as 1-100

@@ -32,7 +32,7 @@ import { TruncatedText } from "../Shared/TruncatedText";
 
 export type Group = Pick<
   GQL.Group,
-  "id" | "name" | "date" | "front_image_path" | "aliases"
+  "id" | "name" | "date" | "front_image_path" | "alias_list"
 > & {
   studio?: Pick<GQL.Studio, "name"> | null;
 };
@@ -47,7 +47,7 @@ function sortGroupsByRelevance(input: string, groups: FindGroupsResult) {
     input,
     groups,
     (m) => m.name,
-    (m) => m.aliases ?? []
+    (m) => m.alias_list ?? []
   );
 }
 
@@ -111,7 +111,7 @@ export const GroupSelect: React.FC<
     const { inputValue } = optionProps.selectProps;
     let alias: string | undefined = "";
     if (!title.toLowerCase().includes(inputValue.toLowerCase())) {
-      alias = object.aliases?.find((a) =>
+      alias = object.alias_list?.find((a) =>
         a.toLowerCase().includes(inputValue.toLowerCase())
       );
     }
@@ -206,7 +206,7 @@ export const GroupSelect: React.FC<
     return {
       id,
       name,
-      aliases: [],
+      alias_list: [],
     };
   };
 
@@ -219,7 +219,7 @@ export const GroupSelect: React.FC<
       options.some((o) => {
         return (
           o.name.toLowerCase() === inputValue.toLowerCase() ||
-          o.aliases?.some((a) => a.toLowerCase() === inputValue.toLowerCase())
+          o.alias_list?.some((a) => a.toLowerCase() === inputValue.toLowerCase())
         );
       })
     ) {

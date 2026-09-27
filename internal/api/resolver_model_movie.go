@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"strings"
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
@@ -229,7 +230,7 @@ func (r *groupResolver) CustomFields(ctx context.Context, obj *models.Group) (ma
 	return m, nil
 }
 
-func (r *groupResolver) Aliases(ctx context.Context, obj *models.Group) ([]string, error) {
+func (r *groupResolver) AliasList(ctx context.Context, obj *models.Group) ([]string, error) {
 	if !obj.Aliases.Loaded() {
 		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			return obj.LoadAliases(ctx, r.repository.Group)
@@ -241,15 +242,15 @@ func (r *groupResolver) Aliases(ctx context.Context, obj *models.Group) ([]strin
 	return obj.Aliases.List(), nil
 }
 
-// movieResolver.Aliases overrides groupResolver.Aliases to return a single string
-// for backward compatibility with the deprecated Movie type.
-func (r *movieResolver) Aliases(ctx context.Context, obj *models.Group) (*string, error) {
-	aliases, err := r.groupResolver.Aliases(ctx, obj)
+// Aliases is deprecated in favour of alias_list. It returns the aliases joined
+// into a single string, for backward compatibility with the deprecated aliases
+// field on the Group and Movie types.
+func (r *groupResolver) Aliases(ctx context.Context, obj *models.Group) (*string, error) {
+	aliases, err := r.AliasList(ctx, obj)
 	if err != nil {
 		return nil, err
 	}
-	if len(aliases) == 0 {
-		return nil, nil
-	}
-	return &aliases[0], nil
+
+	ret := strings.Join(aliases, ", ")
+	return &ret, nil
 }
