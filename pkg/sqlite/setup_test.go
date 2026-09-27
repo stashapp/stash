@@ -175,9 +175,8 @@ const (
 	// groups with dup names start from the end
 	groupIdxWithDupName
 
-	groupsNameCase       = groupIdxWithDupName
-	groupsNameNoCase     = 1
-	groupIdxWithoutAlias = groupIdxWithScene
+	groupsNameCase   = groupIdxWithDupName
+	groupsNameNoCase = 1
 )
 
 const (
