@@ -240,7 +240,7 @@ func (r mappedResult) scrapedMovie() *models.ScrapedMovie {
 func (r mappedResult) scrapedGroup() *models.ScrapedGroup {
 	ret := &models.ScrapedGroup{
 		Name:       r.stringPtr("Name"),
-		AliasList:  r.stringSlice("Aliases"),
+		Aliases:    r.stringPtr("Aliases"),
 		URL:        r.stringPtr("URL"),
 		URLs:       r.stringSlice("URLs"),
 		Duration:   r.stringPtr("Duration"),
