@@ -14,6 +14,19 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+// deprecatedAliasList converts the deprecated single-string aliases input to a
+// list. Group names can legitimately contain commas, so the value is treated as
+// a single alias rather than being split. A blank value means no aliases.
+func deprecatedAliasList(aliases *string) []string {
+	if aliases == nil {
+		return nil
+	}
+	if v := strings.TrimSpace(*aliases); v != "" {
+		return []string{v}
+	}
+	return []string{}
+}
+
 func groupFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*models.CreateGroupInput, error) {
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
@@ -31,11 +44,8 @@ func groupFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*mo
 	var aliases []string
 	if input.AliasList != nil {
 		aliases = input.AliasList
-	} else if input.Aliases != nil {
-		// aliases is deprecated in favour of alias_list. Group names can
-		// legitimately contain commas, so the value is treated as a single
-		// alias rather than being split on commas.
-		aliases = []string{*input.Aliases}
+	} else {
+		aliases = deprecatedAliasList(input.Aliases)
 	}
 	newGroup.Aliases = models.NewRelatedStrings(stringslice.UniqueExcludeFold(stringslice.TrimSpace(aliases), newGroup.Name))
 	newGroup.Duration = input.Duration
@@ -132,10 +142,7 @@ func groupPartialFromGroupUpdateInput(translator changesetTranslator, input Grou
 	if translator.hasField("alias_list") {
 		updatedGroup.Aliases = translator.updateStrings(input.AliasList, "alias_list")
 	} else if translator.hasField("aliases") {
-		// aliases is deprecated in favour of alias_list. Treated as a single
-		// alias rather than being split on commas (group names can contain
-		// commas).
-		updatedGroup.Aliases = translator.updateStrings([]string{*input.Aliases}, "aliases")
+		updatedGroup.Aliases = translator.updateStrings(deprecatedAliasList(input.Aliases), "aliases")
 	}
 	updatedGroup.Duration = translator.optionalInt(input.Duration, "duration")
 	updatedGroup.Rating = translator.optionalInt(input.Rating100, "rating100")

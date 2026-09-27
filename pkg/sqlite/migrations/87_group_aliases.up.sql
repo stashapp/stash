@@ -8,7 +8,7 @@ CREATE TABLE `group_aliases` (
 CREATE INDEX `index_group_aliases_on_alias` on `group_aliases` (`alias`);
 
 -- copy data from group table where aliases is just a string
--- skip NULL rows to satisfy the NOT NULL constraint
+-- skip NULL rows to satisfy the NOT NULL constraint, and empty strings
 INSERT INTO `group_aliases` (
     `group_id`,
     `alias`
@@ -16,6 +16,6 @@ INSERT INTO `group_aliases` (
     `id`,
     `aliases`
 FROM `groups`
-WHERE `aliases` IS NOT NULL;
+WHERE `aliases` IS NOT NULL AND `aliases` != '';
 
 ALTER TABLE `groups` DROP COLUMN `aliases`;

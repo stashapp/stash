@@ -34,10 +34,7 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	newGroup := models.NewGroup()
 
 	newGroup.Name = strings.TrimSpace(input.Name)
-	var movieAliases []string
-	if input.Aliases != nil {
-		movieAliases = []string{strings.TrimSpace(*input.Aliases)}
-	}
+	movieAliases := deprecatedAliasList(input.Aliases)
 	newGroup.Aliases = models.NewRelatedStrings(stringslice.UniqueExcludeFold(movieAliases, newGroup.Name))
 	newGroup.Duration = input.Duration
 	newGroup.Rating = input.Rating100
@@ -138,10 +135,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 
 	updatedGroup.Name = translator.optionalString(input.Name, "name")
 
-	var aliases []string
-	if input.Aliases != nil {
-		aliases = []string{strings.TrimSpace(*input.Aliases)}
-	}
+	aliases := deprecatedAliasList(input.Aliases)
 
 	// movie is deprecated, so the below case is being ignored
 	// when the new alias is same as old group name and old group name
