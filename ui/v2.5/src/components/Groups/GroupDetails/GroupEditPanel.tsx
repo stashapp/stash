@@ -180,8 +180,8 @@ export const GroupEditPanel: React.FC<IGroupEditPanel> = ({
       formik.setFieldValue("name", state.name);
     }
 
-    if (state.aliases) {
-      formik.setFieldValue("alias_list", state.aliases);
+    if (state.alias_list) {
+      formik.setFieldValue("alias_list", state.alias_list);
     }
 
     if (state.duration) {
