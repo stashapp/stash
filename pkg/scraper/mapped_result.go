@@ -170,15 +170,16 @@ func (r mappedResults) scrapedPerformers() []*models.ScrapedPerformer {
 
 func (r mappedResult) scrapedScene() *models.ScrapedScene {
 	ret := &models.ScrapedScene{
-		Title:    r.stringPtr("Title"),
-		Code:     r.stringPtr("Code"),
-		Details:  r.stringPtr("Details"),
-		Director: r.stringPtr("Director"),
-		URL:      r.stringPtr("URL"),
-		URLs:     r.stringSlice("URLs"),
-		Date:     r.stringPtr("Date"),
-		Image:    r.stringPtr("Image"),
-		Duration: r.IntPtr("Duration"),
+		Title:          r.stringPtr("Title"),
+		Code:           r.stringPtr("Code"),
+		Details:        r.stringPtr("Details"),
+		Director:       r.stringPtr("Director"),
+		URL:            r.stringPtr("URL"),
+		URLs:           r.stringSlice("URLs"),
+		Date:           r.stringPtr("Date"),
+		ProductionDate: r.stringPtr("ProductionDate"),
+		Image:          r.stringPtr("Image"),
+		Duration:       r.IntPtr("Duration"),
 	}
 	return ret
 }

@@ -649,3 +649,51 @@ func TestImporterPostImport(t *testing.T) {
 		})
 	}
 }
+
+func TestImporterPreImportDates(t *testing.T) {
+	tests := []struct {
+		name               string
+		date               string
+		productionDate     string
+		wantDate           string
+		wantProductionDate string
+	}{
+		{"full dates", "2001-02-03", "2000-06-07", "2001-02-03", "2000-06-07"},
+		{"month precision is preserved", "2001-02-03", "2000-06", "2001-02-03", "2000-06"},
+		{"year precision is preserved", "2001-02-03", "2000", "2001-02-03", "2000"},
+		{"no production date", "2001-02-03", "", "2001-02-03", ""},
+		// an unparseable date is logged and skipped, leaving the rest of the
+		// scene importable
+		{"unparseable production date is skipped", "2001-02-03", "banana", "2001-02-03", ""},
+		{"unparseable date is skipped", "banana", "2000-06", "", "2000-06"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			i := Importer{
+				Input: jsonschema.Scene{
+					Title:          "title",
+					Date:           tt.date,
+					ProductionDate: tt.productionDate,
+				},
+			}
+
+			if err := i.PreImport(testCtx); err != nil {
+				t.Fatalf("PreImport() error = %v", err)
+			}
+
+			dateStr := ""
+			if i.scene.Date != nil {
+				dateStr = i.scene.Date.String()
+			}
+
+			productionDateStr := ""
+			if i.scene.ProductionDate != nil {
+				productionDateStr = i.scene.ProductionDate.String()
+			}
+
+			assert.Equal(t, tt.wantDate, dateStr)
+			assert.Equal(t, tt.wantProductionDate, productionDateStr)
+		})
+	}
+}

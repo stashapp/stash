@@ -41,14 +41,23 @@ const (
 	sceneCoverBlobColumn = "cover_blob"
 )
 
+// sceneAgeDateExpr is the scene date used when calculating a performer's age
+// for a scene. The production date is when the scene was actually shot, so it
+// is preferred over the release date where one is set. NULLIF is needed because
+// dates are stored as empty strings in some older databases, and an empty
+// production date must not mask a valid release date.
+const sceneAgeDateExpr = "COALESCE(NULLIF(scenes.production_date, ''), scenes.date)"
+
 type sceneRow struct {
-	ID            int         `db:"id" goqu:"skipinsert"`
-	Title         zero.String `db:"title"`
-	Code          zero.String `db:"code"`
-	Details       zero.String `db:"details"`
-	Director      zero.String `db:"director"`
-	Date          NullDate    `db:"date"`
-	DatePrecision null.Int    `db:"date_precision"`
+	ID                      int         `db:"id" goqu:"skipinsert"`
+	Title                   zero.String `db:"title"`
+	Code                    zero.String `db:"code"`
+	Details                 zero.String `db:"details"`
+	Director                zero.String `db:"director"`
+	Date                    NullDate    `db:"date"`
+	DatePrecision           null.Int    `db:"date_precision"`
+	ProductionDate          NullDate    `db:"production_date"`
+	ProductionDatePrecision null.Int    `db:"production_date_precision"`
 	// expressed as 1-100
 	Rating       null.Int  `db:"rating"`
 	Organized    bool      `db:"organized"`
@@ -70,6 +79,8 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.Director = zero.StringFrom(o.Director)
 	r.Date = NullDateFromDatePtr(o.Date)
 	r.DatePrecision = datePrecisionFromDatePtr(o.Date)
+	r.ProductionDate = NullDateFromDatePtr(o.ProductionDate)
+	r.ProductionDatePrecision = datePrecisionFromDatePtr(o.ProductionDate)
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
 	r.StudioID = intFromPtr(o.StudioID)
@@ -90,15 +101,16 @@ type sceneQueryRow struct {
 
 func (r *sceneQueryRow) resolve() *models.Scene {
 	ret := &models.Scene{
-		ID:        r.ID,
-		Title:     r.Title.String,
-		Code:      r.Code.String,
-		Details:   r.Details.String,
-		Director:  r.Director.String,
-		Date:      r.Date.DatePtr(r.DatePrecision),
-		Rating:    nullIntPtr(r.Rating),
-		Organized: r.Organized,
-		StudioID:  nullIntPtr(r.StudioID),
+		ID:             r.ID,
+		Title:          r.Title.String,
+		Code:           r.Code.String,
+		Details:        r.Details.String,
+		Director:       r.Director.String,
+		Date:           r.Date.DatePtr(r.DatePrecision),
+		ProductionDate: r.ProductionDate.DatePtr(r.ProductionDatePrecision),
+		Rating:         nullIntPtr(r.Rating),
+		Organized:      r.Organized,
+		StudioID:       nullIntPtr(r.StudioID),
 
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
 		OSHash:        r.PrimaryFileOshash.String,
@@ -128,6 +140,7 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullString("details", o.Details)
 	r.setNullString("director", o.Director)
 	r.setNullDate("date", "date_precision", o.Date)
+	r.setNullDate("production_date", "production_date_precision", o.ProductionDate)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
 	r.setNullInt("studio_id", o.StudioID)
@@ -1165,6 +1178,7 @@ var sceneSortOptions = sortOptions{
 	"created_at",
 	"code",
 	"date",
+	"production_date",
 	"file_count",
 	"filesize",
 	"duration",
@@ -1323,8 +1337,9 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 			fallback = "9223372036854775807"
 		}
 		query.sortAndPagination += fmt.Sprintf(
-			" ORDER BY (SELECT COALESCE(%s(JulianDay(scenes.date) - JulianDay(performers.birthdate)), %s) FROM %s as performers INNER JOIN %s AS aggregation WHERE performers.id = aggregation.%s AND aggregation.%s = %s.id) %s",
+			" ORDER BY (SELECT COALESCE(%s(JulianDay(%s) - JulianDay(performers.birthdate)), %s) FROM %s as performers INNER JOIN %s AS aggregation WHERE performers.id = aggregation.%s AND aggregation.%s = %s.id) %s",
 			aggregation,
+			sceneAgeDateExpr,
 			fallback,
 			performerTable,
 			performersScenesTable,

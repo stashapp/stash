@@ -24,7 +24,7 @@ import { SettingSection } from "./SettingSection";
 export const InstalledScraperPackages: React.FC = () => {
   const [loadUpgrades, setLoadUpgrades] = useState(false);
   const [jobID, setJobID] = useState<string>();
-  const { job } = useMonitorJob(jobID, () => onPackageChanges());
+  const { job } = useMonitorJob(jobID, onPackageChanges);
 
   const { data, previousData, refetch, networkStatus, error } =
     useInstalledScraperPackages(loadUpgrades);
@@ -44,7 +44,8 @@ export const InstalledScraperPackages: React.FC = () => {
   }
 
   function onPackageChanges() {
-    // job is complete, refresh all local data
+    // job is complete, stop monitoring it and refresh all local data
+    setJobID(undefined);
     const ac = getClient();
     evictQueries(ac.cache, scraperMutationImpactedQueries);
   }
@@ -98,7 +99,7 @@ export const AvailableScraperPackages: React.FC = () => {
   const { general, loading: configLoading, error, saveGeneral } = useSettings();
 
   const [jobID, setJobID] = useState<string>();
-  const { job } = useMonitorJob(jobID, () => onPackageChanges());
+  const { job } = useMonitorJob(jobID, onPackageChanges);
 
   // Get installed packages to filter them out from available list
   const { data: installedData } = useInstalledScraperPackages(false);
@@ -113,7 +114,8 @@ export const AvailableScraperPackages: React.FC = () => {
   }
 
   function onPackageChanges() {
-    // job is complete, refresh all local data
+    // job is complete, stop monitoring it and refresh all local data
+    setJobID(undefined);
     const ac = getClient();
     evictQueries(ac.cache, scraperMutationImpactedQueries);
   }

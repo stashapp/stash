@@ -995,6 +995,7 @@ Director
 Groups (see Group Fields)
 Image
 Performers (see Performer fields)
+ProductionDate
 Studio (see Studio Fields)
 Tags (see Tag fields)
 Title

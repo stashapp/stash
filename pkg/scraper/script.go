@@ -65,6 +65,8 @@ type sceneInput struct {
 	Date    *string `json:"date"`
 	Details string  `json:"details"`
 
+	ProductionDate *string `json:"production_date,omitempty"`
+
 	Director string `json:"director,omitempty"`
 
 	Files []videoFileInput `json:"files,omitempty"`
@@ -136,11 +138,12 @@ func sceneInputFromScene(scene *models.Scene) sceneInput {
 		Title:   title,
 		Details: scene.Details,
 		// include deprecated URL for now
-		URL:      url,
-		URLs:     urls,
-		Date:     dateToStringPtr(scene.Date),
-		Code:     scene.Code,
-		Director: scene.Director,
+		URL:            url,
+		URLs:           urls,
+		Date:           dateToStringPtr(scene.Date),
+		ProductionDate: dateToStringPtr(scene.ProductionDate),
+		Code:           scene.Code,
+		Director:       scene.Director,
 	}
 
 	for _, f := range scene.Files.List() {

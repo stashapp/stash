@@ -353,6 +353,8 @@ input SceneFilterType {
   last_played_at: TimestampCriterionInput
   "Filter by date"
   date: DateCriterionInput
+  "Filter by production date"
+  production_date: DateCriterionInput
   "Filter by creation time"
   created_at: TimestampCriterionInput
   "Filter by last update time"

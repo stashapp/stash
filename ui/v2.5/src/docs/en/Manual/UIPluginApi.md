@@ -335,6 +335,7 @@ Returns `void`.
 - `ScenePage.Tabs`
 - `ScenePlayer`
 - `SceneRecommendationRow`
+- `SceneScrapeDialog`
 - `SceneSelect`
 - `SceneSelect.sort`
 - `SelectSetting`

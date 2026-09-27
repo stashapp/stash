@@ -34,6 +34,7 @@ const sceneFields = [
   "organized",
   "director",
   "date",
+  "production_date",
 ];
 
 export const EditScenesDialog: React.FC<IListOperationProps> = (
@@ -49,6 +50,9 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
   });
 
   const [dateError, setDateError] = useState<string | undefined>();
+  const [productionDateError, setProductionDateError] = useState<
+    string | undefined
+  >();
 
   const [performerIds, setPerformerIds] = useState<GQL.BulkUpdateIds>({
     mode: GQL.BulkUpdateIdMode.Add,
@@ -97,6 +101,12 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
   useEffect(() => {
     setDateError(getDateError(updateInput.date ?? "", intl));
   }, [updateInput.date, intl]);
+
+  useEffect(() => {
+    setProductionDateError(
+      getDateError(updateInput.production_date ?? "", intl)
+    );
+  }, [updateInput.production_date, intl]);
 
   function setUpdateField(input: Partial<GQL.BulkSceneUpdateInput>) {
     setUpdateInput((current) => ({ ...current, ...input }));
@@ -154,7 +164,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
           onClick: onSave,
           text: intl.formatMessage({ id: "actions.apply" }),
         }}
-        disabled={isUpdating || !!dateError}
+        disabled={isUpdating || !!dateError || !!productionDateError}
         cancel={{
           onClick: () => props.onClose(false),
           text: intl.formatMessage({ id: "actions.cancel" }),
@@ -187,6 +197,17 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
               valueChanged={(newValue) => setUpdateField({ date: newValue })}
               unsetDisabled={unsetDisabled}
               error={dateError}
+            />
+          </BulkUpdateFormGroup>
+
+          <BulkUpdateFormGroup name="production_date">
+            <BulkUpdateDateInput
+              value={updateInput.production_date}
+              valueChanged={(newValue) =>
+                setUpdateField({ production_date: newValue })
+              }
+              unsetDisabled={unsetDisabled}
+              error={productionDateError}
             />
           </BulkUpdateFormGroup>
 

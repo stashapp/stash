@@ -158,15 +158,16 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 	stashID := s.ID
 
 	ss := &models.ScrapedScene{
-		Title:        s.Title,
-		Code:         s.Code,
-		Date:         s.Date,
-		Details:      s.Details,
-		Director:     s.Director,
-		URL:          findURL(s.Urls, "STUDIO"),
-		Duration:     s.Duration,
-		RemoteSiteID: &stashID,
-		Fingerprints: getFingerprints(s),
+		Title:          s.Title,
+		Code:           s.Code,
+		Date:           s.Date,
+		ProductionDate: s.ProductionDate,
+		Details:        s.Details,
+		Director:       s.Director,
+		URL:            findURL(s.Urls, "STUDIO"),
+		Duration:       s.Duration,
+		RemoteSiteID:   &stashID,
+		Fingerprints:   getFingerprints(s),
 		// Image
 		// stash_id
 	}
@@ -287,6 +288,11 @@ func newSceneDraftInput(d SceneDraft, endpoint string) graphql.SceneDraftInput {
 	if scene.Date != nil {
 		v := scene.Date.String()
 		draft.Date = &v
+	}
+
+	if scene.ProductionDate != nil {
+		v := scene.ProductionDate.String()
+		draft.ProductionDate = &v
 	}
 
 	if d.Studio != nil {

@@ -60,6 +60,12 @@ export class ScrapeResult<T> {
       return this.newValue;
     }
   }
+
+  // the value the dialog is currently showing for this field - the scraped
+  // value if it is selected, otherwise the value the object already had
+  public currentValue() {
+    return this.useNewValue ? this.newValue : this.originalValue;
+  }
 }
 
 // for types where !!value is a valid value (boolean and number)
