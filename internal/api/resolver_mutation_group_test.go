@@ -92,8 +92,8 @@ func TestGroupCreate_AliasNormalization(t *testing.T) {
 
 			// run the mutation
 			result, err := r.Mutation().GroupCreate(ctx, GroupCreateInput{
-				Name:    groupName,
-				Aliases: tt.aliases,
+				Name:      groupName,
+				AliasList: tt.aliases,
 			})
 			assert.Nil(t, err)
 			assert.NotNil(t, result)
@@ -156,7 +156,7 @@ func TestGroupUpdate_AliasNormalization(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			inputMap := map[string]interface{}{"aliases": nil}
+			inputMap := map[string]interface{}{"alias_list": nil}
 			if tt.newName != nil {
 				inputMap["name"] = nil
 			}
@@ -179,9 +179,9 @@ func TestGroupUpdate_AliasNormalization(t *testing.T) {
 
 			// run the mutation
 			result, err := r.Mutation().GroupUpdate(ctx, GroupUpdateInput{
-				ID:      groupIDStr,
-				Name:    tt.newName,
-				Aliases: tt.inputAliases,
+				ID:        groupIDStr,
+				Name:      tt.newName,
+				AliasList: tt.inputAliases,
 			})
 			assert.Nil(t, err)
 			assert.NotNil(t, result)

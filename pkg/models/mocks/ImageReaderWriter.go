@@ -976,12 +976,3 @@ func NewImageReaderWriter(t mockConstructorTestingTNewImageReaderWriter) *ImageR
 
 	return mock
 }
-e mock and a cleanup function to assert the mocks expectations.
-func NewImageReaderWriter(t mockConstructorTestingTNewImageReaderWriter) *ImageReaderWriter {
-	mock := &ImageReaderWriter{}
-	mock.Mock.Test(t)
-
-	t.Cleanup(func() { mock.AssertExpectations(t) })
-
-	return mock
-}

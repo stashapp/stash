@@ -1710,9 +1710,3 @@ func NewSceneReaderWriter(t mockConstructorTestingTNewSceneReaderWriter) *SceneR
 
 	return mock
 }
-
-
-	t.Cleanup(func() { mock.AssertExpectations(t) })
-
-	return mock
-}

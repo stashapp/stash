@@ -32,8 +32,9 @@ import { TruncatedText } from "../Shared/TruncatedText";
 
 export type Group = Pick<
   GQL.Group,
-  "id" | "name" | "date" | "front_image_path" | "alias_list"
+  "id" | "name" | "date" | "front_image_path"
 > & {
+  alias_list?: string[] | null;
   studio?: Pick<GQL.Studio, "name"> | null;
 };
 type Option = SelectOption<Group>;
@@ -219,7 +220,9 @@ export const GroupSelect: React.FC<
       options.some((o) => {
         return (
           o.name.toLowerCase() === inputValue.toLowerCase() ||
-          o.alias_list?.some((a) => a.toLowerCase() === inputValue.toLowerCase())
+          o.alias_list?.some(
+            (a) => a.toLowerCase() === inputValue.toLowerCase()
+          )
         );
       })
     ) {

@@ -324,11 +324,9 @@ export const ScrapedGroupsRow: React.FC<
     const value = resultValue ?? [];
 
     const selectValue = value.map((p) => {
-      const aliases: string[] = [];
       return {
         id: p.stored_id ?? "",
         name: p.name ?? "",
-        aliases,
       };
     });
 
