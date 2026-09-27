@@ -53,7 +53,7 @@ func ToJSON(ctx context.Context, reader GroupExportReader, studioReader models.S
 	if err := group.LoadAliases(ctx, reader); err != nil {
 		return nil, fmt.Errorf("loading group aliases: %w", err)
 	}
-	newGroupJSON.Aliases = group.Aliases.List()
+	newGroupJSON.AliasList = group.Aliases.List()
 
 	frontImage, err := reader.GetFrontImage(ctx, group.ID)
 	if err != nil {
