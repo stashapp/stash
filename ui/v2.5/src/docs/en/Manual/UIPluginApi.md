@@ -291,6 +291,7 @@ Returns `void`.
 - `PerformerCard.Popovers`
 - `PerformerCard.Title`
 - `PerformerCardGrid`
+- `PerformerCreate`
 - `PerformerDetailsPanel`
 - `PerformerDetailsPanel.DetailGroup`
 - `PerformerGalleriesPanel`
@@ -319,6 +320,7 @@ Returns `void`.
 - `SceneCard.Popovers`
 - `SceneCard.SceneSpecs`
 - `SceneCardsGrid`
+- `SceneCreate`
 - `SceneFileInfoPanel`
 - `SceneIDSelect`
 - `SceneMarkerCard`
