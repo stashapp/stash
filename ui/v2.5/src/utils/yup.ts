@@ -92,25 +92,74 @@ export function yupUniqueStringList(intl: IntlShape) {
     });
 }
 
+export function normalizeDateString(value?: string) {
+  if (!value) return undefined;
+
+  let year: number;
+  let month: number | undefined;
+  let day: number | undefined;
+
+  const yearMatch = /^(\d{4})$/.exec(value);
+  const yearMonthMatch = /^(\d{4})([-.])(\d{1,2})$/.exec(value);
+  const fullDateMatch = /^(\d{4})([-.])(\d{1,2})\2(\d{1,2})$/.exec(value);
+  const compactDateMatch = /^(\d{4})(\d{2})(\d{2})$/.exec(value);
+  const shortDateMatch = /^(\d{2})([-.])(\d{1,2})\2(\d{1,2})$/.exec(value);
+
+  if (yearMatch) {
+    year = Number(yearMatch[1]);
+  } else if (yearMonthMatch) {
+    year = Number(yearMonthMatch[1]);
+    month = Number(yearMonthMatch[3]);
+  } else if (fullDateMatch) {
+    year = Number(fullDateMatch[1]);
+    month = Number(fullDateMatch[3]);
+    day = Number(fullDateMatch[4]);
+  } else if (compactDateMatch) {
+    year = Number(compactDateMatch[1]);
+    month = Number(compactDateMatch[2]);
+    day = Number(compactDateMatch[3]);
+  } else if (shortDateMatch) {
+    const shortYear = Number(shortDateMatch[1]);
+    year = shortYear <= 68 ? 2000 + shortYear : 1900 + shortYear;
+    month = Number(shortDateMatch[3]);
+    day = Number(shortDateMatch[4]);
+  } else {
+    return undefined;
+  }
+
+  if (year < 1 || year > 9999) return undefined;
+  if (month === undefined) return `${year}`;
+  if (month < 1 || month > 12) return undefined;
+  if (day === undefined) return `${year}-${month.toString().padStart(2, "0")}`;
+
+  const daysInMonth = [
+    31,
+    isLeapYear(year) ? 29 : 28,
+    31,
+    30,
+    31,
+    30,
+    31,
+    31,
+    30,
+    31,
+    30,
+    31,
+  ][month - 1];
+  if (day < 1 || day > daysInMonth) return undefined;
+
+  return `${year}-${month.toString().padStart(2, "0")}-${day
+    .toString()
+    .padStart(2, "0")}`;
+}
+
 export function validateDateString(value?: string) {
   if (!value) return true;
-  // Allow YYYY, YYYY-MM, or YYYY-MM-DD formats
-  if (!value.match(/^\d{4}(-\d{2}(-\d{2})?)?$/)) return false;
-  // Validate the date components
-  const parts = value.split("-");
-  const year = parseInt(parts[0], 10);
-  if (year < 1 || year > 9999) return false;
-  if (parts.length >= 2) {
-    const month = parseInt(parts[1], 10);
-    if (month < 1 || month > 12) return false;
-  }
-  if (parts.length === 3) {
-    const day = parseInt(parts[2], 10);
-    if (day < 1 || day > 31) return false;
-    // Full date - validate it parses correctly
-    if (Number.isNaN(Date.parse(value))) return false;
-  }
-  return true;
+  return normalizeDateString(value) !== undefined;
+}
+
+function isLeapYear(year: number) {
+  return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
 }
 
 export function getDateError(

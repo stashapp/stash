@@ -14,6 +14,11 @@ func TestParseDateStringAsTime(t *testing.T) {
 		{"RFC3339", "2014-01-02T15:04:05Z", false},
 		{"Date only", "2014-01-02", false},
 		{"Date with time", "2014-01-02 15:04:05", false},
+		{"Unpadded date", "2014-1-2", false},
+		{"Compact date", "20140102", false},
+		{"Dotted date", "2014.01.02", false},
+		{"Two-digit year date", "14-01-02", false},
+		{"Two-digit year dotted date", "14.01.02", false},
 
 		// Invalid formats
 		{"Invalid format", "not-a-date", true},
