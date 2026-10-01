@@ -20,6 +20,7 @@ $sceneTabWidth: 450px;
 
   &.portrait .video-wrapper {
     height: 177.78vw;
+    max-height: calc(100vh - #{$menuHeight});
   }
 }
 
