@@ -1340,6 +1340,7 @@
     "install": "Install",
     "installed_version": "Installed version",
     "latest_version": "Latest version",
+    "matched_via": "Matches {match}",
     "no_packages": "No packages found",
     "no_sources": "No sources configured",
     "no_upgradable": "No upgradable packages found",
