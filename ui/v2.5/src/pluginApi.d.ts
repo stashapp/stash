@@ -719,6 +719,7 @@ declare namespace PluginApi {
     "PerformerCard.Overlays": React.FC<any>;
     "PerformerCard.Popovers": React.FC<any>;
     "PerformerCard.Title": React.FC<any>;
+    PerformerCreate: React.FC<any>;
     PerformerDetailsPanel: React.FC<any>;
     "PerformerDetailsPanel.DetailGroup": React.FC<any>;
     PerformerGalleriesPanel: React.FC<any>;
@@ -737,6 +738,7 @@ declare namespace PluginApi {
     RatingStars: React.FC<any>;
     RatingSystem: React.FC<any>;
     RecommendationRow: React.FC<any>;
+    SceneCreate: React.FC<any>;
     SceneFileInfoPanel: React.FC<any>;
     SceneIDSelect: React.FC<any>;
     ScenePage: React.FC<any>;
