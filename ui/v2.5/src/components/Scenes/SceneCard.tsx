@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { useHistory } from "react-router-dom";
 import cx from "classnames";
@@ -56,13 +62,17 @@ export const ScenePreview: React.FC<IScenePreviewProps> = React.memo(
   }) => {
     const videoEl = useRef<HTMLVideoElement>(null);
 
+    const [showing, setShowing] = useState(false);
+    // WebKit sets up a media player for every video that has a src, so don't
+    // attach it until the preview is first shown
+    const [loadVideo, setLoadVideo] = useState(false);
+
     useEffect(() => {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
-          if (entry.intersectionRatio > 0)
-            // Catch is necessary due to DOMException if user hovers before clicking on page
-            videoEl.current?.play()?.catch(() => {});
-          else videoEl.current?.pause();
+          const visible = entry.intersectionRatio > 0;
+          if (visible) setLoadVideo(true);
+          setShowing(visible);
         });
       });
 
@@ -70,6 +80,19 @@ export const ScenePreview: React.FC<IScenePreviewProps> = React.memo(
 
       return () => observer.disconnect();
     }, []);
+
+    useEffect(() => {
+      const el = videoEl.current;
+      if (!el) return;
+
+      if (showing && loadVideo) {
+        // Catch is necessary due to DOMException if user hovers before clicking on page
+        el.play()?.catch(() => {});
+      } else if (!el.paused) {
+        // pausing a video that never played also starts the media player
+        el.pause();
+      }
+    }, [showing, loadVideo]);
 
     useEffect(() => {
       if (videoEl?.current?.volume)
@@ -92,7 +115,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = React.memo(
           loop
           preload="none"
           ref={videoEl}
-          src={video}
+          src={loadVideo ? video : undefined}
         />
         <PreviewScrubber
           vttPath={vttPath}
