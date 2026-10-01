@@ -19,6 +19,17 @@ interface IAuthenticationInput {
   setValue: (v: AuthenticationSettingsInput) => void;
 }
 
+// bcrypt imposes a 72-byte maximum on passwords. Note this is a byte count,
+// not a character count: a multibyte UTF-8 password can be 72 characters
+// but well over 72 bytes. We validate the byte length here so the user gets
+// immediate feedback, and the backend rejects the request atomically if they
+// somehow submit anyway. See #7135.
+const MAX_PASSWORD_BYTES = 72;
+
+function passwordByteLength(password: string): number {
+  return new TextEncoder().encode(password).length;
+}
+
 const AuthenticationInput: React.FC<IAuthenticationInput> = ({
   value,
   setValue,
@@ -33,6 +44,8 @@ const AuthenticationInput: React.FC<IAuthenticationInput> = ({
   }
 
   const { username, password } = value;
+  const passwordTooLong =
+    passwordByteLength(password ?? "") > MAX_PASSWORD_BYTES;
 
   return (
     <div>
@@ -54,15 +67,19 @@ const AuthenticationInput: React.FC<IAuthenticationInput> = ({
         <Form.Control
           className="text-input"
           type="password"
-          // bcrypt imposes a 72-byte maximum on passwords. Enforce it here
-          // so the user cannot type more than 72 characters; the backend
-          // also validates the byte length. See #7135.
-          maxLength={72}
           value={password ?? ""}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             set({ password: e.currentTarget.value })
           }
+          isInvalid={passwordTooLong}
         />
+        <Form.Control.Feedback type="invalid">
+          {passwordTooLong
+            ? intl.formatMessage({
+                id: "config.general.auth.password_too_long",
+              })
+            : ""}
+        </Form.Control.Feedback>
         <Form.Text className="text-muted">
           {intl.formatMessage({ id: "config.general.auth.password_desc" })}
         </Form.Text>

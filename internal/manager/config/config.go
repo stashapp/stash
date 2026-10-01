@@ -1234,9 +1234,25 @@ func (i *Config) HasCredentials() bool {
 // See https://github.com/stashapp/stash/issues/7135.
 const maxPasswordBytes = 72
 
-func hashPassword(password string) (string, error) {
+// ValidatePasswordLength returns an error if the given password exceeds the
+// bcrypt-imposed 72-byte maximum. It is safe to call with an empty password
+// (an empty password means "no password" / disabled auth and is always
+// valid). Callers that need to validate a password before mutating any other
+// state (e.g. before creating config files in Setup, or before applying a
+// username change in ConfigureGeneral) should call this first so that a
+// too-long password fails atomically instead of leaving a half-applied
+// configuration behind.
+func ValidatePasswordLength(password string) error {
 	if len(password) > maxPasswordBytes {
-		return "", fmt.Errorf("password exceeds the %d-byte limit imposed by bcrypt", maxPasswordBytes)
+		return fmt.Errorf("password exceeds the %d-byte limit imposed by bcrypt", maxPasswordBytes)
+	}
+
+	return nil
+}
+
+func hashPassword(password string) (string, error) {
+	if err := ValidatePasswordLength(password); err != nil {
+		return "", err
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
