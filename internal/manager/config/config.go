@@ -507,7 +507,7 @@ func (i *Config) set(key string, value interface{}) {
 
 	// test for nil interface as well
 	refVal := reflect.ValueOf(value)
-	if refVal.Kind() == reflect.Ptr && refVal.IsNil() {
+	if refVal.Kind() == reflect.Pointer && refVal.IsNil() {
 		return
 	}
 
