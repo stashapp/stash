@@ -2,7 +2,7 @@
 fragment GroupData on Group {
   id
   name
-  aliases
+  alias_list
   duration
   date
   rating100
@@ -48,7 +48,7 @@ fragment GroupData on Group {
 fragment ListGroupData on Group {
   id
   name
-  aliases
+  alias_list
   duration
   date
   rating100
