@@ -131,15 +131,11 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 		newHash := GetHash(f, h.FileNamingAlgorithm)
 
 		if oldHash != "" && newHash != "" && oldHash != newHash {
-			// sprite/preview/transcode/cover are generated from a scene's
-			// primary file, keyed on its hash - if the file that changed
-			// isn't primary for any of its scenes, nothing was actually
-			// generated from its hash, and that hash may still be in use
-			// by the real primary file (e.g. two files that started out
-			// as byte-identical duplicates, sharing a hash, one of which
-			// gets edited). Only invalidate when this file is primary
-			// somewhere, so a secondary file's edit can't destroy content
-			// that's still valid for the (unchanged) primary file.
+			// sprite/preview/transcode/cover are keyed on the scene's
+			// primary file hash - only invalidate if this file is
+			// primary somewhere, so editing a secondary file (or one
+			// sharing a hash with the real primary) can't destroy
+			// content that's still valid.
 			isPrimary := false
 			for _, s := range existing {
 				if s.PrimaryFileID == nil || *s.PrimaryFileID != videoFile.ID {
@@ -153,19 +149,11 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 			}
 
 			if isPrimary {
-				// content changed at the same path - remove the old
-				// hash's generated files instead of renaming them onto
-				// the new hash, so stale content doesn't pass as valid
-				// for the new content. Deleting from disk isn't part of
-				// the DB transaction and can't be rolled back, so defer
-				// it to a post-commit hook - if anything later in this
-				// transaction fails and rolls back, these files are
-				// never touched, instead of the DB reverting to the old
-				// hash while its generated files are already gone.
-				// Registered before the ScanGenerator hook below so it
-				// always runs first (post-commit hooks run in
-				// registration order): stale files are gone before any
-				// regeneration of fresh ones begins.
+				// delete, don't rename - stale content shouldn't pass as
+				// valid under the new hash. Deferred to a post-commit
+				// hook since disk deletes can't roll back with the
+				// transaction; registered before the ScanGenerator hook
+				// below so deletion still runs first.
 				txn.AddPostCommitHook(ctx, func(ctx context.Context) {
 					InvalidateGeneratedFiles(h.Paths, oldHash)
 				})
