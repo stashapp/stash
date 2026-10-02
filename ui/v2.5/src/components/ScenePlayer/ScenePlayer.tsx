@@ -216,12 +216,14 @@ function fingerprintsMatch(a: FileFingerprint[], b: FileFingerprint[]) {
   if (a.length === 0 && b.length === 0) {
     return true;
   }
-  const bByType = new Map(b.map((fp) => [fp.type, fp.value]));
-  const common = a.filter((fp) => bByType.has(fp.type));
-  if (common.length === 0) {
-    return false;
+  let sawCommonType = false;
+  for (const fp of a) {
+    const match = b.find((other) => other.type === fp.type);
+    if (!match) continue;
+    if (match.value !== fp.value) return false;
+    sawCommonType = true;
   }
-  return common.every((fp) => fp.value === bByType.get(fp.type));
+  return sawCommonType;
 }
 
 function getMarkerTitle(marker: MarkerFragment) {
@@ -267,8 +269,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     const uiConfig = configuration?.ui;
     const videoRef = useRef<HTMLDivElement>(null);
     const [_player, setPlayer] = useState<VideoJsPlayer>();
-    const sceneId = useRef<string>();
-    const fileFingerprints = useRef<FileFingerprint[]>();
+    const loadedSource = useRef<{
+      sceneId: string;
+      fingerprints: FileFingerprint[];
+    }>();
     const [sceneSaveActivity] = useSceneSaveActivity();
     const [sceneIncrementPlayCount] = useSceneIncrementPlayCount();
     const [updateInterfaceConfig] = useConfigureInterface();
@@ -458,9 +462,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         videoEl.remove();
         setPlayer(undefined);
 
-        // reset sceneId/fileFingerprints to force reload sources
-        sceneId.current = undefined;
-        fileFingerprints.current = undefined;
+        // reset to force reload sources
+        loadedSource.current = undefined;
       };
       // empty deps - only init once
       // showAbLoopControls is necessary to re-init the player when the config changes
@@ -610,14 +613,15 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       // edited in place under the same scene id (fingerprints differ)
       if (!file) return;
       if (
-        scene.id === sceneId.current &&
-        fileFingerprints.current &&
-        fingerprintsMatch(file.fingerprints, fileFingerprints.current)
+        loadedSource.current?.sceneId === scene.id &&
+        fingerprintsMatch(file.fingerprints, loadedSource.current.fingerprints)
       )
         return;
 
-      sceneId.current = scene.id;
-      fileFingerprints.current = file.fingerprints;
+      loadedSource.current = {
+        sceneId: scene.id,
+        fingerprints: file.fingerprints,
+      };
 
       setReady(false);
 

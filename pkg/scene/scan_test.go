@@ -40,6 +40,36 @@ func (stubServerConfig) GetPluginsPath() string       { return "" }
 func (stubServerConfig) GetDisabledPlugins() []string { return nil }
 func (stubServerConfig) GetPythonPath() string        { return "" }
 
+// oldHash/newHash are the before/after hashes shared by every
+// TestHandle_ContentChangedAtSamePath* same-path-content-change test below.
+const (
+	oldHash = "oldhash0000000000000000000000000"
+	newHash = "newhash0000000000000000000000000"
+)
+
+// newTestScanHandler builds the ScanHandler struct literal shared by every
+// TestHandle_ContentChangedAtSamePath* test below.
+func newTestScanHandler(db *mocks.Database, p *paths.Paths) *ScanHandler {
+	return &ScanHandler{
+		CreatorUpdater:       db.Scene,
+		GalleryFinderUpdater: db.Gallery,
+		CaptionUpdater:       db.File,
+		ScanGenerator:        noopScanGenerator{},
+		PluginCache:          plugin.NewCache(stubServerConfig{}),
+		FileNamingAlgorithm:  models.HashAlgorithmOshash,
+		Paths:                p,
+	}
+}
+
+// seedStaleFile writes a placeholder file at path, creating its parent
+// directory as needed, standing in for generated content a test expects
+// to be deleted (or to survive, depending on the assertion).
+func seedStaleFile(t *testing.T, path string) {
+	t.Helper()
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0755))
+	require.NoError(t, os.WriteFile(path, []byte("stale"), 0644))
+}
+
 func TestAssociateExisting_UpdatePartialOnContentChange(t *testing.T) {
 	const (
 		testSceneID = 1
@@ -148,11 +178,6 @@ func TestInvalidateGeneratedFiles(t *testing.T) {
 	tmpDir := t.TempDir()
 	p := paths.NewPaths(tmpDir, filepath.Join(tmpDir, "blobs"))
 
-	seedFile := func(path string) {
-		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0755))
-		require.NoError(t, os.WriteFile(path, []byte("stale"), 0644))
-	}
-
 	videoPreview := p.Scene.GetVideoPreviewPath(hash)
 	webpPreview := p.Scene.GetWebpPreviewPath(hash)
 	transcode := p.Scene.GetTranscodePath(hash)
@@ -161,13 +186,13 @@ func TestInvalidateGeneratedFiles(t *testing.T) {
 	heatmap := p.Scene.GetInteractiveHeatmapPath(hash)
 	markersFolder := filepath.Join(p.Generated.Markers, hash)
 
-	seedFile(videoPreview)
-	seedFile(webpPreview)
-	seedFile(transcode)
-	seedFile(spriteVtt)
-	seedFile(spriteImage)
-	seedFile(heatmap)
-	seedFile(filepath.Join(markersFolder, "1.mp4"))
+	seedStaleFile(t, videoPreview)
+	seedStaleFile(t, webpPreview)
+	seedStaleFile(t, transcode)
+	seedStaleFile(t, spriteVtt)
+	seedStaleFile(t, spriteImage)
+	seedStaleFile(t, heatmap)
+	seedStaleFile(t, filepath.Join(markersFolder, "1.mp4"))
 
 	// no files exist for this hash - should be a no-op
 	assert.NotPanics(t, func() {
@@ -188,9 +213,6 @@ func TestInvalidateGeneratedFiles(t *testing.T) {
 func TestHandle_ContentChangedAtSamePath(t *testing.T) {
 	const testSceneID = 1
 	const testFileID = 100
-
-	const oldHash = "oldhash0000000000000000000000000"
-	const newHash = "newhash0000000000000000000000000"
 
 	tests := []struct {
 		name               string
@@ -241,8 +263,7 @@ func TestHandle_ContentChangedAtSamePath(t *testing.T) {
 			p := paths.NewPaths(tmpDir, filepath.Join(tmpDir, "blobs"))
 
 			staleSprite := p.Scene.GetSpriteImageFilePath(oldHash)
-			require.NoError(t, os.MkdirAll(filepath.Dir(staleSprite), 0755))
-			require.NoError(t, os.WriteFile(staleSprite, []byte("stale"), 0644))
+			seedStaleFile(t, staleSprite)
 
 			db := mocks.NewDatabase()
 			db.File.On("GetCaptions", mock.Anything, mock.Anything).Return(nil, nil)
@@ -253,15 +274,7 @@ func TestHandle_ContentChangedAtSamePath(t *testing.T) {
 			db.Scene.On("UpdateCover", mock.Anything, testSceneID, mock.Anything).Return(nil)
 			db.Gallery.On("FindByPath", mock.Anything, mock.Anything).Return(nil, nil)
 
-			h := &ScanHandler{
-				CreatorUpdater:       db.Scene,
-				GalleryFinderUpdater: db.Gallery,
-				CaptionUpdater:       db.File,
-				ScanGenerator:        noopScanGenerator{},
-				PluginCache:          plugin.NewCache(stubServerConfig{}),
-				FileNamingAlgorithm:  models.HashAlgorithmOshash,
-				Paths:                &p,
-			}
+			h := newTestScanHandler(db, &p)
 
 			withCommittedTxn(t, db, func(ctx context.Context) error {
 				return h.Handle(ctx, newFile, oldFile)
@@ -282,9 +295,6 @@ func TestHandle_ContentChangedAtSamePath_SecondaryFile(t *testing.T) {
 	const testSceneID = 1
 	const primaryFileID = 100
 	const secondaryFileID = 200
-
-	const oldHash = "oldhash0000000000000000000000000"
-	const newHash = "newhash0000000000000000000000000"
 
 	primaryFile := &models.VideoFile{
 		BaseFile: &models.BaseFile{
@@ -322,8 +332,7 @@ func TestHandle_ContentChangedAtSamePath_SecondaryFile(t *testing.T) {
 	p := paths.NewPaths(tmpDir, filepath.Join(tmpDir, "blobs"))
 
 	staleSprite := p.Scene.GetSpriteImageFilePath(oldHash)
-	require.NoError(t, os.MkdirAll(filepath.Dir(staleSprite), 0755))
-	require.NoError(t, os.WriteFile(staleSprite, []byte("stale"), 0644))
+	seedStaleFile(t, staleSprite)
 
 	db := mocks.NewDatabase()
 	db.File.On("GetCaptions", mock.Anything, mock.Anything).Return(nil, nil)
@@ -334,15 +343,7 @@ func TestHandle_ContentChangedAtSamePath_SecondaryFile(t *testing.T) {
 	db.Scene.On("UpdateCover", mock.Anything, testSceneID, mock.Anything).Return(nil)
 	db.Gallery.On("FindByPath", mock.Anything, mock.Anything).Return(nil, nil)
 
-	h := &ScanHandler{
-		CreatorUpdater:       db.Scene,
-		GalleryFinderUpdater: db.Gallery,
-		CaptionUpdater:       db.File,
-		ScanGenerator:        noopScanGenerator{},
-		PluginCache:          plugin.NewCache(stubServerConfig{}),
-		FileNamingAlgorithm:  models.HashAlgorithmOshash,
-		Paths:                &p,
-	}
+	h := newTestScanHandler(db, &p)
 
 	withCommittedTxn(t, db, func(ctx context.Context) error {
 		return h.Handle(ctx, newFile, oldFile)
@@ -366,7 +367,6 @@ func TestHandle_ContentChangedAtSamePath_SharedHashSibling(t *testing.T) {
 	// sharing a hash - a real, reachable state via FindByFingerprints
 	// matching a new file to an existing scene by content
 	const sharedHash = "sharedhash00000000000000000000000"
-	const newHash = "newhash0000000000000000000000000"
 
 	primaryFile := &models.VideoFile{
 		BaseFile: &models.BaseFile{
@@ -409,8 +409,7 @@ func TestHandle_ContentChangedAtSamePath_SharedHashSibling(t *testing.T) {
 	// generated content sitting at the shared hash - this is what the
 	// still-unedited primary file depends on
 	sharedSprite := p.Scene.GetSpriteImageFilePath(sharedHash)
-	require.NoError(t, os.MkdirAll(filepath.Dir(sharedSprite), 0755))
-	require.NoError(t, os.WriteFile(sharedSprite, []byte("shared"), 0644))
+	seedStaleFile(t, sharedSprite)
 
 	db := mocks.NewDatabase()
 	db.File.On("GetCaptions", mock.Anything, mock.Anything).Return(nil, nil)
@@ -421,15 +420,7 @@ func TestHandle_ContentChangedAtSamePath_SharedHashSibling(t *testing.T) {
 	db.Scene.On("UpdateCover", mock.Anything, testSceneID, mock.Anything).Return(nil)
 	db.Gallery.On("FindByPath", mock.Anything, mock.Anything).Return(nil, nil)
 
-	h := &ScanHandler{
-		CreatorUpdater:       db.Scene,
-		GalleryFinderUpdater: db.Gallery,
-		CaptionUpdater:       db.File,
-		ScanGenerator:        noopScanGenerator{},
-		PluginCache:          plugin.NewCache(stubServerConfig{}),
-		FileNamingAlgorithm:  models.HashAlgorithmOshash,
-		Paths:                &p,
-	}
+	h := newTestScanHandler(db, &p)
 
 	withCommittedTxn(t, db, func(ctx context.Context) error {
 		return h.Handle(ctx, newFile, oldFile)
@@ -451,9 +442,6 @@ func TestHandle_ContentChangedAtSamePath_SharedHashSibling(t *testing.T) {
 func TestHandle_ContentChangedAtSamePath_RollbackDoesNotDeleteFiles(t *testing.T) {
 	const testSceneID = 1
 	const testFileID = 100
-
-	const oldHash = "oldhash0000000000000000000000000"
-	const newHash = "newhash0000000000000000000000000"
 
 	oldFile := &models.VideoFile{
 		BaseFile: &models.BaseFile{
@@ -485,8 +473,7 @@ func TestHandle_ContentChangedAtSamePath_RollbackDoesNotDeleteFiles(t *testing.T
 	p := paths.NewPaths(tmpDir, filepath.Join(tmpDir, "blobs"))
 
 	staleSprite := p.Scene.GetSpriteImageFilePath(oldHash)
-	require.NoError(t, os.MkdirAll(filepath.Dir(staleSprite), 0755))
-	require.NoError(t, os.WriteFile(staleSprite, []byte("stale"), 0644))
+	seedStaleFile(t, staleSprite)
 
 	db := mocks.NewDatabase()
 	db.File.On("GetCaptions", mock.Anything, mock.Anything).Return(nil, nil)
@@ -499,15 +486,7 @@ func TestHandle_ContentChangedAtSamePath_RollbackDoesNotDeleteFiles(t *testing.T
 	// return an error and the transaction to roll back
 	db.Gallery.On("FindByPath", mock.Anything, mock.Anything).Return(nil, assert.AnError)
 
-	h := &ScanHandler{
-		CreatorUpdater:       db.Scene,
-		GalleryFinderUpdater: db.Gallery,
-		CaptionUpdater:       db.File,
-		ScanGenerator:        noopScanGenerator{},
-		PluginCache:          plugin.NewCache(stubServerConfig{}),
-		FileNamingAlgorithm:  models.HashAlgorithmOshash,
-		Paths:                &p,
-	}
+	h := newTestScanHandler(db, &p)
 
 	err := txn.WithTxn(context.Background(), db, func(ctx context.Context) error {
 		return h.Handle(ctx, newFile, oldFile)

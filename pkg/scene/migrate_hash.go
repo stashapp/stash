@@ -79,23 +79,20 @@ func existsForAction(existsFn func(string) (bool, error), path string) bool {
 }
 
 func removeSceneFile(path string) {
-	if !existsForAction(fsutil.FileExists, path) {
-		return
-	}
-
-	logger.Infof("removing outdated generated file %s", path)
-	if err := os.Remove(path); err != nil {
-		logger.Errorf("error removing %s: %s", path, err.Error())
-	}
+	removePath(fsutil.FileExists, os.Remove, "file", path)
 }
 
 func removeSceneFolder(path string) {
-	if !existsForAction(fsutil.DirExists, path) {
+	removePath(fsutil.DirExists, fsutil.RemoveDir, "folder", path)
+}
+
+func removePath(existsFn func(string) (bool, error), removeFn func(string) error, kind, path string) {
+	if !existsForAction(existsFn, path) {
 		return
 	}
 
-	logger.Infof("removing outdated generated folder %s", path)
-	if err := os.RemoveAll(path); err != nil {
+	logger.Infof("removing outdated generated %s %s", kind, path)
+	if err := removeFn(path); err != nil {
 		logger.Errorf("error removing %s: %s", path, err.Error())
 	}
 }
