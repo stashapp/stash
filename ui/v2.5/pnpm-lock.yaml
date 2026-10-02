@@ -55,9 +55,6 @@ importers:
       '@silvermine/videojs-airplay':
         specifier: ^1.3.0
         version: 1.3.0(video.js@7.21.7)
-      '@silvermine/videojs-chromecast':
-        specifier: ^1.5.0
-        version: 1.5.0(video.js@7.21.7)
       '@types/react-router-dom':
         specifier: ^5.3.3
         version: 5.3.3
@@ -262,7 +259,7 @@ importers:
         version: 2.1.3
       '@vitejs/plugin-react':
         specifier: ^5.2.0
-        version: 5.2.0(vite@7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1))
+        version: 5.2.0(vite@7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1))
       extract-react-intl-messages:
         specifier: ^4.1.1
         version: 4.1.1
@@ -289,13 +286,13 @@ importers:
         version: 5.9.3
       vite:
         specifier: ^7.3.5
-        version: 7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1)
+        version: 7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1)
       vite-plugin-compression:
         specifier: ^0.5.1
-        version: 0.5.1(vite@7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1))
+        version: 0.5.1(vite@7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1))
       vite-tsconfig-paths:
         specifier: ^6.1.1
-        version: 6.1.1(typescript@5.9.3)(vite@7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1))
+        version: 6.1.1(typescript@5.9.3)(vite@7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1))
 
 packages:
 
@@ -1503,11 +1500,6 @@ packages:
     resolution: {integrity: sha512-Oxq31DIEuKVt0qLj8/n5aaC9RRAc0hryarPVD9SFxPwCQ3A9Ef7bkRkGJz2i7XQxpIhPQ4SkM9BudUj6oHsPzA==}
     peerDependencies:
       video.js: '>= 6.0.0'
-
-  '@silvermine/videojs-chromecast@1.5.0':
-    resolution: {integrity: sha512-oDWu0WT6NORWqpUHf5xg+GoLlxA/YV7guNDOGsDV51gOqYiKb2HoPXodDfhdzwHczUmPFmbyPwfSC1E+etAOmQ==}
-    peerDependencies:
-      video.js: '>= 6 < 9'
 
   '@sindresorhus/merge-streams@4.0.0':
     resolution: {integrity: sha512-tlqY9xq5ukxTUZBmoOp+m61cqwQD5pHJtFY3Mn8CA8ps6yghLH/Hw8UPdqg4OLmFW3IFlcXnQNmo/dh8HzXYIQ==}
@@ -4088,10 +4080,6 @@ packages:
     resolution: {integrity: sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw==}
     engines: {node: '>= 8'}
 
-  webcomponents.js@https://codeload.github.com/webcomponents/webcomponentsjs/tar.gz/8a2e40557b177e2cca0def2553f84c8269c8f93e:
-    resolution: {tarball: https://codeload.github.com/webcomponents/webcomponentsjs/tar.gz/8a2e40557b177e2cca0def2553f84c8269c8f93e}
-    version: 0.7.24
-
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
 
@@ -5551,11 +5539,6 @@ snapshots:
     dependencies:
       video.js: 7.21.7
 
-  '@silvermine/videojs-chromecast@1.5.0(video.js@7.21.7)':
-    dependencies:
-      video.js: 7.21.7
-      webcomponents.js: https://codeload.github.com/webcomponents/webcomponentsjs/tar.gz/8a2e40557b177e2cca0def2553f84c8269c8f93e
-
   '@sindresorhus/merge-streams@4.0.0': {}
 
   '@theguild/federation-composition@0.20.1(graphql@16.14.2)':
@@ -5770,7 +5753,7 @@ snapshots:
       global: 4.4.0
       is-function: 1.0.2
 
-  '@vitejs/plugin-react@5.2.0(vite@7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1))':
+  '@vitejs/plugin-react@5.2.0(vite@7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1))':
     dependencies:
       '@babel/core': 7.29.7
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.29.7)
@@ -5778,7 +5761,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-rc.3
       '@types/babel__core': 7.20.5
       react-refresh: 0.18.0
-      vite: 7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1)
+      vite: 7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -8279,26 +8262,26 @@ snapshots:
     dependencies:
       global: 4.4.0
 
-  vite-plugin-compression@0.5.1(vite@7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1)):
+  vite-plugin-compression@0.5.1(vite@7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1)):
     dependencies:
       chalk: 4.1.2
       debug: 4.4.3
       fs-extra: 10.1.0
-      vite: 7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1)
+      vite: 7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
 
-  vite-tsconfig-paths@6.1.1(typescript@5.9.3)(vite@7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1)):
+  vite-tsconfig-paths@6.1.1(typescript@5.9.3)(vite@7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1)):
     dependencies:
       debug: 4.4.3
       globrex: 0.1.2
       tsconfck: 3.1.6(typescript@5.9.3)
-      vite: 7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1)
+      vite: 7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
       - typescript
 
-  vite@7.3.5(@types/node@20.19.37)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.98.0)(terser@5.46.1)(yaml@2.8.1):
+  vite@7.3.5(@types/node@20.19.43)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.101.0)(terser@5.48.0)(yaml@2.8.1):
     dependencies:
       esbuild: 0.27.7
       fdir: 6.5.0(picomatch@4.0.4)
@@ -8326,8 +8309,6 @@ snapshots:
   web-namespaces@1.1.4: {}
 
   web-streams-polyfill@3.3.3: {}
-
-  webcomponents.js@https://codeload.github.com/webcomponents/webcomponentsjs/tar.gz/8a2e40557b177e2cca0def2553f84c8269c8f93e: {}
 
   webidl-conversions@3.0.1: {}
 

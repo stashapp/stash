@@ -29,6 +29,18 @@ By default, scene videos do not automatically start when navigating to the scene
 
 The maximum loop duration option allows looping of shorter videos. Set this value to the maximum scene duration that scene videos should loop. Setting this to 0 disables this functionality.
 
+### Chromecast
+
+Enable Chromecast under Scene player options to show the Cast button in the player. Casting is supported from Chrome, Edge and Opera. Safari and Firefox don't support Google's Cast SDK, and that includes Safari on iOS.
+
+Stash needs to be open over HTTPS, or at `http://localhost` - the Cast sender won't start otherwise, for example at `http://192.168.x.x`. The Chromecast itself needs the opposite: it can't reach `localhost`, so Stash sends it one of the server's LAN addresses instead.
+
+Not every file can be cast as-is. Scenes that are already H.264/AAC in an MP4 container are sent directly; anything else is transcoded first, which can take 10-30 seconds before playback starts. If a scene can't be cast at all, this is shown as an error rather than a silent hang.
+
+Casting still works if your Stash requires a login, since stream URLs are signed rather than relying on cookies.
+
+The sender and the Chromecast must be on the same network. If you access Stash by hostname rather than IP, that hostname also needs to resolve on the Chromecast, which uses Google's DNS - a LAN-only hostname won't work there. Using `http://localhost` avoids this, since Stash substitutes in the LAN address for you.
+
 ### Activity tracking
 
 The "Track Activity" option allows tracking of scene play count and duration, and sets the resume point when a scene video is not finished.

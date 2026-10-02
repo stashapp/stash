@@ -25,11 +25,13 @@ import "./track-activity";
 import "./vrmode";
 import "./media-session";
 import "./wake-sentinel";
+import "./chromecast";
 import cx from "classnames";
 import {
   useSceneSaveActivity,
   useSceneIncrementPlayCount,
   useConfigureInterface,
+  useSystemStatus,
 } from "src/core/StashService";
 
 import * as GQL from "src/core/generated-graphql";
@@ -42,18 +44,18 @@ import {
 import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
 import { languageMap } from "src/utils/caption";
 import { VIDEO_PLAYER_ID } from "./util";
+import { objectTitle } from "src/core/files";
+import { pickLanIPv4 } from "src/utils/castMedia";
+import { useToast } from "src/hooks/Toast";
 
 // @ts-expect-error
 import airplay from "@silvermine/videojs-airplay";
-// @ts-expect-error
-import chromecast from "@silvermine/videojs-chromecast";
 import abLoopPlugin from "videojs-abloop";
 import ScreenUtils from "src/utils/screen";
 import { PatchComponent } from "src/patch";
 
 // register videojs plugins
 airplay(videojs);
-chromecast(videojs);
 abLoopPlugin(window, videojs);
 
 function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
@@ -246,6 +248,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     const { configuration } = useConfigurationContext();
     const interfaceConfig = configuration?.interface;
     const uiConfig = configuration?.ui;
+    const Toast = useToast();
+    // A Chromecast fetches the stream itself and cannot resolve localhost, so
+    // it needs an address of this machine that the LAN can reach.
+    const { data: systemStatus } = useSystemStatus();
+    const lanIp = pickLanIPv4(systemStatus?.systemStatus.localIPs);
+    const enableChromecast = uiConfig?.enableChromecast ?? false;
     const videoRef = useRef<HTMLDivElement>(null);
     const [_player, setPlayer] = useState<VideoJsPlayer>();
     const sceneId = useRef<string>();
@@ -279,7 +287,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
     useScript(
       "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1",
-      uiConfig?.enableChromecast
+      enableChromecast
     );
 
     const file = useMemo(
@@ -302,6 +310,29 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       if (_player.isDisposed()) return null;
       return _player;
     }, [_player]);
+
+    // Held in a ref so a new Toast identity does not re-enter the Cast SDK:
+    // the effect below re-runs whenever the scene changes, which is every few
+    // seconds while activity tracking writes back to the cache.
+    const castError = useRef((message: string) => Toast.error(message));
+    castError.current = (message: string) => Toast.error(message);
+
+    // Keep the cast plugin in step with the config and the scene on screen.
+    useEffect(() => {
+      const player = getPlayer();
+      if (!player) return;
+
+      player.chromecast().configure({
+        enabled: enableChromecast,
+        lanIp,
+        scene: {
+          title: objectTitle(scene),
+          streams: scene.sceneStreams,
+          file,
+        },
+        onError: (message) => castError.current(message),
+      });
+    }, [getPlayer, enableChromecast, lanIp, scene, file]);
 
     useEffect(() => {
       if (hideScrubberOverride || fullscreen) {
@@ -370,7 +401,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         inactivityTimeout: 700,
         preload: "none",
         playsinline: true,
-        techOrder: ["chromecast", "html5"],
+        techOrder: ["html5"],
         userActions: {
           hotkeys: function (this: VideoJsPlayer, event) {
             handleHotkeys(this, event);
