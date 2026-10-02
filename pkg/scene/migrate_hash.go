@@ -48,11 +48,9 @@ func MigrateHash(p *paths.Paths, oldHash string, newHash string) {
 	migrateSceneFolder(oldPath, newPath)
 }
 
-// InvalidateGeneratedFiles removes the generated files associated with hash.
-//
-// Used instead of MigrateHash when a file's content changed at the same path,
-// where the old hash's generated files are no longer valid and should be
-// deleted rather than renamed onto the new hash.
+// InvalidateGeneratedFiles removes the generated files for hash. Used
+// instead of MigrateHash when content changed at the same path - the old
+// hash's files are stale, not valid to rename onto the new one.
 func InvalidateGeneratedFiles(p *paths.Paths, hash string) {
 	scenePaths := p.Scene
 	removeSceneFile(scenePaths.GetVideoPreviewPath(hash))

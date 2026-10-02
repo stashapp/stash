@@ -207,11 +207,11 @@ type MarkerFragment = Pick<GQL.SceneMarker, "title" | "seconds"> & {
 
 type FileFingerprint = Pick<GQL.Fingerprint, "type" | "value">;
 
-// True if every fingerprint type present in both a and b matches. Only
-// comparing shared types avoids false positives from a type added later
-// (e.g. phash) or mtime/size drifting without content changing. Two
-// empty sets count as matching, so an unfingerprinted file doesn't
-// re-trigger on every unrelated re-render.
+// True if every fingerprint type present in both matches. Comparing only
+// shared types avoids false positives from a type added later (e.g.
+// phash) or mtime/size drifting without content changing. Two empty
+// sets count as matching too, so an unfingerprinted file doesn't
+// re-trigger on every re-render.
 function fingerprintsMatch(a: FileFingerprint[], b: FileFingerprint[]) {
   if (a.length === 0 && b.length === 0) {
     return true;

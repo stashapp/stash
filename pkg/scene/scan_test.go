@@ -16,20 +16,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// withCommittedTxn runs fn in a real (mocked) transaction that commits on
-// success, unlike mocks.Database.WithTxnCtx which always rolls back - some
-// side effects (e.g. InvalidateGeneratedFiles) are deferred to a
-// post-commit hook and only run down this path.
+// withCommittedTxn runs fn in a transaction that commits on success -
+// mocks.Database.WithTxnCtx always rolls back, which never exercises
+// post-commit hooks like InvalidateGeneratedFiles's deferred delete.
 func withCommittedTxn(t *testing.T, db *mocks.Database, fn func(ctx context.Context) error) {
 	t.Helper()
 	err := txn.WithTxn(context.Background(), db, fn)
 	assert.NoError(t, err)
 }
 
-// stubServerConfig is a minimal plugin.ServerConfig so plugin.NewCache
-// produces a Cache safe to actually execute post-commit hooks against -
-// the zero-value plugin.Cache{} has a nil config, which panics as soon as
-// a real commit (see withCommittedTxn) runs its post-hook execution path.
+// stubServerConfig gives plugin.NewCache a non-nil config - the zero-value
+// plugin.Cache{} panics once a real commit runs its post-hook execution.
 type stubServerConfig struct{}
 
 func (stubServerConfig) GetHost() string              { return "" }
@@ -349,11 +346,8 @@ func TestHandle_ContentChangedAtSamePath_SecondaryFile(t *testing.T) {
 		return h.Handle(ctx, newFile, oldFile)
 	})
 
-	// nothing scene-level (sprite/preview/transcode/cover) was ever
-	// generated from the secondary file's hash - only the primary file's
-	// hash drives that - so a secondary file's edit must leave everything
-	// alone, in case its old hash happens to still be in use by the
-	// (unchanged) primary file
+	// only the primary file's hash drives generation - a secondary
+	// file's edit must leave everything alone
 	assert.FileExists(t, staleSprite)
 	db.Scene.AssertNotCalled(t, "UpdateCover", mock.Anything, mock.Anything, mock.Anything)
 }
@@ -363,9 +357,8 @@ func TestHandle_ContentChangedAtSamePath_SharedHashSibling(t *testing.T) {
 	const primaryFileID = 100
 	const secondaryFileID = 200
 
-	// primary and secondary start out as byte-identical duplicates,
-	// sharing a hash - a real, reachable state via FindByFingerprints
-	// matching a new file to an existing scene by content
+	// start as byte-identical duplicates sharing a hash - reachable via
+	// FindByFingerprints matching a new file by content
 	const sharedHash = "sharedhash00000000000000000000000"
 
 	primaryFile := &models.VideoFile{
@@ -426,19 +419,13 @@ func TestHandle_ContentChangedAtSamePath_SharedHashSibling(t *testing.T) {
 		return h.Handle(ctx, newFile, oldFile)
 	})
 
-	// editing the secondary file must not destroy generated content the
-	// still-unedited primary file depends on, even though they used to
-	// share a hash
+	// must not destroy the primary's still-valid content
 	assert.FileExists(t, sharedSprite)
 	db.Scene.AssertNotCalled(t, "UpdateCover", mock.Anything, mock.Anything, mock.Anything)
 }
 
-// TestHandle_ContentChangedAtSamePath_RollbackDoesNotDeleteFiles verifies
-// InvalidateGeneratedFiles is genuinely deferred to a post-commit hook: if
-// something later in the same Handle() call fails and the transaction
-// rolls back, the generated files it would have deleted must still exist
-// on disk afterward, since the DB itself also reverted to believing the
-// old hash (and its files) are still current.
+// verifies the post-commit-hook deferral: if Handle() fails later and
+// rolls back, the files it would have deleted must still be there too.
 func TestHandle_ContentChangedAtSamePath_RollbackDoesNotDeleteFiles(t *testing.T) {
 	const testSceneID = 1
 	const testFileID = 100
@@ -493,9 +480,7 @@ func TestHandle_ContentChangedAtSamePath_RollbackDoesNotDeleteFiles(t *testing.T
 	})
 	assert.Error(t, err)
 
-	// the transaction rolled back, so the post-commit deletion hook must
-	// never have run - the DB reverted to the old hash, and its
-	// generated files must still be there to match
+	// rolled back - the deletion hook never ran
 	assert.FileExists(t, staleSprite)
 }
 
