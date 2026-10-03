@@ -193,15 +193,50 @@ Please disable it on the server and refresh the page.`);
     cache,
   });
 
+  // resetStore() cancels any query still in flight, briefly rendering
+  // affected screens as a failed "Error loading items" state, so wait
+  // until no watched query is loading before resetting. The deadline
+  // bounds the wait; hitting it falls back to resetting mid-flight,
+  // which at worst is the old behavior. Resets are also serialized and
+  // coalesced so back-to-back task completions cannot reset over each
+  // other's refetches, which would cancel them the same way.
+  const resetPollMs = 100;
+  const resetMaxWaitMs = 10000;
+
+  const queriesInFlight = () => {
+    for (const query of client.getObservableQueries().values()) {
+      if (query.getCurrentResult().loading) return true;
+    }
+    return false;
+  };
+
+  let resetQueued = false;
+  let resetChain = Promise.resolve();
+
+  const queueResetStore = () => {
+    if (resetQueued) return;
+    resetQueued = true;
+    resetChain = resetChain
+      .then(async () => {
+        const deadline = Date.now() + resetMaxWaitMs;
+        while (queriesInFlight() && Date.now() < deadline) {
+          await new Promise((resolve) => setTimeout(resolve, resetPollMs));
+        }
+        // events arriving before this point are covered by the reset
+        // below; later ones must queue their own
+        resetQueued = false;
+        await client.resetStore();
+      })
+      .catch(() => {});
+  };
+
   // Watch for scan/clean tasks and reset cache when they complete
   client
     .subscribe<GQL.ScanCompleteSubscribeSubscription>({
       query: GQL.ScanCompleteSubscribeDocument,
     })
     .subscribe({
-      next: () => {
-        client.resetStore();
-      },
+      next: () => queueResetStore(),
     });
 
   return {
