@@ -1217,6 +1217,14 @@
   "filter_name": "Filter name",
   "filters": "Filters",
   "folder": "Folder",
+  "folder_browser": {
+    "no_images": "No images in this folder.",
+    "no_scenes": "No scenes in this folder.",
+    "no_subfolders": "No subfolders.",
+    "zip_not_supported": "ZIP folders are not shown in this view."
+  },
+  "folders": "Folders",
+  "root_folders": "Root Folders",
   "framerate": "Frame Rate",
   "frames_per_second": "{value} fps",
   "front_page": {

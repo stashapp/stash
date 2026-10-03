@@ -94,6 +94,14 @@ fragment SelectFolderData on Folder {
   basename
 }
 
+fragment FolderBrowserFolderData on Folder {
+  id
+  basename
+  zip_file {
+    id
+  }
+}
+
 fragment RecursiveFolderData on Folder {
   ...SelectFolderData
 
