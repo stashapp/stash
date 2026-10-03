@@ -732,6 +732,10 @@
         }
       },
       "editing": {
+        "auto_save_confirmed_fields": {
+          "description": "Immediately save the edit form when a tag, performer, studio, gallery, group, or stash-box ID is selected, without needing to press Save.",
+          "heading": "Auto-save on selection"
+        },
         "disable_dropdown_create": {
           "description": "Remove the ability to create new objects from the dropdown selectors.",
           "heading": "Disable dropdown create"
