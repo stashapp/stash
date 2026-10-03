@@ -7,6 +7,7 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
 type ImageFinderUpdater interface {
@@ -34,9 +35,11 @@ func getImageFileTagger(s *models.Image, cache *match.Cache) tagger {
 	}
 }
 
-// ImagePerformers tags the provided image with performers whose name matches the image's path.
-func ImagePerformers(ctx context.Context, s *models.Image, rw ImagePerformerUpdater, performerReader models.PerformerAutoTagQueryer, cache *match.Cache) error {
-	t := getImageFileTagger(s, cache)
+// ImagePerformersAtPath tags the provided image with performers whose name
+// matches the image's path. A fresh write txn is opened only when a match is
+// applied.
+func (tagger *Tagger) ImagePerformersAtPath(ctx context.Context, s *models.Image, rw ImagePerformerUpdater, performerReader models.PerformerAutoTagQueryer) error {
+	t := getImageFileTagger(s, tagger.Cache)
 
 	return t.tagPerformers(ctx, performerReader, func(subjectID, otherID int) (bool, error) {
 		if err := s.LoadPerformerIDs(ctx, rw); err != nil {
@@ -48,7 +51,9 @@ func ImagePerformers(ctx context.Context, s *models.Image, rw ImagePerformerUpda
 			return false, nil
 		}
 
-		if err := image.AddPerformer(ctx, rw, s, otherID); err != nil {
+		if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
+			return image.AddPerformer(ctx, rw, s, otherID)
+		}); err != nil {
 			return false, err
 		}
 
@@ -56,25 +61,35 @@ func ImagePerformers(ctx context.Context, s *models.Image, rw ImagePerformerUpda
 	})
 }
 
-// ImageStudios tags the provided image with the first studio whose name matches the image's path.
+// ImageStudiosAtPath tags the provided image with the first studio whose
+// name matches the image's path.
 //
 // Images will not be tagged if studio is already set.
-func ImageStudios(ctx context.Context, s *models.Image, rw ImageFinderUpdater, studioReader models.StudioAutoTagQueryer, cache *match.Cache) error {
+func (tagger *Tagger) ImageStudiosAtPath(ctx context.Context, s *models.Image, rw ImageFinderUpdater, studioReader models.StudioAutoTagQueryer) error {
 	if s.StudioID != nil {
 		// don't modify
 		return nil
 	}
 
-	t := getImageFileTagger(s, cache)
+	t := getImageFileTagger(s, tagger.Cache)
 
 	return t.tagStudios(ctx, studioReader, func(subjectID, otherID int) (bool, error) {
-		return addImageStudio(ctx, rw, s, otherID)
+		var added bool
+		if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
+			var err error
+			added, err = addImageStudio(ctx, rw, s, otherID)
+			return err
+		}); err != nil {
+			return false, err
+		}
+		return added, nil
 	})
 }
 
-// ImageTags tags the provided image with tags whose name matches the image's path.
-func ImageTags(ctx context.Context, s *models.Image, rw ImageTagUpdater, tagReader models.TagAutoTagQueryer, cache *match.Cache) error {
-	t := getImageFileTagger(s, cache)
+// ImageTagsAtPath tags the provided image with tags whose name matches the
+// image's path.
+func (tagger *Tagger) ImageTagsAtPath(ctx context.Context, s *models.Image, rw ImageTagUpdater, tagReader models.TagAutoTagQueryer) error {
+	t := getImageFileTagger(s, tagger.Cache)
 
 	return t.tagTags(ctx, tagReader, func(subjectID, otherID int) (bool, error) {
 		if err := s.LoadTagIDs(ctx, rw); err != nil {
@@ -86,7 +101,9 @@ func ImageTags(ctx context.Context, s *models.Image, rw ImageTagUpdater, tagRead
 			return false, nil
 		}
 
-		if err := image.AddTag(ctx, rw, s, otherID); err != nil {
+		if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
+			return image.AddTag(ctx, rw, s, otherID)
+		}); err != nil {
 			return false, err
 		}
 
