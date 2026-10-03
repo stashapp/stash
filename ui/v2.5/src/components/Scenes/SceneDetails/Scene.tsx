@@ -28,7 +28,7 @@ import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { Icon } from "src/components/Shared/Icon";
 import { Counter } from "src/components/Shared/Counter";
 import { useToast } from "src/hooks/Toast";
-import SceneQueue, { QueuedScene } from "src/models/sceneQueue";
+import SceneQueue, { isPlayable, QueuedScene } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import Mousetrap from "mousetrap";
 import { OrganizedButton } from "./OrganizedButton";
@@ -939,20 +939,33 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     history.replace(sceneLink);
   }
 
-  async function queueNext(autoPlay: boolean) {
+  // skipUnplayable steps over scenes that have no file. Set it when advancing
+  // without the user choosing the destination, since a scene that can't be
+  // played never finishes and so would stall the queue.
+  async function queueNext(autoPlay: boolean, skipUnplayable = false) {
     if (currentQueueIndex === -1) return;
 
-    if (currentQueueIndex < queueScenes.length - 1) {
-      loadScene(queueScenes[currentQueueIndex + 1].id, autoPlay);
-    } else {
+    let nextIndex = currentQueueIndex + 1;
+    while (
+      skipUnplayable &&
+      nextIndex < queueScenes.length &&
+      !isPlayable(queueScenes[nextIndex])
+    ) {
+      nextIndex++;
+    }
+
+    if (nextIndex < queueScenes.length) {
+      loadScene(queueScenes[nextIndex].id, autoPlay);
+    } else if (queueHasMoreScenes) {
       // if we're at the end of the queue, load more scenes
-      if (currentQueueIndex === queueScenes.length - 1 && queueHasMoreScenes) {
-        const loadedScenes = await onQueueMoreScenes();
-        if (loadedScenes && loadedScenes.length > 0) {
-          // set the page to the next page
-          const newPage = (sceneQueue.query?.currentPage ?? 0) + 1;
-          loadScene(loadedScenes[0].id, autoPlay, newPage);
-        }
+      const loadedScenes = await onQueueMoreScenes();
+      const candidates = skipUnplayable
+        ? loadedScenes?.filter(isPlayable)
+        : loadedScenes;
+      if (candidates && candidates.length > 0) {
+        // set the page to the next page
+        const newPage = (sceneQueue.query?.currentPage ?? 0) + 1;
+        loadScene(candidates[0].id, autoPlay, newPage);
       }
     }
   }
@@ -1003,7 +1016,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   function onComplete() {
     // load the next scene if we're continuing
     if (continuePlaylist) {
-      queueNext(true);
+      queueNext(true, true);
     }
   }
 
@@ -1063,18 +1076,26 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
         onRefreshScene={onRefreshScene}
       />
       <div className={`scene-player-container ${collapsed ? "expanded" : ""}`}>
-        <ScenePlayer
-          key="ScenePlayer"
-          scene={scene}
-          hideScrubberOverride={hideScrubber}
-          autoplay={autoplay}
-          permitLoop={!continuePlaylist}
-          initialTimestamp={initialTimestamp}
-          sendSetTimestamp={getSetTimestamp}
-          onComplete={onComplete}
-          onNext={() => queueNext(true)}
-          onPrevious={() => queuePrevious(true)}
-        />
+        {isPlayable(scene) ? (
+          <ScenePlayer
+            key="ScenePlayer"
+            scene={scene}
+            hideScrubberOverride={hideScrubber}
+            autoplay={autoplay}
+            permitLoop={!continuePlaylist}
+            initialTimestamp={initialTimestamp}
+            sendSetTimestamp={getSetTimestamp}
+            onComplete={onComplete}
+            onNext={() => queueNext(true)}
+            onPrevious={() => queuePrevious(true)}
+          />
+        ) : (
+          <div className="VideoPlayer">
+            <div className="video-wrapper scene-player-no-file">
+              <FormattedMessage id="scene_has_no_file" />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

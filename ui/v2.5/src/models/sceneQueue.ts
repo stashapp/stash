@@ -1,11 +1,18 @@
 import { FilterMode, Scene } from "src/core/generated-graphql";
 import { ListFilterModel } from "./list-filter/filter";
 import { INamedObject } from "src/utils/navigation";
+import { IFile, IObjectWithFiles } from "src/core/files";
 
 export type QueuedScene = Pick<Scene, "id" | "title" | "date" | "paths"> & {
+  files: IFile[];
   performers?: INamedObject[] | null;
   studio?: INamedObject | null;
 };
+
+// a scene with no file has no streams, so it can't be played
+export function isPlayable(s: IObjectWithFiles) {
+  return !!s.files?.length;
+}
 
 export interface IPlaySceneOptions {
   sceneIndex?: number;

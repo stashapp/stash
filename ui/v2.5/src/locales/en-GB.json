@@ -1447,6 +1447,7 @@
   "scenes_size": "Scene Size",
   "scene_created_at": "Scene Created At",
   "scene_date": "Date of Scene",
+  "scene_has_no_file": "This scene has no file.",
   "scene_id": "Scene ID",
   "scene_tags": "Scene Tags",
   "scene_updated_at": "Scene Updated At",
