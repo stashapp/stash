@@ -94,6 +94,8 @@ query SceneStreams($id: ID!) {
       url
       mime_type
       label
+      stream_type
+      resolution
     }
   }
 }
