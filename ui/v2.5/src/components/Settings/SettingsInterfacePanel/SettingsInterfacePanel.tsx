@@ -467,6 +467,14 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             onChange={(v) => saveInterface({ continuePlaylistDefault: v })}
           />
 
+          <BooleanSetting
+            id="play-next-on-delete"
+            headingID="config.ui.scene_player.options.play_next_on_delete.heading"
+            subHeadingID="config.ui.scene_player.options.play_next_on_delete.description"
+            checked={ui.playNextOnDelete ?? undefined}
+            onChange={(v) => saveUI({ playNextOnDelete: v })}
+          />
+
           <ModalSetting<number>
             id="max-loop-duration"
             headingID="config.ui.max_loop_duration.heading"

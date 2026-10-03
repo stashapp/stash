@@ -853,6 +853,10 @@
           },
           "disable_mobile_media_auto_rotate": "Disable auto-rotate of fullscreen media on mobile",
           "enable_chromecast": "Enable Chromecast",
+          "play_next_on_delete": {
+            "description": "When deleting a scene from the scene player, play the next scene in the queue instead of returning to the previous page.",
+            "heading": "Play next scene after deleting"
+          },
           "show_ab_loop_controls": "Show AB loop controls",
           "show_scrubber": "Show scrubber",
           "show_range_markers": "Show range markers",

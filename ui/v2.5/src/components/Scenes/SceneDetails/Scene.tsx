@@ -841,6 +841,8 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   const autoPlayOnSelected =
     configuration?.interface.autostartVideoOnPlaySelected ?? false;
 
+  const playNextOnDelete = configuration?.ui.playNextOnDelete ?? false;
+
   const currentQueueIndex = useMemo(
     () => queueScenes.findIndex((s) => s.id === id),
     [queueScenes, id]
@@ -930,8 +932,13 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     return scenes;
   }
 
-  function loadScene(sceneID: string, autoPlay?: boolean, newPage?: number) {
-    const sceneLink = sceneQueue.makeLink(sceneID, {
+  function loadScene(
+    sceneID: string,
+    autoPlay?: boolean,
+    newPage?: number,
+    queue: SceneQueue = sceneQueue
+  ) {
+    const sceneLink = queue.makeLink(sceneID, {
       newPage,
       autoPlay,
       continue: continuePlaylist,
@@ -939,22 +946,33 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     history.replace(sceneLink);
   }
 
-  async function queueNext(autoPlay: boolean) {
-    if (currentQueueIndex === -1) return;
+  // returns true if a next scene was loaded. queue may be provided to navigate
+  // using a queue other than the current one.
+  async function queueNext(autoPlay: boolean, queue?: SceneQueue) {
+    if (currentQueueIndex === -1) return false;
 
     if (currentQueueIndex < queueScenes.length - 1) {
-      loadScene(queueScenes[currentQueueIndex + 1].id, autoPlay);
-    } else {
-      // if we're at the end of the queue, load more scenes
-      if (currentQueueIndex === queueScenes.length - 1 && queueHasMoreScenes) {
-        const loadedScenes = await onQueueMoreScenes();
-        if (loadedScenes && loadedScenes.length > 0) {
-          // set the page to the next page
-          const newPage = (sceneQueue.query?.currentPage ?? 0) + 1;
-          loadScene(loadedScenes[0].id, autoPlay, newPage);
-        }
+      loadScene(
+        queueScenes[currentQueueIndex + 1].id,
+        autoPlay,
+        undefined,
+        queue
+      );
+      return true;
+    }
+
+    // if we're at the end of the queue, load more scenes
+    if (queueHasMoreScenes) {
+      const loadedScenes = await onQueueMoreScenes();
+      if (loadedScenes && loadedScenes.length > 0) {
+        // set the page to the next page
+        const newPage = (sceneQueue.query?.currentPage ?? 0) + 1;
+        loadScene(loadedScenes[0].id, autoPlay, newPage, queue);
+        return true;
       }
     }
+
+    return false;
   }
 
   async function queuePrevious(autoPlay: boolean) {
@@ -1007,16 +1025,23 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     }
   }
 
-  function onDelete() {
-    if (
-      continuePlaylist &&
-      currentQueueIndex >= 0 &&
-      currentQueueIndex < queueScenes.length - 1
-    ) {
-      loadScene(queueScenes[currentQueueIndex + 1].id);
-    } else {
-      goBackOrReplace(history, "/scenes");
+  async function onDelete() {
+    // the scene no longer exists, so drop it from the queue. Otherwise the
+    // queue viewer and the previous/next buttons will navigate to a scene
+    // that can't be loaded.
+    const remainingQueue = sceneQueue.withoutSceneID(id);
+    setQueueScenes((scenes) => scenes.filter((s) => s.id !== id));
+    setQueueTotal((total) => Math.max(total - 1, 0));
+
+    // move to the next scene in the queue if configured to do so, or if
+    // we're continuing the playlist
+    if (continuePlaylist || playNextOnDelete) {
+      if (await queueNext(autoPlayOnSelected, remainingQueue)) {
+        return;
+      }
     }
+
+    goBackOrReplace(history, "/scenes");
   }
 
   function getScenePage(sceneID: string) {
