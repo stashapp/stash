@@ -2939,9 +2939,15 @@ export const mutateMetadataGenerate = (input: GQL.GenerateMetadataInput) =>
     variables: { input },
   });
 
-export const mutateMetadataClean = (input: GQL.CleanMetadataInput) =>
-  client.mutate<GQL.MetadataCleanMutation>({
-    mutation: GQL.MetadataCleanDocument,
+export const mutateVerifyPaths = (input: GQL.VerifyPathsInput) =>
+  client.mutate<GQL.VerifyPathsMutation>({
+    mutation: GQL.VerifyPathsDocument,
+    variables: { input },
+  });
+
+export const mutatePurgeMissing = (input: GQL.PurgeMissingInput) =>
+  client.mutate<GQL.PurgeMissingMutation>({
+    mutation: GQL.PurgeMissingDocument,
     variables: { input },
   });
 

@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"io/fs"
+	"time"
 )
 
 // FileGetter provides methods to get files by ID.
@@ -15,8 +16,10 @@ type FileFinder interface {
 	FileGetter
 	FindAllByPath(ctx context.Context, path string, caseSensitive bool) ([]File, error)
 	FindAllInPaths(ctx context.Context, p []string, includeZipContents bool, limit, offset int) ([]File, error)
+	FindMissingInPaths(ctx context.Context, p []string, missingSinceBefore *time.Time, limit, offset int) ([]File, error)
 	FindByPath(ctx context.Context, path string, caseSensitive bool) (File, error)
 	FindByFingerprint(ctx context.Context, fp Fingerprint) ([]File, error)
+	FindByFolderID(ctx context.Context, folderID FolderID) ([]File, error)
 	FindByZipFileID(ctx context.Context, zipFileID FileID) ([]File, error)
 	FindByFileInfo(ctx context.Context, info fs.FileInfo, size int64) ([]File, error)
 }
@@ -29,6 +32,7 @@ type FileQueryer interface {
 // FileCounter provides methods to count files.
 type FileCounter interface {
 	CountAllInPaths(ctx context.Context, p []string) (int, error)
+	CountMissingInPaths(ctx context.Context, p []string, missingSinceBefore *time.Time) (int, error)
 	CountByFolderID(ctx context.Context, folderID FolderID) (int, error)
 }
 
@@ -40,6 +44,7 @@ type FileCreator interface {
 // FileUpdater provides methods to update files.
 type FileUpdater interface {
 	Update(ctx context.Context, f File) error
+	SetMissing(ctx context.Context, id FileID, missingSince *time.Time) error
 }
 
 // FileDestroyer provides methods to destroy files.
