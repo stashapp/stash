@@ -611,6 +611,7 @@ func setPageSecurityHeaders(w http.ResponseWriter, r *http.Request, plugins []*p
 		connectSrcSlice = append(connectSrcSlice, ui.CSP.ConnectSrc...)
 		scriptSrcSlice = append(scriptSrcSlice, ui.CSP.ScriptSrc...)
 		styleSrcSlice = append(styleSrcSlice, ui.CSP.StyleSrc...)
+		mediaSrc += " " + strings.Join(ui.CSP.MediaSrc, " ")
 	}
 
 	connectSrc := strings.Join(connectSrcSlice, " ")
