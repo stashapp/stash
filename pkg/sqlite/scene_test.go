@@ -2804,6 +2804,10 @@ func verifyString(t *testing.T, value string, criterion models.StringCriterionIn
 		assert.Equal(criterion.Value, value)
 	case models.CriterionModifierNotEquals:
 		assert.NotEqual(criterion.Value, value)
+	case models.CriterionModifierIncludes:
+		assert.Contains(value, criterion.Value)
+	case models.CriterionModifierExcludes:
+		assert.NotContains(value, criterion.Value)
 	case models.CriterionModifierMatchesRegex:
 		assert.Regexp(regexp.MustCompile(criterion.Value), value)
 	case models.CriterionModifierNotMatchesRegex:
