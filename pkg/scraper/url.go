@@ -400,3 +400,19 @@ func splitProxyAuth(proxyUrl string) (string, string, string) {
 
 	return proxyUrl, "", ""
 }
+
+func TestRemoteCDP(globalConfig GlobalConfig) error {
+	cdpPath := globalConfig.GetScraperCDPPath()
+	if cdpPath == "" {
+		return fmt.Errorf("CDP path is empty")
+	}
+	if !isCDPPathHTTP(globalConfig) {
+		// unable to test non-http CDP
+		return fmt.Errorf("Unable to test non-http CDP paths")
+	}
+	_, err := getRemoteCDPWSAddress(context.Background(), cdpPath)
+	if err != nil {
+		return fmt.Errorf("Failed to get remote CDP websocket address: %v", err)
+	}
+	return nil
+}
