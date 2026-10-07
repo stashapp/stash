@@ -127,14 +127,36 @@ func (qb *FolderStore) Create(ctx context.Context, f *models.Folder) error {
 	var r folderRow
 	r.fromFolder(*f)
 
-	id, err := qb.tableMgr.insertID(ctx, r)
+	q := dialect.Insert(qb.tableMgr.table).Prepared(true).Rows(r).OnConflict(goqu.DoNothing())
+	result, err := exec(ctx, q)
 	if err != nil {
-		return err
+		return fmt.Errorf("inserting folder %q: %w", f.Path, err)
 	}
 
-	// only assign id once we are successful
-	f.ID = models.FolderID(id)
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("getting rows affected for folder %q: %w", f.Path, err)
+	}
 
+	if affected == 0 {
+		// INSERT OR IGNORE was a no-op: row already exists, re-read the existing ID
+		existing, err := qb.FindByPath(ctx, f.Path, true)
+		if err != nil {
+			return fmt.Errorf("re-reading existing folder %q after insert conflict: %w", f.Path, err)
+		}
+		if existing == nil {
+			return fmt.Errorf("folder %q not found after insert conflict", f.Path)
+		}
+		f.ID = existing.ID
+		return nil
+	}
+
+	lastID, err := result.LastInsertId()
+	if err != nil {
+		return fmt.Errorf("getting last insert id for folder %q: %w", f.Path, err)
+	}
+
+	f.ID = models.FolderID(lastID)
 	return nil
 }
 
