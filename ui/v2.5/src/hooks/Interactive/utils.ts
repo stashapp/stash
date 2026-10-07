@@ -28,7 +28,11 @@ export type IInteractiveClientProvider = (
 export interface IInteractiveClient {
   connect(): Promise<void>;
   handyKey: string;
-  uploadScript: (funscriptPath: string, apiKey?: string) => Promise<void>;
+  uploadScript: (
+    funscriptPath: string,
+    apiKey?: string,
+    interactiveCsvPath?: string
+  ) => Promise<void>;
   sync(): Promise<number>;
   configure(config: Partial<IDeviceSettings>): Promise<void>;
   play(position: number): Promise<void>;

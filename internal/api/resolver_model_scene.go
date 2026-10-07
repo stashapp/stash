@@ -120,6 +120,8 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePat
 
 	var streamPath string
 	var captionBasePath string
+	var funscriptPath string
+	var interactiveCsvPath string
 	if config.HasCredentials() {
 		userID := session.GetCurrentUserID(ctx)
 		if userID == nil {
@@ -134,11 +136,20 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePat
 		// Sign the caption prefix
 		captionBase := builder.GetCaptionURL()
 		captionBasePath = captionBase + "?" + signedParams(config, *userID, builder.GetCaptionPath()).Encode()
+
+		// Sign funscript and interactive_csv (avoid embedding persistent API key in URL)
+		funscriptBase := builder.GetFunscriptURL("").String()
+		funscriptPath = funscriptBase + "?" + signedParams(config, *userID, builder.GetFunscriptPath()).Encode()
+
+		csvBase := builder.GetInteractiveCSVURL("").String()
+		interactiveCsvPath = csvBase + "?" + signedParams(config, *userID, builder.GetInteractiveCSVPath()).Encode()
 	} else {
 		apiKey := config.GetAPIKey()
 		streamURL := builder.GetStreamURL(apiKey)
 		streamPath = streamURL.String()
 		captionBasePath = builder.GetCaptionURL()
+		funscriptPath = builder.GetFunscriptURL(apiKey).String()
+		interactiveCsvPath = builder.GetInteractiveCSVURL(apiKey).String()
 	}
 
 	// Web-only formats: use unsigned URLs (rely on cookie authentication)
@@ -148,7 +159,6 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePat
 	objHash := obj.GetHash(config.GetVideoFileNamingAlgorithm())
 	vttPath := builder.GetSpriteVTTURL(objHash)
 	spritePath := builder.GetSpriteURL(objHash)
-	funscriptPath := builder.GetFunscriptURL(config.GetAPIKey()).String()
 	interactiveHeatmap := builder.GetInteractiveHeatmapURL()
 
 	return &ScenePathsType{
@@ -159,6 +169,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePat
 		Vtt:                &vttPath,
 		Sprite:             &spritePath,
 		Funscript:          &funscriptPath,
+		InteractiveCSV:     &interactiveCsvPath,
 		InteractiveHeatmap: &interactiveHeatmap,
 		Caption:            &captionBasePath,
 	}, nil
