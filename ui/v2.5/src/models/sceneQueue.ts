@@ -107,6 +107,20 @@ export class SceneQueue {
     return ret;
   }
 
+  // returns a copy of this queue with the given scene removed. Only applies
+  // to scene ID queues - filter queues are re-queried from the server, which
+  // will exclude deleted scenes.
+  public withoutSceneID(sceneID: string) {
+    if (!this.sceneIDs) return this;
+
+    const ret = new SceneQueue();
+    ret.query = this.query;
+    ret.originalQueryPage = this.originalQueryPage;
+    ret.originalQueryPageSize = this.originalQueryPageSize;
+    ret.sceneIDs = this.sceneIDs.filter((id) => id !== Number(sceneID));
+    return ret;
+  }
+
   public makeLink(sceneID: string, options: IPlaySceneOptions) {
     const params = [
       this.makeQueryParameters(options.sceneIndex, options.newPage),
