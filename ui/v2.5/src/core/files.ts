@@ -5,7 +5,7 @@ export interface IFile {
   path: string;
 }
 
-interface IObjectWithFiles {
+export interface IObjectWithFiles {
   files?: GQL.Maybe<IFile[]>;
 }
 
