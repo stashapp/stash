@@ -30,6 +30,7 @@ import {
   useSceneSaveActivity,
   useSceneIncrementPlayCount,
   useConfigureInterface,
+  useSystemStatus,
 } from "src/core/StashService";
 
 import * as GQL from "src/core/generated-graphql";
@@ -42,6 +43,12 @@ import {
 import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
 import { languageMap } from "src/utils/caption";
 import { VIDEO_PLAYER_ID } from "./util";
+import { objectTitle } from "src/core/files";
+import {
+  pickCastSource,
+  pickLanIPv4,
+  rewriteCastUrl,
+} from "src/utils/castMedia";
 
 // @ts-expect-error
 import airplay from "@silvermine/videojs-airplay";
@@ -55,6 +62,10 @@ import { PatchComponent } from "src/patch";
 airplay(videojs);
 chromecast(videojs);
 abLoopPlugin(window, videojs);
+
+interface ICastLoadRequest {
+  media: { contentId: string; contentType: string };
+}
 
 function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
   function seekStep(step: number) {
@@ -246,6 +257,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     const { configuration } = useConfigurationContext();
     const interfaceConfig = configuration?.interface;
     const uiConfig = configuration?.ui;
+    const { data: systemStatus } = useSystemStatus();
+    const lanIp = pickLanIPv4(systemStatus?.systemStatus.localIPs);
     const videoRef = useRef<HTMLDivElement>(null);
     const [_player, setPlayer] = useState<VideoJsPlayer>();
     const sceneId = useRef<string>();
@@ -286,6 +299,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       () => (scene.files.length > 0 ? scene.files[0] : undefined),
       [scene]
     );
+
+    // Read by the Chromecast tech when it loads media, long after the player was created.
+    const castScene = useRef({ scene, file, lanIp });
+    castScene.current = { scene, file, lanIp };
 
     const maxLoopDuration = interfaceConfig?.maximumLoopDuration ?? 0;
     const looping = useMemo(
@@ -337,7 +354,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
     // Initialize VideoJS player
     useEffect(() => {
-      const options: VideoJsPlayerOptions = {
+      const options: VideoJsPlayerOptions & { chromecast: object } = {
         id: VIDEO_PLAYER_ID,
         controls: true,
         controlBar: {
@@ -371,6 +388,19 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         preload: "none",
         playsinline: true,
         techOrder: ["chromecast", "html5"],
+        chromecast: {
+          requestTitleFn: () => objectTitle(castScene.current.scene),
+          // The tech sends the stream the browser is playing, at an address only this machine can resolve.
+          modifyLoadRequestFn: (request: ICastLoadRequest) => {
+            const cast = castScene.current;
+            const source = pickCastSource(cast.scene.sceneStreams, cast.file);
+            if (source) {
+              request.media.contentId = rewriteCastUrl(source.url, cast.lanIp);
+              request.media.contentType = source.contentType;
+            }
+            return request;
+          },
+        },
         userActions: {
           hotkeys: function (this: VideoJsPlayer, event) {
             handleHotkeys(this, event);
