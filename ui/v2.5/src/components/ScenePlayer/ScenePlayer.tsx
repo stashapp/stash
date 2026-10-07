@@ -205,6 +205,27 @@ type MarkerFragment = Pick<GQL.SceneMarker, "title" | "seconds"> & {
   tags: Array<Pick<GQL.Tag, "name">>;
 };
 
+type FileFingerprint = Pick<GQL.Fingerprint, "type" | "value">;
+
+// True if every fingerprint type present in both matches. Comparing only
+// shared types avoids false positives from a type added later (e.g.
+// phash) or mtime/size drifting without content changing. Two empty
+// sets count as matching too, so an unfingerprinted file doesn't
+// re-trigger on every re-render.
+function fingerprintsMatch(a: FileFingerprint[], b: FileFingerprint[]) {
+  if (a.length === 0 && b.length === 0) {
+    return true;
+  }
+  let sawCommonType = false;
+  for (const fp of a) {
+    const match = b.find((other) => other.type === fp.type);
+    if (!match) continue;
+    if (match.value !== fp.value) return false;
+    sawCommonType = true;
+  }
+  return sawCommonType;
+}
+
 function getMarkerTitle(marker: MarkerFragment) {
   if (marker.title) {
     return marker.title;
@@ -248,7 +269,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     const uiConfig = configuration?.ui;
     const videoRef = useRef<HTMLDivElement>(null);
     const [_player, setPlayer] = useState<VideoJsPlayer>();
-    const sceneId = useRef<string>();
+    const loadedSource = useRef<{
+      sceneId: string;
+      fingerprints: FileFingerprint[];
+    }>();
     const [sceneSaveActivity] = useSceneSaveActivity();
     const [sceneIncrementPlayCount] = useSceneIncrementPlayCount();
     const [updateInterfaceConfig] = useConfigureInterface();
@@ -438,8 +462,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         videoEl.remove();
         setPlayer(undefined);
 
-        // reset sceneId to force reload sources
-        sceneId.current = undefined;
+        // reset to force reload sources
+        loadedSource.current = undefined;
       };
       // empty deps - only init once
       // showAbLoopControls is necessary to re-init the player when the config changes
@@ -585,10 +609,19 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       const player = getPlayer();
       if (!player) return;
 
-      // don't re-initialise the player unless the scene has changed
-      if (!file || scene.id === sceneId.current) return;
+      // don't re-initialise unless the scene changed, or the file was
+      // edited in place under the same scene id (fingerprints differ)
+      if (!file) return;
+      if (
+        loadedSource.current?.sceneId === scene.id &&
+        fingerprintsMatch(file.fingerprints, loadedSource.current.fingerprints)
+      )
+        return;
 
-      sceneId.current = scene.id;
+      loadedSource.current = {
+        sceneId: scene.id,
+        fingerprints: file.fingerprints,
+      };
 
       setReady(false);
 
