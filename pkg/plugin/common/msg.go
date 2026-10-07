@@ -93,6 +93,9 @@ type PluginInput struct {
 
 	// Arguments to the plugin operation.
 	Args ArgsMap `json:"args"`
+
+	// Configured settings for the plugin.
+	Settings map[string]interface{} `json:"settings"`
 }
 
 // PluginOutput is the data structure that is expected to be output by plugin
