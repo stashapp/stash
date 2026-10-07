@@ -622,23 +622,28 @@ func (m ScrapedMovie) ScrapedGroup() ScrapedGroup {
 		ret.URLs = []string{*m.URL}
 	}
 
+	if m.Aliases != nil && *m.Aliases != "" {
+		ret.AliasList = []string{*m.Aliases}
+	}
+
 	return ret
 }
 
 // ScrapedGroup is a group from a scraping operation
 type ScrapedGroup struct {
-	StoredID *string        `json:"stored_id"`
-	Name     *string        `json:"name"`
-	Aliases  *string        `json:"aliases"`
-	Duration *string        `json:"duration"`
-	Date     *string        `json:"date"`
-	Rating   *string        `json:"rating"`
-	Director *string        `json:"director"`
-	URL      *string        `json:"url"` // included for backward compatibility
-	URLs     []string       `json:"urls"`
-	Synopsis *string        `json:"synopsis"`
-	Studio   *ScrapedStudio `json:"studio"`
-	Tags     []*ScrapedTag  `json:"tags"`
+	StoredID  *string        `json:"stored_id"`
+	Name      *string        `json:"name"`
+	Aliases   *string        `json:"aliases"` // included for backward compatibility
+	AliasList []string       `json:"alias_list"`
+	Duration  *string        `json:"duration"`
+	Date      *string        `json:"date"`
+	Rating    *string        `json:"rating"`
+	Director  *string        `json:"director"`
+	URL       *string        `json:"url"` // included for backward compatibility
+	URLs      []string       `json:"urls"`
+	Synopsis  *string        `json:"synopsis"`
+	Studio    *ScrapedStudio `json:"studio"`
+	Tags      []*ScrapedTag  `json:"tags"`
 	// This should be a base64 encoded data URL
 	FrontImage *string `json:"front_image"`
 	// This should be a base64 encoded data URL

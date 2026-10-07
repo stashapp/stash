@@ -2,6 +2,7 @@ package group
 
 import (
 	"context"
+	"errors"
 	"slices"
 	"strings"
 
@@ -9,9 +10,20 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
+var (
+	ErrEmptyAlias      = errors.New("group alias must not be an empty string")
+	ErrAliasNotTrimmed = errors.New("group alias contains spaces at the beginning or the end")
+)
+
 func (s *Service) validateCreate(ctx context.Context, group *models.Group) error {
 	if err := validateName(group.Name); err != nil {
 		return err
+	}
+
+	if group.Aliases.Loaded() {
+		if err := ValidateAliases(ctx, group.Aliases.List()); err != nil {
+			return err
+		}
 	}
 
 	containingIDs := group.ContainingGroups.IDs()
@@ -41,6 +53,12 @@ func (s *Service) validateUpdate(ctx context.Context, id int, partial models.Gro
 		}
 	}
 
+	if partial.Aliases != nil {
+		if err := ValidateAliases(ctx, partial.Aliases.Values); err != nil {
+			return err
+		}
+	}
+
 	if err := s.validateUpdateGroupHierarchy(ctx, existing, partial.ContainingGroups, partial.SubGroups); err != nil {
 		return err
 	}
@@ -52,6 +70,26 @@ func validateName(n string) error {
 	// ensure name is not empty
 	if strings.TrimSpace(n) == "" {
 		return ErrEmptyName
+	}
+
+	return nil
+}
+
+// only validate if aliases are not empty and trimmed
+// no requirement for uniqueness or difference from group name here
+// deduplication and exclusion are ensured at resolver level
+// import bypasses resolver though.
+func ValidateAliases(ctx context.Context, aliases []string) error {
+	for _, a := range aliases {
+		if err := validateName(a); err != nil {
+			if errors.Is(err, ErrEmptyName) {
+				return ErrEmptyAlias
+			}
+			return err
+		}
+		if strings.TrimSpace(a) != a {
+			return ErrAliasNotTrimmed
+		}
 	}
 
 	return nil

@@ -69,6 +69,7 @@ type GroupReader interface {
 	ContainingGroupLoader
 	SubGroupLoader
 	CustomFieldsReader
+	AliasLoader
 
 	All(ctx context.Context) ([]*Group, error)
 	GetFrontImage(ctx context.Context, groupID int) ([]byte, error)
