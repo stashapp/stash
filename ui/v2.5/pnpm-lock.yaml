@@ -11,7 +11,7 @@ overrides:
 
 patchedDependencies:
   '@silvermine/videojs-chromecast@1.5.0':
-    hash: c56bec761ace6677e5e4dc84281ee1baf3e41213ea35afc20d113a62b0d8e55d
+    hash: 3208b0c774e46003ed95cda4123622780f86db4e2e37cd894d41f0c073f3f4ca
     path: patches/@silvermine__videojs-chromecast@1.5.0.patch
 
 importers:
@@ -62,7 +62,7 @@ importers:
         version: 1.3.0(video.js@7.21.7)
       '@silvermine/videojs-chromecast':
         specifier: ^1.5.0
-        version: 1.5.0(patch_hash=c56bec761ace6677e5e4dc84281ee1baf3e41213ea35afc20d113a62b0d8e55d)(video.js@7.21.7)
+        version: 1.5.0(patch_hash=3208b0c774e46003ed95cda4123622780f86db4e2e37cd894d41f0c073f3f4ca)(video.js@7.21.7)
       '@types/react-router-dom':
         specifier: ^5.3.3
         version: 5.3.3
@@ -5556,7 +5556,7 @@ snapshots:
     dependencies:
       video.js: 7.21.7
 
-  '@silvermine/videojs-chromecast@1.5.0(patch_hash=c56bec761ace6677e5e4dc84281ee1baf3e41213ea35afc20d113a62b0d8e55d)(video.js@7.21.7)':
+  '@silvermine/videojs-chromecast@1.5.0(patch_hash=3208b0c774e46003ed95cda4123622780f86db4e2e37cd894d41f0c073f3f4ca)(video.js@7.21.7)':
     dependencies:
       video.js: 7.21.7
       webcomponents.js: https://codeload.github.com/webcomponents/webcomponentsjs/tar.gz/8a2e40557b177e2cca0def2553f84c8269c8f93e
