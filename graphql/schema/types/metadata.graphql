@@ -360,6 +360,7 @@ type SystemStatus {
   homeDir: String!
   ffmpegPath: String
   ffprobePath: String
+  localIPs: [String!]!
 }
 
 input MigrateInput {
