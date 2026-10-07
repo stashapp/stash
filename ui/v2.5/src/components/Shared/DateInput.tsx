@@ -3,6 +3,7 @@ import React, { forwardRef, useMemo } from "react";
 import { Button, InputGroup, Form } from "react-bootstrap";
 import ReactDatePicker from "react-datepicker";
 import TextUtils from "src/utils/text";
+import { normalizeDateString } from "src/utils/yup";
 import { Icon } from "./Icon";
 
 import "react-datepicker/dist/react-datepicker.css";
@@ -89,6 +90,23 @@ const _DateInput: React.FC<IProps> = (props: IProps) => {
     ? `${props.placeholder} (${formatHint})`
     : formatHint;
 
+  function normalizeOnBlur() {
+    if (!props.value) return;
+
+    const separator = props.isTime ? " " : undefined;
+    const datePart = separator
+      ? props.value.split(separator, 1)[0]
+      : props.value;
+    const normalizedDate = normalizeDateString(datePart);
+    if (!normalizedDate) return;
+
+    const suffix = separator ? props.value.slice(datePart.length) : "";
+    const normalized = `${normalizedDate}${suffix}`;
+    if (normalized !== props.value) {
+      props.onValueChange(normalized);
+    }
+  }
+
   return (
     <InputGroup hasValidation className={groupClassName}>
       <Form.Control
@@ -96,6 +114,7 @@ const _DateInput: React.FC<IProps> = (props: IProps) => {
         disabled={props.disabled}
         value={props.value}
         onChange={(e) => props.onValueChange(e.currentTarget.value)}
+        onBlur={normalizeOnBlur}
         placeholder={
           !props.disabled
             ? (props.placeholderOverride ?? placeholderText)
