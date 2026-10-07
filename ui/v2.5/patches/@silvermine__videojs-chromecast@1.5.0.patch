@@ -1,0 +1,52 @@
+diff --git a/src/js/tech/ChromecastTech.js b/src/js/tech/ChromecastTech.js
+index 663ea3eadc2cc9f0afc8cd66af4f0769604e48e3..79f656eb88488cfa4dc36a4fbe3b14661cf86b31 100644
+--- a/src/js/tech/ChromecastTech.js
++++ b/src/js/tech/ChromecastTech.js
+@@ -62,6 +62,8 @@ module.exports = function(videojs) {
+          this._eventListeners = [];
+ 
+          this.videojsPlayer = this.videojs(options.playerId);
++         // A cast that outlives a disposed player can pick this tech before the plugin's ready() has created the manager.
++         this.videojsPlayer.chromecastSessionManager = this.videojsPlayer.chromecastSessionManager || new ChromecastSessionManager(this.videojsPlayer);
+          this._chromecastSessionManager = this.videojsPlayer.chromecastSessionManager;
+ 
+          this._ui.updatePoster(this.videojsPlayer.poster());
+@@ -81,7 +83,12 @@ module.exports = function(videojs) {
+          // See `currentTime` function
+          this._initialStartTime = options.startTime || 0;
+ 
+-         this._playSource(options.source, this._initialStartTime);
++         // Video.js loads the first supported tech before the player has a source, and only sets one once the tech is ready.
++         if (options.source) {
++            this._playSource(options.source, this._initialStartTime);
++         } else {
++            this.triggerReady();
++         }
+          this.ready(function() {
+             this.setMuted(options.muted);
+          }.bind(this));
+@@ -218,6 +225,10 @@ module.exports = function(videojs) {
+          this._hasPlayedCurrentItem = false;
+          castSession.loadMedia(request)
+             .then(function() {
++               // The player may have been disposed while the device was loading.
++               if (this.isDisposed()) {
++                  return;
++               }
+                this._clearSessionTimeout();
+                if (!this._hasPlayedAnyItem) {
+                   // `triggerReady` is required here to notify the Video.js
+@@ -462,6 +473,13 @@ module.exports = function(videojs) {
+          return true;
+       }
+ 
++      // Video.js forwards the player's loop setting to whichever tech is active, and the device has none.
++      loop() {
++         return false;
++      }
++
++      setLoop() {}
++
+       /**
+        * Returns whether or not fullscreen is supported by this Tech.
+        * Always returns `true` because fullscreen is always supported.
