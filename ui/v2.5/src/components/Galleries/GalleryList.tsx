@@ -14,6 +14,7 @@ import GalleryWallCard from "./GalleryWallCard";
 import { EditGalleriesDialog } from "./EditGalleriesDialog";
 import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
+import { getActiveSortColumn } from "src/utils/data";
 import { GenerateDialog } from "../Dialogs/GenerateDialog";
 import { GalleryListTable } from "./GalleryListTable";
 import { GalleryCardGrid } from "./GalleryCardGrid";
@@ -56,14 +57,23 @@ import { PerformerAgeCriterionOption } from "src/models/list-filter/galleries";
 import { SidebarFolderFilter } from "../List/Filters/FolderFilter";
 import { ParentFolderCriterionOption } from "src/models/list-filter/criteria/folder";
 
+const galleryColumnSortMap: Record<string, string> = {
+  images: "images_count",
+};
+
 const GalleryList: React.FC<{
   galleries: GQL.SlimGalleryDataFragment[];
   filter: ListFilterModel;
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
+  onSort?: (value: string) => void;
 }> = PatchComponent(
   "GalleryList",
-  ({ galleries, filter, selectedIds, onSelectChange }) => {
+  ({ galleries, filter, selectedIds, onSelectChange, onSort }) => {
+    const activeSortColumn = getActiveSortColumn(
+      galleryColumnSortMap,
+      filter.sortBy
+    );
     const { configuration } = useConfigurationContext();
     const showLightbox = useGalleriesLightbox();
 
@@ -101,6 +111,9 @@ const GalleryList: React.FC<{
           galleries={galleries}
           selectedIds={selectedIds}
           onSelectChange={onSelectChange}
+          onSort={onSort}
+          sortBy={activeSortColumn}
+          sortDirection={filter.sortDirection}
         />
       );
     }
@@ -298,6 +311,20 @@ export const FilteredGalleryList = PatchComponent(
       });
 
     const { filter, setFilter } = filterState;
+
+    const onSort = useCallback(
+      (value: string) => {
+        const backendField = galleryColumnSortMap[value] ?? value;
+        if (filter.sortBy === backendField) {
+          setFilter(filter.toggleSortDirection());
+        } else {
+          const newFilter = filter.setSortBy(backendField);
+          newFilter.sortDirection = GQL.SortDirectionEnum.Asc;
+          setFilter(newFilter);
+        }
+      },
+      [filter, setFilter]
+    );
 
     const { effectiveFilter, result, cachedResult, items, totalCount } =
       queryResult;
@@ -524,6 +551,7 @@ export const FilteredGalleryList = PatchComponent(
                   galleries={items}
                   selectedIds={selectedIds}
                   onSelectChange={onSelectChange}
+                  onSort={onSort}
                 />
               </LoadedContent>
 

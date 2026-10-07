@@ -791,6 +791,7 @@ func (qb *TagStore) Query(ctx context.Context, tagFilter *models.TagFilterType, 
 
 var tagSortOptions = sortOptions{
 	"created_at",
+	"favorite",
 	"galleries_count",
 	"groups_count",
 	"id",
