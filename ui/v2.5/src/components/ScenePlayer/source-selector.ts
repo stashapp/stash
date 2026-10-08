@@ -3,6 +3,23 @@ import videojs, { VideoJsPlayer } from "video.js";
 export interface ISource extends videojs.Tech.SourceObject {
   label?: string;
   errored?: boolean;
+  streamType?: string;
+  resolution?: string;
+}
+
+function preferredSourceIndex(
+  sources: ISource[],
+  preferredType: string | undefined,
+  preferredResolution: string | undefined
+): number {
+  let matchedType = -1;
+  for (let i = 0; i < sources.length; i++) {
+    const source = sources[i];
+    const matchType = preferredType ? source.streamType === preferredType : true;
+    if (matchType && source.resolution === preferredResolution) return i;
+    if (matchType && source.resolution === "ORIGINAL" && matchedType === -1) matchedType = i;
+  }
+  return matchedType === -1 ? 0 : matchedType;
 }
 
 class SourceMenuItem extends videojs.getComponent("MenuItem") {
@@ -46,11 +63,11 @@ class SourceMenuButton extends videojs.getComponent("MenuButton") {
     });
   }
 
-  public setSources(sources: ISource[]) {
+  public setSources(sources: ISource[], selectedIndex: number) {
     this.selectedSource = null;
 
     this.items = sources.map((source, i) => {
-      if (i === 0) {
+      if (i === selectedIndex) {
         this.selectedSource = source;
       }
 
@@ -182,8 +199,10 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
       const currentSource = player.currentSource() as ISource;
       console.log(`Source '${currentSource.label}' is unsupported`);
 
-      // mark current source as errored
-      currentSource.errored = true;
+      // mark current source as errored in this.sources (currentSource() returns a copy)
+      if (this.selectedIndex >= 0 && this.selectedIndex < this.sources.length) {
+        this.sources[this.selectedIndex].errored = true;
+      }
       this.menu.markSourceErrored(currentSource);
 
       // don't auto play next source if user manually selected a source
@@ -193,12 +212,10 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
 
       // TODO - make auto play next source configurable
       // try the next source in the list
-      if (
-        this.selectedIndex !== -1 &&
-        this.selectedIndex + 1 < this.sources.length
-      ) {
-        this.selectedIndex += 1;
-        const newSource = this.sources[this.selectedIndex];
+      const nextIndex = (this.selectedIndex + 1) % this.sources.length;
+      if (this.selectedIndex !== -1 && !this.sources[nextIndex].errored) {
+        this.selectedIndex = nextIndex;
+        const newSource = this.sources[nextIndex];
         console.log(`Trying next source in playlist: '${newSource.label}'`);
         this.menu.setSelectedSource(newSource);
 
@@ -217,21 +234,28 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
     });
   }
 
-  setSources(sources: ISource[]) {
+  setSources(
+    sources: ISource[],
+    preferredType: string | undefined,
+    preferredResolution: string | undefined
+  ) {
     const cleanupTracks = this.cleanupTextTracks.splice(0);
     for (const track of cleanupTracks) {
       this.player.removeRemoteTextTrack(track);
     }
 
-    this.menu.setSources(sources);
+    const selectedIndex = preferredSourceIndex(sources, preferredType, preferredResolution);
+    if (selectedIndex === this.selectedIndex) return;
+
+    this.menu.setSources(sources, selectedIndex);
     if (sources.length !== 0) {
-      this.selectedIndex = 0;
+      this.selectedIndex = selectedIndex;
     } else {
       this.selectedIndex = -1;
     }
 
     this.sources = sources;
-    this.player.src(sources[0]);
+    this.player.src(sources[selectedIndex]);
   }
 
   setShouldAutoplay(fn: () => boolean) {

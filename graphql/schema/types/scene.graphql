@@ -274,6 +274,8 @@ type SceneStreamEndpoint {
   url: String!
   mime_type: String
   label: String
+  stream_type: String
+  resolution: String
 }
 
 input AssignSceneFileInput {
