@@ -59,8 +59,12 @@ func GetWorkingDirectory() string {
 	return ret
 }
 
-// GetHomeDirectory returns the path of the user's home directory.  ~ on Unix and C:\Users\UserName on Windows
+// GetHomeDirectory returns the home directory from the environment, falling back to the current user.
 func GetHomeDirectory() string {
+	if homeDir, err := os.UserHomeDir(); err == nil {
+		return homeDir
+	}
+
 	currentUser, err := user.Current()
 	if err != nil {
 		panic(err)
