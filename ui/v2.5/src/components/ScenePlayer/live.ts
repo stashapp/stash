@@ -21,6 +21,12 @@ function offsetMiddleware(player: VideoJsPlayer) {
   let offsetStart: number | undefined;
   let seeking = 0;
 
+  // The cast device seeks the stream itself, so the transcode offset only applies to the local tech.
+  function isCasting() {
+    const Chromecast = videojs.getTech("Chromecast");
+    return !!Chromecast && tech?.constructor === Chromecast;
+  }
+
   function initCues(cues: TextTrackCueList) {
     const offset = offsetStart ?? 0;
     for (let j = 0; j < cues.length; j++) {
@@ -139,7 +145,7 @@ function offsetMiddleware(player: VideoJsPlayer) {
       }
     },
     buffered(buffers: TimeRanges) {
-      if (offsetStart === undefined) {
+      if (offsetStart === undefined || isCasting()) {
         return buffers;
       }
 
@@ -156,10 +162,11 @@ function offsetMiddleware(player: VideoJsPlayer) {
       return videojs.createTimeRanges(timeRanges as any);
     },
     currentTime(seconds: number) {
+      if (isCasting()) return seconds;
       return (offsetStart ?? 0) + seconds;
     },
     setCurrentTime(seconds: number) {
-      if (offsetStart === undefined) {
+      if (offsetStart === undefined || isCasting()) {
         return seconds;
       }
 

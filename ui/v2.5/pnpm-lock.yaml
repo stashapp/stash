@@ -9,6 +9,11 @@ overrides:
   brace-expansion@1.1.12: ~1.1.13
   '@xmldom/xmldom@0.8.12': ~0.8.13
 
+patchedDependencies:
+  '@silvermine/videojs-chromecast@1.5.0':
+    hash: 8bd7f9a0c7739a51381bc8bc5d382912fc30da8fee248a56c032810d8b92e1b3
+    path: patches/@silvermine__videojs-chromecast@1.5.0.patch
+
 importers:
 
   .:
@@ -57,7 +62,7 @@ importers:
         version: 1.3.0(video.js@7.21.7)
       '@silvermine/videojs-chromecast':
         specifier: ^1.5.0
-        version: 1.5.0(video.js@7.21.7)
+        version: 1.5.0(patch_hash=8bd7f9a0c7739a51381bc8bc5d382912fc30da8fee248a56c032810d8b92e1b3)(video.js@7.21.7)
       '@types/react-router-dom':
         specifier: ^5.3.3
         version: 5.3.3
@@ -5551,7 +5556,7 @@ snapshots:
     dependencies:
       video.js: 7.21.7
 
-  '@silvermine/videojs-chromecast@1.5.0(video.js@7.21.7)':
+  '@silvermine/videojs-chromecast@1.5.0(patch_hash=8bd7f9a0c7739a51381bc8bc5d382912fc30da8fee248a56c032810d8b92e1b3)(video.js@7.21.7)':
     dependencies:
       video.js: 7.21.7
       webcomponents.js: https://codeload.github.com/webcomponents/webcomponentsjs/tar.gz/8a2e40557b177e2cca0def2553f84c8269c8f93e

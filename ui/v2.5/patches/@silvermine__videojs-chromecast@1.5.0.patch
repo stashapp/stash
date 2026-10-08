@@ -1,0 +1,118 @@
+diff --git a/src/js/components/ChromecastButton.js b/src/js/components/ChromecastButton.js
+index e50a3f83a2c524776ce441347c1521664df49b69..0d0ec04bfca4c1fe6ed63c014e190ebaecc3426c 100644
+--- a/src/js/components/ChromecastButton.js
++++ b/src/js/components/ChromecastButton.js
+@@ -59,18 +59,6 @@ module.exports = function(videojs) {
+ 
+          player.on('chromecastConnected', this._onChromecastConnected.bind(this));
+          player.on('chromecastDisconnected', this._onChromecastDisconnected.bind(this));
+-         player.on('chromecastDevicesAvailable', this._onChromecastDevicesAvailable.bind(this));
+-         player.on('chromecastDevicesUnavailable', this._onChromecastDevicesUnavailable.bind(this));
+-
+-         // Use the initial state of `hasAvailableDevices` to call the corresponding event
+-         // handlers because the corresponding events may have already been emitted before
+-         // binding the listeners above.
+-         if (player.chromecastSessionManager && player.chromecastSessionManager.hasAvailableDevices()) {
+-            this._onChromecastDevicesAvailable();
+-         } else {
+-            this._onChromecastDevicesUnavailable();
+-         }
+-
+          if (options.addCastLabelToButton) {
+             this.el().classList.add('vjs-chromecast-button-lg');
+ 
+@@ -132,24 +120,6 @@ module.exports = function(videojs) {
+          this._updateCastLabelText();
+       }
+ 
+-      /**
+-       * Handles `chromecastDevicesAvailable` player events.
+-       *
+-       * @private
+-       */
+-      _onChromecastDevicesAvailable() {
+-         this.show();
+-      }
+-
+-      /**
+-       * Handles `chromecastDevicesUnavailable` player events.
+-       *
+-       * @private
+-       */
+-      _onChromecastDevicesUnavailable() {
+-         this.hide();
+-      }
+-
+       /**
+        * Re-calculates which CSS classes the button needs and sets them on the buttons'
+        * DOMElement.
+diff --git a/src/js/tech/ChromecastTech.js b/src/js/tech/ChromecastTech.js
+index 663ea3eadc2cc9f0afc8cd66af4f0769604e48e3..a095c7b8070f34106b34145b3ee7266929900fc5 100644
+--- a/src/js/tech/ChromecastTech.js
++++ b/src/js/tech/ChromecastTech.js
+@@ -62,6 +62,8 @@ module.exports = function(videojs) {
+          this._eventListeners = [];
+ 
+          this.videojsPlayer = this.videojs(options.playerId);
++         // A cast that outlives a disposed player can pick this tech before the plugin's ready() has created the manager.
++         this.videojsPlayer.chromecastSessionManager = this.videojsPlayer.chromecastSessionManager || new ChromecastSessionManager(this.videojsPlayer);
+          this._chromecastSessionManager = this.videojsPlayer.chromecastSessionManager;
+ 
+          this._ui.updatePoster(this.videojsPlayer.poster());
+@@ -81,7 +83,12 @@ module.exports = function(videojs) {
+          // See `currentTime` function
+          this._initialStartTime = options.startTime || 0;
+ 
+-         this._playSource(options.source, this._initialStartTime);
++         // Video.js loads the first supported tech before the player has a source, and only sets one once the tech is ready.
++         if (options.source) {
++            this._playSource(options.source, this._initialStartTime);
++         } else {
++            this.triggerReady();
++         }
+          this.ready(function() {
+             this.setMuted(options.muted);
+          }.bind(this));
+@@ -218,6 +225,10 @@ module.exports = function(videojs) {
+          this._hasPlayedCurrentItem = false;
+          castSession.loadMedia(request)
+             .then(function() {
++               // The player may have been disposed while the device was loading.
++               if (this.isDisposed()) {
++                  return;
++               }
+                this._clearSessionTimeout();
+                if (!this._hasPlayedAnyItem) {
+                   // `triggerReady` is required here to notify the Video.js
+@@ -230,7 +241,11 @@ module.exports = function(videojs) {
+                this.trigger('playing');
+                this._hasPlayedAnyItem = true;
+                this._isMediaLoading = false;
+-               this._getMediaSession().addUpdateListener(this._onMediaSessionStatusChanged.bind(this));
++               // When a new scene is loaded as the previous one ends, the device may not have attached the new media yet.
++               var mediaSession = this._getMediaSession();
++               if (mediaSession) {
++                  mediaSession.addUpdateListener(this._onMediaSessionStatusChanged.bind(this));
++               }
+             }.bind(this), this._triggerErrorEvent.bind(this));
+       }
+ 
+@@ -462,6 +477,18 @@ module.exports = function(videojs) {
+          return true;
+       }
+ 
++      // Video.js forwards the player's loop setting to whichever tech is active, and the device has none.
++      loop() {
++         return false;
++      }
++
++      setLoop() {}
++
++      // Video.js holds tech events back while the tech is seeking, until a seeked event this tech never fires.
++      seeking() {
++         return false;
++      }
++
+       /**
+        * Returns whether or not fullscreen is supported by this Tech.
+        * Always returns `true` because fullscreen is always supported.

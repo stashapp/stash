@@ -9,6 +9,7 @@ fragment VideoFileData on VideoFile {
   path
   size
   mod_time
+  format
   duration
   video_codec
   audio_codec
@@ -74,6 +75,7 @@ fragment VisualFileData on VisualFile {
     path
     size
     mod_time
+    format
     duration
     video_codec
     audio_codec
