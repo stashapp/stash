@@ -82,6 +82,13 @@ type UIConfig struct {
 	// Content Security Policy configuration for the plugin.
 	CSP PluginCSP `yaml:"csp"`
 
+	// CSPSettings enables the csp_ plugin setting prefix for this plugin.
+	// When true, any plugin setting whose key starts with "csp_" and whose
+	// value is a valid http/https URL will be added to the connect-src
+	// CSP directive. This is an opt-in mechanism to prevent accidental
+	// namespace collisions with non-CSP settings.
+	CSPSettings bool `yaml:"csp-settings"`
+
 	// Javascript files that will be injected into the stash UI.
 	// These may be URLs or paths to files relative to the plugin configuration file.
 	Javascript []string `yaml:"javascript"`
@@ -260,6 +267,7 @@ func (c Config) toPlugin() *Plugin {
 			Javascript:     c.UI.getJavascriptFiles(c),
 			CSS:            c.UI.getCSSFiles(c),
 			CSP:            c.UI.CSP,
+			CSPSettings:    c.UI.CSPSettings,
 			Assets:         c.UI.Assets,
 		},
 		Settings:   c.getPluginSettings(),
