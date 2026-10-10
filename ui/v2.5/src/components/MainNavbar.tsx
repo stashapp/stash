@@ -26,6 +26,7 @@ import {
   faBars,
   faChartColumn,
   faFilm,
+  faFolderTree,
   faHeart,
   faImage,
   faImages,
@@ -82,6 +83,10 @@ const messages = defineMessages({
     id: "galleries",
     defaultMessage: "Galleries",
   },
+  folders: {
+    id: "folders",
+    defaultMessage: "Folders",
+  },
   sceneTagger: {
     id: "sceneTagger",
     defaultMessage: "Scene Tagger",
@@ -134,6 +139,13 @@ const allMenuItems: IMenuItem[] = [
     icon: faImages,
     hotkey: "g l",
     userCreatable: true,
+  },
+  {
+    name: "folders",
+    message: messages.folders,
+    href: "/folders",
+    icon: faFolderTree,
+    hotkey: "g f",
   },
   {
     name: "performers",

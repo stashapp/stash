@@ -1,0 +1,18 @@
+.folder-browser-folders {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.folder-browser-folder {
+  align-items: center;
+  display: inline-flex;
+  max-width: 18rem;
+  text-align: left;
+}
+
+.folder-browser-folder span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
