@@ -1,4 +1,9 @@
 import videojs, { VideoJsPlayer } from "video.js";
+import type { AbLoopPluginApi } from "./util";
+
+function getAbLoopApi(player: VideoJsPlayer) {
+  return player.abLoopPlugin as unknown as AbLoopPluginApi | undefined;
+}
 
 interface ControlOptions extends videojs.ComponentOptions {
   direction: "forward" | "back";
@@ -28,11 +33,24 @@ class SkipButtonPlugin extends videojs.getPlugin("plugin") {
     else this.player.removeClass("vjs-skip-buttons-prev");
   }
 
+  // manually skipping to another video invalidates any AB-loop range set up
+  // for the one being left - carrying an enabled loop over onto the next
+  // video's timeline would silently loop the wrong section of it
+  private resetAbLoop() {
+    const api = getAbLoopApi(this.player);
+    const opts = api?.getOptions();
+    if (api && opts?.enabled) {
+      api.setOptions({ ...opts, start: 0, end: false, enabled: false });
+    }
+  }
+
   handleForward() {
+    this.resetAbLoop();
     this.onNext?.();
   }
 
   handleBackward() {
+    this.resetAbLoop();
     this.onPrevious?.();
   }
 
