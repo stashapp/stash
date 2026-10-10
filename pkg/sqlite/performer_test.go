@@ -2698,6 +2698,137 @@ func TestPerformerStore_FindByStashIDStatus(t *testing.T) {
 	}
 }
 
+func TestPerformerQueryUnicodeSearchCaseInsensitive(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		qb := db.Performer
+
+		// test cases with various Unicode characters
+		testCases := []struct {
+			name          string
+			performerName string
+			searchTerm    string
+		}{
+			{
+				"Cyrillic lowercase search",
+				"Анна",
+				"анна",
+			},
+			{
+				"Cyrillic uppercase search",
+				"мария",
+				"МАРИЯ",
+			},
+			{
+				"Accented Latin lowercase",
+				"Zoë",
+				"zoë",
+			},
+			{
+				"Accented Latin uppercase",
+				"chloé",
+				"CHLOÉ",
+			},
+			{
+				"Greek lowercase search",
+				"Έλενα",
+				"έλενα",
+			},
+			{
+				"Pure ASCII term keeps working",
+				"John SMITH",
+				"smith",
+			},
+			{
+				"Mixed ASCII and Cyrillic terms in one query",
+				"ANNA МАРИЯ",
+				"anna мария",
+			},
+		}
+
+		for _, tc := range testCases {
+			t.Run(tc.name, func(t *testing.T) {
+				// create performer with unicode name
+				performer := models.Performer{
+					Name: tc.performerName,
+				}
+				err := qb.Create(ctx, &models.CreatePerformerInput{Performer: &performer})
+				if err != nil {
+					t.Fatalf("Error creating performer: %s", err.Error())
+				}
+
+				// search using different case
+				findFilter := &models.FindFilterType{
+					Q: &tc.searchTerm,
+				}
+
+				performers, _, err := qb.Query(ctx, nil, findFilter)
+				if err != nil {
+					t.Fatalf("Error querying performers: %s", err.Error())
+				}
+
+				// should find the performer regardless of case
+				found := false
+				for _, p := range performers {
+					if p.ID == performer.ID {
+						found = true
+						break
+					}
+				}
+
+				assert.True(t, found)
+
+				// clean up
+				if err := qb.Destroy(ctx, performer.ID); err != nil {
+					t.Fatalf("Error cleaning up performer: %s", err.Error())
+				}
+			})
+		}
+
+		return nil
+	})
+}
+
+func TestPerformerQuerySearchExcludeTerm(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		qb := db.Performer
+
+		performer := models.Performer{
+			Name: "Анна Exclusion",
+		}
+		if err := qb.Create(ctx, &models.CreatePerformerInput{Performer: &performer}); err != nil {
+			t.Fatalf("Error creating performer: %s", err.Error())
+		}
+		defer func() {
+			if err := qb.Destroy(ctx, performer.ID); err != nil {
+				t.Fatalf("Error cleaning up performer: %s", err.Error())
+			}
+		}()
+
+		find := func(q string) bool {
+			findFilter := &models.FindFilterType{Q: &q}
+			performers, _, err := qb.Query(ctx, nil, findFilter)
+			if err != nil {
+				t.Fatalf("Error querying performers: %s", err.Error())
+			}
+			for _, p := range performers {
+				if p.ID == performer.ID {
+					return true
+				}
+			}
+			return false
+		}
+
+		// excluded ASCII term (fast path)
+		assert.False(t, find("анна -exclusion"))
+		// excluded Unicode term with different case (lower_unicode path)
+		assert.False(t, find("exclusion -АННА"))
+		// non-matching exclusions do not filter the performer out
+		assert.True(t, find("анна -zzznotthere"))
+
+		return nil
+	})
+}
+
 func TestPerformerMerge(t *testing.T) {
 	tests := []struct {
 		name    string
