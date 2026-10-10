@@ -94,6 +94,36 @@ func nameMatchesPath(name, path string) int {
 	return regexpMatchesPath(re, path)
 }
 
+// pathMatcher holds per-path precomputed values so they aren't recomputed
+// for every candidate name. `allASCII` and `strings.ToLower(path)` were
+// running once per (candidate, file) pair before; under a worker pool with
+// thousands of candidates per file that was the dominant allocation.
+type pathMatcher struct {
+	loweredPath string
+	useUnicode  bool
+	cache       *Cache
+}
+
+func newPathMatcher(path string, cache *Cache) pathMatcher {
+	return pathMatcher{
+		loweredPath: strings.ToLower(path),
+		useUnicode:  !allASCII(path),
+		cache:       cache,
+	}
+}
+
+// match returns the right-most index where name matches the path, or -1.
+// Uses the cache's compiled-regexp table so each name is compiled once per
+// autotag run instead of once per file.
+func (m *pathMatcher) match(name string) int {
+	re := m.cache.nameRegexp(name, m.useUnicode)
+	found := re.FindAllStringIndex(m.loweredPath, -1)
+	if found == nil {
+		return -1
+	}
+	return found[len(found)-1][0]
+}
+
 // nameToRegexp compiles a regexp pattern to match paths from the given name.
 // Set useUnicode to true if this regexp is to be used on any strings with unicode characters.
 func nameToRegexp(name string, useUnicode bool) *regexp.Regexp {
@@ -141,30 +171,47 @@ func getPerformers(ctx context.Context, words []string, performerReader models.P
 	return append(performers, swPerformers...), nil
 }
 
+// PathToPerformers returns performers whose name matches the given path.
+//
+// When the cache has been preloaded via Cache.PreloadPerformers, the full
+// non-ignored performer set is already in memory and a 2-rune prefix index
+// narrows candidates before regex-matching — this is the path the bulk
+// file-based auto-tag job takes. Otherwise (e.g., the built-in scraper,
+// which runs on a single scene per request) falls back to a per-call SQL
+// prefilter via reader.QueryForAutoTag.
 func PathToPerformers(ctx context.Context, path string, reader models.PerformerAutoTagQueryer, cache *Cache, trimExt bool) ([]*models.Performer, error) {
-	words := getPathWords(path, trimExt)
-
-	performers, err := getPerformers(ctx, words, reader, cache)
-	if err != nil {
-		return nil, err
+	var performers []*models.Performer
+	if cache != nil && cache.allPerformers != nil {
+		performers = cache.performerCandidates(getPathWords(path, trimExt))
+	} else {
+		words := getPathWords(path, trimExt)
+		var err error
+		performers, err = getPerformers(ctx, words, reader, cache)
+		if err != nil {
+			return nil, err
+		}
 	}
 
+	pm := newPathMatcher(path, cache)
 	var ret []*models.Performer
 	for _, p := range performers {
 		matches := false
-		if nameMatchesPath(p.Name, path) != -1 {
+		if pm.match(p.Name) != -1 {
 			matches = true
 		}
 
 		// TODO - disabled alias matching until we can get finer
-		// control over the matching
+		// control over the matching. To re-enable:
+		//   - uncomment this block (fallback path)
+		//   - have Cache.PreloadPerformers load aliases (e.g. via
+		//     loadAllAliases, as PreloadStudios/PreloadTags do) and
+		//     iterate them here in the preloaded path too
 		// if !matches {
 		// 	if err := p.LoadAliases(ctx, reader); err != nil {
 		// 		return nil, err
 		// 	}
-
 		// 	for _, alias := range p.Aliases.List() {
-		// 		if nameMatchesPath(alias, path) != -1 {
+		// 		if pm.match(alias) != -1 {
 		// 			matches = true
 		// 			break
 		// 		}
@@ -193,13 +240,34 @@ func getStudios(ctx context.Context, words []string, reader models.StudioAutoTag
 	return append(studios, swStudios...), nil
 }
 
-// PathToStudio returns the Studio that matches the given path.
-// Where multiple matching studios are found, the one that matches the latest
-// position in the path is returned.
+// PathToStudio returns the studio whose name or alias matches the given
+// path. Where multiple match, the one matching the latest position wins.
+//
+// See PathToPerformers for the preloaded-vs-fallback behavior.
 func PathToStudio(ctx context.Context, path string, reader models.StudioAutoTagQueryer, cache *Cache, trimExt bool) (*models.Studio, error) {
+	pm := newPathMatcher(path, cache)
+
+	if cache != nil && cache.allStudios != nil {
+		candidates := cache.studioCandidates(getPathWords(path, trimExt))
+		var ret *models.Studio
+		index := -1
+		for _, c := range candidates {
+			if matchIndex := pm.match(c.Studio.Name); matchIndex != -1 && matchIndex > index {
+				ret = c.Studio
+				index = matchIndex
+			}
+			for _, alias := range c.Aliases {
+				if matchIndex := pm.match(alias); matchIndex != -1 && matchIndex > index {
+					ret = c.Studio
+					index = matchIndex
+				}
+			}
+		}
+		return ret, nil
+	}
+
 	words := getPathWords(path, trimExt)
 	candidates, err := getStudios(ctx, words, reader, cache)
-
 	if err != nil {
 		return nil, err
 	}
@@ -207,8 +275,7 @@ func PathToStudio(ctx context.Context, path string, reader models.StudioAutoTagQ
 	var ret *models.Studio
 	index := -1
 	for _, c := range candidates {
-		matchIndex := nameMatchesPath(c.Name, path)
-		if matchIndex != -1 && matchIndex > index {
+		if matchIndex := pm.match(c.Name); matchIndex != -1 && matchIndex > index {
 			ret = c
 			index = matchIndex
 		}
@@ -217,10 +284,8 @@ func PathToStudio(ctx context.Context, path string, reader models.StudioAutoTagQ
 		if err != nil {
 			return nil, err
 		}
-
 		for _, alias := range aliases {
-			matchIndex = nameMatchesPath(alias, path)
-			if matchIndex != -1 && matchIndex > index {
+			if matchIndex := pm.match(alias); matchIndex != -1 && matchIndex > index {
 				ret = c
 				index = matchIndex
 			}
@@ -244,10 +309,32 @@ func getTags(ctx context.Context, words []string, reader models.TagAutoTagQuerye
 	return append(tags, swTags...), nil
 }
 
+// PathToTags returns tags whose name or alias matches the given path.
+//
+// See PathToPerformers for the preloaded-vs-fallback behavior.
 func PathToTags(ctx context.Context, path string, reader models.TagAutoTagQueryer, cache *Cache, trimExt bool) ([]*models.Tag, error) {
+	pm := newPathMatcher(path, cache)
+
+	if cache != nil && cache.allTags != nil {
+		candidates := cache.tagCandidates(getPathWords(path, trimExt))
+		var ret []*models.Tag
+		for _, c := range candidates {
+			if pm.match(c.Tag.Name) != -1 {
+				ret = append(ret, c.Tag)
+				continue
+			}
+			for _, alias := range c.Aliases {
+				if pm.match(alias) != -1 {
+					ret = append(ret, c.Tag)
+					break
+				}
+			}
+		}
+		return ret, nil
+	}
+
 	words := getPathWords(path, trimExt)
 	tags, err := getTags(ctx, words, reader, cache)
-
 	if err != nil {
 		return nil, err
 	}
@@ -255,23 +342,21 @@ func PathToTags(ctx context.Context, path string, reader models.TagAutoTagQuerye
 	var ret []*models.Tag
 	for _, t := range tags {
 		matches := false
-		if nameMatchesPath(t.Name, path) != -1 {
+		if pm.match(t.Name) != -1 {
 			matches = true
 		}
-
 		if !matches {
 			aliases, err := reader.GetAliases(ctx, t.ID)
 			if err != nil {
 				return nil, err
 			}
 			for _, alias := range aliases {
-				if nameMatchesPath(alias, path) != -1 {
+				if pm.match(alias) != -1 {
 					matches = true
 					break
 				}
 			}
 		}
-
 		if matches {
 			ret = append(ret, t)
 		}

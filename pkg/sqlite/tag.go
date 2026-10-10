@@ -940,6 +940,12 @@ func (qb *TagStore) GetAliases(ctx context.Context, tagID int) ([]string, error)
 	return tagRepository.aliases.get(ctx, tagID)
 }
 
+// GetAllAliases returns a map of tag id to its aliases. Lets callers that
+// need aliases for many tags avoid N+1 per-id lookups.
+func (qb *TagStore) GetAllAliases(ctx context.Context) (map[int][]string, error) {
+	return tagRepository.aliases.getAll(ctx)
+}
+
 func (qb *TagStore) UpdateAliases(ctx context.Context, tagID int, aliases []string) error {
 	return tagRepository.aliases.replace(ctx, tagID, aliases)
 }

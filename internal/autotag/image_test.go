@@ -65,7 +65,7 @@ func TestImagePerformers(t *testing.T) {
 
 				return imagePartialsEqual(got, expected)
 			})
-			db.Image.On("UpdatePartial", testCtx, imageID, matchPartial).Return(nil, nil).Once()
+			db.Image.On("UpdatePartial", mock.Anything, imageID, matchPartial).Return(nil, nil).Once()
 		}
 
 		image := models.Image{
@@ -73,7 +73,8 @@ func TestImagePerformers(t *testing.T) {
 			Path:         test.Path,
 			PerformerIDs: models.NewRelatedIDs([]int{}),
 		}
-		err := ImagePerformers(testCtx, &image, db.Image, db.Performer, nil)
+		tagger := &Tagger{TxnManager: db, Cache: nil}
+		err := tagger.ImagePerformersAtPath(testCtx, &image, db.Image, db.Performer)
 
 		assert.Nil(err)
 		db.AssertExpectations(t)
@@ -111,14 +112,15 @@ func TestImageStudios(t *testing.T) {
 
 				return imagePartialsEqual(got, expected)
 			})
-			db.Image.On("UpdatePartial", testCtx, imageID, matchPartial).Return(nil, nil).Once()
+			db.Image.On("UpdatePartial", mock.Anything, imageID, matchPartial).Return(nil, nil).Once()
 		}
 
 		image := models.Image{
 			ID:   imageID,
 			Path: test.Path,
 		}
-		err := ImageStudios(testCtx, &image, db.Image, db.Studio, nil)
+		tagger := &Tagger{TxnManager: db, Cache: nil}
+		err := tagger.ImageStudiosAtPath(testCtx, &image, db.Image, db.Studio)
 
 		assert.Nil(err)
 		db.AssertExpectations(t)
@@ -186,7 +188,7 @@ func TestImageTags(t *testing.T) {
 
 				return imagePartialsEqual(got, expected)
 			})
-			db.Image.On("UpdatePartial", testCtx, imageID, matchPartial).Return(nil, nil).Once()
+			db.Image.On("UpdatePartial", mock.Anything, imageID, matchPartial).Return(nil, nil).Once()
 		}
 
 		image := models.Image{
@@ -194,7 +196,8 @@ func TestImageTags(t *testing.T) {
 			Path:   test.Path,
 			TagIDs: models.NewRelatedIDs([]int{}),
 		}
-		err := ImageTags(testCtx, &image, db.Image, db.Tag, nil)
+		tagger := &Tagger{TxnManager: db, Cache: nil}
+		err := tagger.ImageTagsAtPath(testCtx, &image, db.Image, db.Tag)
 
 		assert.Nil(err)
 		db.AssertExpectations(t)

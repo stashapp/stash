@@ -438,6 +438,28 @@ func (t *stringTable) get(ctx context.Context, id int) ([]string, error) {
 	return ret, nil
 }
 
+// getAll returns every (id, value) pair in the join table, grouped by id.
+// Used to avoid N+1 lookups when callers need values for many ids at once.
+func (t *stringTable) getAll(ctx context.Context) (map[int][]string, error) {
+	q := dialect.Select(t.idColumn, t.stringColumn).From(t.table.table)
+
+	const single = false
+	ret := make(map[int][]string)
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var id int
+		var v string
+		if err := rows.Scan(&id, &v); err != nil {
+			return err
+		}
+		ret[id] = append(ret[id], v)
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("getting all values from %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return ret, nil
+}
+
 func (t *stringTable) insertJoin(ctx context.Context, id int, v string) (sql.Result, error) {
 	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), t.stringColumn.GetCol()).Vals(
 		goqu.Vals{id, v},
