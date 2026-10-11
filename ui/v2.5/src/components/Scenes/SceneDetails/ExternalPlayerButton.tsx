@@ -5,6 +5,7 @@ import { useIntl } from "react-intl";
 import { Icon } from "src/components/Shared/Icon";
 import { objectTitle } from "src/core/files";
 import { SceneDataFragment } from "src/core/generated-graphql";
+import { useConfigurationContext } from "src/hooks/Config";
 
 export interface IExternalPlayerButtonProps {
   scene: SceneDataFragment;
@@ -16,10 +17,15 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
   const isAndroid = /(android)/i.test(navigator.userAgent);
   const isAppleDevice = /(ipod|iphone|ipad)/i.test(navigator.userAgent);
   const intl = useIntl();
-
+  const { configuration } = useConfigurationContext();
+  const showOpenExternal = configuration.ui.showOpenExternal ?? true;
   const { paths } = scene;
+  const { files } = scene;
+  // Get only file name from the full path.
+  const fileName = files[0].path?.split("/").pop()?.split("\\").pop() ?? "";
 
-  if (!paths?.stream || (!isAndroid && !isAppleDevice)) return <span />;
+  if (!paths?.stream || (!isAndroid && !isAppleDevice && !showOpenExternal))
+    return <span />;
 
   const { stream } = paths;
   const title = objectTitle(scene);
@@ -46,6 +52,8 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
     url = streamURL
       .toString()
       .replace(new RegExp(`^${streamURL.protocol}`), "vlc-x-callback:");
+  } else if (showOpenExternal) {
+    url = stream + "/" + encodeURIComponent(fileName);
   }
 
   return (
