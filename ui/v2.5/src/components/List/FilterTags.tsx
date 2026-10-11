@@ -22,6 +22,8 @@ import { CustomFieldsCriterion } from "src/models/list-filter/criteria/custom-fi
 import { useDebounce } from "src/hooks/debounce";
 import cx from "classnames";
 import { useConfigurationContext } from "src/hooks/Config";
+import { PatchContainerComponent } from "src/patch";
+import { View } from "./views";
 
 type TagItemProps = PropsWithChildren<
   ReplaceProps<"span", BsPrefixProps<"span"> & BadgeProps>
@@ -122,6 +124,7 @@ const MoreFilterTags: React.FC<{
 
 interface IFilterTagsProps {
   searchTerm?: string;
+  view?: View;
   criteria: Criterion[];
   onEditSearchTerm?: () => void;
   onEditCriterion: (c: Criterion) => void;
@@ -131,8 +134,18 @@ interface IFilterTagsProps {
   truncateOnOverflow?: boolean;
 }
 
+interface IFilterTagExtrasProps {
+  searchTerm?: string;
+  view?: View;
+  criteria: Criterion[];
+}
+
+const FilterTagExtras =
+  PatchContainerComponent<IFilterTagExtrasProps>("FilterTags.Extras");
+
 export const FilterTags: React.FC<IFilterTagsProps> = ({
   searchTerm,
+  view,
   criteria,
   onEditCriterion,
   onRemoveCriterion,
@@ -302,10 +315,6 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
     );
   }
 
-  if (criteria.length === 0 && !searchTerm) {
-    return null;
-  }
-
   const className = "wrap-tags filter-tags";
 
   const filterTags = criteria.flatMap((c) => getFilterTags(c));
@@ -331,19 +340,30 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
     cutoff !== undefined ? filterTags.slice(0, cutoff) : filterTags;
   const hiddenCriteria = cutoff !== undefined ? filterTags.slice(cutoff) : [];
 
+  const extras = (
+    <FilterTagExtras searchTerm={searchTerm} view={view} criteria={criteria} />
+  );
+
+  if (filterTags.length === 0) {
+    return extras;
+  }
+
   return (
-    <div className={className} ref={ref}>
-      {visibleCriteria}
-      <MoreFilterTags tags={hiddenCriteria} />
-      {filterTags.length >= 3 && (
-        <Button
-          variant="minimal"
-          className="clear-all-button"
-          onClick={() => onRemoveAll()}
-        >
-          <FormattedMessage id="actions.clear" />
-        </Button>
-      )}
-    </div>
+    <>
+      <div className={className} ref={ref}>
+        {visibleCriteria}
+        <MoreFilterTags tags={hiddenCriteria} />
+        {filterTags.length >= 3 && (
+          <Button
+            variant="minimal"
+            className="clear-all-button"
+            onClick={() => onRemoveAll()}
+          >
+            <FormattedMessage id="actions.clear" />
+          </Button>
+        )}
+      </div>
+      {extras}
+    </>
   );
 };

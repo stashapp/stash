@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getWSClient, useWSState } from "src/core/StashService";
 import {
   Job,
@@ -18,6 +18,11 @@ export const useMonitorJob = (
   onComplete?: (job?: JobFragment) => void
 ) => {
   const { state } = useWSState(getWSClient());
+
+  const onCompleteRef = useRef(onComplete);
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   const jobsSubscribe = useJobsSubscribeSubscription({
     skip: !jobID,
@@ -48,22 +53,22 @@ export const useMonitorJob = (
 
     const j = jobData?.findJob;
     if (j) {
-      setJob(j);
-
       if (
         j.status === JobStatus.Finished ||
         j.status === JobStatus.Failed ||
         j.status === JobStatus.Cancelled
       ) {
         setJob(undefined);
-        onComplete?.(j);
+        onCompleteRef.current?.(j);
+      } else {
+        setJob(j);
       }
     } else {
       // must've already finished
       setJob(undefined);
-      onComplete?.();
+      onCompleteRef.current?.();
     }
-  }, [jobID, jobData, loading, onComplete]);
+  }, [jobID, jobData, loading]);
 
   // monitor job
   useEffect(() => {
@@ -84,9 +89,9 @@ export const useMonitorJob = (
       setJob(event.job);
     } else {
       setJob(undefined);
-      onComplete?.(event.job);
+      onCompleteRef.current?.(event.job);
     }
-  }, [jobsSubscribe, jobID, onComplete]);
+  }, [jobsSubscribe, jobID]);
 
   // it's possible that the websocket connection isn't present
   // in that case, we'll just poll the server

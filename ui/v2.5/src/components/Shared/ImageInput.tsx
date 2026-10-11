@@ -7,13 +7,25 @@ import {
   Popover,
   Row,
 } from "react-bootstrap";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { ModalComponent } from "./Modal";
 import { Icon } from "./Icon";
-import { faClipboard, faFile, faLink } from "@fortawesome/free-solid-svg-icons";
+import {
+  faClipboard,
+  faFile,
+  faLink,
+  faTrashAlt,
+} from "@fortawesome/free-solid-svg-icons";
 import { PatchComponent } from "src/patch";
 import ImageUtils from "src/utils/image";
 import { useToast } from "src/hooks/Toast";
+
+export interface IImageInputExtraAction {
+  icon: IconDefinition;
+  labelId: string;
+  onClick: () => void | Promise<void>;
+}
 
 interface IImageInput {
   isEditing: boolean;
@@ -22,6 +34,7 @@ interface IImageInput {
   onImageURL?: (url: string) => void;
   onReset?: () => void;
   acceptSVG?: boolean;
+  extraActions?: IImageInputExtraAction[];
 }
 
 function acceptExtensions(acceptSVG: boolean = false) {
@@ -37,12 +50,12 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
     onImageURL,
     onReset,
     acceptSVG = false,
+    extraActions,
   }) => {
     const [isShowDialog, setIsShowDialog] = useState(false);
     const [url, setURL] = useState("");
     const intl = useIntl();
     const Toast = useToast();
-
     if (!isEditing) return <div />;
 
     if (!onImageURL) {
@@ -50,7 +63,7 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
       return (
         <Form.Label className="image-input">
           <Button variant="secondary">
-            {text ?? intl.formatMessage({ id: "actions.browse_for_image" })}
+            {text ?? <FormattedMessage id="actions.browse_for_image" />}
           </Button>
           <Form.Control
             type="file"
@@ -111,7 +124,7 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
           <div className="dialog-content">
             <Form.Group controlId="url" as={Row}>
               <Form.Label column xs={3}>
-                {intl.formatMessage({ id: "url" })}
+                <FormattedMessage id="url" />
               </Form.Label>
               <Col xs={9}>
                 <Form.Control
@@ -133,22 +146,26 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
       <Popover id="set-image-popover">
         <Popover.Content>
           <div>
-            <Form.Label className="image-input">
-              <Button variant="secondary">
+            <span className="image-input">
+              <Button className="minimal">
                 <Icon icon={faFile} className="fa-fw" />
-                <span>{intl.formatMessage({ id: "actions.from_file" })}</span>
+                <span>
+                  <FormattedMessage id="actions.from_file" />
+                </span>
+                <Form.Control
+                  type="file"
+                  onChange={onImageChange}
+                  accept={acceptExtensions(acceptSVG)}
+                />
               </Button>
-              <Form.Control
-                type="file"
-                onChange={onImageChange}
-                accept={acceptExtensions(acceptSVG)}
-              />
-            </Form.Label>
+            </span>
           </div>
           <div>
             <Button className="minimal" onClick={showDialog}>
               <Icon icon={faLink} className="fa-fw" />
-              <span>{intl.formatMessage({ id: "actions.from_url" })}</span>
+              <span>
+                <FormattedMessage id="actions.from_url" />
+              </span>
             </Button>
           </div>
           {window.isSecureContext && (
@@ -156,10 +173,36 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
               <Button className="minimal" onClick={onPasteClipboard}>
                 <Icon icon={faClipboard} className="fa-fw" />
                 <span>
-                  {intl.formatMessage({ id: "actions.from_clipboard" })}
+                  <FormattedMessage id="actions.from_clipboard" />
                 </span>
               </Button>
             </div>
+          )}
+          {extraActions && extraActions.length > 0 && (
+            <div className="set-image-menu-divider" />
+          )}
+          {extraActions?.map((action) => (
+            <div key={action.labelId}>
+              <Button className="minimal" onClick={action.onClick}>
+                <Icon icon={action.icon} className="fa-fw" />
+                <span>
+                  <FormattedMessage id={action.labelId} />
+                </span>
+              </Button>
+            </div>
+          ))}
+          {onReset && (
+            <>
+              <div className="set-image-menu-divider" />
+              <div>
+                <Button className="minimal" onClick={onReset}>
+                  <Icon icon={faTrashAlt} className="fa-fw" />
+                  <span>
+                    <FormattedMessage id="actions.clear_image" />
+                  </span>
+                </Button>
+              </div>
+            </>
           )}
         </Popover.Content>
       </Popover>
@@ -175,14 +218,9 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
           rootClose
         >
           <Button variant="secondary" className="mr-2">
-            {text ?? intl.formatMessage({ id: "actions.set_image" })}
+            {text ?? <FormattedMessage id="actions.set_image" />}
           </Button>
         </OverlayTrigger>
-        {onReset && (
-          <Button variant="danger" className="mr-2" onClick={onReset}>
-            {intl.formatMessage({ id: "actions.clear_image" })}
-          </Button>
-        )}
       </>
     );
   }

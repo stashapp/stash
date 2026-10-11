@@ -11,6 +11,8 @@ import { useIntl } from "react-intl";
 import { uniq } from "lodash-es";
 import { Performer } from "src/components/Performers/PerformerSelect";
 import { sortStoredIdObjects } from "src/utils/data";
+import { sceneAgeFromDate } from "src/utils/scene";
+import { PatchComponent } from "src/patch";
 import {
   ObjectListScrapeResult,
   ObjectScrapeResult,
@@ -43,7 +45,7 @@ interface ISceneScrapeDialogProps {
   onClose: (scrapedScene?: GQL.ScrapedScene) => void;
 }
 
-export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
+const _SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
   scene,
   sceneStudio,
   scenePerformers,
@@ -71,6 +73,9 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
 
   const [date, setDate] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(scene.date, scraped.date)
+  );
+  const [production_date, setProductionDate] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(scene.production_date, scraped.production_date)
   );
   const [director, setDirector] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(scene.director, scraped.director)
@@ -177,6 +182,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
       code,
       urls,
       date,
+      production_date,
       director,
       studio,
       performers,
@@ -203,6 +209,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
       code: code.getNewValue(),
       urls: urls.getNewValue(),
       date: date.getNewValue(),
+      production_date: production_date.getNewValue(),
       director: director.getNewValue(),
       studio: newStudioValue,
       performers: performers.getNewValue(),
@@ -243,6 +250,13 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
           onChange={(value) => setDate(value)}
         />
         <ScrapedInputGroupRow
+          field="production_date"
+          title={intl.formatMessage({ id: "production_date" })}
+          placeholder="YYYY-MM-DD"
+          result={production_date}
+          onChange={(value) => setProductionDate(value)}
+        />
+        <ScrapedInputGroupRow
           field="director"
           title={intl.formatMessage({ id: "director" })}
           result={director}
@@ -263,7 +277,10 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
           onChange={(value) => setPerformers(value)}
           newObjects={newPerformers}
           onCreateNew={createNewPerformer}
-          ageFromDate={date.useNewValue ? date.newValue : date.originalValue}
+          ageFromDate={sceneAgeFromDate(
+            production_date.currentValue(),
+            date.currentValue()
+          )}
         />
         <ScrapedGroupsRow
           field="groups"
@@ -316,5 +333,10 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     </ScrapeDialog>
   );
 };
+
+export const SceneScrapeDialog = PatchComponent(
+  "SceneScrapeDialog",
+  _SceneScrapeDialog
+);
 
 export default SceneScrapeDialog;

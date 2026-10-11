@@ -158,15 +158,16 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 	stashID := s.ID
 
 	ss := &models.ScrapedScene{
-		Title:        s.Title,
-		Code:         s.Code,
-		Date:         s.Date,
-		Details:      s.Details,
-		Director:     s.Director,
-		URL:          findURL(s.Urls, "STUDIO"),
-		Duration:     s.Duration,
-		RemoteSiteID: &stashID,
-		Fingerprints: getFingerprints(s),
+		Title:          s.Title,
+		Code:           s.Code,
+		Date:           s.Date,
+		ProductionDate: s.ProductionDate,
+		Details:        s.Details,
+		Director:       s.Director,
+		URL:            findURL(s.Urls, "STUDIO"),
+		Duration:       s.Duration,
+		RemoteSiteID:   &stashID,
+		Fingerprints:   getFingerprints(s),
 		// Image
 		// stash_id
 	}
@@ -191,11 +192,7 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 	}
 
 	if s.Studio != nil {
-		var err error
-		ss.Studio, err = c.resolveStudio(ctx, s.Studio)
-		if err != nil {
-			return nil, err
-		}
+		ss.Studio = studioFragmentToScrapedStudio(*s.Studio)
 	}
 
 	for _, p := range s.Performers {
@@ -223,9 +220,10 @@ func getFingerprints(scene *graphql.SceneFragment) []*models.StashBoxFingerprint
 	fingerprints := []*models.StashBoxFingerprint{}
 	for _, fp := range scene.Fingerprints {
 		fingerprint := models.StashBoxFingerprint{
-			Algorithm: fp.Algorithm.String(),
-			Hash:      fp.Hash,
-			Duration:  fp.Duration,
+			Algorithm:   fp.Algorithm.String(),
+			Hash:        fp.Hash,
+			Duration:    fp.Duration,
+			Submissions: fp.Submissions,
 		}
 		fingerprints = append(fingerprints, &fingerprint)
 	}
@@ -290,6 +288,11 @@ func newSceneDraftInput(d SceneDraft, endpoint string) graphql.SceneDraftInput {
 	if scene.Date != nil {
 		v := scene.Date.String()
 		draft.Date = &v
+	}
+
+	if scene.ProductionDate != nil {
+		v := scene.ProductionDate.String()
+		draft.ProductionDate = &v
 	}
 
 	if d.Studio != nil {

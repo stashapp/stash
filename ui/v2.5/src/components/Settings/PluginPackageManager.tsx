@@ -24,7 +24,7 @@ import { SettingSection } from "./SettingSection";
 export const InstalledPluginPackages: React.FC = () => {
   const [loadUpgrades, setLoadUpgrades] = useState(false);
   const [jobID, setJobID] = useState<string>();
-  const { job } = useMonitorJob(jobID, () => onPackageChanges());
+  const { job } = useMonitorJob(jobID, onPackageChanges);
 
   const { data, previousData, refetch, networkStatus, error } =
     useInstalledPluginPackages(loadUpgrades);
@@ -44,7 +44,8 @@ export const InstalledPluginPackages: React.FC = () => {
   }
 
   function onPackageChanges() {
-    // job is complete, refresh all local data
+    // job is complete, stop monitoring it and refresh all local data
+    setJobID(undefined);
     const ac = getClient();
     evictQueries(ac.cache, pluginMutationImpactedQueries);
   }
@@ -98,7 +99,7 @@ export const AvailablePluginPackages: React.FC = () => {
   const { general, loading: configLoading, error, saveGeneral } = useSettings();
 
   const [jobID, setJobID] = useState<string>();
-  const { job } = useMonitorJob(jobID, () => onPackageChanges());
+  const { job } = useMonitorJob(jobID, onPackageChanges);
 
   // Get installed packages to filter them out from available list
   const { data: installedData } = useInstalledPluginPackages(false);
@@ -113,7 +114,8 @@ export const AvailablePluginPackages: React.FC = () => {
   }
 
   function onPackageChanges() {
-    // job is complete, refresh all local data
+    // job is complete, stop monitoring it and refresh all local data
+    setJobID(undefined);
     const ac = getClient();
     evictQueries(ac.cache, pluginMutationImpactedQueries);
   }

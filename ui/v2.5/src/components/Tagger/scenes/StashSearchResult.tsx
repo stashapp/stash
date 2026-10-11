@@ -19,10 +19,12 @@ import { Icon } from "src/components/Shared/Icon";
 import { SuccessIcon } from "src/components/Shared/SuccessIcon";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { TagSelect } from "src/components/Shared/Select";
+import TextUtils from "src/utils/text";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import { OperationButton } from "src/components/Shared/OperationButton";
 import * as FormUtils from "src/utils/form";
 import { genderList, stringToGender } from "src/utils/gender";
+import { sceneAgeFromDate } from "src/utils/scene";
 import { IScrapedScene, TaggerStateContext } from "../context";
 import { OptionalField } from "../IncludeButton";
 import { SceneTaggerModalsState } from "./sceneTaggerModals";
@@ -63,6 +65,8 @@ const getDurationStatus = (
   if (!scene.duration && durations.length === 0) return "";
 
   const matchCount = durations.filter((duration) => duration <= 5).length;
+  const sceneDurationMatches =
+    !!scene.duration && Math.abs(scene.duration - stashDuration) < 5;
 
   let match: JSX.Element | undefined;
   if (matchCount > 0)
@@ -72,7 +76,7 @@ const getDurationStatus = (
         values={{ matchCount, durationsLength: durations.length }}
       />
     );
-  else if (scene.duration && Math.abs(scene.duration - stashDuration) < 5)
+  else if (sceneDurationMatches)
     match = <FormattedMessage id="component_tagger.results.fp_matches" />;
 
   const matchPercentage = (matchCount / durations.length) * 100;
@@ -80,7 +84,11 @@ const getDurationStatus = (
   if (match)
     return (
       <div className="font-weight-bold">
-        {getDurationIcon(matchPercentage)}
+        {sceneDurationMatches && matchCount === 0 ? (
+          <Icon className="SceneTaggerIcon text-success" icon={faCheckCircle} />
+        ) : (
+          getDurationIcon(matchPercentage)
+        )}
         {match}
       </div>
     );
@@ -133,14 +141,16 @@ const getFingerprintStatus = (
   scene: IScrapedScene,
   stashScene: GQL.SlimSceneDataFragment
 ) => {
-  const checksumMatch = scene.fingerprints?.some((f) =>
-    stashScene.files.some((ff) =>
-      ff.fingerprints.some(
-        (fp) =>
-          fp.value === f.hash && (fp.type === "oshash" || fp.type === "md5")
-      )
-    )
-  );
+  const oshashMatches =
+    scene.fingerprints?.filter(
+      (f) =>
+        f.algorithm === "OSHASH" &&
+        stashScene.files.some((ff) =>
+          ff.fingerprints.some(
+            (fp) => fp.type === "oshash" && fp.value === f.hash
+          )
+        )
+    ) ?? [];
 
   const allPhashes: Pick<GQL.Fingerprint, "type" | "value">[] = [];
 
@@ -165,7 +175,22 @@ const getFingerprintStatus = (
     </div>
   );
 
-  if (checksumMatch || phashMatches.length > 0)
+  const oshashList = (
+    <div className="m-2">
+      {oshashMatches.map((fp) => (
+        <div key={fp.hash}>
+          <b>{fp.hash}</b>
+          {", "}
+          <FormattedMessage
+            id="component_tagger.results.hash_submissions"
+            values={{ count: fp.submissions }}
+          />
+        </div>
+      ))}
+    </div>
+  );
+
+  if (oshashMatches.length > 0 || phashMatches.length > 0)
     return (
       <div>
         {phashMatches.length > 0 && (
@@ -176,33 +201,35 @@ const getFingerprintStatus = (
               content={phashList}
               className="PHashPopover"
             >
-              {phashMatches.length > 1 ? (
-                <FormattedMessage
-                  id="component_tagger.results.phash_matches"
-                  values={{
-                    count: phashMatches.length,
-                  }}
-                />
-              ) : (
-                <FormattedMessage
-                  id="component_tagger.results.hash_matches"
-                  values={{
-                    hash_type: <FormattedMessage id="media_info.phash" />,
-                  }}
-                />
-              )}
+              <FormattedMessage
+                id="component_tagger.results.hash_matches"
+                values={{
+                  count: phashMatches.length,
+                  hash_type: <FormattedMessage id="media_info.phash" />,
+                }}
+              />
             </HoverPopover>
           </div>
         )}
-        {checksumMatch && (
+        {oshashMatches.length > 0 && (
           <div className="font-weight-bold">
-            <SuccessIcon className="mr-2" />
-            <FormattedMessage
-              id="component_tagger.results.hash_matches"
-              values={{
-                hash_type: <FormattedMessage id="media_info.md5" />,
-              }}
-            />
+            <SuccessIcon className="SceneTaggerIcon" />
+            <HoverPopover
+              placement="bottom"
+              content={oshashList}
+              className="PHashPopover"
+            >
+              <FormattedMessage
+                id="component_tagger.results.hash_matches"
+                values={{
+                  count: oshashMatches.reduce(
+                    (sum, fp) => sum + fp.submissions,
+                    0
+                  ),
+                  hash_type: <FormattedMessage id="media_info.oshash" />,
+                }}
+              />
+            </HoverPopover>
           </div>
         )}
       </div>
@@ -371,6 +398,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       title: resolveField("title", stashScene.title, scene.title),
       details: resolveField("details", stashScene.details, scene.details),
       date: resolveField("date", stashScene.date, scene.date),
+      production_date: resolveField(
+        "production_date",
+        stashScene.production_date,
+        scene.production_date
+      ),
       performer_ids: uniq(
         stashScene.performers.map((p) => p.id).concat(filteredPerformerIDs)
       ),
@@ -508,6 +540,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     cover_image: "cover_image",
     title: "title",
     date: "date",
+    production_date: "production_date",
     url: "url",
     details: "details",
     studio: "studio",
@@ -527,11 +560,20 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             }
             setExclude={(v) => setExcludedField(fields.cover_image, v)}
           >
-            <img
-              src={scene.image}
-              alt=""
-              className="align-self-center scene-image"
-            />
+            <div className="scene-image-overlay-container">
+              <img
+                src={scene.image}
+                alt=""
+                className="align-self-center scene-image"
+              />
+              {!!scene.duration && (
+                <div className="scene-specs-overlay">
+                  <span className="overlay-duration">
+                    {TextUtils.secondsToTimestamp(scene.duration)}
+                  </span>
+                </div>
+              )}
+            </div>
           </OptionalField>
         </div>
       );
@@ -618,6 +660,23 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             setExclude={(v) => setExcludedField(fields.date, v)}
           >
             {scene.date}
+          </OptionalField>
+        </h5>
+      );
+    }
+  };
+
+  // labelled, unlike the date field above it, so that the two dates rendered
+  // next to each other can be told apart
+  const maybeRenderProductionDateField = () => {
+    if (isActive && scene.production_date) {
+      return (
+        <h5>
+          <OptionalField
+            exclude={excludedFields[fields.production_date]}
+            setExclude={(v) => setExcludedField(fields.production_date, v)}
+          >
+            <FormattedMessage id="production_date" />: {scene.production_date}
           </OptionalField>
         </h5>
       );
@@ -721,6 +780,17 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     setPerformerIDs(newPerformerIDs);
   }
 
+  // the value the scene will end up with for a date field: the scraped value,
+  // unless it is empty or the user has excluded it, in which case the scene
+  // keeps the value it already has
+  function resolvedDate(
+    scrapedValue: string | undefined | null,
+    stashValue: string | undefined | null,
+    excluded: boolean
+  ) {
+    return !scrapedValue || excluded ? stashValue : scrapedValue;
+  }
+
   const renderPerformerField = () => (
     <div className="mt-2">
       <div>
@@ -738,11 +808,18 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
                 currentSource?.sourceInput.stash_box_endpoint ?? undefined
               }
               key={`${performer.name ?? performer.remote_site_id ?? ""}`}
-              ageFromDate={
-                !scene.date || excludedFields.date
-                  ? stashScene.date
-                  : scene.date
-              }
+              ageFromDate={sceneAgeFromDate(
+                resolvedDate(
+                  scene.production_date,
+                  stashScene.production_date,
+                  excludedFields[fields.production_date]
+                ),
+                resolvedDate(
+                  scene.date,
+                  stashScene.date,
+                  excludedFields[fields.date]
+                )
+              )}
             />
           ))}
         </Form.Group>
@@ -831,6 +908,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
             {maybeRenderStudioCode()}
             {maybeRenderDateField()}
+            {maybeRenderProductionDateField()}
             {getDurationStatus(scene, stashSceneFile?.duration)}
             {getFingerprintStatus(scene, stashScene)}
           </div>

@@ -562,6 +562,55 @@ func Test_FileStore_FindByPath(t *testing.T) {
 	}
 }
 
+func TestFileStore_FindByPathCaseInsensitiveTreatsLikeWildcardsLiterally(t *testing.T) {
+	qb := db.File
+
+	runWithRollbackTxn(t, "literal wildcards", func(t *testing.T, ctx context.Context) {
+		now := time.Now()
+		makeTestFile := func(basename string) models.File {
+			return &models.BaseFile{
+				Path:           getFilePath(folderIdxWithFiles, basename),
+				ParentFolderID: folderIDs[folderIdxWithFiles],
+				Basename:       basename,
+				Size:           1,
+				DirEntry: models.DirEntry{
+					ModTime: now,
+				},
+				CreatedAt: now,
+				UpdatedAt: now,
+			}
+		}
+
+		ambiguous := makeTestFile("scan_lookup_AB1.mp4")
+		if !assert.NoError(t, qb.Create(ctx, ambiguous)) {
+			return
+		}
+
+		got, err := qb.FindByPath(ctx, getFilePath(folderIdxWithFiles, "scan_lookup_A_1.mp4"), false)
+		assert.NoError(t, err)
+		assert.Nil(t, got)
+
+		got, err = qb.FindByPath(ctx, getFilePath(folderIdxWithFiles, "scan_lookup_A%1.mp4"), false)
+		assert.NoError(t, err)
+		assert.Nil(t, got)
+
+		literalUnderscore := makeTestFile("scan_lookup_A_1.mp4")
+		if !assert.NoError(t, qb.Create(ctx, literalUnderscore)) {
+			return
+		}
+
+		got, err = qb.FindByPath(ctx, getFilePath(folderIdxWithFiles, "SCAN_LOOKUP_a_1.MP4"), false)
+		assert.NoError(t, err)
+		if assert.NotNil(t, got) {
+			assert.Equal(t, literalUnderscore.Base().ID, got.Base().ID)
+		}
+
+		wildcardMatches, err := qb.FindAllByPath(ctx, getFilePath(folderIdxWithFiles, "scan_lookup_A*1.mp4"), true)
+		assert.NoError(t, err)
+		assert.Len(t, wildcardMatches, 2)
+	})
+}
+
 func TestFileStore_FindByFingerprint(t *testing.T) {
 	tests := []struct {
 		name    string

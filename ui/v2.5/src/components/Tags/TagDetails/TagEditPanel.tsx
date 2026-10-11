@@ -144,6 +144,10 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     try {
       await onSubmit(input, andNew);
       formik.resetForm();
+      if (andNew) {
+        setParentTags(tag.parents ?? []);
+        setChildTags(tag.children ?? []);
+      }
     } catch (e) {
       Toast.error(e);
     }

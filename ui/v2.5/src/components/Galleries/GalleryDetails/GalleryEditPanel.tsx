@@ -117,10 +117,8 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     onSubmit: submit,
   });
 
-  const { tags, updateTagsStateFromScraper, tagsControl } = useTagsEdit(
-    gallery.tags,
-    (ids) => formik.setFieldValue("tag_ids", ids)
-  );
+  const { tags, updateTagsStateFromScraper, resetTagsState, tagsControl } =
+    useTagsEdit(gallery.tags, (ids) => formik.setFieldValue("tag_ids", ids));
 
   function onSetScenes(items: Scene[]) {
     setScenes(items);
@@ -199,6 +197,12 @@ export const GalleryEditPanel: React.FC<IProps> = ({
     try {
       await onSubmit(input, andNew);
       formik.resetForm();
+      if (andNew) {
+        setScenes(gallery.scenes ?? []);
+        setPerformers(gallery.performers ?? []);
+        setStudio(gallery.studio ?? null);
+        resetTagsState();
+      }
     } catch (e) {
       Toast.error(e);
     }

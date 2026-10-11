@@ -207,13 +207,21 @@ func (j *ScanJob) queueFileFunc(ctx context.Context, f models.FS, zipFile *file.
 			return err
 		}
 
+		// #4425 - store the NFC-normalized path so search matches user input.
+		// Filtering and filesystem access above use the original path; zip
+		// entries are matched byte-exact so are left unnormalized.
+		storedPath := path
+		if zipFile == nil {
+			storedPath = fsutil.NormalizePath(path)
+		}
+
 		ff := file.ScannedFile{
 			BaseFile: &models.BaseFile{
 				DirEntry: models.DirEntry{
 					ModTime: file.ModTime(info),
 				},
-				Path:     path,
-				Basename: filepath.Base(path),
+				Path:     storedPath,
+				Basename: filepath.Base(storedPath),
 				Size:     size,
 			},
 			FS:   f,

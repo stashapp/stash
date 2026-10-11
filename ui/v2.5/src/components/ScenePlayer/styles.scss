@@ -20,6 +20,7 @@ $sceneTabWidth: 450px;
 
   &.portrait .video-wrapper {
     height: 177.78vw;
+    max-height: calc(100vh - #{$menuHeight});
   }
 }
 
@@ -647,6 +648,7 @@ $sceneTabWidth: 450px;
 @media (min-width: 1200px) {
   .scene-tabs {
     flex: 0 0 $sceneTabWidth;
+    max-height: calc(100vh - 4rem);
     max-width: $sceneTabWidth;
     overflow: auto;
 

@@ -112,6 +112,10 @@ export const PluginApi = {
     GalleryViewer: () => import("src/components/Galleries/GalleryViewer"),
 
     DeleteScenesDialog: () => import("./components/Scenes/DeleteScenesDialog"),
+    SceneMergeDialog: () => import("./components/Scenes/SceneMergeDialog"),
+    PerformerMergeDialog: () =>
+      import("./components/Performers/PerformerMergeDialog"),
+    TagMergeDialog: () => import("./components/Tags/TagMergeDialog"),
     SceneList: () => import("./components/Scenes/SceneList"),
     SceneMarkerList: () => import("./components/Scenes/SceneMarkerList"),
     Scene: () => import("./components/Scenes/SceneDetails/Scene"),

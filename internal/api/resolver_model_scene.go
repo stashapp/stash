@@ -76,6 +76,14 @@ func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, e
 	return nil, nil
 }
 
+func (r *sceneResolver) ProductionDate(ctx context.Context, obj *models.Scene) (*string, error) {
+	if obj.ProductionDate != nil {
+		result := obj.ProductionDate.String()
+		return &result, nil
+	}
+	return nil, nil
+}
+
 func (r *sceneResolver) Files(ctx context.Context, obj *models.Scene) ([]*VideoFile, error) {
 	files, err := r.getFiles(ctx, obj)
 	if err != nil {

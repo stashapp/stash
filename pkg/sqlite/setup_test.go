@@ -1197,16 +1197,17 @@ func makeScene(i int) *models.Scene {
 		URLs: models.NewRelatedStrings([]string{
 			getSceneEmptyString(i, urlField),
 		}),
-		Rating:       getIntPtr(rating),
-		Date:         getObjectDate(i),
-		StudioID:     studioID,
-		GalleryIDs:   models.NewRelatedIDs(gids),
-		PerformerIDs: models.NewRelatedIDs(pids),
-		TagIDs:       models.NewRelatedIDs(tids),
-		Groups:       models.NewRelatedGroups(groups),
-		StashIDs:     models.NewRelatedStashIDs(sceneStashIDs(i)),
-		PlayDuration: getScenePlayDuration(i),
-		ResumeTime:   getSceneResumeTime(i),
+		Rating:         getIntPtr(rating),
+		Date:           getObjectDate(i),
+		ProductionDate: getObjectDate(i),
+		StudioID:       studioID,
+		GalleryIDs:     models.NewRelatedIDs(gids),
+		PerformerIDs:   models.NewRelatedIDs(pids),
+		TagIDs:         models.NewRelatedIDs(tids),
+		Groups:         models.NewRelatedGroups(groups),
+		StashIDs:       models.NewRelatedStashIDs(sceneStashIDs(i)),
+		PlayDuration:   getScenePlayDuration(i),
+		ResumeTime:     getSceneResumeTime(i),
 	}
 }
 

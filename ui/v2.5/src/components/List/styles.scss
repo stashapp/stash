@@ -156,13 +156,6 @@ input[type="range"].zoom-slider {
     flex-direction: column;
   }
 
-  .set-as-default-button {
-    float: right;
-    margin-right: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    width: auto;
-  }
-
   .LoadingIndicator {
     height: auto;
     text-align: center;
@@ -206,10 +199,6 @@ input[type="range"].zoom-slider {
       .btn {
         border-radius: 0;
       }
-    }
-
-    .delete-button {
-      color: $danger;
     }
   }
 }
@@ -268,10 +257,6 @@ input[type="range"].zoom-slider {
         flex-shrink: 0;
       }
     }
-
-    .delete-button {
-      color: $danger;
-    }
   }
 
   .saved-filter-search-input {
@@ -288,6 +273,11 @@ input[type="range"].zoom-slider {
 
 .save-filter-button {
   color: $text-color;
+}
+
+.saved-filter-name-input {
+  flex-grow: 1;
+  margin: 0.125rem 0.25rem;
 }
 
 .saved-filter-overwrite-warning {

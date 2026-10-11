@@ -45,6 +45,10 @@ func ToBasicJSON(ctx context.Context, reader ExportGetter, scene *models.Scene) 
 		newSceneJSON.Date = scene.Date.String()
 	}
 
+	if scene.ProductionDate != nil {
+		newSceneJSON.ProductionDate = scene.ProductionDate.String()
+	}
+
 	if scene.Rating != nil {
 		newSceneJSON.Rating = *scene.Rating
 	}

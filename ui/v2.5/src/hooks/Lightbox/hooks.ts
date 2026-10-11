@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import * as GQL from "src/core/generated-graphql";
+import { useToast } from "../Toast";
 import { IState, useLightboxContext } from "./context";
 import { IChapter } from "./types";
 
@@ -69,6 +70,7 @@ interface ILightboxGallery {
 
 export const useGalleriesLightbox = () => {
   const { setLightboxState } = useLightboxContext();
+  const Toast = useToast();
 
   const pageSize = 40;
   const [fetchImages, { data }] = GQL.useFindImagesLazyQuery();
@@ -112,29 +114,36 @@ export const useGalleriesLightbox = () => {
           },
         },
       },
-    }).then((result) => {
-      // ignore if a different gallery was opened in the meantime
-      if (active.current !== current) return;
+    })
+      .then((result) => {
+        // ignore if a different gallery was opened in the meantime
+        if (active.current !== current) return;
 
-      const totalCount = result.data?.findImages.count ?? 0;
-      const pages = Math.ceil(totalCount / pageSize);
-      current.page = page;
-      current.pages = pages;
+        const totalCount = result.data?.findImages.count ?? 0;
+        const pages = Math.ceil(totalCount / pageSize);
+        current.page = page;
+        current.pages = pages;
 
-      setLightboxState({
-        isLoading: false,
-        isVisible: true,
-        images: result.data?.findImages?.images ?? [],
-        pageCallback: pages > 1 ? handleLightBoxPage : undefined,
-        page,
-        pages,
-        pageSize,
-        totalCount,
-        chapters: current.chapters,
-        slideshowEnabled: current.slideshowEnabled,
-        slideshowAutostart: current.slideshowAutostart,
+        setLightboxState({
+          isLoading: false,
+          isVisible: true,
+          images: result.data?.findImages?.images ?? [],
+          pageCallback: pages > 1 ? handleLightBoxPage : undefined,
+          page,
+          pages,
+          pageSize,
+          totalCount,
+          chapters: current.chapters,
+          slideshowEnabled: current.slideshowEnabled,
+          slideshowAutostart: current.slideshowAutostart,
+        });
+      })
+      .catch((e) => {
+        // A failed page load leaves the lightbox on its loader: the page and
+        // images props never change, so an in-flight switch cannot settle.
+        // Surface the error so the stall is at least explained.
+        Toast.error(e);
       });
-    });
   }
 
   function handleLightBoxPage(props: { direction?: number; page?: number }) {
