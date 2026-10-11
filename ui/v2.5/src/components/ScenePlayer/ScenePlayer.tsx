@@ -7,7 +7,6 @@ import React, {
   useState,
 } from "react";
 import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
-import useScript from "src/hooks/useScript";
 import "videojs-contrib-dash";
 import "videojs-mobile-ui";
 import "videojs-seek-buttons";
@@ -54,6 +53,7 @@ import {
 import airplay from "@silvermine/videojs-airplay";
 // @ts-expect-error
 import chromecast from "@silvermine/videojs-chromecast";
+import { registerStashChromecastTech } from "./chromecast-tech";
 import abLoopPlugin from "videojs-abloop";
 import ScreenUtils from "src/utils/screen";
 import { PatchComponent } from "src/patch";
@@ -61,10 +61,23 @@ import { PatchComponent } from "src/patch";
 // register videojs plugins
 airplay(videojs);
 chromecast(videojs);
+registerStashChromecastTech();
 abLoopPlugin(window, videojs);
 
 interface ICastLoadRequest {
   media: { contentId: string; contentType: string };
+}
+
+const castSdkUrl =
+  "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1";
+
+// Added once and never removed, so a cast keeps going when the player is rebuilt.
+function loadCastSdk() {
+  if (document.querySelector(`script[src="${castSdkUrl}"]`)) return;
+
+  const script = document.createElement("script");
+  script.src = castSdkUrl;
+  document.head.appendChild(script);
 }
 
 function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
@@ -290,10 +303,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     const trackActivity = uiConfig?.trackActivity ?? true;
     const vrTag = uiConfig?.vrTag ?? undefined;
 
-    useScript(
-      "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1",
-      uiConfig?.enableChromecast
-    );
+    useEffect(() => {
+      if (uiConfig?.enableChromecast) loadCastSdk();
+    }, [uiConfig?.enableChromecast]);
 
     const file = useMemo(
       () => (scene.files.length > 0 ? scene.files[0] : undefined),
