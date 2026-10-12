@@ -536,7 +536,9 @@ interface IConstantSetting<T> extends ISetting {
   renderValue?: (v: T | undefined) => JSX.Element;
 }
 
-export const _ConstantSetting = <T extends {}>(props: IConstantSetting<T>) => {
+export const _ConstantSetting = <T extends React.ReactNode>(
+  props: IConstantSetting<T>
+) => {
   const { id, headingID, subHeading, subHeadingID, renderValue, value } = props;
   const intl = useIntl();
 

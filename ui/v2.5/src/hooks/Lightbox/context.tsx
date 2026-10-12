@@ -59,7 +59,9 @@ export function useLightboxContext() {
   return context;
 }
 
-export const LightboxProvider: React.FC = ({ children }) => {
+export const LightboxProvider: React.FC<React.PropsWithChildren<unknown>> = ({
+  children,
+}) => {
   const [lightboxState, setLightboxState] = useState<IState>({
     images: [],
     isVisible: false,

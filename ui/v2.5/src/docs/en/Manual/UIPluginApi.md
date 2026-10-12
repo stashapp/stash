@@ -10,11 +10,11 @@ An example using various aspects of `PluginApi` may be found in the source code 
 
 ### `React`
 
-An instance of the React library.
+An instance of the React library. The UI uses React 18.
 
 ### `ReactDOM`
 
-An instance of the ReactDOM library.
+An instance of the ReactDOM library. `ReactDOM.render` still works in React 18 but is deprecated and logs a warning in development builds.
 
 ### `GQL`
 

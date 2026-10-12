@@ -1,5 +1,5 @@
 import { ApolloProvider } from "@apollo/client";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
 import { getClient } from "./core/StashService";
@@ -7,7 +7,7 @@ import { baseURL, getPlatformURL } from "./core/createClient";
 import "./index.scss";
 import * as serviceWorker from "./serviceWorker";
 
-ReactDOM.render(
+createRoot(document.getElementById("root")!).render(
   <>
     <link
       rel="stylesheet"
@@ -19,8 +19,7 @@ ReactDOM.render(
         <App />
       </ApolloProvider>
     </BrowserRouter>
-  </>,
-  document.getElementById("root")
+  </>
 );
 
 const script = document.createElement("script");

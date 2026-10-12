@@ -80,7 +80,9 @@ export const defaultInteractiveClientProvider: IInteractiveClientProvider = ({
   return new InteractiveAPI(handyKey, scriptOffset);
 };
 
-export const InteractiveProvider: React.FC = ({ children }) => {
+export const InteractiveProvider: React.FC<
+  React.PropsWithChildren<unknown>
+> = ({ children }) => {
   const [{ data: config }, setConfig] = useLocalForage<IInteractiveState>(
     LOCAL_FORAGE_KEY,
     { serverOffset: 0, lastSyncTime: 0 }

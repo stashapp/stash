@@ -151,7 +151,7 @@ export const AvailablePluginPackages: React.FC = () => {
   }
 
   function renderDescription(pkg: RemotePackage) {
-    if (pkg.metadata.description) {
+    if (typeof pkg.metadata.description === "string") {
       return pkg.metadata.description;
     }
   }
