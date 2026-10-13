@@ -6,7 +6,7 @@ import (
 )
 
 // only support H264 by default, since Safari does not support VP8/VP9
-var defaultSupportedCodecs = []string{H264, H265}
+var defaultSupportedCodecs = []string{H264, H265, Hevc}
 
 var validForH264Mkv = []Container{Mp4, Matroska}
 var validForH264 = []Container{Mp4}
