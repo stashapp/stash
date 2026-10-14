@@ -60,6 +60,7 @@ const SetupContext: React.FC<{
   setupError: string | undefined;
   systemStatus: GQL.SystemStatusQuery;
   configuration: GQL.ConfigDataFragment;
+  children?: React.ReactNode;
 }> = ({ setupState, setupError, systemStatus, configuration, children }) => {
   const status = systemStatus?.systemStatus;
 
@@ -141,7 +142,7 @@ const WelcomeSpecificConfig: React.FC<IWizardStep> = ({ next }) => {
             id="setup.welcome_specific_config.config_path"
             values={{
               path: overrideConfig,
-              code: (chunks: string) => <code>{chunks}</code>,
+              code: (chunks) => <code>{chunks}</code>,
             }}
           />
         </p>
@@ -186,7 +187,7 @@ const DefaultWelcomeStep: React.FC<IWizardStep> = ({ next }) => {
           <FormattedMessage
             id="setup.welcome.config_path_logic_explained"
             values={{
-              code: (chunks: string) => <code>{chunks}</code>,
+              code: (chunks) => <code>{chunks}</code>,
               fallback_path: fallbackConfigPath,
             }}
           />
@@ -195,7 +196,7 @@ const DefaultWelcomeStep: React.FC<IWizardStep> = ({ next }) => {
           <FormattedMessage
             id="setup.welcome.unexpected_explained"
             values={{
-              code: (chunks: string) => <code>{chunks}</code>,
+              code: (chunks) => <code>{chunks}</code>,
             }}
           />
         </Alert>
@@ -217,7 +218,7 @@ const DefaultWelcomeStep: React.FC<IWizardStep> = ({ next }) => {
             <FormattedMessage
               id="setup.welcome.in_current_stash_directory"
               values={{
-                code: (chunks: string) => <code>{chunks}</code>,
+                code: (chunks) => <code>{chunks}</code>,
                 path: fallbackStashDir,
               }}
             />
@@ -234,7 +235,7 @@ const DefaultWelcomeStep: React.FC<IWizardStep> = ({ next }) => {
                 <FormattedMessage
                   id="setup.welcome.in_the_current_working_directory_disabled"
                   values={{
-                    code: (chunks: string) => <code>{chunks}</code>,
+                    code: (chunks) => <code>{chunks}</code>,
                     path: pwd,
                   }}
                 />
@@ -243,7 +244,7 @@ const DefaultWelcomeStep: React.FC<IWizardStep> = ({ next }) => {
                   <FormattedMessage
                     id="setup.welcome.in_the_current_working_directory_disabled_macos"
                     values={{
-                      code: (chunks: string) => <code>{chunks}</code>,
+                      code: (chunks) => <code>{chunks}</code>,
                       br: () => <br />,
                     }}
                   />
@@ -254,7 +255,7 @@ const DefaultWelcomeStep: React.FC<IWizardStep> = ({ next }) => {
                 <FormattedMessage
                   id="setup.welcome.in_the_current_working_directory"
                   values={{
-                    code: (chunks: string) => <code>{chunks}</code>,
+                    code: (chunks) => <code>{chunks}</code>,
                     path: pwd,
                   }}
                 />
@@ -319,14 +320,14 @@ const DatabaseSection: React.FC<{
         <FormattedMessage
           id="setup.paths.where_can_stash_store_its_database_description"
           values={{
-            code: (chunks: string) => <code>{chunks}</code>,
+            code: (chunks) => <code>{chunks}</code>,
           }}
         />
         <br />
         <FormattedMessage
           id="setup.paths.where_can_stash_store_its_database_warning"
           values={{
-            strong: (chunks: string) => <strong>{chunks}</strong>,
+            strong: (chunks) => <strong>{chunks}</strong>,
           }}
         />
       </p>
@@ -400,7 +401,7 @@ const GeneratedSection: React.FC<{
         <FormattedMessage
           id="setup.paths.where_can_stash_store_its_generated_content_description"
           values={{
-            code: (chunks: string) => <code>{chunks}</code>,
+            code: (chunks) => <code>{chunks}</code>,
           }}
         />
       </p>
@@ -430,7 +431,7 @@ const CacheSection: React.FC<{
         <FormattedMessage
           id="setup.paths.where_can_stash_store_cache_files_description"
           values={{
-            code: (chunks: string) => <code>{chunks}</code>,
+            code: (chunks) => <code>{chunks}</code>,
           }}
         />
       </p>
@@ -467,7 +468,7 @@ const BlobsSection: React.FC<{
         <FormattedMessage
           id="setup.paths.where_can_stash_store_blobs_description"
           values={{
-            code: (chunks: string) => <code>{chunks}</code>,
+            code: (chunks) => <code>{chunks}</code>,
           }}
         />
       </p>
@@ -475,8 +476,8 @@ const BlobsSection: React.FC<{
         <FormattedMessage
           id="setup.paths.where_can_stash_store_blobs_description_addendum"
           values={{
-            code: (chunks: string) => <code>{chunks}</code>,
-            strong: (chunks: string) => <strong>{chunks}</strong>,
+            code: (chunks) => <code>{chunks}</code>,
+            strong: (chunks) => <strong>{chunks}</strong>,
           }}
         />
       </p>

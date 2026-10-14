@@ -1,5 +1,6 @@
 import { ApolloProvider } from "@apollo/client";
-import ReactDOM from "react-dom";
+import { flushSync } from "react-dom";
+import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
 import { getClient } from "./core/StashService";
@@ -7,21 +8,25 @@ import { baseURL, getPlatformURL } from "./core/createClient";
 import "./index.scss";
 import * as serviceWorker from "./serviceWorker";
 
-ReactDOM.render(
-  <>
-    <link
-      rel="stylesheet"
-      type="text/css"
-      href={getPlatformURL("css").toString()}
-    />
-    <BrowserRouter basename={baseURL}>
-      <ApolloProvider client={getClient()}>
-        <App />
-      </ApolloProvider>
-    </BrowserRouter>
-  </>,
-  document.getElementById("root")
-);
+const root = createRoot(document.getElementById("root")!);
+
+// render synchronously so the DOM exists before the custom javascript runs
+flushSync(() => {
+  root.render(
+    <>
+      <link
+        rel="stylesheet"
+        type="text/css"
+        href={getPlatformURL("css").toString()}
+      />
+      <BrowserRouter basename={baseURL}>
+        <ApolloProvider client={getClient()}>
+          <App />
+        </ApolloProvider>
+      </BrowserRouter>
+    </>
+  );
+});
 
 const script = document.createElement("script");
 script.src = getPlatformURL("javascript").toString();

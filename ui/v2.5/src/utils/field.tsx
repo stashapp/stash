@@ -13,7 +13,7 @@ interface ITextField {
   truncate?: boolean | null;
 }
 
-export const TextField: React.FC<ITextField> = ({
+export const TextField: React.FC<React.PropsWithChildren<ITextField>> = ({
   id,
   name,
   value,

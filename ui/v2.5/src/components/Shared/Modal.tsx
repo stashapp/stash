@@ -28,7 +28,7 @@ interface IModal {
 
 const defaultOnHide = () => {};
 
-export const ModalComponent: React.FC<IModal> = ({
+export const ModalComponent: React.FC<React.PropsWithChildren<IModal>> = ({
   children,
   show,
   icon,

@@ -149,7 +149,7 @@ const DragHandle: React.FC<{
   );
 };
 
-const Controls: React.FC = ({ children }) => {
+const Controls: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   return <div className="card-controls">{children}</div>;
 };
 

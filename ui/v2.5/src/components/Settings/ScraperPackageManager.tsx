@@ -151,8 +151,9 @@ export const AvailableScraperPackages: React.FC = () => {
   }
 
   function renderDescription(pkg: RemotePackage) {
-    if (pkg.metadata.description) {
-      return pkg.metadata.description;
+    const { description } = pkg.metadata;
+    if (typeof description === "string" || typeof description === "number") {
+      return description;
     }
   }
 
