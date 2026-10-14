@@ -65,6 +65,8 @@ type sceneInput struct {
 	Date    *string `json:"date"`
 	Details string  `json:"details"`
 
+	ProductionDate *string `json:"production_date,omitempty"`
+
 	Director string `json:"director,omitempty"`
 
 	Files []videoFileInput `json:"files,omitempty"`
@@ -136,11 +138,12 @@ func sceneInputFromScene(scene *models.Scene) sceneInput {
 		Title:   title,
 		Details: scene.Details,
 		// include deprecated URL for now
-		URL:      url,
-		URLs:     urls,
-		Date:     dateToStringPtr(scene.Date),
-		Code:     scene.Code,
-		Director: scene.Director,
+		URL:            url,
+		URLs:           urls,
+		Date:           dateToStringPtr(scene.Date),
+		ProductionDate: dateToStringPtr(scene.ProductionDate),
+		Code:           scene.Code,
+		Director:       scene.Director,
 	}
 
 	for _, f := range scene.Files.List() {
@@ -198,6 +201,52 @@ func galleryInputFromGallery(gallery *models.Gallery) galleryInput {
 	}
 
 	for _, f := range gallery.Files.List() {
+		fi := fileInputFromFile(*f.Base())
+		ret.Files = append(ret.Files, fi)
+	}
+
+	return ret
+}
+
+type imageInput struct {
+	ID      string   `json:"id"`
+	Title   string   `json:"title"`
+	Urls    []string `json:"urls"`
+	Date    *string  `json:"date"`
+	Details string   `json:"details"`
+
+	Code         string `json:"code,omitempty"`
+	Photographer string `json:"photographer,omitempty"`
+
+	Files []fileInput `json:"files,omitempty"`
+}
+
+func imageInputFromImage(image *models.Image) imageInput {
+	dateToStringPtr := func(s *models.Date) *string {
+		if s != nil {
+			v := s.String()
+			return &v
+		}
+
+		return nil
+	}
+
+	// fallback to file basename if title is empty
+	title := image.GetTitle()
+	urls := image.URLs.List()
+
+	ret := imageInput{
+		ID:      strconv.Itoa(image.ID),
+		Title:   title,
+		Urls:    urls,
+		Details: image.Details,
+		Date:    dateToStringPtr(image.Date),
+
+		Code:         image.Code,
+		Photographer: image.Photographer,
+	}
+
+	for _, f := range image.Files.List() {
 		fi := fileInputFromFile(*f.Base())
 		ret.Files = append(ret.Files, fi)
 	}
@@ -392,6 +441,9 @@ func (s *scriptFragmentScraper) scrapeByFragment(ctx context.Context, input Inpu
 	case input.Scene != nil:
 		inString, err = json.Marshal(*input.Scene)
 		ty = ScrapeContentTypeScene
+	case input.Image != nil:
+		inString, err = json.Marshal(*input.Image)
+		ty = ScrapeContentTypeImage
 	}
 
 	if err != nil {
@@ -430,7 +482,7 @@ func (s *scriptFragmentScraper) scrapeGalleryByGallery(ctx context.Context, gall
 }
 
 func (s *scriptFragmentScraper) scrapeImageByImage(ctx context.Context, image *models.Image) (*models.ScrapedImage, error) {
-	inString, err := json.Marshal(imageToUpdateInput(image))
+	inString, err := json.Marshal(imageInputFromImage(image))
 
 	if err != nil {
 		return nil, err

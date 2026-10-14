@@ -4,14 +4,14 @@ labels: ["bug report"]
 body:
   - type: markdown
     attributes:
-      value: |
-        Thanks for taking the time to fill out this bug report!
+      value: Thanks for taking the time to fill out this bug report! Make sure to read [Contributing](https://github.com/stashapp/stash/blob/develop/docs/CONTRIBUTING.md) document before submitting.
   - type: checkboxes
     id: confirm-troubleshooting
     attributes:
       label: Have you enabled troubleshooting mode?
       description: |
-        To ensure the bug is not caused by custom modifications or plugins make sure to enable troubleshooting mode before filing the report. In Stash go to Settings and click **Troubleshooting mode** and then retest to see if the bug still occurs.
+        To ensure the bug is not caused by custom modifications or plugins make sure to enable troubleshooting mode before filing the report. In Stash go to Settings and click **Troubleshooting mode** and then retest to see if the bug still occurs.  
+        It's important to note that troubleshooting mode only affects UI modifications and plugins.
       options:
         - label: I confirm that the troubleshooting mode is enabled.
           required: true
@@ -56,13 +56,13 @@ body:
       placeholder: (e.g. v0.28.1)
     validations:
       required: true
-  - type: input
+  - type: textarea
     id: devicedetails
     attributes:
       label: Device details
       description: |
-        If this is an issue that occurs when using the Stash interface, please provide details of the device/browser used which presents the reported issue.
-      placeholder: (e.g. Firefox 97 (64-bit) on Windows 11)
+        Please provide details about the device you are using, including the operating system and browser (if applicable).
+      placeholder: Firefox 97 (64-bit) on Windows 11
     validations:
       required: false
   - type: textarea

@@ -8,7 +8,7 @@ import * as GQL from "src/core/generated-graphql";
 import * as StashService from "src/core/StashService";
 import * as Apollo from "@apollo/client";
 import * as Bootstrap from "react-bootstrap";
-import * as Intl from "react-intl";
+import * as ReactIntl from "react-intl";
 import * as FontAwesomeSolid from "@fortawesome/free-solid-svg-icons";
 import * as FontAwesomeRegular from "@fortawesome/free-regular-svg-icons";
 import * as FontAwesomeBrands from "@fortawesome/free-brands-svg-icons";
@@ -38,12 +38,12 @@ function useLoadComponents(toLoad: (() => Promise<unknown>)[]) {
   const [loading, setLoading] = React.useState(true);
   const [componentList] = React.useState(toLoad);
 
-  async function load(c: (() => Promise<unknown>)[]) {
-    await loadComponents(c);
-    setLoading(false);
-  }
-
   React.useEffect(() => {
+    async function load(c: (() => Promise<unknown>)[]) {
+      await loadComponents(c);
+      setLoading(false);
+    }
+
     setLoading(true);
     load(componentList);
   }, [componentList]);
@@ -52,7 +52,7 @@ function useLoadComponents(toLoad: (() => Promise<unknown>)[]) {
 }
 
 function registerRoute(path: string, component: React.FC) {
-  before("PluginRoutes", function (props: React.PropsWithChildren<{}>) {
+  before("PluginRoutes", (props: React.PropsWithChildren<unknown>) => {
     return [
       {
         children: (
@@ -74,7 +74,7 @@ export const PluginApi = {
     ReactRouterDOM,
     Bootstrap,
     Apollo,
-    Intl,
+    Intl: ReactIntl,
     FontAwesomeRegular,
     FontAwesomeSolid,
     FontAwesomeBrands,
@@ -112,6 +112,10 @@ export const PluginApi = {
     GalleryViewer: () => import("src/components/Galleries/GalleryViewer"),
 
     DeleteScenesDialog: () => import("./components/Scenes/DeleteScenesDialog"),
+    SceneMergeDialog: () => import("./components/Scenes/SceneMergeDialog"),
+    PerformerMergeDialog: () =>
+      import("./components/Performers/PerformerMergeDialog"),
+    TagMergeDialog: () => import("./components/Tags/TagMergeDialog"),
     SceneList: () => import("./components/Scenes/SceneList"),
     SceneMarkerList: () => import("./components/Scenes/SceneMarkerList"),
     Scene: () => import("./components/Scenes/SceneDetails/Scene"),

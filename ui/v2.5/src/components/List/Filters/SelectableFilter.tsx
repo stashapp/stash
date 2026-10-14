@@ -197,10 +197,10 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
     );
   }, [modifier, queryResults, selected, excluded]);
 
-  const includingOnly = modifier == CriterionModifier.Equals;
+  const includingOnly = modifier === CriterionModifier.Equals;
   const excludingOnly =
-    modifier == CriterionModifier.Excludes ||
-    modifier == CriterionModifier.NotEquals;
+    modifier === CriterionModifier.Excludes ||
+    modifier === CriterionModifier.NotEquals;
 
   const modifierValues = useMemo(() => {
     return {
@@ -296,27 +296,24 @@ const SelectableFilter: React.FC<ISelectableFilter> = ({
             />
           </li>
         ))}
-        {showModifierValues && (
-          <>
-            {Object.entries(availableModifierValues).map(([key, value]) => {
-              if (!value) {
-                return null;
-              }
+        {showModifierValues &&
+          Object.entries(availableModifierValues).map(([key, value]) => {
+            if (!value) {
+              return null;
+            }
 
-              return (
-                <UnselectedItem
-                  key={key}
-                  onSelect={() => onModifierValueSelect(key as SpecialValue)}
-                  label={`(${intl.formatMessage({
-                    id: `criterion_modifier_values.${key}`,
-                  })})`}
-                  canExclude={false}
-                  modifier
-                />
-              );
-            })}
-          </>
-        )}
+            return (
+              <UnselectedItem
+                key={key}
+                onSelect={() => onModifierValueSelect(key as SpecialValue)}
+                label={`(${intl.formatMessage({
+                  id: `criterion_modifier_values.${key}`,
+                })})`}
+                canExclude={false}
+                modifier
+              />
+            );
+          })}
         {objects.map((p) => (
           <UnselectedItem
             key={p.id}
@@ -338,7 +335,7 @@ interface IObjectsFilter<T extends ModifierCriterion<ILabeledValueListValue>> {
 }
 
 export const ObjectsFilter = <
-  T extends ModifierCriterion<ILabeledValueListValue | IHierarchicalLabelValue>
+  T extends ModifierCriterion<ILabeledValueListValue | IHierarchicalLabelValue>,
 >({
   criterion,
   setCriterion,
@@ -354,7 +351,7 @@ export const ObjectsFilter = <
       setDisplayQuery(input);
       debouncedSetQuery(input);
     },
-    [debouncedSetQuery, setDisplayQuery]
+    [debouncedSetQuery]
   );
 
   const [queryResults, setQueryResults] = useState<ILabeledId[]>([]);
@@ -369,7 +366,7 @@ export const ObjectsFilter = <
   const [, setInputFocus] = inputFocus;
 
   function onSelect(value: ILabeledId, newExclude: boolean) {
-    let newCriterion: T = cloneDeep(criterion);
+    const newCriterion: T = cloneDeep(criterion);
 
     if (newExclude) {
       if (newCriterion.value.excluded) {
@@ -399,7 +396,7 @@ export const ObjectsFilter = <
     (value: ILabeledId) => {
       if (!criterion) return;
 
-      let newCriterion: T = cloneDeep(criterion);
+      const newCriterion: T = cloneDeep(criterion);
 
       newCriterion.value.items = criterion.value.items.filter(
         (v) => v.id !== value.id
@@ -418,7 +415,7 @@ export const ObjectsFilter = <
 
   const onSetModifier = useCallback(
     (modifier: CriterionModifier) => {
-      let newCriterion: T = criterion.clone();
+      const newCriterion: T = criterion.clone();
       newCriterion.modifier = modifier;
       setCriterion(newCriterion);
     },
@@ -504,7 +501,7 @@ interface IHierarchicalObjectsFilter<T extends IHierarchicalLabeledIdCriterion>
   extends IObjectsFilter<T> {}
 
 export const HierarchicalObjectsFilter = <
-  T extends IHierarchicalLabeledIdCriterion
+  T extends IHierarchicalLabeledIdCriterion,
 >(
   props: IHierarchicalObjectsFilter<T>
 ) => {
@@ -519,7 +516,7 @@ export const HierarchicalObjectsFilter = <
   });
 
   function onDepthChanged(depth: number) {
-    let newCriterion: T = cloneDeep(criterion);
+    const newCriterion: T = cloneDeep(criterion);
     newCriterion.value.depth = depth;
     setCriterion(newCriterion);
   }
@@ -539,8 +536,8 @@ export const HierarchicalObjectsFilter = <
       criterion.criterionOption.type === "studios"
         ? "include_sub_studios"
         : criterion.criterionOption.type === "children"
-        ? "include_parent_tags"
-        : "include_sub_tags";
+          ? "include_parent_tags"
+          : "include_sub_tags";
     return {
       id: optionType,
     };

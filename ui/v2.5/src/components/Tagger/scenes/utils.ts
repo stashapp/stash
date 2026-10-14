@@ -31,7 +31,7 @@ export function calculatePhashComparisonScore(
     (f) => minDistance(f.hash, stashScene) <= 8
   );
 
-  if (phashFingerprints.length == 0) return [0, 0];
+  if (phashFingerprints.length === 0) return [0, 0];
 
   return [
     filteredFingerprints.length,
@@ -99,7 +99,7 @@ export function compareScenesForSort(
 
   // If only one scene has matching phash, prefer that scene
   if (
-    (nbPhashMatchSceneA != nbPhashMatchSceneB && nbPhashMatchSceneA === 0) ||
+    (nbPhashMatchSceneA !== nbPhashMatchSceneB && nbPhashMatchSceneA === 0) ||
     nbPhashMatchSceneB === 0
   ) {
     return nbPhashMatchSceneB - nbPhashMatchSceneA;
@@ -122,12 +122,12 @@ export function compareScenesForSort(
     minDurationDiffSceneB,
   ] = calculateDurationComparisonScore(stashScene, sceneB);
 
-  if (nbDurationMatchSceneA != nbDurationMatchSceneB) {
+  if (nbDurationMatchSceneA !== nbDurationMatchSceneB) {
     return nbDurationMatchSceneB - nbDurationMatchSceneA;
   }
 
   // Same number of phash & duration, check duration ratio
-  if (ratioDurationMatchSceneA != ratioDurationMatchSceneB) {
+  if (ratioDurationMatchSceneA !== ratioDurationMatchSceneB) {
     return ratioDurationMatchSceneB - ratioDurationMatchSceneA;
   }
 

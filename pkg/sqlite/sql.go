@@ -88,6 +88,7 @@ func getSortDirection(direction string) string {
 		return direction
 	}
 }
+
 func getSort(sort string, direction string, tableName string) string {
 	direction = getSortDirection(direction)
 

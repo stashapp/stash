@@ -51,6 +51,7 @@ type Query {
     Fractional seconds are ok: 0.5 will mean only files that have durations within 0.5 seconds between them will be matched based on PHash distance.
     """
     duration_diff: Float
+    scene_filter: SceneFilterType
   ): [[Scene!]!]!
 
   "Return valid stream paths"
@@ -330,7 +331,7 @@ type Mutation {
   sceneResetPlayCount(id: ID!): Int!
 
   "Generates screenshot at specified time in seconds. Leave empty to generate default screenshot"
-  sceneGenerateScreenshot(id: ID!, at: Float): String!
+  sceneGenerateScreenshot(id: ID!, at: Float): ID!
 
   sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker
   sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker

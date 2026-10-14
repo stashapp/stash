@@ -40,8 +40,30 @@ func (r *imageFileResolver) ParentFolder(ctx context.Context, obj *ImageFile) (*
 	return loaders.From(ctx).FolderByID.Load(obj.ParentFolderID)
 }
 
+func (r *imageFileResolver) Images(ctx context.Context, obj *ImageFile) ([]*models.Image, error) {
+	imageIDs, err := loaders.From(ctx).ImageIDsByFileID.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	var errs []error
+	ret, errs := loaders.From(ctx).ImageByID.LoadAll(imageIDs)
+	return ret, firstError(errs)
+}
+
 func (r *videoFileResolver) ParentFolder(ctx context.Context, obj *VideoFile) (*models.Folder, error) {
 	return loaders.From(ctx).FolderByID.Load(obj.ParentFolderID)
+}
+
+func (r *videoFileResolver) Scenes(ctx context.Context, obj *VideoFile) ([]*models.Scene, error) {
+	sceneIDs, err := loaders.From(ctx).SceneIDsByFileID.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	var errs []error
+	ret, errs := loaders.From(ctx).SceneByID.LoadAll(sceneIDs)
+	return ret, firstError(errs)
 }
 
 func (r *basicFileResolver) ParentFolder(ctx context.Context, obj *BasicFile) (*models.Folder, error) {
@@ -65,6 +87,17 @@ func zipFileResolver(ctx context.Context, zipFileID *models.FileID) (*BasicFile,
 
 func (r *galleryFileResolver) ZipFile(ctx context.Context, obj *GalleryFile) (*BasicFile, error) {
 	return zipFileResolver(ctx, obj.ZipFileID)
+}
+
+func (r *galleryFileResolver) Galleries(ctx context.Context, obj *GalleryFile) ([]*models.Gallery, error) {
+	galleryIDs, err := loaders.From(ctx).GalleryIDsByFileID.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	var errs []error
+	ret, errs := loaders.From(ctx).GalleryByID.LoadAll(galleryIDs)
+	return ret, firstError(errs)
 }
 
 func (r *imageFileResolver) ZipFile(ctx context.Context, obj *ImageFile) (*BasicFile, error) {

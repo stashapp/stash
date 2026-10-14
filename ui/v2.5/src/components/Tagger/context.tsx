@@ -187,8 +187,8 @@ export const TaggerContext: React.FC = ({ children }) => {
     }
     // First, see if we have a saved endpoint.
     if (config.selectedEndpoint) {
-      let source = sources.find(
-        (s) => s.sourceInput.stash_box_endpoint == config.selectedEndpoint
+      const source = sources.find(
+        (s) => s.sourceInput.stash_box_endpoint === config.selectedEndpoint
       );
       if (source) {
         setCurrentSource(source);
@@ -200,6 +200,7 @@ export const TaggerContext: React.FC = ({ children }) => {
   }, [sources, currentSource, config]);
 
   // clear the search results when the source changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally only resetting when currentSource changes
   useEffect(() => {
     setSearchResults({});
   }, [currentSource]);
@@ -303,8 +304,6 @@ export const TaggerContext: React.FC = ({ children }) => {
 
       if (results.error) {
         newResult = { error: results.error.message };
-      } else if (results.errors) {
-        newResult = { error: results.errors.toString() };
       } else {
         newResult = {
           results: results.data.scrapeSingleScene.map((r) => ({
@@ -339,8 +338,6 @@ export const TaggerContext: React.FC = ({ children }) => {
 
       if (results.error) {
         newResult = { error: results.error.message };
-      } else if (results.errors) {
-        newResult = { error: results.errors.toString() };
       } else {
         newResult = {
           results: results.data.scrapeSingleScene.map((r) => ({
@@ -401,8 +398,6 @@ export const TaggerContext: React.FC = ({ children }) => {
 
         if (results.error) {
           setMultiError(results.error.message);
-        } else if (results.errors) {
-          setMultiError(results.errors.toString());
         } else {
           const newSearchResults = { ...searchResults };
           sceneIDs.forEach((sceneID, index) => {

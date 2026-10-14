@@ -7,7 +7,7 @@ Only `docker` is required. For the most part your understanding of the technolog
 Installation instructions are available below, and if your distributions's repository ships a current version of docker, you may use that.
 https://docs.docker.com/engine/install/
 
-On some distributions, `docker compose` is shipped seperately, usually as `docker-cli-compose`. docker-compose is not recommended.
+On some distributions, `docker compose` is shipped separately, usually as `docker-cli-compose`. docker-compose is not recommended.
 
 ### Get the docker-compose.yml file
 

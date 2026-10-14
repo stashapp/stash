@@ -14,7 +14,7 @@ import { ToastProvider } from "src/hooks/Toast";
 import { LightboxProvider } from "src/hooks/Lightbox/context";
 import { initPolyfills } from "src/polyfills";
 
-import locales, { registerCountry } from "src/locales";
+import locales, { NestedMessage, registerCountry } from "src/locales";
 import {
   useConfiguration,
   useConfigureUI,
@@ -55,6 +55,7 @@ import { PatchFunction } from "./patch";
 import moment from "moment/min/moment-with-locales";
 import { ErrorMessage } from "./components/Shared/ErrorMessage";
 import cx from "classnames";
+import Welcome from "./components/Setup/Welcome";
 
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
@@ -101,9 +102,9 @@ function languageMessageString(language: string) {
   return language.replace(/-/, "");
 }
 
-const AppContainer: React.FC<React.PropsWithChildren<{}>> = PatchFunction(
+const AppContainer: React.FC<React.PropsWithChildren<unknown>> = PatchFunction(
   "App",
-  (props: React.PropsWithChildren<{}>) => {
+  (props: React.PropsWithChildren<unknown>) => {
     return <>{props.children}</>;
   }
 ) as React.FC;
@@ -147,8 +148,8 @@ export const App: React.FC = () => {
   const intlLanguage = translateLanguageLocale(language);
 
   // use en-GB as default messages if any messages aren't found in the chosen language
-  const [messages, setMessages] = useState<{}>();
-  const [customMessages, setCustomMessages] = useState<{}>();
+  const [messages, setMessages] = useState<Record<string, string>>();
+  const [customMessages, setCustomMessages] = useState<NestedMessage>();
 
   useEffect(() => {
     (async () => {
@@ -203,7 +204,7 @@ export const App: React.FC = () => {
 
   const location = useLocation();
   const history = useHistory();
-  const setupMatch = useRouteMatch(["/setup", "/migrate"]);
+  const setupMatch = useRouteMatch(["/setup", "/migrate", "/welcome"]);
 
   // dispatch event when location changes
   useEffect(() => {
@@ -233,7 +234,7 @@ export const App: React.FC = () => {
       // redirect to migrate page
       history.replace("/migrate");
     }
-  }, [systemStatusData, setupMatch, history, location]);
+  }, [systemStatusData, history, location.pathname]);
 
   function maybeRenderNavbar() {
     // don't render navbar for setup views
@@ -270,6 +271,7 @@ export const App: React.FC = () => {
               component={SceneDuplicateChecker}
             />
             <Route path="/setup" component={Setup} />
+            <Route path="/welcome" component={Welcome} />
             <Route path="/migrate" component={Migrate} />
             <PluginRoutes />
             <Route component={PageNotFound} />
@@ -310,6 +312,7 @@ export const App: React.FC = () => {
 
   const title = config.data?.configuration.ui.title || "Stash";
   const titleProps = makeTitleProps(title);
+  const htmlAttributes = { lang: language };
 
   if (!messages) {
     return null;
@@ -322,6 +325,7 @@ export const App: React.FC = () => {
         messages={messages}
         formats={intlFormats}
       >
+        <Helmet htmlAttributes={htmlAttributes} />
         <MainContainer>{content}</MainContainer>
       </IntlProvider>
     );
@@ -368,7 +372,10 @@ export const App: React.FC = () => {
                   <LightboxProvider>
                     <ManualProvider>
                       <InteractiveProvider>
-                        <Helmet {...titleProps} />
+                        <Helmet
+                          {...titleProps}
+                          htmlAttributes={htmlAttributes}
+                        />
                         {maybeRenderNavbar()}
                         <MainContainer>{renderContent()}</MainContainer>
                       </InteractiveProvider>

@@ -291,7 +291,7 @@ export function formikUtils<V extends FormikValues>(
     error: ErrorMessage[] | ErrorMessage
   ): [string | undefined, number[] | undefined] {
     if (Array.isArray(error)) {
-      let errors: string[] = [];
+      const errors: string[] = [];
       const errorIdx = [];
       for (let i = 0; i < error.length; i++) {
         const err = error[i];

@@ -48,13 +48,13 @@ func (qb *folderFilterHandler) handle(ctx context.Context, f *filterBuilder) {
 		return
 	}
 
+	f.handleCriterion(ctx, qb.criterionHandler())
+
 	sf := folderFilter.SubFilter()
 	if sf != nil {
 		sub := &folderFilterHandler{folderFilter: sf, table: qb.table}
 		handleSubFilter(ctx, sub, f, folderFilter.OperatorFilter)
 	}
-
-	f.handleCriterion(ctx, qb.criterionHandler())
 }
 
 func (qb *folderFilterHandler) criterionHandler() criterionHandler {

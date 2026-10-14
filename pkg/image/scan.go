@@ -69,19 +69,19 @@ type ScanHandler struct {
 
 func (h *ScanHandler) validate() error {
 	if h.CreatorUpdater == nil {
-		return errors.New("CreatorUpdater is required")
+		return errors.New("internal error: CreatorUpdater is required")
 	}
 	if h.ScanGenerator == nil {
-		return errors.New("ScanGenerator is required")
+		return errors.New("internal error: ScanGenerator is required")
 	}
 	if h.GalleryFinder == nil {
-		return errors.New("GalleryFinder is required")
+		return errors.New("internal error: GalleryFinder is required")
 	}
 	if h.ScanConfig == nil {
-		return errors.New("ScanConfig is required")
+		return errors.New("internal error: ScanConfig is required")
 	}
 	if h.Paths == nil {
-		return errors.New("Paths is required")
+		return errors.New("internal error: Paths is required")
 	}
 
 	return nil
@@ -375,13 +375,13 @@ func (h *ScanHandler) getOrCreateGallery(ctx context.Context, f models.File) (*m
 	if _, err := os.Stat(filepath.Join(folderPath, ".forcegallery")); err == nil {
 		forceGallery = true
 	} else if !errors.Is(err, os.ErrNotExist) {
-		return nil, fmt.Errorf("Could not test Path %s: %w", folderPath, err)
+		return nil, fmt.Errorf("could not test Path %s: %w", folderPath, err)
 	}
 	exemptGallery := false
 	if _, err := os.Stat(filepath.Join(folderPath, ".nogallery")); err == nil {
 		exemptGallery = true
 	} else if !errors.Is(err, os.ErrNotExist) {
-		return nil, fmt.Errorf("Could not test Path %s: %w", folderPath, err)
+		return nil, fmt.Errorf("could not test Path %s: %w", folderPath, err)
 	}
 
 	if forceGallery || (h.ScanConfig.GetCreateGalleriesFromFolders() && !exemptGallery) {

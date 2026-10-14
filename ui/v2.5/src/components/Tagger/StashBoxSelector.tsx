@@ -17,7 +17,7 @@ export const StashBoxSelector: React.FC<IStashBoxSelectorProps> = ({
   const { configuration } = useConfigurationContext();
 
   function stashboxNameForEndpoint(endpoint: string) {
-    let box = configuration?.general.stashBoxes.find(
+    const box = configuration?.general.stashBoxes.find(
       (sb) => sb.endpoint === endpoint
     );
     return `stash-box: ${box?.name ?? endpoint}`;

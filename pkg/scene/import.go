@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -85,6 +86,24 @@ func (i *Importer) PreImport(ctx context.Context) error {
 	return nil
 }
 
+// parseImportedDate parses a date from an imported scene JSON file. An
+// unparseable date is logged and skipped rather than failing the import of the
+// whole scene, since the rest of the object is still usable. fieldName and
+// sceneTitle are used for logging only.
+func parseImportedDate(value string, fieldName string, sceneTitle string) *models.Date {
+	if value == "" {
+		return nil
+	}
+
+	d, err := models.ParseDate(value)
+	if err != nil {
+		logger.Warnf("Skipping unparseable %s %q for scene %q: %v", fieldName, value, sceneTitle, err)
+		return nil
+	}
+
+	return &d
+}
+
 func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 	newScene := models.Scene{
 		Title:        sceneJSON.Title,
@@ -104,12 +123,9 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 		newScene.URLs = models.NewRelatedStrings([]string{sceneJSON.URL})
 	}
 
-	if sceneJSON.Date != "" {
-		d, err := models.ParseDate(sceneJSON.Date)
-		if err == nil {
-			newScene.Date = &d
-		}
-	}
+	newScene.Date = parseImportedDate(sceneJSON.Date, "date", sceneJSON.Title)
+	newScene.ProductionDate = parseImportedDate(sceneJSON.ProductionDate, "production date", sceneJSON.Title)
+
 	if sceneJSON.Rating != 0 {
 		newScene.Rating = &sceneJSON.Rating
 	}

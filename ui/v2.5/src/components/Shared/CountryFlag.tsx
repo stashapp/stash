@@ -20,7 +20,7 @@ export const CountryFlag: React.FC<ICountryFlag> = ({
 
   const country = getCountryByISO(isoCountry, locale);
 
-  if (!isoCountry || !country) return <></>;
+  if (!isoCountry || !country) return null;
 
   return (
     <>

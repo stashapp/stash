@@ -23,6 +23,9 @@ func customUsage() {
 func printPhash(ff *ffmpeg.FFMpeg, ffp *ffmpeg.FFProbe, inputfile string, quiet *bool) error {
 	// Determine if this is a video or image file based on extension
 	ext := filepath.Ext(inputfile)
+	if ext == "" {
+		return fmt.Errorf("file %q has no extension, cannot determine type", inputfile)
+	}
 	ext = ext[1:] // remove the leading dot
 
 	// Common image extensions
@@ -119,10 +122,13 @@ func main() {
 	// don't need to InitHWSupport, phashing doesn't use hw acceleration
 	ffprobe := ffmpeg.NewFFProbe(ffprobePath)
 
+	exitCode := 0
 	for _, item := range args {
 		if err := printPhash(encoder, ffprobe, item, quiet); err != nil {
 			fmt.Fprintln(os.Stderr, err)
+			exitCode = 1
 		}
 	}
 
+	os.Exit(exitCode)
 }

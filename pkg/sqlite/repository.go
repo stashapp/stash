@@ -204,7 +204,15 @@ func (r *repository) newQuery() queryBuilder {
 	}
 }
 
-func (r *repository) join(j joiner, as string, parentIDCol string) {
+func (r *repository) join(j joiner, t joinType, as string, parentIDCol string) {
+	fn := r.innerJoin
+	if t == joinTypeLeft {
+		fn = r.leftJoin
+	}
+	fn(j, as, parentIDCol)
+}
+
+func (r *repository) leftJoin(j joiner, as string, parentIDCol string) {
 	t := r.tableName
 	if as != "" {
 		t = as

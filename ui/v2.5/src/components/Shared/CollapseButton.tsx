@@ -60,8 +60,8 @@ export const ExpandCollapseButton: React.FC<{
   notCollapsedIcon?: IconDefinition;
 }> = ({ collapsedIcon, notCollapsedIcon, collapsed, setCollapsed }) => {
   const buttonIcon = collapsed
-    ? collapsedIcon ?? faChevronDown
-    : notCollapsedIcon ?? faChevronUp;
+    ? (collapsedIcon ?? faChevronDown)
+    : (notCollapsedIcon ?? faChevronUp);
 
   return (
     <span className="detail-expand-collapse">

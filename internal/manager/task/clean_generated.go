@@ -313,7 +313,34 @@ func (j *CleanGeneratedJob) cleanBlobFiles(ctx context.Context, progress *job.Pr
 		return err
 	}
 
+	// remove empty hash prefix subdirectories
+	j.removeEmptyDirs(j.Paths.Blobs)
+
 	return nil
+}
+
+func (j *CleanGeneratedJob) removeEmptyDirs(root string) {
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		return
+	}
+
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+
+		dirPath := filepath.Join(root, entry.Name())
+		subEntries, err := os.ReadDir(dirPath)
+		if err != nil {
+			continue
+		}
+
+		if len(subEntries) == 0 {
+			j.logDelete("removing empty directory: %s", entry.Name())
+			j.deleteDir(dirPath)
+		}
+	}
 }
 
 func (j *CleanGeneratedJob) getScenesWithHash(ctx context.Context, hash string) ([]*models.Scene, error) {
@@ -637,6 +664,8 @@ func (j *CleanGeneratedJob) cleanMarkerFiles(ctx context.Context, progress *job.
 		return err
 	}
 
+	j.removeEmptyDirs(j.Paths.Generated.Markers)
+
 	return nil
 }
 
@@ -729,6 +758,8 @@ func (j *CleanGeneratedJob) cleanThumbnailFiles(ctx context.Context, progress *j
 	}); err != nil {
 		return err
 	}
+
+	j.removeEmptyDirs(j.Paths.Generated.Thumbnails)
 
 	return nil
 }

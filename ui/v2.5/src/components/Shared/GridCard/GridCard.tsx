@@ -1,10 +1,4 @@
-import React, {
-  MutableRefObject,
-  PropsWithChildren,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { MutableRefObject, useMemo, useRef, useState } from "react";
 import { Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
@@ -16,6 +10,7 @@ import { faGripLines } from "@fortawesome/free-solid-svg-icons";
 import { DragSide, useDragMoveSelect } from "./dragMoveSelect";
 import { useDebounce } from "src/hooks/debounce";
 import { PatchComponent } from "src/patch";
+import { ExternalLink } from "../ExternalLink";
 
 interface ICardProps {
   className?: string;
@@ -47,8 +42,8 @@ export const calculateCardWidth = (
 ) => {
   const containerPadding = 30;
   const cardMargin = 10;
-  let maxUsableWidth = containerWidth - containerPadding;
-  let maxElementsOnRow = Math.ceil(maxUsableWidth / preferredWidth);
+  const maxUsableWidth = containerWidth - containerPadding;
+  const maxElementsOnRow = Math.ceil(maxUsableWidth / preferredWidth);
   return maxUsableWidth / maxElementsOnRow - cardMargin;
 };
 
@@ -68,7 +63,7 @@ export const useContainerDimensions = <T extends HTMLElement = HTMLDivElement>(
 
   const debouncedSetDimension = useDebounce((entry: ResizeObserverEntry) => {
     const { inlineSize: width, blockSize: height } = entry.contentBoxSize[0];
-    let difference = Math.abs(dimension.width - width);
+    const difference = Math.abs(dimension.width - width);
     // Only adjust when width changed by a significant margin. This addresses the cornercase that sees
     // the dimensions toggle back and forward when the window is adjusted perfectly such that overflow
     // is trigger then immediable disabled because of a resize event then continues this loop endlessly.
@@ -105,9 +100,9 @@ export function useCardWidth(
       return zoomWidths[zoomIndex];
     }
 
-    let zoomValue = zoomIndex;
+    const zoomValue = zoomIndex;
     const preferredCardWidth = zoomWidths[zoomValue];
-    let fittedCardWidth = calculateCardWidth(
+    const fittedCardWidth = calculateCardWidth(
       containerWidth,
       preferredCardWidth!
     );
@@ -154,7 +149,7 @@ const DragHandle: React.FC<{
   );
 };
 
-const Controls: React.FC<PropsWithChildren<{}>> = ({ children }) => {
+const Controls: React.FC = ({ children }) => {
   return <div className="card-controls">{children}</div>;
 };
 
@@ -171,6 +166,27 @@ const MoveTarget: React.FC<{ dragSide: DragSide }> = ({ dragSide }) => {
     ></div>
   );
 };
+
+function CardNavLink(props: {
+  url: string;
+  linkClassName?: string;
+  onClick: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+  children: React.ReactNode;
+}) {
+  const { url, linkClassName, onClick, children } = props;
+  if (/^https?:\/\//i.test(url)) {
+    return (
+      <ExternalLink href={url} className={linkClassName} onClick={onClick}>
+        {children}
+      </ExternalLink>
+    );
+  }
+  return (
+    <Link to={url} className={linkClassName} onClick={onClick}>
+      {children}
+    </Link>
+  );
+}
 
 export const GridCard: React.FC<ICardProps> = PatchComponent(
   "GridCard",
@@ -256,24 +272,24 @@ export const GridCard: React.FC<ICardProps> = PatchComponent(
         <div
           className={cx(props.thumbnailSectionClassName, "thumbnail-section")}
         >
-          <Link
-            to={props.url}
-            className={props.linkClassName}
+          <CardNavLink
+            url={props.url}
+            linkClassName={props.linkClassName}
             onClick={handleImageClick}
           >
             {props.image}
-          </Link>
+          </CardNavLink>
           {props.overlays}
           {maybeRenderProgressBar()}
         </div>
         {maybeRenderInteractiveHeatmap()}
         <div className="card-section">
-          <Link to={props.url} onClick={handleImageClick}>
+          <CardNavLink url={props.url} onClick={handleImageClick}>
             <h5 className="card-section-title flex-aligned">
               {props.pretitleIcon}
               <TruncatedText text={props.title} lineCount={2} />
             </h5>
-          </Link>
+          </CardNavLink>
           {props.details}
         </div>
 

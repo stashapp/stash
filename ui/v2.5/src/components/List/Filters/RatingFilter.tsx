@@ -72,7 +72,7 @@ export const RatingFilter: React.FC<IRatingFilterProps> = ({
     );
   }
 
-  return <></>;
+  return null;
 };
 
 interface ISidebarFilter {

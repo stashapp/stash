@@ -693,6 +693,7 @@ declare namespace PluginApi {
     GroupCardGrid: React.FC<any>;
     GroupIDSelect: React.FC<any>;
     GroupList: React.FC<any>;
+    GroupPage: React.FC<any>;
     GroupRecommendationRow: React.FC<any>;
     GroupSelect: React.FC<any>;
     GroupSubGroupsPanel: React.FC<any>;
@@ -718,6 +719,7 @@ declare namespace PluginApi {
     "PerformerCard.Overlays": React.FC<any>;
     "PerformerCard.Popovers": React.FC<any>;
     "PerformerCard.Title": React.FC<any>;
+    PerformerCreate: React.FC<any>;
     PerformerDetailsPanel: React.FC<any>;
     "PerformerDetailsPanel.DetailGroup": React.FC<any>;
     PerformerGalleriesPanel: React.FC<any>;
@@ -726,6 +728,7 @@ declare namespace PluginApi {
     PerformerIDSelect: React.FC<any>;
     PerformerImagesPanel: React.FC<any>;
     PerformerList: React.FC<any>;
+    PerformerMergeModal: React.FC<any>;
     PerformerPage: React.FC<any>;
     PerformerRecommendationRow: React.FC<any>;
     PerformerScenesPanel: React.FC<any>;
@@ -735,6 +738,7 @@ declare namespace PluginApi {
     RatingStars: React.FC<any>;
     RatingSystem: React.FC<any>;
     RecommendationRow: React.FC<any>;
+    SceneCreate: React.FC<any>;
     SceneFileInfoPanel: React.FC<any>;
     SceneIDSelect: React.FC<any>;
     ScenePage: React.FC<any>;
@@ -757,6 +761,7 @@ declare namespace PluginApi {
     SceneMarkerCardGrid: React.FC<any>;
     SceneMarkerList: React.FC<any>;
     SceneMarkerRecommendationRow: React.FC<any>;
+    SceneMergeModal: React.FC<any>;
     SceneRecommendationRow: React.FC<any>;
     SelectSetting: React.FC<any>;
     Setting: React.FC<any>;
@@ -769,6 +774,7 @@ declare namespace PluginApi {
     StudioDetailsPanel: React.FC<any>;
     StudioIDSelect: React.FC<any>;
     StudioList: React.FC<any>;
+    StudioPage: React.FC<any>;
     StudioRecommendationRow: React.FC<any>;
     StudioSelect: React.FC<any>;
     SweatDrops: React.FC<any>;
@@ -782,6 +788,8 @@ declare namespace PluginApi {
     TagCardGrid: React.FC<any>;
     TagLink: React.FC<any>;
     TagList: React.FC<any>;
+    TagMergeModal: React.FC<any>;
+    TagPage: React.FC<any>;
     TagRecommendationRow: React.FC<any>;
     TagSelect: React.FC<any>;
     TruncatedText: React.FC<any>;

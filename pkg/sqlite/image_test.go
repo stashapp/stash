@@ -93,7 +93,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 					CreatedAt:    createdAt,
 					UpdatedAt:    updatedAt,
 					GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
-					TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithImage]}),
+					TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithNothing]}),
 					PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
 				},
 				CustomFields: testCustomFields,
@@ -122,7 +122,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 					CreatedAt:     createdAt,
 					UpdatedAt:     updatedAt,
 					GalleryIDs:    models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
-					TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithImage]}),
+					TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithNothing]}),
 					PerformerIDs:  models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
 				},
 			},
@@ -271,7 +271,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithImage]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithNothing]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
 			},
 			false,
@@ -467,7 +467,7 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 					Mode: models.RelationshipUpdateModeSet,
 				},
 				TagIDs: &models.UpdateIDs{
-					IDs:  []int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]},
+					IDs:  []int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithNothing]},
 					Mode: models.RelationshipUpdateModeSet,
 				},
 				PerformerIDs: &models.UpdateIDs{
@@ -493,7 +493,7 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithImage]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithNothing]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
 			},
 			false,
@@ -593,7 +593,7 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			imageIDs[imageIdxWithTwoTags],
 			models.ImagePartial{
 				TagIDs: &models.UpdateIDs{
-					IDs:  []int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGallery]},
+					IDs:  []int{tagIDs[tagIdx1WithGallery], tagIDs[tagIdx1WithNothing]},
 					Mode: models.RelationshipUpdateModeAdd,
 				},
 			},
@@ -601,7 +601,7 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				TagIDs: models.NewRelatedIDs(append(
 					[]int{
 						tagIDs[tagIdx1WithGallery],
-						tagIDs[tagIdx1WithDupName],
+						tagIDs[tagIdx1WithNothing],
 					},
 					indexesToIDs(tagIDs, imageTags[imageIdxWithTwoTags])...,
 				)),
@@ -1628,6 +1628,67 @@ func queryImagesWithCount(ctx context.Context, sqb models.ImageReader, imageFilt
 	}
 
 	return images, result.Count, nil
+}
+
+// #5503 - total size/megapixels must include secondary files of equal size/dimensions
+func TestImageQueryTotalSizeMultipleFiles(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		iqb := db.Image
+		fqb := db.File
+
+		const fileSize = int64(1234)
+		const fileWidth = 1000
+		const fileHeight = 1000
+
+		makeFile := func(basename string) models.FileID {
+			f := &models.ImageFile{
+				BaseFile: &models.BaseFile{
+					Path:           getFilePath(folderIdxWithImageFiles, basename),
+					Basename:       basename,
+					ParentFolderID: folderIDs[folderIdxWithImageFiles],
+					Size:           fileSize,
+				},
+				Width:  fileWidth,
+				Height: fileHeight,
+			}
+			if err := fqb.Create(ctx, f); err != nil {
+				t.Fatalf("creating file: %v", err)
+			}
+			return f.ID
+		}
+
+		f1 := makeFile("multifile-image-1.jpg")
+		f2 := makeFile("multifile-image-2.jpg")
+
+		image := &models.Image{Title: "multifile image"}
+		if err := iqb.Create(ctx, &models.CreateImageInput{
+			Image:   image,
+			FileIDs: []models.FileID{f1, f2},
+		}); err != nil {
+			t.Fatalf("creating image: %v", err)
+		}
+
+		result, err := iqb.Query(ctx, models.ImageQueryOptions{
+			QueryOptions: models.QueryOptions{Count: true},
+			ImageFilter: &models.ImageFilterType{
+				ID: &models.IntCriterionInput{
+					Modifier: models.CriterionModifierEquals,
+					Value:    image.ID,
+				},
+			},
+			Megapixels: true,
+			TotalSize:  true,
+		})
+		if err != nil {
+			t.Fatalf("querying image: %v", err)
+		}
+
+		assert.Equal(t, 1, result.Count)
+		assert.Equal(t, float64(fileSize*2), result.TotalSize)
+		assert.Equal(t, float64(fileWidth*fileHeight*2)/1000000, result.Megapixels)
+
+		return nil
+	})
 }
 
 func imageQueryQ(ctx context.Context, t *testing.T, sqb models.ImageReader, q string, expectedImageIdx int) {
@@ -3026,6 +3087,13 @@ func TestImageQuerySorting(t *testing.T) {
 			models.SortDirectionEnumDesc,
 			imageIdxWithTwoGalleries,
 			imageIdxWithGrandChildStudio,
+		},
+		{
+			"performer_age",
+			"performer_age",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
 		},
 	}
 

@@ -32,10 +32,11 @@ export const RatingBanner: React.FC<IProps> = ({ rating }) => {
           ? `rating-banner rating-${convertedRating}`
           : `rating-banner rating-100-${Math.trunc(rating / 5)}`
       }
+      data-rating100={rating}
+      data-rating-system={ratingSystemOptions.type}
+      style={{ "--rating-100": rating } as React.CSSProperties}
     >
       <FormattedMessage id="rating" />: {convertedRating}
     </div>
-  ) : (
-    <></>
-  );
+  ) : null;
 };

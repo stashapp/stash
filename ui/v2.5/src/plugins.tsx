@@ -15,12 +15,12 @@ type PluginList = NonNullable<Required<PluginsQuery["plugins"]>>;
 function sortPlugins(plugins: PluginList) {
   type Node = { id: string; afters: string[] };
 
-  let nodes: Record<string, Node> = {};
-  let sorted: PluginList = [];
-  let visited: Record<string, boolean> = {};
+  const nodes: Record<string, Node> = {};
+  const sorted: PluginList = [];
+  const visited: Record<string, boolean> = {};
 
   plugins.forEach((v) => {
-    let from = v.id;
+    const from = v.id;
 
     if (!nodes[from]) nodes[from] = { id: from, afters: [] };
 
@@ -31,14 +31,14 @@ function sortPlugins(plugins: PluginList) {
   });
 
   function visit(idstr: string, ancestors: string[] = []) {
-    let node = nodes[idstr];
+    const node = nodes[idstr];
     const { id } = node;
 
     if (visited[idstr]) return;
 
     ancestors.push(id);
     visited[idstr] = true;
-    node.afters.forEach(function (afterID) {
+    node.afters.forEach((afterID) => {
       if (ancestors.indexOf(afterID) >= 0)
         throw new Error("closed chain : " + afterID + " is in " + id);
       visit(afterID.toString(), ancestors.slice());
@@ -85,8 +85,7 @@ function useLoadPlugins(disableCustomizations?: boolean) {
       uniq(
         sortedPlugins
           ?.filter((plugin) => plugin.enabled && plugin.paths.javascript)
-          .map((plugin) => plugin.paths.javascript!)
-          .flat() ?? []
+          .flatMap((plugin) => plugin.paths.javascript!) ?? []
       ),
       !!sortedPlugins && !pluginsLoading && !pluginsError,
     ];
@@ -100,8 +99,7 @@ function useLoadPlugins(disableCustomizations?: boolean) {
       uniq(
         sortedPlugins
           ?.filter((plugin) => plugin.enabled && plugin.paths.css)
-          .map((plugin) => plugin.paths.css!)
-          .flat() ?? []
+          .flatMap((plugin) => plugin.paths.css!) ?? []
       ),
       !!sortedPlugins && !pluginsLoading && !pluginsError,
     ];
@@ -143,7 +141,6 @@ export const PluginsLoader: React.FC<
   return <>{children}</>;
 };
 
-export const PluginRoutes: React.FC<React.PropsWithChildren<{}>> =
-  PatchFunction("PluginRoutes", (props: React.PropsWithChildren<{}>) => {
-    return <>{props.children}</>;
-  }) as React.FC;
+export const PluginRoutes: React.FC = PatchFunction("PluginRoutes", (props) => {
+  return <>{props.children}</>;
+}) as React.FC;

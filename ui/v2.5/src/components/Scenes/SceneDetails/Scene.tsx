@@ -1,11 +1,11 @@
 import { Tab, Nav, Dropdown, Button } from "react-bootstrap";
 import React, {
+  useCallback,
   useEffect,
   useState,
   useMemo,
   useRef,
   useLayoutEffect,
-  useCallback,
 } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory, RouteComponentProps } from "react-router-dom";
@@ -61,11 +61,11 @@ import { StudioLogo } from "src/components/Shared/StudioLogo";
 import {
   DEFAULT_SCENE_FILE_GAIN,
   SceneFileGainMap,
-  getSceneFileGainStorageId,
   loadSceneFileGains,
   normalizeSceneFileGains,
   saveSceneFileGains,
 } from "./sceneFileGains";
+import { JobFragment, useMonitorJob } from "src/utils/job";
 
 const SubmitStashBoxDraft = lazyComponent(
   () => import("src/components/Dialogs/SubmitDraft")
@@ -165,6 +165,7 @@ interface IProps {
   setContinuePlaylist: (value: boolean) => void;
   savedFileGains: SceneFileGainMap;
   saveFileGains: (fileGains: SceneFileGainMap) => Promise<void>;
+  onRefreshScene: () => Promise<void>;
 }
 
 interface ISceneParams {
@@ -196,6 +197,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
     setContinuePlaylist,
     savedFileGains,
     saveFileGains,
+    onRefreshScene,
   } = props;
 
   const Toast = useToast();
@@ -203,6 +205,7 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
   const history = useHistory();
   const [updateScene] = useSceneUpdate();
   const [generateScreenshot] = useSceneGenerateScreenshot();
+  const [screenshotJobID, setScreenshotJobID] = useState<string>();
   const { configuration } = useConfigurationContext();
   const { showStudioText } = configuration?.ui ?? {};
 
@@ -228,6 +231,27 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
   const [isMerging, setIsMerging] = useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+
+  const onScreenshotJobComplete = useCallback(
+    async (job?: JobFragment) => {
+      setScreenshotJobID(undefined);
+
+      if (job?.status === GQL.JobStatus.Failed) {
+        Toast.error(job.error);
+        return;
+      }
+
+      if (job?.status === GQL.JobStatus.Cancelled) {
+        return;
+      }
+
+      await onRefreshScene();
+      Toast.success(intl.formatMessage({ id: "toast.screenshot_generated" }));
+    },
+    [Toast, intl, onRefreshScene]
+  );
+
+  useMonitorJob(screenshotJobID, onScreenshotJobComplete);
 
   const onIncrementOClick = async () => {
     try {
@@ -398,13 +422,21 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
   }
 
   async function onGenerateScreenshot(at?: number) {
-    await generateScreenshot({
-      variables: {
-        id: scene.id,
-        at,
-      },
-    });
-    Toast.success(intl.formatMessage({ id: "toast.generating_screenshot" }));
+    try {
+      const result = await generateScreenshot({
+        variables: {
+          id: scene.id,
+          at,
+        },
+      });
+      const jobID = result.data?.sceneGenerateScreenshot;
+      if (jobID) {
+        setScreenshotJobID(jobID);
+      }
+      Toast.success(intl.formatMessage({ id: "toast.generating_screenshot" }));
+    } catch (e) {
+      Toast.error(e);
+    }
   }
 
   function onDeleteDialogClosed(deleted: boolean) {
@@ -480,20 +512,6 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
           onClick={() => setIsGenerateDialogOpen(true)}
         >
           <FormattedMessage id="actions.generate" />…
-        </Dropdown.Item>
-        <Dropdown.Item
-          key="generate-screenshot"
-          className="bg-secondary text-white"
-          onClick={() => onGenerateScreenshot(getPlayerPosition())}
-        >
-          <FormattedMessage id="actions.generate_thumb_from_current" />
-        </Dropdown.Item>
-        <Dropdown.Item
-          key="generate-default"
-          className="bg-secondary text-white"
-          onClick={() => onGenerateScreenshot()}
-        >
-          <FormattedMessage id="actions.generate_thumb_default" />
         </Dropdown.Item>
         {boxes.length > 0 && (
           <Dropdown.Item
@@ -653,6 +671,10 @@ const ScenePage: React.FC<IProps> = PatchComponent("ScenePage", (props) => {
             <SceneEditPanel
               isVisible={activeTabKey === "scene-edit-panel"}
               scene={scene}
+              onGenerateThumbFromCurrent={() =>
+                onGenerateScreenshot(getPlayerPosition())
+              }
+              onGenerateThumbDefault={() => onGenerateScreenshot()}
               onSubmit={onSave}
               savedFileGains={savedFileGains}
               onSaveFileGains={saveFileGains}
@@ -771,10 +793,17 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
 }) => {
   const { id } = match.params;
   const { configuration } = useConfigurationContext();
-  const { data, loading, error } = useFindScene(id);
+  const { data, loading, error, refetch } = useFindScene(id);
 
   const [scene, setScene] = useState<GQL.SceneDataFragment>();
   const [savedFileGains, setSavedFileGains] = useState<SceneFileGainMap>({});
+
+  const onRefreshScene = useCallback(async () => {
+    const result = await refetch();
+    if (result.data?.findScene) {
+      setScene(result.data.findScene);
+    }
+  }, [refetch]);
 
   // useLayoutEffect to update before paint
   useLayoutEffect(() => {
@@ -783,13 +812,6 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
       setScene(data?.findScene ?? undefined);
     }
   }, [data, loading]);
-
-  const sceneFileGainKey = useMemo(
-    () =>
-      scene?.files.map((file) => getSceneFileGainStorageId(file)).join("|") ??
-      "",
-    [scene]
-  );
 
   useEffect(() => {
     if (!scene) {
@@ -817,7 +839,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     return () => {
       ignore = true;
     };
-  }, [scene, sceneFileGainKey]);
+  }, [scene]);
 
   const saveFileGains = useCallback(
     async (nextFileGains: SceneFileGainMap) => {
@@ -853,7 +875,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     [queryParams]
   );
   const queryContinue = useMemo(() => {
-    let cont = queryParams.get("continue");
+    const cont = queryParams.get("continue");
     if (cont) {
       return cont === "true";
     } else {
@@ -910,23 +932,23 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     };
   }, []);
 
-  async function getQueueFilterScenes(filter: ListFilterModel) {
-    const query = await queryFindScenes(filter);
-    const { scenes, count } = query.data.findScenes;
-    setQueueScenes(scenes);
-    setQueueTotal(count);
-    setQueueStart((filter.currentPage - 1) * filter.itemsPerPage + 1);
-  }
-
-  async function getQueueScenes(sceneIDs: number[]) {
-    const query = await queryFindScenesByID(sceneIDs);
-    const { scenes, count } = query.data.findScenes;
-    setQueueScenes(scenes);
-    setQueueTotal(count);
-    setQueueStart(1);
-  }
-
   useEffect(() => {
+    async function getQueueFilterScenes(filter: ListFilterModel) {
+      const query = await queryFindScenes(filter);
+      const { scenes, count } = query.data.findScenes;
+      setQueueScenes(scenes);
+      setQueueTotal(count);
+      setQueueStart((filter.currentPage - 1) * filter.itemsPerPage + 1);
+    }
+
+    async function getQueueScenes(sceneIDs: number[]) {
+      const query = await queryFindScenesByID(sceneIDs);
+      const { scenes, count } = query.data.findScenes;
+      setQueueScenes(scenes);
+      setQueueTotal(count);
+      setQueueStart(1);
+    }
+
     if (sceneQueue.query) {
       getQueueFilterScenes(sceneQueue.query);
     } else if (sceneQueue.sceneIDs) {
@@ -1107,6 +1129,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
         setContinuePlaylist={setContinuePlaylist}
         savedFileGains={savedFileGains}
         saveFileGains={saveFileGains}
+        onRefreshScene={onRefreshScene}
       />
       <div className={`scene-player-container ${collapsed ? "expanded" : ""}`}>
         <ScenePlayer

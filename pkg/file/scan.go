@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
@@ -348,6 +349,7 @@ type ScanFileResult struct {
 	Renamed            bool
 	Updated            bool
 	FingerprintChanged bool
+	HandlerRequired    bool
 }
 
 func (r ScanFileResult) IsUnchanged() bool {
@@ -370,7 +372,7 @@ func (s *Scanner) ScanFile(ctx context.Context, f ScannedFile) (*ScanFileResult,
 		// #1426 / #6326 - if file is in a case-insensitive filesystem, then try
 		// case insensitive search
 		// assume case sensitive if in zip
-		if ff == nil && f.ZipFileID != nil {
+		if ff == nil && f.ZipFileID == nil {
 			caseSensitive, _ := f.FS.IsPathCaseSensitive(f.Path)
 
 			if !caseSensitive {
@@ -609,6 +611,11 @@ func (s *Scanner) handleRename(ctx context.Context, f models.File, fp []models.F
 		switch {
 		case err != nil:
 			missing = append(missing, other)
+		case other.Base().Path != f.Base().Path && fsutil.NormalizePath(other.Base().Path) == fsutil.NormalizePath(f.Base().Path):
+			// #4425 - same file under a different normalization (e.g. NFD stored
+			// before NFC was introduced); treat as a move so the path is updated
+			// in place instead of creating a duplicate
+			missing = append(missing, other)
 		case strings.EqualFold(f.Base().Path, other.Base().Path):
 			// #1426 - if file exists but is a case-insensitive match for the
 			// original filename, and the filesystem is case-insensitive
@@ -842,6 +849,14 @@ func (s *Scanner) removeOutdatedFingerprints(existing models.File, fp models.Fin
 		return
 	}
 
+	b := existing.Base()
+
+	// oshash has changed - drop phash in case file contents are different
+	if b.Fingerprints.For(models.FingerprintTypePhash) != nil {
+		logger.Infof("Removing outdated phash from %s", b.Path)
+		b.Fingerprints = b.Fingerprints.Remove(models.FingerprintTypePhash)
+	}
+
 	md5 := fp.For(models.FingerprintTypeMD5)
 
 	if md5 != nil {
@@ -850,8 +865,7 @@ func (s *Scanner) removeOutdatedFingerprints(existing models.File, fp models.Fin
 	}
 
 	// oshash has changed, MD5 is missing - remove MD5 from the existing fingerprints
-	logger.Infof("Removing outdated checksum from %s", existing.Base().Path)
-	b := existing.Base()
+	logger.Infof("Removing outdated checksum from %s", b.Path)
 	b.Fingerprints = b.Fingerprints.Remove(models.FingerprintTypeMD5)
 }
 
@@ -911,7 +925,8 @@ func (s *Scanner) onUnchangedFile(ctx context.Context, f ScannedFile, existing m
 	// if this file is a zip file, then we need to rescan the contents
 	// as well. We do this by indicating that the file is updated.
 	return &ScanFileResult{
-		File:    existing,
-		Updated: true,
+		File:            existing,
+		Updated:         true,
+		HandlerRequired: true,
 	}, nil
 }

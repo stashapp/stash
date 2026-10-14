@@ -40,12 +40,7 @@ func loadImage(encoder *ffmpeg.FFMpeg, imageFile *models.ImageFile) (image.Image
 	}
 	defer reader.Close()
 
-	buf := new(bytes.Buffer)
-	if _, err := buf.ReadFrom(reader); err != nil {
-		return nil, err
-	}
-
-	img, _, err := image.Decode(buf)
+	img, _, err := image.Decode(reader)
 	if errors.Is(err, image.ErrFormat) {
 		// try ffmpeg as a fallback for unsupported formats
 		// ffmpeg cannot read files inside zips

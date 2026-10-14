@@ -24,17 +24,30 @@ func NewImageURLBuilder(baseURL string, image *models.Image) ImageURLBuilder {
 	}
 }
 
+// cacheBuster returns the value used to bust client-side caches. The image
+// content is immutable for a given file, so the checksum of the primary file
+// is preferred: this keeps the URL stable across metadata edits (rating,
+// o-counter, tags, etc.) so the browser can reuse its cached copy. When no
+// primary file is present the checksum is empty, in which case we fall back to
+// the updated timestamp.
+func (b ImageURLBuilder) cacheBuster() string {
+	if b.Checksum != "" {
+		return b.Checksum
+	}
+	return b.UpdatedAt
+}
+
 func (b ImageURLBuilder) GetImageURL() string {
-	return b.BaseURL + "/image/" + b.ImageID + "/image?t=" + b.UpdatedAt
+	return b.BaseURL + "/image/" + b.ImageID + "/image?t=" + b.cacheBuster()
 }
 
 func (b ImageURLBuilder) GetThumbnailURL() string {
-	return b.BaseURL + "/image/" + b.ImageID + "/thumbnail?t=" + b.UpdatedAt
+	return b.BaseURL + "/image/" + b.ImageID + "/thumbnail?t=" + b.cacheBuster()
 }
 
 func (b ImageURLBuilder) GetPreviewURL() string {
 	if exists, err := fsutil.FileExists(manager.GetInstance().Paths.Generated.GetClipPreviewPath(b.Checksum, models.DefaultGthumbWidth)); exists && err == nil {
-		return b.BaseURL + "/image/" + b.ImageID + "/preview?" + b.UpdatedAt
+		return b.BaseURL + "/image/" + b.ImageID + "/preview?t=" + b.cacheBuster()
 	} else {
 		return ""
 	}

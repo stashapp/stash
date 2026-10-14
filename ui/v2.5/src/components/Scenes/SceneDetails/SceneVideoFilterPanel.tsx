@@ -149,11 +149,11 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
     aspectRatioRange.default
   );
 
-  // eslint-disable-next-line
-  function getVideoElement(playerVideoContainer: any) {
-    let videoElements = playerVideoContainer.getElementsByTagName("canvas");
+  function getVideoElement(playerVideoContainer: HTMLElement) {
+    let videoElements: HTMLCollectionOf<HTMLElement> =
+      playerVideoContainer.getElementsByTagName("canvas");
 
-    if (videoElements.length == 0) {
+    if (videoElements.length === 0) {
       videoElements = playerVideoContainer.getElementsByTagName("video");
     }
 
@@ -240,7 +240,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
         styleString += ` scale(${xScale},${yScale})`;
       }
 
-      if (playerVideoElement.tagName == "CANVAS") {
+      if (playerVideoElement.tagName === "CANVAS") {
         styleString += "; width: 100%; height: 100%; position: absolute; top:0";
       }
 

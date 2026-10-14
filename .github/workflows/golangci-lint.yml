@@ -17,6 +17,8 @@ jobs:
       # no tags or depth needed for lint
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
+        with:
+          go-version-file: 'go.mod'
 
       # generate-backend runs natively (just go generate + touch-ui) — no Docker needed
       - name: Generate Backend
@@ -25,4 +27,6 @@ jobs:
       ## WARN
       ## using v1, update in a later PR
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.11.4

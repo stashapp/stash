@@ -98,6 +98,11 @@
       width: auto;
     }
 
+    .delete-button,
+    button.delete-button:hover {
+      color: $danger;
+    }
+
     &-left {
       display: flex;
       flex-direction: column;
@@ -149,22 +154,12 @@
       display: flex;
       width: 100vw;
 
-      picture {
-        display: flex;
+      &-wrapper {
         margin: auto;
-        position: relative;
-
-        > div {
-          display: flex;
-          height: 100%;
-          position: absolute;
-          width: 100%;
-        }
       }
 
       img {
         cursor: pointer;
-        object-fit: contain;
       }
     }
   }
