@@ -1,6 +1,7 @@
 declare namespace PluginApi {
   const React: typeof import("react");
   const ReactDOM: typeof import("react-dom");
+  const ReactDOMClient: typeof import("react-dom/client");
   namespace GQL {
     const AddGalleryImagesDocument: { [key: string]: any };
     const AddTempDlnaipDocument: { [key: string]: any };
