@@ -68,7 +68,7 @@ import cloneDeep from "lodash-es/cloneDeep";
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
 
-const AUTO_SAVE_DELAY_MS = 5000;
+const AUTO_SAVE_DELAY_MS = 10000;
 
 interface IProps {
   scene: Partial<GQL.SceneDataFragment>;
@@ -769,7 +769,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function renderStudioField() {
     const title = intl.formatMessage({ id: "studio" });
-    const control = (
+    const control = flushOnLeave(
       <StudioSelect
         onSelect={(items) => onSetStudio(items.length > 0 ? items[0] : null)}
         values={studio ? [studio] : []}
@@ -820,7 +820,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function renderGroupsField() {
     const title = intl.formatMessage({ id: "groups" });
-    const control = (
+    const control = flushOnLeave(
       <SceneGroupTable value={groupEntries} onUpdate={onSetGroupEntries} />
     );
 
