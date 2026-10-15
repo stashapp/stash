@@ -24,6 +24,7 @@ import { Icon } from "src/components/Shared/Icon";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { ImageInput } from "src/components/Shared/ImageInput";
 import { useToast } from "src/hooks/Toast";
+import { useDebounce } from "src/hooks/debounce";
 import ImageUtils from "src/utils/image";
 import { addUpdateStashID, getStashIDs } from "src/utils/stashIds";
 import { useFormik } from "formik";
@@ -66,6 +67,8 @@ import cloneDeep from "lodash-es/cloneDeep";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
+
+const AUTO_SAVE_DELAY_MS = 5000;
 
 interface IProps {
   scene: Partial<GQL.SceneDataFragment>;
@@ -236,10 +239,28 @@ export const SceneEditPanel: React.FC<IProps> = ({
   // set after a selection to submit once formik state has caught up
   const [autoSaveRequested, setAutoSaveRequested] = useState(false);
 
-  function requestAutoSave() {
+  // wait for the user to stop editing so plugins don't run mid-edit
+  const requestAutoSave = useDebounce(() => {
     if (autoSaveEnabled && !isSaving) {
       setAutoSaveRequested(true);
     }
+  }, AUTO_SAVE_DELAY_MS);
+
+  useEffect(() => requestAutoSave.cancel, [requestAutoSave]);
+
+  // multi-selects save once focus leaves them, not after every item
+  function flushOnLeave(control: React.ReactNode) {
+    return (
+      <div
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+            requestAutoSave.flush();
+          }
+        }}
+      >
+        {control}
+      </div>
+    );
   }
 
   useEffect(() => {
@@ -302,6 +323,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     if (isVisible) {
       Mousetrap.bind("s s", () => {
         if (formik.dirty) {
+          requestAutoSave.cancel();
           formik.submitForm();
         }
       });
@@ -734,7 +756,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function renderGalleriesField() {
     const title = intl.formatMessage({ id: "galleries" });
-    const control = (
+    const control = flushOnLeave(
       <GallerySelect
         values={galleries}
         onSelect={(items) => onSetGalleries(items)}
@@ -772,7 +794,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     );
 
     const title = intl.formatMessage({ id: "performers" });
-    const control = (
+    const control = flushOnLeave(
       <PerformerSelect
         isMulti
         onSelect={onSetPerformers}
@@ -807,12 +829,14 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function renderTagsField() {
     const title = intl.formatMessage({ id: "tags" });
-    const control = tagsControl({
-      onSelect: (items) => {
-        onSetTags(items);
-        requestAutoSave();
-      },
-    });
+    const control = flushOnLeave(
+      tagsControl({
+        onSelect: (items) => {
+          onSetTags(items);
+          requestAutoSave();
+        },
+      })
+    );
 
     return renderField("tag_ids", title, control, fullWidthProps);
   }
