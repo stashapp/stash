@@ -230,8 +230,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     tagsControl,
   } = useTagsEdit(scene.tags, (ids) => formik.setFieldValue("tag_ids", ids));
 
-  // auto-save applies only to fields whose value comes from an explicit
-  // selection, and never while creating a new scene
+  // auto-save applies only to fields whose value comes from an explicit selection, and never while creating a new scene
   const autoSaveEnabled =
     !isNew &&
     ((stashConfig?.ui as IUIConfig)?.autoSaveConfirmedFields ?? false);
@@ -248,7 +247,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   useEffect(() => requestAutoSave.cancel, [requestAutoSave]);
 
-  // multi-selects save once focus leaves them, not after every item
+  // flush the pending auto-save when focus leaves the field, so each pick doesn't wait out the delay
   function flushOnLeave(control: React.ReactNode) {
     return (
       <div

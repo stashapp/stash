@@ -55,8 +55,7 @@ export interface IUIConfig {
 
   abbreviateCounters?: boolean;
 
-  // if true, selecting a value in a confirmed selector (tags, performers,
-  // studio, galleries, groups, stash IDs) saves the edit form immediately
+  // if true, the edit form auto-saves 10s after a confirmed selector (tags, performers, studio, galleries, groups, stash IDs) changes, or when focus leaves it
   autoSaveConfirmedFields?: boolean;
 
   ratingSystemOptions?: RatingSystemOptions;
