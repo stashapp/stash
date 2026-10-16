@@ -9,19 +9,19 @@ importers:
   .:
     devDependencies:
       '@types/react':
-        specifier: ^18.3.26
+        specifier: ^18.2.31
         version: 18.3.26
       '@types/react-dom':
-        specifier: ^18.3.7
+        specifier: ^18.2.14
         version: 18.3.7(@types/react@18.3.26)
       cpx:
         specifier: ^1.5.0
         version: 1.5.0
       sass:
-        specifier: ^1.93.2
+        specifier: ^1.69.4
         version: 1.93.2
       typescript:
-        specifier: ^5.9.3
+        specifier: ^5.2.2
         version: 5.9.3
 
 packages:
@@ -692,8 +692,8 @@ packages:
     resolution: {integrity: sha512-FtyOnWN/wCHTVXOMwvSv26d+ko5vWlIDD6zoUJ7LW8vh+ZBC8QdljveRP+crNrtBwioEUWy/4dMtbBjA4ioNlg==}
     engines: {node: '>=0.10.0'}
 
-  source-map-js@1.2.1:
-    resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
+  source-map-js@1.2.2:
+    resolution: {integrity: sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==}
     engines: {node: '>=0.10.0'}
 
   source-map-resolve@0.5.3:
@@ -1465,7 +1465,7 @@ snapshots:
     dependencies:
       chokidar: 4.0.3
       immutable: 5.1.5
-      source-map-js: 1.2.1
+      source-map-js: 1.2.2
     optionalDependencies:
       '@parcel/watcher': 2.5.1
 
@@ -1501,7 +1501,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  source-map-js@1.2.1: {}
+  source-map-js@1.2.2: {}
 
   source-map-resolve@0.5.3:
     dependencies:
