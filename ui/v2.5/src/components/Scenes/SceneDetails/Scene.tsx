@@ -42,7 +42,7 @@ import {
   faChevronRight,
   faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
-import { objectPath, objectTitle } from "src/core/files";
+import { isPlayable, objectPath, objectTitle } from "src/core/files";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import TextUtils from "src/utils/text";
 import {
@@ -939,20 +939,25 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
     history.replace(sceneLink);
   }
 
-  async function queueNext(autoPlay: boolean) {
+  // skipUnplayable steps over scenes that have no file. Set it when advancing
+  // without the user choosing the destination, since a scene that can't be
+  // played never finishes and so would stall the queue.
+  async function queueNext(autoPlay: boolean, skipUnplayable = false) {
     if (currentQueueIndex === -1) return;
 
-    if (currentQueueIndex < queueScenes.length - 1) {
-      loadScene(queueScenes[currentQueueIndex + 1].id, autoPlay);
-    } else {
+    const canLoad = (s: QueuedScene) => !skipUnplayable || isPlayable(s);
+
+    const next = queueScenes.slice(currentQueueIndex + 1).find(canLoad);
+    if (next) {
+      loadScene(next.id, autoPlay);
+    } else if (queueHasMoreScenes) {
       // if we're at the end of the queue, load more scenes
-      if (currentQueueIndex === queueScenes.length - 1 && queueHasMoreScenes) {
-        const loadedScenes = await onQueueMoreScenes();
-        if (loadedScenes && loadedScenes.length > 0) {
-          // set the page to the next page
-          const newPage = (sceneQueue.query?.currentPage ?? 0) + 1;
-          loadScene(loadedScenes[0].id, autoPlay, newPage);
-        }
+      const loadedScenes = await onQueueMoreScenes();
+      const target = loadedScenes?.find(canLoad);
+      if (target) {
+        // set the page to the next page
+        const newPage = (sceneQueue.query?.currentPage ?? 0) + 1;
+        loadScene(target.id, autoPlay, newPage);
       }
     }
   }
@@ -1003,7 +1008,7 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   function onComplete() {
     // load the next scene if we're continuing
     if (continuePlaylist) {
-      queueNext(true);
+      queueNext(true, true);
     }
   }
 
@@ -1063,18 +1068,26 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
         onRefreshScene={onRefreshScene}
       />
       <div className={`scene-player-container ${collapsed ? "expanded" : ""}`}>
-        <ScenePlayer
-          key="ScenePlayer"
-          scene={scene}
-          hideScrubberOverride={hideScrubber}
-          autoplay={autoplay}
-          permitLoop={!continuePlaylist}
-          initialTimestamp={initialTimestamp}
-          sendSetTimestamp={getSetTimestamp}
-          onComplete={onComplete}
-          onNext={() => queueNext(true)}
-          onPrevious={() => queuePrevious(true)}
-        />
+        {isPlayable(scene) ? (
+          <ScenePlayer
+            key="ScenePlayer"
+            scene={scene}
+            hideScrubberOverride={hideScrubber}
+            autoplay={autoplay}
+            permitLoop={!continuePlaylist}
+            initialTimestamp={initialTimestamp}
+            sendSetTimestamp={getSetTimestamp}
+            onComplete={onComplete}
+            onNext={() => queueNext(true)}
+            onPrevious={() => queuePrevious(true)}
+          />
+        ) : (
+          <div className="VideoPlayer">
+            <div className="video-wrapper scene-player-no-file">
+              <FormattedMessage id="scene_has_no_file" />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

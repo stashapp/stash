@@ -482,6 +482,14 @@ $sceneTabWidth: 450px;
   padding-right: 15px;
 }
 
+.scene-player-no-file {
+  align-items: center;
+  background-color: #000;
+  color: $text-muted;
+  display: flex;
+  justify-content: center;
+}
+
 .scrubber-wrapper {
   display: flex;
   flex-shrink: 0;
