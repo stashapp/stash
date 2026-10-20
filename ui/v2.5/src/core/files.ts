@@ -5,7 +5,7 @@ export interface IFile {
   path: string;
 }
 
-export interface IObjectWithFiles {
+interface IObjectWithFiles {
   files?: GQL.Maybe<IFile[]>;
 }
 
@@ -28,6 +28,11 @@ export function objectPath(s: IObjectWithFiles) {
     return s.files[0].path;
   }
   return "";
+}
+
+// a scene with no file has no streams, so it can't be played
+export function isPlayable(s: IObjectWithFiles) {
+  return !!s.files?.length;
 }
 
 interface IObjectWithVisualFiles {

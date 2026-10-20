@@ -28,7 +28,7 @@ import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { Icon } from "src/components/Shared/Icon";
 import { Counter } from "src/components/Shared/Counter";
 import { useToast } from "src/hooks/Toast";
-import SceneQueue, { isPlayable, QueuedScene } from "src/models/sceneQueue";
+import SceneQueue, { QueuedScene } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import Mousetrap from "mousetrap";
 import { OrganizedButton } from "./OrganizedButton";
@@ -42,7 +42,7 @@ import {
   faChevronRight,
   faChevronLeft,
 } from "@fortawesome/free-solid-svg-icons";
-import { objectPath, objectTitle } from "src/core/files";
+import { isPlayable, objectPath, objectTitle } from "src/core/files";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import TextUtils from "src/utils/text";
 import {
@@ -945,27 +945,19 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
   async function queueNext(autoPlay: boolean, skipUnplayable = false) {
     if (currentQueueIndex === -1) return;
 
-    let nextIndex = currentQueueIndex + 1;
-    while (
-      skipUnplayable &&
-      nextIndex < queueScenes.length &&
-      !isPlayable(queueScenes[nextIndex])
-    ) {
-      nextIndex++;
-    }
+    const canLoad = (s: QueuedScene) => !skipUnplayable || isPlayable(s);
 
-    if (nextIndex < queueScenes.length) {
-      loadScene(queueScenes[nextIndex].id, autoPlay);
+    const next = queueScenes.slice(currentQueueIndex + 1).find(canLoad);
+    if (next) {
+      loadScene(next.id, autoPlay);
     } else if (queueHasMoreScenes) {
       // if we're at the end of the queue, load more scenes
       const loadedScenes = await onQueueMoreScenes();
-      const candidates = skipUnplayable
-        ? loadedScenes?.filter(isPlayable)
-        : loadedScenes;
-      if (candidates && candidates.length > 0) {
+      const target = loadedScenes?.find(canLoad);
+      if (target) {
         // set the page to the next page
         const newPage = (sceneQueue.query?.currentPage ?? 0) + 1;
-        loadScene(candidates[0].id, autoPlay, newPage);
+        loadScene(target.id, autoPlay, newPage);
       }
     }
   }
