@@ -28,6 +28,7 @@ import { addUpdateStashID, getStashIDs } from "src/utils/stashIds";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { useConfigurationContext } from "src/hooks/Config";
+import { IUIConfig } from "src/core/config";
 import { IGroupEntry, SceneGroupTable } from "./SceneGroupTable";
 import {
   faSearch,
@@ -217,6 +218,40 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   const { tags, updateTagsStateFromScraper, resetTagsState, tagsControl } =
     useTagsEdit(scene.tags, (ids) => formik.setFieldValue("tag_ids", ids));
+
+  // auto-save only covers explicit selections, never a new scene
+  const autoSaveEnabled =
+    !isNew &&
+    ((stashConfig?.ui as IUIConfig)?.autoSaveConfirmedFields ?? false);
+
+  function autoSave() {
+    if (autoSaveEnabled) {
+      formik.submitForm();
+    }
+  }
+
+  // save once focus leaves the field, so several picks in a row are one save
+  function autoSaveField(field: keyof InputValues, control: React.ReactNode) {
+    return (
+      <div
+        onBlur={(e) => {
+          const next = e.relatedTarget as HTMLElement | null;
+          // Save and Delete act on the form themselves
+          if (
+            e.currentTarget.contains(next) ||
+            next?.closest(".edit-buttons")
+          ) {
+            return;
+          }
+          if (!isEqual(formik.values[field], formik.initialValues[field])) {
+            autoSave();
+          }
+        }}
+      >
+        {control}
+      </div>
+    );
+  }
 
   const coverImagePreview = useMemo(() => {
     const sceneImage = scene.paths?.screenshot;
@@ -622,6 +657,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       "stash_ids",
       addUpdateStashID(formik.values.stash_ids, item)
     );
+    autoSave();
   }
 
   const image = useMemo(() => {
@@ -691,7 +727,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function renderGalleriesField() {
     const title = intl.formatMessage({ id: "galleries" });
-    const control = (
+    const control = autoSaveField(
+      "gallery_ids",
       <GallerySelect
         values={galleries}
         onSelect={(items) => onSetGalleries(items)}
@@ -704,7 +741,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function renderStudioField() {
     const title = intl.formatMessage({ id: "studio" });
-    const control = (
+    const control = autoSaveField(
+      "studio_id",
       <StudioSelect
         onSelect={(items) => onSetStudio(items.length > 0 ? items[0] : null)}
         values={studio ? [studio] : []}
@@ -729,7 +767,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
     );
 
     const title = intl.formatMessage({ id: "performers" });
-    const control = (
+    const control = autoSaveField(
+      "performer_ids",
       <PerformerSelect
         isMulti
         onSelect={onSetPerformers}
@@ -754,7 +793,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function renderGroupsField() {
     const title = intl.formatMessage({ id: "groups" });
-    const control = (
+    const control = autoSaveField(
+      "groups",
       <SceneGroupTable value={groupEntries} onUpdate={onSetGroupEntries} />
     );
 
@@ -763,7 +803,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function renderTagsField() {
     const title = intl.formatMessage({ id: "tags" });
-    return renderField("tag_ids", title, tagsControl(), fullWidthProps);
+    const control = autoSaveField("tag_ids", tagsControl());
+
+    return renderField("tag_ids", title, control, fullWidthProps);
   }
 
   function renderDetailsField() {

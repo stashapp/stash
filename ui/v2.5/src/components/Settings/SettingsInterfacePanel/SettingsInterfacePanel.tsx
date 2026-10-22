@@ -711,6 +711,13 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
         </SettingSection>
 
         <SettingSection headingID="config.ui.editing.heading">
+          <BooleanSetting
+            id="auto-save-confirmed-fields"
+            headingID="config.ui.editing.auto_save_confirmed_fields.heading"
+            subHeadingID="config.ui.editing.auto_save_confirmed_fields.description"
+            checked={ui.autoSaveConfirmedFields ?? false}
+            onChange={(v) => saveUI({ autoSaveConfirmedFields: v })}
+          />
           <div className="setting-group">
             <div className="setting">
               <div>
