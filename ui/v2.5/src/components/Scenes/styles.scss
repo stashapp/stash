@@ -565,6 +565,11 @@ input[type="range"].blue-slider {
     font-size: 0.85em;
   }
 
+  .form-container.saving {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
   @include media-breakpoint-up(xl) {
     .custom-fields-input {
       .custom-fields-field {

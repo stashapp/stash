@@ -111,6 +111,7 @@ export const SceneGroupTable: React.FC<IProps> = (props) => {
         <Row className="group-row">
           <Col xs={12}>
             <GroupSelect
+              key={groupIDs.join(",")}
               onSelect={(items) => onNewGroupSet(items)}
               values={[]}
               excludeIds={groupIDs}

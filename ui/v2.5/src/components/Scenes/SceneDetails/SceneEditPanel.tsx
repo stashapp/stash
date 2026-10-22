@@ -10,6 +10,7 @@ import {
   SplitButton,
 } from "react-bootstrap";
 import Mousetrap from "mousetrap";
+import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import {
@@ -148,6 +149,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
+  // keep the form mounted while auto-saving so the scroll position stays
+  const [isSaving, setIsSaving] = useState(false);
 
   const schema = yup.object({
     title: yup.string().ensure(),
@@ -225,7 +228,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     ((stashConfig?.ui as IUIConfig)?.autoSaveConfirmedFields ?? false);
 
   function autoSave() {
-    if (autoSaveEnabled) {
+    if (autoSaveEnabled && !isSaving) {
       formik.submitForm();
     }
   }
@@ -339,10 +342,16 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }
 
   async function onSave(input: InputValues, andNew?: boolean) {
-    setIsLoading(true);
+    if (autoSaveEnabled) {
+      setIsSaving(true);
+    } else {
+      setIsLoading(true);
+    }
     try {
       await onSubmit(input, andNew);
-      formik.resetForm();
+      if (!autoSaveEnabled) {
+        formik.resetForm();
+      }
       if (andNew) {
         setGalleries(
           scene.galleries?.map((g) => ({
@@ -360,6 +369,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     } catch (e) {
       Toast.error(e);
     }
+    setIsSaving(false);
     setIsLoading(false);
   }
 
@@ -826,8 +836,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   return (
     <div id="scene-edit-details">
+      {/* a save started by leaving a field finishes after the page changes */}
       <Prompt
-        when={formik.dirty}
+        when={formik.dirty && !isSaving}
         message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
       />
 
@@ -856,7 +867,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 className="edit-button"
                 variant="primary"
                 disabled={
-                  !isEqual(formik.errors, {}) || customFieldsError !== undefined
+                  isSaving ||
+                  !isEqual(formik.errors, {}) ||
+                  customFieldsError !== undefined
                 }
                 title={intl.formatMessage({ id: "actions.save" })}
                 onClick={() => formik.submitForm()}
@@ -871,6 +884,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 variant="primary"
                 disabled={
                   (!isNew && !formik.dirty) ||
+                  isSaving ||
                   !isEqual(formik.errors, {}) ||
                   customFieldsError !== undefined
                 }
@@ -883,6 +897,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
               <Button
                 className="edit-button"
                 variant="danger"
+                disabled={isSaving}
                 onClick={() => onDelete()}
               >
                 <FormattedMessage id="actions.delete" />
@@ -911,7 +926,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
             </div>
           )}
         </Row>
-        <Row className="form-container px-3">
+        <Row className={cx("form-container px-3", { saving: isSaving })}>
           <Col lg={7} xl={12}>
             {renderInputField("title")}
             {renderInputField("code", "text", "scene_code")}
