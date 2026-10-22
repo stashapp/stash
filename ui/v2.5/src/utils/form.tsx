@@ -230,7 +230,8 @@ export function formikUtils<V extends FormikValues>(
   function renderDateField(
     field: Field,
     messageID: string = field,
-    props?: IProps
+    props?: IProps,
+    onPick?: (value: string) => void
   ) {
     const value = formik.values[field] as string;
     const error = formik.errors[field] as ErrorMessage;
@@ -240,6 +241,7 @@ export function formikUtils<V extends FormikValues>(
       <DateInput
         value={value}
         onValueChange={(v) => formik.setFieldValue(field, v)}
+        onPick={onPick}
         error={error}
       />
     );

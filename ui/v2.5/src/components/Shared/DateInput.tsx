@@ -17,6 +17,8 @@ interface IProps {
   value: string;
   isTime?: boolean;
   onValueChange(value: string): void;
+  // called after onValueChange when the value comes from the calendar, not from typing
+  onPick?(value: string): void;
   placeholder?: string;
   placeholderOverride?: string;
   error?: string;
@@ -65,7 +67,9 @@ const _DateInput: React.FC<IProps> = (props: IProps) => {
         <ReactDatePicker
           selected={date}
           onChange={(v) => {
-            props.onValueChange(v ? dateToString(v) : "");
+            const value = v ? dateToString(v) : "";
+            props.onValueChange(value);
+            props.onPick?.(value);
           }}
           customInput={<ShowPickerButton onClick={() => {}} />}
           showMonthDropdown

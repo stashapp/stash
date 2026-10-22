@@ -939,8 +939,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
               urlProps
             )}
 
-            {renderDateField("date")}
-            {renderDateField("production_date")}
+            {renderDateField("date", undefined, undefined, autoSave)}
+            {renderDateField("production_date", undefined, undefined, autoSave)}
             {renderInputField("director")}
 
             {renderGalleriesField()}

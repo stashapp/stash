@@ -734,7 +734,7 @@
       },
       "editing": {
         "auto_save_confirmed_fields": {
-          "description": "Automatically save the scene after changing tags, performers, studio, galleries, groups or stash-box IDs, once you leave the field, without needing to press Save.",
+          "description": "Automatically save the scene after changing tags, performers, studio, galleries, groups, stash-box IDs, or dates picked from the calendar, once you leave the field, without needing to press Save.",
           "heading": "Auto-save on selection"
         },
         "disable_dropdown_create": {
