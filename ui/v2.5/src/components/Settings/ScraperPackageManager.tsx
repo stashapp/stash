@@ -16,6 +16,7 @@ import {
   AvailablePackages,
   InstalledPackages,
   RemotePackage,
+  renderPackageDescription,
 } from "../Shared/PackageManager/PackageManager";
 import { useSettings } from "./context";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
@@ -150,13 +151,6 @@ export const AvailableScraperPackages: React.FC = () => {
     });
   }
 
-  function renderDescription(pkg: RemotePackage) {
-    const { description } = pkg.metadata;
-    if (typeof description === "string" || typeof description === "number") {
-      return description;
-    }
-  }
-
   if (error) return <h1>{error.message}</h1>;
   if (configLoading) return <LoadingIndicator />;
 
@@ -170,7 +164,7 @@ export const AvailableScraperPackages: React.FC = () => {
         <AvailablePackages
           loading={loading}
           onInstallPackages={onInstallPackages}
-          renderDescription={renderDescription}
+          renderDescription={renderPackageDescription}
           loadSource={(source) => loadSource(source)}
           sources={sources}
           addSource={addSource}
