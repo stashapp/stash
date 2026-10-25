@@ -19,7 +19,7 @@ interface IDirectorySelectionDialogProps {
 }
 
 export const DirectorySelectionDialog: React.FC<
-  IDirectorySelectionDialogProps
+  React.PropsWithChildren<IDirectorySelectionDialogProps>
 > = ({
   animation,
   allowEmpty = false,

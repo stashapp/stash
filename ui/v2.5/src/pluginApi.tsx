@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import * as ReactDOMClient from "react-dom/client";
 import * as ReactRouterDOM from "react-router-dom";
 import Mousetrap from "mousetrap";
 import MousetrapPause from "mousetrap-pause";
@@ -69,6 +70,7 @@ function registerRoute(path: string, component: React.FC) {
 export const PluginApi = {
   React,
   ReactDOM,
+  ReactDOMClient,
   GQL,
   libraries: {
     ReactRouterDOM,

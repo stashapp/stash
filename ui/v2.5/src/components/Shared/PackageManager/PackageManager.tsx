@@ -643,6 +643,16 @@ export type RemotePackage = Omit<GQL.Package, "requires"> & {
   requires: { package_id: string }[];
 };
 
+export function renderPackageDescription(pkg: RemotePackage) {
+  const { description } = pkg.metadata;
+  if (
+    description &&
+    (typeof description === "string" || typeof description === "number")
+  ) {
+    return description;
+  }
+}
+
 const AvailablePackageRow: React.FC<{
   disabled?: boolean;
   pkg: RemotePackage;

@@ -111,7 +111,9 @@ export interface ISceneQueryResult {
   error?: string;
 }
 
-export const TaggerContext: React.FC = ({ children }) => {
+export const TaggerContext: React.FC<React.PropsWithChildren<unknown>> = ({
+  children,
+}) => {
   const [loading, setLoading] = useState(false);
   const [loadingMulti, setLoadingMulti] = useState(false);
   const [sources, setSources] = useState<ITaggerSource[]>([]);

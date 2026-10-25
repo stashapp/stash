@@ -10,11 +10,15 @@ An example using various aspects of `PluginApi` may be found in the source code 
 
 ### `React`
 
-An instance of the React library.
+An instance of the React library. The UI uses React 18.
 
 ### `ReactDOM`
 
-An instance of the ReactDOM library.
+An instance of the ReactDOM library. `ReactDOM.render` still works but is deprecated in React 18, and components mounted with it run in React 17 compatibility mode. Use `ReactDOMClient.createRoot` instead.
+
+### `ReactDOMClient`
+
+An instance of the `react-dom/client` library. Use `ReactDOMClient.createRoot(container).render(element)` to mount a component outside the main React tree.
 
 ### `GQL`
 

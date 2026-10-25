@@ -301,7 +301,7 @@ const SceneWall: React.FC<ISceneWallProps> = ({
   }, [scenes, previewType, sceneQueue, erroredImgs, handleError]);
 
   const onClick = useCallback(
-    (_event, { index }) => {
+    (_event: React.MouseEvent, { index }: { index: number }) => {
       history.push(photos[index].link);
     },
     [history, photos]

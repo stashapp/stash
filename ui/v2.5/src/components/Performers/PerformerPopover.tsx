@@ -71,6 +71,7 @@ interface IPeroformerPopoverProps {
   triggerClassName?: string;
   onOpen?: () => void;
   onClose?: () => void;
+  children?: React.ReactNode;
 }
 
 export const PerformerPopover: React.FC<IPeroformerPopoverProps> = ({
