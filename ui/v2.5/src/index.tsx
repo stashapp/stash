@@ -10,7 +10,9 @@ import * as serviceWorker from "./serviceWorker";
 
 const root = createRoot(document.getElementById("root")!);
 
-// render synchronously so the DOM exists before the custom javascript runs
+// commit the initial render synchronously, matching ReactDOM.render, before
+// the custom javascript is loaded. Lazy-loaded routes and content that waits on
+// queries still mount later, so custom javascript cannot rely on them existing.
 flushSync(() => {
   root.render(
     <>
