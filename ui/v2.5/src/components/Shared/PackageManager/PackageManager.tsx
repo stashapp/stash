@@ -645,7 +645,10 @@ export type RemotePackage = Omit<GQL.Package, "requires"> & {
 
 export function renderPackageDescription(pkg: RemotePackage) {
   const { description } = pkg.metadata;
-  if (typeof description === "string" || typeof description === "number") {
+  if (
+    description &&
+    (typeof description === "string" || typeof description === "number")
+  ) {
     return description;
   }
 }
