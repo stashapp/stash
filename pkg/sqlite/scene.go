@@ -1304,8 +1304,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		addVideoFileTable()
 		query.sortAndPagination += fmt.Sprintf(" ORDER BY MIN(%s.width, %s.height) %s", videoFileTable, videoFileTable, getSortDirection(direction))
 	case "filesize":
-		addFileTable()
-		query.sortAndPagination += getSort(sort, direction, fileTable)
+		query.sortAndPagination += getFileSizeSort(sceneTable, scenesFilesTable, sceneIDColumn, direction)
 	case "duration":
 		addVideoFileTable()
 		query.sortAndPagination += getSort(sort, direction, videoFileTable)

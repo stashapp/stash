@@ -2112,33 +2112,32 @@ func sceneQueryQ(ctx context.Context, t *testing.T, sqb models.SceneReader, q st
 	assert.Len(t, scenes, totalScenes)
 }
 
+func createSceneTestFile(ctx context.Context, t *testing.T, basename string, size int64, duration float64) models.FileID {
+	f := &models.VideoFile{
+		BaseFile: &models.BaseFile{
+			Path:           getFilePath(folderIdxWithSceneFiles, basename),
+			Basename:       basename,
+			ParentFolderID: folderIDs[folderIdxWithSceneFiles],
+			Size:           size,
+		},
+		Duration: duration,
+	}
+	if err := db.File.Create(ctx, f); err != nil {
+		t.Fatalf("creating file: %v", err)
+	}
+	return f.ID
+}
+
 // #5503 - total size/duration must include secondary files of equal size/duration
 func TestSceneQueryTotalSizeMultipleFiles(t *testing.T) {
 	withRollbackTxn(func(ctx context.Context) error {
 		sqb := db.Scene
-		fqb := db.File
 
 		const fileSize = int64(1234)
 		const fileDuration = float64(100)
 
-		makeFile := func(basename string) models.FileID {
-			f := &models.VideoFile{
-				BaseFile: &models.BaseFile{
-					Path:           getFilePath(folderIdxWithSceneFiles, basename),
-					Basename:       basename,
-					ParentFolderID: folderIDs[folderIdxWithSceneFiles],
-					Size:           fileSize,
-				},
-				Duration: fileDuration,
-			}
-			if err := fqb.Create(ctx, f); err != nil {
-				t.Fatalf("creating file: %v", err)
-			}
-			return f.ID
-		}
-
-		f1 := makeFile("multifile-scene-1.mp4")
-		f2 := makeFile("multifile-scene-2.mp4")
+		f1 := createSceneTestFile(ctx, t, "multifile-scene-1.mp4", fileSize, fileDuration)
+		f2 := createSceneTestFile(ctx, t, "multifile-scene-2.mp4", fileSize, fileDuration)
 
 		scene := &models.Scene{Title: "multifile scene"}
 		if err := sqb.Create(ctx, scene, []models.FileID{f1, f2}); err != nil {
@@ -2163,6 +2162,46 @@ func TestSceneQueryTotalSizeMultipleFiles(t *testing.T) {
 		assert.Equal(t, 1, result.Count)
 		assert.Equal(t, float64(fileSize*2), result.TotalSize)
 		assert.Equal(t, fileDuration*2, result.TotalDuration)
+
+		return nil
+	})
+}
+
+// #7262 - filesize sort must use the combined size of all files
+func TestSceneQuerySortFileSizeMultipleFiles(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		sqb := db.Scene
+
+		// each file is smaller than the single file, but combined they are larger
+		multiFileScene := &models.Scene{Title: "multifile sort scene"}
+		if err := sqb.Create(ctx, multiFileScene, []models.FileID{
+			createSceneTestFile(ctx, t, "sort-multifile-1.mp4", 1000000, 0),
+			createSceneTestFile(ctx, t, "sort-multifile-2.mp4", 1000000, 0),
+		}); err != nil {
+			t.Fatalf("creating scene: %v", err)
+		}
+
+		singleFileScene := &models.Scene{Title: "single file sort scene"}
+		if err := sqb.Create(ctx, singleFileScene, []models.FileID{
+			createSceneTestFile(ctx, t, "sort-singlefile.mp4", 1500000, 0),
+		}); err != nil {
+			t.Fatalf("creating scene: %v", err)
+		}
+
+		sort := "filesize"
+		direction := models.SortDirectionEnumDesc
+		perPage := 2
+		scenes := queryScene(ctx, t, sqb, nil, &models.FindFilterType{
+			Sort:      &sort,
+			Direction: &direction,
+			PerPage:   &perPage,
+		})
+
+		if !assert.Len(t, scenes, 2) {
+			return nil
+		}
+		assert.Equal(t, multiFileScene.ID, scenes[0].ID)
+		assert.Equal(t, singleFileScene.ID, scenes[1].ID)
 
 		return nil
 	})
