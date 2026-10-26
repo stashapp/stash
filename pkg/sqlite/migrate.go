@@ -167,21 +167,6 @@ func (db *Database) ReInitialise() error {
 	return db.initialise()
 }
 
-type contextKey string
-
-var newSystemContextKey = contextKey("new")
-
-// IsNewSystemContext returns true if the context is a new system context, which is used to indicate that the migration is being run on a new database.
-func IsNewSystemContext(ctx context.Context) bool {
-	val := ctx.Value(newSystemContextKey)
-	if val == nil {
-		return false
-	}
-
-	isNew, ok := val.(bool)
-	return ok && isNew
-}
-
 // RunAllMigrations runs all migrations to bring the database up to the current schema version
 func (db *Database) RunAllMigrations(ctx context.Context) error {
 	m, err := NewMigrator(db)
