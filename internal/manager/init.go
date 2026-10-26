@@ -283,8 +283,8 @@ func (s *Manager) postInit(ctx context.Context) error {
 	s.RefreshFFMpeg(ctx)
 	s.RefreshStreamManager()
 
-	// initialise the user service - only do this is the database schema is >= 86, which is when the user table was added
-	const minimumUserSchemaVersion = 86
+	// initialise the user service - only do this is the database schema is >= 87, which is when the user table was added
+	const minimumUserSchemaVersion = 87
 	if s.Database.Version() >= minimumUserSchemaVersion {
 		if err := s.Repository.TxnManager.WithReadTxn(ctx, func(ctx context.Context) error {
 			if err := s.UserService.Init(ctx); err != nil {
