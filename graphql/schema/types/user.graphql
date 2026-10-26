@@ -5,7 +5,7 @@ enum RoleEnum {
   GENERATE_API_KEY
 }
 
-directive @hasRole(role: RoleEnum!) on FIELD_DEFINITION
+directive @hasRole(role: RoleEnum!) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
 directive @isUserOwner on FIELD_DEFINITION
 
 type User {
