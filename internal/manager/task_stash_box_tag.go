@@ -165,8 +165,6 @@ func (t *stashBoxBatchPerformerTagTask) handleMergedPerformer(ctx context.Contex
 
 func (t *stashBoxBatchPerformerTagTask) processMatchedPerformer(ctx context.Context, p *models.ScrapedPerformer, excluded map[string]bool, merge map[string]bool) {
 	if t.performer != nil {
-		storedID, _ := strconv.Atoi(*p.StoredID)
-
 		image, err := p.GetImage(ctx, excluded)
 		if err != nil {
 			logger.Errorf("Error processing scraped performer image for %s: %v", *p.Name, err)
@@ -177,7 +175,7 @@ func (t *stashBoxBatchPerformerTagTask) processMatchedPerformer(ctx context.Cont
 		err = r.WithTxn(ctx, func(ctx context.Context) error {
 			qb := r.Performer
 
-			existingStashIDs, err := qb.GetStashIDs(ctx, storedID)
+			existingStashIDs, err := qb.GetStashIDs(ctx, t.performer.ID)
 			if err != nil {
 				return err
 			}
@@ -367,9 +365,17 @@ func (t *stashBoxBatchStudioTagTask) findStashBoxStudio(ctx context.Context) (*m
 }
 
 func (t *stashBoxBatchStudioTagTask) processMatchedStudio(ctx context.Context, s *models.ScrapedStudio, excluded map[string]bool) {
+	// Determine the studio ID to update — either from the task's studio or from
+	// the StoredID set by match.ScrapedStudio (when batch adding by name/stashID
+	// and the studio already exists locally).
+	studioID := 0
 	if t.studio != nil {
-		storedID, _ := strconv.Atoi(*s.StoredID)
+		studioID = t.studio.ID
+	} else if s.StoredID != nil {
+		studioID, _ = strconv.Atoi(*s.StoredID)
+	}
 
+	if studioID > 0 {
 		if s.Parent != nil && t.createParent {
 			err := t.processParentStudio(ctx, s.Parent, excluded)
 			if err != nil {
@@ -387,12 +393,13 @@ func (t *stashBoxBatchStudioTagTask) processMatchedStudio(ctx context.Context, s
 		err = r.WithTxn(ctx, func(ctx context.Context) error {
 			qb := r.Studio
 
-			existingStashIDs, err := qb.GetStashIDs(ctx, storedID)
+			existingStashIDs, err := qb.GetStashIDs(ctx, studioID)
 			if err != nil {
 				return err
 			}
 
-			partial := s.ToPartial(*s.StoredID, t.box.Endpoint, excluded, existingStashIDs)
+			storedID := strconv.Itoa(studioID)
+			partial := s.ToPartial(storedID, t.box.Endpoint, excluded, existingStashIDs)
 
 			if err := studio.ValidateModify(ctx, partial, qb); err != nil {
 				return err
