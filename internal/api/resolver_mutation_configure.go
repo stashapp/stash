@@ -660,34 +660,40 @@ func (r *mutationResolver) ConfigureDefaults(ctx context.Context, input ConfigDe
 }
 
 func (r *mutationResolver) ConfigureUI(ctx context.Context, input map[string]interface{}, partial map[string]interface{}) (map[string]interface{}, error) {
-	c := config.GetInstance()
+	uiConfig, err := r.getUIConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	if input != nil {
 		// #5483 - convert JSON numbers to float64 or int64
-		input = convertMapJSONNumbers(input)
-		c.SetUIConfiguration(input)
+		uiConfig = convertMapJSONNumbers(input)
 	}
 
 	if partial != nil {
 		// #5483 - convert JSON numbers to float64 or int64
 		partial = convertMapJSONNumbers(partial)
 		// merge partial into existing config
-		existing := c.GetUIConfiguration()
-		utils.MergeMaps(existing, partial)
-		c.SetUIConfiguration(existing)
+		if uiConfig == nil {
+			uiConfig = make(map[string]interface{})
+		}
+		utils.MergeMaps(uiConfig, partial)
 	}
 
-	if err := c.Write(); err != nil {
-		return c.GetUIConfiguration(), err
+	if err := r.setUIConfig(ctx, uiConfig); err != nil {
+		return nil, err
 	}
 
-	return c.GetUIConfiguration(), nil
+	return r.getUIConfig(ctx)
 }
 
 func (r *mutationResolver) ConfigureUISetting(ctx context.Context, key string, value interface{}) (map[string]interface{}, error) {
-	c := config.GetInstance()
+	uiConfig, err := r.getUIConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	cfg := utils.NestedMap(c.GetUIConfiguration())
+	cfg := utils.NestedMap(uiConfig)
 
 	// #5483 - convert JSON numbers to float64 or int64
 	if m, ok := value.(map[string]interface{}); ok {
