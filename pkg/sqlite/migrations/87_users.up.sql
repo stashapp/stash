@@ -77,4 +77,23 @@ ALTER TABLE `scenes_view_dates_new` RENAME TO `scenes_view_dates`;
 CREATE INDEX `index_scenes_view_dates` ON `scenes_view_dates` (`scene_id`, `user_id`);
 CREATE INDEX `index_scenes_view_dates_on_user_id` ON `scenes_view_dates` (`user_id`);
 
+CREATE TABLE `images_user_data` (
+  `image_id` integer NOT NULL,
+  `user_id` integer NOT NULL,
+  `rating` tinyint,
+  `o_counter` integer NOT NULL DEFAULT 0,
+  PRIMARY KEY (`image_id`, `user_id`),
+  FOREIGN KEY (`image_id`) REFERENCES `images`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+);
+
+CREATE INDEX `index_images_user_data_on_user_id` ON `images_user_data` (`user_id`);
+
+INSERT INTO `images_user_data` (`image_id`, `user_id`, `rating`, `o_counter`)
+  SELECT `id`, 1, `rating`, `o_counter` FROM `images`
+  WHERE `rating` IS NOT NULL OR `o_counter` != 0;
+
+ALTER TABLE `images` DROP COLUMN `rating`;
+ALTER TABLE `images` DROP COLUMN `o_counter`;
+
 PRAGMA foreign_keys=ON;

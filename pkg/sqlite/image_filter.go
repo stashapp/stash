@@ -82,8 +82,8 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 
 		pathCriterionHandler(imageFilter.Path, "folders.path", "files.basename", imageRepository.addFoldersTable),
 		qb.fileCountCriterionHandler(imageFilter.FileCount),
-		intCriterionHandler(imageFilter.Rating100, "images.rating", nil),
-		intCriterionHandler(imageFilter.OCounter, "images.o_counter", nil),
+		imageUserData.intCriterionHandler(imageFilter.Rating100, imageUserData.column("rating")),
+		imageUserData.intCriterionHandler(imageFilter.OCounter, imageUserData.columnOrDefault("o_counter", "0")),
 		boolCriterionHandler(imageFilter.Organized, "images.organized", nil),
 		&dateCriterionHandler{imageFilter.Date, "images.date", nil},
 		qb.urlsCriterionHandler(imageFilter.URL),
@@ -189,9 +189,12 @@ func (qb *imageFilterHandler) missingCriterionHandler(isMissing *string) criteri
 			case "tags":
 				imageRepository.tags.leftJoin(f, "tags_join", "images.id")
 				f.addWhere("tags_join.image_id IS NULL")
+			case "rating":
+				imageUserData.join(ctx, f)
+				f.addWhere(imageUserData.column("rating") + " IS NULL")
 			default:
 				if err := validateIsMissing(*isMissing, []string{
-					"title", "details", "photographer", "date", "code", "rating",
+					"title", "details", "photographer", "date", "code",
 				}); err != nil {
 					f.setError(err)
 					return

@@ -689,10 +689,11 @@ func (qb *StudioStore) sortByOCounter(ctx context.Context, direction string) str
 			INNER JOIN %[4]s ON %[3]s.id = %[4]s.scene_id AND %[4]s.user_id = %[7]d
 			WHERE %[3]s.%[2]s = %[1]s.id
 		), 0) + COALESCE((
-			SELECT SUM(o_counter) FROM %[5]s
+			SELECT SUM(%[8]s.o_counter) FROM %[5]s
+			INNER JOIN %[8]s ON %[5]s.id = %[8]s.image_id AND %[8]s.user_id = %[7]d
 			WHERE %[5]s.%[2]s = %[1]s.id
 		), 0)
-	) %[6]s`, studioTable, studioIDColumn, sceneTable, scenesODatesTable, imageTable, getSortDirection(direction), currentUserID(ctx))
+	) %[6]s`, studioTable, studioIDColumn, sceneTable, scenesODatesTable, imageTable, getSortDirection(direction), currentUserID(ctx), imagesUserDataTable)
 }
 
 func (qb *StudioStore) sortByOCounterAll(ctx context.Context, direction string) string {
@@ -708,10 +709,11 @@ func (qb *StudioStore) sortByOCounterAll(ctx context.Context, direction string) 
 			INNER JOIN %[4]s ON %[3]s.id = %[4]s.scene_id AND %[4]s.user_id = %[7]d
 			WHERE %[3]s.%[2]s IN (SELECT id FROM sub_studios)
 		), 0) + COALESCE((
-			SELECT SUM(o_counter) FROM %[5]s
+			SELECT SUM(%[8]s.o_counter) FROM %[5]s
+			INNER JOIN %[8]s ON %[5]s.id = %[8]s.image_id AND %[8]s.user_id = %[7]d
 			WHERE %[5]s.%[2]s IN (SELECT id FROM sub_studios)
 		), 0)
-	) %[6]s`, studioTable, studioIDColumn, sceneTable, scenesODatesTable, imageTable, getSortDirection(direction), currentUserID(ctx))
+	) %[6]s`, studioTable, studioIDColumn, sceneTable, scenesODatesTable, imageTable, getSortDirection(direction), currentUserID(ctx), imagesUserDataTable)
 }
 
 var studioSortOptions = sortOptions{

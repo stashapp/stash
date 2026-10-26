@@ -481,8 +481,8 @@ func (qb *performerFilterHandler) galleryCountCriterionHandler(count *models.Int
 var selectPerformerOCountSQL = utils.StrFormat(
 	"SELECT SUM(o_counter) "+
 		"FROM ("+
-		"SELECT SUM(o_counter) as o_counter from {performers_images} s "+
-		"LEFT JOIN {images} ON {images}.id = s.{images_id} "+
+		"SELECT SUM({images_user_data}.o_counter) as o_counter from {performers_images} s "+
+		"LEFT JOIN {images_user_data} ON {images_user_data}.{images_id} = s.{images_id} AND {images_user_data}.user_id = %[1]d "+
 		"WHERE s.{performer_id} = {performers}.id "+
 		"UNION ALL "+
 		"SELECT COUNT({scenes_o_dates}.{o_date}) as o_counter from {performers_scenes} s "+
@@ -492,7 +492,7 @@ var selectPerformerOCountSQL = utils.StrFormat(
 		")",
 	map[string]interface{}{
 		"performers_images": performersImagesTable,
-		"images":            imageTable,
+		"images_user_data":  imagesUserDataTable,
 		"performer_id":      performerIDColumn,
 		"images_id":         imageIDColumn,
 		"performers":        performerTable,
