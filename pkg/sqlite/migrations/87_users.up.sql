@@ -185,4 +185,24 @@ INSERT INTO `tags_user_data` (`tag_id`, `user_id`, `favorite`)
 
 ALTER TABLE `tags` DROP COLUMN `favorite`;
 
+CREATE TABLE `saved_filters_new` (
+  `id` integer not null primary key autoincrement,
+  `user_id` integer not null,
+  `name` varchar(510) not null,
+  `mode` varchar(255) not null,
+  `find_filter` blob,
+  `object_filter` blob,
+  `ui_options` blob,
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+);
+
+INSERT INTO `saved_filters_new` (`id`, `user_id`, `name`, `mode`, `find_filter`, `object_filter`, `ui_options`)
+  SELECT `id`, 1, `name`, `mode`, `find_filter`, `object_filter`, `ui_options` FROM `saved_filters`;
+
+DROP INDEX `index_saved_filters_on_mode_name_unique`;
+DROP TABLE `saved_filters`;
+ALTER TABLE `saved_filters_new` RENAME TO `saved_filters`;
+
+CREATE UNIQUE INDEX `index_saved_filters_on_user_id_mode_name_unique` ON `saved_filters` (`user_id`, `mode`, `name`);
+
 PRAGMA foreign_keys=ON;
