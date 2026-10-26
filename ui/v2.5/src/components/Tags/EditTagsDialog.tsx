@@ -5,6 +5,7 @@ import { useBulkTagUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { ModalComponent } from "../Shared/Modal";
 import { useToast } from "src/hooks/Toast";
+import { useIsAdmin } from "src/hooks/CurrentUser";
 import { MultiSet } from "../Shared/MultiSet";
 import {
   getAggregateState,
@@ -65,6 +66,7 @@ export const EditTagsDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
 ) => {
   const intl = useIntl();
+  const isAdmin = useIsAdmin();
   const Toast = useToast();
 
   const [parentTagIDs, setParentTagIDs_] = useState<GQL.BulkUpdateIds>({
@@ -105,6 +107,11 @@ export const EditTagsDialog: React.FC<IListOperationProps> = (
       parent_ids: parentTagIDs,
       child_ids: childTagIDs,
     };
+
+    // ignore_auto_tag may only be changed by administrators
+    if (!isAdmin) {
+      tagInput.ignore_auto_tag = undefined;
+    }
 
     return tagInput;
   }
@@ -217,15 +224,17 @@ export const EditTagsDialog: React.FC<IListOperationProps> = (
           setTagIDs={setChildTagIDs}
         />
 
-        <Form.Group controlId="ignore-auto-tags">
-          <IndeterminateCheckbox
-            label={intl.formatMessage({ id: "ignore_auto_tag" })}
-            setChecked={(checked) =>
-              setUpdateField({ ignore_auto_tag: checked })
-            }
-            checked={updateInput.ignore_auto_tag ?? undefined}
-          />
-        </Form.Group>
+        {isAdmin && (
+          <Form.Group controlId="ignore-auto-tags">
+            <IndeterminateCheckbox
+              label={intl.formatMessage({ id: "ignore_auto_tag" })}
+              setChecked={(checked) =>
+                setUpdateField({ ignore_auto_tag: checked })
+              }
+              checked={updateInput.ignore_auto_tag ?? undefined}
+            />
+          </Form.Group>
+        )}
       </Form>
     </ModalComponent>
   );

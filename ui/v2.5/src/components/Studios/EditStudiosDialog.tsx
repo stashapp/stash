@@ -103,9 +103,10 @@ export const EditStudiosDialog: React.FC<IListOperationProps> = (
       aggregateState.state.rating100
     );
 
-    // organized may only be changed by administrators
+    // organized and ignore_auto_tag may only be changed by administrators
     if (!isAdmin) {
       studioInput.organized = undefined;
+      studioInput.ignore_auto_tag = undefined;
     }
 
     return studioInput;
@@ -216,15 +217,17 @@ export const EditStudiosDialog: React.FC<IListOperationProps> = (
             />
           </BulkUpdateFormGroup>
 
-          <Form.Group controlId="ignore-auto-tags">
-            <IndeterminateCheckbox
-              label={intl.formatMessage({ id: "ignore_auto_tag" })}
-              setChecked={(checked) =>
-                setUpdateField({ ignore_auto_tag: checked })
-              }
-              checked={updateInput.ignore_auto_tag ?? undefined}
-            />
-          </Form.Group>
+          {isAdmin && (
+            <Form.Group controlId="ignore-auto-tags">
+              <IndeterminateCheckbox
+                label={intl.formatMessage({ id: "ignore_auto_tag" })}
+                setChecked={(checked) =>
+                  setUpdateField({ ignore_auto_tag: checked })
+                }
+                checked={updateInput.ignore_auto_tag ?? undefined}
+              />
+            </Form.Group>
+          )}
 
           {isAdmin && (
             <Form.Group controlId="organized">
