@@ -149,4 +149,23 @@ INSERT INTO `performers_user_data` (`performer_id`, `user_id`, `rating`, `favori
 ALTER TABLE `performers` DROP COLUMN `rating`;
 ALTER TABLE `performers` DROP COLUMN `favorite`;
 
+CREATE TABLE `studios_user_data` (
+  `studio_id` integer NOT NULL,
+  `user_id` integer NOT NULL,
+  `rating` tinyint,
+  `favorite` boolean NOT NULL DEFAULT false,
+  PRIMARY KEY (`studio_id`, `user_id`),
+  FOREIGN KEY (`studio_id`) REFERENCES `studios`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+);
+
+CREATE INDEX `index_studios_user_data_on_user_id` ON `studios_user_data` (`user_id`);
+
+INSERT INTO `studios_user_data` (`studio_id`, `user_id`, `rating`, `favorite`)
+  SELECT `id`, 1, `rating`, `favorite` FROM `studios`
+  WHERE `rating` IS NOT NULL OR `favorite` = 1;
+
+ALTER TABLE `studios` DROP COLUMN `rating`;
+ALTER TABLE `studios` DROP COLUMN `favorite`;
+
 PRAGMA foreign_keys=ON;

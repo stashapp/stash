@@ -56,6 +56,13 @@ func (t userDataTable) columnOrDefault(col string, def string) string {
 	return "COALESCE(" + t.column(col) + ", " + def + ")"
 }
 
+// orderBy returns an ORDER BY clause on a column of the current user's data for the object.
+// It uses a subquery, so it can be used where the sort cannot add a join.
+func (t userDataTable) orderBy(ctx context.Context, col string, direction string) string {
+	return fmt.Sprintf(" ORDER BY (SELECT %[1]s.%[2]s FROM %[1]s WHERE %[1]s.%[3]s = %[4]s.id AND %[1]s.%[5]s = %[6]d) %[7]s",
+		t.table, col, t.idColumn, t.objectTable, userIDColumn, currentUserID(ctx), getSortDirection(direction))
+}
+
 // upsert sets the provided values for the object and the current user.
 // Existing values not in values are left unchanged.
 // Does nothing if there is no current user.

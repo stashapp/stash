@@ -754,11 +754,6 @@ func (qb *PerformerStore) QueryCount(ctx context.Context, performerFilter *model
 	return query.executeCount(ctx)
 }
 
-func (qb *PerformerStore) sortByRating(ctx context.Context, direction string) string {
-	return fmt.Sprintf(" ORDER BY (SELECT %[1]s.rating FROM %[1]s WHERE %[1]s.%[2]s = %[3]s.id AND %[1]s.%[4]s = %[5]d) %[6]s",
-		performersUserDataTable, performerIDColumn, performerTable, userIDColumn, currentUserID(ctx), getSortDirection(direction))
-}
-
 func (qb *PerformerStore) sortByOCounter(ctx context.Context, direction string) string {
 	// need to sum the o_counter from scenes and images
 	return " ORDER BY (" + fmt.Sprintf(selectPerformerOCountSQL, currentUserID(ctx)) + ") " + direction
@@ -953,7 +948,7 @@ func (qb *PerformerStore) getPerformerSort(ctx context.Context, findFilter *mode
 	case "latest_scene":
 		sortQuery += qb.sortByLatestScene(direction)
 	case "rating":
-		sortQuery += qb.sortByRating(ctx, direction)
+		sortQuery += performerUserData.orderBy(ctx, sort, direction)
 	default:
 		sortQuery += getSort(sort, direction, "performers")
 	}
