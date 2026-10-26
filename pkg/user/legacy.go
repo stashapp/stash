@@ -75,11 +75,27 @@ func (s *LegacyService) GetGuestUser(ctx context.Context) *models.User {
 	return nil
 }
 
-// GetSingleUser returns the single user if it exists.
-// It will return nil if there is no single user or if there are multiple users
-// (since single user can only be used if it is the only user).
+// legacyDefaultUsername is the username of the user returned in single user mode
+// when no credentials are configured.
+const legacyDefaultUsername = "admin"
+
+// GetSingleUser returns the single user in single user mode.
+// In legacy mode, this is the configured user, or a default admin user if no credentials are configured.
+// This allows access to the system, such as the migration page, before the user table exists.
 func (s *LegacyService) GetSingleUser(ctx context.Context) (*models.User, error) {
-	return nil, nil
+	if !s.IsSingleUserMode() {
+		return nil, nil
+	}
+
+	username := s.Username
+	if username == "" {
+		username = legacyDefaultUsername
+	}
+
+	return &models.User{
+		Username: username,
+		Roles:    []models.RoleEnum{models.RoleEnumAdmin},
+	}, nil
 }
 
 func (s *LegacyService) GetUser(ctx context.Context, username string) (*models.User, error) {
