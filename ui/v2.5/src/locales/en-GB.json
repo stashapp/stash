@@ -1213,6 +1213,7 @@
   "file_mod_time": "File Modification Time",
   "files": "files",
   "files_amount": "{value} files",
+  "files_size": "File(s) Size",
   "filesize": "File Size",
   "filter": "Filter",
   "filter_name": "Filter name",
