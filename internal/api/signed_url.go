@@ -52,7 +52,8 @@ func signURL(ctx context.Context, c *config.Config, u *url.URL, prefix string) {
 // Locked users are not matched.
 func resolveCredentialID(c *config.Config, users []*models.User, cid string) (*models.User, []byte, bool) {
 	for _, u := range users {
-		if u.Locked {
+		// users without roles are also considered locked
+		if u.Locked || len(u.Roles) == 0 {
 			continue
 		}
 
