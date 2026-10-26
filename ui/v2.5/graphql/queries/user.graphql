@@ -1,0 +1,6 @@
+query Me {
+  me {
+    name
+    roles
+  }
+}
