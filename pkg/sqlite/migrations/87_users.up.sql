@@ -42,4 +42,39 @@ ALTER TABLE `scenes` DROP COLUMN `rating`;
 ALTER TABLE `scenes` DROP COLUMN `resume_time`;
 ALTER TABLE `scenes` DROP COLUMN `play_duration`;
 
+-- add user_id to scene o and view history
+CREATE TABLE `scenes_o_dates_new` (
+  `scene_id` integer NOT NULL,
+  `user_id` integer NOT NULL,
+  `o_date` datetime NOT NULL,
+  FOREIGN KEY (`scene_id`) REFERENCES `scenes`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+);
+
+INSERT INTO `scenes_o_dates_new` (`scene_id`, `user_id`, `o_date`)
+  SELECT `scene_id`, 1, `o_date` FROM `scenes_o_dates`;
+
+DROP INDEX IF EXISTS `index_scenes_o_dates`;
+DROP TABLE `scenes_o_dates`;
+ALTER TABLE `scenes_o_dates_new` RENAME TO `scenes_o_dates`;
+CREATE INDEX `index_scenes_o_dates` ON `scenes_o_dates` (`scene_id`, `user_id`);
+CREATE INDEX `index_scenes_o_dates_on_user_id` ON `scenes_o_dates` (`user_id`);
+
+CREATE TABLE `scenes_view_dates_new` (
+  `scene_id` integer NOT NULL,
+  `user_id` integer NOT NULL,
+  `view_date` datetime NOT NULL,
+  FOREIGN KEY (`scene_id`) REFERENCES `scenes`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+);
+
+INSERT INTO `scenes_view_dates_new` (`scene_id`, `user_id`, `view_date`)
+  SELECT `scene_id`, 1, `view_date` FROM `scenes_view_dates`;
+
+DROP INDEX IF EXISTS `index_scenes_view_dates`;
+DROP TABLE `scenes_view_dates`;
+ALTER TABLE `scenes_view_dates_new` RENAME TO `scenes_view_dates`;
+CREATE INDEX `index_scenes_view_dates` ON `scenes_view_dates` (`scene_id`, `user_id`);
+CREATE INDEX `index_scenes_view_dates_on_user_id` ON `scenes_view_dates` (`user_id`);
+
 PRAGMA foreign_keys=ON;

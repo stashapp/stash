@@ -573,12 +573,20 @@ type countCriterionHandlerBuilder struct {
 	primaryTable string
 	joinTable    string
 	primaryFK    string
+	// perUser counts only the current user's rows in the join table
+	perUser bool
 }
 
 func (m *countCriterionHandlerBuilder) handler(criterion *models.IntCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if criterion != nil {
-			clause, args := getCountCriterionClause(m.primaryTable, m.joinTable, m.primaryFK, *criterion)
+			var clause string
+			var args []interface{}
+			if m.perUser {
+				clause, args = getUserCountCriterionClause(m.primaryTable, m.joinTable, m.primaryFK, currentUserID(ctx), *criterion)
+			} else {
+				clause, args = getCountCriterionClause(m.primaryTable, m.joinTable, m.primaryFK, *criterion)
+			}
 
 			f.addWhere(clause, args...)
 		}

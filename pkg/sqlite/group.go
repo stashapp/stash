@@ -453,7 +453,7 @@ func (qb *GroupStore) makeQuery(ctx context.Context, groupFilter *models.GroupFi
 		return nil, err
 	}
 
-	if err := qb.setGroupSort(&query, findFilter); err != nil {
+	if err := qb.setGroupSort(ctx, &query, findFilter); err != nil {
 		return nil, err
 	}
 
@@ -506,7 +506,7 @@ var groupSortOptions = sortOptions{
 	"updated_at",
 }
 
-func (qb *GroupStore) setGroupSort(query *queryBuilder, findFilter *models.FindFilterType) error {
+func (qb *GroupStore) setGroupSort(ctx context.Context, query *queryBuilder, findFilter *models.FindFilterType) error {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -547,7 +547,7 @@ func (qb *GroupStore) setGroupSort(query *queryBuilder, findFilter *models.FindF
 	case "scenes_count": // generic getSort won't work for this
 		query.sortAndPagination += getCountSort(groupTable, groupsScenesTable, groupIDColumn, direction)
 	case "o_counter":
-		query.sortAndPagination += qb.sortByOCounter(direction)
+		query.sortAndPagination += qb.sortByOCounter(ctx, direction)
 	default:
 		query.sortAndPagination += getSort(sort, direction, "groups")
 	}
@@ -726,7 +726,7 @@ func (qb *GroupStore) FindInAncestors(ctx context.Context, ascestorIDs []int, id
 	return ret, nil
 }
 
-func (qb *GroupStore) sortByOCounter(direction string) string {
+func (qb *GroupStore) sortByOCounter(ctx context.Context, direction string) string {
 	// need to sum the o_counter from scenes and images
-	return " ORDER BY (" + selectGroupOCountSQL + ") " + direction
+	return " ORDER BY (" + fmt.Sprintf(selectGroupOCountSQL, currentUserID(ctx)) + ") " + direction
 }

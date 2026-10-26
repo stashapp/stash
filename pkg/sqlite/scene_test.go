@@ -5805,3 +5805,78 @@ func TestSceneStore_UserData(t *testing.T) {
 		return nil
 	})
 }
+
+func TestSceneStore_UserHistory(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		qb := db.Scene
+
+		newScene := models.Scene{
+			Title: "user history",
+		}
+		require.NoError(t, qb.Create(ctx, &newScene, nil))
+		sceneID := newScene.ID
+
+		other := models.User{
+			Username: "other",
+			Roles:    models.Roles{models.RoleEnumModify},
+		}
+		require.NoError(t, db.User.Create(ctx, &other, ""))
+		otherCtx := models.WithUserID(ctx, other.ID)
+
+		_, err := qb.AddO(ctx, sceneID, nil)
+		require.NoError(t, err)
+		_, err = qb.AddViews(ctx, sceneID, nil)
+		require.NoError(t, err)
+
+		// the user who added the history sees it
+		oCount, err := qb.GetOCount(ctx, sceneID)
+		require.NoError(t, err)
+		assert.Equal(t, 1, oCount)
+		views, err := qb.CountViews(ctx, sceneID)
+		require.NoError(t, err)
+		assert.Equal(t, 1, views)
+
+		// other users do not
+		oCount, err = qb.GetOCount(otherCtx, sceneID)
+		require.NoError(t, err)
+		assert.Zero(t, oCount)
+		views, err = qb.CountViews(otherCtx, sceneID)
+		require.NoError(t, err)
+		assert.Zero(t, views)
+		lastView, err := qb.LastView(otherCtx, sceneID)
+		require.NoError(t, err)
+		assert.Nil(t, lastView)
+
+		// resetting only affects the current user's history
+		_, err = qb.AddO(otherCtx, sceneID, nil)
+		require.NoError(t, err)
+		_, err = qb.ResetO(otherCtx, sceneID)
+		require.NoError(t, err)
+		oCount, err = qb.GetOCount(ctx, sceneID)
+		require.NoError(t, err)
+		assert.Equal(t, 1, oCount)
+
+		// filtering on o-count only counts the current user's history
+		oFilter := &models.SceneFilterType{
+			OCounter: &models.IntCriterionInput{
+				Value:    1,
+				Modifier: models.CriterionModifierEquals,
+			},
+		}
+		findIDs := func(c context.Context) []int {
+			var ids []int
+			for _, s := range queryScene(c, t, qb, oFilter, nil) {
+				ids = append(ids, s.ID)
+			}
+			return ids
+		}
+		assert.Contains(t, findIDs(ctx), sceneID)
+		assert.NotContains(t, findIDs(otherCtx), sceneID)
+
+		// adding history without a user fails
+		_, err = qb.AddO(models.WithUserID(ctx, 0), sceneID, nil)
+		assert.Error(t, err)
+
+		return nil
+	})
+}

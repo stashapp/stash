@@ -145,6 +145,12 @@ func getCountSort(primaryTable, joinTable, primaryFK, direction string) string {
 	return fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM %s AS sort WHERE sort.%s = %s.id) %s", joinTable, primaryFK, primaryTable, getSortDirection(direction))
 }
 
+// getUserCountSort is getCountSort for a per-user join table.
+// Only rows belonging to the provided user are counted.
+func getUserCountSort(primaryTable, joinTable, primaryFK string, userID int, direction string) string {
+	return fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM %s AS sort WHERE sort.%s = %s.id AND sort.%s = %d) %s", joinTable, primaryFK, primaryTable, userIDColumn, userID, getSortDirection(direction))
+}
+
 // getFileSizeSort sorts by the combined size of all files attached to the primary object.
 func getFileSizeSort(primaryTable, joinTable, primaryFK, direction string) string {
 	return fmt.Sprintf(" ORDER BY (SELECT COALESCE(SUM(sort_files.size), 0) FROM %s AS sort INNER JOIN %s AS sort_files ON sort.file_id = sort_files.id WHERE sort.%s = %s.id) %s", joinTable, fileTable, primaryFK, primaryTable, getSortDirection(direction))
@@ -370,6 +376,13 @@ func getMultiCriterionClause(primaryTable, foreignTable, joinTable, primaryFK, f
 
 func getCountCriterionClause(primaryTable, joinTable, primaryFK string, criterion models.IntCriterionInput) (string, []interface{}) {
 	lhs := fmt.Sprintf("(SELECT COUNT(*) FROM %s s WHERE s.%s = %s.id)", joinTable, primaryFK, primaryTable)
+	return getIntCriterionWhereClause(lhs, criterion)
+}
+
+// getUserCountCriterionClause is getCountCriterionClause for a per-user join table.
+// Only rows belonging to the provided user are counted.
+func getUserCountCriterionClause(primaryTable, joinTable, primaryFK string, userID int, criterion models.IntCriterionInput) (string, []interface{}) {
+	lhs := fmt.Sprintf("(SELECT COUNT(*) FROM %s s WHERE s.%s = %s.id AND s.%s = %d)", joinTable, primaryFK, primaryTable, userIDColumn, userID)
 	return getIntCriterionWhereClause(lhs, criterion)
 }
 

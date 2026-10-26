@@ -582,7 +582,7 @@ func (qb *StudioStore) makeQuery(ctx context.Context, studioFilter *models.Studi
 	}
 
 	var err error
-	query.sortAndPagination, err = qb.getStudioSort(findFilter)
+	query.sortAndPagination, err = qb.getStudioSort(ctx, findFilter)
 	if err != nil {
 		return nil, err
 	}
@@ -682,20 +682,20 @@ func (qb *StudioStore) sortByPerformerCountAll(direction string) string {
 	) %[5]s`, studioTable, performersScenesTable, studioIDColumn, sceneTable, getSortDirection(direction))
 }
 
-func (qb *StudioStore) sortByOCounter(direction string) string {
+func (qb *StudioStore) sortByOCounter(ctx context.Context, direction string) string {
 	return fmt.Sprintf(` ORDER BY (
 		SELECT COALESCE((
 			SELECT COUNT(*) FROM %[3]s
-			INNER JOIN %[4]s ON %[3]s.id = %[4]s.scene_id
+			INNER JOIN %[4]s ON %[3]s.id = %[4]s.scene_id AND %[4]s.user_id = %[7]d
 			WHERE %[3]s.%[2]s = %[1]s.id
 		), 0) + COALESCE((
 			SELECT SUM(o_counter) FROM %[5]s
 			WHERE %[5]s.%[2]s = %[1]s.id
 		), 0)
-	) %[6]s`, studioTable, studioIDColumn, sceneTable, scenesODatesTable, imageTable, getSortDirection(direction))
+	) %[6]s`, studioTable, studioIDColumn, sceneTable, scenesODatesTable, imageTable, getSortDirection(direction), currentUserID(ctx))
 }
 
-func (qb *StudioStore) sortByOCounterAll(direction string) string {
+func (qb *StudioStore) sortByOCounterAll(ctx context.Context, direction string) string {
 	return fmt.Sprintf(` ORDER BY (
 		WITH RECURSIVE sub_studios AS (
 			SELECT s.id FROM %[1]s s WHERE s.id = %[1]s.id
@@ -705,13 +705,13 @@ func (qb *StudioStore) sortByOCounterAll(direction string) string {
 		)
 		SELECT COALESCE((
 			SELECT COUNT(*) FROM %[3]s
-			INNER JOIN %[4]s ON %[3]s.id = %[4]s.scene_id
+			INNER JOIN %[4]s ON %[3]s.id = %[4]s.scene_id AND %[4]s.user_id = %[7]d
 			WHERE %[3]s.%[2]s IN (SELECT id FROM sub_studios)
 		), 0) + COALESCE((
 			SELECT SUM(o_counter) FROM %[5]s
 			WHERE %[5]s.%[2]s IN (SELECT id FROM sub_studios)
 		), 0)
-	) %[6]s`, studioTable, studioIDColumn, sceneTable, scenesODatesTable, imageTable, getSortDirection(direction))
+	) %[6]s`, studioTable, studioIDColumn, sceneTable, scenesODatesTable, imageTable, getSortDirection(direction), currentUserID(ctx))
 }
 
 var studioSortOptions = sortOptions{
@@ -736,7 +736,7 @@ var studioSortOptions = sortOptions{
 	"updated_at",
 }
 
-func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string, error) {
+func (qb *StudioStore) getStudioSort(ctx context.Context, findFilter *models.FindFilterType) (string, error) {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -773,9 +773,9 @@ func (qb *StudioStore) getStudioSort(findFilter *models.FindFilterType) (string,
 	case "latest_scene":
 		sortQuery += qb.sortByLatestScene(direction)
 	case "o_counter":
-		sortQuery += qb.sortByOCounter(direction)
+		sortQuery += qb.sortByOCounter(ctx, direction)
 	case "o_counter_all":
-		sortQuery += qb.sortByOCounterAll(direction)
+		sortQuery += qb.sortByOCounterAll(ctx, direction)
 	case "performer_count":
 		sortQuery += qb.sortByPerformerCount(direction)
 	case "performer_count_all":

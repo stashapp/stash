@@ -875,7 +875,10 @@ func (qb *SceneStore) OCountByPerformerID(ctx context.Context, performerID int) 
 
 	q := dialect.Select(goqu.COUNT("*")).From(table).InnerJoin(
 		oHistoryTable,
-		goqu.On(table.Col(idColumn).Eq(oHistoryTable.Col(sceneIDColumn))),
+		goqu.On(
+			table.Col(idColumn).Eq(oHistoryTable.Col(sceneIDColumn)),
+			oHistoryTable.Col(userIDColumn).Eq(currentUserID(ctx)),
+		),
 	).InnerJoin(
 		joinTable,
 		goqu.On(
@@ -898,7 +901,10 @@ func (qb *SceneStore) OCountByGroupID(ctx context.Context, groupID int) (int, er
 
 	q := dialect.Select(goqu.COUNT("*")).From(table).InnerJoin(
 		oHistoryTable,
-		goqu.On(table.Col(idColumn).Eq(oHistoryTable.Col(sceneIDColumn))),
+		goqu.On(
+			table.Col(idColumn).Eq(oHistoryTable.Col(sceneIDColumn)),
+			oHistoryTable.Col(userIDColumn).Eq(currentUserID(ctx)),
+		),
 	).InnerJoin(
 		joinTable,
 		goqu.On(
@@ -926,7 +932,10 @@ func (qb *SceneStore) OCountByStudioID(ctx context.Context, studioID int, depth 
 
 	q := dialect.Select(goqu.COUNT("*")).From(table).InnerJoin(
 		oHistoryTable,
-		goqu.On(table.Col(idColumn).Eq(oHistoryTable.Col(sceneIDColumn))),
+		goqu.On(
+			table.Col(idColumn).Eq(oHistoryTable.Col(sceneIDColumn)),
+			oHistoryTable.Col(userIDColumn).Eq(currentUserID(ctx)),
+		),
 	).Where(table.Col(studioIDColumn).Eq(studioID))
 
 	if err := querySimple(ctx, q, &ret); err != nil {
@@ -946,10 +955,10 @@ func (qb *SceneStore) oCountByStudioIDRecursive(ctx context.Context, studioID in
 		WHERE ss.level < ? OR ? < 0
 	)
 	SELECT COUNT(*) FROM scenes
-	INNER JOIN scenes_o_dates ON scenes.id = scenes_o_dates.scene_id
+	INNER JOIN scenes_o_dates ON scenes.id = scenes_o_dates.scene_id AND scenes_o_dates.user_id = ?
 	WHERE scenes.studio_id IN (SELECT id FROM sub_studios)`
 
-	rows, err := dbWrapper.QueryxContext(ctx, q, studioID, depth, depth)
+	rows, err := dbWrapper.QueryxContext(ctx, q, studioID, depth, depth, currentUserID(ctx))
 	if err != nil {
 		return 0, fmt.Errorf("querying scene o_count by studio: %w", err)
 	}
@@ -1391,13 +1400,13 @@ func (qb *SceneStore) setSceneSort(ctx context.Context, query *queryBuilder, fin
 		addFolderTable()
 		query.sortAndPagination += " ORDER BY COALESCE(scenes.title, files.basename) COLLATE NATURAL_CI " + direction + ", folders.path COLLATE NATURAL_CI " + direction
 	case "play_count":
-		query.sortAndPagination += getCountSort(sceneTable, scenesViewDatesTable, sceneIDColumn, direction)
+		query.sortAndPagination += getUserCountSort(sceneTable, scenesViewDatesTable, sceneIDColumn, currentUserID(ctx), direction)
 	case "last_played_at":
-		query.sortAndPagination += fmt.Sprintf(" ORDER BY (SELECT MAX(view_date) FROM %s AS sort WHERE sort.%s = %s.id) %s", scenesViewDatesTable, sceneIDColumn, sceneTable, getSortDirection(direction))
+		query.sortAndPagination += fmt.Sprintf(" ORDER BY (SELECT MAX(view_date) FROM %s AS sort WHERE sort.%s = %s.id AND sort.%s = %d) %s", scenesViewDatesTable, sceneIDColumn, sceneTable, userIDColumn, currentUserID(ctx), getSortDirection(direction))
 	case "last_o_at":
-		query.sortAndPagination += fmt.Sprintf(" ORDER BY (SELECT MAX(o_date) FROM %s AS sort WHERE sort.%s = %s.id) %s", scenesODatesTable, sceneIDColumn, sceneTable, getSortDirection(direction))
+		query.sortAndPagination += fmt.Sprintf(" ORDER BY (SELECT MAX(o_date) FROM %s AS sort WHERE sort.%s = %s.id AND sort.%s = %d) %s", scenesODatesTable, sceneIDColumn, sceneTable, userIDColumn, currentUserID(ctx), getSortDirection(direction))
 	case "o_counter":
-		query.sortAndPagination += getCountSort(sceneTable, scenesODatesTable, sceneIDColumn, direction)
+		query.sortAndPagination += getUserCountSort(sceneTable, scenesODatesTable, sceneIDColumn, currentUserID(ctx), direction)
 	case "performer_age":
 		// Looking at the youngest performer by default
 		aggregation := "MIN"

@@ -168,7 +168,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if sceneFilter.LastPlayedAt != nil {
 				f.addLeftJoin(
-					fmt.Sprintf("(SELECT %s, MAX(%s) as last_played_at FROM %s GROUP BY %s)", sceneIDColumn, sceneViewDateColumn, scenesViewDatesTable, sceneIDColumn),
+					fmt.Sprintf("(SELECT %s, MAX(%s) as last_played_at FROM %s WHERE %s = %d GROUP BY %s)", sceneIDColumn, sceneViewDateColumn, scenesViewDatesTable, userIDColumn, currentUserID(ctx), sceneIDColumn),
 					"scene_last_view",
 					fmt.Sprintf("scene_last_view.%s = scenes.id", sceneIDColumn),
 				)
@@ -295,6 +295,7 @@ func (qb *sceneFilterHandler) playCountCriterionHandler(count *models.IntCriteri
 		primaryTable: sceneTable,
 		joinTable:    scenesViewDatesTable,
 		primaryFK:    sceneIDColumn,
+		perUser:      true,
 	}
 
 	return h.handler(count)
@@ -305,6 +306,7 @@ func (qb *sceneFilterHandler) oCountCriterionHandler(count *models.IntCriterionI
 		primaryTable: sceneTable,
 		joinTable:    scenesODatesTable,
 		primaryFK:    sceneIDColumn,
+		perUser:      true,
 	}
 
 	return h.handler(count)
