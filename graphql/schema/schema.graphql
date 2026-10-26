@@ -469,9 +469,9 @@ type Mutation {
   revealFolderInFileManager(id: ID!): Boolean!
 
   # Saved filters
-  saveFilter(input: SaveFilterInput!): SavedFilter! @hasRole(role: MODIFY)
+  saveFilter(input: SaveFilterInput!): SavedFilter! @hasRole(role: READ)
   destroySavedFilter(input: DestroyFilterInput!): Boolean!
-    @hasRole(role: MODIFY)
+    @hasRole(role: READ)
   setDefaultFilter(input: SetDefaultFilterInput!): Boolean!
     @deprecated(reason: "now uses UI config")
     @hasRole(role: READ)
