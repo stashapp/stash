@@ -120,7 +120,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 			criterion: sceneFilter.PhashDistance,
 		},
 
-		intCriterionHandler(sceneFilter.Rating100, "scenes.rating", nil),
+		sceneUserData.intCriterionHandler(sceneFilter.Rating100, sceneUserData.column("rating")),
 		qb.oCountCriterionHandler(sceneFilter.OCounter),
 		boolCriterionHandler(sceneFilter.Organized, "scenes.organized", nil),
 
@@ -162,8 +162,8 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 
 		qb.captionCriterionHandler(sceneFilter.Captions),
 
-		floatIntCriterionHandler(sceneFilter.ResumeTime, "scenes.resume_time", nil),
-		floatIntCriterionHandler(sceneFilter.PlayDuration, "scenes.play_duration", nil),
+		sceneUserData.floatIntCriterionHandler(sceneFilter.ResumeTime, sceneUserData.columnOrDefault("resume_time", "0")),
+		sceneUserData.floatIntCriterionHandler(sceneFilter.PlayDuration, sceneUserData.columnOrDefault("play_duration", "0")),
 		qb.playCountCriterionHandler(sceneFilter.PlayCount),
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if sceneFilter.LastPlayedAt != nil {
@@ -448,9 +448,12 @@ func (qb *sceneFilterHandler) isMissingCriterionHandler(isMissing *string) crite
 				f.addWhere("fingerprints_phash.fingerprint IS NULL")
 			case "cover":
 				f.addWhere("scenes.cover_blob IS NULL")
+			case "rating":
+				sceneUserData.join(ctx, f)
+				f.addWhere(sceneUserData.column("rating") + " IS NULL")
 			default:
 				if err := validateIsMissing(*isMissing, []string{
-					"title", "code", "details", "director", "rating",
+					"title", "code", "details", "director",
 				}); err != nil {
 					f.setError(err)
 					return

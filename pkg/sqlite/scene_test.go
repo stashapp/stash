@@ -5734,3 +5734,74 @@ func TestSceneQueryPerformerAgeUsesProductionDate(t *testing.T) {
 		assert.Less(withIdx, withoutIdx)
 	})
 }
+
+func TestSceneStore_UserData(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		qb := db.Scene
+
+		newScene := models.Scene{
+			Title: "user data",
+		}
+		require.NoError(t, qb.Create(ctx, &newScene, nil))
+		sceneID := newScene.ID
+
+		other := models.User{
+			Username: "other",
+			Roles:    models.Roles{models.RoleEnumModify},
+		}
+		require.NoError(t, db.User.Create(ctx, &other, ""))
+		otherCtx := models.WithUserID(ctx, other.ID)
+		guestCtx := models.WithUserID(ctx, 0)
+
+		rating := 60
+		_, err := qb.UpdatePartial(ctx, sceneID, models.ScenePartial{
+			Rating: models.NewOptionalInt(rating),
+		})
+		require.NoError(t, err)
+
+		resumeTime := 12.5
+		playDuration := 30.0
+		_, err = qb.SaveActivity(ctx, sceneID, &resumeTime, &playDuration)
+		require.NoError(t, err)
+
+		// the user who set the data sees it
+		s, err := qb.Find(ctx, sceneID)
+		require.NoError(t, err)
+		assert.Equal(t, &rating, s.Rating)
+		assert.Equal(t, resumeTime, s.ResumeTime)
+		assert.Equal(t, playDuration, s.PlayDuration)
+
+		// other users and the guest user do not
+		for name, c := range map[string]context.Context{"other user": otherCtx, "guest": guestCtx} {
+			s, err := qb.Find(c, sceneID)
+			require.NoError(t, err)
+			assert.Nil(t, s.Rating, name)
+			assert.Zero(t, s.ResumeTime, name)
+			assert.Zero(t, s.PlayDuration, name)
+		}
+
+		// filtering by rating only matches the current user's rating
+		ratingFilter := &models.SceneFilterType{
+			Rating100: &models.IntCriterionInput{
+				Value:    rating,
+				Modifier: models.CriterionModifierEquals,
+			},
+		}
+		findIDs := func(c context.Context) []int {
+			var ids []int
+			for _, s := range queryScene(c, t, qb, ratingFilter, nil) {
+				ids = append(ids, s.ID)
+			}
+			return ids
+		}
+		assert.Contains(t, findIDs(ctx), sceneID)
+		assert.NotContains(t, findIDs(otherCtx), sceneID)
+
+		// play duration stats are per user
+		total, err := qb.PlayDuration(otherCtx)
+		require.NoError(t, err)
+		assert.Zero(t, total)
+
+		return nil
+	})
+}
