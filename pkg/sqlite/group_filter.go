@@ -66,7 +66,7 @@ func (qb *groupFilterHandler) criterionHandler() criterionHandler {
 		stringCriterionHandler(groupFilter.Name, "groups.name"),
 		stringCriterionHandler(groupFilter.Director, "groups.director"),
 		stringCriterionHandler(groupFilter.Synopsis, "groups.description"),
-		intCriterionHandler(groupFilter.Rating100, "groups.rating", nil),
+		groupUserData.intCriterionHandler(groupFilter.Rating100, groupUserData.column("rating")),
 		floatIntCriterionHandler(groupFilter.Duration, "groups.duration", nil),
 		qb.missingCriterionHandler(groupFilter.IsMissing),
 		qb.urlsCriterionHandler(groupFilter.URL),
@@ -131,9 +131,12 @@ func (qb *groupFilterHandler) missingCriterionHandler(isMissing *string) criteri
 			case "tags":
 				groupRepository.tags.leftJoin(f, "tags_join", "groups.id")
 				f.addWhere("tags_join.group_id IS NULL")
+			case "rating":
+				groupUserData.join(ctx, f)
+				f.addWhere(groupUserData.column("rating") + " IS NULL")
 			default:
 				if err := validateIsMissing(*isMissing, []string{
-					"aliases", "description", "director", "date", "rating",
+					"aliases", "description", "director", "date",
 				}); err != nil {
 					f.setError(err)
 					return

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil"
@@ -2319,3 +2320,60 @@ func TestGroupQueryCustomFields(t *testing.T) {
 // TODO Count
 // TODO All
 // TODO Query
+
+func TestGroupStore_UserData(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		qb := db.Group
+
+		newGroup := models.Group{
+			Name: "user data",
+		}
+		require.NoError(t, qb.Create(ctx, &newGroup))
+		groupID := newGroup.ID
+
+		other := models.User{
+			Username: "other",
+			Roles:    models.Roles{models.RoleEnumModify},
+		}
+		require.NoError(t, db.User.Create(ctx, &other, ""))
+		otherCtx := models.WithUserID(ctx, other.ID)
+		guestCtx := models.WithUserID(ctx, 0)
+
+		rating := 60
+		_, err := qb.UpdatePartial(ctx, groupID, models.GroupPartial{
+			Rating: models.NewOptionalInt(rating),
+		})
+		require.NoError(t, err)
+
+		// the user who set the rating sees it
+		g, err := qb.Find(ctx, groupID)
+		require.NoError(t, err)
+		assert.Equal(t, &rating, g.Rating)
+
+		// other users and the guest user do not
+		for name, c := range map[string]context.Context{"other user": otherCtx, "guest": guestCtx} {
+			g, err := qb.Find(c, groupID)
+			require.NoError(t, err)
+			assert.Nil(t, g.Rating, name)
+		}
+
+		// filtering by rating only matches the current user's rating
+		ratingFilter := &models.GroupFilterType{
+			Rating100: &models.IntCriterionInput{
+				Value:    rating,
+				Modifier: models.CriterionModifierEquals,
+			},
+		}
+		findIDs := func(c context.Context) []int {
+			var ids []int
+			for _, g := range queryGroups(c, t, ratingFilter, nil) {
+				ids = append(ids, g.ID)
+			}
+			return ids
+		}
+		assert.Contains(t, findIDs(ctx), groupID)
+		assert.NotContains(t, findIDs(otherCtx), groupID)
+
+		return nil
+	})
+}

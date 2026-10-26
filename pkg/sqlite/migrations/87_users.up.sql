@@ -113,4 +113,21 @@ INSERT INTO `galleries_user_data` (`gallery_id`, `user_id`, `rating`)
 
 ALTER TABLE `galleries` DROP COLUMN `rating`;
 
+CREATE TABLE `groups_user_data` (
+  `group_id` integer NOT NULL,
+  `user_id` integer NOT NULL,
+  `rating` tinyint,
+  PRIMARY KEY (`group_id`, `user_id`),
+  FOREIGN KEY (`group_id`) REFERENCES `groups`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+);
+
+CREATE INDEX `index_groups_user_data_on_user_id` ON `groups_user_data` (`user_id`);
+
+INSERT INTO `groups_user_data` (`group_id`, `user_id`, `rating`)
+  SELECT `id`, 1, `rating` FROM `groups`
+  WHERE `rating` IS NOT NULL;
+
+ALTER TABLE `groups` DROP COLUMN `rating`;
+
 PRAGMA foreign_keys=ON;
