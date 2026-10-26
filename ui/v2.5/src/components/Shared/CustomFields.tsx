@@ -49,7 +49,7 @@ const CustomField: React.FC<{ field: string; value: unknown }> = ({
       id={id}
       label={field}
       labelTitle={field}
-      value={<TruncatedText lineCount={5} text={<>{valueStr}</>} />}
+      value={<TruncatedText lineCount={5} text={valueStr} />}
       fullWidth={true}
       showEmpty
     />
@@ -128,21 +128,17 @@ const CustomFieldInput: React.FC<{
         >
           <Col className="custom-fields-field">
             {isNew ? (
-              <>
-                <Form.Control
-                  ref={fieldRef}
-                  className="input-control"
-                  type="text"
-                  value={currentField ?? ""}
-                  placeholder={intl.formatMessage({
-                    id: "custom_fields.field",
-                  })}
-                  onChange={(event) =>
-                    setCurrentField(event.currentTarget.value)
-                  }
-                  onBlur={onBlur}
-                />
-              </>
+              <Form.Control
+                ref={fieldRef}
+                className="input-control"
+                type="text"
+                value={currentField ?? ""}
+                placeholder={intl.formatMessage({
+                  id: "custom_fields.field",
+                })}
+                onChange={(event) => setCurrentField(event.currentTarget.value)}
+                onBlur={onBlur}
+              />
             ) : (
               <Form.Label title={currentField}>{currentField}</Form.Label>
             )}
@@ -190,7 +186,7 @@ interface ICustomFieldsInput {
   setError: (error?: string) => void;
 }
 
-export function formatCustomFieldInput(isNew: boolean, input: {}) {
+export function formatCustomFieldInput(isNew: boolean, input: object) {
   if (isNew) {
     return input;
   } else {
@@ -223,7 +219,7 @@ export const CustomFieldsInput: React.FC<ICustomFieldsInput> = PatchComponent(
 
     function onSetNewField(v: ICustomField) {
       // validate the field name
-      let newError = undefined;
+      let newError: string | undefined;
       if (v.field.length > maxFieldNameLength) {
         newError = intl.formatMessage({
           id: "errors.custom_fields.field_name_length",
@@ -277,7 +273,7 @@ export const CustomFieldsInput: React.FC<ICustomFieldsInput> = PatchComponent(
       newField: string,
       value: unknown
     ) {
-      let newValues = cloneDeep(values);
+      const newValues = cloneDeep(values);
       delete newValues[currentField];
       if (newField !== "") {
         newValues[newField] = value;

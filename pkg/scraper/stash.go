@@ -327,6 +327,12 @@ func (f stashVideoFile) SceneFileType() models.SceneFileType {
 	return ret
 }
 
+// Fields listed here are requested from the remote stash server, so a field
+// that the remote server does not know about fails GraphQL validation and the
+// whole scrape errors out rather than degrading. production_date is therefore
+// deliberately absent: adding it would break this scraper against every
+// currently released stash version. It can be added once the field is widely
+// deployed, or once this scraper negotiates the remote schema.
 type scrapedSceneStash struct {
 	ID         string                   `graphql:"id" json:"id"`
 	Title      *string                  `graphql:"title" json:"title"`
@@ -437,27 +443,4 @@ func (s *stashScraper) scrapeImageByImage(ctx context.Context, image *models.Ima
 
 func (s *stashScraper) scrapeByURL(_ context.Context, _ string, _ ScrapeContentType) (ScrapedContent, error) {
 	return nil, ErrNotSupported
-}
-
-func imageToUpdateInput(gallery *models.Image) models.ImageUpdateInput {
-	dateToStringPtr := func(s *models.Date) *string {
-		if s != nil {
-			v := s.String()
-			return &v
-		}
-
-		return nil
-	}
-
-	// fallback to file basename if title is empty
-	title := gallery.GetTitle()
-	urls := gallery.URLs.List()
-
-	return models.ImageUpdateInput{
-		ID:      strconv.Itoa(gallery.ID),
-		Title:   &title,
-		Details: &gallery.Details,
-		Urls:    urls,
-		Date:    dateToStringPtr(gallery.Date),
-	}
 }

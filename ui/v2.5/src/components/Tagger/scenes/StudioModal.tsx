@@ -10,7 +10,7 @@ import { ModalComponent } from "src/components/Shared/Modal";
 import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { Button, Form } from "react-bootstrap";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
-import { excludeFields } from "src/utils/data";
+import { excludeFields, listToMap } from "src/utils/data";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { StashIDPill } from "src/components/Shared/StashID";
 
@@ -183,10 +183,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
   const intl = useIntl();
 
   const [excluded, setExcluded] = useState<Record<string, boolean>>(
-    excludedStudioFields.reduce(
-      (dict, field) => ({ ...dict, [field]: true }),
-      {}
-    )
+    listToMap(excludedStudioFields)
   );
   const toggleField = (name: string) =>
     setExcluded({
@@ -195,10 +192,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
     });
 
   const [parentExcluded, setParentExcluded] = useState<Record<string, boolean>>(
-    excludedStudioFields.reduce(
-      (dict, field) => ({ ...dict, [field]: true }),
-      {}
-    )
+    listToMap(excludedStudioFields)
   );
   const toggleParentField = (name: string) =>
     setParentExcluded({
@@ -226,7 +220,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
   }
 
   const parentStudioCreateText = () => {
-    if (studio.parent && studio.parent.stored_id) {
+    if (studio.parent?.stored_id) {
       return "actions.assign_stashid_to_parent_studio";
     }
     return "actions.create_parent_studio";
@@ -268,7 +262,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
     // handle exclusions
     excludeFields(studioData, excluded);
 
-    let parentData: GQL.StudioCreateInput | undefined = undefined;
+    let parentData: GQL.StudioCreateInput | undefined;
 
     if (createParentStudio && sendParentStudio) {
       if (!studio.parent?.name) {

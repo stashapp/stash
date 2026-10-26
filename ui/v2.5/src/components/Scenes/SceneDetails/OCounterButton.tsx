@@ -81,7 +81,7 @@ export const OCounterButton: React.FC<IOCounterButtonProps> = (
   };
 
   return (
-    <ButtonGroup className="o-counter">
+    <ButtonGroup className="o-counter" data-action="o-counter">
       {renderButton()}
       {maybeRenderDropdown()}
     </ButtonGroup>

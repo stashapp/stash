@@ -116,7 +116,7 @@ class VTTThumbnailsPlugin extends videojs.getPlugin("plugin") {
       window.location.pathname,
     ]
       .join("")
-      .split(/([^\/]*)$/gi)[0];
+      .split(/([^/]*)$/gi)[0];
   }
 
   /**
@@ -300,9 +300,9 @@ class VTTThumbnailsPlugin extends videojs.getPlugin("plugin") {
     if (this.source === null) {
       baseSplit = this.getBaseUrl();
     } else if (this.source.indexOf("//") >= 0) {
-      baseSplit = this.source.split(/([^\/]*)$/gi)[0];
+      baseSplit = this.source.split(/([^/]*)$/gi)[0];
     } else {
-      baseSplit = this.getBaseUrl() + this.source.split(/([^\/]*)$/gi)[0];
+      baseSplit = this.getBaseUrl() + this.source.split(/([^/]*)$/gi)[0];
     }
 
     vttImageDef = this.getFullyQualifiedUrl(vttImageDef, baseSplit);
@@ -385,7 +385,6 @@ class VTTThumbnailsPlugin extends videojs.getPlugin("plugin") {
 // Register the plugin with video.js.
 videojs.registerPlugin("vttThumbnails", VTTThumbnailsPlugin);
 
-/* eslint-disable @typescript-eslint/naming-convention */
 declare module "video.js" {
   interface VideoJsPlayer {
     vttThumbnails: () => VTTThumbnailsPlugin;

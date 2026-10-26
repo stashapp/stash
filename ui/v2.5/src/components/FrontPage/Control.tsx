@@ -94,7 +94,7 @@ const RecommendationRow: React.FC<IFilter> = ({ mode, filter, header }) => {
         />
       );
     default:
-      return <></>;
+      return null;
   }
 };
 
@@ -121,7 +121,7 @@ const SavedFilterResults: React.FC<ISavedFilterResults> = ({
   }, [data?.findSavedFilter, config]);
 
   if (loading || !data?.findSavedFilter || !filter) {
-    return <></>;
+    return null;
   }
 
   const { name, mode } = data.findSavedFilter;
@@ -155,7 +155,7 @@ const CustomFilterResults: React.FC<ICustomFilterProps> = ({
         { id: customFilter.message.id },
         customFilter.message.values
       )
-    : customFilter.title ?? "";
+    : (customFilter.title ?? "");
 
   return (
     <RecommendationRow
@@ -183,6 +183,6 @@ export const Control: React.FC<IProps> = ({ content }) => {
     case "CustomFilter":
       return <CustomFilterResults customFilter={content} />;
     default:
-      return <></>;
+      return null;
   }
 };

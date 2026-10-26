@@ -103,9 +103,11 @@ func (r *queryResolver) FindFiles(
 			return err
 		}
 
+		convertedFiles := convertBaseFiles(files)
+
 		ret = &FindFilesResultType{
 			Count:      result.Count,
-			Files:      convertBaseFiles(files),
+			Files:      convertedFiles,
 			Duration:   result.TotalDuration,
 			Megapixels: result.Megapixels,
 			Size:       int(result.TotalSize),

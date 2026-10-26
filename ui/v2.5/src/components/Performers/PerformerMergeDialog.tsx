@@ -27,7 +27,11 @@ import {
   ScrapedTextAreaRow,
 } from "../Shared/ScrapeDialog/ScrapeDialogRow";
 import { ModalComponent } from "../Shared/Modal";
-import { sortStoredIdObjects, uniqIDStoredIDs } from "src/utils/data";
+import {
+  idToStoredID,
+  sortStoredIdObjects,
+  uniqIDStoredIDs,
+} from "src/utils/data";
 import {
   CustomFieldScrapeResults,
   ObjectListScrapeResult,
@@ -42,6 +46,7 @@ import {
 import { PerformerSelect } from "./PerformerSelect";
 import { uniq } from "lodash-es";
 import { StashIDsField } from "../Shared/StashID";
+import { PatchComponent } from "src/patch";
 
 type MergeOptions = {
   values: GQL.PerformerUpdateInput;
@@ -143,13 +148,6 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
   const [customFields, setCustomFields] = useState<CustomFieldScrapeResults>(
     new Map()
   );
-
-  function idToStoredID(o: { id: string; name: string }) {
-    return {
-      stored_id: o.id,
-      name: o.name,
-    };
-  }
 
   // calculate the values for everything
   // uses the first set value for single value fields, and combines all
@@ -304,10 +302,7 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
       )
     );
     setURLs(
-      new ScrapeResult(
-        dest.urls ?? [],
-        uniq(all.map((s) => s.urls ?? []).flat())
-      )
+      new ScrapeResult(dest.urls ?? [], uniq(all.flatMap((s) => s.urls ?? [])))
     );
     setGender(
       new ScrapeResult(
@@ -337,15 +332,14 @@ const PerformerMergeDetails: React.FC<IPerformerMergeDetailsProps> = ({
     setTags(
       new ObjectListScrapeResult<GQL.ScrapedTag>(
         sortStoredIdObjects(dest.tags.map(idToStoredID)),
-        uniqIDStoredIDs(all.map((s) => s.tags.map(idToStoredID)).flat())
+        uniqIDStoredIDs(all.flatMap((s) => s.tags.map(idToStoredID)))
       )
     );
     setStashIDs(
       new ScrapeResult(
         dest.stash_ids,
         all
-          .map((s) => s.stash_ids)
-          .flat()
+          .flatMap((s) => s.stash_ids)
           .filter((s, index, a) => {
             // remove entries with duplicate endpoints
             return index === a.findIndex((ss) => ss.endpoint === s.endpoint);
@@ -735,190 +729,186 @@ interface IPerformerMergeModalProps {
   performers: GQL.SelectPerformerDataFragment[];
 }
 
-export const PerformerMergeModal: React.FC<IPerformerMergeModalProps> = ({
-  show,
-  onClose,
-  performers,
-}) => {
-  const [sourcePerformers, setSourcePerformers] = useState<
-    GQL.SelectPerformerDataFragment[]
-  >([]);
-  const [destPerformer, setDestPerformer] = useState<
-    GQL.SelectPerformerDataFragment[]
-  >([]);
+export const PerformerMergeModal: React.FC<IPerformerMergeModalProps> =
+  PatchComponent("PerformerMergeModal", ({ show, onClose, performers }) => {
+    const [sourcePerformers, setSourcePerformers] = useState<
+      GQL.SelectPerformerDataFragment[]
+    >([]);
+    const [destPerformer, setDestPerformer] = useState<
+      GQL.SelectPerformerDataFragment[]
+    >([]);
 
-  const [loadedSources, setLoadedSources] = useState<
-    GQL.PerformerDataFragment[]
-  >([]);
-  const [loadedDest, setLoadedDest] = useState<GQL.PerformerDataFragment>();
+    const [loadedSources, setLoadedSources] = useState<
+      GQL.PerformerDataFragment[]
+    >([]);
+    const [loadedDest, setLoadedDest] = useState<GQL.PerformerDataFragment>();
 
-  const [running, setRunning] = useState(false);
-  const [secondStep, setSecondStep] = useState(false);
+    const [running, setRunning] = useState(false);
+    const [secondStep, setSecondStep] = useState(false);
 
-  const intl = useIntl();
-  const Toast = useToast();
+    const intl = useIntl();
+    const Toast = useToast();
 
-  const title = intl.formatMessage({
-    id: "actions.merge",
-  });
+    const title = intl.formatMessage({
+      id: "actions.merge",
+    });
 
-  const srcIDs = useMemo(
-    () => sourcePerformers.map((s) => s.id),
-    [sourcePerformers]
-  );
-  const destID = useMemo(
-    () => (destPerformer[0] ? [destPerformer[0].id] : []),
-    [destPerformer]
-  );
-
-  useEffect(() => {
-    if (performers.length > 0) {
-      // set the first performer as the destination, others as source
-      setDestPerformer([performers[0]]);
-
-      if (performers.length > 1) {
-        setSourcePerformers(performers.slice(1));
-      }
-    }
-  }, [performers]);
-
-  async function loadPerformers() {
-    const performerIDs = sourcePerformers.map((s) => parseInt(s.id));
-    performerIDs.push(parseInt(destPerformer[0].id));
-    const query = await queryFindPerformersByID(performerIDs);
-    const { performers: loadedPerformers } = query.data.findPerformers;
-
-    setLoadedDest(loadedPerformers.find((s) => s.id === destPerformer[0].id));
-    setLoadedSources(
-      loadedPerformers.filter((s) => s.id !== destPerformer[0].id)
+    const srcIDs = useMemo(
+      () => sourcePerformers.map((s) => s.id),
+      [sourcePerformers]
     );
-    setSecondStep(true);
-  }
+    const destID = useMemo(
+      () => (destPerformer[0] ? [destPerformer[0].id] : []),
+      [destPerformer]
+    );
 
-  async function onMerge(options: MergeOptions) {
-    const { values } = options;
-    try {
-      setRunning(true);
-      const result = await mutatePerformerMerge(
-        destPerformer[0].id,
-        sourcePerformers.map((s) => s.id),
-        values
+    useEffect(() => {
+      if (performers.length > 0) {
+        // set the first performer as the destination, others as source
+        setDestPerformer([performers[0]]);
+
+        if (performers.length > 1) {
+          setSourcePerformers(performers.slice(1));
+        }
+      }
+    }, [performers]);
+
+    async function loadPerformers() {
+      const performerIDs = sourcePerformers.map((s) => parseInt(s.id, 10));
+      performerIDs.push(parseInt(destPerformer[0].id, 10));
+      const query = await queryFindPerformersByID(performerIDs);
+      const { performers: loadedPerformers } = query.data.findPerformers;
+
+      setLoadedDest(loadedPerformers.find((s) => s.id === destPerformer[0].id));
+      setLoadedSources(
+        loadedPerformers.filter((s) => s.id !== destPerformer[0].id)
       );
-      if (result.data?.performerMerge) {
-        Toast.success(intl.formatMessage({ id: "toast.merged_performers" }));
-        onClose(destPerformer[0].id);
+      setSecondStep(true);
+    }
+
+    async function onMerge(options: MergeOptions) {
+      const { values } = options;
+      try {
+        setRunning(true);
+        const result = await mutatePerformerMerge(
+          destPerformer[0].id,
+          sourcePerformers.map((s) => s.id),
+          values
+        );
+        if (result.data?.performerMerge) {
+          Toast.success(intl.formatMessage({ id: "toast.merged_performers" }));
+          onClose(destPerformer[0].id);
+        }
+      } catch (e) {
+        Toast.error(e);
+      } finally {
+        setRunning(false);
       }
-      onClose();
-    } catch (e) {
-      Toast.error(e);
-    } finally {
-      setRunning(false);
     }
-  }
 
-  function canMerge() {
-    return sourcePerformers.length > 0 && destPerformer.length !== 0;
-  }
-
-  function switchPerformers() {
-    if (sourcePerformers.length && destPerformer.length) {
-      const newDest = sourcePerformers[0];
-      setSourcePerformers([...sourcePerformers.slice(1), destPerformer[0]]);
-      setDestPerformer([newDest]);
+    function canMerge() {
+      return sourcePerformers.length > 0 && destPerformer.length !== 0;
     }
-  }
 
-  if (secondStep && destPerformer.length > 0) {
+    function switchPerformers() {
+      if (sourcePerformers.length && destPerformer.length) {
+        const newDest = sourcePerformers[0];
+        setSourcePerformers([...sourcePerformers.slice(1), destPerformer[0]]);
+        setDestPerformer([newDest]);
+      }
+    }
+
+    if (secondStep && destPerformer.length > 0) {
+      return (
+        <PerformerMergeDetails
+          sources={loadedSources}
+          dest={loadedDest!}
+          onClose={(values) => {
+            setSecondStep(false);
+            if (values) {
+              onMerge(values);
+            } else {
+              onClose();
+            }
+          }}
+        />
+      );
+    }
+
     return (
-      <PerformerMergeDetails
-        sources={loadedSources}
-        dest={loadedDest!}
-        onClose={(values) => {
-          setSecondStep(false);
-          if (values) {
-            onMerge(values);
-          } else {
-            onClose();
-          }
+      <ModalComponent
+        dialogClassName="performer-merge-dialog"
+        show={show}
+        header={title}
+        icon={faSignInAlt}
+        accept={{
+          text: intl.formatMessage({ id: "actions.next_action" }),
+          onClick: () => loadPerformers(),
         }}
-      />
-    );
-  }
-
-  return (
-    <ModalComponent
-      dialogClassName="performer-merge-dialog"
-      show={show}
-      header={title}
-      icon={faSignInAlt}
-      accept={{
-        text: intl.formatMessage({ id: "actions.next_action" }),
-        onClick: () => loadPerformers(),
-      }}
-      disabled={!canMerge()}
-      cancel={{
-        variant: "secondary",
-        onClick: () => onClose(),
-      }}
-      isRunning={running}
-    >
-      <div className="form-container row px-3">
-        <div className="col-12 col-lg-6 col-xl-12">
-          <Form.Group controlId="source" as={Row}>
-            {FormUtils.renderLabel({
-              title: intl.formatMessage({ id: "dialogs.merge.source" }),
-              labelProps: {
-                column: true,
-                sm: 3,
-                xl: 12,
-              },
-            })}
-            <Col sm={9} xl={12}>
-              <PerformerSelect
-                isMulti
-                onSelect={(items) => setSourcePerformers(items)}
-                values={sourcePerformers}
-                menuPortalTarget={document.body}
-                excludeIds={destID}
-              />
-            </Col>
-          </Form.Group>
-          <Form.Group
-            controlId="switch"
-            as={Row}
-            className="justify-content-center"
-          >
-            <Button
-              variant="secondary"
-              onClick={() => switchPerformers()}
-              disabled={!sourcePerformers.length || !destPerformer.length}
-              title={intl.formatMessage({ id: "actions.swap" })}
+        disabled={!canMerge()}
+        cancel={{
+          variant: "secondary",
+          onClick: () => onClose(),
+        }}
+        isRunning={running}
+      >
+        <div className="form-container row px-3">
+          <div className="col-12 col-lg-6 col-xl-12">
+            <Form.Group controlId="source" as={Row}>
+              {FormUtils.renderLabel({
+                title: intl.formatMessage({ id: "dialogs.merge.source" }),
+                labelProps: {
+                  column: true,
+                  sm: 3,
+                  xl: 12,
+                },
+              })}
+              <Col sm={9} xl={12}>
+                <PerformerSelect
+                  isMulti
+                  onSelect={(items) => setSourcePerformers(items)}
+                  values={sourcePerformers}
+                  menuPortalTarget={document.body}
+                  excludeIds={destID}
+                />
+              </Col>
+            </Form.Group>
+            <Form.Group
+              controlId="switch"
+              as={Row}
+              className="justify-content-center"
             >
-              <Icon className="fa-fw" icon={faExchangeAlt} />
-            </Button>
-          </Form.Group>
-          <Form.Group controlId="destination" as={Row}>
-            {FormUtils.renderLabel({
-              title: intl.formatMessage({
-                id: "dialogs.merge.destination",
-              }),
-              labelProps: {
-                column: true,
-                sm: 3,
-                xl: 12,
-              },
-            })}
-            <Col sm={9} xl={12}>
-              <PerformerSelect
-                onSelect={(items) => setDestPerformer(items)}
-                values={destPerformer}
-                menuPortalTarget={document.body}
-                excludeIds={srcIDs}
-              />
-            </Col>
-          </Form.Group>
+              <Button
+                variant="secondary"
+                onClick={() => switchPerformers()}
+                disabled={!sourcePerformers.length || !destPerformer.length}
+                title={intl.formatMessage({ id: "actions.swap" })}
+              >
+                <Icon className="fa-fw" icon={faExchangeAlt} />
+              </Button>
+            </Form.Group>
+            <Form.Group controlId="destination" as={Row}>
+              {FormUtils.renderLabel({
+                title: intl.formatMessage({
+                  id: "dialogs.merge.destination",
+                }),
+                labelProps: {
+                  column: true,
+                  sm: 3,
+                  xl: 12,
+                },
+              })}
+              <Col sm={9} xl={12}>
+                <PerformerSelect
+                  onSelect={(items) => setDestPerformer(items)}
+                  values={destPerformer}
+                  menuPortalTarget={document.body}
+                  excludeIds={srcIDs}
+                />
+              </Col>
+            </Form.Group>
+          </div>
         </div>
-      </div>
-    </ModalComponent>
-  );
-};
+      </ModalComponent>
+    );
+  });

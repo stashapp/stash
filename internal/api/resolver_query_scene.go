@@ -8,6 +8,7 @@ import (
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/signedurl"
 )
 
 func (r *queryResolver) SceneStreams(ctx context.Context, id *string) ([]*manager.SceneStreamEndpoint, error) {
@@ -40,5 +41,8 @@ func (r *queryResolver) SceneStreams(ctx context.Context, id *string) ([]*manage
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, scene)
 
-	return manager.GetSceneStreamPaths(scene, builder.GetStreamURL(), config.GetMaxStreamingTranscodeSize())
+	streamURL := builder.GetStreamURL()
+	signURL(ctx, config, streamURL, signedurl.DerivePrefix(streamURL.Path))
+
+	return manager.GetSceneStreamPaths(scene, streamURL, config.GetMaxStreamingTranscodeSize())
 }

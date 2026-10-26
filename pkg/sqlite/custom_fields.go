@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -101,6 +102,17 @@ func (s *customFieldsStore) validateCustomFieldName(fieldName string) error {
 
 func getSQLValueFromCustomFieldInput(input interface{}) (interface{}, error) {
 	switch v := input.(type) {
+	case json.Number:
+		if i, err := v.Int64(); err == nil {
+			return i, nil
+		}
+
+		f, err := v.Float64()
+		if err != nil {
+			return nil, fmt.Errorf("invalid custom field number %q: %w", v, err)
+		}
+
+		return f, nil
 	case []interface{}, map[string]interface{}:
 		// TODO - in future it would be nice to convert to a JSON string
 		// however, we would need some way to differentiate between a JSON string and a regular string

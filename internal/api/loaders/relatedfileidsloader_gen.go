@@ -9,8 +9,8 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-// ImageFileIDsLoaderConfig captures the config to create a new ImageFileIDsLoader
-type ImageFileIDsLoaderConfig struct {
+// RelatedFileIDsLoaderConfig captures the config to create a new RelatedFileIDsLoader
+type RelatedFileIDsLoaderConfig struct {
 	// Fetch is a method that provides the data for the loader
 	Fetch func(keys []int) ([][]models.FileID, []error)
 
@@ -21,17 +21,17 @@ type ImageFileIDsLoaderConfig struct {
 	MaxBatch int
 }
 
-// NewImageFileIDsLoader creates a new ImageFileIDsLoader given a fetch, wait, and maxBatch
-func NewImageFileIDsLoader(config ImageFileIDsLoaderConfig) *ImageFileIDsLoader {
-	return &ImageFileIDsLoader{
+// NewRelatedFileIDsLoader creates a new RelatedFileIDsLoader given a fetch, wait, and maxBatch
+func NewRelatedFileIDsLoader(config RelatedFileIDsLoaderConfig) *RelatedFileIDsLoader {
+	return &RelatedFileIDsLoader{
 		fetch:    config.Fetch,
 		wait:     config.Wait,
 		maxBatch: config.MaxBatch,
 	}
 }
 
-// ImageFileIDsLoader batches and caches requests
-type ImageFileIDsLoader struct {
+// RelatedFileIDsLoader batches and caches requests
+type RelatedFileIDsLoader struct {
 	// this method provides the data for the loader
 	fetch func(keys []int) ([][]models.FileID, []error)
 
@@ -48,13 +48,13 @@ type ImageFileIDsLoader struct {
 
 	// the current batch. keys will continue to be collected until timeout is hit,
 	// then everything will be sent to the fetch method and out to the listeners
-	batch *imageFileIDsLoaderBatch
+	batch *relatedFileIDsLoaderBatch
 
 	// mutex to prevent races
 	mu sync.Mutex
 }
 
-type imageFileIDsLoaderBatch struct {
+type relatedFileIDsLoaderBatch struct {
 	keys    []int
 	data    [][]models.FileID
 	error   []error
@@ -63,14 +63,14 @@ type imageFileIDsLoaderBatch struct {
 }
 
 // Load a FileID by key, batching and caching will be applied automatically
-func (l *ImageFileIDsLoader) Load(key int) ([]models.FileID, error) {
+func (l *RelatedFileIDsLoader) Load(key int) ([]models.FileID, error) {
 	return l.LoadThunk(key)()
 }
 
 // LoadThunk returns a function that when called will block waiting for a FileID.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *ImageFileIDsLoader) LoadThunk(key int) func() ([]models.FileID, error) {
+func (l *RelatedFileIDsLoader) LoadThunk(key int) func() ([]models.FileID, error) {
 	l.mu.Lock()
 	if it, ok := l.cache[key]; ok {
 		l.mu.Unlock()
@@ -79,7 +79,7 @@ func (l *ImageFileIDsLoader) LoadThunk(key int) func() ([]models.FileID, error) 
 		}
 	}
 	if l.batch == nil {
-		l.batch = &imageFileIDsLoaderBatch{done: make(chan struct{})}
+		l.batch = &relatedFileIDsLoaderBatch{done: make(chan struct{})}
 	}
 	batch := l.batch
 	pos := batch.keyIndex(l, key)
@@ -113,7 +113,7 @@ func (l *ImageFileIDsLoader) LoadThunk(key int) func() ([]models.FileID, error) 
 
 // LoadAll fetches many keys at once. It will be broken into appropriate sized
 // sub batches depending on how the loader is configured
-func (l *ImageFileIDsLoader) LoadAll(keys []int) ([][]models.FileID, []error) {
+func (l *RelatedFileIDsLoader) LoadAll(keys []int) ([][]models.FileID, []error) {
 	results := make([]func() ([]models.FileID, error), len(keys))
 
 	for i, key := range keys {
@@ -131,7 +131,7 @@ func (l *ImageFileIDsLoader) LoadAll(keys []int) ([][]models.FileID, []error) {
 // LoadAllThunk returns a function that when called will block waiting for a FileIDs.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *ImageFileIDsLoader) LoadAllThunk(keys []int) func() ([][]models.FileID, []error) {
+func (l *RelatedFileIDsLoader) LoadAllThunk(keys []int) func() ([][]models.FileID, []error) {
 	results := make([]func() ([]models.FileID, error), len(keys))
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
@@ -149,7 +149,7 @@ func (l *ImageFileIDsLoader) LoadAllThunk(keys []int) func() ([][]models.FileID,
 // Prime the cache with the provided key and value. If the key already exists, no change is made
 // and false is returned.
 // (To forcefully prime the cache, clear the key first with loader.clear(key).prime(key, value).)
-func (l *ImageFileIDsLoader) Prime(key int, value []models.FileID) bool {
+func (l *RelatedFileIDsLoader) Prime(key int, value []models.FileID) bool {
 	l.mu.Lock()
 	var found bool
 	if _, found = l.cache[key]; !found {
@@ -164,13 +164,13 @@ func (l *ImageFileIDsLoader) Prime(key int, value []models.FileID) bool {
 }
 
 // Clear the value at key from the cache, if it exists
-func (l *ImageFileIDsLoader) Clear(key int) {
+func (l *RelatedFileIDsLoader) Clear(key int) {
 	l.mu.Lock()
 	delete(l.cache, key)
 	l.mu.Unlock()
 }
 
-func (l *ImageFileIDsLoader) unsafeSet(key int, value []models.FileID) {
+func (l *RelatedFileIDsLoader) unsafeSet(key int, value []models.FileID) {
 	if l.cache == nil {
 		l.cache = map[int][]models.FileID{}
 	}
@@ -179,7 +179,7 @@ func (l *ImageFileIDsLoader) unsafeSet(key int, value []models.FileID) {
 
 // keyIndex will return the location of the key in the batch, if its not found
 // it will add the key to the batch
-func (b *imageFileIDsLoaderBatch) keyIndex(l *ImageFileIDsLoader, key int) int {
+func (b *relatedFileIDsLoaderBatch) keyIndex(l *RelatedFileIDsLoader, key int) int {
 	for i, existingKey := range b.keys {
 		if key == existingKey {
 			return i
@@ -203,7 +203,7 @@ func (b *imageFileIDsLoaderBatch) keyIndex(l *ImageFileIDsLoader, key int) int {
 	return pos
 }
 
-func (b *imageFileIDsLoaderBatch) startTimer(l *ImageFileIDsLoader) {
+func (b *relatedFileIDsLoaderBatch) startTimer(l *RelatedFileIDsLoader) {
 	time.Sleep(l.wait)
 	l.mu.Lock()
 
@@ -219,7 +219,7 @@ func (b *imageFileIDsLoaderBatch) startTimer(l *ImageFileIDsLoader) {
 	b.end(l)
 }
 
-func (b *imageFileIDsLoaderBatch) end(l *ImageFileIDsLoader) {
+func (b *relatedFileIDsLoaderBatch) end(l *RelatedFileIDsLoader) {
 	b.data, b.error = l.fetch(b.keys)
 	close(b.done)
 }

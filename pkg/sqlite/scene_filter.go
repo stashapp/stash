@@ -110,7 +110,10 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 
 		&phashDistanceCriterionHandler{
 			joinFn: func(f *filterBuilder) {
-				const joinType = joinTypeInner
+				joinType := joinTypeInner
+				if sceneFilter.PhashDistance.Modifier == models.CriterionModifierIsNull {
+					joinType = joinTypeLeft
+				}
 				qb.addSceneFilesTable(f, joinType)
 				f.addJoin(joinType, fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
 			},
@@ -189,6 +192,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 		qb.performerAgeCriterionHandler(sceneFilter.PerformerAge),
 		qb.duplicatedCriterionHandler(sceneFilter.Duplicated),
 		&dateCriterionHandler{sceneFilter.Date, "scenes.date", nil},
+		&dateCriterionHandler{sceneFilter.ProductionDate, "scenes.production_date", nil},
 		&timestampCriterionHandler{sceneFilter.CreatedAt, "scenes.created_at", nil},
 		&timestampCriterionHandler{sceneFilter.UpdatedAt, "scenes.updated_at", nil},
 
@@ -430,6 +434,8 @@ func (qb *sceneFilterHandler) isMissingCriterionHandler(isMissing *string) crite
 				f.addWhere("performers_join.scene_id IS NULL")
 			case "date":
 				f.addWhere(`scenes.date IS NULL OR scenes.date IS ""`)
+			case "production_date":
+				f.addWhere(`scenes.production_date IS NULL OR scenes.production_date IS ""`)
 			case "tags":
 				sceneRepository.tags.leftJoin(f, "tags_join", "scenes.id")
 				f.addWhere("tags_join.scene_id IS NULL")
@@ -592,10 +598,10 @@ func (qb *sceneFilterHandler) performerAgeCriterionHandler(performerAge *models.
 			f.addInnerJoin("performers_scenes", "", "scenes.id = performers_scenes.scene_id")
 			f.addInnerJoin("performers", "", "performers_scenes.performer_id = performers.id")
 
-			f.addWhere("scenes.date != '' AND performers.birthdate != ''")
-			f.addWhere("scenes.date IS NOT NULL AND performers.birthdate IS NOT NULL")
+			f.addWhere(sceneAgeDateExpr + " != '' AND performers.birthdate != ''")
+			f.addWhere(sceneAgeDateExpr + " IS NOT NULL AND performers.birthdate IS NOT NULL")
 
-			ageCalc := "cast(strftime('%Y.%m%d', scenes.date) - strftime('%Y.%m%d', performers.birthdate) as int)"
+			ageCalc := "cast(strftime('%Y.%m%d', " + sceneAgeDateExpr + ") - strftime('%Y.%m%d', performers.birthdate) as int)"
 			whereClause, args := getIntWhereClause(ageCalc, performerAge.Modifier, performerAge.Value, performerAge.Value2)
 			f.addWhere(whereClause, args...)
 		}

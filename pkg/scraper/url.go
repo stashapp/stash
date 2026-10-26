@@ -17,6 +17,8 @@ import (
 	"github.com/chromedp/cdproto/fetch"
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
+	"github.com/enetx/g"
+	"github.com/enetx/surf"
 	jsoniter "github.com/json-iterator/go"
 	"golang.org/x/net/html/charset"
 
@@ -25,11 +27,17 @@ import (
 
 const scrapeDefaultSleep = time.Second * 2
 
+var proxyAuthRE = regexp.MustCompile(`^(https?:\/\/)(([\P{Cc}]+):([\P{Cc}]+)@)?(([a-zA-Z0-9][a-zA-Z0-9.-]*)(:[0-9]{1,5})?)`)
+
 func loadURL(ctx context.Context, loadURL string, client *http.Client, def Definition, globalConfig GlobalConfig) (io.Reader, error) {
 	driverOptions := def.DriverOptions
-	if driverOptions != nil && driverOptions.UseCDP {
-		// get the page using chrome dp
-		return urlFromCDP(ctx, loadURL, *driverOptions, globalConfig)
+	if driverOptions != nil {
+		switch {
+		case driverOptions.UseCDP:
+			return urlFromCDP(ctx, loadURL, *driverOptions, globalConfig)
+		case driverOptions.UseSurf:
+			return urlFromSurf(ctx, loadURL, *driverOptions, def, globalConfig)
+		}
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, loadURL, nil)
@@ -71,11 +79,77 @@ func loadURL(ctx context.Context, loadURL string, client *http.Client, def Defin
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
+
 	if resp.StatusCode >= 400 {
 		return nil, fmt.Errorf("http error %d:%s", resp.StatusCode, http.StatusText(resp.StatusCode))
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	bodyReader := bytes.NewReader(body)
+	printCookies(jar, def, "Jar cookies found for scraper urls")
+	return charset.NewReader(bodyReader, resp.Header.Get("Content-Type"))
+}
+
+// func urlFromSurf uses enetx/surf with TLS browser emulation to bypass fingerprint-based blocking.
+// this is a step down from CDP but faster and more lightweight and can succeed where CDP might fail
+func urlFromSurf(ctx context.Context, loadURL string, driverOptions scraperDriverOptions, def Definition, globalConfig GlobalConfig) (io.Reader, error) {
+	// get cookies
+	jar, err := def.jar()
+	if err != nil {
+		return nil, fmt.Errorf("error creating cookie jar: %w", err)
+	}
+
+	// create client
+	builder := surf.NewClient().
+		Builder().
+		Impersonate().Chrome()
+
+	// get global proxy
+	proxyURL := globalConfig.GetProxy()
+	if proxyURL != "" {
+		builder = builder.Proxy(g.String(proxyURL))
+	}
+
+	client := builder.
+		Build().
+		Unwrap().
+		Std() // use stdlib adapter
+
+	// pass in jar directly
+	client.Jar = jar
+
+	// try to mimic normal method above
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, loadURL, nil)
+	if err != nil {
+		return nil, err
+	}
+	// remove User-Agent header. This undermines TLS fingerprinting
+	// because of GREASE (RFC 8701)
+	// older fingerprints + UAs are still sustainable.
+	for _, h := range driverOptions.Headers {
+		if h.Key != "" {
+			if strings.ToLower(h.Key) == "user-agent" {
+				continue
+			}
+			req.Header.Set(h.Key, h.Value)
+			logger.Debugf("[scraper] adding header <%s:%s>", h.Key, h.Value)
+		}
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("http error %d:%s", resp.StatusCode, http.StatusText(resp.StatusCode))
+	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -91,7 +165,6 @@ func loadURL(ctx context.Context, loadURL string, client *http.Client, def Defin
 // if remote is set as true in the scraperConfig  it will try to use localhost:9222
 // else it will look for google-chrome in path
 func urlFromCDP(ctx context.Context, urlCDP string, driverOptions scraperDriverOptions, globalConfig GlobalConfig) (io.Reader, error) {
-
 	if !driverOptions.UseCDP {
 		return nil, fmt.Errorf("url shouldn't be fetched through CDP")
 	}
@@ -305,8 +378,7 @@ func proxyUsesAuth(proxyUrl string) bool {
 	if proxyUrl == "" {
 		return false
 	}
-	reg := regexp.MustCompile(`^(https?:\/\/)(([\P{Cc}]+):([\P{Cc}]+)@)?(([a-zA-Z0-9][a-zA-Z0-9.-]*)(:[0-9]{1,5})?)`)
-	matches := reg.FindAllStringSubmatch(proxyUrl, -1)
+	matches := proxyAuthRE.FindAllStringSubmatch(proxyUrl, -1)
 	if matches != nil {
 		split := matches[0]
 		return len(split) == 0 || (len(split) > 5 && split[3] != "")
@@ -319,8 +391,7 @@ func splitProxyAuth(proxyUrl string) (string, string, string) {
 	if proxyUrl == "" {
 		return "", "", ""
 	}
-	reg := regexp.MustCompile(`^(https?:\/\/)(([\P{Cc}]+):([\P{Cc}]+)@)?(([a-zA-Z0-9][a-zA-Z0-9.-]*)(:[0-9]{1,5})?)`)
-	matches := reg.FindAllStringSubmatch(proxyUrl, -1)
+	matches := proxyAuthRE.FindAllStringSubmatch(proxyUrl, -1)
 
 	if matches != nil && len(matches[0]) > 5 {
 		split := matches[0]

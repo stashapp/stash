@@ -17,7 +17,7 @@ import { useConfigurationContext } from "src/hooks/Config";
 
 import StashSearchResult from "./StashSearchResult";
 import TaggerConfig, { ConfigButton } from "../TaggerConfig";
-import { ITaggerConfig, TAG_FIELDS } from "../constants";
+import { ITaggerConfig, TAG_FIELDS, TagOperation } from "../constants";
 import { useUpdateTag } from "../queries";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { mergeTagStashIDs } from "../utils";
@@ -214,7 +214,7 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
       if (parentInput) {
         try {
           // cannot update parent tags, since there may be many
-          if (!!input.parent_ids?.length) {
+          if (input.parent_ids?.length) {
             // ignore
           } else {
             const parentRes = await createTag({
@@ -247,6 +247,15 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
         input.stash_ids ?? []
       );
 
+      if (input.aliases) {
+        if (config.tagOperation === "merge") {
+          const existingAliases = existingTag.aliases ?? [];
+          updateData.aliases = uniq(existingAliases.concat(input.aliases));
+        } else {
+          updateData.aliases = input.aliases;
+        }
+      }
+
       const res = await updateTag(updateData);
       if (!res?.data?.tagUpdate)
         handleSaveError(tagID, tag.name ?? "", res?.errors?.[0]?.message ?? "");
@@ -264,6 +273,7 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
   };
 
   // clear tagged tags when source is changed
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally only resetting when selectedEndpoint changes
   useEffect(() => {
     setTaggedTags({});
     setSearchResults({});
@@ -278,7 +288,7 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
         return s.endpoint === selectedEndpoint.endpoint;
       });
 
-      let mainContent;
+      let mainContent: JSX.Element | undefined;
       if (!isTagged && stashID !== undefined) {
         mainContent = (
           <div className="text-left">
@@ -326,7 +336,7 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
         );
       }
 
-      let subContent;
+      let subContent: JSX.Element | undefined;
       if (stashID !== undefined) {
         const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
         const link = base ? (
@@ -384,7 +394,7 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
         );
       }
 
-      let searchResult;
+      let searchResult: JSX.Element | undefined;
       if (searchResults[tag.id]?.length > 0 && !isTagged) {
         searchResult = (
           <StashSearchResult
@@ -394,6 +404,7 @@ const TagTaggerList: React.FC<ITagTaggerListProps> = ({
             endpoint={selectedEndpoint.endpoint}
             onTagTagged={handleTaggedTag}
             excludedTagFields={config.excludedTagFields ?? []}
+            tagOperation={config.tagOperation}
           />
         );
       }
@@ -481,6 +492,7 @@ interface ITaggerProps {
 }
 
 export const TagTagger: React.FC<ITaggerProps> = ({ tags }) => {
+  const intl = useIntl();
   const jobsSubscribe = useJobsSubscribe();
   const { configuration: stashConfig } = useConfigurationContext();
   const { config, setConfig } = useTaggerConfig();
@@ -522,13 +534,16 @@ export const TagTagger: React.FC<ITaggerProps> = ({ tags }) => {
   const selectedEndpoint =
     stashConfig?.general.stashBoxes[selectedEndpointIndex];
 
-  const selectedEndpointInput = useMemo(
-    () => ({
+  const selectedEndpointInput = useMemo(() => {
+    if (!selectedEndpoint) {
+      return;
+    }
+
+    return {
       endpoint: selectedEndpoint.endpoint,
       index: selectedEndpointIndex,
-    }),
-    [selectedEndpoint, selectedEndpointIndex]
-  );
+    };
+  }, [selectedEndpoint, selectedEndpointIndex]);
 
   if (!config) return <LoadingIndicator />;
 
@@ -607,7 +622,7 @@ export const TagTagger: React.FC<ITaggerProps> = ({ tags }) => {
     }
   }
 
-  if (selectedEndpointIndex === -1 || !selectedEndpoint) {
+  if (selectedEndpointIndex === -1 || !selectedEndpointInput) {
     return (
       <div className="my-4">
         <h3 className="text-center mt-4">
@@ -668,26 +683,53 @@ export const TagTagger: React.FC<ITaggerProps> = ({ tags }) => {
             fields={TAG_FIELDS}
             entityName="tags"
             extraConfig={
-              <Form.Group
-                controlId="config-create-parent"
-                className="align-items-center"
-              >
-                <Form.Check
-                  label={
-                    <FormattedMessage id="tag_tagger.config.create_parent_label" />
-                  }
-                  checked={config.createParentTags}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setConfig({
-                      ...config,
-                      createParentTags: e.currentTarget.checked,
-                    })
-                  }
-                />
-                <Form.Text>
-                  <FormattedMessage id="tag_tagger.config.create_parent_desc" />
-                </Form.Text>
-              </Form.Group>
+              <>
+                <Form.Group
+                  controlId="config-create-parent"
+                  className="align-items-center"
+                >
+                  <Form.Check
+                    label={
+                      <FormattedMessage id="tag_tagger.config.create_parent_label" />
+                    }
+                    checked={config.createParentTags}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setConfig({
+                        ...config,
+                        createParentTags: e.currentTarget.checked,
+                      })
+                    }
+                  />
+                  <Form.Text>
+                    <FormattedMessage id="tag_tagger.config.create_parent_desc" />
+                  </Form.Text>
+                </Form.Group>
+                <Form.Group controlId="config-alias-operation">
+                  <div className="d-flex align-items-center">
+                    <Form.Label className="mr-4 mb-0">
+                      <FormattedMessage id="aliases" />
+                    </Form.Label>
+                    <Form.Control
+                      className="col-md-2 col-3 input-control"
+                      as="select"
+                      value={config.tagOperation}
+                      onChange={(e) =>
+                        setConfig({
+                          ...config,
+                          tagOperation: e.currentTarget.value as TagOperation,
+                        })
+                      }
+                    >
+                      <option value="merge">
+                        {intl.formatMessage({ id: "actions.merge" })}
+                      </option>
+                      <option value="overwrite">
+                        {intl.formatMessage({ id: "actions.overwrite" })}
+                      </option>
+                    </Form.Control>
+                  </div>
+                </Form.Group>
+              </>
             }
           />
         </div>

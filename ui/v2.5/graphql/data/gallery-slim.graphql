@@ -37,7 +37,11 @@ fragment SlimGalleryData on Gallery {
     image_path
   }
   scenes {
-    ...SlimSceneData
+    id
+    title
+    files {
+      path
+    }
   }
   paths {
     cover

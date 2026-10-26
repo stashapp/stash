@@ -13,6 +13,7 @@ import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { FavoriteIcon } from "../Shared/FavoriteIcon";
 import { useStudioUpdate } from "src/core/StashService";
+import { useConfigurationContext } from "src/hooks/Config";
 import { faTag, faBox } from "@fortawesome/free-solid-svg-icons";
 import { OCounterButton } from "../Shared/CountButton";
 
@@ -83,6 +84,16 @@ export const StudioCard: React.FC<IProps> = PatchComponent(
     onSelectedChanged,
   }) => {
     const [updateStudio] = useStudioUpdate();
+    const { configuration } = useConfigurationContext();
+    const showChildContent = configuration?.ui?.showChildStudioContent ?? false;
+
+    const sceneCount = showChildContent
+      ? studio.scene_count_all
+      : studio.scene_count;
+    const performerCount = showChildContent
+      ? studio.performer_count_all
+      : studio.performer_count;
+    const oCounter = showChildContent ? studio.o_counter_all : studio.o_counter;
 
     function onToggleFavorite(v: boolean) {
       if (studio.id) {
@@ -98,13 +109,13 @@ export const StudioCard: React.FC<IProps> = PatchComponent(
     }
 
     function maybeRenderScenesPopoverButton() {
-      if (!studio.scene_count) return;
+      if (!sceneCount) return;
 
       return (
         <PopoverCountButton
           className="scene-count"
           type="scene"
-          count={studio.scene_count}
+          count={sceneCount}
           url={NavUtils.makeStudioScenesUrl(studio)}
         />
       );
@@ -150,13 +161,13 @@ export const StudioCard: React.FC<IProps> = PatchComponent(
     }
 
     function maybeRenderPerformersPopoverButton() {
-      if (!studio.performer_count) return;
+      if (!performerCount) return;
 
       return (
         <PopoverCountButton
           className="performer-count"
           type="performer"
-          count={studio.performer_count}
+          count={performerCount}
           url={NavUtils.makeStudioPerformersUrl(studio)}
         />
       );
@@ -180,9 +191,9 @@ export const StudioCard: React.FC<IProps> = PatchComponent(
     }
 
     function maybeRenderOCounter() {
-      if (!studio.o_counter) return;
+      if (!oCounter) return;
 
-      return <OCounterButton value={studio.o_counter} />;
+      return <OCounterButton value={oCounter} />;
     }
 
     function maybeRenderOrganized() {
@@ -208,12 +219,12 @@ export const StudioCard: React.FC<IProps> = PatchComponent(
 
     function maybeRenderPopoverButtonGroup() {
       if (
-        studio.scene_count ||
+        sceneCount ||
         studio.image_count ||
         studio.gallery_count ||
         studio.group_count ||
-        studio.performer_count ||
-        studio.o_counter ||
+        performerCount ||
+        oCounter ||
         studio.tags.length > 0 ||
         studio.organized
       ) {

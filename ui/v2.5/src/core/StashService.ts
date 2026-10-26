@@ -1092,7 +1092,7 @@ export const useSceneDecrementPlayCount = () =>
 
 export const useSceneResetPlayCount = () =>
   GQL.useSceneResetPlayCountMutation({
-    update(cache, result, { variables }) {
+    update(cache, _result, { variables }) {
       if (!variables) return;
 
       let lastPlayCount = 0;
@@ -1530,6 +1530,7 @@ const sceneMarkerMutationImpactedQueries = [
   GQL.FindSceneMarkersDocument, // various filters
   GQL.MarkerStringsDocument, // marker list
   GQL.FindSceneMarkerTagsDocument, // marker tag list
+  GQL.FindStudiosDocument, // filter/sort by marker count
   GQL.FindTagsDocument, // filter by marker count
 ];
 
@@ -2230,6 +2231,58 @@ export const useSaveFilter = () => {
   }
 
   return saveFilter;
+};
+
+// Extracts a saved filter's stored fields for sending straight back in a
+// mutation input. Round-tripping them through ListFilterModel would drop any
+// criterion the current UI doesn't recognise, and saving replaces
+// object_filter wholesale, so it would be deleted.
+export function savedFilterFields(filter: GQL.SavedFilterDataFragment) {
+  const findFilter = filter.find_filter;
+
+  return {
+    mode: filter.mode,
+    // rebuilt field by field to drop the __typename that apollo adds
+    find_filter: findFilter
+      ? {
+          q: findFilter.q,
+          page: findFilter.page,
+          per_page: findFilter.per_page,
+          sort: findFilter.sort,
+          direction: findFilter.direction,
+        }
+      : null,
+    object_filter: filter.object_filter,
+    ui_options: filter.ui_options,
+  };
+}
+
+// Renames a saved filter, leaving its contents untouched.
+export const useRenameSavedFilter = () => {
+  const [saveFilterMutation] = GQL.useSaveFilterMutation({
+    update(cache, result) {
+      if (!result.data?.saveFilter) return;
+
+      evictQueries(cache, [GQL.FindSavedFiltersDocument]);
+    },
+  });
+
+  function renameSavedFilter(
+    filter: GQL.SavedFilterDataFragment,
+    name: string
+  ) {
+    return saveFilterMutation({
+      variables: {
+        input: {
+          id: filter.id,
+          name,
+          ...savedFilterFields(filter),
+        },
+      },
+    });
+  }
+
+  return renameSavedFilter;
 };
 
 export const useSavedFilterDestroy = () =>

@@ -1,5 +1,3 @@
-/* eslint-disable jsx-a11y/control-has-associated-label */
-
 import React from "react";
 import { useIntl } from "react-intl";
 import { Button } from "react-bootstrap";
@@ -89,7 +87,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   );
 
   const AliasesCell = (performer: GQL.PerformerDataFragment) => {
-    let aliases = performer.alias_list ? performer.alias_list.join(", ") : "";
+    const aliases = performer.alias_list ? performer.alias_list.join(", ") : "";
     return (
       <span className="ellips-data" title={aliases}>
         {aliases}

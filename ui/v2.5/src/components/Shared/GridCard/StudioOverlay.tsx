@@ -36,7 +36,7 @@ export const StudioOverlay: React.FC<{
     }
   }
 
-  if (!studio) return <></>;
+  if (!studio) return null;
 
   return (
     // this class name is incorrect

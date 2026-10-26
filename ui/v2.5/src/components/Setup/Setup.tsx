@@ -20,6 +20,8 @@ import { FolderSelectDialog } from "../Shared/FolderSelect/FolderSelectDialog";
 import {
   faEllipsisH,
   faExclamationTriangle,
+  faEye,
+  faEyeSlash,
 } from "@fortawesome/free-solid-svg-icons";
 import { ExternalLink } from "../Shared/ExternalLink";
 
@@ -58,6 +60,7 @@ const SetupContext: React.FC<{
   setupError: string | undefined;
   systemStatus: GQL.SystemStatusQuery;
   configuration: GQL.ConfigDataFragment;
+  children?: React.ReactNode;
 }> = ({ setupState, setupError, systemStatus, configuration, children }) => {
   const status = systemStatus?.systemStatus;
 
@@ -139,7 +142,7 @@ const WelcomeSpecificConfig: React.FC<IWizardStep> = ({ next }) => {
             id="setup.welcome_specific_config.config_path"
             values={{
               path: overrideConfig,
-              code: (chunks: string) => <code>{chunks}</code>,
+              code: (chunks) => <code>{chunks}</code>,
             }}
           />
         </p>
@@ -184,7 +187,7 @@ const DefaultWelcomeStep: React.FC<IWizardStep> = ({ next }) => {
           <FormattedMessage
             id="setup.welcome.config_path_logic_explained"
             values={{
-              code: (chunks: string) => <code>{chunks}</code>,
+              code: (chunks) => <code>{chunks}</code>,
               fallback_path: fallbackConfigPath,
             }}
           />
@@ -193,7 +196,7 @@ const DefaultWelcomeStep: React.FC<IWizardStep> = ({ next }) => {
           <FormattedMessage
             id="setup.welcome.unexpected_explained"
             values={{
-              code: (chunks: string) => <code>{chunks}</code>,
+              code: (chunks) => <code>{chunks}</code>,
             }}
           />
         </Alert>
@@ -215,7 +218,7 @@ const DefaultWelcomeStep: React.FC<IWizardStep> = ({ next }) => {
             <FormattedMessage
               id="setup.welcome.in_current_stash_directory"
               values={{
-                code: (chunks: string) => <code>{chunks}</code>,
+                code: (chunks) => <code>{chunks}</code>,
                 path: fallbackStashDir,
               }}
             />
@@ -232,7 +235,7 @@ const DefaultWelcomeStep: React.FC<IWizardStep> = ({ next }) => {
                 <FormattedMessage
                   id="setup.welcome.in_the_current_working_directory_disabled"
                   values={{
-                    code: (chunks: string) => <code>{chunks}</code>,
+                    code: (chunks) => <code>{chunks}</code>,
                     path: pwd,
                   }}
                 />
@@ -241,7 +244,7 @@ const DefaultWelcomeStep: React.FC<IWizardStep> = ({ next }) => {
                   <FormattedMessage
                     id="setup.welcome.in_the_current_working_directory_disabled_macos"
                     values={{
-                      code: (chunks: string) => <code>{chunks}</code>,
+                      code: (chunks) => <code>{chunks}</code>,
                       br: () => <br />,
                     }}
                   />
@@ -252,7 +255,7 @@ const DefaultWelcomeStep: React.FC<IWizardStep> = ({ next }) => {
                 <FormattedMessage
                   id="setup.welcome.in_the_current_working_directory"
                   values={{
-                    code: (chunks: string) => <code>{chunks}</code>,
+                    code: (chunks) => <code>{chunks}</code>,
                     path: pwd,
                   }}
                 />
@@ -317,14 +320,14 @@ const DatabaseSection: React.FC<{
         <FormattedMessage
           id="setup.paths.where_can_stash_store_its_database_description"
           values={{
-            code: (chunks: string) => <code>{chunks}</code>,
+            code: (chunks) => <code>{chunks}</code>,
           }}
         />
         <br />
         <FormattedMessage
           id="setup.paths.where_can_stash_store_its_database_warning"
           values={{
-            strong: (chunks: string) => <strong>{chunks}</strong>,
+            strong: (chunks) => <strong>{chunks}</strong>,
           }}
         />
       </p>
@@ -398,7 +401,7 @@ const GeneratedSection: React.FC<{
         <FormattedMessage
           id="setup.paths.where_can_stash_store_its_generated_content_description"
           values={{
-            code: (chunks: string) => <code>{chunks}</code>,
+            code: (chunks) => <code>{chunks}</code>,
           }}
         />
       </p>
@@ -428,7 +431,7 @@ const CacheSection: React.FC<{
         <FormattedMessage
           id="setup.paths.where_can_stash_store_cache_files_description"
           values={{
-            code: (chunks: string) => <code>{chunks}</code>,
+            code: (chunks) => <code>{chunks}</code>,
           }}
         />
       </p>
@@ -465,7 +468,7 @@ const BlobsSection: React.FC<{
         <FormattedMessage
           id="setup.paths.where_can_stash_store_blobs_description"
           values={{
-            code: (chunks: string) => <code>{chunks}</code>,
+            code: (chunks) => <code>{chunks}</code>,
           }}
         />
       </p>
@@ -473,8 +476,8 @@ const BlobsSection: React.FC<{
         <FormattedMessage
           id="setup.paths.where_can_stash_store_blobs_description_addendum"
           values={{
-            code: (chunks: string) => <code>{chunks}</code>,
-            strong: (chunks: string) => <strong>{chunks}</strong>,
+            code: (chunks) => <code>{chunks}</code>,
+            strong: (chunks) => <strong>{chunks}</strong>,
           }}
         />
       </p>
@@ -674,6 +677,40 @@ function validateUsername(username: string) {
   return true;
 }
 
+const PasswordField: React.FC<{
+  password: string;
+  setPassword: React.Dispatch<React.SetStateAction<string>>;
+}> = ({ password, setPassword }) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const intl = useIntl();
+
+  const type = showPassword ? "text" : "password";
+  const hideShowTextID = showPassword ? "actions.hide" : "actions.show";
+  const icon = showPassword ? faEyeSlash : faEye;
+
+  return (
+    <div className="password-field-group">
+      <Form.Control
+        className="text-input"
+        type={type}
+        placeholder={intl.formatMessage({
+          id: "login.password",
+        })}
+        value={password}
+        onChange={(e) => setPassword(e.currentTarget.value)}
+      />
+      <Button
+        variant="secondary"
+        onClick={() => setShowPassword(!showPassword)}
+        title={intl.formatMessage({ id: hideShowTextID })}
+        className="show-password-button"
+      >
+        <Icon icon={icon} />
+      </Button>
+    </div>
+  );
+};
+
 const CredentialsStep: React.FC<IWizardStep> = ({ goBack, next }) => {
   const { setupState } = useSetupContext();
   const intl = useIntl();
@@ -682,11 +719,11 @@ const CredentialsStep: React.FC<IWizardStep> = ({ goBack, next }) => {
     setupState.initialUsername || "admin"
   );
   const [password, setPassword] = useState(setupState.initialPassword ?? "");
-  const valid = validateUsername(username);
+  const usernameValid = validateUsername(username);
 
   function onNext() {
     const input: Partial<GQL.SetupInput> = {
-      initialUsername: username.trim() === "" ? undefined : username,
+      initialUsername: username,
       initialPassword: password === "" ? undefined : password,
     };
     next(input);
@@ -709,13 +746,16 @@ const CredentialsStep: React.FC<IWizardStep> = ({ goBack, next }) => {
           <Form.Control
             className="text-input"
             placeholder={intl.formatMessage({
-              id: "setup.credentials.username",
+              id: "login.username",
             })}
             value={username}
             onChange={(e) => setUsername(e.currentTarget.value)}
+            isInvalid={!usernameValid}
           />
           <Form.Control.Feedback type="invalid">
-            {!valid ? "setup.credentials.username_invalid" : null}
+            {!usernameValid
+              ? intl.formatMessage({ id: "setup.credentials.username_invalid" })
+              : null}
           </Form.Control.Feedback>
         </Form.Group>
         <Form.Group controlId="password">
@@ -723,15 +763,7 @@ const CredentialsStep: React.FC<IWizardStep> = ({ goBack, next }) => {
             <FormattedMessage id="login.password" />:
           </Form.Label>
           <Form.Group id="password">
-            <Form.Control
-              className="text-input"
-              type="password"
-              placeholder={intl.formatMessage({
-                id: "login.password",
-              })}
-              value={password}
-              onChange={(e) => setPassword(e.currentTarget.value)}
-            />
+            <PasswordField password={password} setPassword={setPassword} />
           </Form.Group>
         </Form.Group>
       </section>
@@ -744,7 +776,7 @@ const CredentialsStep: React.FC<IWizardStep> = ({ goBack, next }) => {
           <Button
             variant="primary mx-2 p-5"
             onClick={() => onNext()}
-            disabled={!valid}
+            disabled={!usernameValid}
           >
             <FormattedMessage id="actions.next_action" />
           </Button>

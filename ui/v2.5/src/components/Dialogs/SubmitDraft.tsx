@@ -42,6 +42,7 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
     boxes[selectedBoxIndex];
 
   // #4354: reset state when shown, or if any props change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally resetting when any prop changes
   useEffect(() => {
     if (show) {
       setSelectedBoxIndex(0);

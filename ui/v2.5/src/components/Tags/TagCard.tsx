@@ -213,14 +213,12 @@ const TagCardImage: React.FC<IProps> = PatchComponent(
   "TagCard.Image",
   ({ tag }) => {
     return (
-      <>
-        <img
-          loading="lazy"
-          className="tag-card-image"
-          alt={tag.name}
-          src={tag.image_path ?? ""}
-        />
-      </>
+      <img
+        loading="lazy"
+        className="tag-card-image"
+        alt={tag.name}
+        src={tag.image_path ?? ""}
+      />
     );
   }
 );

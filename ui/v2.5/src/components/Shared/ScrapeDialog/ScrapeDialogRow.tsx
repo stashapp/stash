@@ -53,7 +53,7 @@ export const ScrapeDialogRow = <T,>(props: IScrapedRowProps<T>) => {
   }
 
   if (!props.result.scraped && !props.newValues && !props.alwaysShow) {
-    return <></>;
+    return null;
   }
 
   return (
@@ -362,7 +362,7 @@ const ScrapedImage: React.FC<IScrapedImageProps> = (props) => {
     : props.result.originalValue;
 
   if (!value) {
-    return <></>;
+    return null;
   }
 
   return (

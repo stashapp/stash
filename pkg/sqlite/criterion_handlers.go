@@ -1087,15 +1087,17 @@ func (h *stashIDCriterionHandler) handle(ctx context.Context, f *filterBuilder) 
 	}
 
 	joinClause := fmt.Sprintf("%s.%s = %s", t, stashIDRepo.idColumn, h.parentIDCol)
+	var args []interface{}
 	if h.c.Endpoint != nil && *h.c.Endpoint != "" {
-		joinClause += fmt.Sprintf(" AND %s.endpoint = '%s'", t, *h.c.Endpoint)
+		joinClause += fmt.Sprintf(" AND %s.endpoint = ?", t)
+		args = append(args, *h.c.Endpoint)
 	}
 
 	joinType := joinTypeInner
 	if h.c.Modifier == models.CriterionModifierIsNull || h.c.Modifier == models.CriterionModifierNotMatchesRegex {
 		joinType = joinTypeLeft
 	}
-	f.addJoin(joinType, stashIDRepo.tableName, h.stashIDTableAs, joinClause)
+	f.addJoin(joinType, stashIDRepo.tableName, h.stashIDTableAs, joinClause, args...)
 
 	v := ""
 	if h.c.StashID != nil {
@@ -1127,8 +1129,10 @@ func (h *stashIDsCriterionHandler) handle(ctx context.Context, f *filterBuilder)
 	}
 
 	joinClause := fmt.Sprintf("%s.%s = %s", t, stashIDRepo.idColumn, h.parentIDCol)
+	var args []interface{}
 	if h.c.Endpoint != nil && *h.c.Endpoint != "" {
-		joinClause += fmt.Sprintf(" AND %s.endpoint = '%s'", t, *h.c.Endpoint)
+		joinClause += fmt.Sprintf(" AND %s.endpoint = ?", t)
+		args = append(args, *h.c.Endpoint)
 	}
 
 	joinType := joinTypeInner
@@ -1136,7 +1140,7 @@ func (h *stashIDsCriterionHandler) handle(ctx context.Context, f *filterBuilder)
 		joinType = joinTypeLeft
 	}
 
-	f.addJoin(joinType, stashIDRepo.tableName, h.stashIDTableAs, joinClause)
+	f.addJoin(joinType, stashIDRepo.tableName, h.stashIDTableAs, joinClause, args...)
 
 	switch h.c.Modifier {
 	case models.CriterionModifierIsNull:

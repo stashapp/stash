@@ -12,7 +12,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Button, Form } from "react-bootstrap";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
-import { excludeFields } from "src/utils/data";
+import { excludeFields, listToMap } from "src/utils/data";
 import { StashIDPill } from "src/components/Shared/StashID";
 
 interface ITagModalProps {
@@ -39,7 +39,7 @@ const TagModal: React.FC<ITagModalProps> = ({
   const intl = useIntl();
 
   const [excluded, setExcluded] = useState<Record<string, boolean>>(
-    excludedTagFields.reduce((dict, field) => ({ ...dict, [field]: true }), {})
+    listToMap(excludedTagFields)
   );
   const toggleField = (name: string) =>
     setExcluded({
@@ -76,7 +76,7 @@ const TagModal: React.FC<ITagModalProps> = ({
   const sendParentTag = !existingParentId;
 
   const [parentExcluded, setParentExcluded] = useState<Record<string, boolean>>(
-    excludedTagFields.reduce((dict, field) => ({ ...dict, [field]: true }), {})
+    listToMap(excludedTagFields)
   );
 
   const toggleParentField = (name: string) =>
@@ -239,7 +239,7 @@ const TagModal: React.FC<ITagModalProps> = ({
     // handle exclusions
     excludeFields(tagData, excluded);
 
-    let parentData: GQL.TagCreateInput | undefined = undefined;
+    let parentData: GQL.TagCreateInput | undefined;
 
     // Categories don't have stash IDs, so we only create new parent tags
     if (

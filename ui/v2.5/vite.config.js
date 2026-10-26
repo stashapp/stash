@@ -7,7 +7,7 @@ const sourcemap = process.env.VITE_APP_SOURCEMAPS === "true";
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
-  let plugins = [
+  const plugins = [
     react({
       babel: {
         compact: true,

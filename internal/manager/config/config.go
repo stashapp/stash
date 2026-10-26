@@ -55,6 +55,9 @@ const (
 	UserGraphqlRateLimit       = "user_graphql_rate_limit"
 	UserGraphqlRateLimitWindow = "user_graphql_rate_limit_window_seconds"
 
+	SignedURLExpiry        = "signed_url_expiry"
+	signedURLExpiryDefault = 60 * 60 * 4 // 4 hours in seconds
+
 	// SFWContentMode mode config key
 	SFWContentMode = "sfw_content_mode"
 
@@ -130,6 +133,12 @@ const (
 
 	PreviewExcludeEnd        = "preview_exclude_end"
 	previewExcludeEndDefault = "0"
+
+	MaxMarkerPreviewDuration        = "max_marker_preview_duration"
+	maxMarkerPreviewDurationDefault = 0
+
+	DefaultMarkerPreviewDuration        = "default_marker_preview_duration"
+	defaultMarkerPreviewDurationDefault = 20
 
 	WriteImageThumbnails        = "write_image_thumbnails"
 	writeImageThumbnailsDefault = true
@@ -266,12 +275,6 @@ const (
 	ThemeColor        = "theme_color"
 	DefaultThemeColor = "#202b33"
 
-	// Security
-	dangerousAllowPublicWithoutAuth                   = "dangerous_allow_public_without_auth"
-	dangerousAllowPublicWithoutAuthDefault            = "false"
-	SecurityTripwireAccessedFromPublicInternet        = "security_tripwire_accessed_from_public_internet"
-	securityTripwireAccessedFromPublicInternetDefault = ""
-
 	sslCertPath = "ssl_cert_path"
 	sslKeyPath  = "ssl_key_path"
 
@@ -329,7 +332,7 @@ const (
 // slice default values
 var (
 	defaultVideoExtensions   = []string{"m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm", "f4v"}
-	defaultImageExtensions   = []string{"png", "jpg", "jpeg", "gif", "webp", "avif"}
+	defaultImageExtensions   = []string{"png", "jpg", "jpeg", "gif", "webp", "avif", "jxl"}
 	defaultGalleryExtensions = []string{"zip", "cbz"}
 	defaultMenuItems         = []string{"scenes", "images", "groups", "markers", "galleries", "performers", "studios", "tags"}
 )
@@ -1195,6 +1198,21 @@ func (i *Config) GetTranscodeHardwareAcceleration() bool {
 	return i.getBool(TranscodeHardwareAcceleration)
 }
 
+// GetMaxMarkerPreviewDuration returns the ceiling in seconds applied to
+// generated marker preview videos when the marker has an explicit end time.
+// Any value <= 0 disables the ceiling, honoring the marker's end time verbatim.
+func (i *Config) GetMaxMarkerPreviewDuration() int {
+	return i.getInt(MaxMarkerPreviewDuration)
+}
+
+// GetDefaultMarkerPreviewDuration returns the duration in seconds used for
+// marker preview videos when the marker has no usable explicit end time
+// (nil end, or end <= start). Must be a positive value; the configure
+// mutation rejects non-positive input.
+func (i *Config) GetDefaultMarkerPreviewDuration() int {
+	return i.getInt(DefaultMarkerPreviewDuration)
+}
+
 func (i *Config) GetMaxTranscodeSize() models.StreamingResolutionEnum {
 	ret := i.getString(MaxTranscodeSize)
 
@@ -1343,6 +1361,21 @@ func (i *Config) GetUserGraphqlRateLimitWindow() time.Duration {
 	v := i.forKey(UserGraphqlRateLimitWindow)
 	if v.Exists(UserGraphqlRateLimitWindow) {
 		ret = time.Duration(v.Int(UserGraphqlRateLimitWindow)) * time.Second
+	}
+
+	return ret
+}
+
+// GetSignedURLExpiry gets the expiry time for signed URLs, in seconds.
+// Defaults to 4 hours to accommodate long video playback sessions.
+func (i *Config) GetSignedURLExpiry() time.Duration {
+	i.RLock()
+	defer i.RUnlock()
+
+	ret := signedURLExpiryDefault * time.Second
+	v := i.forKey(SignedURLExpiry)
+	if v.Exists(SignedURLExpiry) {
+		ret = time.Duration(v.Int(SignedURLExpiry)) * time.Second
 	}
 
 	return ret
@@ -1770,19 +1803,6 @@ func (i *Config) GetDefaultGenerateSettings() *models.GenerateMetadataOptions {
 	return nil
 }
 
-// GetDangerousAllowPublicWithoutAuth determines if the security feature is enabled.
-// See https://discourse.stashapp.cc/t/-/1658
-func (i *Config) GetDangerousAllowPublicWithoutAuth() bool {
-	return i.getBool(dangerousAllowPublicWithoutAuth)
-}
-
-// GetSecurityTripwireAccessedFromPublicInternet returns a public IP address if stash
-// has been accessed from the public internet, with no auth enabled, and
-// DangerousAllowPublicWithoutAuth disabled. Returns an empty string otherwise.
-func (i *Config) GetSecurityTripwireAccessedFromPublicInternet() string {
-	return i.getString(SecurityTripwireAccessedFromPublicInternet)
-}
-
 // GetDLNAServerName returns the visible name of the DLNA server. If empty,
 // "stash" will be used.
 func (i *Config) GetDLNAServerName() string {
@@ -1926,14 +1946,6 @@ func (i *Config) GetTrustedProxies() []string {
 	return i.getStringSlice(TrustedProxies)
 }
 
-// ActivatePublicAccessTripwire sets the security_tripwire_accessed_from_public_internet
-// config field to the provided IP address to indicate that stash has been accessed
-// from this public IP without authentication.
-func (i *Config) ActivatePublicAccessTripwire(requestIP string) error {
-	i.SetString(SecurityTripwireAccessedFromPublicInternet, requestIP)
-	return i.Write()
-}
-
 func (i *Config) getPackageSources(key string) []*models.PackageSource {
 	var sources []*models.PackageSource
 	if err := i.unmarshalKey(key, &sources); err != nil {
@@ -2041,6 +2053,8 @@ func (i *Config) setDefaultValues() {
 	i.setDefault(PreviewExcludeStart, previewExcludeStartDefault)
 	i.setDefault(PreviewExcludeEnd, previewExcludeEndDefault)
 	i.setDefault(PreviewAudio, previewAudioDefault)
+	i.setDefault(MaxMarkerPreviewDuration, maxMarkerPreviewDurationDefault)
+	i.setDefault(DefaultMarkerPreviewDuration, defaultMarkerPreviewDurationDefault)
 	i.setDefault(SoundOnPreview, false)
 
 	i.setDefault(UseCustomSpriteInterval, UseCustomSpriteIntervalDefault)
@@ -2055,9 +2069,6 @@ func (i *Config) setDefaultValues() {
 	i.setDefault(CreateImageClipsFromVideos, createImageClipsFromVideosDefault)
 
 	i.setDefault(Database, defaultDatabaseFilePath)
-
-	i.setDefault(dangerousAllowPublicWithoutAuth, dangerousAllowPublicWithoutAuthDefault)
-	i.setDefault(SecurityTripwireAccessedFromPublicInternet, securityTripwireAccessedFromPublicInternetDefault)
 
 	// Set generated to the metadata path for backwards compat
 	i.setDefault(Generated, i.main.String(Metadata))

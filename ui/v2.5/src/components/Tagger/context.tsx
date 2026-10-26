@@ -111,7 +111,9 @@ export interface ISceneQueryResult {
   error?: string;
 }
 
-export const TaggerContext: React.FC = ({ children }) => {
+export const TaggerContext: React.FC<React.PropsWithChildren<unknown>> = ({
+  children,
+}) => {
   const [loading, setLoading] = useState(false);
   const [loadingMulti, setLoadingMulti] = useState(false);
   const [sources, setSources] = useState<ITaggerSource[]>([]);
@@ -187,8 +189,8 @@ export const TaggerContext: React.FC = ({ children }) => {
     }
     // First, see if we have a saved endpoint.
     if (config.selectedEndpoint) {
-      let source = sources.find(
-        (s) => s.sourceInput.stash_box_endpoint == config.selectedEndpoint
+      const source = sources.find(
+        (s) => s.sourceInput.stash_box_endpoint === config.selectedEndpoint
       );
       if (source) {
         setCurrentSource(source);
@@ -200,6 +202,7 @@ export const TaggerContext: React.FC = ({ children }) => {
   }, [sources, currentSource, config]);
 
   // clear the search results when the source changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally only resetting when currentSource changes
   useEffect(() => {
     setSearchResults({});
   }, [currentSource]);

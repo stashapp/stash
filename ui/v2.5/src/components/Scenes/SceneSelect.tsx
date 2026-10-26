@@ -256,14 +256,14 @@ const _SceneIDSelect: React.FC<
     onSelectValues?.(items);
   }
 
-  async function loadObjectsByID(idsToLoad: string[]): Promise<Scene[]> {
-    const query = await queryFindScenesByIDForSelect(idsToLoad);
-    const { scenes: loadedScenes } = query.data.findScenes;
-
-    return loadedScenes;
-  }
-
   useEffect(() => {
+    async function loadObjectsByID(idsToLoad: string[]): Promise<Scene[]> {
+      const query = await queryFindScenesByIDForSelect(idsToLoad);
+      const { scenes: loadedScenes } = query.data.findScenes;
+
+      return loadedScenes;
+    }
+
     if (!idsChanged) {
       return;
     }

@@ -57,12 +57,14 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const [parentStudio, setParentStudio] = useState<Studio | null>(null);
+  const [childStudios, setChildStudios] = useState<Studio[]>([]);
 
   const schema = yup.object({
     name: yup.string().required(),
     urls: yup.array(yup.string().required()).defined(),
     details: yup.string().ensure(),
     parent_id: yup.string().required().nullable(),
+    child_ids: yup.array(yup.string().required()).defined(),
     aliases: yupRequiredStringArray(intl).defined(),
     tag_ids: yup.array(yup.string().required()).defined(),
     ignore_auto_tag: yup.boolean().defined(),
@@ -77,6 +79,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     urls: studio.urls ?? [],
     details: studio.details ?? "",
     parent_id: studio.parent_studio?.id ?? null,
+    child_ids: (studio.child_studios ?? []).map((child) => child.id),
     aliases: studio.aliases ?? [],
     tag_ids: (studio.tags ?? []).map((t) => t.id),
     ignore_auto_tag: studio.ignore_auto_tag ?? false,
@@ -103,13 +106,21 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     onSubmit: submit,
   });
 
-  const { tagsControl } = useTagsEdit(studio.tags, (ids) =>
+  const { resetTagsState, tagsControl } = useTagsEdit(studio.tags, (ids) =>
     formik.setFieldValue("tag_ids", ids)
   );
 
   function onSetParentStudio(item: Studio | null) {
     setParentStudio(item);
     formik.setFieldValue("parent_id", item ? item.id : null);
+  }
+
+  function onSetChildStudios(items: Studio[]) {
+    setChildStudios(items);
+    formik.setFieldValue(
+      "child_ids",
+      items.map((item) => item.id)
+    );
   }
 
   const encodingImage = ImageUtils.usePasteImage((imageData) =>
@@ -127,6 +138,17 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         : null
     );
   }, [studio.parent_studio]);
+
+  useEffect(() => {
+    setChildStudios(
+      (studio.child_studios ?? []).map((childStudio) => ({
+        id: childStudio.id,
+        name: childStudio.name,
+        aliases: [],
+        image_path: childStudio.image_path,
+      }))
+    );
+  }, [studio.child_studios]);
 
   useEffect(() => {
     setImage(formik.values.image);
@@ -154,6 +176,26 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     try {
       await onSubmit(input, andNew);
       formik.resetForm();
+      if (andNew) {
+        setParentStudio(
+          studio.parent_studio
+            ? {
+                id: studio.parent_studio.id,
+                name: studio.parent_studio.name,
+                aliases: [],
+              }
+            : null
+        );
+        setChildStudios(
+          (studio.child_studios ?? []).map((childStudio) => ({
+            id: childStudio.id,
+            name: childStudio.name,
+            aliases: [],
+            image_path: childStudio.image_path,
+          }))
+        );
+        resetTagsState();
+      }
     } catch (e) {
       Toast.error(e);
     }
@@ -199,10 +241,33 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
           onSetParentStudio(items.length > 0 ? items[0] : null)
         }
         values={parentStudio ? [parentStudio] : []}
+        excludeIds={[
+          ...(studio?.id ? [studio.id] : []),
+          ...formik.values.child_ids,
+        ]}
       />
     );
 
     return renderField("parent_id", title, control);
+  }
+
+  function renderSubStudiosField() {
+    const title = intl.formatMessage({ id: "subsidiary_studios" });
+    const control = (
+      <StudioSelect
+        isMulti
+        onSelect={onSetChildStudios}
+        values={childStudios.filter((childStudio) =>
+          formik.values.child_ids.includes(childStudio.id)
+        )}
+        excludeIds={[
+          ...(studio?.id ? [studio.id] : []),
+          ...(formik.values.parent_id ? [formik.values.parent_id] : []),
+        ]}
+      />
+    );
+
+    return renderField("child_ids", title, control);
   }
 
   function renderTagsField() {
@@ -246,6 +311,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         {renderStringListField("urls")}
         {renderInputField("details", "textarea")}
         {renderParentStudioField()}
+        {renderSubStudiosField()}
         {renderTagsField()}
         {renderStashIDsField(
           "stash_ids",

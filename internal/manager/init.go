@@ -126,8 +126,6 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 		if err := mgr.postInit(ctx); err != nil {
 			return nil, err
 		}
-
-		// mgr.checkSecurityTripwire()
 	} else {
 		cfgFile := cfg.GetConfigFile()
 		if cfgFile != "" {
@@ -309,18 +307,6 @@ func (s *Manager) postInit(ctx context.Context) error {
 
 	return nil
 }
-
-// func (s *Manager) checkSecurityTripwire() {
-// 	loginRequired, err := s.SessionStore.LoginRequired(context.Background())
-// 	if err != nil {
-// 		logger.Errorf("Error checking if login is required: %v", err)
-// 		return
-// 	}
-
-// 	if err := session.CheckExternalAccessTripwire(loginRequired, s.Config); err != nil {
-// 		session.LogExternalAccessError(*err)
-// 	}
-// }
 
 func (s *Manager) writeStashIcon() {
 	iconPath := filepath.Join(s.Config.GetConfigPath(), "icon.png")

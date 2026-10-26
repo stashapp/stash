@@ -17,6 +17,7 @@ interface IProps {
   count: number;
   loading: boolean;
   url: string;
+  children?: React.ReactNode;
 }
 
 export const FilteredRecommendationRow: React.FC<IProps> = PatchComponent(

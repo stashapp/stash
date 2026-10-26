@@ -24,7 +24,7 @@ export const TruncatedText: React.FC<ITruncatedTextProps> = PatchComponent(
 
     const startShowingTooltip = useDebounce(() => setShowTooltip(true), delay);
 
-    if (!text) return <></>;
+    if (!text) return null;
 
     const handleFocus = (element: HTMLElement) => {
       // Check if visible size is smaller than the content size
@@ -76,7 +76,7 @@ export const TruncatedInlineText: React.FC<ITruncatedTextProps> = ({
 
   const startShowingTooltip = useDebounce(() => setShowTooltip(true), delay);
 
-  if (!text) return <></>;
+  if (!text) return null;
 
   const handleFocus = (element: HTMLElement) => {
     // Check if visible size is smaller than the content size

@@ -317,13 +317,13 @@ export const FilteredTagList = PatchComponent(
           pluralEntity={intl.formatMessage({ id: "tags" })}
           destroyMutation={useTagsDestroy}
           onDeleted={() => {
-            itemsToDelete.forEach((t) =>
+            itemsToDelete.forEach((t) => {
               tagRelationHook(
                 t,
                 { parents: t.parents ?? [], children: t.children ?? [] },
                 { parents: [], children: [] }
-              )
-            );
+              );
+            });
           }}
         />
       );
@@ -440,6 +440,7 @@ export const FilteredTagList = PatchComponent(
               />
 
               <FilterTags
+                view={view}
                 criteria={filter.criteria}
                 onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
                 onRemoveCriterion={removeCriterion}

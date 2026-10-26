@@ -227,7 +227,7 @@ func (r *queryResolver) ParseSceneFilenames(ctx context.Context, filter *models.
 	return ret, nil
 }
 
-func (r *queryResolver) FindDuplicateScenes(ctx context.Context, distance *int, durationDiff *float64) (ret [][]*models.Scene, err error) {
+func (r *queryResolver) FindDuplicateScenes(ctx context.Context, distance *int, durationDiff *float64, sceneFilter *models.SceneFilterType) (ret [][]*models.Scene, err error) {
 	dist := 0
 	durDiff := -1.
 	if distance != nil {
@@ -237,7 +237,7 @@ func (r *queryResolver) FindDuplicateScenes(ctx context.Context, distance *int, 
 		durDiff = *durationDiff
 	}
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Scene.FindDuplicates(ctx, dist, durDiff)
+		ret, err = r.repository.Scene.FindDuplicates(ctx, dist, durDiff, sceneFilter)
 		return err
 	}); err != nil {
 		return nil, err

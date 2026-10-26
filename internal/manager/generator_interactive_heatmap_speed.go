@@ -48,6 +48,12 @@ type Action struct {
 	Speed float64
 }
 
+var utf8BOM = []byte{0xEF, 0xBB, 0xBF}
+
+func unmarshalFunscriptData(data []byte, funscript *Script) error {
+	return json.Unmarshal(bytes.TrimPrefix(data, utf8BOM), funscript)
+}
+
 type GradientTable []struct {
 	Col    colorful.Color
 	Pos    float64
@@ -96,7 +102,7 @@ func (g *InteractiveHeatmapSpeedGenerator) LoadFunscriptData(path string, sceneD
 	}
 
 	var funscript Script
-	err = json.Unmarshal(data, &funscript)
+	err = unmarshalFunscriptData(data, &funscript)
 	if err != nil {
 		return Script{}, err
 	}
@@ -370,7 +376,7 @@ func LoadFunscriptData(path string) (Script, error) {
 	}
 
 	var funscript Script
-	err = json.Unmarshal(data, &funscript)
+	err = unmarshalFunscriptData(data, &funscript)
 	if err != nil {
 		return Script{}, err
 	}

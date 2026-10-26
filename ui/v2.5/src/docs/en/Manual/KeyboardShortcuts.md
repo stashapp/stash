@@ -134,6 +134,15 @@
 | `s s` | Save Scene |
 | `d d` | Delete Scene |
 
+## Lightbox shortcuts
+
+| Keyboard sequence | Action |
+|-------------------|--------|
+| `←` | Previous image |
+| `→` | Next image |
+| `Escape` | Close lightbox |
+| `d d` | Delete current image |
+
 ## Groups page shortcuts
 
 | Keyboard sequence | Action |

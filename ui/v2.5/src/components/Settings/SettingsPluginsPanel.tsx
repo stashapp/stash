@@ -16,7 +16,6 @@ import { SettingSection } from "./SettingSection";
 import {
   BooleanSetting,
   NumberSetting,
-  Setting,
   SettingGroup,
   StringSetting,
 } from "./Inputs";
@@ -27,6 +26,7 @@ import {
   InstalledPluginPackages,
 } from "./PluginPackageManager";
 import { ExternalLink } from "../Shared/ExternalLink";
+import { ClearableInput } from "../Shared/ClearableInput";
 import { PatchComponent } from "src/patch";
 
 interface IPluginSettingProps {
@@ -114,6 +114,8 @@ export const SettingsPluginsPanel: React.FC = () => {
     string | undefined
   >();
 
+  const [filter, setFilter] = React.useState("");
+
   async function onReloadPlugins() {
     try {
       await mutateReloadPlugins();
@@ -172,9 +174,18 @@ export const SettingsPluginsPanel: React.FC = () => {
     }
 
     function renderPlugins() {
-      const elements = (data?.plugins ?? []).map((plugin) => (
+      const query = filter.toLowerCase();
+      const visiblePlugins = (data?.plugins ?? [])
+        .slice()
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .filter((plugin) => plugin.name.toLowerCase().includes(query));
+
+      const elements = visiblePlugins.map((plugin) => (
         <SettingGroup
           key={plugin.id}
+          // only collapsible if there are hooks or settings to show
+          collapsible={!!(plugin.hooks?.length || plugin.settings?.length)}
+          collapsedDefault={!!(plugin.hooks?.length || plugin.settings?.length)}
           settingProps={{
             heading: `${plugin.name} ${
               plugin.version ? `(${plugin.version})` : undefined
@@ -240,7 +251,7 @@ export const SettingsPluginsPanel: React.FC = () => {
     }
 
     return renderPlugins();
-  }, [data?.plugins, intl, Toast, changedPluginID]);
+  }, [data?.plugins, intl, Toast, changedPluginID, filter]);
 
   if (loading || configLoading) return <LoadingIndicator />;
 
@@ -250,7 +261,12 @@ export const SettingsPluginsPanel: React.FC = () => {
       <AvailablePluginPackages />
 
       <SettingSection headingID="config.categories.plugins">
-        <Setting headingID="actions.reload_plugins">
+        <div className="content d-flex justify-content-between">
+          <ClearableInput
+            placeholder={`${intl.formatMessage({ id: "filter" })}...`}
+            value={filter}
+            setValue={(v) => setFilter(v)}
+          />
           <Button onClick={() => onReloadPlugins()}>
             <span className="fa-icon">
               <Icon icon={faSyncAlt} />
@@ -259,7 +275,7 @@ export const SettingsPluginsPanel: React.FC = () => {
               <FormattedMessage id="actions.reload_plugins" />
             </span>
           </Button>
-        </Setting>
+        </div>
         {pluginElements}
       </SettingSection>
     </>

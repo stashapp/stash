@@ -62,8 +62,12 @@ func (b SceneURLBuilder) GetFunscriptURL() *url.URL {
 	return u
 }
 
+func (b SceneURLBuilder) GetCaptionPath() string {
+	return "/scene/" + b.SceneID + "/caption"
+}
+
 func (b SceneURLBuilder) GetCaptionURL() string {
-	return b.BaseURL + "/scene/" + b.SceneID + "/caption"
+	return b.BaseURL + b.GetCaptionPath()
 }
 
 func (b SceneURLBuilder) GetInteractiveHeatmapURL() string {

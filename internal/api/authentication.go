@@ -12,9 +12,11 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager"
+	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/session"
+	"github.com/stashapp/stash/pkg/signedurl"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/user"
 )
@@ -48,7 +50,50 @@ func handleUnauthorized(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, u.String(), http.StatusFound)
 }
 
+// authenticateSignedRequest checks if the request is a valid signed media request.
+// Returns the matched user, or nil if the request is not a valid signed request.
+func authenticateSignedRequest(ctx context.Context, r *http.Request, txnMgr models.TxnManager, g UserAuthenticator) (*models.User, error) {
+	// Only apply to scene stream paths (used by AirPlay/Chromecast devices that can't pass cookies)
+	if !strings.HasPrefix(r.URL.Path, "/scene/") {
+		return nil, nil
+	}
+
+	// Check for signed URL parameters
+	q := r.URL.Query()
+	if q.Get(signedurl.CIDParam) == "" || q.Get(signedurl.ExpiresParam) == "" || q.Get(signedurl.SigParam) == "" {
+		return nil, nil
+	}
+
+	var users []*models.User
+	if err := txn.WithReadTxn(ctx, txnMgr, func(ctx context.Context) error {
+		var err error
+		users, err = g.AllUsers(ctx)
+		return err
+	}); err != nil {
+		return nil, fmt.Errorf("error getting users: %w", err)
+	}
+
+	// Extract the credential ID and look up the user's signing key.
+	// We need the key before we can verify the signature, since
+	// each user could have their own signing key.
+	c := config.GetInstance()
+	u, secret, found := resolveCredentialID(c, users, q.Get(signedurl.CIDParam))
+	if !found {
+		logger.Warnf("signed URL credential ID mismatch")
+		return nil, nil
+	}
+
+	// Verify the signature using the user's signing key
+	if _, err := signedurl.VerifyURL(r.URL.Path, q, secret); err != nil {
+		logger.Warnf("signed URL verification failed: %v", err)
+		return nil, nil
+	}
+
+	return u, nil
+}
+
 type UserAuthenticator interface {
+	AllUsers(ctx context.Context) ([]*models.User, error)
 	GetGuestUser(ctx context.Context) *models.User
 
 	IsSingleUserMode() bool
@@ -202,6 +247,12 @@ func authenticateHandler(txnMgr models.TxnManager, cfg authenticationConfig) fun
 						httpError(w, r, "Invalid API key", http.StatusUnauthorized)
 						return
 					}
+				} else if signedUser, signedErr := authenticateSignedRequest(ctx, r, txnMgr, g); signedErr != nil {
+					logger.Errorf("error authenticating signed request: %v", signedErr)
+					httpError(w, r, "internal server error", http.StatusInternalServerError)
+					return
+				} else if signedUser != nil {
+					u = signedUser
 				} else {
 					session, getErr := manager.GetInstance().SessionStore.GetSession(w, r)
 					if getErr != nil {

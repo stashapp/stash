@@ -2,7 +2,7 @@ import lodashIsEqual from "lodash-es/isEqual";
 import clone from "lodash-es/clone";
 import { IHasStoredID } from "src/utils/data";
 
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+// biome-ignore lint/suspicious/noExplicitAny: don't know how to type this
 export type CustomFieldScrapeResults = Map<string, ZeroableScrapeResult<any>>;
 
 export class ScrapeResult<T> {
@@ -60,6 +60,12 @@ export class ScrapeResult<T> {
       return this.newValue;
     }
   }
+
+  // the value the dialog is currently showing for this field - the scraped
+  // value if it is selected, otherwise the value the object already had
+  public currentValue() {
+    return this.useNewValue ? this.newValue : this.originalValue;
+  }
 }
 
 // for types where !!value is a valid value (boolean and number)
@@ -98,7 +104,7 @@ function storedIDsEqual<T extends IHasStoredID>(
 }
 
 export class ObjectListScrapeResult<
-  T extends IHasStoredID
+  T extends IHasStoredID,
 > extends ScrapeResult<T[]> {
   public constructor(
     originalValue?: T[] | null,
@@ -110,7 +116,7 @@ export class ObjectListScrapeResult<
 }
 
 export class ObjectScrapeResult<
-  T extends IHasStoredID
+  T extends IHasStoredID,
 > extends ScrapeResult<T> {
   public constructor(
     originalValue?: T | null,

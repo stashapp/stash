@@ -62,13 +62,20 @@ The current sorting field is shown next to the query text field, indicating the 
 
 ### Saved filters
 
-Saved filters can be accessed with the bookmark button on the left of the query text field. The current filter can be saved by entering a filter name and clicking on the save button. Existing saved filters may be overwritten with the current filter by clicking on the save button next to the filter name. Saved filters may also be deleted by pressing the delete button next to the filter name.
+Saved filters can be accessed with the bookmark button on the left of the query text field, and in the `Saved filters` section of the filter sidebar. The current filter can be saved by entering a filter name and clicking on the save button.
+
+Each saved filter has an operations menu, opened with the button next to the filter name. It provides the following operations:
+
+- `Overwrite` - replaces the saved filter with the current filter.
+- `Rename` - changes the name of the saved filter, editing it in place in the list. Press `Enter` to confirm or `Escape` to cancel. The filter's criteria are left unchanged.
+- `Set as default` - makes the saved filter the default filter for the page. See below.
+- `Delete` - deletes the saved filter.
 
 Saved filters are sorted alphabetically by title with capitalized titles sorted first.
 
 ### Default filter
 
-The default filter for the top-level pages may be set to the current filter by clicking the `Set as default` button in the saved filter menu.
+The default filter for the top-level pages may be set to the current filter by clicking the `Set as default` button in the `Saved filters` section of the filter sidebar. An existing saved filter may be made the default by selecting `Set as default` from its operations menu.
 
 ## Reveal file in file manager
 

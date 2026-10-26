@@ -15,16 +15,16 @@ import (
 	"gopkg.in/guregu/null.v4/zero"
 )
 
-func post86(ctx context.Context, db *sqlx.DB) error {
+func post87(ctx context.Context, db *sqlx.DB) error {
 	// don't run this if we're in the setup context - it creates credentials itself
 	if models.IsSetupContext(ctx) {
-		logger.Debug("Skipping post-migration for schema version 86 because we're in the setup context")
+		logger.Debug("Skipping post-migration for schema version 87 because we're in the setup context")
 		return nil
 	}
 
-	logger.Info("Running post-migration for schema version 86")
+	logger.Info("Running post-migration for schema version 87")
 
-	m := schema86Migrator{
+	m := schema87Migrator{
 		migrator: migrator{
 			db: db,
 		},
@@ -37,11 +37,11 @@ func post86(ctx context.Context, db *sqlx.DB) error {
 	return nil
 }
 
-type schema86Migrator struct {
+type schema87Migrator struct {
 	migrator
 }
 
-func (m *schema86Migrator) createInitialUser(ctx context.Context) error {
+func (m *schema87Migrator) createInitialUser(ctx context.Context) error {
 	// if credentials are set in the config file, we need to create an initial user with those credentials, so that the user can log in after the migration
 	cfg := config.GetInstance()
 
@@ -103,7 +103,7 @@ func (m *schema86Migrator) createInitialUser(ctx context.Context) error {
 	return nil
 }
 
-func (m *schema86Migrator) removeLegacyCredentials() error {
+func (m *schema87Migrator) removeLegacyCredentials() error {
 	c := config.GetInstance()
 
 	orgPath := c.GetConfigFile()
@@ -117,7 +117,7 @@ func (m *schema86Migrator) removeLegacyCredentials() error {
 	logger.Info("Removing legacy credentials from config file")
 
 	// save a backup of the original config file
-	backupPath := fmt.Sprintf("%s.85.%s", orgPath, time.Now().Format("20060102_150405"))
+	backupPath := fmt.Sprintf("%s.86.%s", orgPath, time.Now().Format("20060102_150405"))
 
 	data, err := c.Marshal()
 	if err != nil {
@@ -141,5 +141,5 @@ func (m *schema86Migrator) removeLegacyCredentials() error {
 }
 
 func init() {
-	sqlite.RegisterPostMigration(86, post86)
+	sqlite.RegisterPostMigration(87, post87)
 }
