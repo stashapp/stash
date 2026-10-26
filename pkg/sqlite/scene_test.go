@@ -5906,6 +5906,17 @@ func TestSceneStore_MergeUserData(t *testing.T) {
 		_, err = qb.UpdatePartial(otherCtx, src.ID, models.ScenePartial{Rating: models.NewOptionalInt(otherRating)})
 		require.NoError(t, err)
 
+		// the other user has activity but no rating on the destination;
+		// the source rating must still be used
+		resumeTime := 10.0
+		playDuration := 20.0
+		_, err = qb.SaveActivity(otherCtx, dest.ID, &resumeTime, &playDuration)
+		require.NoError(t, err)
+		srcResumeTime := 30.0
+		srcPlayDuration := 5.0
+		_, err = qb.SaveActivity(otherCtx, src.ID, &srcResumeTime, &srcPlayDuration)
+		require.NoError(t, err)
+
 		// the merging user has a rating on both; the destination rating must be kept
 		_, err = qb.UpdatePartial(ctx, src.ID, models.ScenePartial{Rating: models.NewOptionalInt(20)})
 		require.NoError(t, err)
@@ -5928,6 +5939,8 @@ func TestSceneStore_MergeUserData(t *testing.T) {
 		s, err := qb.Find(otherCtx, dest.ID)
 		require.NoError(t, err)
 		assert.Equal(t, &otherRating, s.Rating, "other user's rating should be copied")
+		assert.Equal(t, resumeTime, s.ResumeTime, "destination resume time should be kept")
+		assert.Equal(t, playDuration+srcPlayDuration, s.PlayDuration, "play durations should be added")
 
 		s, err = qb.Find(ctx, dest.ID)
 		require.NoError(t, err)

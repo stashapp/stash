@@ -73,13 +73,15 @@ func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int,
 		}
 	}
 
-	if _, err := s.Repository.UpdatePartial(ctx, destinationID, scenePartial); err != nil {
-		return fmt.Errorf("updating scene: %w", err)
-	}
-
-	// merge user data, including play and o history, for all users
+	// merge user data, including play and o history, for all users.
+	// This is done before updating the destination, so that the provided values
+	// take precedence for the current user.
 	if err := s.Repository.MergeUserData(ctx, destinationID, sourceIDs, options.IncludePlayHistory, options.IncludeOHistory); err != nil {
 		return fmt.Errorf("merging user data: %w", err)
+	}
+
+	if _, err := s.Repository.UpdatePartial(ctx, destinationID, scenePartial); err != nil {
+		return fmt.Errorf("updating scene: %w", err)
 	}
 
 	// delete old scenes

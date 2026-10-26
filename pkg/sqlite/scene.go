@@ -1499,7 +1499,8 @@ func (qb *SceneStore) ResetActivity(ctx context.Context, id int, resetResume boo
 
 // MergeUserData moves the per-user data of all users from the source scenes to the destination scene.
 // History is moved if the corresponding include flag is set.
-// Ratings and activity are copied for users who have none set on the destination scene.
+// For each user, the destination rating and resume time are kept if set, otherwise the source values are used.
+// Play durations are added together.
 func (qb *SceneStore) MergeUserData(ctx context.Context, destinationID int, sourceIDs []int, includeViewHistory bool, includeOHistory bool) error {
 	if len(sourceIDs) == 0 {
 		return nil
@@ -1535,7 +1536,11 @@ func (qb *SceneStore) MergeUserData(ctx context.Context, destinationID int, sour
 			table.Col("resume_time"),
 			table.Col("play_duration"),
 		).Where(table.Col(sceneIDColumn).In(sourceIDs)),
-	).OnConflict(goqu.DoNothing())
+	).OnConflict(goqu.DoUpdate(sceneIDColumn+", "+userIDColumn, goqu.Record{
+		"rating":        goqu.L("COALESCE(rating, excluded.rating)"),
+		"resume_time":   goqu.L("CASE WHEN resume_time = 0 THEN excluded.resume_time ELSE resume_time END"),
+		"play_duration": goqu.L("play_duration + excluded.play_duration"),
+	}))
 
 	if _, err := exec(ctx, q); err != nil {
 		return fmt.Errorf("merging %s: %w", scenesUserDataTable, err)
