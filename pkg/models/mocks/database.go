@@ -23,6 +23,7 @@ type Database struct {
 	Studio         *StudioReaderWriter
 	Tag            *TagReaderWriter
 	SavedFilter    *SavedFilterReaderWriter
+	UserUIConfig   *UserUIConfigReaderWriter
 }
 
 func (*Database) Begin(ctx context.Context, exclusive bool) (context.Context, error) {
@@ -72,6 +73,7 @@ func NewDatabase() *Database {
 		Studio:         &StudioReaderWriter{},
 		Tag:            &TagReaderWriter{},
 		SavedFilter:    &SavedFilterReaderWriter{},
+		UserUIConfig:   &UserUIConfigReaderWriter{},
 	}
 }
 
@@ -88,6 +90,7 @@ func (db *Database) AssertExpectations(t mock.TestingT) {
 	db.Studio.AssertExpectations(t)
 	db.Tag.AssertExpectations(t)
 	db.SavedFilter.AssertExpectations(t)
+	db.UserUIConfig.AssertExpectations(t)
 }
 
 // WithTxnCtx runs fn with a context that has a transaction hook manager registered,
@@ -118,5 +121,6 @@ func (db *Database) Repository() models.Repository {
 		Studio:         db.Studio,
 		Tag:            db.Tag,
 		SavedFilter:    db.SavedFilter,
+		UserUIConfig:   db.UserUIConfig,
 	}
 }

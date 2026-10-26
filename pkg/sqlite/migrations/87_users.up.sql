@@ -205,4 +205,11 @@ ALTER TABLE `saved_filters_new` RENAME TO `saved_filters`;
 
 CREATE UNIQUE INDEX `index_saved_filters_on_user_id_mode_name_unique` ON `saved_filters` (`user_id`, `mode`, `name`);
 
+-- users without a UI configuration use the UI configuration in the config file
+CREATE TABLE `user_ui_config` (
+  `user_id` integer NOT NULL PRIMARY KEY,
+  `config` text NOT NULL,
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+);
+
 PRAGMA foreign_keys=ON;

@@ -80,6 +80,7 @@ type storeRepository struct {
 	Tag            *TagStore
 	Group          *GroupStore
 	User           *UserStore
+	UserUIConfig   *UserUIConfigStore
 }
 
 type Database struct {
@@ -119,6 +120,7 @@ func NewDatabase() *Database {
 		Group:          NewGroupStore(blobStore),
 		SavedFilter:    NewSavedFilterStore(),
 		User:           NewUserStore(),
+		UserUIConfig:   NewUserUIConfigStore(),
 	}
 
 	ret := &Database{
