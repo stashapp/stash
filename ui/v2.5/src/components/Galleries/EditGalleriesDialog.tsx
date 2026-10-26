@@ -7,6 +7,7 @@ import { StudioSelect } from "../Shared/Select";
 import { ModalComponent } from "../Shared/Modal";
 import { MultiSet } from "../Shared/MultiSet";
 import { useToast } from "src/hooks/Toast";
+import { useIsAdmin } from "src/hooks/CurrentUser";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
   getAggregateInputValue,
@@ -40,6 +41,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
 ) => {
   const intl = useIntl();
+  const isAdmin = useIsAdmin();
   const Toast = useToast();
 
   const [updateInput, setUpdateInput] = useState<GQL.BulkGalleryUpdateInput>({
@@ -116,6 +118,11 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
       updateInput.rating100,
       aggregateState.state.rating100
     );
+
+    // organized may only be changed by administrators
+    if (!isAdmin) {
+      galleryInput.organized = undefined;
+    }
 
     return galleryInput;
   }
@@ -273,13 +280,15 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
             />
           </BulkUpdateFormGroup>
 
-          <Form.Group controlId="organized">
-            <IndeterminateCheckbox
-              label={intl.formatMessage({ id: "organized" })}
-              setChecked={(checked) => setUpdateField({ organized: checked })}
-              checked={updateInput.organized ?? undefined}
-            />
-          </Form.Group>
+          {isAdmin && (
+            <Form.Group controlId="organized">
+              <IndeterminateCheckbox
+                label={intl.formatMessage({ id: "organized" })}
+                setChecked={(checked) => setUpdateField({ organized: checked })}
+                checked={updateInput.organized ?? undefined}
+              />
+            </Form.Group>
+          )}
         </Form>
       </ModalComponent>
     );

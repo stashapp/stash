@@ -5,6 +5,7 @@ import { useBulkStudioUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { ModalComponent } from "../Shared/Modal";
 import { useToast } from "src/hooks/Toast";
+import { useIsAdmin } from "src/hooks/CurrentUser";
 import { MultiSet } from "../Shared/MultiSet";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
@@ -34,6 +35,7 @@ export const EditStudiosDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
 ) => {
   const intl = useIntl();
+  const isAdmin = useIsAdmin();
   const Toast = useToast();
 
   const [updateInput, setUpdateInput] = useState<GQL.BulkStudioUpdateInput>({
@@ -100,6 +102,11 @@ export const EditStudiosDialog: React.FC<IListOperationProps> = (
       updateInput.rating100,
       aggregateState.state.rating100
     );
+
+    // organized may only be changed by administrators
+    if (!isAdmin) {
+      studioInput.organized = undefined;
+    }
 
     return studioInput;
   }
@@ -219,13 +226,15 @@ export const EditStudiosDialog: React.FC<IListOperationProps> = (
             />
           </Form.Group>
 
-          <Form.Group controlId="organized">
-            <IndeterminateCheckbox
-              label={intl.formatMessage({ id: "organized" })}
-              setChecked={(checked) => setUpdateField({ organized: checked })}
-              checked={updateInput.organized ?? undefined}
-            />
-          </Form.Group>
+          {isAdmin && (
+            <Form.Group controlId="organized">
+              <IndeterminateCheckbox
+                label={intl.formatMessage({ id: "organized" })}
+                setChecked={(checked) => setUpdateField({ organized: checked })}
+                checked={updateInput.organized ?? undefined}
+              />
+            </Form.Group>
+          )}
         </Form>
       </ModalComponent>
     );
