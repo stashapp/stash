@@ -49,7 +49,9 @@ func (m *schema87Migrator) createInitialUser(ctx context.Context) error {
 	password := cfg.GetLegacyPasswordHash()
 	apiKey := cfg.GetLegacyAPIKey()
 
-	if username == "" || password == "" {
+	hasLegacyCredentials := username != "" && password != ""
+
+	if !hasLegacyCredentials {
 		// create a default user with no password
 		logger.Warn("No credentials found in config file. Creating default user with no password.")
 		username = "admin"
@@ -98,6 +100,13 @@ func (m *schema87Migrator) createInitialUser(ctx context.Context) error {
 	// remove the legacy credentials from the config file, since they're now stored in the database
 	if err := m.removeLegacyCredentials(); err != nil {
 		return fmt.Errorf("error removing legacy credentials: %w", err)
+	}
+
+	// previously, public IPs were only rejected when credentials were not set.
+	// Enable public access to maintain access for systems with credentials.
+	if hasLegacyCredentials && !cfg.GetPublicAccess() {
+		logger.Info("Credentials were set in config file. Enabling public access to maintain existing behaviour.")
+		cfg.SetPublicAccess(true)
 	}
 
 	return nil
