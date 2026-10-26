@@ -204,6 +204,7 @@ func (s *Store) GetSession(w http.ResponseWriter, r *http.Request) (*Session, er
 }
 
 func SetCurrentUser(ctx context.Context, u models.User) context.Context {
+	ctx = models.WithUserID(ctx, u.ID)
 	return context.WithValue(ctx, contextUser, u)
 }
 
