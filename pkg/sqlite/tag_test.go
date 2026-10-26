@@ -13,6 +13,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMarkerFindBySceneMarkerID(t *testing.T) {
@@ -1878,3 +1879,56 @@ func TestTagQueryCustomFields(t *testing.T) {
 // TODO All
 // TODO AllSlim
 // TODO Query
+
+func TestTagStore_UserData(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		qb := db.Tag
+
+		newTag := models.Tag{
+			Name: "user data",
+		}
+		require.NoError(t, qb.Create(ctx, &models.CreateTagInput{Tag: &newTag}))
+		tagID := newTag.ID
+
+		other := models.User{
+			Username: "other",
+			Roles:    models.Roles{models.RoleEnumModify},
+		}
+		require.NoError(t, db.User.Create(ctx, &other, ""))
+		otherCtx := models.WithUserID(ctx, other.ID)
+		guestCtx := models.WithUserID(ctx, 0)
+
+		_, err := qb.UpdatePartial(ctx, tagID, models.TagPartial{
+			Favorite: models.NewOptionalBool(true),
+		})
+		require.NoError(t, err)
+
+		// the user who set the favorite sees it
+		tag, err := qb.Find(ctx, tagID)
+		require.NoError(t, err)
+		assert.True(t, tag.Favorite)
+
+		// other users and the guest user do not
+		for name, c := range map[string]context.Context{"other user": otherCtx, "guest": guestCtx} {
+			tag, err := qb.Find(c, tagID)
+			require.NoError(t, err)
+			assert.False(t, tag.Favorite, name)
+		}
+
+		// filtering by favorite only matches the current user's favorites
+		perPage := -1
+		allResults := &models.FindFilterType{PerPage: &perPage}
+		findIDs := func(c context.Context, favorite bool) []int {
+			var ids []int
+			for _, tag := range queryTags(c, t, qb, &models.TagFilterType{Favorite: &favorite}, allResults) {
+				ids = append(ids, tag.ID)
+			}
+			return ids
+		}
+		assert.Contains(t, findIDs(ctx, true), tagID)
+		assert.NotContains(t, findIDs(otherCtx, true), tagID)
+		assert.Contains(t, findIDs(otherCtx, false), tagID)
+
+		return nil
+	})
+}

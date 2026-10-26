@@ -168,4 +168,21 @@ INSERT INTO `studios_user_data` (`studio_id`, `user_id`, `rating`, `favorite`)
 ALTER TABLE `studios` DROP COLUMN `rating`;
 ALTER TABLE `studios` DROP COLUMN `favorite`;
 
+CREATE TABLE `tags_user_data` (
+  `tag_id` integer NOT NULL,
+  `user_id` integer NOT NULL,
+  `favorite` boolean NOT NULL DEFAULT false,
+  PRIMARY KEY (`tag_id`, `user_id`),
+  FOREIGN KEY (`tag_id`) REFERENCES `tags`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+);
+
+CREATE INDEX `index_tags_user_data_on_user_id` ON `tags_user_data` (`user_id`);
+
+INSERT INTO `tags_user_data` (`tag_id`, `user_id`, `favorite`)
+  SELECT `id`, 1, `favorite` FROM `tags`
+  WHERE `favorite` = 1;
+
+ALTER TABLE `tags` DROP COLUMN `favorite`;
+
 PRAGMA foreign_keys=ON;
