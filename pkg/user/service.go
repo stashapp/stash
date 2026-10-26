@@ -370,7 +370,7 @@ func checkApiKey(apiKey, hash string) (bool, error) {
 func (s *Service) AuthenticateByAPIKey(ctx context.Context, apiKey string) (*models.User, error) {
 	username, err := GetUserIDFromAPIKey(apiKey)
 	if errors.Is(err, ErrInvalidToken) {
-		logger.Infof("[apikey authentication] invalid api key: %s", apiKey)
+		logger.Info("[apikey authentication] invalid api key")
 		return nil, ErrAccessDenied
 	}
 
