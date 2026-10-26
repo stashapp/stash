@@ -704,8 +704,6 @@ func (i *Config) getStringMapString(key string) map[string]string {
 // GetSFW returns true if SFW mode is enabled.
 // Default performer images are changed to more agnostic images when enabled.
 func (i *Config) GetSFWContentMode() bool {
-	i.RLock()
-	defer i.RUnlock()
 	return i.getBool(SFWContentMode)
 }
 

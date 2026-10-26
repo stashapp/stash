@@ -119,6 +119,7 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.SetInterface(AutostartVideoOnPlaySelected, i.GetAutostartVideoOnPlaySelected())
 				i.SetInterface(ContinuePlaylistDefault, i.GetContinuePlaylistDefault())
 				i.SetInterface(PythonPath, i.GetPythonPath())
+				i.SetInterface(SFWContentMode, i.GetSFWContentMode())
 				t.Logf("Worker %v iteration %v took %v", wk, l, time.Since(start))
 			}
 			wg.Done()
