@@ -6,6 +6,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/session"
+	"github.com/stashapp/stash/pkg/user"
 )
 
 func (r *mutationResolver) UserCreate(ctx context.Context, input UserCreateInput) (user *models.User, err error) {
@@ -81,6 +82,9 @@ func (r *mutationResolver) UserDestroy(ctx context.Context, input UserDestroyInp
 func (r *mutationResolver) ChangePassword(ctx context.Context, input UserChangePasswordInput) (bool, error) {
 	// get current user
 	u := session.GetCurrentUser(ctx)
+	if u == nil {
+		return false, fmt.Errorf("no current user in context")
+	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		return r.userService.ChangePassword(ctx, u.Username, input.ExistingPassword, input.NewPassword)
@@ -111,16 +115,20 @@ func (r *mutationResolver) GenerateAPIKey(ctx context.Context, input GenerateAPI
 }
 
 func (r *mutationResolver) GenerateUserAPIKey(ctx context.Context, username string, input GenerateAPIKeyInput) (string, error) {
-	var user *models.User
+	var u *models.User
 	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var err error
-		user, err = r.userService.GetUser(ctx, username)
+		u, err = r.userService.GetUser(ctx, username)
 		return err
 	}); err != nil {
 		return "", fmt.Errorf("error retrieving user: %w", err)
 	}
 
-	return r.generateUserAPIKey(ctx, user, input)
+	if u == nil {
+		return "", fmt.Errorf("user %q: %w", username, user.ErrUserNotExist)
+	}
+
+	return r.generateUserAPIKey(ctx, u, input)
 }
 
 func (r *mutationResolver) LockUser(ctx context.Context, name string) (bool, error) {

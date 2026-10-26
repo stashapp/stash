@@ -238,7 +238,7 @@ func (s *Service) LockUser(ctx context.Context, username string) error {
 		return fmt.Errorf("error locking user: %w", err)
 	}
 
-	logger.Infof("[user] locked %q by %q", username, cur.Username)
+	logger.Infof("[user] locked %q by %q", username, currentUsername(ctx))
 
 	return nil
 }
@@ -263,7 +263,7 @@ func (s *Service) UnlockUser(ctx context.Context, username string) error {
 		return fmt.Errorf("error unlocking user: %w", err)
 	}
 
-	logger.Infof("[user] unlocked %q by %q", username, cur.Username)
+	logger.Infof("[user] unlocked %q by %q", username, currentUsername(ctx))
 
 	return nil
 }
@@ -564,8 +564,7 @@ func (s *Service) CreateUser(ctx context.Context, u models.User, password string
 		return fmt.Errorf("error creating user: %w", err)
 	}
 
-	cur := session.GetCurrentUser(ctx)
-	logger.Infof("[user] created %q by %q", u.Username, cur.Username)
+	logger.Infof("[user] created %q by %q", u.Username, currentUsername(ctx))
 	if setSingleUserMode {
 		s.singleUserMode = true
 	}
@@ -640,10 +639,17 @@ func (s *Service) UpdateUser(ctx context.Context, username string, updated model
 		logger.Infof("[user] updated roles for user %q", updated.Username)
 	}
 
-	cur := session.GetCurrentUser(ctx)
-	logger.Infof("[user] updated %q by %q", updated.Username, cur.Username)
+	logger.Infof("[user] updated %q by %q", updated.Username, currentUsername(ctx))
 
 	return nil
+}
+
+// currentUsername returns the username of the current user for logging.
+func currentUsername(ctx context.Context) string {
+	if cur := session.GetCurrentUser(ctx); cur != nil {
+		return cur.Username
+	}
+	return "<no user>"
 }
 
 func (s *Service) ChangePassword(ctx context.Context, username, currentPassword, newPassword string) error {
@@ -723,8 +729,7 @@ func (s *Service) ChangeUserPassword(ctx context.Context, username, newPassword 
 		return fmt.Errorf("error changing user password: %w", err)
 	}
 
-	cur := session.GetCurrentUser(ctx)
-	logger.Infof("[user] changed password for %q by %q", username, cur.Username)
+	logger.Infof("[user] changed password for %q by %q", username, currentUsername(ctx))
 
 	s.singleUserModeMutex.Lock()
 	defer s.singleUserModeMutex.Unlock()
@@ -852,8 +857,7 @@ func (s *Service) GenerateAPIKey(ctx context.Context, username string) (string, 
 		return "", fmt.Errorf("error updating user with new api key: %w", err)
 	}
 
-	cur := session.GetCurrentUser(ctx)
-	logger.Infof("[user] generated new API key for %q by %q", username, cur.Username)
+	logger.Infof("[user] generated new API key for %q by %q", username, currentUsername(ctx))
 
 	return newAPIKey, nil
 }
@@ -883,8 +887,7 @@ func (s *Service) ClearAPIKey(ctx context.Context, username string) error {
 		return fmt.Errorf("error clearing user api key: %w", err)
 	}
 
-	cur := session.GetCurrentUser(ctx)
-	logger.Infof("[user] cleared API key for %q by %q", username, cur.Username)
+	logger.Infof("[user] cleared API key for %q by %q", username, currentUsername(ctx))
 
 	return nil
 }
@@ -929,8 +932,7 @@ func (s *Service) DeleteUser(ctx context.Context, username string) error {
 		return fmt.Errorf("error deleting user: %w", err)
 	}
 
-	cur := session.GetCurrentUser(ctx)
-	logger.Infof("[user] deleted %q by %q", username, cur.Username)
+	logger.Infof("[user] deleted %q by %q", username, currentUsername(ctx))
 
 	return nil
 }
