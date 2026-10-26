@@ -44,7 +44,8 @@ func (r *rateLimiter) canIncrement(key string) (bool, error) {
 
 	rate := int(math.Round(rateFloat))
 
-	return rate+1 < r.RequestLimit, nil
+	// allow up to RequestLimit increments within the window
+	return rate < r.RequestLimit, nil
 }
 
 func (r *rateLimiter) Increment(key string) error {
