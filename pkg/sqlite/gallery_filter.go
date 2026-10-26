@@ -86,7 +86,7 @@ func (qb *galleryFilterHandler) criterionHandler() criterionHandler {
 		qb.pathCriterionHandler(filter.Path),
 		qb.parentFolderCriterionHandler(filter.ParentFolder),
 		qb.fileCountCriterionHandler(filter.FileCount),
-		intCriterionHandler(filter.Rating100, "galleries.rating", nil),
+		galleryUserData.intCriterionHandler(filter.Rating100, galleryUserData.column("rating")),
 		qb.urlsCriterionHandler(filter.URL),
 		boolCriterionHandler(filter.Organized, "galleries.organized", nil),
 		qb.missingCriterionHandler(filter.IsMissing),
@@ -371,9 +371,12 @@ func (qb *galleryFilterHandler) missingCriterionHandler(isMissing *string) crite
 			case "cover":
 				f.addLeftJoin("galleries_images", "cover_join", "cover_join.gallery_id = galleries.id AND cover_join.cover = 1")
 				f.addWhere("cover_join.image_id IS NULL")
+			case "rating":
+				galleryUserData.join(ctx, f)
+				f.addWhere(galleryUserData.column("rating") + " IS NULL")
 			default:
 				if err := validateIsMissing(*isMissing, []string{
-					"title", "code", "rating", "details", "photographer",
+					"title", "code", "details", "photographer",
 				}); err != nil {
 					f.setError(err)
 					return

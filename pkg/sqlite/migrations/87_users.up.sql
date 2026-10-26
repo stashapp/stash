@@ -96,4 +96,21 @@ INSERT INTO `images_user_data` (`image_id`, `user_id`, `rating`, `o_counter`)
 ALTER TABLE `images` DROP COLUMN `rating`;
 ALTER TABLE `images` DROP COLUMN `o_counter`;
 
+CREATE TABLE `galleries_user_data` (
+  `gallery_id` integer NOT NULL,
+  `user_id` integer NOT NULL,
+  `rating` tinyint,
+  PRIMARY KEY (`gallery_id`, `user_id`),
+  FOREIGN KEY (`gallery_id`) REFERENCES `galleries`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+);
+
+CREATE INDEX `index_galleries_user_data_on_user_id` ON `galleries_user_data` (`user_id`);
+
+INSERT INTO `galleries_user_data` (`gallery_id`, `user_id`, `rating`)
+  SELECT `id`, 1, `rating` FROM `galleries`
+  WHERE `rating` IS NOT NULL;
+
+ALTER TABLE `galleries` DROP COLUMN `rating`;
+
 PRAGMA foreign_keys=ON;

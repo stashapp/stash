@@ -3532,3 +3532,60 @@ func TestGalleryQueryCustomFields(t *testing.T) {
 // TODO All
 // TODO Query
 // TODO Destroy
+
+func TestGalleryStore_UserData(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		qb := db.Gallery
+
+		newGallery := models.Gallery{
+			Title: "user data",
+		}
+		require.NoError(t, qb.Create(ctx, &models.CreateGalleryInput{Gallery: &newGallery}))
+		galleryID := newGallery.ID
+
+		other := models.User{
+			Username: "other",
+			Roles:    models.Roles{models.RoleEnumModify},
+		}
+		require.NoError(t, db.User.Create(ctx, &other, ""))
+		otherCtx := models.WithUserID(ctx, other.ID)
+		guestCtx := models.WithUserID(ctx, 0)
+
+		rating := 60
+		_, err := qb.UpdatePartial(ctx, galleryID, models.GalleryPartial{
+			Rating: models.NewOptionalInt(rating),
+		})
+		require.NoError(t, err)
+
+		// the user who set the rating sees it
+		g, err := qb.Find(ctx, galleryID)
+		require.NoError(t, err)
+		assert.Equal(t, &rating, g.Rating)
+
+		// other users and the guest user do not
+		for name, c := range map[string]context.Context{"other user": otherCtx, "guest": guestCtx} {
+			g, err := qb.Find(c, galleryID)
+			require.NoError(t, err)
+			assert.Nil(t, g.Rating, name)
+		}
+
+		// filtering by rating only matches the current user's rating
+		ratingFilter := &models.GalleryFilterType{
+			Rating100: &models.IntCriterionInput{
+				Value:    rating,
+				Modifier: models.CriterionModifierEquals,
+			},
+		}
+		findIDs := func(c context.Context) []int {
+			var ids []int
+			for _, g := range queryGallery(c, t, qb, ratingFilter, nil) {
+				ids = append(ids, g.ID)
+			}
+			return ids
+		}
+		assert.Contains(t, findIDs(ctx), galleryID)
+		assert.NotContains(t, findIDs(otherCtx), galleryID)
+
+		return nil
+	})
+}
