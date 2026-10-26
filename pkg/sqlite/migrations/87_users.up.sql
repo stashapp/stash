@@ -130,4 +130,23 @@ INSERT INTO `groups_user_data` (`group_id`, `user_id`, `rating`)
 
 ALTER TABLE `groups` DROP COLUMN `rating`;
 
+CREATE TABLE `performers_user_data` (
+  `performer_id` integer NOT NULL,
+  `user_id` integer NOT NULL,
+  `rating` tinyint,
+  `favorite` boolean NOT NULL DEFAULT false,
+  PRIMARY KEY (`performer_id`, `user_id`),
+  FOREIGN KEY (`performer_id`) REFERENCES `performers`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+);
+
+CREATE INDEX `index_performers_user_data_on_user_id` ON `performers_user_data` (`user_id`);
+
+INSERT INTO `performers_user_data` (`performer_id`, `user_id`, `rating`, `favorite`)
+  SELECT `id`, 1, `rating`, `favorite` FROM `performers`
+  WHERE `rating` IS NOT NULL OR `favorite` = 1;
+
+ALTER TABLE `performers` DROP COLUMN `rating`;
+ALTER TABLE `performers` DROP COLUMN `favorite`;
+
 PRAGMA foreign_keys=ON;

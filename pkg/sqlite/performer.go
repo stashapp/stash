@@ -27,7 +27,15 @@ const (
 	performerURLColumn = "url"
 
 	performerImageBlobColumn = "image_blob"
+
+	performersUserDataTable = "performers_user_data"
 )
+
+var performerUserData = userDataTable{
+	table:       performersUserDataTable,
+	idColumn:    performerIDColumn,
+	objectTable: performerTable,
+}
 
 type performerRow struct {
 	ID                   int         `db:"id" goqu:"skipinsert"`
@@ -50,17 +58,14 @@ type performerRow struct {
 	CareerEndPrecision   null.Int    `db:"career_end_precision"`
 	Tattoos              zero.String `db:"tattoos"`
 	Piercings            zero.String `db:"piercings"`
-	Favorite             bool        `db:"favorite"`
 	CreatedAt            Timestamp   `db:"created_at"`
 	UpdatedAt            Timestamp   `db:"updated_at"`
-	// expressed as 1-100
-	Rating             null.Int    `db:"rating"`
-	Details            zero.String `db:"details"`
-	DeathDate          NullDate    `db:"death_date"`
-	DeathDatePrecision null.Int    `db:"death_date_precision"`
-	HairColor          zero.String `db:"hair_color"`
-	Weight             null.Int    `db:"weight"`
-	IgnoreAutoTag      bool        `db:"ignore_auto_tag"`
+	Details              zero.String `db:"details"`
+	DeathDate            NullDate    `db:"death_date"`
+	DeathDatePrecision   null.Int    `db:"death_date_precision"`
+	HairColor            zero.String `db:"hair_color"`
+	Weight               null.Int    `db:"weight"`
+	IgnoreAutoTag        bool        `db:"ignore_auto_tag"`
 
 	// not used in resolution or updates
 	ImageBlob zero.String `db:"image_blob"`
@@ -91,10 +96,8 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.CareerEndPrecision = datePrecisionFromDatePtr(o.CareerEnd)
 	r.Tattoos = zero.StringFrom(o.Tattoos)
 	r.Piercings = zero.StringFrom(o.Piercings)
-	r.Favorite = o.Favorite
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
-	r.Rating = intFromPtr(o.Rating)
 	r.Details = zero.StringFrom(o.Details)
 	r.DeathDate = NullDateFromDatePtr(o.DeathDate)
 	r.DeathDatePrecision = datePrecisionFromDatePtr(o.DeathDate)
@@ -120,16 +123,13 @@ func (r *performerRow) resolve() *models.Performer {
 		CareerEnd:      r.CareerEnd.DatePtr(r.CareerEndPrecision),
 		Tattoos:        r.Tattoos.String,
 		Piercings:      r.Piercings.String,
-		Favorite:       r.Favorite,
 		CreatedAt:      r.CreatedAt.Timestamp,
 		UpdatedAt:      r.UpdatedAt.Timestamp,
-		// expressed as 1-100
-		Rating:        nullIntPtr(r.Rating),
-		Details:       r.Details.String,
-		DeathDate:     r.DeathDate.DatePtr(r.DeathDatePrecision),
-		HairColor:     r.HairColor.String,
-		Weight:        nullIntPtr(r.Weight),
-		IgnoreAutoTag: r.IgnoreAutoTag,
+		Details:        r.Details.String,
+		DeathDate:      r.DeathDate.DatePtr(r.DeathDatePrecision),
+		HairColor:      r.HairColor.String,
+		Weight:         nullIntPtr(r.Weight),
+		IgnoreAutoTag:  r.IgnoreAutoTag,
 	}
 
 	if r.Gender.ValueOrZero() != "" {
@@ -143,6 +143,36 @@ func (r *performerRow) resolve() *models.Performer {
 	}
 
 	return ret
+}
+
+// performerUserDataRow is a row of a user's data for a performer.
+type performerUserDataRow struct {
+	PerformerID int `db:"performer_id"`
+	UserID      int `db:"user_id"`
+	// expressed as 1-100
+	Rating   null.Int `db:"rating"`
+	Favorite bool     `db:"favorite"`
+}
+
+func (r performerUserDataRow) apply(p *models.Performer) {
+	p.Rating = nullIntPtr(r.Rating)
+	p.Favorite = r.Favorite
+}
+
+func performerUserDataRecord(o models.Performer) goqu.Record {
+	return goqu.Record{
+		"rating":   intFromPtr(o.Rating),
+		"favorite": o.Favorite,
+	}
+}
+
+func performerUserDataPartialRecord(o models.PerformerPartial) goqu.Record {
+	r := updateRecord{
+		Record: make(exp.Record),
+	}
+	r.setNullInt("rating", o.Rating)
+	r.setBool("favorite", o.Favorite)
+	return goqu.Record(r.Record)
 }
 
 type performerRowRecord struct {
@@ -166,10 +196,8 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setNullDate("career_end", "career_end_precision", o.CareerEnd)
 	r.setNullString("tattoos", o.Tattoos)
 	r.setNullString("piercings", o.Piercings)
-	r.setBool("favorite", o.Favorite)
 	r.setTimestamp("created_at", o.CreatedAt)
 	r.setTimestamp("updated_at", o.UpdatedAt)
-	r.setNullInt("rating", o.Rating)
 	r.setNullString("details", o.Details)
 	r.setNullDate("death_date", "death_date_precision", o.DeathDate)
 	r.setNullString("hair_color", o.HairColor)
@@ -274,6 +302,10 @@ func (qb *PerformerStore) Create(ctx context.Context, newObject *models.CreatePe
 		return err
 	}
 
+	if err := performerUserData.upsert(ctx, id, performerUserDataRecord(*newObject.Performer)); err != nil {
+		return err
+	}
+
 	if newObject.Aliases.Loaded() {
 		if err := performersAliasesTableMgr.insertJoins(ctx, id, newObject.Aliases.List()); err != nil {
 			return err
@@ -329,6 +361,10 @@ func (qb *PerformerStore) UpdatePartial(ctx context.Context, id int, partial mod
 		}
 	}
 
+	if err := performerUserData.upsert(ctx, id, performerUserDataPartialRecord(partial)); err != nil {
+		return nil, err
+	}
+
 	if partial.Aliases != nil {
 		if err := performersAliasesTableMgr.modifyJoins(ctx, id, partial.Aliases.Values, partial.Aliases.Mode); err != nil {
 			return nil, err
@@ -364,6 +400,10 @@ func (qb *PerformerStore) Update(ctx context.Context, updatedObject *models.Upda
 	r.fromPerformer(*updatedObject.Performer)
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
+		return err
+	}
+
+	if err := performerUserData.upsert(ctx, updatedObject.ID, performerUserDataRecord(*updatedObject.Performer)); err != nil {
 		return err
 	}
 
@@ -501,7 +541,41 @@ func (qb *PerformerStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([
 		return nil, err
 	}
 
+	if err := qb.loadUserData(ctx, ret); err != nil {
+		return nil, err
+	}
+
 	return ret, nil
+}
+
+// loadUserData sets the current user's data on the provided performers.
+func (qb *PerformerStore) loadUserData(ctx context.Context, performers []*models.Performer) error {
+	if _, ok := models.UserIDFromContext(ctx); !ok || len(performers) == 0 {
+		return nil
+	}
+
+	byID := make(map[int]*models.Performer, len(performers))
+	ids := make([]int, len(performers))
+	for i, p := range performers {
+		byID[p.ID] = p
+		ids[i] = p.ID
+	}
+
+	return batchExec(ids, defaultBatchSize, func(batch []int) error {
+		q := performerUserData.selectForUser(ctx, batch)
+		const single = false
+		return queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+			var r performerUserDataRow
+			if err := rows.StructScan(&r); err != nil {
+				return err
+			}
+
+			if p := byID[r.PerformerID]; p != nil {
+				r.apply(p)
+			}
+			return nil
+		})
+	})
 }
 
 func (qb *PerformerStore) FindBySceneID(ctx context.Context, sceneID int) ([]*models.Performer, error) {
@@ -678,6 +752,11 @@ func (qb *PerformerStore) QueryCount(ctx context.Context, performerFilter *model
 	}
 
 	return query.executeCount(ctx)
+}
+
+func (qb *PerformerStore) sortByRating(ctx context.Context, direction string) string {
+	return fmt.Sprintf(" ORDER BY (SELECT %[1]s.rating FROM %[1]s WHERE %[1]s.%[2]s = %[3]s.id AND %[1]s.%[4]s = %[5]d) %[6]s",
+		performersUserDataTable, performerIDColumn, performerTable, userIDColumn, currentUserID(ctx), getSortDirection(direction))
 }
 
 func (qb *PerformerStore) sortByOCounter(ctx context.Context, direction string) string {
@@ -873,6 +952,8 @@ func (qb *PerformerStore) getPerformerSort(ctx context.Context, findFilter *mode
 		sortQuery += qb.sortByLastOAt(ctx, direction)
 	case "latest_scene":
 		sortQuery += qb.sortByLatestScene(direction)
+	case "rating":
+		sortQuery += qb.sortByRating(ctx, direction)
 	default:
 		sortQuery += getSort(sort, direction, "performers")
 	}

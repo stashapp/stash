@@ -126,6 +126,13 @@ func (t userDataTable) intCriterionHandler(c *models.IntCriterionInput, expr str
 	}
 }
 
+// boolCriterionHandler returns a criterion handler filtering on a boolean expression of the user data table.
+func (t userDataTable) boolCriterionHandler(c *bool, expr string) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		boolCriterionHandler(c, expr, t.joinFn(ctx))(ctx, f)
+	}
+}
+
 // floatIntCriterionHandler returns a criterion handler filtering on a float expression of the user data table,
 // using an integer criterion.
 func (t userDataTable) floatIntCriterionHandler(c *models.IntCriterionInput, expr string) criterionHandlerFunc {

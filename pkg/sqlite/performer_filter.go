@@ -128,7 +128,7 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 		stringCriterionHandler(filter.Disambiguation, tableName+".disambiguation"),
 		stringCriterionHandler(filter.Details, tableName+".details"),
 
-		boolCriterionHandler(filter.FilterFavorites, tableName+".favorite", nil),
+		performerUserData.boolCriterionHandler(filter.FilterFavorites, performerUserData.columnOrDefault("favorite", "0")),
 		boolCriterionHandler(filter.IgnoreAutoTag, tableName+".ignore_auto_tag", nil),
 
 		yearFilterCriterionHandler(filter.BirthYear, tableName+".birthdate"),
@@ -182,7 +182,7 @@ func (qb *performerFilterHandler) criterionHandler() criterionHandler {
 		&dateCriterionHandler{filter.CareerEnd, tableName + ".career_end", nil},
 		stringCriterionHandler(filter.Tattoos, tableName+".tattoos"),
 		stringCriterionHandler(filter.Piercings, tableName+".piercings"),
-		intCriterionHandler(filter.Rating100, tableName+".rating", nil),
+		performerUserData.intCriterionHandler(filter.Rating100, performerUserData.column("rating")),
 		stringCriterionHandler(filter.HairColor, tableName+".hair_color"),
 		qb.urlsCriterionHandler(filter.URL),
 		intCriterionHandler(filter.Weight, tableName+".weight", nil),
@@ -349,12 +349,15 @@ func (qb *performerFilterHandler) performerIsMissingCriterionHandler(isMissing *
 			case "tags":
 				f.addLeftJoin(performersTagsTable, "tags_join", "tags_join.performer_id = performers.id")
 				f.addWhere("tags_join.performer_id IS NULL")
+			case "rating":
+				performerUserData.join(ctx, f)
+				f.addWhere(performerUserData.column("rating") + " IS NULL")
 			default:
 				if err := validateIsMissing(*isMissing, []string{
 					"disambiguation", "gender", "birthdate", "death_date",
 					"ethnicity", "country", "hair_color", "eye_color", "height", "weight",
 					"measurements", "fake_tits", "penis_length", "circumcised",
-					"career_start", "career_end", "tattoos", "piercings", "details", "rating",
+					"career_start", "career_end", "tattoos", "piercings", "details",
 				}); err != nil {
 					f.setError(err)
 					return

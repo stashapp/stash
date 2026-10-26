@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -300,13 +301,13 @@ func (qb *imageFilterHandler) performerFavoriteCriterionHandler(performerfavorit
 
 			if *performerfavorite {
 				// contains at least one favorite
-				f.addLeftJoin("performers", "", "performers.id = performers_images.performer_id")
-				f.addWhere("performers.favorite = 1")
+				f.addLeftJoin(performersUserDataTable, "", fmt.Sprintf("performers_user_data.performer_id = performers_images.performer_id AND performers_user_data.user_id = %d", currentUserID(ctx)))
+				f.addWhere("performers_user_data.favorite = 1")
 			} else {
 				// contains zero favorites
-				f.addLeftJoin(`(SELECT performers_images.image_id as id FROM performers_images
-JOIN performers ON performers.id = performers_images.performer_id
-GROUP BY performers_images.image_id HAVING SUM(performers.favorite) = 0)`, "nofaves", "images.id = nofaves.id")
+				f.addLeftJoin(fmt.Sprintf(`(SELECT performers_images.image_id as id FROM performers_images
+LEFT JOIN performers_user_data ON performers_user_data.performer_id = performers_images.performer_id AND performers_user_data.user_id = %d
+GROUP BY performers_images.image_id HAVING SUM(COALESCE(performers_user_data.favorite, 0)) = 0)`, currentUserID(ctx)), "nofaves", "images.id = nofaves.id")
 				f.addWhere("performers_images.image_id IS NULL OR nofaves.id IS NOT NULL")
 			}
 		}
