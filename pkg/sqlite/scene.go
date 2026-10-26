@@ -1497,6 +1497,53 @@ func (qb *SceneStore) ResetActivity(ctx context.Context, id int, resetResume boo
 	return true, nil
 }
 
+// MergeUserData moves the per-user data of all users from the source scenes to the destination scene.
+// History is moved if the corresponding include flag is set.
+// Ratings and activity are copied for users who have none set on the destination scene.
+func (qb *SceneStore) MergeUserData(ctx context.Context, destinationID int, sourceIDs []int, includeViewHistory bool, includeOHistory bool) error {
+	if len(sourceIDs) == 0 {
+		return nil
+	}
+
+	moveHistory := func(tableName string) error {
+		table := goqu.T(tableName)
+		q := dialect.Update(table).Set(goqu.Record{sceneIDColumn: destinationID}).Where(table.Col(sceneIDColumn).In(sourceIDs))
+		if _, err := exec(ctx, q); err != nil {
+			return fmt.Errorf("moving %s: %w", tableName, err)
+		}
+		return nil
+	}
+
+	if includeViewHistory {
+		if err := moveHistory(scenesViewDatesTable); err != nil {
+			return err
+		}
+	}
+
+	if includeOHistory {
+		if err := moveHistory(scenesODatesTable); err != nil {
+			return err
+		}
+	}
+
+	table := sceneUserData.goquTable()
+	q := dialect.Insert(table).Cols(sceneIDColumn, userIDColumn, "rating", "resume_time", "play_duration").FromQuery(
+		dialect.From(table).Select(
+			goqu.V(destinationID),
+			table.Col(userIDColumn),
+			table.Col("rating"),
+			table.Col("resume_time"),
+			table.Col("play_duration"),
+		).Where(table.Col(sceneIDColumn).In(sourceIDs)),
+	).OnConflict(goqu.DoNothing())
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("merging %s: %w", scenesUserDataTable, err)
+	}
+
+	return nil
+}
+
 func (qb *SceneStore) GetURLs(ctx context.Context, sceneID int) ([]string, error) {
 	return scenesURLsTableMgr.get(ctx, sceneID)
 }
