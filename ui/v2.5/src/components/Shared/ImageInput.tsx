@@ -146,19 +146,19 @@ export const ImageInput: React.FC<IImageInput> = PatchComponent(
       <Popover id="set-image-popover">
         <Popover.Content>
           <div>
-            <span className="image-input">
-              <Button className="minimal">
-                <Icon icon={faFile} className="fa-fw" />
-                <span>
-                  <FormattedMessage id="actions.from_file" />
-                </span>
-                <Form.Control
-                  type="file"
-                  onChange={onImageChange}
-                  accept={acceptExtensions(acceptSVG)}
-                />
-              </Button>
-            </span>
+            {/* label rather than button: Firefox does not forward clicks to
+                interactive content nested inside a button */}
+            <Button as="label" className="minimal image-input">
+              <Icon icon={faFile} className="fa-fw" />
+              <span>
+                <FormattedMessage id="actions.from_file" />
+              </span>
+              <Form.Control
+                type="file"
+                onChange={onImageChange}
+                accept={acceptExtensions(acceptSVG)}
+              />
+            </Button>
           </div>
           <div>
             <Button className="minimal" onClick={showDialog}>
