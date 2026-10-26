@@ -110,6 +110,8 @@ func Initialize(cfg *config.Config, l *log.Logger) (*Manager, error) {
 		scanSubs: &subscriptionManager{},
 	}
 
+	dlnaService.SetActivityUserResolver(mgr)
+
 	mgr.UserService = &user.Service{
 		Store:  db.User,
 		Config: cfg,

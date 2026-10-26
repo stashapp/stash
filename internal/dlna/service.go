@@ -226,6 +226,12 @@ func (s *Service) init() error {
 // 	return bytes.NewReader(buff.Bytes())
 // }
 
+// SetActivityUserResolver sets the resolver used to determine the user that DLNA activity is recorded for.
+// Must be called before the service is started.
+func (s *Service) SetActivityUserResolver(r ActivityUserResolver) {
+	s.activityTracker.userResolver = r
+}
+
 // NewService initialises and returns a new DLNA service.
 // The sceneWriter parameter should implement SceneActivityWriter (typically models.SceneReaderWriter).
 // The minPlayPercent parameter is the minimum percentage of video that must be played to increment play count.

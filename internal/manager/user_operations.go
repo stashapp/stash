@@ -47,3 +47,22 @@ func (s *Manager) ResetUserPassword(ctx context.Context, username string) error 
 	}
 	return nil
 }
+
+// DLNAActivityUserID returns the ID of the user that DLNA activity is recorded for.
+// DLNA clients are not authenticated, so activity can only be attributed to a user in single user mode.
+func (s *Manager) DLNAActivityUserID(ctx context.Context) (int, bool, error) {
+	us := s.UserService
+	if us == nil || !us.IsSingleUserMode() {
+		return 0, false, nil
+	}
+
+	u, err := us.GetSingleUser(ctx)
+	if err != nil {
+		return 0, false, fmt.Errorf("getting single user: %w", err)
+	}
+	if u == nil {
+		return 0, false, nil
+	}
+
+	return u.ID, true, nil
+}

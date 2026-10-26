@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -111,11 +112,19 @@ func (s *streamSession) estimatedResumeTime() float64 {
 	return elapsed
 }
 
+// ActivityUserResolver resolves the user that DLNA activity is recorded for.
+type ActivityUserResolver interface {
+	// DLNAActivityUserID returns the ID of the user to record DLNA activity for.
+	// Returns false if activity should not be recorded.
+	DLNAActivityUserID(ctx context.Context) (int, bool, error)
+}
+
 // ActivityTracker tracks DLNA streaming activity and saves it to the database.
 type ActivityTracker struct {
 	txnManager     txn.Manager
 	sceneWriter    SceneActivityWriter
 	config         ActivityConfig
+	userResolver   ActivityUserResolver
 	sessionTimeout time.Duration
 
 	sessions map[string]*streamSession
@@ -290,6 +299,22 @@ func (t *ActivityTracker) processCompletedSession(session *streamSession) {
 	// Save everything in a single transaction
 	ctx := context.Background()
 	if err := txn.WithTxn(ctx, t.txnManager, func(ctx context.Context) error {
+		// DLNA clients are not authenticated, so activity is recorded for the resolved user, if any
+		if t.userResolver == nil {
+			logger.Debugf("[DLNA Activity] No user resolver, skipping DB save")
+			return nil
+		}
+
+		userID, ok, err := t.userResolver.DLNAActivityUserID(ctx)
+		if err != nil {
+			return fmt.Errorf("resolving user: %w", err)
+		}
+		if !ok {
+			logger.Debugf("[DLNA Activity] No user to record activity for, skipping DB save")
+			return nil
+		}
+		ctx = models.WithUserID(ctx, userID)
+
 		// Save resume time only. DLNA clients buffer aggressively and don't report
 		// playback position, so we can't accurately track play duration - saving
 		// guesses would corrupt analytics. Resume time is still useful as a
