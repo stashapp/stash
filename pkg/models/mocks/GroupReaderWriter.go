@@ -266,6 +266,29 @@ func (_m *GroupReaderWriter) FindMany(ctx context.Context, ids []int) ([]*models
 	return r0, r1
 }
 
+// GetAliases provides a mock function with given fields: ctx, relatedID
+func (_m *GroupReaderWriter) GetAliases(ctx context.Context, relatedID int) ([]string, error) {
+	ret := _m.Called(ctx, relatedID)
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func(context.Context, int) []string); ok {
+		r0 = rf(ctx, relatedID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, relatedID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetBackImage provides a mock function with given fields: ctx, groupID
 func (_m *GroupReaderWriter) GetBackImage(ctx context.Context, groupID int) ([]byte, error) {
 	ret := _m.Called(ctx, groupID)

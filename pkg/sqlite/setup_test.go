@@ -171,6 +171,7 @@ const (
 	groupIdxWithParentAndScene
 	groupIdxWithChildWithScene
 	groupIdxWithGrandChildTag
+	groupIdxWithAlias
 	// groups with dup names start from the end
 	groupIdxWithDupName
 
@@ -1510,6 +1511,14 @@ func getGroupCustomFields(index int) map[string]interface{} {
 	}
 }
 
+func groupAliases(index int) []string {
+	if index != groupIdxWithAlias {
+		return []string{}
+	}
+
+	return []string{getGroupStringValue(groupIdxWithAlias, "alias")}
+}
+
 // createGroups creates n groups with plain Name and o groups with camel cased NaMe included
 func createGroups(ctx context.Context, mqb models.GroupReaderWriter, n int, o int) error {
 	const namePlain = "Name"
@@ -1529,7 +1538,8 @@ func createGroups(ctx context.Context, mqb models.GroupReaderWriter, n int, o in
 
 		name = getGroupStringValue(index, name)
 		group := models.Group{
-			Name: name,
+			Name:    name,
+			Aliases: models.NewRelatedStrings(groupAliases(index)),
 			URLs: models.NewRelatedStrings([]string{
 				getGroupEmptyString(i, urlField),
 			}),

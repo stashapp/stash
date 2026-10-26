@@ -8,7 +8,7 @@ fragment SlimGroupData on Group {
 fragment SelectGroupData on Group {
   id
   name
-  aliases
+  alias_list
   date
   studio {
     name

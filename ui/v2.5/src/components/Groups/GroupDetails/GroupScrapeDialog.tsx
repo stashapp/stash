@@ -41,8 +41,13 @@ export const GroupScrapeDialog: React.FC<IGroupScrapeDialogProps> = ({
   const [name, setName] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(group.name, scraped.name)
   );
-  const [aliases, setAliases] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(group.aliases, scraped.aliases)
+  const [aliases, setAliases] = useState<ScrapeResult<string[]>>(
+    new ScrapeResult<string[]>(
+      group.alias_list,
+      scraped.alias_list
+        ? uniq((group.alias_list ?? []).concat(scraped.alias_list))
+        : group.alias_list
+    )
   );
   const [duration, setDuration] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(
@@ -132,7 +137,7 @@ export const GroupScrapeDialog: React.FC<IGroupScrapeDialogProps> = ({
 
     return {
       name: name.getNewValue() ?? "",
-      aliases: aliases.getNewValue(),
+      alias_list: aliases.getNewValue(),
       duration: durationString,
       date: date.getNewValue(),
       director: director.getNewValue(),
@@ -154,7 +159,7 @@ export const GroupScrapeDialog: React.FC<IGroupScrapeDialogProps> = ({
           result={name}
           onChange={(value) => setName(value)}
         />
-        <ScrapedInputGroupRow
+        <ScrapedStringListRow
           field="aliases"
           title={intl.formatMessage({ id: "aliases" })}
           result={aliases}
