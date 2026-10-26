@@ -303,46 +303,46 @@ type Mutation {
   "Increments the o-counter for a scene. Returns the new value"
   sceneIncrementO(id: ID!): Int!
     @deprecated(reason: "Use sceneAddO instead")
-    @hasRole(role: MODIFY)
+    @hasRole(role: READ)
   "Decrements the o-counter for a scene. Returns the new value"
   sceneDecrementO(id: ID!): Int!
     @deprecated(reason: "Use sceneRemoveO instead")
-    @hasRole(role: MODIFY)
+    @hasRole(role: READ)
 
   "Increments the o-counter for a scene. Uses the current time if none provided."
   sceneAddO(id: ID!, times: [Timestamp!]): HistoryMutationResult!
-    @hasRole(role: MODIFY)
+    @hasRole(role: READ)
   "Decrements the o-counter for a scene, removing the last recorded time if specific time not provided. Returns the new value"
   sceneDeleteO(id: ID!, times: [Timestamp!]): HistoryMutationResult!
-    @hasRole(role: MODIFY)
+    @hasRole(role: READ)
 
   "Resets the o-counter for a scene to 0. Returns the new value"
-  sceneResetO(id: ID!): Int! @hasRole(role: MODIFY)
+  sceneResetO(id: ID!): Int! @hasRole(role: READ)
 
   "Sets the resume time point (if provided) and adds the provided duration to the scene's play duration"
   sceneSaveActivity(id: ID!, resume_time: Float, playDuration: Float): Boolean!
-    @hasRole(role: MODIFY)
+    @hasRole(role: READ)
 
   "Resets the resume time point and play duration"
   sceneResetActivity(
     id: ID!
     reset_resume: Boolean
     reset_duration: Boolean
-  ): Boolean! @hasRole(role: MODIFY)
+  ): Boolean! @hasRole(role: READ)
 
   "Increments the play count for the scene. Returns the new play count value."
   sceneIncrementPlayCount(id: ID!): Int!
     @deprecated(reason: "Use sceneAddPlay instead")
-    @hasRole(role: MODIFY)
+    @hasRole(role: READ)
 
   "Increments the play count for the scene. Uses the current time if none provided."
   sceneAddPlay(id: ID!, times: [Timestamp!]): HistoryMutationResult!
-    @hasRole(role: MODIFY)
+    @hasRole(role: READ)
   "Decrements the play count for the scene, removing the specific times or the last recorded time if not provided."
   sceneDeletePlay(id: ID!, times: [Timestamp!]): HistoryMutationResult!
-    @hasRole(role: MODIFY)
+    @hasRole(role: READ)
   "Resets the play count for a scene to 0. Returns the new play count value."
-  sceneResetPlayCount(id: ID!): Int! @hasRole(role: MODIFY)
+  sceneResetPlayCount(id: ID!): Int! @hasRole(role: READ)
 
   "Generates screenshot at specified time in seconds. Leave empty to generate default screenshot"
   sceneGenerateScreenshot(id: ID!, at: Float): ID! @hasRole(role: ADMIN)
@@ -365,11 +365,11 @@ type Mutation {
   imagesUpdate(input: [ImageUpdateInput!]!): [Image] @hasRole(role: MODIFY)
 
   "Increments the o-counter for an image. Returns the new value"
-  imageIncrementO(id: ID!): Int! @hasRole(role: MODIFY)
+  imageIncrementO(id: ID!): Int! @hasRole(role: READ)
   "Decrements the o-counter for an image. Returns the new value"
-  imageDecrementO(id: ID!): Int! @hasRole(role: MODIFY)
+  imageDecrementO(id: ID!): Int! @hasRole(role: READ)
   "Resets the o-counter for a image to 0. Returns the new value"
-  imageResetO(id: ID!): Int! @hasRole(role: MODIFY)
+  imageResetO(id: ID!): Int! @hasRole(role: READ)
 
   galleryCreate(input: GalleryCreateInput!): Gallery @hasRole(role: MODIFY)
   galleryUpdate(input: GalleryUpdateInput!): Gallery @hasRole(role: MODIFY)
