@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
+import { SortDirectionEnum } from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import { useIntl } from "react-intl";
 import { objectTitle } from "src/core/files";
@@ -14,6 +15,9 @@ interface IGalleryListTableProps {
   galleries: GQL.SlimGalleryDataFragment[];
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
+  onSort?: (value: string) => void;
+  sortBy?: string;
+  sortDirection?: SortDirectionEnum;
 }
 
 const TABLE_NAME = "galleries";
@@ -147,6 +151,7 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
     label: string;
     defaultShow?: boolean;
     mandatory?: boolean;
+    sortable?: boolean;
     render?: (
       gallery: GQL.SlimGalleryDataFragment,
       index: number
@@ -158,6 +163,7 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
       value: "cover_image",
       label: intl.formatMessage({ id: "cover_image" }),
       defaultShow: true,
+      sortable: false,
       render: CoverImageCell,
     },
     {
@@ -182,6 +188,7 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
     {
       value: "code",
       label: intl.formatMessage({ id: "scene_code" }),
+      sortable: false,
       render: (s) => <>{s.code}</>,
     },
     {
@@ -194,29 +201,34 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
       value: "tags",
       label: intl.formatMessage({ id: "tags" }),
       defaultShow: true,
+      sortable: false,
       render: TagCell,
     },
     {
       value: "performers",
       label: intl.formatMessage({ id: "performers" }),
       defaultShow: true,
+      sortable: false,
       render: PerformersCell,
     },
     {
       value: "studio",
       label: intl.formatMessage({ id: "studio" }),
       defaultShow: true,
+      sortable: false,
       render: StudioCell,
     },
     {
       value: "scenes",
       label: intl.formatMessage({ id: "scenes" }),
       defaultShow: true,
+      sortable: false,
       render: SceneCell,
     },
     {
       value: "photographer",
       label: intl.formatMessage({ id: "photographer" }),
+      sortable: false,
       render: (s) => <>{s.photographer}</>,
     },
     {
@@ -265,6 +277,9 @@ export const GalleryListTable: React.FC<IGalleryListTableProps> = (
       selectedIds={props.selectedIds}
       onSelectChange={props.onSelectChange}
       renderCell={renderCell}
+      onSort={props.onSort}
+      sortBy={props.sortBy}
+      sortDirection={props.sortDirection}
     />
   );
 };

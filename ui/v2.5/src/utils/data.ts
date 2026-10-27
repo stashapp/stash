@@ -93,3 +93,13 @@ export function idToStoredID(o: { id: string; name: string }) {
     name: o.name,
   };
 }
+
+export function getActiveSortColumn(
+  sortMap: Record<string, string>,
+  sortBy?: string | null
+): string | undefined {
+  const reverseMap = Object.fromEntries(
+    Object.entries(sortMap).map(([k, v]) => [v, k])
+  );
+  return reverseMap[sortBy ?? ""] ?? sortBy;
+}
