@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/stashapp/stash/internal/ip"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
@@ -44,15 +45,9 @@ func (r *Repository) WithReadTxn(ctx context.Context, fn txn.TxnFunc) error {
 type Status struct {
 	Running bool `json:"running"`
 	// If not currently running, time until it will be started. If running, time until it will be stopped
-	Until              *time.Time `json:"until"`
-	RecentIPAddresses  []string   `json:"recentIPAddresses"`
-	AllowedIPAddresses []*Dlnaip  `json:"allowedIPAddresses"`
-}
-
-type Dlnaip struct {
-	IPAddress string `json:"ipAddress"`
-	// Time until IP will be no longer allowed/disallowed
-	Until *time.Time `json:"until"`
+	Until              *time.Time   `json:"until"`
+	RecentIPAddresses  []string     `json:"recentIPAddresses"`
+	AllowedIPAddresses []*ip.IPTime `json:"allowedIPAddresses"`
 }
 
 type dmsConfig struct {
@@ -98,7 +93,7 @@ type Service struct {
 	repository      Repository
 	config          Config
 	sceneServer     sceneServer
-	ipWhitelistMgr  *ipWhitelistManager
+	IPWhitelistMgr  *ip.WhitelistManager
 	activityTracker *ActivityTracker
 
 	server  *Server
@@ -170,7 +165,7 @@ func (s *Service) init() error {
 	s.server = &Server{
 		repository:         s.repository,
 		sceneServer:        s.sceneServer,
-		ipWhitelistManager: s.ipWhitelistMgr,
+		ipWhitelistManager: s.IPWhitelistMgr,
 		activityTracker:    s.activityTracker,
 		Interfaces:         interfaces,
 		HTTPConn: func() net.Listener {
@@ -231,6 +226,12 @@ func (s *Service) init() error {
 // 	return bytes.NewReader(buff.Bytes())
 // }
 
+// SetActivityUserResolver sets the resolver used to determine the user that DLNA activity is recorded for.
+// Must be called before the service is started.
+func (s *Service) SetActivityUserResolver(r ActivityUserResolver) {
+	s.activityTracker.userResolver = r
+}
+
 // NewService initialises and returns a new DLNA service.
 // The sceneWriter parameter should implement SceneActivityWriter (typically models.SceneReaderWriter).
 // The minPlayPercent parameter is the minimum percentage of video that must be played to increment play count.
@@ -241,15 +242,15 @@ func NewService(repo Repository, cfg Config, sceneServer sceneServer, sceneWrite
 	}
 
 	ret := &Service{
-		repository:  repo,
-		sceneServer: sceneServer,
-		config:      cfg,
-		ipWhitelistMgr: &ipWhitelistManager{
-			config: cfg,
-		},
+		repository:      repo,
+		sceneServer:     sceneServer,
+		config:          cfg,
+		IPWhitelistMgr:  &ip.WhitelistManager{},
 		activityTracker: NewActivityTracker(repo.TxnManager, sceneWriter, activityCfg),
 		mutex:           sync.Mutex{},
 	}
+
+	ret.IPWhitelistMgr.SetDefaultWhitelist(cfg.GetDLNADefaultIPWhitelist())
 
 	return ret
 }
@@ -358,8 +359,8 @@ func (s *Service) Status() *Status {
 
 	ret := &Status{
 		Running:            s.running,
-		RecentIPAddresses:  s.ipWhitelistMgr.getRecent(),
-		AllowedIPAddresses: s.ipWhitelistMgr.getTempAllowed(),
+		RecentIPAddresses:  s.IPWhitelistMgr.GetRecent(),
+		AllowedIPAddresses: s.IPWhitelistMgr.GetTempAllowed(),
 	}
 
 	if s.startTime != nil {
@@ -376,9 +377,9 @@ func (s *Service) Status() *Status {
 }
 
 func (s *Service) AddTempDLNAIP(pattern string, duration *time.Duration) {
-	s.ipWhitelistMgr.allowPattern(pattern, duration)
+	s.IPWhitelistMgr.AllowPattern(pattern, duration)
 }
 
 func (s *Service) RemoveTempDLNAIP(pattern string) bool {
-	return s.ipWhitelistMgr.removePattern(pattern)
+	return s.IPWhitelistMgr.RemovePattern(pattern)
 }

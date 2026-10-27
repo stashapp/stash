@@ -125,7 +125,7 @@ func Initialize() (*Server, error) {
 	r.Use(middleware.Heartbeat("/healthz"))
 	r.Use(cors.AllowAll().Handler)
 	r.Use(RequestIPMiddleware)
-	r.Use(authenticateHandler())
+	r.Use(authenticateHandler(mgr.Repository.TxnManager, cfg))
 	visitedPluginHandler := mgr.SessionStore.VisitedPluginHandler()
 	r.Use(visitedPluginHandler)
 
@@ -141,6 +141,7 @@ func Initialize() (*Server, error) {
 	r.Use(middleware.Compress(4))
 	r.Use(middleware.StripSlashes)
 	r.Use(BaseURLMiddleware)
+	r.Use(rateLimitGraphql(cfg.GetUserGraphqlRateLimit(), cfg.GetUserGraphqlRateLimitWindow()))
 
 	recoverFunc := func(ctx context.Context, err interface{}) error {
 		logger.Error(err)
@@ -163,16 +164,32 @@ func Initialize() (*Server, error) {
 	imageService := mgr.ImageService
 	galleryService := mgr.GalleryService
 	groupService := mgr.GroupService
+	userService := mgr.UserService
+
 	resolver := &Resolver{
 		repository:     repo,
 		sceneService:   sceneService,
 		imageService:   imageService,
 		galleryService: galleryService,
 		groupService:   groupService,
+		userService:    userService,
 		hookExecutor:   pluginCache,
 	}
 
-	gqlSrv := gqlHandler.New(NewExecutableSchema(Config{Resolvers: resolver}))
+	// observe user service changes as we need to update resolvers
+	mgr.UserServiceObservers.Subscribe(func(userService manager.UserService) {
+		resolver.userService = userService
+	})
+
+	gqlCfg := Config{
+		Resolvers: resolver,
+		Directives: DirectiveRoot{
+			HasRole:     HasRoleDirective,
+			IsUserOwner: IsUserOwnerDirective,
+		},
+	}
+
+	gqlSrv := gqlHandler.New(NewExecutableSchema(gqlCfg))
 	gqlSrv.SetRecoverFunc(recoverFunc)
 	gqlSrv.AddTransport(gqlTransport.Websocket{
 		Upgrader: websocket.Upgrader{
@@ -228,8 +245,10 @@ func Initialize() (*Server, error) {
 
 	staticLoginUI := statigz.FileServer(ui.LoginUIBox.(fs.ReadDirFS))
 
+	sessionStore := mgr.SessionStore
+
 	r.Get(loginEndpoint, handleLogin())
-	r.Post(loginEndpoint, handleLoginPost())
+	r.Post(loginEndpoint, handleLoginPost(sessionStore, cfg))
 	r.Get(logoutEndpoint, handleLogout())
 	r.Get(loginLocaleEndpoint, handleLoginLocale(cfg))
 	r.HandleFunc(loginEndpoint+"/*", func(w http.ResponseWriter, r *http.Request) {

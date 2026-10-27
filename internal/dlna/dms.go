@@ -47,6 +47,7 @@ import (
 	"github.com/anacrolix/dms/ssdp"
 	"github.com/anacrolix/dms/upnp"
 
+	"github.com/stashapp/stash/internal/ip"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -277,7 +278,7 @@ type Server struct {
 
 	repository         Repository
 	sceneServer        sceneServer
-	ipWhitelistManager *ipWhitelistManager
+	ipWhitelistManager *ip.WhitelistManager
 	activityTracker    *ActivityTracker
 	VideoSortOrder     string
 
@@ -398,10 +399,10 @@ func (me *Server) serviceControlHandler(w http.ResponseWriter, r *http.Request) 
 	clientIp, _, _ := net.SplitHostPort(r.RemoteAddr)
 
 	ip := net.ParseIP(clientIp).String()
-	if !me.ipWhitelistManager.ipAllowed(ip) {
+	if !me.ipWhitelistManager.IPAllowed(ip) {
 		// only log if we haven't seen it
-		if !me.ipWhitelistManager.addRecent(ip) {
-			logger.Infof("not allowed client %s", clientIp)
+		if !me.ipWhitelistManager.AddRecent(ip) {
+			logger.Infof("[DLNA] not allowed client %s", clientIp)
 		}
 
 		http.Error(w, "forbidden", http.StatusForbidden)

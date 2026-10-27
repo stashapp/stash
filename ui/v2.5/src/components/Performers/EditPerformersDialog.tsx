@@ -5,6 +5,7 @@ import { useBulkPerformerUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { ModalComponent } from "../Shared/Modal";
 import { useToast } from "src/hooks/Toast";
+import { useIsAdmin } from "src/hooks/CurrentUser";
 import { MultiSet } from "../Shared/MultiSet";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
@@ -64,6 +65,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
 ) => {
   const intl = useIntl();
+  const isAdmin = useIsAdmin();
   const Toast = useToast();
 
   const { configuration } = useConfigurationContext();
@@ -155,6 +157,11 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     if (penis_length !== undefined) {
       performerInput.penis_length =
         penis_length === null ? null : parseFloat(penis_length);
+    }
+
+    // ignore_auto_tag may only be changed by administrators
+    if (!isAdmin) {
+      performerInput.ignore_auto_tag = undefined;
     }
 
     return performerInput;
@@ -477,15 +484,17 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
             />
           </BulkUpdateFormGroup>
 
-          <Form.Group controlId="ignore-auto-tags">
-            <IndeterminateCheckbox
-              label={intl.formatMessage({ id: "ignore_auto_tag" })}
-              setChecked={(checked) =>
-                setUpdateField({ ignore_auto_tag: checked })
-              }
-              checked={updateInput.ignore_auto_tag ?? undefined}
-            />
-          </Form.Group>
+          {isAdmin && (
+            <Form.Group controlId="ignore-auto-tags">
+              <IndeterminateCheckbox
+                label={intl.formatMessage({ id: "ignore_auto_tag" })}
+                setChecked={(checked) =>
+                  setUpdateField({ ignore_auto_tag: checked })
+                }
+                checked={updateInput.ignore_auto_tag ?? undefined}
+              />
+            </Form.Group>
+          )}
         </Form>
       </ModalComponent>
     );

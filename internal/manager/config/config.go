@@ -17,8 +17,6 @@ import (
 	"sync"
 	// "github.com/sasha-s/go-deadlock" // if you have deadlock issues
 
-	"golang.org/x/crypto/bcrypt"
-
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/v2"
@@ -41,15 +39,24 @@ const (
 	Metadata            = "metadata"
 	BlobsPath           = "blobs_path"
 	Downloads           = "downloads"
-	ApiKey              = "api_key"
-	Username            = "username"
-	Password            = "password"
-	MaxSessionAge       = "max_session_age"
+
+	LegacyAPIKey   = "api_key"
+	LegacyUsername = "username"
+	LegacyPassword = "password"
+
+	PublicAccess        = "public_access"
+	publicAccessDefault = false
+	PublicWhitelist     = "public_whitelist"
+
+	MaxSessionAge = "max_session_age"
+
+	GuestAccountEnabled = "guest_account_enabled"
+
+	UserGraphqlRateLimit       = "user_graphql_rate_limit"
+	UserGraphqlRateLimitWindow = "user_graphql_rate_limit_window_seconds"
 
 	SignedURLExpiry        = "signed_url_expiry"
 	signedURLExpiryDefault = 60 * 60 * 4 // 4 hours in seconds
-
-	PublicWhitelist = "public_whitelist"
 
 	// SFWContentMode mode config key
 	SFWContentMode = "sfw_content_mode"
@@ -361,11 +368,18 @@ type Config struct {
 	// configUpdates  chan int
 	certFile string
 	keyFile  string
+
 	sync.RWMutex
 	// deadlock.RWMutex // for deadlock testing/issues
 
 	// cached values for high-frequency calls
+	cachedValues      sync.Map
 	publicIPWhitelist ipWhitelist
+
+	// temporary username/password for setup purposes
+	setupUsername    string
+	setupPassword    string
+	setupStartupTime time.Time
 }
 
 var instance *Config
@@ -387,13 +401,69 @@ func (i *Config) load(f string) error {
 }
 
 func (i *Config) IsNewSystem() bool {
+	// not protected as we shouldn't be changing it in multi-threaded environments
+	// and its not worth the overhead
 	return i.isNewSystem
+}
+
+func (i *Config) SetNewSystemCredentials(username, password string) {
+	i.Lock()
+	defer i.Unlock()
+	i.setupUsername = username
+	i.setupPassword = password
+	i.setupStartupTime = time.Now()
+}
+
+// GetNewSystemCredentials returns the temporary username and password used for authentication in a new system before the initial user is created.
+// Returns empty strings if not in a new system.
+func (i *Config) GetNewSystemCredentials() (username, password string, startupTime time.Time) {
+	i.RLock()
+	defer i.RUnlock()
+	if !i.isNewSystem {
+		return "", "", time.Time{}
+	}
+	return i.setupUsername, i.setupPassword, i.setupStartupTime
 }
 
 func (i *Config) SetConfigFile(fn string) {
 	i.Lock()
 	defer i.Unlock()
 	i.filePath = fn
+}
+
+// getCachedValue returns
+func getCachedValue[T any](i *Config, key string, getter func() T) T {
+	var ret T
+	cached, ok := i.cachedValues.Load(key)
+	if ok {
+		ret, ok = cached.(T)
+		if ok {
+			return ret
+		}
+	}
+
+	ret = getter()
+	i.cachedValues.Store(key, ret)
+	return ret
+}
+
+func setCachedValue[T any](i *Config, key string, value T) {
+	i.cachedValues.Store(key, value)
+}
+
+// GetPublicAccess returns true if public access is enabled.
+// In public access mode, Stash will allow access from external IPs.
+func (i *Config) GetPublicAccess() bool {
+	// cache the value as it is used frequently in authentication
+	return getCachedValue(i, PublicAccess, func() bool {
+		return i.getBoolDefault(PublicAccess, publicAccessDefault)
+	})
+}
+
+func (i *Config) SetPublicAccess(enabled bool) {
+	i.SetBool(PublicAccess, enabled)
+	setCachedValue(i, PublicAccess, enabled)
+	_ = i.Write()
 }
 
 type ipWhitelist struct {
@@ -491,6 +561,9 @@ func (i *Config) SetInterface(key string, value interface{}) {
 	i.Lock()
 	defer i.Unlock()
 
+	i.setInterfaceNoLock(key, value)
+}
+func (i *Config) setInterfaceNoLock(key string, value interface{}) {
 	i.set(key, value)
 }
 
@@ -527,19 +600,14 @@ func (i *Config) setDefault(key string, value interface{}) {
 	}
 }
 
-func (i *Config) SetPassword(value string) {
-	// if blank, don't bother hashing; we want it to be blank
-	if value == "" {
-		i.SetString(Password, "")
-	} else {
-		i.SetString(Password, hashPassword(value))
-	}
-}
-
 func (i *Config) Write() error {
 	i.Lock()
 	defer i.Unlock()
 
+	return i.writeNoLock()
+}
+
+func (i *Config) writeNoLock() error {
 	data, err := i.marshal()
 	if err != nil {
 		return err
@@ -808,6 +876,10 @@ func (i *Config) GetJWTSignKey() []byte {
 
 func (i *Config) GetSessionStoreKey() []byte {
 	return []byte(i.getString(SessionStoreKey))
+}
+
+func (i *Config) SetSessionStoreKey(key string) {
+	i.SetString(SessionStoreKey, key)
 }
 
 func (i *Config) GetDefaultScrapersPath() string {
@@ -1193,50 +1265,16 @@ func (i *Config) IsCreateImageClipsFromVideos() bool {
 	return i.getBool(CreateImageClipsFromVideos)
 }
 
-func (i *Config) GetAPIKey() string {
-	return i.getString(ApiKey)
+func (i *Config) GetLegacyAPIKey() string {
+	return i.getString(LegacyAPIKey)
 }
 
-func (i *Config) GetUsername() string {
-	return i.getString(Username)
+func (i *Config) GetLegacyUsername() string {
+	return i.getString(LegacyUsername)
 }
 
-func (i *Config) GetPasswordHash() string {
-	return i.getString(Password)
-}
-
-func (i *Config) GetCredentials() (string, string) {
-	if i.HasCredentials() {
-		return i.getString(Username), i.getString(Password)
-	}
-
-	return "", ""
-}
-
-func (i *Config) HasCredentials() bool {
-	username := i.getString(Username)
-	pwHash := i.getString(Password)
-
-	return username != "" && pwHash != ""
-}
-
-func hashPassword(password string) string {
-	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
-
-	return string(hash)
-}
-
-func (i *Config) ValidateCredentials(username string, password string) bool {
-	if !i.HasCredentials() {
-		// don't need to authenticate if no credentials saved
-		return true
-	}
-
-	authUser, authPWHash := i.GetCredentials()
-
-	err := bcrypt.CompareHashAndPassword([]byte(authPWHash), []byte(password))
-
-	return username == authUser && err == nil
+func (i *Config) GetLegacyPasswordHash() string {
+	return i.getString(LegacyPassword)
 }
 
 func stashBoxValidate(str string) bool {
@@ -1286,6 +1324,43 @@ func (i *Config) GetMaxSessionAge() int {
 	v := i.forKey(MaxSessionAge)
 	if v.Exists(MaxSessionAge) {
 		ret = v.Int(MaxSessionAge)
+	}
+
+	return ret
+}
+
+func (i *Config) GetGuestUserEnabled() bool {
+	return i.getBool(GuestAccountEnabled)
+}
+
+func (i *Config) SetGuestUserEnabled(enabled bool) {
+	i.RLock()
+	defer i.RUnlock()
+	i.set(GuestAccountEnabled, enabled)
+	_ = i.Write()
+}
+
+func (i *Config) GetUserGraphqlRateLimit() int {
+	i.RLock()
+	defer i.RUnlock()
+
+	ret := 0
+	v := i.forKey(UserGraphqlRateLimit)
+	if v.Exists(UserGraphqlRateLimit) {
+		ret = v.Int(UserGraphqlRateLimit)
+	}
+
+	return ret
+}
+
+func (i *Config) GetUserGraphqlRateLimitWindow() time.Duration {
+	i.RLock()
+	defer i.RUnlock()
+
+	ret := time.Minute
+	v := i.forKey(UserGraphqlRateLimitWindow)
+	if v.Exists(UserGraphqlRateLimitWindow) {
+		ret = time.Duration(v.Int(UserGraphqlRateLimitWindow)) * time.Second
 	}
 
 	return ret
@@ -2025,6 +2100,14 @@ func (i *Config) setDefaultValues() {
 	}})
 }
 
+// setNewSystemDefaults sets config options that are new and unset in a fresh install.
+func (i *Config) setNewSystemDefaults() {
+	i.Lock()
+	defer i.Unlock()
+
+	// add new system defaults here
+}
+
 // setExistingSystemDefaults sets config options that are new and unset in an existing install,
 // but should have a separate default than for brand-new systems, to maintain behavior.
 // The config file will not be written.
@@ -2045,6 +2128,15 @@ func (i *Config) setExistingSystemDefaults() {
 	}
 }
 
+func GenerateSessionStoreKey() (string, error) {
+	const sessionKeyLength = 32
+	sessionStoreKey, err := hash.GenerateRandomKey(sessionKeyLength)
+	if err != nil {
+		return "", err
+	}
+	return sessionStoreKey, nil
+}
+
 // SetInitialConfig fills in missing required config fields. The config file will not be written.
 func (i *Config) SetInitialConfig() error {
 	// generate some api keys
@@ -2059,11 +2151,11 @@ func (i *Config) SetInitialConfig() error {
 	}
 
 	if string(i.GetSessionStoreKey()) == "" {
-		sessionStoreKey, err := hash.GenerateRandomKey(apiKeyLength)
+		sessionStoreKey, err := GenerateSessionStoreKey()
 		if err != nil {
 			return fmt.Errorf("error generating session store key: %w", err)
 		}
-		i.SetString(SessionStoreKey, sessionStoreKey)
+		i.SetSessionStoreKey(sessionStoreKey)
 	}
 
 	i.setDefaultValues()

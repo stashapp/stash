@@ -46,7 +46,7 @@ input GalleryCreateInput {
   photographer: String
   # rating expressed as 1-100
   rating100: Int
-  organized: Boolean
+  organized: Boolean @hasRole(role: ADMIN)
   scene_ids: [ID!]
   studio_id: ID
   tag_ids: [ID!]
@@ -67,7 +67,7 @@ input GalleryUpdateInput {
   photographer: String
   # rating expressed as 1-100
   rating100: Int
-  organized: Boolean
+  organized: Boolean @hasRole(role: ADMIN)
   scene_ids: [ID!]
   studio_id: ID
   tag_ids: [ID!]
@@ -89,7 +89,7 @@ input BulkGalleryUpdateInput {
   photographer: String
   # rating expressed as 1-100
   rating100: Int
-  organized: Boolean
+  organized: Boolean @hasRole(role: ADMIN)
   scene_ids: BulkUpdateIds
   studio_id: ID
   tag_ids: BulkUpdateIds

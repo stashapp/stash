@@ -107,7 +107,14 @@ func handleLogin() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		returnURL := r.URL.Query().Get(returnURLParam)
 
-		if !config.GetInstance().HasCredentials() {
+		s := manager.GetInstance().UserService
+		loginRequired, err := s.LoginRequired(r.Context())
+		if err != nil {
+			http.Error(w, "An unexpected error occurred. See logs", http.StatusInternalServerError)
+			return
+		}
+
+		if !loginRequired {
 			if returnURL != "" {
 				http.Redirect(w, r, returnURL, http.StatusFound)
 			} else {
@@ -121,9 +128,37 @@ func handleLogin() http.HandlerFunc {
 	}
 }
 
-func handleLoginPost() http.HandlerFunc {
+func handleLoginPost(s *session.Store, cfg authenticationConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := manager.GetInstance().SessionStore.Login(w, r)
+		// perform IP rate limiting before attempting to log in to prevent brute force attacks
+
+		limitKey, err := keyByIP(r)
+		if err != nil {
+			logger.Errorf("Error getting IP for login rate limiting: %v", err)
+			http.Error(w, "An unexpected error occurred. See logs", http.StatusInternalServerError)
+			return
+		}
+
+		if loginRateLimiter.OnLimit(w, r, limitKey) {
+			http.Error(w, "Too many login attempts. Please try again later.", http.StatusTooManyRequests)
+			return
+		}
+
+		username := session.GetUsernameFromForm(r)
+
+		if userLoginRateLimiter.OnLimit(w, r, username) {
+			http.Error(w, "Too many login attempts. Please try again later.", http.StatusTooManyRequests)
+			return
+		}
+
+		// handle new system setup
+		if cfg.IsNewSystem() {
+			expectedUsername, expectedPassword, _ := cfg.GetNewSystemCredentials()
+			err = s.LoginForSetup(w, r, expectedUsername, expectedPassword)
+		} else {
+			err = s.Login(w, r)
+		}
+
 		if err != nil {
 			// always log the error
 			logger.Errorf("Error logging in: %v from IP: %s", err, r.RemoteAddr)
@@ -153,9 +188,16 @@ func handleLogout() http.HandlerFunc {
 			return
 		}
 
+		s := manager.GetInstance().UserService
+		loginRequired, err := s.LoginRequired(r.Context())
+		if err != nil {
+			http.Error(w, "An unexpected error occurred. See logs", http.StatusInternalServerError)
+			return
+		}
+
 		// redirect to the login page if credentials are required
 		prefix := getProxyPrefix(r)
-		if config.GetInstance().HasCredentials() {
+		if loginRequired {
 			http.Redirect(w, r, prefix+loginEndpoint, http.StatusFound)
 		} else {
 			http.Redirect(w, r, prefix+"/", http.StatusFound)

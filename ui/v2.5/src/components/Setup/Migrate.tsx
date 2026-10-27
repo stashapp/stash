@@ -224,6 +224,8 @@ export const Migrate: React.FC = () => {
             <FormattedMessage id="setup.migrate.migration_irreversible_warning" />
           </p>
 
+          {maybeMigrationNotes}
+
           <p>
             <FormattedMessage
               id="setup.migrate.backup_recommended"
@@ -234,8 +236,6 @@ export const Migrate: React.FC = () => {
             />
           </p>
         </section>
-
-        {maybeMigrationNotes}
 
         <section>
           <Form.Group id="migrate">

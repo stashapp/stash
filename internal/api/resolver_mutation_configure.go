@@ -333,27 +333,17 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.SetString(config.GalleryCoverRegex, *input.GalleryCoverRegex)
 	}
 
-	if input.Username != nil && *input.Username != c.GetUsername() {
-		c.SetString(config.Username, *input.Username)
-		if *input.Password == "" {
-			logger.Info("Username cleared")
-		} else {
-			logger.Info("Username changed")
-		}
+	if input.Username != nil {
+		return makeConfigGeneralResult(), fmt.Errorf("username not supported")
 	}
 
 	if input.Password != nil {
-		// bit of a hack - check if the passed in password is the same as the stored hash
-		// and only set if they are different
-		currentPWHash := c.GetPasswordHash()
+		return makeConfigGeneralResult(), fmt.Errorf("password not supported")
+	}
 
-		if *input.Password != currentPWHash {
-			if *input.Password == "" {
-				logger.Info("Password cleared")
-			} else {
-				logger.Info("Password changed")
-			}
-			c.SetPassword(*input.Password)
+	if input.GuestAccountEnabled != nil {
+		if err := manager.GetInstance().UserService.SetGuestUserEnabled(*input.GuestAccountEnabled); err != nil {
+			return makeConfigGeneralResult(), fmt.Errorf("error setting guest account enabled: %w", err)
 		}
 	}
 
@@ -567,8 +557,10 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input ConfigDLNAIn
 
 	r.setConfigString(config.DLNAServerName, input.ServerName)
 
+	updateDLNAWhitelist := false
 	if input.WhitelistedIPs != nil {
 		c.SetInterface(config.DLNADefaultIPWhitelist, input.WhitelistedIPs)
+		updateDLNAWhitelist = true
 	}
 
 	r.setConfigString(config.DLNAVideoSortOrder, input.VideoSortOrder)
@@ -586,6 +578,11 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input ConfigDLNAIn
 
 	if err := c.Write(); err != nil {
 		return makeConfigDLNAResult(), err
+	}
+
+	// need to update the whitelist manager with the new default whitelist
+	if updateDLNAWhitelist {
+		manager.GetInstance().DLNAService.IPWhitelistMgr.SetDefaultWhitelist(input.WhitelistedIPs)
 	}
 
 	if refresh {
@@ -662,58 +659,41 @@ func (r *mutationResolver) ConfigureDefaults(ctx context.Context, input ConfigDe
 	return makeConfigDefaultsResult(), nil
 }
 
-func (r *mutationResolver) GenerateAPIKey(ctx context.Context, input GenerateAPIKeyInput) (string, error) {
-	c := config.GetInstance()
-
-	var newAPIKey string
-	if input.Clear == nil || !*input.Clear {
-		username := c.GetUsername()
-		if username != "" {
-			var err error
-			newAPIKey, err = manager.GenerateAPIKey(username)
-			if err != nil {
-				return "", err
-			}
-		}
-	}
-
-	c.SetString(config.ApiKey, newAPIKey)
-	if err := c.Write(); err != nil {
-		return newAPIKey, err
-	}
-
-	return newAPIKey, nil
-}
-
 func (r *mutationResolver) ConfigureUI(ctx context.Context, input map[string]interface{}, partial map[string]interface{}) (map[string]interface{}, error) {
-	c := config.GetInstance()
+	uiConfig, err := r.getUIConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	if input != nil {
 		// #5483 - convert JSON numbers to float64 or int64
-		input = convertMapJSONNumbers(input)
-		c.SetUIConfiguration(input)
+		uiConfig = convertMapJSONNumbers(input)
 	}
 
 	if partial != nil {
 		// #5483 - convert JSON numbers to float64 or int64
 		partial = convertMapJSONNumbers(partial)
 		// merge partial into existing config
-		existing := c.GetUIConfiguration()
-		utils.MergeMaps(existing, partial)
-		c.SetUIConfiguration(existing)
+		if uiConfig == nil {
+			uiConfig = make(map[string]interface{})
+		}
+		utils.MergeMaps(uiConfig, partial)
 	}
 
-	if err := c.Write(); err != nil {
-		return c.GetUIConfiguration(), err
+	if err := r.setUIConfig(ctx, uiConfig); err != nil {
+		return nil, err
 	}
 
-	return c.GetUIConfiguration(), nil
+	return r.getUIConfig(ctx)
 }
 
 func (r *mutationResolver) ConfigureUISetting(ctx context.Context, key string, value interface{}) (map[string]interface{}, error) {
-	c := config.GetInstance()
+	uiConfig, err := r.getUIConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	cfg := utils.NestedMap(c.GetUIConfiguration())
+	cfg := utils.NestedMap(uiConfig)
 
 	// #5483 - convert JSON numbers to float64 or int64
 	if m, ok := value.(map[string]interface{}); ok {

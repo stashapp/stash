@@ -1210,6 +1210,20 @@ func (_m *SceneReaderWriter) HasCover(ctx context.Context, sceneID int) (bool, e
 	return r0, r1
 }
 
+// MergeUserData provides a mock function with given fields: ctx, destinationID, sourceIDs, includeViewHistory, includeOHistory
+func (_m *SceneReaderWriter) MergeUserData(ctx context.Context, destinationID int, sourceIDs []int, includeViewHistory bool, includeOHistory bool) error {
+	ret := _m.Called(ctx, destinationID, sourceIDs, includeViewHistory, includeOHistory)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, []int, bool, bool) error); ok {
+		r0 = rf(ctx, destinationID, sourceIDs, includeViewHistory, includeOHistory)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // OCountByGroupID provides a mock function with given fields: ctx, groupID
 func (_m *SceneReaderWriter) OCountByGroupID(ctx context.Context, groupID int) (int, error) {
 	ret := _m.Called(ctx, groupID)

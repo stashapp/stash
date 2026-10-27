@@ -99,7 +99,7 @@ input PerformerCreateInput {
   death_date: String
   hair_color: String
   weight: Int
-  ignore_auto_tag: Boolean
+  ignore_auto_tag: Boolean @hasRole(role: ADMIN)
 
   custom_fields: Map
 }
@@ -140,7 +140,7 @@ input PerformerUpdateInput {
   death_date: String
   hair_color: String
   weight: Int
-  ignore_auto_tag: Boolean
+  ignore_auto_tag: Boolean @hasRole(role: ADMIN)
 
   custom_fields: CustomFieldsInput
 }
@@ -183,7 +183,7 @@ input BulkPerformerUpdateInput {
   death_date: String
   hair_color: String
   weight: Int
-  ignore_auto_tag: Boolean
+  ignore_auto_tag: Boolean @hasRole(role: ADMIN)
 
   custom_fields: CustomFieldsInput
 }

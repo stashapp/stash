@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -82,8 +83,8 @@ func (qb *imageFilterHandler) criterionHandler() criterionHandler {
 
 		pathCriterionHandler(imageFilter.Path, "folders.path", "files.basename", imageRepository.addFoldersTable),
 		qb.fileCountCriterionHandler(imageFilter.FileCount),
-		intCriterionHandler(imageFilter.Rating100, "images.rating", nil),
-		intCriterionHandler(imageFilter.OCounter, "images.o_counter", nil),
+		imageUserData.intCriterionHandler(imageFilter.Rating100, imageUserData.column("rating")),
+		imageUserData.intCriterionHandler(imageFilter.OCounter, imageUserData.columnOrDefault("o_counter", "0")),
 		boolCriterionHandler(imageFilter.Organized, "images.organized", nil),
 		&dateCriterionHandler{imageFilter.Date, "images.date", nil},
 		qb.urlsCriterionHandler(imageFilter.URL),
@@ -189,9 +190,12 @@ func (qb *imageFilterHandler) missingCriterionHandler(isMissing *string) criteri
 			case "tags":
 				imageRepository.tags.leftJoin(f, "tags_join", "images.id")
 				f.addWhere("tags_join.image_id IS NULL")
+			case "rating":
+				imageUserData.join(ctx, f)
+				f.addWhere(imageUserData.column("rating") + " IS NULL")
 			default:
 				if err := validateIsMissing(*isMissing, []string{
-					"title", "details", "photographer", "date", "code", "rating",
+					"title", "details", "photographer", "date", "code",
 				}); err != nil {
 					f.setError(err)
 					return
@@ -297,13 +301,13 @@ func (qb *imageFilterHandler) performerFavoriteCriterionHandler(performerfavorit
 
 			if *performerfavorite {
 				// contains at least one favorite
-				f.addLeftJoin("performers", "", "performers.id = performers_images.performer_id")
-				f.addWhere("performers.favorite = 1")
+				f.addLeftJoin(performersUserDataTable, "", fmt.Sprintf("performers_user_data.performer_id = performers_images.performer_id AND performers_user_data.user_id = %d", currentUserID(ctx)))
+				f.addWhere("performers_user_data.favorite = 1")
 			} else {
 				// contains zero favorites
-				f.addLeftJoin(`(SELECT performers_images.image_id as id FROM performers_images
-JOIN performers ON performers.id = performers_images.performer_id
-GROUP BY performers_images.image_id HAVING SUM(performers.favorite) = 0)`, "nofaves", "images.id = nofaves.id")
+				f.addLeftJoin(fmt.Sprintf(`(SELECT performers_images.image_id as id FROM performers_images
+LEFT JOIN performers_user_data ON performers_user_data.performer_id = performers_images.performer_id AND performers_user_data.user_id = %d
+GROUP BY performers_images.image_id HAVING SUM(COALESCE(performers_user_data.favorite, 0)) = 0)`, currentUserID(ctx)), "nofaves", "images.id = nofaves.id")
 				f.addWhere("performers_images.image_id IS NULL OR nofaves.id IS NOT NULL")
 			}
 		}

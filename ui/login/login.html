@@ -17,8 +17,10 @@
             password: "Password",
             login: "Login",
             invalid_credentials: "Invalid credentials",
-            internal_error: "Unexpected internal error. See logs for more details"
+            internal_error: "Unexpected internal error. See logs for more details",
+            too_many_attempts: "Too many login attempts. Please try again later."
         };
+        var fallbackStrings = localeStrings;
     </script>
     <script src="login/locale"></script>
 </head>
@@ -37,12 +39,23 @@
                 if (xhr.status == 200) {
                     window.location.replace(returnURL);
                 } else {
-                    document.getElementsByClassName("login-error")[0].innerHTML = localeStrings.invalid_credentials;
+                    var errMsg = "Login failed: " + xhr.status;
+                    if (xhr.status == 429) {
+                        errMsg = localeStrings.too_many_attempts ?? fallbackStrings.too_many_attempts;
+                    } else if (xhr.status == 401) {
+                        errMsg = localeStrings.invalid_credentials ?? fallbackStrings.invalid_credentials;
+                    } else if (xhr.status >= 500 && xhr.status < 600) {
+                        errMsg = localeStrings.internal_error ?? fallbackStrings.internal_error;
+                    } else {
+                        errMsg = "Unexpected error: " + xhr.status;
+                    }
+
+                    document.getElementsByClassName("login-error")[0].innerHTML = errMsg;
                 }
             }
         };
         xhr.onerror = function() {
-            document.getElementsByClassName("login-error")[0].innerHTML = localeStrings.internal_error;
+            document.getElementsByClassName("login-error")[0].innerHTML = localeStrings.internal_error ?? fallbackStrings.internal_error;
         };
         var body = "username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&returnURL=" + encodeURIComponent(returnURL);
         xhr.send(body);

@@ -163,13 +163,12 @@ func (db *Database) getDatabaseSchemaVersion() (uint, error) {
 }
 
 func (db *Database) ReInitialise() error {
+	_ = db.Close()
 	return db.initialise()
 }
 
 // RunAllMigrations runs all migrations to bring the database up to the current schema version
-func (db *Database) RunAllMigrations() error {
-	ctx := context.Background()
-
+func (db *Database) RunAllMigrations(ctx context.Context) error {
 	m, err := NewMigrator(db)
 	if err != nil {
 		return err

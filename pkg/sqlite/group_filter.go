@@ -66,7 +66,7 @@ func (qb *groupFilterHandler) criterionHandler() criterionHandler {
 		stringCriterionHandler(groupFilter.Name, "groups.name"),
 		stringCriterionHandler(groupFilter.Director, "groups.director"),
 		stringCriterionHandler(groupFilter.Synopsis, "groups.description"),
-		intCriterionHandler(groupFilter.Rating100, "groups.rating", nil),
+		groupUserData.intCriterionHandler(groupFilter.Rating100, groupUserData.column("rating")),
 		floatIntCriterionHandler(groupFilter.Duration, "groups.duration", nil),
 		qb.missingCriterionHandler(groupFilter.IsMissing),
 		qb.urlsCriterionHandler(groupFilter.URL),
@@ -131,9 +131,12 @@ func (qb *groupFilterHandler) missingCriterionHandler(isMissing *string) criteri
 			case "tags":
 				groupRepository.tags.leftJoin(f, "tags_join", "groups.id")
 				f.addWhere("tags_join.group_id IS NULL")
+			case "rating":
+				groupUserData.join(ctx, f)
+				f.addWhere(groupUserData.column("rating") + " IS NULL")
 			default:
 				if err := validateIsMissing(*isMissing, []string{
-					"aliases", "description", "director", "date", "rating",
+					"aliases", "description", "director", "date",
 				}); err != nil {
 					f.setError(err)
 					return
@@ -240,13 +243,14 @@ func (qb *groupFilterHandler) sceneCountCriterionHandler(count *models.IntCriter
 	return h.handler(count)
 }
 
-// used for sorting and filtering on group o-count
+// used for sorting and filtering on group o-count.
+// Must be formatted with the current user ID.
 var selectGroupOCountSQL = utils.StrFormat(
 	"SELECT SUM(o_counter) "+
 		"FROM ("+
 		"SELECT COUNT({scenes_o_dates}.{o_date}) as o_counter from {groups_scenes} s "+
 		"LEFT JOIN {scenes} ON {scenes}.id = s.{scene_id} "+
-		"LEFT JOIN {scenes_o_dates} ON {scenes_o_dates}.{scene_id} = {scenes}.id "+
+		"LEFT JOIN {scenes_o_dates} ON {scenes_o_dates}.{scene_id} = {scenes}.id AND {scenes_o_dates}.user_id = %[1]d "+
 		"WHERE s.{group_id} = {group}.id "+
 		")",
 	map[string]interface{}{
@@ -266,7 +270,7 @@ func (qb *groupFilterHandler) groupOCounterCriterionHandler(count *models.IntCri
 			return
 		}
 
-		lhs := "(" + selectGroupOCountSQL + ")"
+		lhs := "(" + fmt.Sprintf(selectGroupOCountSQL, currentUserID(ctx)) + ")"
 		clause, args := getIntCriterionWhereClause(lhs, *count)
 
 		f.addWhere(clause, args...)

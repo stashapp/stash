@@ -59,7 +59,7 @@ func runTests(m *testing.M) int {
 	f.Close()
 	databaseFile := f.Name()
 	db = sqlite.NewDatabase()
-	if err := db.Open(databaseFile); err != nil {
+	if err := db.Open(context.Background(), databaseFile); err != nil {
 		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
 	}
 

@@ -5734,3 +5734,218 @@ func TestSceneQueryPerformerAgeUsesProductionDate(t *testing.T) {
 		assert.Less(withIdx, withoutIdx)
 	})
 }
+
+func TestSceneStore_UserData(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		qb := db.Scene
+
+		newScene := models.Scene{
+			Title: "user data",
+		}
+		require.NoError(t, qb.Create(ctx, &newScene, nil))
+		sceneID := newScene.ID
+
+		other := models.User{
+			Username: "other",
+			Roles:    models.Roles{models.RoleEnumModify},
+		}
+		require.NoError(t, db.User.Create(ctx, &other, ""))
+		otherCtx := models.WithUserID(ctx, other.ID)
+		guestCtx := models.WithUserID(ctx, 0)
+
+		rating := 60
+		_, err := qb.UpdatePartial(ctx, sceneID, models.ScenePartial{
+			Rating: models.NewOptionalInt(rating),
+		})
+		require.NoError(t, err)
+
+		resumeTime := 12.5
+		playDuration := 30.0
+		_, err = qb.SaveActivity(ctx, sceneID, &resumeTime, &playDuration)
+		require.NoError(t, err)
+
+		// the user who set the data sees it
+		s, err := qb.Find(ctx, sceneID)
+		require.NoError(t, err)
+		assert.Equal(t, &rating, s.Rating)
+		assert.Equal(t, resumeTime, s.ResumeTime)
+		assert.Equal(t, playDuration, s.PlayDuration)
+
+		// other users and the guest user do not
+		for name, c := range map[string]context.Context{"other user": otherCtx, "guest": guestCtx} {
+			s, err := qb.Find(c, sceneID)
+			require.NoError(t, err)
+			assert.Nil(t, s.Rating, name)
+			assert.Zero(t, s.ResumeTime, name)
+			assert.Zero(t, s.PlayDuration, name)
+		}
+
+		// filtering by rating only matches the current user's rating
+		ratingFilter := &models.SceneFilterType{
+			Rating100: &models.IntCriterionInput{
+				Value:    rating,
+				Modifier: models.CriterionModifierEquals,
+			},
+		}
+		findIDs := func(c context.Context) []int {
+			var ids []int
+			for _, s := range queryScene(c, t, qb, ratingFilter, nil) {
+				ids = append(ids, s.ID)
+			}
+			return ids
+		}
+		assert.Contains(t, findIDs(ctx), sceneID)
+		assert.NotContains(t, findIDs(otherCtx), sceneID)
+
+		// play duration stats are per user
+		total, err := qb.PlayDuration(otherCtx)
+		require.NoError(t, err)
+		assert.Zero(t, total)
+
+		return nil
+	})
+}
+
+func TestSceneStore_UserHistory(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		qb := db.Scene
+
+		newScene := models.Scene{
+			Title: "user history",
+		}
+		require.NoError(t, qb.Create(ctx, &newScene, nil))
+		sceneID := newScene.ID
+
+		other := models.User{
+			Username: "other",
+			Roles:    models.Roles{models.RoleEnumModify},
+		}
+		require.NoError(t, db.User.Create(ctx, &other, ""))
+		otherCtx := models.WithUserID(ctx, other.ID)
+
+		_, err := qb.AddO(ctx, sceneID, nil)
+		require.NoError(t, err)
+		_, err = qb.AddViews(ctx, sceneID, nil)
+		require.NoError(t, err)
+
+		// the user who added the history sees it
+		oCount, err := qb.GetOCount(ctx, sceneID)
+		require.NoError(t, err)
+		assert.Equal(t, 1, oCount)
+		views, err := qb.CountViews(ctx, sceneID)
+		require.NoError(t, err)
+		assert.Equal(t, 1, views)
+
+		// other users do not
+		oCount, err = qb.GetOCount(otherCtx, sceneID)
+		require.NoError(t, err)
+		assert.Zero(t, oCount)
+		views, err = qb.CountViews(otherCtx, sceneID)
+		require.NoError(t, err)
+		assert.Zero(t, views)
+		lastView, err := qb.LastView(otherCtx, sceneID)
+		require.NoError(t, err)
+		assert.Nil(t, lastView)
+
+		// resetting only affects the current user's history
+		_, err = qb.AddO(otherCtx, sceneID, nil)
+		require.NoError(t, err)
+		_, err = qb.ResetO(otherCtx, sceneID)
+		require.NoError(t, err)
+		oCount, err = qb.GetOCount(ctx, sceneID)
+		require.NoError(t, err)
+		assert.Equal(t, 1, oCount)
+
+		// filtering on o-count only counts the current user's history
+		oFilter := &models.SceneFilterType{
+			OCounter: &models.IntCriterionInput{
+				Value:    1,
+				Modifier: models.CriterionModifierEquals,
+			},
+		}
+		findIDs := func(c context.Context) []int {
+			var ids []int
+			for _, s := range queryScene(c, t, qb, oFilter, nil) {
+				ids = append(ids, s.ID)
+			}
+			return ids
+		}
+		assert.Contains(t, findIDs(ctx), sceneID)
+		assert.NotContains(t, findIDs(otherCtx), sceneID)
+
+		// adding history without a user fails
+		_, err = qb.AddO(models.WithUserID(ctx, 0), sceneID, nil)
+		assert.Error(t, err)
+
+		return nil
+	})
+}
+
+func TestSceneStore_MergeUserData(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		qb := db.Scene
+
+		src := models.Scene{Title: "merge source"}
+		require.NoError(t, qb.Create(ctx, &src, nil))
+		dest := models.Scene{Title: "merge destination"}
+		require.NoError(t, qb.Create(ctx, &dest, nil))
+
+		other := models.User{
+			Username: "other",
+			Roles:    models.Roles{models.RoleEnumModify},
+		}
+		require.NoError(t, db.User.Create(ctx, &other, ""))
+		otherCtx := models.WithUserID(ctx, other.ID)
+
+		// the other user has history and a rating on the source only
+		_, err := qb.AddO(otherCtx, src.ID, nil)
+		require.NoError(t, err)
+		_, err = qb.AddViews(otherCtx, src.ID, nil)
+		require.NoError(t, err)
+		otherRating := 40
+		_, err = qb.UpdatePartial(otherCtx, src.ID, models.ScenePartial{Rating: models.NewOptionalInt(otherRating)})
+		require.NoError(t, err)
+
+		// the other user has activity but no rating on the destination;
+		// the source rating must still be used
+		resumeTime := 10.0
+		playDuration := 20.0
+		_, err = qb.SaveActivity(otherCtx, dest.ID, &resumeTime, &playDuration)
+		require.NoError(t, err)
+		srcResumeTime := 30.0
+		srcPlayDuration := 5.0
+		_, err = qb.SaveActivity(otherCtx, src.ID, &srcResumeTime, &srcPlayDuration)
+		require.NoError(t, err)
+
+		// the merging user has a rating on both; the destination rating must be kept
+		_, err = qb.UpdatePartial(ctx, src.ID, models.ScenePartial{Rating: models.NewOptionalInt(20)})
+		require.NoError(t, err)
+		destRating := 100
+		_, err = qb.UpdatePartial(ctx, dest.ID, models.ScenePartial{Rating: models.NewOptionalInt(destRating)})
+		require.NoError(t, err)
+
+		const includeViewHistory = true
+		const includeOHistory = false
+		require.NoError(t, qb.MergeUserData(ctx, dest.ID, []int{src.ID}, includeViewHistory, includeOHistory))
+
+		views, err := qb.CountViews(otherCtx, dest.ID)
+		require.NoError(t, err)
+		assert.Equal(t, 1, views, "view history should be moved")
+
+		oCount, err := qb.GetOCount(otherCtx, dest.ID)
+		require.NoError(t, err)
+		assert.Zero(t, oCount, "o history should not be moved")
+
+		s, err := qb.Find(otherCtx, dest.ID)
+		require.NoError(t, err)
+		assert.Equal(t, &otherRating, s.Rating, "other user's rating should be copied")
+		assert.Equal(t, resumeTime, s.ResumeTime, "destination resume time should be kept")
+		assert.Equal(t, playDuration+srcPlayDuration, s.PlayDuration, "play durations should be added")
+
+		s, err = qb.Find(ctx, dest.ID)
+		require.NoError(t, err)
+		assert.Equal(t, &destRating, s.Rating, "existing destination rating should be kept")
+
+		return nil
+	})
+}

@@ -13,6 +13,7 @@ import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import isEqual from "lodash-es/isEqual";
 import { useToast } from "src/hooks/Toast";
 import { useConfigurationContext } from "src/hooks/Config";
+import { useIsAdmin } from "src/hooks/CurrentUser";
 import { handleUnsavedChanges } from "src/utils/navigation";
 import { formikUtils } from "src/utils/form";
 import { yupFormikValidate, yupRequiredStringArray } from "src/utils/yup";
@@ -44,6 +45,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
   setEncodingImage,
 }) => {
   const intl = useIntl();
+  const isAdmin = useIsAdmin();
   const Toast = useToast();
   const { configuration: stashConfig } = useConfigurationContext();
 
@@ -142,7 +144,11 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
   async function onSave(input: InputValues, andNew?: boolean) {
     setIsLoading(true);
     try {
-      await onSubmit(input, andNew);
+      // ignore_auto_tag may only be changed by administrators
+      await onSubmit(
+        isAdmin ? input : { ...input, ignore_auto_tag: undefined },
+        andNew
+      );
       formik.resetForm();
       if (andNew) {
         setParentTags(tag.parents ?? []);
@@ -299,7 +305,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
           />
 
           <hr />
-          {renderInputField("ignore_auto_tag", "checkbox")}
+          {isAdmin && renderInputField("ignore_auto_tag", "checkbox")}
         </Form>
 
         <DetailsEditNavbar

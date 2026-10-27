@@ -37,9 +37,16 @@ const (
 	sceneViewDateColumn   = "view_date"
 	scenesODatesTable     = "scenes_o_dates"
 	sceneODateColumn      = "o_date"
+	scenesUserDataTable   = "scenes_user_data"
 
 	sceneCoverBlobColumn = "cover_blob"
 )
+
+var sceneUserData = userDataTable{
+	table:       scenesUserDataTable,
+	idColumn:    sceneIDColumn,
+	objectTable: sceneTable,
+}
 
 // sceneAgeDateExpr is the scene date used when calculating a performer's age
 // for a scene. The production date is when the scene was actually shot, so it
@@ -58,14 +65,10 @@ type sceneRow struct {
 	DatePrecision           null.Int    `db:"date_precision"`
 	ProductionDate          NullDate    `db:"production_date"`
 	ProductionDatePrecision null.Int    `db:"production_date_precision"`
-	// expressed as 1-100
-	Rating       null.Int  `db:"rating"`
-	Organized    bool      `db:"organized"`
-	StudioID     null.Int  `db:"studio_id,omitempty"`
-	CreatedAt    Timestamp `db:"created_at"`
-	UpdatedAt    Timestamp `db:"updated_at"`
-	ResumeTime   float64   `db:"resume_time"`
-	PlayDuration float64   `db:"play_duration"`
+	Organized               bool        `db:"organized"`
+	StudioID                null.Int    `db:"studio_id,omitempty"`
+	CreatedAt               Timestamp   `db:"created_at"`
+	UpdatedAt               Timestamp   `db:"updated_at"`
 
 	// not used in resolutions or updates
 	CoverBlob zero.String `db:"cover_blob"`
@@ -81,13 +84,44 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.DatePrecision = datePrecisionFromDatePtr(o.Date)
 	r.ProductionDate = NullDateFromDatePtr(o.ProductionDate)
 	r.ProductionDatePrecision = datePrecisionFromDatePtr(o.ProductionDate)
-	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
 	r.StudioID = intFromPtr(o.StudioID)
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
-	r.ResumeTime = o.ResumeTime
-	r.PlayDuration = o.PlayDuration
+}
+
+// sceneUserDataRow is a row of a user's data for a scene.
+type sceneUserDataRow struct {
+	SceneID int `db:"scene_id"`
+	UserID  int `db:"user_id"`
+	// expressed as 1-100
+	Rating       null.Int `db:"rating"`
+	ResumeTime   float64  `db:"resume_time"`
+	PlayDuration float64  `db:"play_duration"`
+}
+
+func (r sceneUserDataRow) apply(s *models.Scene) {
+	s.Rating = nullIntPtr(r.Rating)
+	s.ResumeTime = r.ResumeTime
+	s.PlayDuration = r.PlayDuration
+}
+
+func sceneUserDataRecord(o models.Scene) goqu.Record {
+	return goqu.Record{
+		"rating":        intFromPtr(o.Rating),
+		"resume_time":   o.ResumeTime,
+		"play_duration": o.PlayDuration,
+	}
+}
+
+func sceneUserDataPartialRecord(o models.ScenePartial) goqu.Record {
+	r := updateRecord{
+		Record: make(exp.Record),
+	}
+	r.setNullInt("rating", o.Rating)
+	r.setFloat64("resume_time", o.ResumeTime)
+	r.setFloat64("play_duration", o.PlayDuration)
+	return goqu.Record(r.Record)
 }
 
 type sceneQueryRow struct {
@@ -108,7 +142,6 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		Director:       r.Director.String,
 		Date:           r.Date.DatePtr(r.DatePrecision),
 		ProductionDate: r.ProductionDate.DatePtr(r.ProductionDatePrecision),
-		Rating:         nullIntPtr(r.Rating),
 		Organized:      r.Organized,
 		StudioID:       nullIntPtr(r.StudioID),
 
@@ -118,9 +151,6 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 
 		CreatedAt: r.CreatedAt.Timestamp,
 		UpdatedAt: r.UpdatedAt.Timestamp,
-
-		ResumeTime:   r.ResumeTime,
-		PlayDuration: r.PlayDuration,
 	}
 
 	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {
@@ -141,13 +171,10 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullString("director", o.Director)
 	r.setNullDate("date", "date_precision", o.Date)
 	r.setNullDate("production_date", "production_date_precision", o.ProductionDate)
-	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
 	r.setNullInt("studio_id", o.StudioID)
 	r.setTimestamp("created_at", o.CreatedAt)
 	r.setTimestamp("updated_at", o.UpdatedAt)
-	r.setFloat64("resume_time", o.ResumeTime)
-	r.setFloat64("play_duration", o.PlayDuration)
 }
 
 type sceneRepositoryType struct {
@@ -293,6 +320,10 @@ func (qb *SceneStore) Create(ctx context.Context, newObject *models.Scene, fileI
 		return err
 	}
 
+	if err := sceneUserData.upsert(ctx, id, sceneUserDataRecord(*newObject)); err != nil {
+		return err
+	}
+
 	if len(fileIDs) > 0 {
 		const firstPrimary = true
 		if err := scenesFilesTableMgr.insertJoins(ctx, id, firstPrimary, fileIDs); err != nil {
@@ -361,6 +392,10 @@ func (qb *SceneStore) UpdatePartial(ctx context.Context, id int, partial models.
 		}
 	}
 
+	if err := sceneUserData.upsert(ctx, id, sceneUserDataPartialRecord(partial)); err != nil {
+		return nil, err
+	}
+
 	if partial.URLs != nil {
 		if err := scenesURLsTableMgr.modifyJoins(ctx, id, partial.URLs.Values, partial.URLs.Mode); err != nil {
 			return nil, err
@@ -405,6 +440,10 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 	r.fromScene(*updatedObject)
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
+		return err
+	}
+
+	if err := sceneUserData.upsert(ctx, updatedObject.ID, sceneUserDataRecord(*updatedObject)); err != nil {
 		return err
 	}
 
@@ -585,7 +624,41 @@ func (qb *SceneStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 		return nil, err
 	}
 
+	if err := qb.loadUserData(ctx, ret); err != nil {
+		return nil, err
+	}
+
 	return ret, nil
+}
+
+// loadUserData sets the current user's data on the provided scenes.
+func (qb *SceneStore) loadUserData(ctx context.Context, scenes []*models.Scene) error {
+	if _, ok := models.UserIDFromContext(ctx); !ok || len(scenes) == 0 {
+		return nil
+	}
+
+	byID := make(map[int]*models.Scene, len(scenes))
+	ids := make([]int, len(scenes))
+	for i, s := range scenes {
+		byID[s.ID] = s
+		ids[i] = s.ID
+	}
+
+	return batchExec(ids, defaultBatchSize, func(batch []int) error {
+		q := sceneUserData.selectForUser(ctx, batch)
+		const single = false
+		return queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+			var r sceneUserDataRow
+			if err := rows.StructScan(&r); err != nil {
+				return err
+			}
+
+			if s := byID[r.SceneID]; s != nil {
+				r.apply(s)
+			}
+			return nil
+		})
+	})
 }
 
 func (qb *SceneStore) GetFiles(ctx context.Context, id int) ([]*models.VideoFile, error) {
@@ -802,7 +875,10 @@ func (qb *SceneStore) OCountByPerformerID(ctx context.Context, performerID int) 
 
 	q := dialect.Select(goqu.COUNT("*")).From(table).InnerJoin(
 		oHistoryTable,
-		goqu.On(table.Col(idColumn).Eq(oHistoryTable.Col(sceneIDColumn))),
+		goqu.On(
+			table.Col(idColumn).Eq(oHistoryTable.Col(sceneIDColumn)),
+			oHistoryTable.Col(userIDColumn).Eq(currentUserID(ctx)),
+		),
 	).InnerJoin(
 		joinTable,
 		goqu.On(
@@ -825,7 +901,10 @@ func (qb *SceneStore) OCountByGroupID(ctx context.Context, groupID int) (int, er
 
 	q := dialect.Select(goqu.COUNT("*")).From(table).InnerJoin(
 		oHistoryTable,
-		goqu.On(table.Col(idColumn).Eq(oHistoryTable.Col(sceneIDColumn))),
+		goqu.On(
+			table.Col(idColumn).Eq(oHistoryTable.Col(sceneIDColumn)),
+			oHistoryTable.Col(userIDColumn).Eq(currentUserID(ctx)),
+		),
 	).InnerJoin(
 		joinTable,
 		goqu.On(
@@ -853,7 +932,10 @@ func (qb *SceneStore) OCountByStudioID(ctx context.Context, studioID int, depth 
 
 	q := dialect.Select(goqu.COUNT("*")).From(table).InnerJoin(
 		oHistoryTable,
-		goqu.On(table.Col(idColumn).Eq(oHistoryTable.Col(sceneIDColumn))),
+		goqu.On(
+			table.Col(idColumn).Eq(oHistoryTable.Col(sceneIDColumn)),
+			oHistoryTable.Col(userIDColumn).Eq(currentUserID(ctx)),
+		),
 	).Where(table.Col(studioIDColumn).Eq(studioID))
 
 	if err := querySimple(ctx, q, &ret); err != nil {
@@ -873,10 +955,10 @@ func (qb *SceneStore) oCountByStudioIDRecursive(ctx context.Context, studioID in
 		WHERE ss.level < ? OR ? < 0
 	)
 	SELECT COUNT(*) FROM scenes
-	INNER JOIN scenes_o_dates ON scenes.id = scenes_o_dates.scene_id
+	INNER JOIN scenes_o_dates ON scenes.id = scenes_o_dates.scene_id AND scenes_o_dates.user_id = ?
 	WHERE scenes.studio_id IN (SELECT id FROM sub_studios)`
 
-	rows, err := dbWrapper.QueryxContext(ctx, q, studioID, depth, depth)
+	rows, err := dbWrapper.QueryxContext(ctx, q, studioID, depth, depth, currentUserID(ctx))
 	if err != nil {
 		return 0, fmt.Errorf("querying scene o_count by studio: %w", err)
 	}
@@ -955,9 +1037,11 @@ func (qb *SceneStore) Duration(ctx context.Context) (float64, error) {
 }
 
 func (qb *SceneStore) PlayDuration(ctx context.Context) (float64, error) {
-	table := qb.table()
+	table := sceneUserData.goquTable()
 
-	q := dialect.Select(goqu.COALESCE(goqu.SUM("play_duration"), 0)).From(table)
+	q := dialect.Select(goqu.COALESCE(goqu.SUM("play_duration"), 0)).From(table).Where(
+		table.Col(userIDColumn).Eq(currentUserID(ctx)),
+	)
 
 	var ret float64
 	if err := querySimple(ctx, q, &ret); err != nil {
@@ -1070,7 +1154,7 @@ func (qb *SceneStore) makeQuery(ctx context.Context, sceneFilter *models.SceneFi
 		return nil, err
 	}
 
-	if err := qb.setSceneSort(&query, findFilter); err != nil {
+	if err := qb.setSceneSort(ctx, &query, findFilter); err != nil {
 		return nil, err
 	}
 	query.sortAndPagination += getPagination(findFilter)
@@ -1209,7 +1293,7 @@ var sceneSortOptions = sortOptions{
 	"performer_age",
 }
 
-func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindFilterType) error {
+func (qb *SceneStore) setSceneSort(ctx context.Context, query *queryBuilder, findFilter *models.FindFilterType) error {
 	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
 		return nil
 	}
@@ -1316,13 +1400,13 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		addFolderTable()
 		query.sortAndPagination += " ORDER BY COALESCE(scenes.title, files.basename) COLLATE NATURAL_CI " + direction + ", folders.path COLLATE NATURAL_CI " + direction
 	case "play_count":
-		query.sortAndPagination += getCountSort(sceneTable, scenesViewDatesTable, sceneIDColumn, direction)
+		query.sortAndPagination += getUserCountSort(sceneTable, scenesViewDatesTable, sceneIDColumn, currentUserID(ctx), direction)
 	case "last_played_at":
-		query.sortAndPagination += fmt.Sprintf(" ORDER BY (SELECT MAX(view_date) FROM %s AS sort WHERE sort.%s = %s.id) %s", scenesViewDatesTable, sceneIDColumn, sceneTable, getSortDirection(direction))
+		query.sortAndPagination += fmt.Sprintf(" ORDER BY (SELECT MAX(view_date) FROM %s AS sort WHERE sort.%s = %s.id AND sort.%s = %d) %s", scenesViewDatesTable, sceneIDColumn, sceneTable, userIDColumn, currentUserID(ctx), getSortDirection(direction))
 	case "last_o_at":
-		query.sortAndPagination += fmt.Sprintf(" ORDER BY (SELECT MAX(o_date) FROM %s AS sort WHERE sort.%s = %s.id) %s", scenesODatesTable, sceneIDColumn, sceneTable, getSortDirection(direction))
+		query.sortAndPagination += fmt.Sprintf(" ORDER BY (SELECT MAX(o_date) FROM %s AS sort WHERE sort.%s = %s.id AND sort.%s = %d) %s", scenesODatesTable, sceneIDColumn, sceneTable, userIDColumn, currentUserID(ctx), getSortDirection(direction))
 	case "o_counter":
-		query.sortAndPagination += getCountSort(sceneTable, scenesODatesTable, sceneIDColumn, direction)
+		query.sortAndPagination += getUserCountSort(sceneTable, scenesODatesTable, sceneIDColumn, currentUserID(ctx), direction)
 	case "performer_age":
 		// Looking at the youngest performer by default
 		aggregation := "MIN"
@@ -1350,6 +1434,12 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	case "studio":
 		query.joinSort(studioTable, "", "scenes.studio_id = studios.id")
 		query.sortAndPagination += getSort("name", direction, studioTable)
+	case "rating":
+		sceneUserData.joinSort(ctx, query)
+		query.sortAndPagination += getSort(sort, direction, scenesUserDataTable)
+	case "resume_time", "play_duration":
+		sceneUserData.joinSort(ctx, query)
+		query.sortAndPagination += " ORDER BY " + sceneUserData.columnOrDefault(sort, "0") + " " + getSortDirection(direction)
 	default:
 		query.sortAndPagination += getSort(sort, direction, "scenes")
 	}
@@ -1365,20 +1455,21 @@ func (qb *SceneStore) SaveActivity(ctx context.Context, id int, resumeTime *floa
 		return false, err
 	}
 
-	record := goqu.Record{}
+	values := goqu.Record{}
+	updates := goqu.Record{}
 
 	if resumeTime != nil {
-		record["resume_time"] = resumeTime
+		values["resume_time"] = *resumeTime
+		updates["resume_time"] = goqu.I("excluded.resume_time")
 	}
 
 	if playDuration != nil {
-		record["play_duration"] = goqu.L("play_duration + ?", playDuration)
+		values["play_duration"] = *playDuration
+		updates["play_duration"] = goqu.L("play_duration + excluded.play_duration")
 	}
 
-	if len(record) > 0 {
-		if err := qb.tableMgr.updateByID(ctx, id, record); err != nil {
-			return false, err
-		}
+	if err := sceneUserData.upsertWith(ctx, id, values, updates); err != nil {
+		return false, err
 	}
 
 	return true, nil
@@ -1389,23 +1480,73 @@ func (qb *SceneStore) ResetActivity(ctx context.Context, id int, resetResume boo
 		return false, err
 	}
 
-	record := goqu.Record{}
+	values := goqu.Record{}
 
 	if resetResume {
-		record["resume_time"] = 0.0
+		values["resume_time"] = 0.0
 	}
 
 	if resetDuration {
-		record["play_duration"] = 0.0
+		values["play_duration"] = 0.0
 	}
 
-	if len(record) > 0 {
-		if err := qb.tableMgr.updateByID(ctx, id, record); err != nil {
-			return false, err
-		}
+	if err := sceneUserData.upsert(ctx, id, values); err != nil {
+		return false, err
 	}
 
 	return true, nil
+}
+
+// MergeUserData moves the per-user data of all users from the source scenes to the destination scene.
+// History is moved if the corresponding include flag is set.
+// For each user, the destination rating and resume time are kept if set, otherwise the source values are used.
+// Play durations are added together.
+func (qb *SceneStore) MergeUserData(ctx context.Context, destinationID int, sourceIDs []int, includeViewHistory bool, includeOHistory bool) error {
+	if len(sourceIDs) == 0 {
+		return nil
+	}
+
+	moveHistory := func(tableName string) error {
+		table := goqu.T(tableName)
+		q := dialect.Update(table).Set(goqu.Record{sceneIDColumn: destinationID}).Where(table.Col(sceneIDColumn).In(sourceIDs))
+		if _, err := exec(ctx, q); err != nil {
+			return fmt.Errorf("moving %s: %w", tableName, err)
+		}
+		return nil
+	}
+
+	if includeViewHistory {
+		if err := moveHistory(scenesViewDatesTable); err != nil {
+			return err
+		}
+	}
+
+	if includeOHistory {
+		if err := moveHistory(scenesODatesTable); err != nil {
+			return err
+		}
+	}
+
+	table := sceneUserData.goquTable()
+	q := dialect.Insert(table).Cols(sceneIDColumn, userIDColumn, "rating", "resume_time", "play_duration").FromQuery(
+		dialect.From(table).Select(
+			goqu.V(destinationID),
+			table.Col(userIDColumn),
+			table.Col("rating"),
+			table.Col("resume_time"),
+			table.Col("play_duration"),
+		).Where(table.Col(sceneIDColumn).In(sourceIDs)),
+	).OnConflict(goqu.DoUpdate(sceneIDColumn+", "+userIDColumn, goqu.Record{
+		"rating":        goqu.L("COALESCE(rating, excluded.rating)"),
+		"resume_time":   goqu.L("CASE WHEN resume_time = 0 THEN excluded.resume_time ELSE resume_time END"),
+		"play_duration": goqu.L("play_duration + excluded.play_duration"),
+	}))
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("merging %s: %w", scenesUserDataTable, err)
+	}
+
+	return nil
 }
 
 func (qb *SceneStore) GetURLs(ctx context.Context, sceneID int) ([]string, error) {

@@ -29,7 +29,15 @@ const (
 	groupURLColumn = "url"
 
 	groupRelationsTable = "groups_relations"
+
+	groupsUserDataTable = "groups_user_data"
 )
+
+var groupUserData = userDataTable{
+	table:       groupsUserDataTable,
+	idColumn:    groupIDColumn,
+	objectTable: groupTable,
+}
 
 type groupRow struct {
 	ID            int         `db:"id" goqu:"skipinsert"`
@@ -38,13 +46,11 @@ type groupRow struct {
 	Duration      null.Int    `db:"duration"`
 	Date          NullDate    `db:"date"`
 	DatePrecision null.Int    `db:"date_precision"`
-	// expressed as 1-100
-	Rating      null.Int    `db:"rating"`
-	StudioID    null.Int    `db:"studio_id,omitempty"`
-	Director    zero.String `db:"director"`
-	Description zero.String `db:"description"`
-	CreatedAt   Timestamp   `db:"created_at"`
-	UpdatedAt   Timestamp   `db:"updated_at"`
+	StudioID      null.Int    `db:"studio_id,omitempty"`
+	Director      zero.String `db:"director"`
+	Description   zero.String `db:"description"`
+	CreatedAt     Timestamp   `db:"created_at"`
+	UpdatedAt     Timestamp   `db:"updated_at"`
 
 	// not used in resolutions or updates
 	FrontImageBlob zero.String `db:"front_image_blob"`
@@ -58,7 +64,6 @@ func (r *groupRow) fromGroup(o models.Group) {
 	r.Duration = intFromPtr(o.Duration)
 	r.Date = NullDateFromDatePtr(o.Date)
 	r.DatePrecision = datePrecisionFromDatePtr(o.Date)
-	r.Rating = intFromPtr(o.Rating)
 	r.StudioID = intFromPtr(o.StudioID)
 	r.Director = zero.StringFrom(o.Director)
 	r.Description = zero.StringFrom(o.Synopsis)
@@ -73,7 +78,6 @@ func (r *groupRow) resolve() *models.Group {
 		Aliases:   r.Aliases.String,
 		Duration:  nullIntPtr(r.Duration),
 		Date:      r.Date.DatePtr(r.DatePrecision),
-		Rating:    nullIntPtr(r.Rating),
 		StudioID:  nullIntPtr(r.StudioID),
 		Director:  r.Director.String,
 		Synopsis:  r.Description.String,
@@ -82,6 +86,32 @@ func (r *groupRow) resolve() *models.Group {
 	}
 
 	return ret
+}
+
+// groupUserDataRow is a row of a user's data for a group.
+type groupUserDataRow struct {
+	GroupID int `db:"group_id"`
+	UserID  int `db:"user_id"`
+	// expressed as 1-100
+	Rating null.Int `db:"rating"`
+}
+
+func (r groupUserDataRow) apply(g *models.Group) {
+	g.Rating = nullIntPtr(r.Rating)
+}
+
+func groupUserDataRecord(o models.Group) goqu.Record {
+	return goqu.Record{
+		"rating": intFromPtr(o.Rating),
+	}
+}
+
+func groupUserDataPartialRecord(o models.GroupPartial) goqu.Record {
+	r := updateRecord{
+		Record: make(exp.Record),
+	}
+	r.setNullInt("rating", o.Rating)
+	return goqu.Record(r.Record)
 }
 
 type groupRowRecord struct {
@@ -93,7 +123,6 @@ func (r *groupRowRecord) fromPartial(o models.GroupPartial) {
 	r.setNullString("aliases", o.Aliases)
 	r.setNullInt("duration", o.Duration)
 	r.setNullDate("date", "date_precision", o.Date)
-	r.setNullInt("rating", o.Rating)
 	r.setNullInt("studio_id", o.StudioID)
 	r.setNullString("director", o.Director)
 	r.setNullString("description", o.Synopsis)
@@ -178,6 +207,10 @@ func (qb *GroupStore) Create(ctx context.Context, newObject *models.Group) error
 		return err
 	}
 
+	if err := groupUserData.upsert(ctx, id, groupUserDataRecord(*newObject)); err != nil {
+		return err
+	}
+
 	if newObject.URLs.Loaded() {
 		const startPos = 0
 		if err := groupsURLsTableMgr.insertJoins(ctx, id, startPos, newObject.URLs.List()); err != nil {
@@ -222,6 +255,10 @@ func (qb *GroupStore) UpdatePartial(ctx context.Context, id int, partial models.
 		}
 	}
 
+	if err := groupUserData.upsert(ctx, id, groupUserDataPartialRecord(partial)); err != nil {
+		return nil, err
+	}
+
 	if partial.URLs != nil {
 		if err := groupsURLsTableMgr.modifyJoins(ctx, id, partial.URLs.Values, partial.URLs.Mode); err != nil {
 			return nil, err
@@ -252,6 +289,10 @@ func (qb *GroupStore) Update(ctx context.Context, updatedObject *models.Group) e
 	r.fromGroup(*updatedObject)
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
+		return err
+	}
+
+	if err := groupUserData.upsert(ctx, updatedObject.ID, groupUserDataRecord(*updatedObject)); err != nil {
 		return err
 	}
 
@@ -367,7 +408,41 @@ func (qb *GroupStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 		return nil, err
 	}
 
+	if err := qb.loadUserData(ctx, ret); err != nil {
+		return nil, err
+	}
+
 	return ret, nil
+}
+
+// loadUserData sets the current user's data on the provided groups.
+func (qb *GroupStore) loadUserData(ctx context.Context, groups []*models.Group) error {
+	if _, ok := models.UserIDFromContext(ctx); !ok || len(groups) == 0 {
+		return nil
+	}
+
+	byID := make(map[int]*models.Group, len(groups))
+	ids := make([]int, len(groups))
+	for i, g := range groups {
+		byID[g.ID] = g
+		ids[i] = g.ID
+	}
+
+	return batchExec(ids, defaultBatchSize, func(batch []int) error {
+		q := groupUserData.selectForUser(ctx, batch)
+		const single = false
+		return queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+			var r groupUserDataRow
+			if err := rows.StructScan(&r); err != nil {
+				return err
+			}
+
+			if g := byID[r.GroupID]; g != nil {
+				r.apply(g)
+			}
+			return nil
+		})
+	})
 }
 
 func (qb *GroupStore) FindByName(ctx context.Context, name string, nocase bool) (*models.Group, error) {
@@ -453,7 +528,7 @@ func (qb *GroupStore) makeQuery(ctx context.Context, groupFilter *models.GroupFi
 		return nil, err
 	}
 
-	if err := qb.setGroupSort(&query, findFilter); err != nil {
+	if err := qb.setGroupSort(ctx, &query, findFilter); err != nil {
 		return nil, err
 	}
 
@@ -506,7 +581,7 @@ var groupSortOptions = sortOptions{
 	"updated_at",
 }
 
-func (qb *GroupStore) setGroupSort(query *queryBuilder, findFilter *models.FindFilterType) error {
+func (qb *GroupStore) setGroupSort(ctx context.Context, query *queryBuilder, findFilter *models.FindFilterType) error {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -547,7 +622,10 @@ func (qb *GroupStore) setGroupSort(query *queryBuilder, findFilter *models.FindF
 	case "scenes_count": // generic getSort won't work for this
 		query.sortAndPagination += getCountSort(groupTable, groupsScenesTable, groupIDColumn, direction)
 	case "o_counter":
-		query.sortAndPagination += qb.sortByOCounter(direction)
+		query.sortAndPagination += qb.sortByOCounter(ctx, direction)
+	case "rating":
+		groupUserData.joinSort(ctx, query)
+		query.sortAndPagination += getSort(sort, direction, groupsUserDataTable)
 	default:
 		query.sortAndPagination += getSort(sort, direction, "groups")
 	}
@@ -571,6 +649,10 @@ func (qb *GroupStore) queryGroups(ctx context.Context, query string, args []inte
 		ret = append(ret, s)
 		return nil
 	}); err != nil {
+		return nil, err
+	}
+
+	if err := qb.loadUserData(ctx, ret); err != nil {
 		return nil, err
 	}
 
@@ -726,7 +808,7 @@ func (qb *GroupStore) FindInAncestors(ctx context.Context, ascestorIDs []int, id
 	return ret, nil
 }
 
-func (qb *GroupStore) sortByOCounter(direction string) string {
+func (qb *GroupStore) sortByOCounter(ctx context.Context, direction string) string {
 	// need to sum the o_counter from scenes and images
-	return " ORDER BY (" + selectGroupOCountSQL + ") " + direction
+	return " ORDER BY (" + fmt.Sprintf(selectGroupOCountSQL, currentUserID(ctx)) + ") " + direction
 }

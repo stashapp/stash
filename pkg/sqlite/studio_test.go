@@ -15,6 +15,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestStudioFindByName(t *testing.T) {
@@ -2084,6 +2085,65 @@ func TestStudioQuerySortPerformerCountAll(t *testing.T) {
 		assert.Greater(t, firstWithPerf, -1)
 		assert.Greater(t, lastWithoutPerf, -1)
 		assert.Less(t, firstWithPerf, lastWithoutPerf)
+
+		return nil
+	})
+}
+
+func TestStudioStore_UserData(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		qb := db.Studio
+
+		newStudio := models.Studio{
+			Name: "user data",
+		}
+		require.NoError(t, qb.Create(ctx, &models.CreateStudioInput{Studio: &newStudio}))
+		studioID := newStudio.ID
+
+		other := models.User{
+			Username: "other",
+			Roles:    models.Roles{models.RoleEnumModify},
+		}
+		require.NoError(t, db.User.Create(ctx, &other, ""))
+		otherCtx := models.WithUserID(ctx, other.ID)
+		guestCtx := models.WithUserID(ctx, 0)
+
+		rating := 60
+		_, err := qb.UpdatePartial(ctx, models.StudioPartial{
+			ID:       studioID,
+			Rating:   models.NewOptionalInt(rating),
+			Favorite: models.NewOptionalBool(true),
+		})
+		require.NoError(t, err)
+
+		// the user who set the data sees it
+		s, err := qb.Find(ctx, studioID)
+		require.NoError(t, err)
+		assert.Equal(t, &rating, s.Rating)
+		assert.True(t, s.Favorite)
+
+		// other users and the guest user do not
+		for name, c := range map[string]context.Context{"other user": otherCtx, "guest": guestCtx} {
+			s, err := qb.Find(c, studioID)
+			require.NoError(t, err)
+			assert.Nil(t, s.Rating, name)
+			assert.False(t, s.Favorite, name)
+		}
+
+		// filtering by favorite only matches the current user's favorites
+		perPage := -1
+		sort := "rating"
+		allResults := &models.FindFilterType{PerPage: &perPage, Sort: &sort}
+		findIDs := func(c context.Context, favorite bool) []int {
+			var ids []int
+			for _, s := range queryStudios(c, t, &models.StudioFilterType{Favorite: &favorite}, allResults) {
+				ids = append(ids, s.ID)
+			}
+			return ids
+		}
+		assert.Contains(t, findIDs(ctx, true), studioID)
+		assert.NotContains(t, findIDs(otherCtx, true), studioID)
+		assert.Contains(t, findIDs(otherCtx, false), studioID)
 
 		return nil
 	})

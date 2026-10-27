@@ -12,6 +12,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func loadImageRelationships(ctx context.Context, expected models.Image, actual *models.Image) error {
@@ -3472,6 +3473,89 @@ func TestImageQueryCustomFields(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestImageStore_UserData(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		qb := db.Image
+
+		newImage := models.Image{
+			Title: "user data",
+		}
+		require.NoError(t, qb.Create(ctx, &models.CreateImageInput{Image: &newImage}))
+		imageID := newImage.ID
+
+		other := models.User{
+			Username: "other",
+			Roles:    models.Roles{models.RoleEnumModify},
+		}
+		require.NoError(t, db.User.Create(ctx, &other, ""))
+		otherCtx := models.WithUserID(ctx, other.ID)
+		guestCtx := models.WithUserID(ctx, 0)
+
+		rating := 60
+		_, err := qb.UpdatePartial(ctx, imageID, models.ImagePartial{
+			Rating: models.NewOptionalInt(rating),
+		})
+		require.NoError(t, err)
+
+		_, err = qb.IncrementOCounter(ctx, imageID)
+		require.NoError(t, err)
+		oCount, err := qb.IncrementOCounter(ctx, imageID)
+		require.NoError(t, err)
+		assert.Equal(t, 2, oCount)
+
+		// the user who set the data sees it
+		i, err := qb.Find(ctx, imageID)
+		require.NoError(t, err)
+		assert.Equal(t, &rating, i.Rating)
+		assert.Equal(t, 2, i.OCounter)
+
+		// other users and the guest user do not
+		for name, c := range map[string]context.Context{"other user": otherCtx, "guest": guestCtx} {
+			i, err := qb.Find(c, imageID)
+			require.NoError(t, err)
+			assert.Nil(t, i.Rating, name)
+			assert.Zero(t, i.OCounter, name)
+		}
+
+		// decrementing for another user does not go below zero or affect the first user
+		oCount, err = qb.DecrementOCounter(otherCtx, imageID)
+		require.NoError(t, err)
+		assert.Zero(t, oCount)
+
+		i, err = qb.Find(ctx, imageID)
+		require.NoError(t, err)
+		assert.Equal(t, 2, i.OCounter)
+
+		// the guest user cannot change the o-counter
+		_, err = qb.IncrementOCounter(guestCtx, imageID)
+		assert.Error(t, err)
+
+		// filtering by o-counter only matches the current user's o-counter
+		oCounterFilter := &models.ImageFilterType{
+			OCounter: &models.IntCriterionInput{
+				Value:    2,
+				Modifier: models.CriterionModifierEquals,
+			},
+		}
+		findIDs := func(c context.Context) []int {
+			var ids []int
+			for _, i := range queryImages(c, t, qb, oCounterFilter, nil) {
+				ids = append(ids, i.ID)
+			}
+			return ids
+		}
+		assert.Contains(t, findIDs(ctx), imageID)
+		assert.NotContains(t, findIDs(otherCtx), imageID)
+
+		// o-count stats are per user
+		total, err := qb.OCount(otherCtx)
+		require.NoError(t, err)
+		assert.Zero(t, total)
+
+		return nil
+	})
 }
 
 // TODO Count

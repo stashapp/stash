@@ -13,7 +13,15 @@ import (
 )
 
 func (r *queryResolver) Configuration(ctx context.Context) (*ConfigResult, error) {
-	return makeConfigResult(), nil
+	ret := makeConfigResult()
+
+	ui, err := r.getUIConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
+	ret.UI = ui
+
+	return ret, nil
 }
 
 func (r *queryResolver) Directory(ctx context.Context, path, locale *string) (*Directory, error) {
@@ -65,7 +73,6 @@ func makeConfigResult() *ConfigResult {
 		Dlna:      makeConfigDLNAResult(),
 		Scraping:  makeConfigScrapingResult(),
 		Defaults:  makeConfigDefaultsResult(),
-		UI:        makeConfigUIResult(),
 	}
 }
 
@@ -115,9 +122,10 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		WriteImageThumbnails:          config.IsWriteImageThumbnails(),
 		CreateImageClipsFromVideos:    config.IsCreateImageClipsFromVideos(),
 		GalleryCoverRegex:             config.GetGalleryCoverRegex(),
-		APIKey:                        config.GetAPIKey(),
-		Username:                      config.GetUsername(),
-		Password:                      config.GetPasswordHash(),
+		APIKey:                        "",
+		Username:                      nil,
+		Password:                      nil,
+		GuestAccountEnabled:           config.GetGuestUserEnabled(),
 		MaxSessionAge:                 config.GetMaxSessionAge(),
 		LogFile:                       &logFile,
 		LogOut:                        config.GetLogOut(),
@@ -244,10 +252,6 @@ func makeConfigDefaultsResult() *ConfigDefaultSettingsResult {
 		DeleteFile:      &deleteFileDefault,
 		DeleteGenerated: &deleteGeneratedDefault,
 	}
-}
-
-func makeConfigUIResult() map[string]interface{} {
-	return config.GetInstance().GetUIConfiguration()
 }
 
 func (r *queryResolver) ValidateStashBoxCredentials(ctx context.Context, input config.StashBoxInput) (*StashBoxValidationResult, error) {

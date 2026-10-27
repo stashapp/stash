@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"time"
 
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
@@ -74,46 +73,15 @@ func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int,
 		}
 	}
 
+	// merge user data, including play and o history, for all users.
+	// This is done before updating the destination, so that the provided values
+	// take precedence for the current user.
+	if err := s.Repository.MergeUserData(ctx, destinationID, sourceIDs, options.IncludePlayHistory, options.IncludeOHistory); err != nil {
+		return fmt.Errorf("merging user data: %w", err)
+	}
+
 	if _, err := s.Repository.UpdatePartial(ctx, destinationID, scenePartial); err != nil {
 		return fmt.Errorf("updating scene: %w", err)
-	}
-
-	// merge play history
-	if options.IncludePlayHistory {
-		var allDates []time.Time
-		for _, src := range sources {
-			thisDates, err := s.Repository.GetViewDates(ctx, src.ID)
-			if err != nil {
-				return fmt.Errorf("getting view dates for scene %d: %w", src.ID, err)
-			}
-
-			allDates = append(allDates, thisDates...)
-		}
-
-		if len(allDates) > 0 {
-			if _, err := s.Repository.AddViews(ctx, destinationID, allDates); err != nil {
-				return fmt.Errorf("adding view dates to scene %d: %w", destinationID, err)
-			}
-		}
-	}
-
-	// merge o history
-	if options.IncludeOHistory {
-		var allDates []time.Time
-		for _, src := range sources {
-			thisDates, err := s.Repository.GetODates(ctx, src.ID)
-			if err != nil {
-				return fmt.Errorf("getting o dates for scene %d: %w", src.ID, err)
-			}
-
-			allDates = append(allDates, thisDates...)
-		}
-
-		if len(allDates) > 0 {
-			if _, err := s.Repository.AddO(ctx, destinationID, allDates); err != nil {
-				return fmt.Errorf("adding o dates to scene %d: %w", destinationID, err)
-			}
-		}
 	}
 
 	// delete old scenes
