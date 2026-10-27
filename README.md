@@ -1,5 +1,7 @@
 # Stash
 
+> **Gallery People development draft:** Start with [the current status and next steps](README-GALLERY-PEOPLE.md). This fork contains the full upstream Stash source plus an unfinished local face-grouping prototype and compatibility plan. The new plugin is not ready to install.
+
 [![Build](https://github.com/stashapp/stash/actions/workflows/build.yml/badge.svg?branch=develop&event=push)](https://github.com/stashapp/stash/actions/workflows/build.yml)
 [![Docker pulls](https://img.shields.io/docker/pulls/stashapp/stash?logo=docker)](https://hub.docker.com/r/stashapp/stash 'DockerHub')
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/stashapp?logo=github)](https://github.com/sponsors/stashapp)

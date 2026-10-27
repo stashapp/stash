@@ -126,6 +126,6 @@ The initial experiment is not aligned with the final product yet. Its scan-all t
 
 ## Current environment evidence
 
-Go 1.25.14 was installed with its official SHA-256 verified. Node 24 and FFmpeg are available. The repository-pinned pnpm 10.33.0 installed the UI dependencies using its frozen lockfile. Go module checksums verified after fetching one blocked module directly from its official Git repository. Application build/startup checks are still in progress as this plan is written.
+Go 1.25.14 was installed with its official SHA-256 verified. Node 24 and FFmpeg are available. The repository-pinned pnpm 10.33.0 installed the UI dependencies using its frozen lockfile. Go module checksums verified after fetching one blocked module directly from its official Git repository. UI code generation, TypeScript checking, and the frontend production build passed. Backend generation was stopped at the requested handoff; backend build/startup and functional checks remain outstanding.
 
-The cloud draft includes `storage.googleapis.com` for Go module artifacts and `media.githubusercontent.com` for public model weights. Saving the draft does not activate network access or publish the environment. The model-weight download currently receives a proxy 403; no local face model has been loaded or validated.
+Required cloud network additions are `storage.googleapis.com` for Go module artifacts, `media.githubusercontent.com` for public model weights, and `api.github.com` for pull-request creation. Saving a draft does not activate network access or publish the environment. Model-weight download and GitHub API requests received proxy denials; no local face model has been loaded or validated. The draft branch itself was successfully pushed using Git.

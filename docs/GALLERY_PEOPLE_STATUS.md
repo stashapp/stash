@@ -1,6 +1,6 @@
 # Gallery People draft checkpoint
 
-Updated: 27 October 2026, 12:40 Europe/Budapest.
+Updated: 27 October 2026, 12:45 Europe/Budapest.
 
 This is an unfinished design and feasibility checkpoint. It is safe to review as source; it is not a working plugin release. Do not install the prototype into a real Stash library.
 
@@ -37,10 +37,12 @@ This is an unfinished design and feasibility checkpoint. It is safe to review as
 - Node 24.19.0, GCC, and FFmpeg 7.1.5 are available.
 - UI dependencies installed using repository-pinned pnpm 10.33.0 and the frozen lockfile.
 - Go module checksums verified. One artifact was fetched directly from its official Git repository after the Go proxy's storage destination was blocked.
-- UI GraphQL generation completed.
-- Backend generation and UI type checking are still running; a completed application build, test suite, server startup, or functional gallery request has **not** yet been demonstrated.
+- UI GraphQL generation, TypeScript checking, and the existing frontend production build passed. Upstream deprecation/bundle-size warnings remain.
+- Backend generation was stopped at the user's requested handoff, with caches retained. A completed backend build, test suite, server startup, or functional gallery request has **not** yet been demonstrated.
 - The face worker's Python dependencies installed in a private local environment. Model-weight download was blocked by a proxy 403. No face model has been loaded or validated.
-- The environment draft saves network additions for `storage.googleapis.com` and `media.githubusercontent.com`. Draft persistence is confirmed; runtime application and publication are not confirmed.
+- Required network additions are `storage.googleapis.com`, `media.githubusercontent.com`, and `api.github.com`; preserve the user's existing `docs.stashapp.cc` and `github.com` rules. Draft persistence and runtime application must be distinguished.
+- GitHub branch `codex/gallery-people-draft-20261027` was successfully pushed and verified remotely. Automatic draft-PR creation failed with a proxy denial of `api.github.com`; no PR was created. The root README has manual next steps.
+- The cloud environment draft now saves the dependency/frontend `install_script`, explicit work-in-progress resume instructions in `start_skill`, and the required network additions while preserving the existing domain rules. Saving does not execute these instructions or publish an environment. Backend startup remains unverified.
 
 Local environment files are under `/workspace/stash-cloud/`: `env.sh`, tool/dependency caches, logs, and isolated development state. They are not committed to GitHub. Source `/workspace/stash-cloud/env.sh` before using the installed Go/pnpm tooling. Credentials and environment values must never be copied into a draft or recovery archive.
 
