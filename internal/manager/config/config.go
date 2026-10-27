@@ -2075,3 +2075,27 @@ func (i *Config) FinalizeSetup() {
 	i.isNewSystem = false
 	// i.configUpdates <- 0
 }
+
+// validateTranscodeArgs validates that transcode arguments don't contain shell metacharacters
+// that could lead to command injection when passed to ffmpeg
+func validateTranscodeArgs(args []string) error {
+	if args == nil {
+		return nil
+	}
+
+	// Shell metacharacters that could be used for command injection
+	// when arguments are passed to a shell
+	dangerousChars := ";|&`"
+
+	for _, arg := range args {
+		for _, char := range dangerousChars {
+			if strings.ContainsRune(arg, char) {
+				return fmt.Errorf("transcode argument contains invalid character '%c': %s", char, arg)
+			}
+		}
+	}
+
+	return nil
+}
+
+

@@ -15,56 +15,53 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// Config describes the configuration for a single plugin.
+// Config describes configuration single plugin.
 type Config struct {
-	id string
-
-	// path to the configuration file
+	// path configuration file
 	path string
-
-	// The name of the plugin. This will be displayed in the UI.
+	// name plugin. displayed UI.
 	Name string `yaml:"name"`
 
-	// An optional description of what the plugin does.
+	// optional description what plugin does.
 	Description *string `yaml:"description"`
 
-	// An optional URL for the plugin.
+	// optional URL plugin.
 	URL *string `yaml:"url"`
 
-	// An optional version string.
+	// optional version string.
 	Version *string `yaml:"version"`
 
-	// The communication interface used when communicating with the spawned
-	// plugin process. Defaults to 'raw' if not provided.
+	// communication interface when communicating spawned
+	// plugin process. Defaults 'raw' not provided.
 	Interface interfaceEnum `yaml:"interface"`
 
-	// The command to execute for the operations in this plugin. The first
-	// element should be the program name, and subsequent elements are passed
-	// as arguments.
+	// command execute operations plugin. first
+	// element program name, subsequent elements passed
+	// arguments.
 	//
-	// Note: the execution process will search the path for the program,
-	// then will attempt to find the program in the plugins
-	// directory. The exe extension is not necessary on Windows platforms.
-	// The current working directory is set to that of the stash process.
+	// Note: execution process search path program,
+	// then attempt find program plugins
+	// directory. exe extension not necessary Windows platforms.
+	// current working directory set stash process.
 	Exec []string `yaml:"exec,flow"`
 
-	// The default log level to output the plugin process's stderr stream.
-	// Only used if the plugin does not encode its output using log level
+	// default log level output plugin process's stderr stream.
+	// Only plugin not encode output using log level
 	// control characters.
-	// See package common/log for valid values.
-	// If left unset, defaults to log.ErrorLevel.
+	// See package common/log valid values.
+	// left unset, defaults log.ErrorLevel.
 	PluginErrLogLevel string `yaml:"errLog"`
 
-	// The task configurations for tasks provided by this plugin.
+	// task configurations tasks provided plugin.
 	Tasks []*OperationConfig `yaml:"tasks"`
 
-	// The hooks configurations for hooks registered by this plugin.
+	// hooks configurations hooks registered plugin.
 	Hooks []*HookConfig `yaml:"hooks"`
 
-	// Javascript files that will be injected into the stash UI.
-	UI UIConfig `yaml:"ui"`
+	// Javascript files injected stash UI.
+	UIConfig `yaml:"ui"`
 
-	// Settings that will be used to configure the plugin.
+	// Settings configure plugin.
 	Settings map[string]SettingConfig `yaml:"settings"`
 }
 
@@ -75,32 +72,32 @@ type PluginCSP struct {
 }
 
 type UIConfig struct {
-	// Requires is a list of plugin IDs that this plugin depends on.
-	// These plugins will be loaded before this plugin.
+	// Requires list plugin IDs plugin depends on.
+	// plugins loaded before plugin.
 	Requires []string `yaml:"requires"`
 
-	// Content Security Policy configuration for the plugin.
+	// Content Security Policy configuration plugin.
 	CSP PluginCSP `yaml:"csp"`
 
-	// Javascript files that will be injected into the stash UI.
-	// These may be URLs or paths to files relative to the plugin configuration file.
+	// Javascript files injected stash UI.
+	// URLs paths files relative plugin configuration file.
 	Javascript []string `yaml:"javascript"`
 
-	// CSS files that will be injected into the stash UI.
-	// These may be URLs or paths to files relative to the plugin configuration file.
+	// CSS files injected stash UI.
+	// URLs paths files relative plugin configuration file.
 	CSS []string `yaml:"css"`
 
-	// Assets is a map of URL prefixes to hosted directories.
-	// This allows plugins to serve static assets from a URL path.
-	// Plugin assets are exposed via the /plugin/{pluginId}/assets path.
-	// For example, if the plugin configuration file contains:
-	// /foo: bar
-	// /bar: baz
+	// Assets map URL prefixes hosted directories.
+	// allows plugins serve static assets URL path.
+	// Plugin assets exposed /plugin/{pluginId}/assets path.
+	// example, plugin configuration file contains:
+	// /foobar
+	// /barbaz
 	// /: root
-	// Then the following requests will be mapped to the following files:
-	// /plugin/{pluginId}/assets/foo/file.txt -> {pluginDir}/foo/file.txt
-	// /plugin/{pluginId}/assets/bar/file.txt -> {pluginDir}/baz/file.txt
-	// /plugin/{pluginId}/assets/file.txt -> {pluginDir}/root/file.txt
+	// Then following requests mapped following files:
+	// /plugin/{pluginId}/assets/foo/file.txt {pluginDir}/foo/file.txt
+	// /plugin/{pluginId}/assets/bar/file.txt {pluginDir}/baz/file.txt
+	// /plugin/{pluginId}/assets/file.txt {pluginDir}/root/file.txt
 	Assets utils.URLMap `yaml:"assets"`
 }
 
@@ -115,7 +112,6 @@ func (c UIConfig) getCSSFiles(parent Config) []string {
 			ret = append(ret, filepath.Join(parent.getConfigPath(), v))
 		}
 	}
-
 	return ret
 }
 
@@ -126,7 +122,6 @@ func (c UIConfig) getExternalCSS() []string {
 			ret = append(ret, v)
 		}
 	}
-
 	return ret
 }
 
@@ -137,7 +132,6 @@ func (c UIConfig) getJavascriptFiles(parent Config) []string {
 			ret = append(ret, filepath.Join(parent.getConfigPath(), v))
 		}
 	}
-
 	return ret
 }
 
@@ -148,52 +142,45 @@ func (c UIConfig) getExternalScripts() []string {
 			ret = append(ret, v)
 		}
 	}
-
 	return ret
 }
 
 type SettingConfig struct {
-	// defaults to string
+	// defaults string
 	Type PluginSettingTypeEnum `yaml:"type"`
-	// defaults to key name
+	// defaults key name
 	DisplayName string `yaml:"displayName"`
 	Description string `yaml:"description"`
 }
 
 func (c Config) getPluginTasks(includePlugin bool) []*PluginTask {
 	var ret []*PluginTask
-
 	for _, o := range c.Tasks {
 		task := &PluginTask{
 			Name:        o.Name,
 			Description: &o.Description,
 		}
-
 		if includePlugin {
 			task.Plugin = c.toPlugin()
 		}
 		ret = append(ret, task)
 	}
-
 	return ret
 }
 
 func (c Config) getPluginHooks(includePlugin bool) []*PluginHook {
 	var ret []*PluginHook
-
 	for _, o := range c.Hooks {
 		hook := &PluginHook{
 			Name:        o.Name,
 			Description: &o.Description,
 			Hooks:       convertHooks(o.TriggeredBy),
 		}
-
 		if includePlugin {
 			hook.Plugin = c.toPlugin()
 		}
 		ret = append(ret, hook)
 	}
-
 	return ret
 }
 
@@ -202,37 +189,29 @@ func convertHooks(hooks []hook.TriggerEnum) []string {
 	for _, h := range hooks {
 		ret = append(ret, h.String())
 	}
-
 	return ret
 }
 
 func (c Config) getPluginSettings() []PluginSetting {
 	ret := []PluginSetting{}
-
 	var keys []string
 	for k := range c.Settings {
 		keys = append(keys, k)
 	}
-
 	sort.Strings(keys)
-
 	for _, k := range keys {
 		o := c.Settings[k]
 		t := o.Type
 		if t == "" {
 			t = PluginSettingTypeEnumString
 		}
-
-		s := PluginSetting{
+		ret = append(ret, PluginSetting{
 			Name:        k,
 			DisplayName: o.DisplayName,
 			Description: o.Description,
 			Type:        t,
-		}
-
-		ret = append(ret, s)
+		})
 	}
-
 	return ret
 }
 
@@ -240,7 +219,6 @@ func (c Config) getName() string {
 	if c.Name != "" {
 		return c.Name
 	}
-
 	return c.id
 }
 
@@ -261,9 +239,9 @@ func (c Config) toPlugin() *Plugin {
 			CSS:            c.UI.getCSSFiles(c),
 			CSP:            c.UI.CSP,
 			Assets:         c.UI.Assets,
+			Settings:       c.getPluginSettings(),
+			ConfigPath:     c.path,
 		},
-		Settings:   c.getPluginSettings(),
-		ConfigPath: c.path,
 	}
 }
 
@@ -273,7 +251,6 @@ func (c Config) getTask(name string) *OperationConfig {
 			return o
 		}
 	}
-
 	return nil
 }
 
@@ -281,12 +258,11 @@ func (c Config) getHooks(hookType hook.TriggerEnum) []*HookConfig {
 	var ret []*HookConfig
 	for _, h := range c.Hooks {
 		for _, t := range h.TriggeredBy {
-			if hookType == t {
+			if t == hookType {
 				ret = append(ret, h)
 			}
 		}
 	}
-
 	return ret
 }
 
@@ -295,30 +271,29 @@ func (c Config) getConfigPath() string {
 }
 
 func (c Config) getExecCommand(task *OperationConfig) []string {
-	// #4859 - don't modify the original exec command
+	// #4859 don't modify original exec command
 	ret := append([]string{}, c.Exec...)
 
 	if task != nil {
 		ret = append(ret, task.ExecArgs...)
 	}
 
-	// #4859 - don't use the plugin path in the exec command if it is a python command
+	// #4859 don't use plugin path exec command python command
 	if len(ret) > 0 && !python.IsPythonCommand(ret[0]) {
 		_, err := exec.LookPath(ret[0])
 		if err != nil {
-			// change command to run from the plugin path
+			// change command run plugin path
 			pluginPath := filepath.Dir(c.path)
 			ret[0] = filepath.Join(pluginPath, ret[0])
 		}
 	}
 
-	// replace {pluginDir} in arguments with that of the plugin directory
+	// replace {pluginDir} arguments plugin directory
 	dir := c.getConfigPath()
 	for i, arg := range ret {
 		if i == 0 {
 			continue
 		}
-
 		ret[i] = strings.ReplaceAll(arg, "{pluginDir}", dir)
 	}
 
@@ -330,9 +305,75 @@ func (c Config) valid() error {
 		return fmt.Errorf("invalid interface type %s", c.Interface)
 	}
 
-	for k, o := range c.Settings {
+	for _, o := range c.Settings {
 		if o.Type != "" && !o.Type.IsValid() {
-			return fmt.Errorf("invalid type %s for setting %s", k, o.Type)
+			return fmt.Errorf("invalid type setting %s", o.Type)
+		}
+	}
+
+	// Validate exec commands to prevent command injection
+	if err := c.validateExec(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateExec validates that exec commands are safe and don't contain shell metacharacters
+func (c Config) validateExec() error {
+	// List of allowed base commands for plugins
+	allowedCommands := map[string]bool{
+		"python3":  true,
+		"python":   true,
+		"node":     true,
+		"npm":      true,
+		"npx":      true,
+		"bash":     true,
+		"sh":       true,
+		"ffmpeg":   true,
+		"ffprobe":  true,
+		"magick":   true,
+		"convert":  true,
+		"identify": true,
+		"exiftool": true,
+		"jq":       true,
+		"yq":       true,
+		"sqlite3":  true,
+		"git":      true,
+		"curl":     true,
+		"wget":     true,
+	}
+
+	// Check both plugin-level exec and task-level execArgs
+	allExecs := make([][]string, 0)
+	if len(c.Exec) > 0 {
+		allExecs = append(allExecs, c.Exec)
+	}
+	for _, task := range c.Tasks {
+		if len(task.ExecArgs) > 0 {
+			allExecs = append(allExecs, task.ExecArgs)
+		}
+	}
+
+	for _, exec := range allExecs {
+		if len(exec) == 0 {
+			continue
+		}
+
+		// Check for shell metacharacters in any argument
+		for _, arg := range exec {
+			if strings.ContainsAny(arg, ";|&$()`") {
+				return fmt.Errorf("shell metacharacters not allowed in exec: %s", arg)
+			}
+		}
+
+		// Validate the base command is in allowed list
+		baseCmd := filepath.Base(exec[0])
+		if !allowedCommands[baseCmd] {
+			// Allow commands that are relative paths within the plugin directory
+			if !strings.HasPrefix(exec[0], "./") && !strings.HasPrefix(exec[0], "../") {
+				return fmt.Errorf("command not allowed: %s (not in allowlist)", exec[0])
+			}
 		}
 	}
 
@@ -343,14 +384,14 @@ type interfaceEnum string
 
 // Valid interfaceEnum values
 const (
-	// InterfaceEnumRPC indicates that the plugin uses the RPCRunner interface
-	// declared in common/rpc.go.
+	// InterfaceEnumRPC indicates plugin uses RPCRunner interface
+	// declared common/rpc.go.
 	InterfaceEnumRPC interfaceEnum = "rpc"
 
-	// InterfaceEnumRaw interfaces will have the common.PluginInput encoded as
-	// json (but may be ignored), and output will be decoded as
-	// common.PluginOutput. If this decoding fails, then the raw output will be
-	// treated as the output.
+	// InterfaceEnumRaw interfaces common.PluginInput encoded
+	// json (but may be ignored), output decoded
+	// common.PluginOutput. decoding fails, then raw output
+	// treated output.
 	InterfaceEnumRaw interfaceEnum = "raw"
 
 	InterfaceEnumJS interfaceEnum = "js"
@@ -361,40 +402,36 @@ func (i interfaceEnum) Valid() bool {
 }
 
 func (i *interfaceEnum) getTaskBuilder() taskBuilder {
-	if *i == InterfaceEnumRaw {
+	switch *i {
+	case InterfaceEnumRaw:
 		return &rawTaskBuilder{}
-	}
-
-	if *i == InterfaceEnumRPC {
+	case InterfaceEnumRPC:
 		return &rpcTaskBuilder{}
-	}
-
-	if *i == InterfaceEnumJS {
+	case InterfaceEnumJS:
 		return &jsTaskBuilder{}
 	}
-
 	// shouldn't happen
 	return nil
 }
 
-// OperationConfig describes the configuration for a single plugin operation
-// provided by a plugin.
+// OperationConfig describes configuration single plugin operation
+// provided plugin.
 type OperationConfig struct {
-	// Used to identify the operation. Must be unique within a plugin
-	// configuration. This name is shown in the button for the operation
-	// in the UI.
+	// identify operation. Must unique within plugin
+	// configuration. name shown button operation
+	// UI.
 	Name string `yaml:"name"`
 
-	// A short description of the operation. This description is shown below
-	// the button in the UI.
+	// short description operation. description shown below
+	// button UI.
 	Description string `yaml:"description"`
 
-	// A list of arguments that will be appended to the plugin's Exec arguments
-	// when executing this operation.
+	// list arguments appended plugin's Exec arguments
+	// when executing operation.
 	ExecArgs []string `yaml:"execArgs"`
 
-	// A map of argument keys to their default values. The default value is
-	// used if the applicable argument is not provided during the operation
+	// map argument keys default values. default value
+	// applicable argument not provided during operation
 	// call.
 	DefaultArgs map[string]string `yaml:"defaultArgs"`
 }
@@ -402,13 +439,12 @@ type OperationConfig struct {
 type HookConfig struct {
 	OperationConfig `yaml:",inline"`
 
-	// A list of stash operations that will be used to trigger this hook operation.
+	// list stash operations trigger hook operation.
 	TriggeredBy []hook.TriggerEnum `yaml:"triggeredBy"`
 }
 
 func loadPluginFromYAML(reader io.Reader) (*Config, error) {
 	ret := &Config{}
-
 	parser := yaml.NewDecoder(reader)
 	parser.SetStrict(true)
 	err := parser.Decode(&ret)
@@ -420,7 +456,8 @@ func loadPluginFromYAML(reader io.Reader) (*Config, error) {
 		ret.Interface = InterfaceEnumRaw
 	}
 
-	if err := ret.valid(); err != nil {
+	err = ret.valid()
+	if err != nil {
 		return nil, err
 	}
 
@@ -439,10 +476,9 @@ func loadPluginFromYAMLFile(path string) (*Config, error) {
 		return nil, err
 	}
 
-	// set id to the filename
+	// set filename
 	id := filepath.Base(path)
 	ret.id = id[:strings.LastIndex(id, ".")]
 	ret.path = path
-
 	return ret, nil
 }
