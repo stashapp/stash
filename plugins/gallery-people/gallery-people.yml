@@ -1,0 +1,19 @@
+name: Gallery People
+description: Browse galleries by face, review suggested groups, and assign performers. All image processing stays on your Stash machine.
+version: 1.0.0
+url: https://github.com/ucbbrla9011-jpg/stash232323
+exec:
+  - python3
+  - "{pluginDir}/launcher.py"
+interface: raw
+errLog: info
+ui:
+  javascript:
+    - gallery-people.js
+  css:
+    - gallery-people.css
+tasks:
+  - name: Scan all images for faces
+    description: Find and group faces locally. Existing performer assignments are preserved.
+    defaultArgs:
+      operation: scan
