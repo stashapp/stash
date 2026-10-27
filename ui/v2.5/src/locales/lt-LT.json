@@ -1,7 +1,7 @@
 {
     "actions": {
         "add": "Pridėti",
-        "add_directory": "Pridėti katalogą",
+        "add_directory": "Pridėti aplanką",
         "add_entity": "Pridėti {entityType}",
         "add_manual_date": "Įvesti datą rankini būdu",
         "add_sub_groups": "Pridėti pogrupius",
@@ -12,7 +12,7 @@
         "anonymise": "Anonimizuoti",
         "apply": "Taikyti",
         "assign_stashid_to_parent_studio": "Priskirti Stash ID esamai pagrindinei studijai ir atnaujinti metaduomenis",
-        "auto_tag": "Auto žymė",
+        "auto_tag": "Žymėti automatiškai",
         "browse_for_image": "Ieškoti vaizdo…",
         "cancel": "Atšaukti",
         "choose_date": "Pasirinkti datą",
@@ -105,6 +105,123 @@
         "select_all": "Pasirinkti visus",
         "select_entity": "Pasirinkti {entityType}",
         "select_folders": "Pasirinkti katalogus",
-        "select_none": "Atžymėti viską"
+        "select_none": "Atžymėti viską",
+        "add_stash_id": "Pridėti Stash ID",
+        "backup": "Atsarginė kopija",
+        "create_new": "Kurti naują",
+        "create_parent_tag": "Sukurti pagrindinę žymę",
+        "exclude_lowercase": "Neįtraukti",
+        "from_clipboard": "Iš iškarpinės",
+        "hash_migration": "Migruoti maišos kodus",
+        "migrate_blobs": "Migruoti Blob objektus",
+        "migrate_scene_screenshots": "Migruoti scenų ekrano nuotraukas",
+        "reveal_in_file_manager": "Rodyti aplanke",
+        "save_and_new": "Įšsaugoti ir sukurti naują",
+        "select_directory": "Pasirinkti aplanką",
+        "invert_selection": "Invertuoti žymėjimą",
+        "selective_auto_tag": "Automatiškai žymėti pasirinktus",
+        "selective_clean": "Išvalyti pasirinktus",
+        "selective_generate": "Sugeneruoti pasirinktus",
+        "selective_scan": "Skenuoti pasirinktus",
+        "set_as_default": "Nustatyti kaip numatytąjį",
+        "set_as_performer_image": "Nustatyti kaip atlikėjo paveikslėlį",
+        "set_cover": "Nustatyti kaip viršelio paveikslėlį",
+        "set_image": "Nustatyti nuotrauką…",
+        "show": "Rodyti",
+        "show_configuration": "Rodyti konfigūraciją",
+        "show_results": "Rodyti rezultatus",
+        "show_count_results": "Rodyti {count} rezultatus",
+        "sidebar": {
+            "close": "Slėpti šoninę juostą",
+            "open": "Rodyti šoninę juostą",
+            "toggle": "Rodyti / slėpti šoninę juostą"
+        },
+        "skip": "Praleisti",
+        "split": "Padalyti",
+        "stop": "Sustabdyti",
+        "submit": "Pateikti",
+        "submit_stash_box": "Pateikti į Stash-Box",
+        "submit_update": "Pateikti atnaujinimą",
+        "swap": "Sukeisti",
+        "tasks": {
+            "clean_confirm_message": "Ar tikrai norite išvalyti? Tai ištrins duomenų bazės informaciją ir sugeneruotą turinį visoms scenoms bei galerijoms, kurių nebėra failų sistemoje.",
+            "dry_mode_selected": "Pasirinktas bandomasis režimas. Jokie duomenys nebus trinami, bus tik registruojami įrašai.",
+            "import_warning": "Ar tikrai norite importuoti? Tai ištrins duomenų bazę ir importuos iš naujo iš jūsų eksportuotų metaduomenų."
+        },
+        "temp_disable": "Laikinai išjungti…",
+        "temp_enable": "Laikinai įjungti…",
+        "unset": "Panaikinti nustatymą",
+        "use_default": "Naudoti numatytąjį",
+        "view_history": "Rodyti istoriją",
+        "view_random": "Peržiūrėti atsitiktinį",
+        "add_play": "Pridėti paleidimą"
+    },
+    "actions_name": "Veiksmai",
+    "age": "Amžius",
+    "age_on_date": "{age} filmavimo metu",
+    "aliases": "Slapyvardžiai",
+    "all": "Visi",
+    "also_known_as": "Taip pat žinomas kaip",
+    "appears_with": "Pasirodo kartu su",
+    "ascending": "Didėjančia tvarka",
+    "audio_codec": "Garso kodekas",
+    "average_resolution": "Vidutinė vaizdo raiška",
+    "between_and": "ir",
+    "birth_year": "Gimimo metaI",
+    "birthdate": "Gimimo data",
+    "bitrate": "Srauto sparta",
+    "blobs_storage_type": {
+        "database": "Duomenų bazė",
+        "filesystem": "Failų sistema"
+    },
+    "captions": "Subtitrai",
+    "career_end": "Karjeros pabaiga",
+    "career_length": "Karjeros laikotarpis",
+    "career_start": "Karjeros pradžia",
+    "chapters": "Laiko žymės",
+    "circumcised": "Apipjaustytas",
+    "circumcised_types": {
+        "CUT": "Apipjaustytas",
+        "UNCUT": "Neapipjaustytas"
+    },
+    "component_tagger": {
+        "config": {
+            "active_instance": "Aktyvi „Stash-Box“ instancija:",
+            "blacklist_desc": "Juodojo sąrašo elementai yra neįtraukiami į užklausas. Atkreipkite dėmesį, kad tai yra reguliariosios išraiškos, kurios taip pat neskiria didžiųjų ir mažųjų raidžių. Tam tikrus simbolius būtina apsaugoti kairiniu brūkšniu (backslash): {chars_require_escape}",
+            "blacklist_label": "Juodasis sąrašas",
+            "errors": {
+                "blacklist_duplicate": "Dubliuoti juodojo sąrašo elementą"
+            },
+            "mark_organized_desc": "Iškart pažymėkite sceną kaip „Suorganizuotą“, kai tik paspaudžiamas mygtukas „Išsaugoti“.",
+            "mark_organized_label": "Išsaugant pažymėti kaip suorganizuotą",
+            "performer_genders": {
+                "heading": "Atlikėjų lytis",
+                "description": "Žymint scenas bus rodomi šios lyties atlikėjai."
+            },
+            "query_mode_auto": "Automatiškai",
+            "query_mode_auto_desc": "Naudoti metaduomenis (jei yra) arba failo pavadinimą",
+            "query_mode_dir": "Katalogas",
+            "query_mode_filename": "Failo pavadinimas",
+            "query_mode_filename_desc": "Naudoja tik failo pavadinimą",
+            "query_mode_label": "Užklausų režimas",
+            "query_mode_metadata": "Metaduomenys",
+            "query_mode_metadata_desc": "Naudoja tik metaduomenis",
+            "query_mode_path": "Kelias",
+            "query_mode_path_desc": "Naudoja visą failo kelią",
+            "set_cover_desc": "Pakeisti scenos viršelį, jei jis randamas.",
+            "set_cover_label": "Nustatyti scenos viršelio paveikslėlį",
+            "set_tag_desc": "Prisegti žymes prie scenos jas perrašant arba sujungiant su esamomis scenos žymėmis.",
+            "set_tag_label": "Nustatyti žymes",
+            "source": "Šaltinis"
+        },
+        "noun_query": "Užklausa",
+        "results": {
+            "duration_unknown": "Trukmė nežinoma",
+            "fp_matches": "Trukmė sutampa",
+            "match_failed_already_tagged": "Scena jau pažymėta"
+        }
+    },
+    "media_info": {
+        "downloaded_from": "Atsiųsta iš"
     }
 }

@@ -159,7 +159,8 @@
         "selective_generate": "Вибіркове генерування",
         "from_clipboard": "З буфера обміну",
         "exclude_lowercase": "виключити",
-        "create_parent_tag": "Створити головний тег"
+        "create_parent_tag": "Створити головний тег",
+        "set_as_performer_image": "Встановити як зображення виконавця"
     },
     "actions_name": "Дії",
     "age": "Вік",
@@ -203,15 +204,15 @@
         "results": {
             "duration_unknown": "Тривалість невідома",
             "match_failed_no_result": "Результатів не знайдено",
-            "phash_matches": "{count} PHashes збігаються",
             "unnamed": "Без назви",
             "duration_off": "Тривалість відрізняється щонайменше на {number}с",
             "fp_matches": "Тривалість збігається",
             "fp_matches_multi": "Тривалість збігається з {matchCount}/{durationsLength} відбитками",
-            "hash_matches": "{hash_type} збігається",
+            "hash_matches": "{count, plural, one {# збіг {hash_type}} few {# збіги {hash_type}} many {# збігів {hash_type}} other {# збігів {hash_type}}",
             "match_failed_already_tagged": "Сцена вже має теги",
             "match_success": "Теги успішно додано до сцени",
-            "fp_found": "{fpCount, plural, =0 {Нових збігів відбитків не знайдено} other {Знайдено # нових збігів відбитків}}"
+            "fp_found": "{fpCount, plural, =0 {Нових збігів відбитків не знайдено} other {Знайдено # нових збігів відбитків}}",
+            "hash_submissions": "Подань: {count}"
         },
         "verb_match_fp": "Зіставити відбитки",
         "verb_matched": "Зіставлено",
@@ -432,7 +433,11 @@
             "sprite_screenshot_size_desc": "Бажаний розмір кожного спрайта в пікселях.",
             "sprite_screenshot_size_head": "Розмір спрайта",
             "use_custom_sprite_interval_head": "Використовувати власний інтервал спрайтів",
-            "use_custom_sprite_interval_desc": "Увімкніть користувацький інтервал спрайтів відповідно до налаштувань нижче."
+            "use_custom_sprite_interval_desc": "Увімкніть користувацький інтервал спрайтів відповідно до налаштувань нижче.",
+            "default_marker_preview_duration_desc": "Тривалість (у секундах) для попереднього перегляду маркерів без часу закінчення. Має бути більшою за 0.",
+            "default_marker_preview_duration_head": "Тривалість перегляду маркера за замовчуванням",
+            "max_marker_preview_duration_desc": "Максимальна тривалість (у секундах) для попереднього перегляду маркерів. 0 вимикає обмеження.",
+            "max_marker_preview_duration_head": "Максимальна тривалість перегляду маркера"
         },
         "advanced_mode": "Розширений режим",
         "tasks": {
@@ -477,7 +482,11 @@
             "auto_tag_based_on_filenames": "Автоматично тегувати контент на основі шляхів до файлів.",
             "auto_tag": {
                 "auto_tagging_paths": "Автотегування наступних шляхів",
-                "auto_tagging_all_paths": "Автотегування всіх шляхів"
+                "auto_tagging_all_paths": "Автотегування всіх шляхів",
+                "disable_warning": {
+                    "heading": "Вимкнути автоматичне тегування",
+                    "description": "Вимкнути попередження про підтвердження, яке відображається перед запуском автоматичного тегу."
+                }
             },
             "auto_tagging": "Автотегування",
             "backing_up_database": "Резервне копіювання бази даних",
@@ -850,6 +859,10 @@
                         "heading": "Попередній перегляд гучності"
                     }
                 }
+            },
+            "autostart_gallery_slideshow": {
+                "heading": "Автозапуск слайд-шоу галереї",
+                "description": "Автоматично запускати слайд-шоу при відкритті лайтбоксу галереї зі сторінки галерей."
             }
         },
         "plugins": {
@@ -1062,7 +1075,7 @@
         "md5": "Контрольна сума MD5",
         "phash_meaning": "Перцептивний хеш",
         "oshash_meaning": "Хеш OpenSubtitles",
-        "oshash": "Хеш oshash"
+        "oshash": "Хеш OSHash"
     },
     "metadata": "Метадані",
     "new": "Новий",
@@ -1152,7 +1165,10 @@
         "untagged_performers": "Нетеговані виконавці",
         "performer_successfully_tagged": "Виконавця успішно теговано:",
         "performer_already_tagged": "Виконавець вже має тег",
-        "performer_names_or_stashids_separated_by_comma": "Імена виконавців або StashID, розділені комою"
+        "performer_names_or_stashids_separated_by_comma": "Імена виконавців або StashID, розділені комою",
+        "field_options_description": "Виберіть спосіб оновлення кожного поля: перезапис замінює існуючі дані, об’єднання додає до них дані, пропуск залишає їх без змін.",
+        "configure_fields": "Налаштувати поля",
+        "field_options": "Параметри поля"
     },
     "resolution": "Роздільна здатність",
     "scene": "Сцена",
@@ -1204,7 +1220,7 @@
             "interactive_heatmap_speed": "Генерувати теплові карти та швидкість для інтерактивних сцен",
             "preview_exclude_end_time_desc": "Виключити останні X секунд із попереднього перегляду сцени. Це може бути значення в секундах або відсоток (наприклад, 2%) від загальної тривалості.",
             "preview_seg_count_desc": "Кількість сегментів у файлах попереднього перегляду.",
-            "markers_tooltip": "20-секундні відео, що починаються з вказаного таймкоду.",
+            "markers_tooltip": "Відеопрев'ю, що починаються з вказаного таймкоду.",
             "sprites_tooltip": "Набір зображень під відеоплеєром для зручної навігації.",
             "preview_seg_count_head": "Кількість сегментів у попередньому перегляді",
             "override_preview_generation_options": "Перевизначити параметри генерації перегляду",
@@ -1264,7 +1280,6 @@
                 "fit_horizontally": "Підігнати по горизонталі",
                 "original": "Оригінал"
             },
-            "page_header": "Сторінка {page} / {total}",
             "disable_animation": "Вимкнути анімацію переходу між зображеннями",
             "options": "Опції"
         },
@@ -1303,7 +1318,8 @@
         "scrape_results_missing": "Відсутні",
         "scrape_results_scraped": "Отримані",
         "set_default_filter_confirm": "Ви впевнені, що хочете встановити цей фільтр як типовий?",
-        "edit_entity_count_title": "Редагувати {count} {count, plural, one {{singularEntity}} інший {{pluralEntity}}}"
+        "edit_entity_count_title": "Редагувати {count} {count, plural, one {{singularEntity}} інший {{pluralEntity}}}",
+        "dont_show_again": "Не показувати це попередження більше"
     },
     "setup": {
         "errors": {
@@ -1390,7 +1406,8 @@
             "nearly_there": "Майже готово!",
             "generated_directory": "Каталог згенерованих файлів",
             "database_file_path": "Шлях до файлу бази даних",
-            "blobs_use_database": "<використовується база даних>"
+            "blobs_use_database": "<використовується база даних>",
+            "password_set_warning": "Зверніть увагу: після створення системи потрібно буде ввести облікові дані."
         },
         "stash_setup_wizard": "Майстер налаштування Stash",
         "creating": {
@@ -1401,7 +1418,13 @@
             "up_dir": "На рівень вище"
         },
         "welcome_to_stash": "Ласкаво просимо до Stash",
-        "github_repository": "Репозиторій Github"
+        "github_repository": "Репозиторій Github",
+        "credentials": {
+            "description": "Введіть ім'я користувача та пароль для входу в систему Stash. Залиште ці поля порожніми, якщо не хочете використовувати авторизацію для доступу. Зверніть увагу: облікові дані обов'язкові, якщо ви відкриваєте доступ до системи з глобальної мережі Інтернет.",
+            "heading": "Налаштуйте свої облікові дані",
+            "password_invalid": "Пароль є обов'язковим, якщо вказано ім'я користувача.",
+            "username_invalid": "Ім'я користувача не повинно містити пробілів на початку або в кінці."
+        }
     },
     "validation": {
         "required": "${path} є обов'язковим полем",
@@ -1461,7 +1484,8 @@
         "merged_performers": "Виконавців об'єднано",
         "clipboard_access_denied": "Доступ до буфера обміну заборонено. Перевірте дозволи браузера",
         "clipboard_image_pasted": "Зображення вставлено з буфера обміну",
-        "clipboard_no_image": "У буфері обміну не знайдено зображення"
+        "clipboard_no_image": "У буфері обміну не знайдено зображення",
+        "screenshot_generated": "Скріншот згенеровано"
     },
     "empty_server": "Додайте кілька сцен на свій сервер, щоб побачити рекомендації на цій сторінці.",
     "appears_with": "З'являється разом із",
@@ -1694,7 +1718,8 @@
             "create_parent_desc": "Створити відсутні головні теги з категорій stash-box або прив'язати наявні головні теги за точним збігом назви",
             "create_parent_label": "Створити головні теги"
         },
-        "create_or_tag_parent_tags": "Створити відсутні або прив'язати наявні головні теги"
+        "create_or_tag_parent_tags": "Створити відсутні або прив'язати наявні головні теги",
+        "parent_tag_no_remote_site_id_warning": "Головний тег не має ідентифікатора віддаленого сайту та не буде пов'язаний з екземпляром stash-box."
     },
     "tagger": {
         "config": {
@@ -1704,6 +1729,13 @@
             "fields_will_not_be_changed": "Ці поля не будуть змінені під час оновлення {entity}.",
             "no_fields_are_excluded": "Жодне поле не виключено",
             "no_instances_found": "Не знайдено жодних екземплярів"
+        },
+        "performers": {
+            "birthdate": "У знайденого виконавця інша дата народження.",
+            "country": "Зіставлений виконавець з іншої країни.",
+            "ethnicity": "Зіставлений виконавець має іншу етнічну приналежність.",
+            "gender": "Зіставлений виконавець має іншу стать.",
+            "stash_mismatch": "Зіставлений виконавець вже має інший stash-id."
         }
     },
     "unsupported_criteria": "Непідтримувані критерії: {criteria}",
@@ -1713,5 +1745,11 @@
     "parent_folder": "Основна папка",
     "empty_value": "порожній",
     "scenes_size": "Розмір сцени",
-    "refer_to": "Будь ласка, дивіться {link}."
+    "refer_to": "Будь ласка, дивіться {link}.",
+    "related_studios": "Пов'язані",
+    "sub_group_description": "Опис підгрупи",
+    "o_count_all": "Кількість оргазмів (загалом)",
+    "performer_count_all": "Кількість виконавців (загалом)",
+    "scene_marker_count": "Кількість маркерів сцени",
+    "stash_id_endpoint_any": "Будь-яка кінцева точка"
 }
