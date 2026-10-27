@@ -27,6 +27,7 @@ import (
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/sqlite"
+	"github.com/stashapp/stash/pkg/utils"
 
 	// register custom migrations
 	_ "github.com/stashapp/stash/pkg/sqlite/migrations"
@@ -392,6 +393,7 @@ func (s *Manager) GetSystemStatus() *SystemStatus {
 		ConfigPath:     &configFile,
 		FfmpegPath:     &ffmpegPath,
 		FfprobePath:    &ffprobePath,
+		LocalIPs:       utils.LocalIPv4s(),
 	}
 }
 
