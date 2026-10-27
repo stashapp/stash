@@ -8,7 +8,10 @@ import {
   useListSceneScrapers,
   useListGalleryScrapers,
   useListImageScrapers,
+  useScraperURLConflicts,
 } from "src/core/StashService";
+import * as GQL from "src/core/generated-graphql";
+import { ConflictBadge, findConflict } from "./ScraperURLConflicts";
 import { useToast } from "src/hooks/Toast";
 import TextUtils from "src/utils/text";
 import { CollapseButton } from "../Shared/CollapseButton";
@@ -106,11 +109,22 @@ const ScrapeTypeList: React.FC<{
   );
 };
 
+type ScraperURLConflict =
+  GQL.ScraperUrlConflictsQuery["scraperURLConflicts"][number];
+
 interface IURLList {
+  scraperId: string;
   urls: string[];
+  conflicts: ScraperURLConflict[];
+  scraperNames: Map<string, string>;
 }
 
-const URLList: React.FC<IURLList> = ({ urls }) => {
+const URLList: React.FC<IURLList> = ({
+  scraperId,
+  urls,
+  conflicts,
+  scraperNames,
+}) => {
   const items = useMemo(() => {
     function linkSite(url: string) {
       const u = new URL(url);
@@ -123,26 +137,47 @@ const URLList: React.FC<IURLList> = ({ urls }) => {
       .map((u) => {
         const sanitised = TextUtils.sanitiseURL(u);
         const siteURL = linkSite(sanitised!);
+        const conflict = findConflict(conflicts, scraperId, u);
 
         return (
           <li key={u}>
             <ExternalLink href={siteURL}>{sanitised}</ExternalLink>
+            {conflict && (
+              <ConflictBadge
+                conflict={conflict}
+                mineName={scraperNames.get(scraperId) ?? scraperId}
+                otherName={
+                  scraperNames.get(conflict.otherID) ?? conflict.otherID
+                }
+              />
+            )}
           </li>
         );
       });
 
     return ret;
-  }, [urls]);
+  }, [urls, conflicts, scraperId, scraperNames]);
 
   return <ul>{items}</ul>;
 };
 
 const ScraperTableRow: React.FC<{
+  id: string;
   name: string;
   entityType: string;
   supportedScrapes: ScrapeType[];
   urls: string[];
-}> = ({ name, entityType, supportedScrapes, urls }) => {
+  conflicts: ScraperURLConflict[];
+  scraperNames: Map<string, string>;
+}> = ({
+  id,
+  name,
+  entityType,
+  supportedScrapes,
+  urls,
+  conflicts,
+  scraperNames,
+}) => {
   return (
     <tr>
       <td>{name}</td>
@@ -150,7 +185,12 @@ const ScraperTableRow: React.FC<{
         <ScrapeTypeList types={supportedScrapes} entityType={entityType} />
       </td>
       <td>
-        <URLList urls={urls} />
+        <URLList
+          scraperId={id}
+          urls={urls}
+          conflicts={conflicts}
+          scraperNames={scraperNames}
+        />
       </td>
     </tr>
   );
@@ -183,6 +223,44 @@ const ScrapersSection: React.FC = () => {
     useListImageScrapers();
   const { data: groupScrapers, loading: loadingGroups } =
     useListGroupScrapers();
+  const { data: conflictsData } = useScraperURLConflicts();
+
+  const scraperNames = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const list of [
+      performerScrapers?.listScrapers,
+      sceneScrapers?.listScrapers,
+      galleryScrapers?.listScrapers,
+      imageScrapers?.listScrapers,
+      groupScrapers?.listScrapers,
+    ]) {
+      list?.forEach((s) => {
+        m.set(s.id, s.name);
+      });
+    }
+    return m;
+  }, [
+    performerScrapers,
+    sceneScrapers,
+    galleryScrapers,
+    imageScrapers,
+    groupScrapers,
+  ]);
+
+  const conflictsByType = useMemo(() => {
+    const conflicts = conflictsData?.scraperURLConflicts ?? [];
+    return {
+      performers: conflicts.filter(
+        (c) => c.type === GQL.ScrapeContentType.Performer
+      ),
+      scenes: conflicts.filter((c) => c.type === GQL.ScrapeContentType.Scene),
+      galleries: conflicts.filter(
+        (c) => c.type === GQL.ScrapeContentType.Gallery
+      ),
+      images: conflicts.filter((c) => c.type === GQL.ScrapeContentType.Image),
+      groups: conflicts.filter((c) => c.type === GQL.ScrapeContentType.Group),
+    };
+  }, [conflictsData]);
 
   const filteredScrapers = useMemo(() => {
     const filterFn = filterScraper(filter.toLowerCase());
@@ -261,10 +339,13 @@ const ScrapersSection: React.FC = () => {
             {filteredScrapers.scenes?.map((scraper) => (
               <ScraperTableRow
                 key={scraper.id}
+                id={scraper.id}
                 name={scraper.name}
                 entityType="scene"
                 supportedScrapes={scraper.scene?.supported_scrapes ?? []}
                 urls={scraper.scene?.urls ?? []}
+                conflicts={conflictsByType.scenes}
+                scraperNames={scraperNames}
               />
             ))}
           </ScraperTable>
@@ -278,10 +359,13 @@ const ScrapersSection: React.FC = () => {
             {filteredScrapers.galleries?.map((scraper) => (
               <ScraperTableRow
                 key={scraper.id}
+                id={scraper.id}
                 name={scraper.name}
                 entityType="gallery"
                 supportedScrapes={scraper.gallery?.supported_scrapes ?? []}
                 urls={scraper.gallery?.urls ?? []}
+                conflicts={conflictsByType.galleries}
+                scraperNames={scraperNames}
               />
             ))}
           </ScraperTable>
@@ -295,10 +379,13 @@ const ScrapersSection: React.FC = () => {
             {filteredScrapers.images?.map((scraper) => (
               <ScraperTableRow
                 key={scraper.id}
+                id={scraper.id}
                 name={scraper.name}
                 entityType="image"
                 supportedScrapes={scraper.image?.supported_scrapes ?? []}
                 urls={scraper.image?.urls ?? []}
+                conflicts={conflictsByType.images}
+                scraperNames={scraperNames}
               />
             ))}
           </ScraperTable>
@@ -312,10 +399,13 @@ const ScrapersSection: React.FC = () => {
             {filteredScrapers.performers?.map((scraper) => (
               <ScraperTableRow
                 key={scraper.id}
+                id={scraper.id}
                 name={scraper.name}
                 entityType="performer"
                 supportedScrapes={scraper.performer?.supported_scrapes ?? []}
                 urls={scraper.performer?.urls ?? []}
+                conflicts={conflictsByType.performers}
+                scraperNames={scraperNames}
               />
             ))}
           </ScraperTable>
@@ -329,10 +419,13 @@ const ScrapersSection: React.FC = () => {
             {filteredScrapers.groups?.map((scraper) => (
               <ScraperTableRow
                 key={scraper.id}
+                id={scraper.id}
                 name={scraper.name}
                 entityType="group"
                 supportedScrapes={scraper.group?.supported_scrapes ?? []}
                 urls={scraper.group?.urls ?? []}
+                conflicts={conflictsByType.groups}
+                scraperNames={scraperNames}
               />
             ))}
           </ScraperTable>

@@ -149,6 +149,9 @@ type Query {
   "List available scrapers"
   listScrapers(types: [ScrapeContentType!]!): [Scraper!]!
 
+  "List installed scrapers with overlapping URL patterns"
+  scraperURLConflicts: [ScraperURLConflict!]!
+
   "Scrape for a single scene"
   scrapeSingleScene(
     source: ScraperSourceInput!
