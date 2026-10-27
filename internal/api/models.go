@@ -41,9 +41,10 @@ func convertBaseFile(f models.File) BaseFile {
 	case *models.ImageFile:
 		return &ImageFile{ImageFile: f}
 	case *models.BaseFile:
-		return &BasicFile{BaseFile: f}
+		// assume gallery file if it's not a video or image file
+		return &GalleryFile{BaseFile: f}
 	default:
-		panic("unknown file type")
+		panic(fmt.Errorf("unknown file type %T", f))
 	}
 }
 
@@ -56,8 +57,6 @@ type GalleryFile struct {
 }
 
 func (GalleryFile) IsBaseFile() {}
-
-func (GalleryFile) IsVisualFile() {}
 
 func (f *GalleryFile) Fingerprints() []models.Fingerprint {
 	return f.BaseFile.Fingerprints

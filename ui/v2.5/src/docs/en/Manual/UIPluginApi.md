@@ -1,4 +1,4 @@
-# UI Plugin API
+# UI plugin API
 
 The `PluginApi` object is a global object in the `window` object.
 
@@ -10,11 +10,15 @@ An example using various aspects of `PluginApi` may be found in the source code 
 
 ### `React`
 
-An instance of the React library.
+An instance of the React library. The UI uses React 18.
 
 ### `ReactDOM`
 
-An instance of the ReactDOM library.
+An instance of the ReactDOM library. `ReactDOM.render` still works but is deprecated in React 18, and components mounted with it run in React 17 compatibility mode. Use `ReactDOMClient.createRoot` instead.
+
+### `ReactDOMClient`
+
+An instance of the `react-dom/client` library. Use `ReactDOMClient.createRoot(container).render(element)` to mount a component outside the main React tree.
 
 ### `GQL`
 
@@ -83,9 +87,11 @@ In general, `PluginApi.hooks.useLoadComponents` hook should be used instead.
 Returns a `Promise<void>` that resolves when all of the components have been loaded.
 
 #### `PluginApi.utils.InteractiveUtils`
+
 This namespace provides access to `interactiveClientProvider` and `getPlayer`
  - `getPlayer` returns the current `videojs` player object
  - `interactiveClientProvider` takes `IInteractiveClientProvider` which allows a developer to hook into the lifecycle of funscripts.
+
 ```ts
   export interface IDeviceSettings {
   connectionKey: string;
@@ -124,6 +130,7 @@ export interface IInteractiveClient {
 
 ```
 ##### Example
+
 For instance say I wanted to add extra logging when `IInteractiveClient.connect()` is called.
 In my plugin you would install your own client provider as seen below
 
@@ -146,7 +153,6 @@ InteractiveUtils.interactiveClientProvider = (
 };
 
 ```
-
 
 ### `hooks`
 
@@ -237,6 +243,7 @@ Returns `void`.
 - `FilteredSceneMarkerList`
 - `FilteredStudioList`
 - `FilteredTagList`
+- `FilterTags.Extras`
 - `FolderSelect`
 - `FrontPage`
 - `GalleryCard`
@@ -255,6 +262,7 @@ Returns `void`.
 - `GroupCardGrid`
 - `GroupIDSelect`
 - `GroupList`
+- `GroupPage`
 - `GroupRecommendationRow`
 - `GroupSelect`
 - `GroupSelect.sort`
@@ -287,6 +295,7 @@ Returns `void`.
 - `PerformerCard.Popovers`
 - `PerformerCard.Title`
 - `PerformerCardGrid`
+- `PerformerCreate`
 - `PerformerDetailsPanel`
 - `PerformerDetailsPanel.DetailGroup`
 - `PerformerGalleriesPanel`
@@ -295,6 +304,7 @@ Returns `void`.
 - `PerformerIDSelect`
 - `PerformerImagesPanel`
 - `PerformerList`
+- `PerformerMergeModal`
 - `PerformerPage`
 - `PerformerRecommendationRow`
 - `PerformerScenesPanel`
@@ -306,6 +316,7 @@ Returns `void`.
 - `RatingStars`
 - `RatingSystem`
 - `RecommendationRow`
+- `SavedFilter.Loaded`
 - `SceneCard`
 - `SceneCard.Details`
 - `SceneCard.Image`
@@ -313,6 +324,7 @@ Returns `void`.
 - `SceneCard.Popovers`
 - `SceneCard.SceneSpecs`
 - `SceneCardsGrid`
+- `SceneCreate`
 - `SceneFileInfoPanel`
 - `SceneIDSelect`
 - `SceneMarkerCard`
@@ -322,12 +334,14 @@ Returns `void`.
 - `SceneMarkerCardsGrid`
 - `SceneMarkerList`
 - `SceneMarkerRecommendationRow`
+- `SceneMergeModal`
 - `SceneList`
 - `ScenePage`
 - `ScenePage.TabContent`
 - `ScenePage.Tabs`
 - `ScenePlayer`
 - `SceneRecommendationRow`
+- `SceneScrapeDialog`
 - `SceneSelect`
 - `SceneSelect.sort`
 - `SelectSetting`
@@ -341,6 +355,7 @@ Returns `void`.
 - `StudioDetailsPanel`
 - `StudioIDSelect`
 - `StudioList`
+- `StudioPage`
 - `StudioRecommendationRow`
 - `StudioSelect`
 - `StudioSelect.sort`
@@ -356,6 +371,8 @@ Returns `void`.
 - `TagIDSelect`
 - `TagLink`
 - `TagList`
+- `TagMergeModal`
+- `TagPage`
 - `TagRecommendationRow`
 - `TagSelect`
 - `TagSelect.sort`

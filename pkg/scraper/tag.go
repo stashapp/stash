@@ -11,7 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
-func postProcessTags(ctx context.Context, tqb models.TagQueryer, scrapedTags []*models.ScrapedTag) (ret []*models.ScrapedTag, err error) {
+func postProcessTags(ctx context.Context, tqb models.TagNameFinder, scrapedTags []*models.ScrapedTag) (ret []*models.ScrapedTag, err error) {
 	ret = make([]*models.ScrapedTag, 0, len(scrapedTags))
 
 	for _, t := range scrapedTags {

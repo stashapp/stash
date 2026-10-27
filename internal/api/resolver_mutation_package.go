@@ -12,9 +12,10 @@ import (
 func refreshPackageType(typeArg PackageType) {
 	mgr := manager.GetInstance()
 
-	if typeArg == PackageTypePlugin {
+	switch typeArg {
+	case PackageTypePlugin:
 		mgr.RefreshPluginCache()
-	} else if typeArg == PackageTypeScraper {
+	case PackageTypeScraper:
 		mgr.RefreshScraperCache()
 	}
 }

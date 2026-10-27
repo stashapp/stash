@@ -416,6 +416,18 @@ func (qb *TagStore) find(ctx context.Context, id int) (*models.Tag, error) {
 	return ret, nil
 }
 
+func (qb *TagStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Tag, error) {
+	table := qb.table()
+
+	q := qb.selectDataset().Prepared(true).Where(
+		table.Col(idColumn).Eq(
+			sq,
+		),
+	)
+
+	return qb.getMany(ctx, q)
+}
+
 // returns nil, sql.ErrNoRows if not found
 func (qb *TagStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Tag, error) {
 	ret, err := qb.getMany(ctx, q)
@@ -577,6 +589,27 @@ func (qb *TagStore) FindByNames(ctx context.Context, names []string, nocase bool
 	}
 
 	return ret, nil
+}
+
+func (qb *TagStore) FindByAlias(ctx context.Context, alias string, nocase bool) (*models.Tag, error) {
+	where := fmt.Sprintf("%s = ?", tagAliasColumn)
+	if nocase {
+		where += " COLLATE NOCASE"
+	}
+	sq := dialect.From(tagsAliasesJoinTable).Select(
+		tagsAliasesJoinTable.Col(tagIDColumn),
+	).Prepared(true).Where(goqu.L(where, alias)).Limit(1)
+	ret, err := qb.findBySubquery(ctx, sq)
+
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, err
+	}
+
+	if len(ret) == 0 {
+		return nil, nil
+	}
+
+	return ret[0], nil
 }
 
 func (qb *TagStore) FindByStashID(ctx context.Context, stashID models.StashID) ([]*models.Tag, error) {

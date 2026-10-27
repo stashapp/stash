@@ -45,6 +45,7 @@ type Scene {
   url: String @deprecated(reason: "Use urls")
   urls: [String!]!
   date: String
+  production_date: String
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean!
@@ -103,6 +104,7 @@ input SceneCreateInput {
   url: String @deprecated(reason: "Use urls")
   urls: [String!]
   date: String
+  production_date: String
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean
@@ -136,6 +138,7 @@ input SceneUpdateInput {
   url: String @deprecated(reason: "Use urls")
   urls: [String!]
   date: String
+  production_date: String
   # rating expressed as 1-100
   rating100: Int
   o_counter: Int
@@ -187,6 +190,7 @@ input BulkSceneUpdateInput {
   url: String @deprecated(reason: "Use urls")
   urls: BulkUpdateStrings
   date: String
+  production_date: String
   # rating expressed as 1-100
   rating100: Int
   organized: Boolean

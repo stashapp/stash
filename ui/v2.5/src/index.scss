@@ -11,32 +11,32 @@ $sidebar-width: 250px;
 @import "styles/range";
 @import "styles/scrollbars";
 @import "sfw-mode.scss";
-@import "src/components/Changelog/styles.scss";
-@import "src/components/Galleries/styles.scss";
-@import "src/components/Help/styles.scss";
-@import "src/components/Images/styles.scss";
-@import "src/components/List/styles.scss";
-@import "src/components/Groups/styles.scss";
-@import "src/components/Performers/styles.scss";
-@import "src/components/FrontPage/styles.scss";
-@import "src/components/Scenes/styles.scss";
-@import "src/components/SceneDuplicateChecker/styles.scss";
-@import "src/components/SceneFilenameParser/styles.scss";
-@import "src/components/ScenePlayer/styles.scss";
-@import "src/components/Settings/styles.scss";
-@import "src/components/Setup/styles.scss";
-@import "src/components/Studios/styles.scss";
-@import "src/components/Shared/styles.scss";
-@import "src/components/Shared/GridCard/styles.scss";
-@import "src/components/Shared/Rating/styles.scss";
-@import "src/components/Shared/PackageManager/styles.scss";
-@import "src/components/Tags/styles.scss";
-@import "src/components/Wall/styles.scss";
-@import "src/components/Tagger/styles.scss";
-@import "src/hooks/Lightbox/lightbox.scss";
-@import "src/hooks/Interactive/interactive.scss";
-@import "src/components/Dialogs/IdentifyDialog/styles.scss";
-@import "src/components/Dialogs/styles.scss";
+@import "components/Changelog/styles.scss";
+@import "components/Galleries/styles.scss";
+@import "components/Help/styles.scss";
+@import "components/Images/styles.scss";
+@import "components/List/styles.scss";
+@import "components/Groups/styles.scss";
+@import "components/Performers/styles.scss";
+@import "components/FrontPage/styles.scss";
+@import "components/Scenes/styles.scss";
+@import "components/SceneDuplicateChecker/styles.scss";
+@import "components/SceneFilenameParser/styles.scss";
+@import "components/ScenePlayer/styles.scss";
+@import "components/Settings/styles.scss";
+@import "components/Setup/styles.scss";
+@import "components/Studios/styles.scss";
+@import "components/Shared/styles.scss";
+@import "components/Shared/GridCard/styles.scss";
+@import "components/Shared/Rating/styles.scss";
+@import "components/Shared/PackageManager/styles.scss";
+@import "components/Tags/styles.scss";
+@import "components/Wall/styles.scss";
+@import "components/Tagger/styles.scss";
+@import "hooks/Lightbox/lightbox.scss";
+@import "hooks/Interactive/interactive.scss";
+@import "components/Dialogs/IdentifyDialog/styles.scss";
+@import "components/Dialogs/styles.scss";
 @import "flag-icons/css/flag-icons.min.css";
 
 /* stylelint-disable */
@@ -1008,6 +1008,33 @@ div.dropdown-menu {
     right: 0;
     text-align: right;
     top: 0;
+  }
+}
+
+#set-image-popover {
+  .btn.minimal {
+    align-items: center;
+    display: flex;
+    text-align: left;
+    width: 100%;
+  }
+
+  .btn.minimal .fa-icon {
+    align-items: center;
+    display: inline-flex;
+    flex-shrink: 0;
+    justify-content: center;
+    margin-left: 0;
+    margin-right: 0.4rem;
+    width: var(--fa-fw-width, 1.25em);
+  }
+
+  .set-image-menu-divider {
+    border-top: 1px solid $textfield-bg;
+    color: $text-color;
+    height: 0;
+    margin: 0.25rem -0.75rem;
+    overflow: hidden;
   }
 }
 

@@ -162,32 +162,33 @@ func (t *ImportTask) unzipFile() error {
 			continue
 		}
 
-		if err := os.MkdirAll(filepath.Dir(fn), os.ModePerm); err != nil {
+		if err := t.unzipFileEntry(f, fn); err != nil {
 			return err
 		}
-
-		o, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
-		if err != nil {
-			return err
-		}
-
-		i, err := f.Open()
-		if err != nil {
-			o.Close()
-			return err
-		}
-
-		if _, err := io.Copy(o, i); err != nil {
-			o.Close()
-			i.Close()
-			return err
-		}
-
-		o.Close()
-		i.Close()
 	}
 
 	return nil
+}
+
+func (t *ImportTask) unzipFileEntry(f *zip.File, fn string) error {
+	if err := os.MkdirAll(filepath.Dir(fn), os.ModePerm); err != nil {
+		return err
+	}
+
+	o, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+	if err != nil {
+		return err
+	}
+	defer o.Close()
+
+	i, err := f.Open()
+	if err != nil {
+		return err
+	}
+	defer i.Close()
+
+	_, err = io.Copy(o, i)
+	return err
 }
 
 func (t *ImportTask) ImportPerformers(ctx context.Context) {

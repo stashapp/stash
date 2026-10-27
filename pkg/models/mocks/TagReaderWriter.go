@@ -197,6 +197,29 @@ func (_m *TagReaderWriter) FindAllDescendants(ctx context.Context, tagID int, ex
 	return r0, r1
 }
 
+// FindByAlias provides a mock function with given fields: ctx, alias, nocase
+func (_m *TagReaderWriter) FindByAlias(ctx context.Context, alias string, nocase bool) (*models.Tag, error) {
+	ret := _m.Called(ctx, alias, nocase)
+
+	var r0 *models.Tag
+	if rf, ok := ret.Get(0).(func(context.Context, string, bool) *models.Tag); ok {
+		r0 = rf(ctx, alias, nocase)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string, bool) error); ok {
+		r1 = rf(ctx, alias, nocase)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByChildTagID provides a mock function with given fields: ctx, childID
 func (_m *TagReaderWriter) FindByChildTagID(ctx context.Context, childID int) ([]*models.Tag, error) {
 	ret := _m.Called(ctx, childID)

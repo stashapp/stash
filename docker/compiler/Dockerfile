@@ -5,14 +5,14 @@ WORKDIR /tmp/osxcross
 ARG OSXCROSS_REVISION=5e1b71fcceb23952f3229995edca1b6231525b5b
 ADD --checksum=sha256:d3f771bbc20612fea577b18a71be3af2eb5ad2dd44624196cf55de866d008647 https://codeload.github.com/tpoechtrager/osxcross/tar.gz/${OSXCROSS_REVISION} /tmp/osxcross.tar.gz
 
-ARG OSX_SDK_VERSION=11.3
+ARG OSX_SDK_VERSION=12.3
 ARG OSX_SDK_DOWNLOAD_FILE=MacOSX${OSX_SDK_VERSION}.sdk.tar.xz
-ARG OSX_SDK_DOWNLOAD_URL=https://github.com/phracker/MacOSX-SDKs/releases/download/${OSX_SDK_VERSION}/${OSX_SDK_DOWNLOAD_FILE}
-ADD --checksum=sha256:cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4 ${OSX_SDK_DOWNLOAD_URL} /tmp/osxcross/tarballs/${OSX_SDK_DOWNLOAD_FILE}
+ARG OSX_SDK_DOWNLOAD_URL=https://github.com/joseluisq/macosx-sdks/releases/download/${OSX_SDK_VERSION}/${OSX_SDK_DOWNLOAD_FILE}
+ADD --checksum=sha256:3abd261ceb483c44295a6623fdffe5d44fc4ac2c872526576ec5ab5ad0f6e26c ${OSX_SDK_DOWNLOAD_URL} /tmp/osxcross/tarballs/${OSX_SDK_DOWNLOAD_FILE}
 
 ENV UNATTENDED=yes \
     SDK_VERSION=${OSX_SDK_VERSION} \
-    OSX_VERSION_MIN=10.10
+    OSX_VERSION_MIN=12.0
 RUN apt update && \
   apt install -y --no-install-recommends \
   bash ca-certificates clang cmake git patch libssl-dev bzip2 cpio libbz2-dev libxml2-dev make python3 xz-utils zlib1g-dev
@@ -46,7 +46,7 @@ RUN cd /opt/cross-freebsd/usr/lib && \
     ln -s libc++.so libstdc++.so
 
 ### BUILDER
-FROM golang:1.24.3 AS builder
+FROM golang:1.25.9 AS builder
 ENV PATH=/opt/osx-ndk-x86/bin:$PATH
 
 # copy in nodejs instead of using nodesource :thumbsup:

@@ -456,7 +456,7 @@ type FilenameParserRepository struct {
 	Performer PerformerNamesFinder
 	Studio    models.StudioQueryer
 	Group     GroupNameFinder
-	Tag       models.TagQueryer
+	Tag       models.TagNameFinder
 }
 
 func NewFilenameParserRepository(repo models.Repository) FilenameParserRepository {
@@ -599,7 +599,7 @@ func (p *FilenameParser) queryGroup(ctx context.Context, qb GroupNameFinder, gro
 	return ret
 }
 
-func (p *FilenameParser) queryTag(ctx context.Context, qb models.TagQueryer, tagName string) *models.Tag {
+func (p *FilenameParser) queryTag(ctx context.Context, qb models.TagNameFinder, tagName string) *models.Tag {
 	// massage the tag name
 	tagName = delimiterRE.ReplaceAllString(tagName, " ")
 
@@ -638,7 +638,7 @@ func (p *FilenameParser) setPerformers(ctx context.Context, qb PerformerNamesFin
 	}
 }
 
-func (p *FilenameParser) setTags(ctx context.Context, qb models.TagQueryer, h sceneHolder, result *models.SceneParserResult) {
+func (p *FilenameParser) setTags(ctx context.Context, qb models.TagNameFinder, h sceneHolder, result *models.SceneParserResult) {
 	// query for each performer
 	tagsSet := make(map[int]bool)
 	for _, tagName := range h.tags {

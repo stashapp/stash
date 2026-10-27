@@ -119,7 +119,7 @@ func Test_PerformerStore_Create(t *testing.T) {
 					HairColor:      hairColor,
 					Weight:         &weight,
 					IgnoreAutoTag:  ignoreAutoTag,
-					TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithDupName]}),
+					TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithNothing]}),
 					Aliases:        models.NewRelatedStrings(aliases),
 					StashIDs: models.NewRelatedStashIDs([]models.StashID{
 						{
@@ -284,7 +284,7 @@ func Test_PerformerStore_Update(t *testing.T) {
 					Weight:         &weight,
 					IgnoreAutoTag:  ignoreAutoTag,
 					Aliases:        models.NewRelatedStrings(aliases),
-					TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithPerformer]}),
+					TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithNothing]}),
 					StashIDs: models.NewRelatedStashIDs([]models.StashID{
 						{
 							StashID:   stashID1,
@@ -521,7 +521,7 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				Weight:        models.NewOptionalInt(weight),
 				IgnoreAutoTag: models.NewOptionalBool(ignoreAutoTag),
 				TagIDs: &models.UpdateIDs{
-					IDs:  []int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithPerformer]},
+					IDs:  []int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithNothing]},
 					Mode: models.RelationshipUpdateModeSet,
 				},
 				StashIDs: &models.UpdateStashIDs{
@@ -569,7 +569,7 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				HairColor:      hairColor,
 				Weight:         &weight,
 				IgnoreAutoTag:  ignoreAutoTag,
-				TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithPerformer]}),
+				TagIDs:         models.NewRelatedIDs([]int{tagIDs[tagIdx1WithPerformer], tagIDs[tagIdx1WithNothing]}),
 				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
 						StashID:   stashID1,

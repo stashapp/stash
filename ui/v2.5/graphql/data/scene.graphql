@@ -6,6 +6,7 @@ fragment SceneData on Scene {
   director
   urls
   date
+  production_date
   rating100
   o_counter
   organized
@@ -87,6 +88,7 @@ fragment SelectSceneData on Scene {
   id
   title
   date
+  production_date
   code
   studio {
     name

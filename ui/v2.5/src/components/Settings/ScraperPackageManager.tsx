@@ -16,6 +16,7 @@ import {
   AvailablePackages,
   InstalledPackages,
   RemotePackage,
+  renderPackageDescription,
 } from "../Shared/PackageManager/PackageManager";
 import { useSettings } from "./context";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
@@ -24,7 +25,7 @@ import { SettingSection } from "./SettingSection";
 export const InstalledScraperPackages: React.FC = () => {
   const [loadUpgrades, setLoadUpgrades] = useState(false);
   const [jobID, setJobID] = useState<string>();
-  const { job } = useMonitorJob(jobID, () => onPackageChanges());
+  const { job } = useMonitorJob(jobID, onPackageChanges);
 
   const { data, previousData, refetch, networkStatus, error } =
     useInstalledScraperPackages(loadUpgrades);
@@ -44,7 +45,8 @@ export const InstalledScraperPackages: React.FC = () => {
   }
 
   function onPackageChanges() {
-    // job is complete, refresh all local data
+    // job is complete, stop monitoring it and refresh all local data
+    setJobID(undefined);
     const ac = getClient();
     evictQueries(ac.cache, scraperMutationImpactedQueries);
   }
@@ -98,7 +100,7 @@ export const AvailableScraperPackages: React.FC = () => {
   const { general, loading: configLoading, error, saveGeneral } = useSettings();
 
   const [jobID, setJobID] = useState<string>();
-  const { job } = useMonitorJob(jobID, () => onPackageChanges());
+  const { job } = useMonitorJob(jobID, onPackageChanges);
 
   // Get installed packages to filter them out from available list
   const { data: installedData } = useInstalledScraperPackages(false);
@@ -113,7 +115,8 @@ export const AvailableScraperPackages: React.FC = () => {
   }
 
   function onPackageChanges() {
-    // job is complete, refresh all local data
+    // job is complete, stop monitoring it and refresh all local data
+    setJobID(undefined);
     const ac = getClient();
     evictQueries(ac.cache, scraperMutationImpactedQueries);
   }
@@ -148,12 +151,6 @@ export const AvailableScraperPackages: React.FC = () => {
     });
   }
 
-  function renderDescription(pkg: RemotePackage) {
-    if (pkg.metadata.description) {
-      return pkg.metadata.description;
-    }
-  }
-
   if (error) return <h1>{error.message}</h1>;
   if (configLoading) return <LoadingIndicator />;
 
@@ -167,7 +164,7 @@ export const AvailableScraperPackages: React.FC = () => {
         <AvailablePackages
           loading={loading}
           onInstallPackages={onInstallPackages}
-          renderDescription={renderDescription}
+          renderDescription={renderPackageDescription}
           loadSource={(source) => loadSource(source)}
           sources={sources}
           addSource={addSource}

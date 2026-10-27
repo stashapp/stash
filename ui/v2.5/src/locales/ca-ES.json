@@ -167,7 +167,6 @@
             "fp_found": "{fpCount, plural, =0 {No s'han trobat coincidències d'empremta digital noves} other {# s'han trobat coincidències d'empremta digital noves}}",
             "match_failed_already_tagged": "Escena ja etiquetada",
             "match_success": "Escena etiquetada correctament",
-            "phash_matches": "{count} PHashes coincideixen",
             "unnamed": "Sense nom",
             "duration_off": "Durada de sortida com a mínim {number}s",
             "duration_unknown": "Durada desconeguda",

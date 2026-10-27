@@ -159,7 +159,8 @@
         "exclude_lowercase": "排除",
         "from_clipboard": "来自剪贴板",
         "selective_generate": "选择性生成",
-        "create_parent_tag": "创建上级标签"
+        "create_parent_tag": "创建上级标签",
+        "set_as_performer_image": "设置为演员图片"
     },
     "actions_name": "操作",
     "age": "年龄",
@@ -213,7 +214,7 @@
             },
             "performer_genders": {
                 "heading": "演员性别",
-                "description": "这些性别的演员在标记场景时会被展示。"
+                "description": "在为短片设置标签时会展示这些性别的演员。"
             }
         },
         "noun_query": "查询",
@@ -223,12 +224,12 @@
             "fp_found": "{fpCount, plural, =0 {没有新的匹配指纹} other {# 匹配到新的指纹}}",
             "fp_matches": "时长符合",
             "fp_matches_multi": "时长符合 {matchCount}/{durationsLength} 个指纹",
-            "hash_matches": "{hash_type} 数值符合",
+            "hash_matches": "{count, plural, one {# 条 {hash_type} 匹配} other {# 条 {hash_type} 匹配}}",
             "match_failed_already_tagged": "短片已经添加标签",
             "match_failed_no_result": "没有找到",
             "match_success": "短片成功添加标签",
-            "phash_matches": "{count} 个感知识别码 匹配",
-            "unnamed": "无名"
+            "unnamed": "无名",
+            "hash_submissions": "{count} 次提交"
         },
         "verb_match_fp": "匹配指纹",
         "verb_matched": "符合",
@@ -250,9 +251,11 @@
             "latest_version_build_hash": "最新版本识别码:",
             "new_version_notice": "[新版本]",
             "release_date": "发布日期：",
-            "stash_home": "Stash 主页在 {url}",
-            "stash_wiki": "Stash {url} 页面",
-            "version": "版本"
+            "stash_home": "访问 Stash，网址为{url}。",
+            "stash_wiki": "查看 Stash {url} 网站。",
+            "version": "版本",
+            "stash_community": "加入我们的 {forumUrl} 或{discordUrl} 论坛服务器。",
+            "support_us": "通过 {openCollectiveUrl} 或 {githubSponsorsUrl}支持我们。"
         },
         "application_paths": {
             "heading": "程序路径"
@@ -334,7 +337,7 @@
             },
             "cache_location": "缓存的目录位置。如果使用 HLS（例如在 Apple 设备上）或 DASH 进行流传输，则需要该位置。",
             "cache_path_head": "缓存路径",
-            "calculate_md5_and_ohash_desc": "除了快搜码外还计算 MD5 值。如果开启，初次扫描时速度会较慢。如果关闭 MD5 值计算，则必须将文件名识别码算法设置为快搜码.",
+            "calculate_md5_and_ohash_desc": "除了 oshash 外还计算 MD5 值。如果开启，初次扫描时速度会较慢。如果关闭 MD5 值计算，则必须将文件名识别码算法设置为 oshash.",
             "calculate_md5_and_ohash_label": "计算影片MD5值",
             "check_for_insecure_certificates": "检查证书安全性",
             "check_for_insecure_certificates_desc": "某些网站所使用的 SSL 证书可能有安全问题。取消勾选之后挖掘器会跳过证书安全性检查，如果你遇到了证书错误的问题，可以取消此选项。",
@@ -393,7 +396,7 @@
             "gallery_cover_regex_label": "图库封面模式",
             "gallery_ext_desc": "逗号(半角)分隔的文件扩展名列表，将被标识为基于压缩文件的图库。",
             "gallery_ext_head": "图库压缩包扩展名",
-            "generated_file_naming_hash_desc": "使用 MD5 或快搜码为生成的文件命名。 更改此设置要求所有短片都有对应的 MD5/快搜码 值。 更改此值后，之前生成的数据需要迁移或重新生成。 请参阅 [迁移] 页面。",
+            "generated_file_naming_hash_desc": "使用 MD5 或 oshash 为生成的文件命名。 更改此设置要求所有短片都有对应的 MD5/oshash 值。 更改此值后，之前生成的数据需要迁移或重新生成。 请参阅 [迁移] 页面。",
             "generated_file_naming_hash_head": "生成文件名识别码",
             "generated_files_location": "生成数据的存储目录（短片标记，短片预览，预览图等）。",
             "generated_path_head": "生成数据的存储路径",
@@ -449,7 +452,11 @@
             "sprite_screenshot_size_desc": "每个时间轴缩略图所需像素大小。",
             "sprite_screenshot_size_head": "时间轴缩略图尺寸",
             "use_custom_sprite_interval_head": "使用自定义时间轴缩略图间隔",
-            "use_custom_sprite_interval_desc": "根据以下设置启用自定义时间轴缩略图间隔。"
+            "use_custom_sprite_interval_desc": "根据以下设置启用自定义时间轴缩略图间隔。",
+            "default_marker_preview_duration_head": "默认标记预览持续时间",
+            "max_marker_preview_duration_desc": "标记预览的最长持续时间（秒）。0禁用限制。",
+            "max_marker_preview_duration_head": "最大标记预览持续时间",
+            "default_marker_preview_duration_desc": "对于没有结束时间的预览标记，其持续时间（秒）必须大于0。"
         },
         "library": {
             "exclusions": "不包括",
@@ -495,11 +502,15 @@
         "tasks": {
             "added_job_to_queue": "已经添加 {operation_name} 到工作队列",
             "anonymise_and_download": "建立一个匿名的数据库拷贝然后下载其文件。",
-            "anonymise_database": "建立一个数据库的拷贝到备份目录，匿名化所有敏感数据。这可以为其他人提供查找问题和去虫的方法。原本的数据库是没有改动的。匿名化数据库使用文件名格式 {filename_format}.",
+            "anonymise_database": "建立一个数据库的拷贝到备份目录，匿名化所有敏感数据。这可以为其他人提供查找问题和 debug 的方法。原本的数据库是没有改动的。匿名化数据库使用文件名格式 {filename_format}.",
             "anonymising_database": "数据库匿名化",
             "auto_tag": {
                 "auto_tagging_all_paths": "自动标签所有路径",
-                "auto_tagging_paths": "自动标签以下路径"
+                "auto_tagging_paths": "自动标签以下路径",
+                "disable_warning": {
+                    "description": "禁用运行自动标记前显示的确认警告。",
+                    "heading": "禁用自动标记警告"
+                }
             },
             "auto_tag_based_on_filenames": "根据文件路径自动添加标签。",
             "auto_tagging": "自动标签",
@@ -518,7 +529,7 @@
             "generate_clip_previews_during_scan": "为图像短片生成预览图",
             "generate_desc": "生成辅助的图片，预览，片段，字幕等其他文件。",
             "generate_phashes_during_scan": "生成感知识别码",
-            "generate_phashes_during_scan_tooltip": "为了防止重复和短片甄别.",
+            "generate_phashes_during_scan_tooltip": "为了防止重复和短片甄别。",
             "generate_previews_during_scan": "生成动态图片预览",
             "generate_previews_during_scan_tooltip": "生成webp动画预览，仅适用于短片/标记墙预览类型设为动图的情况. 浏览时将更少CPU占用，但生成的是额外的且更大的文件。",
             "generate_sprites_during_scan": "生成时间轴预览小图",
@@ -610,7 +621,9 @@
                 "zip": "SQLite 数据库文件和 blob 文件将被压缩到一个文件中，文件名格式为 {filename_format}"
             },
             "clean_ignore_zip_contents": "忽略 zip 文件内容",
-            "clean_ignore_zip_contents_desc": "速度更快，但会遗漏在 zip 压缩文件中删除的文件。如果不在压缩文件中删除文件，启用它是安全的。"
+            "clean_ignore_zip_contents_desc": "速度更快，但会遗漏在 zip 压缩文件中删除的文件。如果不在压缩文件中删除文件，启用它是安全的。",
+            "auto_tag_confirm": "这将尝试将你的内容与现有元数据进行匹配。",
+            "auto_tag_warning": "这一过程无法逆转，可能导致错误匹配。"
         },
         "tools": {
             "scene_duplicate_checker": "短片重复性检查工具",
@@ -772,7 +785,8 @@
             "scene_list": {
                 "heading": "网格视图",
                 "options": {
-                    "show_studio_as_text": "文本形式展示工作室名称覆层"
+                    "show_studio_as_text": "文本形式展示工作室名称覆层",
+                    "show_studio_as_text_desc": "默认情况下，工作室标志会显示在网格中的卡片上。启用这个选项，让工作室名称始终以文本形式显示。"
                 }
             },
             "scene_player": {
@@ -851,6 +865,10 @@
                 "enable_background_image": {
                     "heading": "启用背景图像",
                     "description": "在详情页面上显示背景图片。"
+                },
+                "show_studio_text": {
+                    "description": "在详细信息视图中，总是以文字形式显示工作室名称，而不是图标。",
+                    "heading": "将工作室显示为文本"
                 }
             },
             "use_stash_hosted_funscript": {
@@ -895,6 +913,10 @@
                         "heading": "预览音量"
                     }
                 }
+            },
+            "autostart_gallery_slideshow": {
+                "description": "打开画廊页面的灯箱效果时，自动幻灯片播放。",
+                "heading": "自动画廊幻灯片播放"
             }
         },
         "advanced_mode": "高级模式",
@@ -986,7 +1008,6 @@
                 "original": "原图"
             },
             "options": "选项",
-            "page_header": "第 {page} 页，共 {total} 页",
             "reset_zoom_on_nav": "图片改动时重设缩放度",
             "scale_up": {
                 "description": "放大小图到整屏。",
@@ -1022,7 +1043,7 @@
             "marker_screenshots": "标记的屏幕截图",
             "marker_screenshots_tooltip": "标记使用静态JPG 图像",
             "markers": "标记预览",
-            "markers_tooltip": "从给出的时间码开始20秒的视频.",
+            "markers_tooltip": "从指定时间码开始的视频预览。",
             "override_preview_generation_options": "覆盖预览生成选项",
             "override_preview_generation_options_desc": "覆盖此操作的“预览生成选项”。默认设置在“系统”->“生成预览”中。",
             "overwrite": "覆盖现有文件",
@@ -1069,7 +1090,8 @@
         "studios_found": "找到{count} 个工作室",
         "tags_found": "找到{count} 个标签",
         "scrape_results_missing": "丢失",
-        "edit_entity_count_title": "编辑{count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}"
+        "edit_entity_count_title": "编辑{count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "dont_show_again": "不要再显示此警告"
     },
     "dimensions": "大小",
     "director": "导演",
@@ -1107,7 +1129,7 @@
         "select_youngest": "选择重复组中最新文件",
         "only_select_matching_codecs": "仅在重复组中所有编解码器匹配时选择"
     },
-    "duplicated_phash": "重复的（感知码）",
+    "duplicated_phash": "重复的（感知哈希值）",
     "duration": "时长",
     "effect_filters": {
         "aspect": "比例",
@@ -1227,14 +1249,14 @@
             "age": "{age} {years_old}",
             "age_context": "制作时 {age} {years_old}"
         },
-        "phash": "感知码PHash",
+        "phash": "感知哈希值",
         "play_count": "播放量",
         "play_duration": "播放长度",
         "stream": "视频流地址",
         "video_codec": "视频编码",
         "o_count": "高潮次数",
         "md5": "MD5 校验值",
-        "oshash": "oshash值",
+        "oshash": "OSHash",
         "oshash_meaning": "OpenSubtitles 哈希值",
         "phash_meaning": "感知哈希值"
     },
@@ -1258,7 +1280,7 @@
     "parent_tags": "上级标签",
     "part_of": "{parent} 的部分",
     "path": "路径",
-    "perceptual_similarity": "感知相似度（pHash码）",
+    "perceptual_similarity": "感知相似度（感知哈希值）",
     "performer": "演员",
     "performer_age": "演员年龄",
     "performer_count": "演员数量",
@@ -1289,7 +1311,10 @@
         "update_performer": "更新演员资料",
         "update_performers": "更新演员们资料",
         "updating_untagged_performers_description": "更新尚未标记的演员，会尝试搜寻没有stashid的演员并更新其元数据。",
-        "performer_names_or_stashids_separated_by_comma": "用逗号分隔的演员名称或Stash编号"
+        "performer_names_or_stashids_separated_by_comma": "用逗号分隔的演员名称或Stash编号",
+        "configure_fields": "配置字段",
+        "field_options": "字段选项",
+        "field_options_description": "选择每个字段的更新方式：覆盖替换现有数据，合并添加到现有数据，跳过保持不变。"
     },
     "performer_tags": "演员标签",
     "performers": "演员",
@@ -1337,7 +1362,8 @@
             "generated_directory": "生成资料的路径",
             "nearly_there": "就快好了！",
             "stash_library_directories": "Stash库的路径",
-            "blobs_use_database": "<数据库使用中>"
+            "blobs_use_database": "<数据库使用中>",
+            "password_set_warning": "注意：在系统创建后，需要输入凭据。"
         },
         "creating": {
             "creating_your_system": "建立你的系统当中"
@@ -1356,7 +1382,7 @@
         "github_repository": "Github 代码仓库",
         "migrate": {
             "backup_database_path_leave_empty_to_disable_backup": "数据库备份路径 (留空代表不备份):",
-            "backup_recommended": "在迁移前推荐你先备份现有数据库. 我们可以帮你做一备份到<code>{defaultBackupPath}</code>.",
+            "backup_recommended": "建议您在迁移之前备份现有数据库。我们可以帮您完成这项操作，将您的数据库复制到 <code>{defaultBackupPath}</code>。",
             "migrating_database": "数据库迁移当中",
             "migration_failed": "迁移失败",
             "migration_failed_error": "迁移数据库时遇到以下错误:",
@@ -1365,7 +1391,7 @@
             "migration_notes": "迁移历史",
             "migration_required": "需要进行数据库迁移",
             "perform_schema_migration": "进行数据库结构迁移",
-            "schema_too_old": "你当前的stash数据库结构是版本<strong>{databaseSchema}</strong>，需要迁移到版本<strong>{appSchema}</strong>. 这版本的Stash无法在没有迁移的数据库上工作。如果你不希望进行数据迁移，那你必须使用旧版本以适应你的数据库结构。"
+            "schema_too_old": "您当前的 Stash 数据库架构版本为<strong>{databaseSchema}</strong>，需要迁移到版本<strong>{appSchema}</strong>。如果不进行数据库迁移，此版本的 Stash 将无法正常工作。如果您不想进行迁移，您需要将 Stash 降级到与您的数据库架构版本相匹配的版本。"
         },
         "paths": {
             "database_filename_empty_for_default": "数据库文件名 (留空则用默认名)",
@@ -1375,13 +1401,13 @@
             "set_up_your_paths": "设立你的路径",
             "stash_alert": "没有选择任何影像库的路径。Stash将不会扫描到任何媒体文件。你确认吗？",
             "where_can_stash_store_blobs": "Stash 在哪里可以存储数据库二进制数据？",
-            "where_can_stash_store_blobs_description": "Stash可以将场景封面、表演者、工作室和标记图像等二进制数据存储在数据库或文件系统中。默认情况下，它会将这些数据存储在包含您的配置文件的目录内的子目录<code>blob</code>中的文件系统中。如果您想更改此设置，请输入绝对或相对（到当前工作目录）路径。如果Stash不存在，它将创建此目录。",
-            "where_can_stash_store_blobs_description_addendum": "或者，如果要将此数据存储在数据库中，可以将此字段留空<strong>注意：</strong>这将增加数据库文件的大小，并增加数据库迁移时间。",
+            "where_can_stash_store_blobs_description": "Stash 可以存储二进制数据，包括短片封面图片、表演者图片、工作室图片和标签图片，这些数据可以选择存储在数据库或文件系统中。默认情况下，它们会被存储在包含配置文件的目录下的 <code>blob</code> 子目录中。如果您想更改存储位置，请输入一个绝对路径或相对于当前工作目录的相对路径。如果该目录尚不存在，Stash 将为您创建。",
+            "where_can_stash_store_blobs_description_addendum": "或者，您也可以选择将这些数据存储在数据库中。<strong>注意：</strong>这样做会导致您的数据库文件变大，并且会增加数据库迁移所需的时间。",
             "where_can_stash_store_cache_files": "Stash可以在哪里存储缓存文件？",
-            "where_can_stash_store_cache_files_description": "为了使HLS/DASH实时转码等功能正常运行，Stash需要一个临时文件的缓存目录。默认情况下，Stash将在包含您的配置文件的目录中创建一个<code>cache</code>目录。如果您想更改此设置，请输入绝对或相对（与当前工作目录）路径。如果Stash不存在，它将创建此目录。",
+            "where_can_stash_store_cache_files_description": "为了实现某些功能，例如 HLS/DASH 实时转码，Stash 需要用于存储临时文件的缓存目录。默认情况下，Stash 会在包含您的配置文件的目录中创建名为 <code>cache</code> 的缓存目录。如果您想更改缓存目录的位置，请输入绝对路径或相对于当前工作目录的相对路径。如果该目录尚不存在，Stash 将为您创建。",
             "where_can_stash_store_its_database": "在哪里可以储存Stash的数据库？",
-            "where_can_stash_store_its_database_description": "Stash 使用 sqlite 数据库来存放你的内容的元数据。默认情况下，会建立<code>stash-go.sqlite</code>在包含有你配置文件的目录里。如果你想改动，请输入一个绝对，或者相对（对于当前目录）的文件名。",
-            "where_can_stash_store_its_database_warning": "警告：<strong>不支持</strong>将数据库存储在运行 Stash 的不同系统上（例如，在另一台计算机上运行 Stash 服务器时将数据库存储到 NAS 上）！SQLite 不适合在网络上使用，尝试这样做很容易导致整个数据库损坏。",
+            "where_can_stash_store_its_database_description": "Stash 使用 SQLite 数据库来存储您的内容元数据。默认情况下，它将创建为包含您的配置文件的目录中的 <code>stash-go.sqlite</code> 文件。如果您想更改此设置，请输入绝对路径或相对路径（相对于当前工作目录）的文件名。",
+            "where_can_stash_store_its_database_warning": "警告：在不同于运行 Stash 的系统上存储数据库（例如，在NAS上存储数据库而在另一台计算机上运行 Stash 服务器）是<strong>不受支持</strong>的！SQLite 不适合在网络中使用，尝试这样做很容易导致您的整个数据库损坏。",
             "where_can_stash_store_its_generated_content": "哪里可以存放Stash产生的资料？",
             "where_can_stash_store_its_generated_content_description": "为了可以提供缩图，预览和浏览图，Stash生成图片和视频。同时也包括将不支持的文件转码后的视频。默认情况下，Stash会建立一个<code>generated</code>文件夹在含有你配置文件的目录中。如果你要修改生成媒体的地方，请输入一个绝对，或者相对(对于当前工作目录)的路径。如果此目录不存在，Stash会自动建立它。",
             "where_is_your_porn_located": "你的内容存放在哪里？",
@@ -1423,7 +1449,13 @@
             "next_step": "当你准备好建立一个新系统时，点击“下一个”。",
             "unable_to_locate_specified_config": "如果你看到这，就意味着Stash无法用命令行或者环境变量找到配置文件。这个向导将指引你去建立一个新的配置。"
         },
-        "welcome_to_stash": "欢迎使用Stash"
+        "welcome_to_stash": "欢迎使用Stash",
+        "credentials": {
+            "description": "请输入您想要用来登录Stash系统的用户名和密码。如果您不想通过用户名和密码来访问系统，可以不填写这些信息。但是，如果您是从公共互联网访问系统，则需要提供登录信息。",
+            "heading": "设置凭证",
+            "password_invalid": "如果设置了用户名则密码不可为空。",
+            "username_invalid": "用户名不能包含开头或结尾的空格。"
+        }
     },
     "stash_id": "Stash ID",
     "stash_id_endpoint": "Stash ID 端点",
@@ -1482,7 +1514,8 @@
         "merged_performers": "合并的表演者",
         "clipboard_access_denied": "剪贴板访问受阻。检查你浏览器的权限",
         "clipboard_image_pasted": "粘贴剪贴板图像",
-        "clipboard_no_image": "没有图像在剪贴板中找到"
+        "clipboard_no_image": "没有图像在剪贴板中找到",
+        "screenshot_generated": "截图已生成"
     },
     "total": "总计",
     "true": "是",
@@ -1654,8 +1687,8 @@
     "duplicated": "重复",
     "duplicated_stash_id": "重复（Stash ID）",
     "duplicated_title": "重复（标题）",
-    "career_end": "引退时间",
-    "career_start": "入行时间",
+    "career_end": "演艺生涯结束",
+    "career_start": "演艺生涯开始",
     "tag_tagger": {
         "add_new_tags": "增加新标签",
         "any_names_entered_will_be_queried": "输入的任何名字都会从远程 Stash-Box 实例查询，并在找到后添加。只有完全匹配才算匹配。",
@@ -1685,7 +1718,8 @@
             "create_parent_desc": "从 stash-box 类别中创建缺失的父母标签，或用完全匹配的名称为现有的父母标签添加标签",
             "create_parent_label": "创建父母标签"
         },
-        "create_or_tag_parent_tags": "创建缺失或标记已存在的父母标签"
+        "create_or_tag_parent_tags": "创建缺失或标记已存在的父母标签",
+        "parent_tag_no_remote_site_id_warning": "双亲标签没有远程站点 ID，也不会与stash-box实例关联。"
     },
     "tagger": {
         "config": {
@@ -1695,6 +1729,13 @@
             "fields_will_not_be_changed": "更新 {entity} 时这些字段将不变。",
             "no_fields_are_excluded": "没有字段被排除",
             "no_instances_found": "没有找到实例"
+        },
+        "performers": {
+            "birthdate": "匹配到的演员出生日期不一致。",
+            "country": "匹配到的演员国籍不同。",
+            "ethnicity": "匹配到的演员族裔不一致。",
+            "gender": "匹配到的演员性别不一致。",
+            "stash_mismatch": "匹配到的演员 stash-id 不一致。"
         }
     },
     "unsupported_criteria": "未支持标准：{criteria}",
@@ -1704,5 +1745,11 @@
     "sub_folders": "子文件夹",
     "empty_value": "空的",
     "refer_to": "请看 {link}。",
-    "scenes_size": "场景大小"
+    "scenes_size": "场景大小",
+    "related_studios": "相关",
+    "sub_group_description": "子集合介绍",
+    "o_count_all": "O 计数（所有）",
+    "performer_count_all": "演员计数（所有）",
+    "scene_marker_count": "短片标记计数",
+    "stash_id_endpoint_any": "任意端点"
 }

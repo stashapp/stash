@@ -10,9 +10,11 @@ interface IHoverPopover {
   content: JSX.Element[] | JSX.Element | string;
   className?: string;
   placement?: OverlayProps["placement"];
+  popperConfig?: OverlayProps["popperConfig"];
   onOpen?: () => void;
   onClose?: () => void;
   target?: React.RefObject<HTMLElement>;
+  children?: React.ReactNode;
 }
 
 export const HoverPopover: React.FC<IHoverPopover> = PatchComponent(
@@ -24,14 +26,28 @@ export const HoverPopover: React.FC<IHoverPopover> = PatchComponent(
     children,
     className,
     placement = "top",
+    popperConfig,
     onOpen,
     onClose,
     target,
   }) => {
     const [show, setShow] = useState(false);
-    const triggerRef = useRef<HTMLDivElement>(null);
+    const [triggerElement, setTriggerElement] = useState<HTMLDivElement | null>(
+      null
+    );
     const enterTimer = useRef<number>();
     const leaveTimer = useRef<number>();
+    const popoverId = useRef(
+      `hover-popover-${Math.random().toString(36).slice(2)}`
+    );
+
+    const setTriggerRef = useCallback((element: HTMLDivElement | null) => {
+      setTriggerElement(element);
+    }, []);
+
+    const getOverlayTarget = useCallback(() => {
+      return target?.current ?? triggerElement;
+    }, [target, triggerElement]);
 
     const handleMouseEnter = useCallback(() => {
       window.clearTimeout(leaveTimer.current);
@@ -63,20 +79,22 @@ export const HoverPopover: React.FC<IHoverPopover> = PatchComponent(
           className={className}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-          ref={triggerRef}
+          ref={setTriggerRef}
         >
           {children}
         </div>
-        {triggerRef.current && (
+        {getOverlayTarget() && (
           <Overlay
             show={show}
             placement={placement}
-            target={target?.current ?? triggerRef.current}
+            target={getOverlayTarget}
+            container={document.body}
+            popperConfig={popperConfig}
           >
             <Popover
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
-              id="popover"
+              id={popoverId.current}
               className="hover-popover-content"
             >
               {content}
@@ -89,10 +107,9 @@ export const HoverPopover: React.FC<IHoverPopover> = PatchComponent(
 );
 
 // convenience component to set the padding on popover content
-export const PopoverCard: React.FC<{ className?: string }> = ({
-  className,
-  children,
-}) => {
+export const PopoverCard: React.FC<
+  React.PropsWithChildren<{ className?: string }>
+> = ({ className, children }) => {
   return <div className={`popover-card ${className}`}>{children}</div>;
 };
 

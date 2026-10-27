@@ -181,3 +181,12 @@ func GetExeName(base string) string {
 	}
 	return base
 }
+
+// NormalizePaths returns a new slice with NormalizePath applied to each path.
+func NormalizePaths(paths []string) []string {
+	ret := make([]string, len(paths))
+	for i, p := range paths {
+		ret[i] = NormalizePath(p)
+	}
+	return ret
+}

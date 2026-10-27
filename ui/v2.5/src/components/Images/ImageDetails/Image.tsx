@@ -80,7 +80,7 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
   }
 
   async function onRescan() {
-    if (!image || !image.visual_files.length) {
+    if (!image?.visual_files.length) {
       return;
     }
 
@@ -379,13 +379,13 @@ const ImagePage: React.FC<IProps> = ({ image }) => {
       <div className="image-container">
         {image.visual_files.length > 0 && (
           <ImageView
-            loop={image.visual_files[0].__typename == "VideoFile"}
-            autoPlay={image.visual_files[0].__typename == "VideoFile"}
-            playsInline={image.visual_files[0].__typename == "VideoFile"}
-            controls={image.visual_files[0].__typename == "VideoFile"}
+            loop={image.visual_files[0].__typename === "VideoFile"}
+            autoPlay={image.visual_files[0].__typename === "VideoFile"}
+            playsInline={image.visual_files[0].__typename === "VideoFile"}
+            controls={image.visual_files[0].__typename === "VideoFile"}
             className="m-sm-auto no-gutter image-image"
             style={
-              image.visual_files[0].__typename == "VideoFile"
+              image.visual_files[0].__typename === "VideoFile"
                 ? { width: "100%", height: "100%" }
                 : {}
             }

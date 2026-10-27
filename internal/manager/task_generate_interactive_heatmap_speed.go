@@ -45,6 +45,9 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 	r := t.repository
 	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		primaryFile := t.Scene.Files.Primary()
+		if primaryFile == nil {
+			return nil
+		}
 		primaryFile.InteractiveSpeed = &median
 		if err := r.File.Update(ctx, primaryFile); err != nil {
 			return fmt.Errorf("updating interactive speed for %s: %w", primaryFile.Path, err)

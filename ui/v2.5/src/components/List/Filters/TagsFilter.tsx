@@ -47,7 +47,9 @@ function queryVariables(query: string, f?: ListFilterModel) {
       // TODO - look for same in AND?
     }
 
-    setObjectFilter(tagFilter, f.mode, filterOutput);
+    setObjectFilter(tagFilter, f.mode, filterOutput, {
+      hierarchicalCounts: true,
+    });
   }
 
   return makeQueryVariables(query, { tag_filter: tagFilter });
