@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { useHistory } from "react-router-dom";
 import cx from "classnames";
@@ -55,6 +61,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = React.memo(
     volume,
   }) => {
     const videoEl = useRef<HTMLVideoElement>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
 
     useEffect(() => {
       const observer = new IntersectionObserver((entries) => {
@@ -79,7 +86,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = React.memo(
     return (
       <div className={cx("scene-card-preview", { portrait: isPortrait })}>
         <img
-          className="scene-card-preview-image"
+          className={cx("scene-card-preview-image", { "d-none": isPlaying })}
           loading="lazy"
           src={image}
           alt=""
@@ -93,6 +100,11 @@ export const ScenePreview: React.FC<IScenePreviewProps> = React.memo(
           preload="none"
           ref={videoEl}
           src={video}
+          onLoadStart={() => setIsPlaying(false)}
+          onPlaying={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onEnded={() => setIsPlaying(false)}
+          onError={() => setIsPlaying(false)}
         />
         <PreviewScrubber
           vttPath={vttPath}
