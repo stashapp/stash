@@ -55,6 +55,9 @@ export interface IUIConfig {
 
   abbreviateCounters?: boolean;
 
+  // if true, the scene edit form saves when a changed selection field loses focus, or right after a stash ID or a calendar date is picked
+  autoSaveConfirmedFields?: boolean;
+
   ratingSystemOptions?: RatingSystemOptions;
 
   // if true a background image will be display on header

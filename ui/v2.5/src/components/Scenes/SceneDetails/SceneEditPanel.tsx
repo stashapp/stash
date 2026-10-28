@@ -10,6 +10,7 @@ import {
   SplitButton,
 } from "react-bootstrap";
 import Mousetrap from "mousetrap";
+import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import {
@@ -28,6 +29,7 @@ import { addUpdateStashID, getStashIDs } from "src/utils/stashIds";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { useConfigurationContext } from "src/hooks/Config";
+import { IUIConfig } from "src/core/config";
 import { IGroupEntry, SceneGroupTable } from "./SceneGroupTable";
 import {
   faSearch,
@@ -147,6 +149,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
+  // keep the form mounted while auto-saving so the scroll position stays
+  const [isSaving, setIsSaving] = useState(false);
 
   const schema = yup.object({
     title: yup.string().ensure(),
@@ -217,6 +221,40 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   const { tags, updateTagsStateFromScraper, resetTagsState, tagsControl } =
     useTagsEdit(scene.tags, (ids) => formik.setFieldValue("tag_ids", ids));
+
+  // auto-save only covers explicit selections, never a new scene
+  const autoSaveEnabled =
+    !isNew &&
+    ((stashConfig?.ui as IUIConfig)?.autoSaveConfirmedFields ?? false);
+
+  function autoSave() {
+    if (autoSaveEnabled && !isSaving) {
+      formik.submitForm();
+    }
+  }
+
+  // save once focus leaves the field, so several picks in a row are one save
+  function autoSaveField(field: keyof InputValues, control: React.ReactNode) {
+    return (
+      <div
+        onBlur={(e) => {
+          const next = e.relatedTarget as HTMLElement | null;
+          // Save and Delete act on the form themselves
+          if (
+            e.currentTarget.contains(next) ||
+            next?.closest(".edit-buttons")
+          ) {
+            return;
+          }
+          if (!isEqual(formik.values[field], formik.initialValues[field])) {
+            autoSave();
+          }
+        }}
+      >
+        {control}
+      </div>
+    );
+  }
 
   const coverImagePreview = useMemo(() => {
     const sceneImage = scene.paths?.screenshot;
@@ -304,10 +342,16 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }
 
   async function onSave(input: InputValues, andNew?: boolean) {
-    setIsLoading(true);
+    if (autoSaveEnabled) {
+      setIsSaving(true);
+    } else {
+      setIsLoading(true);
+    }
     try {
       await onSubmit(input, andNew);
-      formik.resetForm();
+      if (!autoSaveEnabled) {
+        formik.resetForm();
+      }
       if (andNew) {
         setGalleries(
           scene.galleries?.map((g) => ({
@@ -325,6 +369,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     } catch (e) {
       Toast.error(e);
     }
+    setIsSaving(false);
     setIsLoading(false);
   }
 
@@ -622,6 +667,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       "stash_ids",
       addUpdateStashID(formik.values.stash_ids, item)
     );
+    autoSave();
   }
 
   const image = useMemo(() => {
@@ -691,7 +737,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function renderGalleriesField() {
     const title = intl.formatMessage({ id: "galleries" });
-    const control = (
+    const control = autoSaveField(
+      "gallery_ids",
       <GallerySelect
         values={galleries}
         onSelect={(items) => onSetGalleries(items)}
@@ -704,7 +751,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function renderStudioField() {
     const title = intl.formatMessage({ id: "studio" });
-    const control = (
+    const control = autoSaveField(
+      "studio_id",
       <StudioSelect
         onSelect={(items) => onSetStudio(items.length > 0 ? items[0] : null)}
         values={studio ? [studio] : []}
@@ -729,7 +777,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
     );
 
     const title = intl.formatMessage({ id: "performers" });
-    const control = (
+    const control = autoSaveField(
+      "performer_ids",
       <PerformerSelect
         isMulti
         onSelect={onSetPerformers}
@@ -754,7 +803,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function renderGroupsField() {
     const title = intl.formatMessage({ id: "groups" });
-    const control = (
+    const control = autoSaveField(
+      "groups",
       <SceneGroupTable value={groupEntries} onUpdate={onSetGroupEntries} />
     );
 
@@ -763,7 +813,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function renderTagsField() {
     const title = intl.formatMessage({ id: "tags" });
-    return renderField("tag_ids", title, tagsControl(), fullWidthProps);
+    const control = autoSaveField("tag_ids", tagsControl());
+
+    return renderField("tag_ids", title, control, fullWidthProps);
   }
 
   function renderDetailsField() {
@@ -784,8 +836,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   return (
     <div id="scene-edit-details">
+      {/* a save started by leaving a field finishes after the page changes */}
       <Prompt
-        when={formik.dirty}
+        when={formik.dirty && !isSaving}
         message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
       />
 
@@ -814,7 +867,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 className="edit-button"
                 variant="primary"
                 disabled={
-                  !isEqual(formik.errors, {}) || customFieldsError !== undefined
+                  isSaving ||
+                  !isEqual(formik.errors, {}) ||
+                  customFieldsError !== undefined
                 }
                 title={intl.formatMessage({ id: "actions.save" })}
                 onClick={() => formik.submitForm()}
@@ -829,6 +884,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 variant="primary"
                 disabled={
                   (!isNew && !formik.dirty) ||
+                  isSaving ||
                   !isEqual(formik.errors, {}) ||
                   customFieldsError !== undefined
                 }
@@ -841,6 +897,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
               <Button
                 className="edit-button"
                 variant="danger"
+                disabled={isSaving}
                 onClick={() => onDelete()}
               >
                 <FormattedMessage id="actions.delete" />
@@ -869,7 +926,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
             </div>
           )}
         </Row>
-        <Row className="form-container px-3">
+        <Row className={cx("form-container px-3", { saving: isSaving })}>
           <Col lg={7} xl={12}>
             {renderInputField("title")}
             {renderInputField("code", "text", "scene_code")}
@@ -882,8 +939,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
               urlProps
             )}
 
-            {renderDateField("date")}
-            {renderDateField("production_date")}
+            {renderDateField("date", undefined, undefined, autoSave)}
+            {renderDateField("production_date", undefined, undefined, autoSave)}
             {renderInputField("director")}
 
             {renderGalleriesField()}
