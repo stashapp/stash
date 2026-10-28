@@ -143,6 +143,18 @@
 | `Escape` | Close lightbox |
 | `d d` | Delete current image |
 
+## Lightbox touch gestures
+
+| Gesture | Action |
+|-------------------|--------|
+| `Swipe left` | Next image |
+| `Swipe right` | Previous image |
+| `Swipe up` | Delete current image |
+| `Swipe down` | Close the lightbox |
+| `Double-tap` | Toggle zoom |
+| `Pinch` | Zoom in/out |
+| `Drag (while zoomed in)` | Pan image |
+
 ## Groups page shortcuts
 
 | Keyboard sequence | Action |
