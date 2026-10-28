@@ -189,11 +189,16 @@ Plugin tasks may accept an input from the stash server. This input is encoded ac
     },
     "args": {
         "argKey": "argValue"
+    },
+    "settings": {
+        "settingKey": "configuredValue"
     }
 }
 ```
 
 The `server_connection` field contains all the information needed for a plugin to access the parent stash server, if necessary.
+
+The `settings` field contains the plugin's current configured values. If no values have been configured, it is an empty object. Declared settings without a configured value are not included.
 
 ### Plugin task output
 
