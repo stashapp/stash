@@ -13,6 +13,35 @@ query FindRootFoldersForSelect($zip_file_filter: MultiCriterionInput) {
   }
 }
 
+query FindRootFoldersForBrowser {
+  findFolders(
+    filter: { per_page: -1, sort: "path", direction: ASC }
+    folder_filter: {
+      parent_folder: { modifier: IS_NULL }
+      zip_file: { modifier: IS_NULL }
+    }
+  ) {
+    count
+    folders {
+      ...FolderBrowserFolderData
+    }
+  }
+}
+
+query FindFolderForBrowser($id: ID!) {
+  findFolder(id: $id) {
+    ...FolderBrowserFolderData
+
+    parent_folders {
+      ...FolderBrowserFolderData
+    }
+
+    sub_folders {
+      ...FolderBrowserFolderData
+    }
+  }
+}
+
 query FindFoldersForQuery(
   $filter: FindFilterType
   $folder_filter: FolderFilterType
