@@ -149,7 +149,11 @@ export class Interactive {
     this._scriptOffset = offset;
   }
 
-  async uploadScript(funscriptPath: string, apiKey?: string) {
+  async uploadScript(
+    funscriptPath: string,
+    apiKey?: string,
+    interactiveCsvPath?: string
+  ) {
     if (!(this._handy.connectionKey && funscriptPath)) {
       return;
     }
@@ -157,11 +161,15 @@ export class Interactive {
     let funscriptUrl = "";
 
     if (this._useStashHostedFunscript) {
-      funscriptUrl = funscriptPath.replace("/funscript", "/interactive_csv");
-      if (typeof apiKey !== "undefined" && apiKey !== "") {
-        const url = new URL(funscriptUrl);
-        url.searchParams.append("apikey", apiKey);
-        funscriptUrl = url.toString();
+      if (interactiveCsvPath) {
+        funscriptUrl = interactiveCsvPath;
+      } else {
+        funscriptUrl = funscriptPath.replace("/funscript", "/interactive_csv");
+        if (typeof apiKey !== "undefined" && apiKey !== "") {
+          const url = new URL(funscriptUrl);
+          url.searchParams.append("apikey", apiKey);
+          funscriptUrl = url.toString();
+        }
       }
     } else {
       const csv = await fetch(funscriptPath)

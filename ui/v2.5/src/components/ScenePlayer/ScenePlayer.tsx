@@ -465,7 +465,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
     useEffect(() => {
       if (scene.interactive && interactiveInitialised) {
         interactiveReady.current = false;
-        uploadScript(scene.paths.funscript || "").then(() => {
+        uploadScript(
+          scene.paths.funscript || "",
+          scene.paths.interactive_csv || undefined
+        ).then(() => {
           interactiveReady.current = true;
         });
       }
@@ -474,6 +477,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       interactiveInitialised,
       scene.interactive,
       scene.paths.funscript,
+      scene.paths.interactive_csv,
     ]);
 
     // play the script if video started before script upload finished
