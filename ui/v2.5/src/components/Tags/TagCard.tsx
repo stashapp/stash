@@ -12,6 +12,7 @@ import { Icon } from "../Shared/Icon";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import cx from "classnames";
 import { useTagUpdate } from "src/core/StashService";
+import { RatingBanner } from "../Shared/RatingBanner";
 
 interface IProps {
   tag: GQL.TagDataFragment | GQL.TagListDataFragment;
@@ -120,7 +121,19 @@ const TagCardOverlays: React.FC<IProps> = PatchComponent(
       }
     }
 
-    return <>{renderFavoriteIcon()}</>;
+    function maybeRenderRatingBanner() {
+      if (tag.rating100 == null) {
+        return;
+      }
+      return <RatingBanner rating={tag.rating100} />;
+    }
+
+    return (
+      <>
+        {renderFavoriteIcon()}
+        {maybeRenderRatingBanner()}
+      </>
+    );
   }
 );
 

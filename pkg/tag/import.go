@@ -48,6 +48,10 @@ func (i *Importer) PreImport(ctx context.Context) error {
 		UpdatedAt:     i.Input.UpdatedAt.GetTime(),
 	}
 
+	if i.Input.Rating != 0 {
+		i.tag.Rating = &i.Input.Rating
+	}
+
 	var err error
 	if len(i.Input.Image) > 0 {
 		i.imageData, err = utils.ProcessBase64Image(i.Input.Image)

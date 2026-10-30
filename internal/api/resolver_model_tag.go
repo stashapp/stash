@@ -14,6 +14,10 @@ import (
 	"github.com/stashapp/stash/pkg/studio"
 )
 
+func (r *tagResolver) Rating100(ctx context.Context, obj *models.Tag) (*int, error) {
+	return obj.Rating, nil
+}
+
 func (r *tagResolver) Parents(ctx context.Context, obj *models.Tag) (ret []*models.Tag, err error) {
 	if !obj.ParentIDs.Loaded() {
 		if err := r.withReadTxn(ctx, func(ctx context.Context) error {

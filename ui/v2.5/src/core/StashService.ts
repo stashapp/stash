@@ -2084,6 +2084,7 @@ const tagMutationImpactedTypeFields = {
 };
 
 const tagMutationImpactedQueries = [
+  GQL.FindTagDocument, // tag details
   GQL.FindGroupsDocument, // filter by tags
   GQL.FindSceneMarkersDocument, // filter by tags
   GQL.FindScenesDocument, // filter by tags

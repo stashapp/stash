@@ -15,6 +15,7 @@ type Tag struct {
 	SortName      string                 `json:"sort_name,omitempty"`
 	Description   string                 `json:"description,omitempty"`
 	Favorite      bool                   `json:"favorite,omitempty"`
+	Rating        int                    `json:"rating,omitempty"`
 	Aliases       []string               `json:"aliases,omitempty"`
 	Image         string                 `json:"image,omitempty"`
 	Parents       []string               `json:"parents,omitempty"`

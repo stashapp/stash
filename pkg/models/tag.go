@@ -12,6 +12,8 @@ type TagFilterType struct {
 	Favorite *bool `json:"favorite"`
 	// Filter by tag description
 	Description *StringCriterionInput `json:"description"`
+	// Filter by rating expressed as 1-100
+	Rating100 *IntCriterionInput `json:"rating100"`
 	// Filter to only include tags missing this property
 	IsMissing *string `json:"is_missing"`
 	// Filter by number of scenes with this tag
