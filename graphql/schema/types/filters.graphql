@@ -425,6 +425,8 @@ input GroupFilterType {
   NOT: GroupFilterType
 
   name: StringCriterionInput
+  "Filter by aliases"
+  aliases: StringCriterionInput
   director: StringCriterionInput
   synopsis: StringCriterionInput
 
