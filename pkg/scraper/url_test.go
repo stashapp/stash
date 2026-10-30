@@ -38,29 +38,39 @@ func TestIsJSONMimeType(t *testing.T) {
 	}
 }
 
-func TestJSONDocumentTrackerOnlyRecordsFirstDocument(t *testing.T) {
-	t.Run("first document is JSON, later ones don't override it", func(t *testing.T) {
+func TestJSONDocumentTrackerTracksMainFrame(t *testing.T) {
+	t.Run("a later main-frame document overrides an earlier one", func(t *testing.T) {
+		// e.g. a JS redirect or challenge page settling before landing on JSON.
 		var tracker jsonDocumentTracker
+		tracker.setMainFrame("frame-1")
 
-		tracker.markDocument("req-1", "application/json")
-		tracker.markDocument("req-2", "application/json")
-		tracker.markDocument("req-3", "text/html")
+		tracker.markDocument("frame-1", "req-challenge", "text/html")
+		tracker.markDocument("frame-1", "req-final", "application/json")
 
-		if requestID, isJSON := tracker.mainDocument(); !isJSON || requestID != "req-1" {
-			t.Fatalf("mainDocument() = (%q, %v), want (%q, true)", requestID, isJSON, "req-1")
+		if requestID, isJSON := tracker.mainDocument(); !isJSON || requestID != "req-final" {
+			t.Fatalf("mainDocument() = (%q, %v), want (%q, true)", requestID, isJSON, "req-final")
 		}
 	})
 
-	t.Run("first document is HTML, a later JSON response doesn't override it", func(t *testing.T) {
-		// e.g. an iframe firing a later JSON Document response must not
-		// override the main page's HTML.
+	t.Run("an iframe's document is ignored", func(t *testing.T) {
 		var tracker jsonDocumentTracker
+		tracker.setMainFrame("frame-main")
 
-		tracker.markDocument("req-main-page", "text/html")
-		tracker.markDocument("req-iframe", "application/json")
+		tracker.markDocument("frame-main", "req-main-page", "text/html")
+		tracker.markDocument("frame-iframe", "req-iframe", "application/json")
 
 		if requestID, isJSON := tracker.mainDocument(); isJSON || requestID != "req-main-page" {
 			t.Fatalf("mainDocument() = (%q, %v), want (%q, false)", requestID, isJSON, "req-main-page")
+		}
+	})
+
+	t.Run("documents before the main frame is known are ignored", func(t *testing.T) {
+		var tracker jsonDocumentTracker
+
+		tracker.markDocument("", "req-early", "application/json")
+
+		if requestID, isJSON := tracker.mainDocument(); isJSON || requestID != "" {
+			t.Fatalf(`mainDocument() = (%q, %v), want ("", false)`, requestID, isJSON)
 		}
 	})
 }
@@ -69,6 +79,7 @@ func TestJSONDocumentTrackerOnlyRecordsFirstDocument(t *testing.T) {
 // Fails under `go test -race` without the mutex.
 func TestJSONDocumentTrackerConcurrentAccess(t *testing.T) {
 	var tracker jsonDocumentTracker
+	tracker.setMainFrame("frame-1")
 
 	const n = 200
 	var wg sync.WaitGroup
@@ -77,7 +88,7 @@ func TestJSONDocumentTrackerConcurrentAccess(t *testing.T) {
 	for i := range n {
 		go func() {
 			defer wg.Done()
-			tracker.markDocument(network.RequestID(fmt.Sprintf("req-%d", i)), "application/json")
+			tracker.markDocument("frame-1", network.RequestID(fmt.Sprintf("req-%d", i)), "application/json")
 		}()
 		go func() {
 			defer wg.Done()

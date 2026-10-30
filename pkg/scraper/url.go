@@ -17,6 +17,7 @@ import (
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/fetch"
 	"github.com/chromedp/cdproto/network"
+	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
 	"github.com/enetx/g"
 	"github.com/enetx/surf"
@@ -30,12 +31,12 @@ const scrapeDefaultSleep = time.Second * 2
 
 var proxyAuthRE = regexp.MustCompile(`^(https?:\/\/)(([\P{Cc}]+):([\P{Cc}]+)@)?(([a-zA-Z0-9][a-zA-Z0-9.-]*)(:[0-9]{1,5})?)`)
 
-func loadURL(ctx context.Context, loadURL string, client *http.Client, def Definition, globalConfig GlobalConfig) (io.Reader, error) {
+func loadURL(ctx context.Context, loadURL string, client *http.Client, def Definition, globalConfig GlobalConfig, preferRawJSON bool) (io.Reader, error) {
 	driverOptions := def.DriverOptions
 	if driverOptions != nil {
 		switch {
 		case driverOptions.UseCDP:
-			return urlFromCDP(ctx, loadURL, *driverOptions, globalConfig)
+			return urlFromCDP(ctx, loadURL, *driverOptions, globalConfig, preferRawJSON)
 		case driverOptions.UseSurf:
 			return urlFromSurf(ctx, loadURL, *driverOptions, def, globalConfig)
 		}
@@ -165,7 +166,10 @@ func urlFromSurf(ctx context.Context, loadURL string, driverOptions scraperDrive
 // func urlFromCDP uses chrome cdp and DOM to load and process the url
 // if remote is set as true in the scraperConfig  it will try to use localhost:9222
 // else it will look for google-chrome in path
-func urlFromCDP(ctx context.Context, urlCDP string, driverOptions scraperDriverOptions, globalConfig GlobalConfig) (io.Reader, error) {
+//
+// preferRawJSON is true for JSON scrapers (read raw body) and false for
+// XPath scrapers (always need the HTML-wrapped OuterHTML view).
+func urlFromCDP(ctx context.Context, urlCDP string, driverOptions scraperDriverOptions, globalConfig GlobalConfig, preferRawJSON bool) (io.Reader, error) {
 	if !driverOptions.UseCDP {
 		return nil, fmt.Errorf("url shouldn't be fetched through CDP")
 	}
@@ -254,13 +258,13 @@ func urlFromCDP(ctx context.Context, urlCDP string, driverOptions scraperDriverO
 	var res string
 	headers := cdpHeaders(driverOptions)
 
-	// Track the main document so a JSON response can be read via its raw
-	// body instead of Chrome's HTML-wrapped OuterHTML view.
+	// Track the main frame's latest document for the raw-JSON-body path below.
+	// Main frame ID is set from the first action, once the target exists.
 	var jsonDoc jsonDocumentTracker
 	chromedp.ListenTarget(ctx, func(ev interface{}) {
 		if ev, ok := ev.(*network.EventResponseReceived); ok {
 			if ev.Type == network.ResourceTypeDocument {
-				jsonDoc.markDocument(ev.RequestID, ev.Response.MimeType)
+				jsonDoc.markDocument(ev.FrameID, ev.RequestID, ev.Response.MimeType)
 			}
 		}
 	})
@@ -299,6 +303,14 @@ func urlFromCDP(ctx context.Context, urlCDP string, driverOptions scraperDriverO
 	}
 
 	err := chromedp.Run(ctx,
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			tree, err := page.GetFrameTree().Do(ctx)
+			if err != nil {
+				return err
+			}
+			jsonDoc.setMainFrame(tree.Frame.ID)
+			return nil
+		}),
 		network.Enable(),
 		setCDPCookies(driverOptions),
 		printCDPCookies(driverOptions, "Cookies found"),
@@ -309,7 +321,7 @@ func urlFromCDP(ctx context.Context, urlCDP string, driverOptions scraperDriverO
 		chromedp.ActionFunc(func(ctx context.Context) error {
 			requestID, isJSON := jsonDoc.mainDocument()
 
-			if isJSON {
+			if preferRawJSON && isJSON {
 				body, err := network.GetResponseBody(requestID).Do(ctx)
 				if err != nil {
 					// e.g. evicted from Chrome's cache.
@@ -397,27 +409,33 @@ func isJSONMimeType(mimeType string) bool {
 		mimeType == "text/json"
 }
 
-// jsonDocumentTracker records the first Document response's request ID
-// and whether it's JSON. Iframes fire later Document responses too, so
-// only the first counts. Mutex-guarded: written on chromedp's event
-// goroutine, read from the action sequence.
+// jsonDocumentTracker records the main frame's latest Document response and
+// whether it was JSON, ignoring iframes. "Latest" lets this follow redirects
+// and challenge pages to wherever they land. Mutex-guarded: markDocument
+// runs on chromedp's event goroutine, the rest on the action sequence.
 type jsonDocumentTracker struct {
-	mutex     sync.Mutex
-	requestID network.RequestID
-	isJSON    bool
-	recorded  bool
+	mutex       sync.Mutex
+	mainFrameID cdp.FrameID
+	requestID   network.RequestID
+	isJSON      bool
 }
 
-// markDocument records requestID as the main document if no document has
-// been recorded yet. Subsequent calls after the first are no-ops.
-func (t *jsonDocumentTracker) markDocument(requestID network.RequestID, mimeType string) {
+// setMainFrame sets the frame ID markDocument should track.
+func (t *jsonDocumentTracker) setMainFrame(id cdp.FrameID) {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 
-	if t.recorded {
+	t.mainFrameID = id
+}
+
+// markDocument overwrites the tracked document if frameID is the main frame.
+func (t *jsonDocumentTracker) markDocument(frameID cdp.FrameID, requestID network.RequestID, mimeType string) {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	if t.mainFrameID == "" || frameID != t.mainFrameID {
 		return
 	}
-	t.recorded = true
 	t.requestID = requestID
 	t.isJSON = isJSONMimeType(mimeType)
 }
