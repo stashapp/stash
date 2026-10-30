@@ -103,6 +103,9 @@ ui:
     connect-src:
       - http://alloweddomain.com
 
+  # enable csp_ setting prefix for dynamic connect-src sources
+  csp-settings: true
+
 # map of setting names to be displayed in the plugins page in the UI
 settings:
   # internal name
@@ -130,6 +133,12 @@ The `exec`, `interface`, `errLog` and `tasks` fields are used only for plugins w
 
 The `settings` field is used to display plugin settings on the plugins page. Plugin settings can also be set using the graphql mutation `configurePlugin` - the settings set this way do _not_ need to be specified in the `settings` field unless they are to be displayed in the stock plugin settings UI.
 
+Settings whose key begins with `csp_` and whose value is a valid, concrete `http` or `https` URL are automatically added to the plugin's `connect-src` content security policy on the next page load. This is useful for plugins with a user-configurable backend endpoint: users can set the exact host in the plugin settings UI (or via `configurePlugin`) without editing the plugin configuration file, and the value survives plugin updates because it is stored in Stash's configuration rather than the plugin files.
+
+**This feature is opt-in.** The plugin must set `csp-settings: true` in its `ui` section (see below) to enable the `csp_` setting prefix. This prevents accidental namespace collisions with non-CSP settings.
+
+Only values that are valid `http`/`https` URLs with a host are accepted. Wildcard hosts, URLs containing whitespace, commas, or `;` characters, and other invalid values are ignored and logged, so a misconfigured setting cannot weaken or corrupt the page content security policy.
+
 ### UI configuration
 
 The `css` and `javascript` field values may be relative paths to the plugin configuration file, or
@@ -156,7 +165,10 @@ Mappings that try to go outside of the directory containing the plugin configura
 ignored.
 
 The `csp` field contains overrides to the content security policies. The URLs in `script-src`,
-`style-src` and `connect-src` will be added to the applicable content security policy.
+`style-src` and `connect-src` will be added to the applicable content security policy. In addition
+to the URLs listed here, if `csp-settings: true` is set in the `ui` section, any setting whose key
+begins with `csp_` and whose value is a valid `http`/`https` URL is also added to the plugin's
+`connect-src` policy (see the `settings` section above).
 
 See [External Plugins](/help/ExternalPlugins.md) for details for making plugins with external tasks.
 
