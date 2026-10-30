@@ -253,7 +253,10 @@ input IdentifyMetadataInput {
   "scene ids to identify"
   sceneIDs: [ID!]
 
-  "paths of scenes to identify - ignored if scene ids are set"
+  "gallery ids to identify"
+  galleryIDs: [ID!]
+
+  "paths of scenes/galleries to identify - ignored if scene/gallery ids are set"
   paths: [String!]
 }
 

@@ -149,6 +149,33 @@ func (g *Gallery) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
 	})
 }
 
+// UpdateInput constructs a GalleryUpdateInput using the populated fields in the GalleryPartial object.
+func (s GalleryPartial) UpdateInput(id int) GalleryUpdateInput {
+	var dateStr *string
+	if s.Date.Set {
+		d := s.Date.Value
+		v := d.String()
+		dateStr = &v
+	}
+
+	ret := GalleryUpdateInput{
+		ID:           strconv.Itoa(id),
+		Title:        s.Title.Ptr(),
+		Code:         s.Code.Ptr(),
+		Details:      s.Details.Ptr(),
+		Photographer: s.Photographer.Ptr(),
+		Urls:         s.URLs.Strings(),
+		Date:         dateStr,
+		Rating100:    s.Rating.Ptr(),
+		Organized:    s.Organized.Ptr(),
+		StudioID:     s.StudioID.StringPtr(),
+		TagIds:       s.TagIDs.IDStrings(),
+		PerformerIds: s.PerformerIDs.IDStrings(),
+	}
+
+	return ret
+}
+
 func (g Gallery) PrimaryChecksum() string {
 	// renamed from Checksum to prevent gqlgen from using it in the resolver
 	if p := g.Files.Primary(); p != nil {

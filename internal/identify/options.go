@@ -22,7 +22,9 @@ type Options struct {
 	Options *MetadataOptions `json:"options"`
 	// scene ids to identify
 	SceneIDs []string `json:"sceneIDs"`
-	// paths of scenes to identify - ignored if scene ids are set
+	// gallery ids to identify
+	GalleryIDs []string `json:"galleryIDs"`
+	// paths of scenes/galleries to identify - ignored if scene/gallery ids are set
 	Paths []string `json:"paths"`
 }
 
