@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/stashapp/stash/internal/autotag"
+	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
@@ -51,6 +51,35 @@ func (j *autoTagJob) isFileBasedAutoTag(input AutoTagMetadataInput) bool {
 }
 
 func (j *autoTagJob) autoTagFiles(ctx context.Context, progress *job.Progress, paths []string, performers, studios, tags bool) {
+	// Preload entity sets once. Each worker then matches against the
+	// in-memory set instead of paying a QueryForAutoTag roundtrip per file.
+	r := j.repository
+	preloadBegin := time.Now()
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
+		if performers {
+			if err := j.cache.PreloadPerformers(ctx, r.Performer); err != nil {
+				return fmt.Errorf("preloading performers: %w", err)
+			}
+		}
+		if studios {
+			if err := j.cache.PreloadStudios(ctx, r.Studio); err != nil {
+				return fmt.Errorf("preloading studios: %w", err)
+			}
+		}
+		if tags {
+			if err := j.cache.PreloadTags(ctx, r.Tag); err != nil {
+				return fmt.Errorf("preloading tags: %w", err)
+			}
+		}
+		return nil
+	}); err != nil {
+		if !job.IsCancelled(ctx) {
+			logger.Errorf("auto-tag preload error: %v", err)
+		}
+		return
+	}
+	logger.Infof("Preloaded auto-tag entities in %s", time.Since(preloadBegin))
+
 	t := autoTagFilesTask{
 		paths:      paths,
 		performers: performers,
@@ -545,25 +574,40 @@ func (t *autoTagFilesTask) processScenes(ctx context.Context) {
 		return
 	}
 
-	logger.Info("Auto-tagging scenes...")
+	workers := config.GetInstance().GetParallelTasksWithAutoDetection()
+	logger.Infof("Auto-tagging scenes (workers=%d)...", workers)
 
-	batchSize := 1000
+	const batchSize = 1000
+	const queueSize = batchSize * 4
 
-	findFilter := models.BatchFindFilter(batchSize)
+	findFilter := models.KeysetFindFilter(batchSize)
 	sceneFilter := t.makeSceneFilter()
-
 	r := t.repository
 
-	more := true
-	for more {
+	taskQueue := job.NewTaskQueue(ctx, t.progress, queueSize, workers)
+	defer taskQueue.Close()
+
+	var lastID, processed int
+	for {
+		filter := sceneFilter
+		if lastID != 0 {
+			filter = &models.SceneFilterType{
+				ID: &models.IntCriterionInput{
+					Value:    lastID,
+					Modifier: models.CriterionModifierGreaterThan,
+				},
+			}
+			filter.And = sceneFilter
+		}
+
 		var scenes []*models.Scene
 		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 			var err error
-			scenes, err = scene.Query(ctx, r.Scene, sceneFilter, findFilter)
+			scenes, err = scene.Query(ctx, r.Scene, filter, findFilter)
 			return err
 		}); err != nil {
 			if !job.IsCancelled(ctx) {
-				logger.Errorf("error querying scenes for auto-tag: %w", err)
+				logger.Errorf("error querying scenes for auto-tag: %v", err)
 			}
 			return
 		}
@@ -573,32 +617,28 @@ func (t *autoTagFilesTask) processScenes(ctx context.Context) {
 				logger.Info("Stopping auto-tag due to user request")
 				return
 			}
-
-			tt := autoTagSceneTask{
-				repository: r,
-				scene:      ss,
-				performers: t.performers,
-				studios:    t.studios,
-				tags:       t.tags,
-				cache:      t.cache,
-			}
-
-			var wg sync.WaitGroup
-			wg.Add(1)
-			go tt.Start(ctx, &wg)
-			wg.Wait()
-
-			t.progress.Increment()
+			taskQueue.Add(fmt.Sprintf("Auto-tagging %s", ss.DisplayName()), func(ctx context.Context) {
+				tt := autoTagSceneTask{
+					repository: r,
+					scene:      ss,
+					performers: t.performers,
+					studios:    t.studios,
+					tags:       t.tags,
+					cache:      t.cache,
+				}
+				tt.Start(ctx)
+				t.progress.Increment()
+			})
 		}
 
-		if len(scenes) != batchSize {
-			more = false
-		} else {
-			*findFilter.Page++
+		if len(scenes) < batchSize {
+			return
+		}
 
-			if *findFilter.Page%10 == 1 {
-				logger.Infof("Processed %d scenes...", (*findFilter.Page-1)*batchSize)
-			}
+		lastID = scenes[len(scenes)-1].ID
+		processed += len(scenes)
+		if processed%(batchSize*10) == 0 {
+			logger.Infof("Processed %d scenes...", processed)
 		}
 	}
 }
@@ -608,25 +648,40 @@ func (t *autoTagFilesTask) processImages(ctx context.Context) {
 		return
 	}
 
-	logger.Info("Auto-tagging images...")
+	workers := config.GetInstance().GetParallelTasksWithAutoDetection()
+	logger.Infof("Auto-tagging images (workers=%d)...", workers)
 
-	batchSize := 1000
+	const batchSize = 1000
+	const queueSize = batchSize * 4
 
-	findFilter := models.BatchFindFilter(batchSize)
+	findFilter := models.KeysetFindFilter(batchSize)
 	imageFilter := t.makeImageFilter()
-
 	r := t.repository
 
-	more := true
-	for more {
+	taskQueue := job.NewTaskQueue(ctx, t.progress, queueSize, workers)
+	defer taskQueue.Close()
+
+	var lastID, processed int
+	for {
+		filter := imageFilter
+		if lastID != 0 {
+			filter = &models.ImageFilterType{
+				ID: &models.IntCriterionInput{
+					Value:    lastID,
+					Modifier: models.CriterionModifierGreaterThan,
+				},
+			}
+			filter.And = imageFilter
+		}
+
 		var images []*models.Image
 		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 			var err error
-			images, err = image.Query(ctx, r.Image, imageFilter, findFilter)
+			images, err = image.Query(ctx, r.Image, filter, findFilter)
 			return err
 		}); err != nil {
 			if !job.IsCancelled(ctx) {
-				logger.Errorf("error querying images for auto-tag: %w", err)
+				logger.Errorf("error querying images for auto-tag: %v", err)
 			}
 			return
 		}
@@ -636,32 +691,28 @@ func (t *autoTagFilesTask) processImages(ctx context.Context) {
 				logger.Info("Stopping auto-tag due to user request")
 				return
 			}
-
-			tt := autoTagImageTask{
-				repository: t.repository,
-				image:      ss,
-				performers: t.performers,
-				studios:    t.studios,
-				tags:       t.tags,
-				cache:      t.cache,
-			}
-
-			var wg sync.WaitGroup
-			wg.Add(1)
-			go tt.Start(ctx, &wg)
-			wg.Wait()
-
-			t.progress.Increment()
+			taskQueue.Add(fmt.Sprintf("Auto-tagging %s", ss.DisplayName()), func(ctx context.Context) {
+				tt := autoTagImageTask{
+					repository: r,
+					image:      ss,
+					performers: t.performers,
+					studios:    t.studios,
+					tags:       t.tags,
+					cache:      t.cache,
+				}
+				tt.Start(ctx)
+				t.progress.Increment()
+			})
 		}
 
-		if len(images) != batchSize {
-			more = false
-		} else {
-			*findFilter.Page++
+		if len(images) < batchSize {
+			return
+		}
 
-			if *findFilter.Page%10 == 1 {
-				logger.Infof("Processed %d images...", (*findFilter.Page-1)*batchSize)
-			}
+		lastID = images[len(images)-1].ID
+		processed += len(images)
+		if processed%(batchSize*10) == 0 {
+			logger.Infof("Processed %d images...", processed)
 		}
 	}
 }
@@ -671,25 +722,40 @@ func (t *autoTagFilesTask) processGalleries(ctx context.Context) {
 		return
 	}
 
-	logger.Info("Auto-tagging galleries...")
+	workers := config.GetInstance().GetParallelTasksWithAutoDetection()
+	logger.Infof("Auto-tagging galleries (workers=%d)...", workers)
 
-	batchSize := 1000
+	const batchSize = 1000
+	const queueSize = batchSize * 4
 
-	findFilter := models.BatchFindFilter(batchSize)
+	findFilter := models.KeysetFindFilter(batchSize)
 	galleryFilter := t.makeGalleryFilter()
-
 	r := t.repository
 
-	more := true
-	for more {
+	taskQueue := job.NewTaskQueue(ctx, t.progress, queueSize, workers)
+	defer taskQueue.Close()
+
+	var lastID, processed int
+	for {
+		filter := galleryFilter
+		if lastID != 0 {
+			filter = &models.GalleryFilterType{
+				ID: &models.IntCriterionInput{
+					Value:    lastID,
+					Modifier: models.CriterionModifierGreaterThan,
+				},
+			}
+			filter.And = galleryFilter
+		}
+
 		var galleries []*models.Gallery
 		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 			var err error
-			galleries, _, err = r.Gallery.Query(ctx, galleryFilter, findFilter)
+			galleries, _, err = r.Gallery.Query(ctx, filter, findFilter)
 			return err
 		}); err != nil {
 			if !job.IsCancelled(ctx) {
-				logger.Errorf("error querying galleries for auto-tag: %w", err)
+				logger.Errorf("error querying galleries for auto-tag: %v", err)
 			}
 			return
 		}
@@ -699,32 +765,28 @@ func (t *autoTagFilesTask) processGalleries(ctx context.Context) {
 				logger.Info("Stopping auto-tag due to user request")
 				return
 			}
-
-			tt := autoTagGalleryTask{
-				repository: t.repository,
-				gallery:    ss,
-				performers: t.performers,
-				studios:    t.studios,
-				tags:       t.tags,
-				cache:      t.cache,
-			}
-
-			var wg sync.WaitGroup
-			wg.Add(1)
-			go tt.Start(ctx, &wg)
-			wg.Wait()
-
-			t.progress.Increment()
+			taskQueue.Add(fmt.Sprintf("Auto-tagging %s", ss.DisplayName()), func(ctx context.Context) {
+				tt := autoTagGalleryTask{
+					repository: r,
+					gallery:    ss,
+					performers: t.performers,
+					studios:    t.studios,
+					tags:       t.tags,
+					cache:      t.cache,
+				}
+				tt.Start(ctx)
+				t.progress.Increment()
+			})
 		}
 
-		if len(galleries) != batchSize {
-			more = false
-		} else {
-			*findFilter.Page++
+		if len(galleries) < batchSize {
+			return
+		}
 
-			if *findFilter.Page%10 == 1 {
-				logger.Infof("Processed %d galleries...", (*findFilter.Page-1)*batchSize)
-			}
+		lastID = galleries[len(galleries)-1].ID
+		processed += len(galleries)
+		if processed%(batchSize*10) == 0 {
+			logger.Infof("Processed %d galleries...", processed)
 		}
 	}
 }
@@ -763,27 +825,28 @@ type autoTagSceneTask struct {
 	cache *match.Cache
 }
 
-func (t *autoTagSceneTask) Start(ctx context.Context, wg *sync.WaitGroup) {
-	defer wg.Done()
+func (t *autoTagSceneTask) Start(ctx context.Context) {
 	r := t.repository
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
+	tagger := &autotag.Tagger{TxnManager: r.TxnManager, Cache: t.cache}
+
+	if err := r.WithDB(ctx, func(ctx context.Context) error {
 		if t.scene.Path == "" {
 			// nothing to do
 			return nil
 		}
 
 		if t.performers {
-			if err := autotag.ScenePerformers(ctx, t.scene, r.Scene, r.Performer, t.cache); err != nil {
+			if err := tagger.ScenePerformersAtPath(ctx, t.scene, r.Scene, r.Performer); err != nil {
 				return fmt.Errorf("tagging scene performers for %s: %v", t.scene.DisplayName(), err)
 			}
 		}
 		if t.studios {
-			if err := autotag.SceneStudios(ctx, t.scene, r.Scene, r.Studio, t.cache); err != nil {
+			if err := tagger.SceneStudiosAtPath(ctx, t.scene, r.Scene, r.Studio); err != nil {
 				return fmt.Errorf("tagging scene studio for %s: %v", t.scene.DisplayName(), err)
 			}
 		}
 		if t.tags {
-			if err := autotag.SceneTags(ctx, t.scene, r.Scene, r.Tag, t.cache); err != nil {
+			if err := tagger.SceneTagsAtPath(ctx, t.scene, r.Scene, r.Tag); err != nil {
 				return fmt.Errorf("tagging scene tags for %s: %v", t.scene.DisplayName(), err)
 			}
 		}
@@ -807,22 +870,23 @@ type autoTagImageTask struct {
 	cache *match.Cache
 }
 
-func (t *autoTagImageTask) Start(ctx context.Context, wg *sync.WaitGroup) {
-	defer wg.Done()
+func (t *autoTagImageTask) Start(ctx context.Context) {
 	r := t.repository
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
+	tagger := &autotag.Tagger{TxnManager: r.TxnManager, Cache: t.cache}
+
+	if err := r.WithDB(ctx, func(ctx context.Context) error {
 		if t.performers {
-			if err := autotag.ImagePerformers(ctx, t.image, r.Image, r.Performer, t.cache); err != nil {
+			if err := tagger.ImagePerformersAtPath(ctx, t.image, r.Image, r.Performer); err != nil {
 				return fmt.Errorf("tagging image performers for %s: %v", t.image.DisplayName(), err)
 			}
 		}
 		if t.studios {
-			if err := autotag.ImageStudios(ctx, t.image, r.Image, r.Studio, t.cache); err != nil {
+			if err := tagger.ImageStudiosAtPath(ctx, t.image, r.Image, r.Studio); err != nil {
 				return fmt.Errorf("tagging image studio for %s: %v", t.image.DisplayName(), err)
 			}
 		}
 		if t.tags {
-			if err := autotag.ImageTags(ctx, t.image, r.Image, r.Tag, t.cache); err != nil {
+			if err := tagger.ImageTagsAtPath(ctx, t.image, r.Image, r.Tag); err != nil {
 				return fmt.Errorf("tagging image tags for %s: %v", t.image.DisplayName(), err)
 			}
 		}
@@ -846,22 +910,23 @@ type autoTagGalleryTask struct {
 	cache *match.Cache
 }
 
-func (t *autoTagGalleryTask) Start(ctx context.Context, wg *sync.WaitGroup) {
-	defer wg.Done()
+func (t *autoTagGalleryTask) Start(ctx context.Context) {
 	r := t.repository
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
+	tagger := &autotag.Tagger{TxnManager: r.TxnManager, Cache: t.cache}
+
+	if err := r.WithDB(ctx, func(ctx context.Context) error {
 		if t.performers {
-			if err := autotag.GalleryPerformers(ctx, t.gallery, r.Gallery, r.Performer, t.cache); err != nil {
+			if err := tagger.GalleryPerformersAtPath(ctx, t.gallery, r.Gallery, r.Performer); err != nil {
 				return fmt.Errorf("tagging gallery performers for %s: %v", t.gallery.DisplayName(), err)
 			}
 		}
 		if t.studios {
-			if err := autotag.GalleryStudios(ctx, t.gallery, r.Gallery, r.Studio, t.cache); err != nil {
+			if err := tagger.GalleryStudiosAtPath(ctx, t.gallery, r.Gallery, r.Studio); err != nil {
 				return fmt.Errorf("tagging gallery studio for %s: %v", t.gallery.DisplayName(), err)
 			}
 		}
 		if t.tags {
-			if err := autotag.GalleryTags(ctx, t.gallery, r.Gallery, r.Tag, t.cache); err != nil {
+			if err := tagger.GalleryTagsAtPath(ctx, t.gallery, r.Gallery, r.Tag); err != nil {
 				return fmt.Errorf("tagging gallery tags for %s: %v", t.gallery.DisplayName(), err)
 			}
 		}

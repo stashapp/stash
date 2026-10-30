@@ -63,6 +63,14 @@ type AliasLoader interface {
 	GetAliases(ctx context.Context, relatedID int) ([]string, error)
 }
 
+// AllAliasLoader is an optional bulk variant of AliasLoader: it returns
+// aliases for every id in one query, letting callers that need aliases for
+// many entities skip the N+1 per-id lookups. Implementations are free to
+// add this alongside AliasLoader; callers use it via a type assertion.
+type AllAliasLoader interface {
+	GetAllAliases(ctx context.Context) (map[int][]string, error)
+}
+
 type URLLoader interface {
 	GetURLs(ctx context.Context, relatedID int) ([]string, error)
 }

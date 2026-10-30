@@ -7,6 +7,7 @@ import (
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
 type GalleryFinderUpdater interface {
@@ -43,9 +44,11 @@ func getGalleryFileTagger(s *models.Gallery, cache *match.Cache) tagger {
 	}
 }
 
-// GalleryPerformers tags the provided gallery with performers whose name matches the gallery's path.
-func GalleryPerformers(ctx context.Context, s *models.Gallery, rw GalleryPerformerUpdater, performerReader models.PerformerAutoTagQueryer, cache *match.Cache) error {
-	t := getGalleryFileTagger(s, cache)
+// GalleryPerformersAtPath tags the provided gallery with performers whose
+// name matches the gallery's path. A fresh write txn is opened only when a
+// match is applied.
+func (tagger *Tagger) GalleryPerformersAtPath(ctx context.Context, s *models.Gallery, rw GalleryPerformerUpdater, performerReader models.PerformerAutoTagQueryer) error {
+	t := getGalleryFileTagger(s, tagger.Cache)
 
 	return t.tagPerformers(ctx, performerReader, func(subjectID, otherID int) (bool, error) {
 		if err := s.LoadPerformerIDs(ctx, rw); err != nil {
@@ -57,7 +60,9 @@ func GalleryPerformers(ctx context.Context, s *models.Gallery, rw GalleryPerform
 			return false, nil
 		}
 
-		if err := gallery.AddPerformer(ctx, rw, s, otherID); err != nil {
+		if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
+			return gallery.AddPerformer(ctx, rw, s, otherID)
+		}); err != nil {
 			return false, err
 		}
 
@@ -65,25 +70,35 @@ func GalleryPerformers(ctx context.Context, s *models.Gallery, rw GalleryPerform
 	})
 }
 
-// GalleryStudios tags the provided gallery with the first studio whose name matches the gallery's path.
+// GalleryStudiosAtPath tags the provided gallery with the first studio whose
+// name matches the gallery's path.
 //
-// Gallerys will not be tagged if studio is already set.
-func GalleryStudios(ctx context.Context, s *models.Gallery, rw GalleryFinderUpdater, studioReader models.StudioAutoTagQueryer, cache *match.Cache) error {
+// Galleries will not be tagged if studio is already set.
+func (tagger *Tagger) GalleryStudiosAtPath(ctx context.Context, s *models.Gallery, rw GalleryFinderUpdater, studioReader models.StudioAutoTagQueryer) error {
 	if s.StudioID != nil {
 		// don't modify
 		return nil
 	}
 
-	t := getGalleryFileTagger(s, cache)
+	t := getGalleryFileTagger(s, tagger.Cache)
 
 	return t.tagStudios(ctx, studioReader, func(subjectID, otherID int) (bool, error) {
-		return addGalleryStudio(ctx, rw, s, otherID)
+		var added bool
+		if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
+			var err error
+			added, err = addGalleryStudio(ctx, rw, s, otherID)
+			return err
+		}); err != nil {
+			return false, err
+		}
+		return added, nil
 	})
 }
 
-// GalleryTags tags the provided gallery with tags whose name matches the gallery's path.
-func GalleryTags(ctx context.Context, s *models.Gallery, rw GalleryTagUpdater, tagReader models.TagAutoTagQueryer, cache *match.Cache) error {
-	t := getGalleryFileTagger(s, cache)
+// GalleryTagsAtPath tags the provided gallery with tags whose name matches
+// the gallery's path.
+func (tagger *Tagger) GalleryTagsAtPath(ctx context.Context, s *models.Gallery, rw GalleryTagUpdater, tagReader models.TagAutoTagQueryer) error {
+	t := getGalleryFileTagger(s, tagger.Cache)
 
 	return t.tagTags(ctx, tagReader, func(subjectID, otherID int) (bool, error) {
 		if err := s.LoadTagIDs(ctx, rw); err != nil {
@@ -95,7 +110,9 @@ func GalleryTags(ctx context.Context, s *models.Gallery, rw GalleryTagUpdater, t
 			return false, nil
 		}
 
-		if err := gallery.AddTag(ctx, rw, s, otherID); err != nil {
+		if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
+			return gallery.AddTag(ctx, rw, s, otherID)
+		}); err != nil {
 			return false, err
 		}
 
