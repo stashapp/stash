@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import {
@@ -6,12 +6,13 @@ import {
   mutateMetadataExport,
   mutateBackupDatabase,
   mutateMetadataImport,
-  mutateMetadataClean,
+  mutateVerifyPaths,
   mutateAnonymiseDatabase,
   mutateMigrateSceneScreenshots,
   mutateMigrateBlobs,
   mutateOptimiseDatabase,
   mutateCleanGenerated,
+  mutatePurgeMissing,
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import downloadFile from "src/utils/download";
@@ -33,16 +34,19 @@ import {
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { CleanGeneratedDialog } from "./CleanGeneratedDialog";
+import { useSettings } from "../context";
 
-interface ICleanDialog {
+interface IVerifyDialog {
   pathSelection?: boolean;
   dryRun: boolean;
+  purgeMissing: boolean;
   onClose: (paths?: string[]) => void;
 }
 
-const CleanDialog: React.FC<ICleanDialog> = ({
+const VerifyDialog: React.FC<IVerifyDialog> = ({
   pathSelection = false,
   dryRun,
+  purgeMissing,
   onClose,
 }) => {
   const intl = useIntl();
@@ -68,19 +72,24 @@ const CleanDialog: React.FC<ICleanDialog> = ({
     msg = (
       <p>{intl.formatMessage({ id: "actions.tasks.dry_mode_selected" })}</p>
     );
-  } else {
+  } else if (purgeMissing) {
     msg = (
-      <p>{intl.formatMessage({ id: "actions.tasks.clean_confirm_message" })}</p>
+      <p>
+        {intl.formatMessage({
+          id: "actions.tasks.verify_purge_confirm_message",
+        })}
+      </p>
     );
   }
 
   return (
     <ModalComponent
       show
+      header={<FormattedMessage id="actions.verify_files" />}
       icon={faTrashAlt}
       disabled={pathSelection && paths.length === 0}
       accept={{
-        text: intl.formatMessage({ id: "actions.clean" }),
+        text: intl.formatMessage({ id: "actions.verify_files" }),
         variant: "danger",
         onClick: () => onClose(paths),
       }}
@@ -130,35 +139,166 @@ const CleanDialog: React.FC<ICleanDialog> = ({
   );
 };
 
-interface ICleanOptions {
-  options: GQL.CleanMetadataInput;
-  setOptions: (s: GQL.CleanMetadataInput) => void;
+interface IVerifyOptions {
+  options: GQL.VerifyPathsInput;
+  setOptions: (s: GQL.VerifyPathsInput) => void;
 }
 
-const CleanOptions: React.FC<ICleanOptions> = ({
+const VerifyOptions: React.FC<IVerifyOptions> = ({
   options,
   setOptions: setOptionsState,
 }) => {
-  function setOptions(input: Partial<GQL.CleanMetadataInput>) {
+  function setOptions(input: Partial<GQL.VerifyPathsInput>) {
     setOptionsState({ ...options, ...input });
   }
 
   return (
     <>
       <BooleanSetting
-        id="clean-ignore-zip-contents"
-        checked={options.ignoreZipFileContents ?? false}
-        headingID="config.tasks.clean_ignore_zip_contents"
-        subHeadingID="config.tasks.clean_ignore_zip_contents_desc"
-        onChange={(v) => setOptions({ ignoreZipFileContents: v })}
+        id="verify-ignore-zip-contents"
+        checked={options.checkZipFileContents ?? false}
+        headingID="config.tasks.verify_check_zip_contents"
+        subHeadingID="config.tasks.verify_check_zip_contents_desc"
+        onChange={(v) => setOptions({ checkZipFileContents: v })}
       />
       <BooleanSetting
-        id="clean-dryrun"
-        checked={options.dryRun}
-        headingID="config.tasks.only_dry_run"
+        id="verify-dryrun"
+        checked={options.dryRun ?? false}
+        headingID="config.tasks.dry_run"
         onChange={(v) => setOptions({ dryRun: v })}
       />
+      <BooleanSetting
+        id="verify-purge-missing"
+        checked={(!options.dryRun && options.purgeMissing) ?? false}
+        disabled={options.dryRun ?? false}
+        headingID="config.tasks.verify_purge_missing"
+        onChange={(v) => setOptions({ purgeMissing: v })}
+      />
     </>
+  );
+};
+
+interface IPurgeMissingDialog {
+  pathSelection?: boolean;
+  dryRun: boolean;
+  onClose: (paths?: string[]) => void;
+}
+
+const PurgeMissingDialog: React.FC<IPurgeMissingDialog> = ({
+  pathSelection = false,
+  dryRun,
+  onClose,
+}) => {
+  const intl = useIntl();
+  const { configuration } = useConfigurationContext();
+
+  const libraryPaths = configuration?.general.stashes.map((s) => s.path);
+
+  const [paths, setPaths] = useState<string[]>([]);
+  const [currentDirectory, setCurrentDirectory] = useState<string>("");
+
+  function removePath(p: string) {
+    setPaths(paths.filter((path) => path !== p));
+  }
+
+  function addPath(p: string) {
+    if (p && !paths.includes(p)) {
+      setPaths(paths.concat(p));
+    }
+  }
+
+  let msg: React.ReactNode;
+  if (dryRun) {
+    msg = (
+      <p>{intl.formatMessage({ id: "actions.tasks.dry_mode_selected" })}</p>
+    );
+  } else {
+    msg = (
+      <p>
+        {intl.formatMessage({
+          id: "actions.tasks.purge_missing_confirm_message",
+        })}
+      </p>
+    );
+  }
+
+  return (
+    <ModalComponent
+      show
+      icon={faTrashAlt}
+      header={<FormattedMessage id="config.tasks.purge_missing" />}
+      disabled={pathSelection && paths.length === 0}
+      accept={{
+        text: intl.formatMessage({ id: "config.tasks.purge_missing" }),
+        variant: "danger",
+        onClick: () => onClose(paths),
+      }}
+      cancel={{ onClick: () => onClose() }}
+    >
+      <div className="dialog-container">
+        <div className="mb-3">
+          {paths.map((p) => (
+            <Row className="align-items-center mb-1" key={p}>
+              <Form.Label column xs={10}>
+                {p}
+              </Form.Label>
+              <Col xs={2} className="d-flex justify-content-end">
+                <Button
+                  className="ml-auto"
+                  size="sm"
+                  variant="danger"
+                  title={intl.formatMessage({ id: "actions.delete" })}
+                  onClick={() => removePath(p)}
+                >
+                  <Icon icon={faMinus} />
+                </Button>
+              </Col>
+            </Row>
+          ))}
+
+          {pathSelection ? (
+            <FolderSelect
+              currentDirectory={currentDirectory}
+              onChangeDirectory={setCurrentDirectory}
+              defaultDirectories={libraryPaths}
+              appendButton={
+                <Button
+                  variant="secondary"
+                  onClick={() => addPath(currentDirectory)}
+                >
+                  <Icon icon={faPlus} />
+                </Button>
+              }
+            />
+          ) : undefined}
+        </div>
+
+        {msg}
+      </div>
+    </ModalComponent>
+  );
+};
+
+interface IPurgeMissingOptions {
+  options: GQL.PurgeMissingInput;
+  setOptions: (s: GQL.PurgeMissingInput) => void;
+}
+
+const PurgeMissingOptions: React.FC<IPurgeMissingOptions> = ({
+  options,
+  setOptions: setOptionsState,
+}) => {
+  function setOptions(input: Partial<GQL.PurgeMissingInput>) {
+    setOptionsState({ ...options, ...input });
+  }
+
+  return (
+    <BooleanSetting
+      id="purge-missing-dryrun"
+      checked={options.dryRun ?? false}
+      headingID="config.tasks.dry_run"
+      onChange={(v) => setOptions({ dryRun: v })}
+    />
   );
 };
 
@@ -296,14 +436,23 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
     importAlert: false,
     import: false,
     backup: false,
-    clean: false,
-    cleanAlert: false,
+    verify: false,
+    verifyAlert: false,
+    purgeMissing: false,
+    purgeMissingAlert: false,
     cleanGenerated: false,
   });
 
-  const [cleanOptions, setCleanOptions] = useState<GQL.CleanMetadataInput>({
+  const [verifyOptions, setVerifyOptions] = useState<GQL.VerifyPathsInput>({
     dryRun: false,
+    checkZipFileContents: false,
+    purgeMissing: false,
   });
+
+  const [purgeMissingOptions, setPurgeMissingOptions] =
+    useState<GQL.PurgeMissingInput>({
+      dryRun: false,
+    });
 
   const [migrateBlobsOptions, setMigrateBlobsOptions] =
     useState<GQL.MigrateBlobsInput>({
@@ -315,6 +464,37 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
       deleteFiles: false,
       overwriteExisting: false,
     });
+
+  const { ui, saveUI, loading } = useSettings();
+
+  const { taskDefaults } = ui;
+
+  useEffect(() => {
+    if (loading) {
+      return;
+    }
+
+    if (taskDefaults?.verify) {
+      setVerifyOptions(taskDefaults.verify);
+    }
+    if (taskDefaults?.purgeMissing) {
+      setPurgeMissingOptions(taskDefaults.purgeMissing);
+    }
+  }, [taskDefaults, loading]);
+
+  function configureDefaults(partial: Record<string, object>) {
+    saveUI({ taskDefaults: { ...partial } });
+  }
+
+  function onSetVerifyOptions(s: GQL.VerifyPathsInput) {
+    configureDefaults({ verify: s });
+    setVerifyOptions(s);
+  }
+
+  function onSetPurgeMissingOptions(s: GQL.PurgeMissingInput) {
+    configureDefaults({ purgeMissing: s });
+    setPurgeMissingOptions(s);
+  }
 
   type DialogOpenState = typeof dialogOpen;
 
@@ -364,24 +544,66 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
     return <ImportDialog onClose={() => setDialogOpen({ import: false })} />;
   }
 
-  async function onClean(paths?: string[]) {
+  async function onVerify(paths?: string[]) {
     try {
-      await mutateMetadataClean({
-        ...cleanOptions,
+      await mutateVerifyPaths({
+        ...verifyOptions,
         paths,
       });
 
       Toast.success(
         intl.formatMessage(
           { id: "config.tasks.added_job_to_queue" },
-          { operation_name: intl.formatMessage({ id: "actions.clean" }) }
+          { operation_name: intl.formatMessage({ id: "actions.verify_files" }) }
         )
       );
     } catch (e) {
       Toast.error(e);
     } finally {
-      setDialogOpen({ clean: false });
+      setDialogOpen({ verify: false });
     }
+  }
+
+  function onVerifyClicked() {
+    if (verifyOptions.dryRun || !verifyOptions.purgeMissing) {
+      onVerify();
+      return;
+    }
+
+    setDialogOpen({ verifyAlert: true });
+  }
+
+  async function onPurgeMissing(paths?: string[]) {
+    try {
+      await mutatePurgeMissing({
+        ...purgeMissingOptions,
+        paths,
+      });
+
+      Toast.success(
+        intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          {
+            operation_name: intl.formatMessage({
+              id: "config.tasks.purge_missing",
+            }),
+          }
+        )
+      );
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setDialogOpen({ purgeMissing: false });
+    }
+  }
+
+  function onPurgeMissingClicked() {
+    if (purgeMissingOptions.dryRun) {
+      onPurgeMissing();
+      return;
+    }
+
+    setDialogOpen({ purgeMissingAlert: true });
   }
 
   async function onCleanGenerated(options: GQL.CleanGeneratedInput) {
@@ -534,30 +756,51 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
     <Form.Group>
       {renderImportAlert()}
       {renderImportDialog()}
-      {dialogOpen.cleanAlert || dialogOpen.clean ? (
-        <CleanDialog
-          dryRun={cleanOptions.dryRun}
-          pathSelection={dialogOpen.clean}
+      {dialogOpen.verifyAlert || dialogOpen.verify ? (
+        <VerifyDialog
+          dryRun={verifyOptions.dryRun ?? false}
+          purgeMissing={verifyOptions.purgeMissing ?? false}
+          pathSelection={dialogOpen.verify}
           onClose={(p) => {
             // undefined means cancelled
             if (p !== undefined) {
-              if (dialogOpen.cleanAlert) {
+              if (dialogOpen.verifyAlert) {
                 // don't provide paths
-                onClean();
+                onVerify();
               } else {
-                onClean(p);
+                onVerify(p);
               }
             }
 
             setDialogOpen({
-              clean: false,
-              cleanAlert: false,
+              verify: false,
+              verifyAlert: false,
             });
           }}
         />
-      ) : (
-        dialogOpen.clean
-      )}
+      ) : null}
+      {dialogOpen.purgeMissingAlert || dialogOpen.purgeMissing ? (
+        <PurgeMissingDialog
+          dryRun={purgeMissingOptions.dryRun ?? false}
+          pathSelection={dialogOpen.purgeMissing}
+          onClose={(p) => {
+            // undefined means cancelled
+            if (p !== undefined) {
+              if (dialogOpen.purgeMissingAlert) {
+                // don't provide paths
+                onPurgeMissing();
+              } else {
+                onPurgeMissing(p);
+              }
+            }
+
+            setDialogOpen({
+              purgeMissing: false,
+              purgeMissingAlert: false,
+            });
+          }}
+        />
+      ) : null}
       {dialogOpen.cleanGenerated && (
         <CleanGeneratedDialog
           onClose={(options) => {
@@ -586,32 +829,65 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
           <Setting
             heading={
               <>
-                <FormattedMessage id="actions.clean" />
+                <FormattedMessage id="actions.verify_files" />
                 <ManualLink tab="Tasks">
                   <Icon icon={faQuestionCircle} />
                 </ManualLink>
               </>
             }
-            subHeadingID="config.tasks.cleanup_desc"
+            subHeadingID="config.tasks.verify_files_desc"
           >
             <Button
               variant="danger"
               type="submit"
-              onClick={() => setDialogOpen({ cleanAlert: true })}
+              onClick={() => onVerifyClicked()}
             >
-              <FormattedMessage id="actions.clean" />…
+              <FormattedMessage id="actions.verify_files" />
             </Button>
             <Button
               variant="danger"
               type="submit"
-              onClick={() => setDialogOpen({ clean: true })}
+              onClick={() => setDialogOpen({ verify: true })}
             >
-              <FormattedMessage id="actions.selective_clean" />…
+              <FormattedMessage id="actions.selective_verify" />…
             </Button>
           </Setting>
-          <CleanOptions
-            options={cleanOptions}
-            setOptions={(o) => setCleanOptions(o)}
+          <VerifyOptions
+            options={verifyOptions}
+            setOptions={(o) => onSetVerifyOptions(o)}
+          />
+        </div>
+
+        <div className="setting-group">
+          <Setting
+            heading={
+              <>
+                <FormattedMessage id="config.tasks.purge_missing" />
+                <ManualLink tab="Tasks">
+                  <Icon icon={faQuestionCircle} />
+                </ManualLink>
+              </>
+            }
+            subHeadingID="config.tasks.purge_missing_desc"
+          >
+            <Button
+              variant="danger"
+              type="submit"
+              onClick={() => onPurgeMissingClicked()}
+            >
+              <FormattedMessage id="config.tasks.purge_missing" />
+            </Button>
+            <Button
+              variant="danger"
+              type="submit"
+              onClick={() => setDialogOpen({ purgeMissing: true })}
+            >
+              <FormattedMessage id="config.tasks.selective_purge_missing" />…
+            </Button>
+          </Setting>
+          <PurgeMissingOptions
+            options={purgeMissingOptions}
+            setOptions={(o) => onSetPurgeMissingOptions(o)}
           />
         </div>
 

@@ -95,7 +95,8 @@ type DirEntry struct {
 	// only guaranteed to have id, path and basename set
 	ZipFile File
 
-	ModTime time.Time `json:"mod_time"`
+	ModTime      time.Time  `json:"mod_time"`
+	MissingSince *time.Time `json:"missing_since"`
 }
 
 func (e *DirEntry) info(fs FS, path string) (fs.FileInfo, error) {

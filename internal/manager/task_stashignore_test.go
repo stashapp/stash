@@ -52,7 +52,7 @@ func TestStashIgnoreUsesTopmostLibraryRootWithNestedLibraries(t *testing.T) {
 		t.Fatalf("expected scan filter to reject file due to parent .stashignore")
 	}
 
-	cleanFilter := &cleanFilter{
+	verifyFilter := &verifyFilter{
 		scanFilter: scanFilter{
 			stashPaths:        stashPaths,
 			generatedPath:     filepath.Join(root, "generated"),
@@ -60,7 +60,7 @@ func TestStashIgnoreUsesTopmostLibraryRootWithNestedLibraries(t *testing.T) {
 		},
 	}
 
-	if cleanFilter.Accept(context.Background(), ignoredFile, info, "") {
+	if verifyFilter.Accept(context.Background(), ignoredFile, info, "") {
 		t.Fatalf("expected clean filter to reject file due to parent .stashignore")
 	}
 }

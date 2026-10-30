@@ -48,8 +48,8 @@ func (h *FilteredHandler) Handle(ctx context.Context, f models.File, oldFile mod
 	return nil
 }
 
-// CleanHandler provides a handler for cleaning Files and Folders.
-type CleanHandler interface {
+// PurgeHandler provides a handler for cleaning Files and Folders.
+type PurgeHandler interface {
 	HandleFile(ctx context.Context, fileDeleter *Deleter, fileID models.FileID) error
 	HandleFolder(ctx context.Context, fileDeleter *Deleter, folderID models.FolderID) error
 }

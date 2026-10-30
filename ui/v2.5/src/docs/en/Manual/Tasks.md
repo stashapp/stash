@@ -109,11 +109,15 @@ Stash has since implemented live transcoding, so transcodes are essentially unne
 
 These are generated when the gallery is first viewed, so generating them beforehand is not necessary.
 
-## Cleaning
+## Verify files
 
-This task will walk through your configured media directories and remove any scene from the database that can no longer be found. It will also remove generated files for scenes that subsequently no longer exist.
+This task will walk through your configured media directories and mark files and folders in the database that can no longer be found in the filesystem. It can optionally remove these missing files and their associated metadata objects (e.g., scenes, images, and galleries) and generated files from the database.
 
-Care should be taken with this task, especially where the configured media directories may be inaccessible due to network issues.
+Files marked as missing may be removed by the Purge missing task. Files and folders can have their missing status cleared by running the scan task, assuming the scan task finds the file or folder in the filesystem.
+
+## Purge missing
+
+This task will remove files and folders marked as missing from the database, along with their associated metadata objects (e.g., scenes, images, and galleries) and generated files.
 
 ## Exporting and importing
 
