@@ -259,6 +259,7 @@ type StreamOptions struct {
 	StreamType *StreamType
 	VideoFile  *models.VideoFile
 	Resolution string
+	Alignment  string
 	Hash       string
 	Segment    string
 }
@@ -288,6 +289,7 @@ type runningStream struct {
 	streamType       *StreamType
 	vf               *models.VideoFile
 	maxTranscodeSize int
+	alignment        string
 	outputDir        string
 
 	waitingSegments []*waitingSegment
@@ -334,9 +336,10 @@ func (s *runningStream) makeStreamArgs(sm *StreamManager, segment int) Args {
 	args := Args{"-hide_banner"}
 	args = args.LogLevel(LogLevelError)
 
-	codec := HLSGetCodec(sm, s.streamType.Name)
+	codec := hlsCodecWithAlignment(sm, s.streamType.Name, s.alignment)
 
-	fullhw := sm.config.GetTranscodeHardwareAcceleration() && sm.encoder.hwCanFullHWTranscode(sm.context, codec, s.vf, s.maxTranscodeSize)
+	fullhw := fullHardwareWithAlignment(sm.config.GetTranscodeHardwareAcceleration(), s.alignment) &&
+		sm.encoder.hwCanFullHWTranscode(sm.context, codec, s.vf, s.maxTranscodeSize)
 	args = sm.encoder.hwDeviceInit(args, codec, fullhw)
 	args = append(args, extraInputArgs...)
 
@@ -349,6 +352,7 @@ func (s *runningStream) makeStreamArgs(sm *StreamManager, segment int) Args {
 	videoOnly := ProbeAudioCodec(s.vf.AudioCodec) == MissingUnsupported
 
 	videoFilter := sm.encoder.hwMaxResFilter(codec, s.vf, s.maxTranscodeSize, fullhw)
+	videoFilter = videoFilterWithAlignment(videoFilter, s.alignment)
 
 	args = append(args, s.streamType.Args(codec, segment, videoFilter, videoOnly, s.outputDir)...)
 
@@ -433,18 +437,7 @@ func serveHLSManifest(sm *StreamManager, w http.ResponseWriter, r *http.Request,
 	baseUrl.RawQuery = ""
 	baseURL := prefix + baseUrl.String()
 
-	urlQuery := url.Values{}
-
-	copyAuthParams(urlQuery, r.URL.Query())
-
-	if resolution != "" {
-		urlQuery.Set(resolutionParamKey, resolution)
-	}
-
-	segQuery := ""
-	if len(urlQuery) > 0 {
-		segQuery = "?" + urlQuery.Encode()
-	}
+	segQuery := hlsSegmentQuery(r.URL, resolution)
 
 	var buf bytes.Buffer
 
@@ -645,7 +638,8 @@ func (sm *StreamManager) ServeSegment(w http.ResponseWriter, r *http.Request, op
 		maxTranscodeSize = models.StreamingResolutionEnum(options.Resolution).GetMaxResolution()
 	}
 
-	dir := options.StreamType.FileDir(options.Hash, maxTranscodeSize)
+	baseDir := options.StreamType.FileDir(options.Hash, maxTranscodeSize)
+	dir := streamDirWithAlignment(baseDir, options.Alignment)
 	outputDir := filepath.Join(sm.cacheDir, dir)
 
 	name := streamType.SegmentType.MakeFilename(segment)
@@ -660,6 +654,7 @@ func (sm *StreamManager) ServeSegment(w http.ResponseWriter, r *http.Request, op
 			streamType:       options.StreamType,
 			vf:               options.VideoFile,
 			maxTranscodeSize: maxTranscodeSize,
+			alignment:        options.Alignment,
 			outputDir:        outputDir,
 
 			// initialize to cap 10 to avoid reallocations
