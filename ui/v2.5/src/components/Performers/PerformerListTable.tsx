@@ -20,11 +20,16 @@ import {
 import TextUtils from "src/utils/text";
 import { getCountryByISO } from "src/utils/country";
 import { IColumn, ListTable } from "../List/ListTable";
+import {
+  IPerformerCardExtraCriteria,
+  PerformerCardPerformer,
+} from "./PerformerCard";
 
 interface IPerformerListTableProps {
-  performers: GQL.PerformerDataFragment[];
+  performers: PerformerCardPerformer[];
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
+  extraCriteria?: IPerformerCardExtraCriteria;
 }
 
 const TABLE_NAME = "performers";
@@ -33,6 +38,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   props: IPerformerListTableProps
 ) => {
   const intl = useIntl();
+  const { extraCriteria } = props;
 
   const [updatePerformer] = usePerformerUpdate();
 
@@ -190,21 +196,39 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
     <>{formatYearRange(performer.career_start, performer.career_end) ?? ""}</>
   );
 
-  const SceneCountCell = (performer: GQL.PerformerDataFragment) => (
-    <Link to={NavUtils.makePerformerScenesUrl(performer)}>
-      <span>{performer.scene_count}</span>
+  const SceneCountCell = (performer: PerformerCardPerformer) => (
+    <Link
+      to={NavUtils.makePerformerScenesUrl(
+        performer,
+        extraCriteria?.performer,
+        extraCriteria?.scenes
+      )}
+    >
+      <span>{performer.scoped_scene_count ?? performer.scene_count}</span>
     </Link>
   );
 
-  const GalleryCountCell = (performer: GQL.PerformerDataFragment) => (
-    <Link to={NavUtils.makePerformerGalleriesUrl(performer)}>
-      <span>{performer.gallery_count}</span>
+  const GalleryCountCell = (performer: PerformerCardPerformer) => (
+    <Link
+      to={NavUtils.makePerformerGalleriesUrl(
+        performer,
+        extraCriteria?.performer,
+        extraCriteria?.galleries
+      )}
+    >
+      <span>{performer.scoped_gallery_count ?? performer.gallery_count}</span>
     </Link>
   );
 
-  const ImageCountCell = (performer: GQL.PerformerDataFragment) => (
-    <Link to={NavUtils.makePerformerImagesUrl(performer)}>
-      <span>{performer.image_count}</span>
+  const ImageCountCell = (performer: PerformerCardPerformer) => (
+    <Link
+      to={NavUtils.makePerformerImagesUrl(
+        performer,
+        extraCriteria?.performer,
+        extraCriteria?.images
+      )}
+    >
+      <span>{performer.scoped_image_count ?? performer.image_count}</span>
     </Link>
   );
 

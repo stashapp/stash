@@ -2,6 +2,11 @@ query FindPerformers(
   $filter: FindFilterType
   $performer_filter: PerformerFilterType
   $performer_ids: [Int!]
+  $scoped_counts: Boolean! = false
+  $scene_filter: SceneFilterType
+  $image_filter: ImageFilterType
+  $gallery_filter: GalleryFilterType
+  $group_filter: GroupFilterType
 ) {
   findPerformers(
     filter: $filter
@@ -11,6 +16,14 @@ query FindPerformers(
     count
     performers {
       ...PerformerData
+      scoped_scene_count: scene_count(filter: $scene_filter)
+        @include(if: $scoped_counts)
+      scoped_image_count: image_count(filter: $image_filter)
+        @include(if: $scoped_counts)
+      scoped_gallery_count: gallery_count(filter: $gallery_filter)
+        @include(if: $scoped_counts)
+      scoped_group_count: group_count(filter: $group_filter)
+        @include(if: $scoped_counts)
     }
   }
 }
