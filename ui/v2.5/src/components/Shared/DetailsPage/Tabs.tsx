@@ -29,24 +29,32 @@ export function useTabKey(props: {
   const { tabKey, validTabs, defaultTabKey, baseURL } = props;
 
   const history = useHistory();
+  const activeTabKey =
+    tabKey && tabKey !== "default" && validTabs.includes(tabKey)
+      ? tabKey
+      : defaultTabKey;
 
   const setTabKey = useCallback(
     (newTabKey: string | null) => {
-      if (!newTabKey) newTabKey = defaultTabKey;
-      if (newTabKey === tabKey) return;
-
-      if (validTabs.includes(newTabKey)) {
-        history.replace(`${baseURL}/${newTabKey}`);
+      if (
+        !newTabKey ||
+        newTabKey === "default" ||
+        !validTabs.includes(newTabKey)
+      ) {
+        newTabKey = defaultTabKey;
       }
+      if (newTabKey === activeTabKey) return;
+
+      history.replace(`${baseURL}/${newTabKey}`);
     },
-    [defaultTabKey, validTabs, tabKey, history, baseURL]
+    [activeTabKey, defaultTabKey, validTabs, history, baseURL]
   );
 
   useEffect(() => {
-    if (!tabKey) {
-      setTabKey(defaultTabKey);
+    if (tabKey !== activeTabKey) {
+      history.replace(`${baseURL}/${activeTabKey}`);
     }
-  }, [setTabKey, defaultTabKey, tabKey]);
+  }, [activeTabKey, baseURL, history, tabKey]);
 
-  return { setTabKey };
+  return { activeTabKey, setTabKey };
 }

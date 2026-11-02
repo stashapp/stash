@@ -130,6 +130,21 @@ func (i IntCriterionInput) ValidModifier() bool {
 	return false
 }
 
+type HierarchicalCountInput struct {
+	Value    int               `json:"value"`
+	Value2   *int              `json:"value2"`
+	Modifier CriterionModifier `json:"modifier"`
+	Depth    *int              `json:"depth"`
+}
+
+func (i HierarchicalCountInput) ValidModifier() bool {
+	switch i.Modifier {
+	case CriterionModifierEquals, CriterionModifierNotEquals, CriterionModifierGreaterThan, CriterionModifierLessThan, CriterionModifierIsNull, CriterionModifierNotNull, CriterionModifierBetween, CriterionModifierNotBetween:
+		return true
+	}
+	return false
+}
+
 type FloatCriterionInput struct {
 	Value    float64           `json:"value"`
 	Value2   *float64          `json:"value2"`

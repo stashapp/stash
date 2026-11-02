@@ -215,7 +215,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
               ss.stash_box_endpoint === s.source.stash_box_endpoint
           );
 
-          if (!found) return;
+          if (!found) return undefined;
 
           const ret: IScraperSource = {
             ...found,
@@ -270,7 +270,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
   }, [allSources, configData]);
 
   if (configError || scraperError)
-    return <div>{configError ?? scraperError}</div>;
+    return <div>{(configError ?? scraperError)?.message}</div>;
   if (!allSources || !configData) return <div />;
 
   function makeIdentifyInput(): GQL.IdentifyMetadataInput {
@@ -317,9 +317,9 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
     // only include scrapers not already present
     return !editingSource?.id === undefined
       ? []
-      : allSources?.filter((s) => {
+      : (allSources?.filter((s) => {
           return !sources.some((ss) => ss.id === s.id);
-        }) ?? [];
+        }) ?? []);
   }
 
   function onEditSource(s?: IScraperSource) {

@@ -20,12 +20,12 @@ func (s *Manager) RunPluginTask(
 		pluginProgress := make(chan float64)
 		task, err := s.PluginCache.CreateTask(ctx, pluginID, taskName, args, pluginProgress)
 		if err != nil {
-			return fmt.Errorf("Error creating plugin task: %w", err)
+			return fmt.Errorf("error creating plugin task: %w", err)
 		}
 
 		err = task.Start()
 		if err != nil {
-			return fmt.Errorf("Error running plugin task: %w", err)
+			return fmt.Errorf("error running plugin task: %w", err)
 		}
 
 		done := make(chan bool)

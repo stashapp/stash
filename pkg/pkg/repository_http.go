@@ -169,6 +169,7 @@ func (r *httpRepository) getCachedList(ctx context.Context, u url.URL) ([]Remote
 		if err != nil {
 			return nil, fmt.Errorf("failed to get remote file: %w", err)
 		}
+		defer resp.Body.Close()
 
 		if resp.StatusCode >= 400 {
 			return nil, fmt.Errorf("failed to get remote file: %s", resp.Status)
@@ -205,6 +206,7 @@ func (r *httpRepository) getFile(ctx context.Context, u url.URL) (io.ReadCloser,
 	}
 
 	if resp.StatusCode >= 400 {
+		resp.Body.Close()
 		return nil, nil, fmt.Errorf("failed to get remote file: %s", resp.Status)
 	}
 

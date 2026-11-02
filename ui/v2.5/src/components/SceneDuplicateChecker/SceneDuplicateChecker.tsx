@@ -50,6 +50,17 @@ const CLASSNAME = "duplicate-checker";
 
 const defaultDurationDiff = "1";
 
+function getGroupTotalSize(group: GQL.SlimSceneDataFragment[]) {
+  // Sum all file sizes across all scenes in the group
+  return group.reduce((groupTotal, scene) => {
+    const sceneTotal = scene.files.reduce(
+      (fileTotal, file) => fileTotal + file.size,
+      0
+    );
+    return groupTotal + sceneTotal;
+  }, 0);
+}
+
 export const SceneDuplicateChecker: React.FC = () => {
   const intl = useIntl();
   const history = useHistory();
@@ -78,17 +89,6 @@ export const SceneDuplicateChecker: React.FC = () => {
       duration_diff: durationDiff,
     },
   });
-
-  const getGroupTotalSize = (group: GQL.SlimSceneDataFragment[]) => {
-    // Sum all file sizes across all scenes in the group
-    return group.reduce((groupTotal, scene) => {
-      const sceneTotal = scene.files.reduce(
-        (fileTotal, file) => fileTotal + file.size,
-        0
-      );
-      return groupTotal + sceneTotal;
-    }, 0);
-  };
 
   const scenes = useMemo(() => {
     const groups = data?.findDuplicateScenes ?? [];
@@ -126,7 +126,7 @@ export const SceneDuplicateChecker: React.FC = () => {
     ];
 
     const filteredSizes = pageSizes.filter((s, i) => {
-      return scenes.length > s || i == 0 || scenes.length > pageSizes[i - 1];
+      return scenes.length > s || i === 0 || scenes.length > pageSizes[i - 1];
     });
 
     return filteredSizes.map((size) => {
@@ -137,6 +137,24 @@ export const SceneDuplicateChecker: React.FC = () => {
       );
     });
   }, [scenes.length]);
+
+  // Detect the codecs actually present in the duplicate results, so the
+  // preferred-codec dropdown only offers codecs that exist in the library.
+  const codecOptions = useMemo(() => {
+    const codecs = scenes
+      .flat()
+      .map((scene) => scene.files[0]?.video_codec)
+      .filter((codec): codec is string => !!codec);
+    return Array.from(new Set(codecs)).sort();
+  }, [scenes]);
+
+  // Keep the user's chosen codec if it is still present, otherwise default to
+  // the first detected one.
+  const requestedCodec = query.get("selectedCodec");
+  const selectedCodec =
+    requestedCodec && codecOptions.includes(requestedCodec)
+      ? requestedCodec
+      : codecOptions[0];
 
   if (loading) return <LoadingIndicator />;
   if (!data) return <ErrorMessage error="Error searching for duplicates." />;
@@ -218,7 +236,7 @@ export const SceneDuplicateChecker: React.FC = () => {
     compareScenes: GQL.SlimSceneDataFragment[]
   ) => {
     let selectedFile: GQL.VideoFileDataFragment;
-    let oldestTimestamp: Date | undefined = undefined;
+    let oldestTimestamp: Date | undefined;
 
     // Loop through all files
     for (const file of compareScenes.flatMap((s) => s.files)) {
@@ -269,6 +287,30 @@ export const SceneDuplicateChecker: React.FC = () => {
       const largest = findLargestScene(group);
       group.forEach((scene) => {
         if (scene !== largest) {
+          checkedArray[scene.id] = true;
+        }
+      });
+    });
+
+    setCheckedScenes(checkedArray);
+  };
+
+  const onSelectCodecClick = () => {
+    setSelectedScenes([]);
+    const checkedArray: Record<string, boolean> = {};
+
+    filteredScenes.forEach((group) => {
+      // Only act on groups that contain a scene with the preferred codec;
+      // otherwise there is nothing to keep, so select nothing.
+      const hasPreferred = group.some(
+        (scene) => scene.files[0]?.video_codec === selectedCodec
+      );
+      if (!hasPreferred) {
+        return;
+      }
+      // Select every scene whose codec is not the preferred one.
+      group.forEach((scene) => {
+        if (scene.files[0]?.video_codec !== selectedCodec) {
           checkedArray[scene.id] = true;
         }
       });
@@ -524,18 +566,16 @@ export const SceneDuplicateChecker: React.FC = () => {
       scene.organized
     ) {
       return (
-        <>
-          <ButtonGroup className="flex-wrap">
-            {maybeRenderTagPopoverButton(scene)}
-            {maybeRenderPerformerPopoverButton(scene)}
-            {maybeRenderGroupPopoverButton(scene)}
-            {maybeRenderSceneMarkerPopoverButton(scene)}
-            {maybeRenderOCounter(scene)}
-            {maybeRenderGallery(scene)}
-            {maybeRenderFileCount(scene)}
-            {maybeRenderOrganized(scene)}
-          </ButtonGroup>
-        </>
+        <ButtonGroup className="flex-wrap">
+          {maybeRenderTagPopoverButton(scene)}
+          {maybeRenderPerformerPopoverButton(scene)}
+          {maybeRenderGroupPopoverButton(scene)}
+          {maybeRenderSceneMarkerPopoverButton(scene)}
+          {maybeRenderOCounter(scene)}
+          {maybeRenderGallery(scene)}
+          {maybeRenderFileCount(scene)}
+          {maybeRenderOrganized(scene)}
+        </ButtonGroup>
       );
     }
   }
@@ -755,6 +795,33 @@ export const SceneDuplicateChecker: React.FC = () => {
               </Col>
             </Row>
           </Form.Group>
+
+          {codecOptions.length > 0 && (
+            <Form.Group>
+              <Row noGutters>
+                <Form.Label>
+                  <FormattedMessage id="dupe_check.preferred_codec_label" />
+                </Form.Label>
+                <Col xs="auto">
+                  <Form.Control
+                    as="select"
+                    onChange={(e) =>
+                      setQuery({ selectedCodec: e.currentTarget.value })
+                    }
+                    value={selectedCodec}
+                    className="input-control ml-4"
+                  >
+                    {codecOptions.map((codec) => (
+                      <option key={codec} value={codec}>
+                        {codec}
+                      </option>
+                    ))}
+                  </Form.Control>
+                </Col>
+              </Row>
+            </Form.Group>
+          )}
+
           <Form.Group>
             <Row noGutters>
               <Col xs="12">
@@ -780,6 +847,14 @@ export const SceneDuplicateChecker: React.FC = () => {
                         id: "dupe_check.select_all_but_largest_file",
                       })}
                     </Dropdown.Item>
+
+                    {codecOptions.length > 0 && (
+                      <Dropdown.Item onClick={() => onSelectCodecClick()}>
+                        {intl.formatMessage({
+                          id: "dupe_check.select_all_but_preferred_codec",
+                        })}
+                      </Dropdown.Item>
+                    )}
 
                     <Dropdown.Item onClick={() => onSelectByAge(true)}>
                       {intl.formatMessage({
@@ -938,12 +1013,14 @@ export const SceneDuplicateChecker: React.FC = () => {
                         <Button
                           className="edit-button"
                           variant="danger"
+                          data-action="delete"
                           onClick={() => handleDeleteScene(scene)}
                         >
                           <FormattedMessage id="actions.delete" />
                         </Button>
                         <Button
                           className="edit-button"
+                          data-action="merge"
                           onClick={() => onMergeClicked(group, scene)}
                         >
                           <FormattedMessage id="actions.merge" />

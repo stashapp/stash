@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from "react";
+import { useCallback, useLayoutEffect, useRef } from "react";
 import { PatchComponent } from "src/patch";
 import { remToPx } from "src/utils/units";
 
@@ -12,7 +12,7 @@ export const DetailImage = PatchComponent(
   (props: IDetailImageProps) => {
     const imgRef = useRef<HTMLImageElement>(null);
 
-    function fixWidth() {
+    const fixWidth = useCallback(() => {
       const img = imgRef.current;
       if (!img) return;
 
@@ -32,11 +32,12 @@ export const DetailImage = PatchComponent(
         const i = img.cloneNode() as HTMLImageElement;
         img.setAttribute("width", String(i.naturalWidth || DEFAULT_WIDTH));
       }
-    }
+    }, []);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: explicitly want to run this effect whenever the src changes
     useLayoutEffect(() => {
       fixWidth();
-    }, [props.src]);
+    }, [props.src, fixWidth]);
 
     return <img ref={imgRef} onLoad={() => fixWidth()} {...props} />;
   }

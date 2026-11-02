@@ -12,6 +12,7 @@ type GalleryGetter interface {
 // GalleryFinder provides methods to find galleries.
 type GalleryFinder interface {
 	GalleryGetter
+	IDsFromFileIDsLoader
 	FindByFingerprints(ctx context.Context, fp []Fingerprint) ([]*Gallery, error)
 	FindByChecksum(ctx context.Context, checksum string) ([]*Gallery, error)
 	FindByChecksums(ctx context.Context, checksums []string) ([]*Gallery, error)

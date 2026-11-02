@@ -21,7 +21,7 @@ export const GalleryViewer: React.FC<IProps> = ({ galleryId }) => {
       per_page: pageSize,
       sort: "path",
     };
-  }, [pageSize]);
+  }, []);
 
   const { data, loading } = useFindImagesQuery({
     variables: {
@@ -46,7 +46,7 @@ export const GalleryViewer: React.FC<IProps> = ({ galleryId }) => {
 
   const showLightbox = useLightbox(lightboxState);
   const showLightboxOnClick: PhotoClickHandler = useCallback(
-    (event, { index }) => {
+    (_event, { index }) => {
       showLightbox({ initialIndex: index });
     },
     [showLightbox]
@@ -54,7 +54,7 @@ export const GalleryViewer: React.FC<IProps> = ({ galleryId }) => {
 
   if (loading) return <LoadingIndicator />;
 
-  let photos: {
+  const photos: {
     src: string;
     srcSet?: string | string[] | undefined;
     sizes?: string | string[] | undefined;
@@ -65,7 +65,7 @@ export const GalleryViewer: React.FC<IProps> = ({ galleryId }) => {
   }[] = [];
 
   images.forEach((image, index) => {
-    let imageData = {
+    const imageData = {
       src: image.paths.thumbnail!,
       width: image.visual_files[0]?.width ?? 0,
       height: image.visual_files[0]?.height ?? 0,

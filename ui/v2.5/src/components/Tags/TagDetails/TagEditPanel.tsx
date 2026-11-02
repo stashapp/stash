@@ -24,7 +24,7 @@ import {
   CustomFieldsInput,
   formatCustomFieldInput,
 } from "src/components/Shared/CustomFields";
-import { cloneDeep } from "@apollo/client/utilities";
+import cloneDeep from "lodash-es/cloneDeep";
 
 interface ITagEditPanel {
   tag: Partial<GQL.TagDataFragment>;
@@ -144,6 +144,10 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     try {
       await onSubmit(input, andNew);
       formik.resetForm();
+      if (andNew) {
+        setParentTags(tag.parents ?? []);
+        setChildTags(tag.children ?? []);
+      }
     } catch (e) {
       Toast.error(e);
     }

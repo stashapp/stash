@@ -28,14 +28,18 @@ import { FolderCriterionOption } from "./criteria/folder";
 const defaultSortBy = "path";
 
 const sortByOptions = [
-  "filesize",
   "file_count",
   "date",
   "resolution",
+  "performer_age",
   ...MediaSortByOptions,
 ]
   .map(ListFilterOptions.createSortBy)
   .concat([
+    {
+      messageID: "files_size",
+      value: "filesize",
+    },
     {
       messageID: "o_count",
       value: "o_counter",

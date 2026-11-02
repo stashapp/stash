@@ -2,3 +2,7 @@ onlyBuiltDependencies:
   - '@parcel/watcher'
   - core-js
   - esbuild
+overrides:
+  "yaml@1.10.2": "~1.10.3"
+  "brace-expansion@1.1.12": "~1.1.13"
+  "@xmldom/xmldom@0.8.12": "~0.8.13"

@@ -63,8 +63,8 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = PatchComponent(
     );
 
     async function addImages(
-      result: GQL.FindImagesQueryResult,
-      filter: ListFilterModel,
+      _result: GQL.FindImagesQueryResult,
+      _filter: ListFilterModel,
       selectedIds: Set<string>
     ) {
       try {

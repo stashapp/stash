@@ -16,9 +16,11 @@ export interface IInteractiveClientProviderOptions {
   defaultClientProvider?: IInteractiveClientProvider;
   stashConfig?: GQL.ConfigDataFragment;
 }
-export interface IInteractiveClientProvider {
-  (options: IInteractiveClientProviderOptions): IInteractiveClient;
-}
+
+// convert this to interface if more methods are added
+export type IInteractiveClientProvider = (
+  options: IInteractiveClientProviderOptions
+) => IInteractiveClient;
 
 /**
  * Interface that is used for InteractiveProvider

@@ -19,6 +19,9 @@ type ScreenshotOptions struct {
 	Verbosity ffmpeg.LogLevel
 
 	UseSelectFilter bool
+
+	// SlowSeek uses accurate seek by placing -ss after the input.
+	SlowSeek bool
 }
 
 func (o *ScreenshotOptions) setDefaults() {
@@ -60,9 +63,14 @@ func ScreenshotTime(input string, t float64, options ScreenshotOptions) ffmpeg.A
 	var args ffmpeg.Args
 	args = args.LogLevel(options.Verbosity)
 	args = args.Overwrite()
-	args = args.Seek(t)
 
+	if !options.SlowSeek {
+		args = args.Seek(t)
+	}
 	args = args.Input(input)
+	if options.SlowSeek {
+		args = args.Seek(t)
+	}
 	args = args.VideoFrames(1)
 
 	if options.Quality > 0 {

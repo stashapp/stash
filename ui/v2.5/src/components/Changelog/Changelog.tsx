@@ -36,6 +36,7 @@ import V0280 from "src/docs/en/Changelog/v0280.md";
 import V0290 from "src/docs/en/Changelog/v0290.md";
 import V0300 from "src/docs/en/Changelog/v0300.md";
 import V0310 from "src/docs/en/Changelog/v0310.md";
+import V0320 from "src/docs/en/Changelog/v0320.md";
 
 import V0290ReleaseNotes from "src/docs/en/ReleaseNotes/v0290.md";
 
@@ -48,12 +49,12 @@ const Changelog: React.FC = () => {
   const stashVersion = import.meta.env.VITE_APP_STASH_VERSION;
   const buildTime = import.meta.env.VITE_APP_DATE;
 
-  let buildDate;
+  let buildDate: string | undefined;
   if (buildTime) {
     buildDate = buildTime.substring(0, buildTime.indexOf(" "));
   }
 
-  if (loading) return <></>;
+  if (loading) return null;
 
   const openState = data?.versions ?? {};
 
@@ -76,9 +77,9 @@ const Changelog: React.FC = () => {
   // after new release:
   // add entry to releases, using the current* fields
   // then update the current fields.
-  const currentVersion = stashVersion || "v0.31.0";
+  const currentVersion = stashVersion || "v0.32.0";
   const currentDate = buildDate;
-  const currentPage = V0310;
+  const currentPage = V0320;
 
   const releases: IStashRelease[] = [
     {
@@ -86,6 +87,11 @@ const Changelog: React.FC = () => {
       date: currentDate,
       page: currentPage,
       defaultOpen: true,
+    },
+    {
+      version: "v0.31.1",
+      date: "2026-04-13",
+      page: V0310,
     },
     {
       version: "v0.30.1",

@@ -214,8 +214,8 @@ export const Migrate: React.FC = () => {
               values={{
                 databaseSchema: <strong>{status.databaseSchema}</strong>,
                 appSchema: <strong>{status.appSchema}</strong>,
-                strong: (chunks: string) => <strong>{chunks}</strong>,
-                code: (chunks: string) => <code>{chunks}</code>,
+                strong: (chunks) => <strong>{chunks}</strong>,
+                code: (chunks) => <code>{chunks}</code>,
               }}
             />
           </p>
@@ -229,7 +229,7 @@ export const Migrate: React.FC = () => {
               id="setup.migrate.backup_recommended"
               values={{
                 defaultBackupPath,
-                code: (chunks: string) => <code>{chunks}</code>,
+                code: (chunks) => <code>{chunks}</code>,
               }}
             />
           </p>

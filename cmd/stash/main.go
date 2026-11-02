@@ -11,6 +11,9 @@ import (
 	"runtime/pprof"
 	"syscall"
 
+	// fallback timezone database for systems without tzdata installed
+	_ "time/tzdata"
+
 	"github.com/spf13/pflag"
 
 	"github.com/stashapp/stash/internal/api"
@@ -69,10 +72,12 @@ func main() {
 	l := initLog(cfg)
 
 	if cpuProfilePath != "" {
-		if err := initProfiling(cpuProfilePath); err != nil {
+		f, err := initProfiling(cpuProfilePath)
+		if err != nil {
 			exitError(err)
 			return
 		}
+		defer f.Close()
 		defer pprof.StopCPUProfile()
 	}
 
@@ -128,19 +133,20 @@ func initLog(cfg *config.Config) *log.Logger {
 	return l
 }
 
-func initProfiling(path string) error {
+func initProfiling(path string) (*os.File, error) {
 	f, err := os.Create(path)
 	if err != nil {
-		return fmt.Errorf("unable to create CPU profile file: %v", err)
+		return nil, fmt.Errorf("unable to create CPU profile file: %v", err)
 	}
 
 	if err = pprof.StartCPUProfile(f); err != nil {
-		return fmt.Errorf("could not start CPU profiling: %v", err)
+		f.Close()
+		return nil, fmt.Errorf("could not start CPU profiling: %v", err)
 	}
 
 	logger.Infof("profiling to %s", path)
 
-	return nil
+	return f, nil
 }
 
 func recoverPanic() {
@@ -148,7 +154,7 @@ func recoverPanic() {
 		exitCode = 1
 		logger.Errorf("panic: %v\n%s", err, debug.Stack())
 		if desktop.IsDesktop() {
-			desktop.FatalError(fmt.Errorf("Panic: %v", err))
+			desktop.FatalError(fmt.Errorf("panic: %v", err))
 		}
 	}
 }

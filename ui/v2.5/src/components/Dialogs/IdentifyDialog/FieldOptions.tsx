@@ -238,11 +238,9 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
             </Button>
           </>
         ) : (
-          <>
-            <Button className="minimal" onClick={() => editField()}>
-              <Icon icon={faPencilAlt} />
-            </Button>
-          </>
+          <Button className="minimal" onClick={() => editField()}>
+            <Icon icon={faPencilAlt} />
+          </Button>
         )}
       </td>
     </tr>
@@ -312,7 +310,7 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
   }
 
   if (!localFieldOptions) {
-    return <></>;
+    return null;
   }
 
   return (
@@ -332,7 +330,6 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
             <th className="w-25">
               <FormattedMessage id="config.tasks.identify.create_missing" />
             </th>
-            {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
             <th className="w-25" />
           </tr>
         </thead>

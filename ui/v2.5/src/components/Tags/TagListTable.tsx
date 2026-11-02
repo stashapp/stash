@@ -1,4 +1,4 @@
-/* eslint-disable jsx-a11y/control-has-associated-label */
+/* XXbiome-ignore-start jsx-a11y/control-has-associated-label */
 
 import React from "react";
 import { useIntl } from "react-intl";
@@ -61,7 +61,7 @@ export const TagListTable: React.FC<ITagListTableProps> = (
   );
 
   const AliasesCell = (tag: GQL.TagListDataFragment) => {
-    let aliases = tag.aliases ? tag.aliases.join(", ") : "";
+    const aliases = tag.aliases ? tag.aliases.join(", ") : "";
     return (
       <span className="ellips-data" title={aliases}>
         {aliases}

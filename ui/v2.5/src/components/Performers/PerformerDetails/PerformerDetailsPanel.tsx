@@ -64,7 +64,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> =
       );
     }
 
-    let details = performer?.details
+    const details = performer?.details
       ?.replace(/\[((?:http|www\.)[^\n\]]+)\]/gm, "")
       .trim();
 

@@ -133,7 +133,26 @@
         "make_primary": "ตั้งให้เป็นไฟล์หลัก",
         "migrate_blobs": "ย้าย blob",
         "migrate_scene_screenshots": "ย้าย scene screenshots",
-        "remove_date": "ลบวันที่"
+        "remove_date": "ลบวันที่",
+        "add_sub_groups": "เพิ่มกลุ่มย่อย",
+        "add_stash_id": "เพิ่มรหัส Stash ID",
+        "create_new": "สร้างใหม่",
+        "create_parent_tag": "สร้างแท็กหลัก",
+        "exclude_lowercase": "ยกเว้น",
+        "from_clipboard": "จากคลิปบอร์ด",
+        "load": "โหลด",
+        "load_filter": "โหลดตัวกรอง",
+        "play": "เล่น",
+        "remove_from_containing_group": "ลบจากกลุ่ม",
+        "reveal_in_file_manager": "เปิดในตัวจัดการไฟล์",
+        "reset_play_duration": "รีเซ็ตระยะเวลาการเล่น",
+        "reset_resume_time": "รีเซ็ต เวลาเริ่มต้น ใหม่",
+        "reset_cover": "คืนค่าหน้าปก",
+        "save_and_new": "เซฟ & เริ่มใหม่",
+        "select_directory": "เลือกไดเร็กทอรี",
+        "invert_selection": "ตัวเลือก การกลับด้าน",
+        "set_cover": "ตั้งเป็นหน้าปก",
+        "show_results": "แสดงผลลัพธ์"
     },
     "actions_name": "Actions",
     "age": "อายุ",
@@ -182,7 +201,6 @@
             "match_failed_already_tagged": "มีข้อมูลซีนนี้แล้ว",
             "match_failed_no_result": "ไม่พบผลลัพธ์",
             "match_success": "เพิ่มข้อมูลซีนสำเร็จแล้ว",
-            "phash_matches": "{count} PHashes ตรงกัน",
             "unnamed": "ไม่มีชื่อ"
         },
         "verb_match_fp": "ข้อมูลอัตลักษณ์ตรงกัน",
@@ -977,7 +995,6 @@
                 "fit_horizontally": "ขนาดพอดีความกว้างจอ"
             },
             "options": "ตัวเลือก",
-            "page_header": "หน้าที่ {page} / {total}",
             "reset_zoom_on_nav": "รีเซ็ตระดับการซูมเมื่อเปลี่ยนภาพ",
             "scale_up": {
                 "description": "ขยายภาพที่มีขนาดเล็กให้พอดีหน้าจอ",

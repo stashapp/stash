@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"image"
+	"io"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -33,10 +35,18 @@ func (d *Decorator) Decorate(ctx context.Context, fs models.FS, f models.File) (
 	// ignore clips in non-OsFS filesystems as ffprobe cannot read them
 	// TODO - copy to temp file if not an OsFS
 	if _, isOs := fs.(*file.OsFS); !isOs {
+		ext := strings.ToLower(filepath.Ext(base.Path))
+
 		// AVIF images inside zip files are not supported
-		if strings.ToLower(filepath.Ext(base.Path)) == ".avif" {
+		if ext == ".avif" {
 			return nil, fmt.Errorf("%w: %s", ErrUnsupportedAVIFInZip, base.Path)
 		}
+
+		// Go cannot decode JXL from a stream, so extract to a temp file and probe by path
+		if ext == ".jxl" {
+			return d.decorateViaTempFile(fs, f)
+		}
+
 		logger.Debugf("assuming ImageFile for non-OsFS file %q", base.Path)
 		return decorateFallback(fs, f)
 	}
@@ -133,6 +143,46 @@ func decorateFallback(fs models.FS, f models.File) (models.File, error) {
 	}
 
 	adjustForOrientation(fs, path, ret)
+
+	return ret, nil
+}
+
+// decorateViaTempFile extracts a non-OsFS file (e.g. inside a zip) to a temp file so ffprobe can read it by path, for formats like JXL that ffprobe reads but Go cannot decode from a stream.
+func (d *Decorator) decorateViaTempFile(fs models.FS, f models.File) (models.File, error) {
+	base := f.Base()
+
+	r, err := fs.Open(base.Path)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+
+	// preserve the extension so ffprobe can detect the format
+	tmp, err := os.CreateTemp("", "stash-image-*"+filepath.Ext(base.Path))
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove(tmp.Name())
+
+	if _, err := io.Copy(tmp, r); err != nil {
+		tmp.Close()
+		return nil, err
+	}
+	tmp.Close()
+
+	probe, err := d.FFProbe.NewVideoFile(tmp.Name())
+	if err != nil {
+		return nil, err
+	}
+
+	ret := &models.ImageFile{
+		BaseFile: base,
+		Format:   probe.VideoCodec,
+		Width:    probe.Width,
+		Height:   probe.Height,
+	}
+
+	adjustForOrientation(fs, base.Path, ret)
 
 	return ret, nil
 }

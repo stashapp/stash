@@ -11,7 +11,6 @@ import (
 
 const (
 	markerPreviewWidth        = 640
-	maxMarkerPreviewDuration  = 20
 	markerPreviewAudioBitrate = "64k"
 
 	markerImageDuration = 5
@@ -20,7 +19,34 @@ const (
 	markerScreenshotQuality = 2
 )
 
-func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash string, seconds float64, endSeconds *float64, includeAudio bool) error {
+// markerPreviewDuration resolves how long a marker preview video should be.
+// It honors an explicit, positive marker interval (endSeconds - seconds),
+// capped by maxDuration when that is positive (maxDuration <= 0 disables the
+// ceiling). Markers without a usable interval (nil end, or end <= start) fall
+// back to defaultDuration. The boolean return is false when the resolved
+// duration is non-positive — e.g. a misconfigured default — signalling that
+// generation should be skipped rather than emitting a malformed ffmpeg call.
+func markerPreviewDuration(seconds float64, endSeconds *float64, maxDuration int, defaultDuration int) (float64, bool) {
+	duration := float64(defaultDuration)
+
+	// The marker form permits end == start, so a non-positive interval is valid
+	// user data, not an error: fall back to the default duration and warn.
+	if endSeconds != nil {
+		interval := *endSeconds - seconds
+		switch {
+		case interval <= 0:
+			logger.Warnf("[generator] marker at %.2fs has non-positive interval (end=%.2f); using default duration", seconds, *endSeconds)
+		case maxDuration <= 0 || interval <= float64(maxDuration):
+			duration = interval
+		default:
+			duration = float64(maxDuration)
+		}
+	}
+
+	return duration, duration > 0
+}
+
+func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash string, seconds float64, endSeconds *float64, includeAudio bool, maxDuration int, defaultDuration int) error {
 	lockCtx := g.LockManager.ReadLock(ctx, input)
 	defer lockCtx.Cancel()
 
@@ -31,11 +57,10 @@ func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash st
 		}
 	}
 
-	duration := float64(maxMarkerPreviewDuration)
-
-	// don't allow preview to exceed max duration
-	if endSeconds != nil && *endSeconds-seconds < maxMarkerPreviewDuration {
-		duration = float64(*endSeconds) - seconds
+	duration, generate := markerPreviewDuration(seconds, endSeconds, maxDuration, defaultDuration)
+	if !generate {
+		logger.Warnf("[generator] marker at %.2fs resolved to a non-positive preview duration (%.2fs); skipping video preview generation — check the Default marker preview duration setting", seconds, duration)
+		return nil
 	}
 
 	if err := g.generateFile(lockCtx, g.MarkerPaths, mp4Pattern, output, g.markerPreviewVideo(input, sceneMarkerOptions{

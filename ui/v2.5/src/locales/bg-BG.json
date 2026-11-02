@@ -214,7 +214,6 @@
             "match_failed_already_tagged": "Сцената вече има тагове",
             "match_failed_no_result": "Няма намерени резултати",
             "match_success": "Счената е успешно тагната",
-            "phash_matches": "{count} PHashes съвпадат",
             "unnamed": "Неименуван"
         },
         "verb_match_fp": "Сравни Отпечатъци",

@@ -7,7 +7,7 @@ import NavUtils from "src/utils/navigation";
 export const DirectorLink: React.FC<{
   director: string;
   linkType: "scene" | "group";
-}> = ({ director: director, linkType = "scene" }) => {
+}> = ({ director, linkType = "scene" }) => {
   const link = useMemo(() => {
     switch (linkType) {
       case "scene":

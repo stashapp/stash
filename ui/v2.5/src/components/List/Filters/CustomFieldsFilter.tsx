@@ -5,7 +5,7 @@ import {
   CriterionModifier,
   CustomFieldCriterionInput,
 } from "src/core/generated-graphql";
-import { cloneDeep } from "@apollo/client/utilities";
+import cloneDeep from "lodash-es/cloneDeep";
 import { ModifierSelect } from "../ModifierSelect";
 import { useIntl } from "react-intl";
 import { Icon } from "src/components/Shared/Icon";
@@ -23,7 +23,7 @@ interface ICustomFieldCriterionEditor {
 function getValue(v: string) {
   // if the value is numeric, convert it to a number
   const num = Number(v);
-  if (!isNaN(num)) {
+  if (!Number.isNaN(num)) {
     return num;
   } else {
     return v;

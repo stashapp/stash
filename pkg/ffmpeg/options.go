@@ -37,6 +37,11 @@ func (a Args) Seek(seconds float64) Args {
 	return append(a, "-ss", fmt.Sprint(seconds))
 }
 
+// NoAccurateSeek adds the -noaccurate_seek flag and returns the result.
+func (a Args) NoAccurateSeek() Args {
+	return append(a, "-noaccurate_seek")
+}
+
 // Duration sets the duration (-t) to the given seconds and returns the result.
 func (a Args) Duration(seconds float64) Args {
 	return append(a, "-t", fmt.Sprint(seconds))

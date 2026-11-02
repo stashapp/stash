@@ -119,7 +119,7 @@ const _TagSelect: React.FC<TagSelectProps> = (props) => {
 
     const { object } = optionProps.data;
 
-    let { name } = object;
+    const { name } = object;
 
     // if name does not match the input value but an alias does, show the alias
     const { inputValue } = optionProps.selectProps;
@@ -290,14 +290,14 @@ const _TagIDSelect: React.FC<IFilterProps & IFilterIDProps<Tag>> = (props) => {
     onSelectValues?.(items);
   }
 
-  async function loadObjectsByID(idsToLoad: string[]): Promise<Tag[]> {
-    const query = await queryFindTagsByIDForSelect(idsToLoad);
-    const { tags: loadedTags } = query.data.findTags;
-
-    return loadedTags;
-  }
-
   useEffect(() => {
+    async function loadObjectsByID(idsToLoad: string[]): Promise<Tag[]> {
+      const query = await queryFindTagsByIDForSelect(idsToLoad);
+      const { tags: loadedTags } = query.data.findTags;
+
+      return loadedTags;
+    }
+
     if (!idsChanged) {
       return;
     }

@@ -22,17 +22,27 @@ const processNoneObjValue = (value: unknown): unknown =>
 export function withoutTypename<T extends ITypename>(
   o: T
 ): Omit<T, "__typename"> {
-  const { __typename, ...data } = o;
+  const result = {} as Omit<T, "__typename">;
 
-  return Object.entries(data).reduce(
-    (ret, [key, value]) => ({
-      ...ret,
-      [key]: hasTypename(value)
-        ? withoutTypename(value)
-        : processNoneObjValue(value),
-    }),
-    {} as Omit<T, "__typename">
-  );
+  for (const [key, value] of Object.entries(o)) {
+    if (key === "__typename") {
+      continue;
+    }
+
+    (result as Record<string, unknown>)[key] = hasTypename(value)
+      ? withoutTypename(value)
+      : processNoneObjValue(value);
+  }
+
+  return result;
+}
+
+export function listToMap(list: string[]) {
+  const map: Record<string, boolean> = {};
+  list.forEach((item) => {
+    map[item] = true;
+  });
+  return map;
 }
 
 // excludeFields removes fields from data that are in the excluded object
@@ -75,4 +85,11 @@ export function uniqIDStoredIDs<T extends IHasStoredID>(objs: T[]) {
   return objs.filter((o, i) => {
     return objs.findIndex((oo) => oo.stored_id === o.stored_id) === i;
   });
+}
+
+export function idToStoredID(o: { id: string; name: string }) {
+  return {
+    stored_id: o.id,
+    name: o.name,
+  };
 }

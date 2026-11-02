@@ -9,10 +9,10 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-// SceneFileIDsLoaderConfig captures the config to create a new SceneFileIDsLoader
-type SceneFileIDsLoaderConfig struct {
+// FileIDsRelatedIDsLoaderConfig captures the config to create a new FileIDsRelatedIDsLoader
+type FileIDsRelatedIDsLoaderConfig struct {
 	// Fetch is a method that provides the data for the loader
-	Fetch func(keys []int) ([][]models.FileID, []error)
+	Fetch func(keys []models.FileID) ([][]int, []error)
 
 	// Wait is how long wait before sending a batch
 	Wait time.Duration
@@ -21,19 +21,19 @@ type SceneFileIDsLoaderConfig struct {
 	MaxBatch int
 }
 
-// NewSceneFileIDsLoader creates a new SceneFileIDsLoader given a fetch, wait, and maxBatch
-func NewSceneFileIDsLoader(config SceneFileIDsLoaderConfig) *SceneFileIDsLoader {
-	return &SceneFileIDsLoader{
+// NewFileIDsRelatedIDsLoader creates a new FileIDsRelatedIDsLoader given a fetch, wait, and maxBatch
+func NewFileIDsRelatedIDsLoader(config FileIDsRelatedIDsLoaderConfig) *FileIDsRelatedIDsLoader {
+	return &FileIDsRelatedIDsLoader{
 		fetch:    config.Fetch,
 		wait:     config.Wait,
 		maxBatch: config.MaxBatch,
 	}
 }
 
-// SceneFileIDsLoader batches and caches requests
-type SceneFileIDsLoader struct {
+// FileIDsRelatedIDsLoader batches and caches requests
+type FileIDsRelatedIDsLoader struct {
 	// this method provides the data for the loader
-	fetch func(keys []int) ([][]models.FileID, []error)
+	fetch func(keys []models.FileID) ([][]int, []error)
 
 	// how long to done before sending a batch
 	wait time.Duration
@@ -44,51 +44,51 @@ type SceneFileIDsLoader struct {
 	// INTERNAL
 
 	// lazily created cache
-	cache map[int][]models.FileID
+	cache map[models.FileID][]int
 
 	// the current batch. keys will continue to be collected until timeout is hit,
 	// then everything will be sent to the fetch method and out to the listeners
-	batch *sceneFileIDsLoaderBatch
+	batch *fileIDsRelatedIDsLoaderBatch
 
 	// mutex to prevent races
 	mu sync.Mutex
 }
 
-type sceneFileIDsLoaderBatch struct {
-	keys    []int
-	data    [][]models.FileID
+type fileIDsRelatedIDsLoaderBatch struct {
+	keys    []models.FileID
+	data    [][]int
 	error   []error
 	closing bool
 	done    chan struct{}
 }
 
-// Load a FileID by key, batching and caching will be applied automatically
-func (l *SceneFileIDsLoader) Load(key int) ([]models.FileID, error) {
+// Load a int by key, batching and caching will be applied automatically
+func (l *FileIDsRelatedIDsLoader) Load(key models.FileID) ([]int, error) {
 	return l.LoadThunk(key)()
 }
 
-// LoadThunk returns a function that when called will block waiting for a FileID.
+// LoadThunk returns a function that when called will block waiting for a int.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *SceneFileIDsLoader) LoadThunk(key int) func() ([]models.FileID, error) {
+func (l *FileIDsRelatedIDsLoader) LoadThunk(key models.FileID) func() ([]int, error) {
 	l.mu.Lock()
 	if it, ok := l.cache[key]; ok {
 		l.mu.Unlock()
-		return func() ([]models.FileID, error) {
+		return func() ([]int, error) {
 			return it, nil
 		}
 	}
 	if l.batch == nil {
-		l.batch = &sceneFileIDsLoaderBatch{done: make(chan struct{})}
+		l.batch = &fileIDsRelatedIDsLoaderBatch{done: make(chan struct{})}
 	}
 	batch := l.batch
 	pos := batch.keyIndex(l, key)
 	l.mu.Unlock()
 
-	return func() ([]models.FileID, error) {
+	return func() ([]int, error) {
 		<-batch.done
 
-		var data []models.FileID
+		var data []int
 		if pos < len(batch.data) {
 			data = batch.data[pos]
 		}
@@ -113,49 +113,49 @@ func (l *SceneFileIDsLoader) LoadThunk(key int) func() ([]models.FileID, error) 
 
 // LoadAll fetches many keys at once. It will be broken into appropriate sized
 // sub batches depending on how the loader is configured
-func (l *SceneFileIDsLoader) LoadAll(keys []int) ([][]models.FileID, []error) {
-	results := make([]func() ([]models.FileID, error), len(keys))
+func (l *FileIDsRelatedIDsLoader) LoadAll(keys []models.FileID) ([][]int, []error) {
+	results := make([]func() ([]int, error), len(keys))
 
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
 
-	fileIDs := make([][]models.FileID, len(keys))
+	ints := make([][]int, len(keys))
 	errors := make([]error, len(keys))
 	for i, thunk := range results {
-		fileIDs[i], errors[i] = thunk()
+		ints[i], errors[i] = thunk()
 	}
-	return fileIDs, errors
+	return ints, errors
 }
 
-// LoadAllThunk returns a function that when called will block waiting for a FileIDs.
+// LoadAllThunk returns a function that when called will block waiting for a ints.
 // This method should be used if you want one goroutine to make requests to many
 // different data loaders without blocking until the thunk is called.
-func (l *SceneFileIDsLoader) LoadAllThunk(keys []int) func() ([][]models.FileID, []error) {
-	results := make([]func() ([]models.FileID, error), len(keys))
+func (l *FileIDsRelatedIDsLoader) LoadAllThunk(keys []models.FileID) func() ([][]int, []error) {
+	results := make([]func() ([]int, error), len(keys))
 	for i, key := range keys {
 		results[i] = l.LoadThunk(key)
 	}
-	return func() ([][]models.FileID, []error) {
-		fileIDs := make([][]models.FileID, len(keys))
+	return func() ([][]int, []error) {
+		ints := make([][]int, len(keys))
 		errors := make([]error, len(keys))
 		for i, thunk := range results {
-			fileIDs[i], errors[i] = thunk()
+			ints[i], errors[i] = thunk()
 		}
-		return fileIDs, errors
+		return ints, errors
 	}
 }
 
 // Prime the cache with the provided key and value. If the key already exists, no change is made
 // and false is returned.
 // (To forcefully prime the cache, clear the key first with loader.clear(key).prime(key, value).)
-func (l *SceneFileIDsLoader) Prime(key int, value []models.FileID) bool {
+func (l *FileIDsRelatedIDsLoader) Prime(key models.FileID, value []int) bool {
 	l.mu.Lock()
 	var found bool
 	if _, found = l.cache[key]; !found {
 		// make a copy when writing to the cache, its easy to pass a pointer in from a loop var
 		// and end up with the whole cache pointing to the same value.
-		cpy := make([]models.FileID, len(value))
+		cpy := make([]int, len(value))
 		copy(cpy, value)
 		l.unsafeSet(key, cpy)
 	}
@@ -164,22 +164,22 @@ func (l *SceneFileIDsLoader) Prime(key int, value []models.FileID) bool {
 }
 
 // Clear the value at key from the cache, if it exists
-func (l *SceneFileIDsLoader) Clear(key int) {
+func (l *FileIDsRelatedIDsLoader) Clear(key models.FileID) {
 	l.mu.Lock()
 	delete(l.cache, key)
 	l.mu.Unlock()
 }
 
-func (l *SceneFileIDsLoader) unsafeSet(key int, value []models.FileID) {
+func (l *FileIDsRelatedIDsLoader) unsafeSet(key models.FileID, value []int) {
 	if l.cache == nil {
-		l.cache = map[int][]models.FileID{}
+		l.cache = map[models.FileID][]int{}
 	}
 	l.cache[key] = value
 }
 
 // keyIndex will return the location of the key in the batch, if its not found
 // it will add the key to the batch
-func (b *sceneFileIDsLoaderBatch) keyIndex(l *SceneFileIDsLoader, key int) int {
+func (b *fileIDsRelatedIDsLoaderBatch) keyIndex(l *FileIDsRelatedIDsLoader, key models.FileID) int {
 	for i, existingKey := range b.keys {
 		if key == existingKey {
 			return i
@@ -203,7 +203,7 @@ func (b *sceneFileIDsLoaderBatch) keyIndex(l *SceneFileIDsLoader, key int) int {
 	return pos
 }
 
-func (b *sceneFileIDsLoaderBatch) startTimer(l *SceneFileIDsLoader) {
+func (b *fileIDsRelatedIDsLoaderBatch) startTimer(l *FileIDsRelatedIDsLoader) {
 	time.Sleep(l.wait)
 	l.mu.Lock()
 
@@ -219,7 +219,7 @@ func (b *sceneFileIDsLoaderBatch) startTimer(l *SceneFileIDsLoader) {
 	b.end(l)
 }
 
-func (b *sceneFileIDsLoaderBatch) end(l *SceneFileIDsLoader) {
+func (b *fileIDsRelatedIDsLoaderBatch) end(l *FileIDsRelatedIDsLoader) {
 	b.data, b.error = l.fetch(b.keys)
 	close(b.done)
 }

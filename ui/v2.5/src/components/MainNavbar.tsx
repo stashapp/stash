@@ -167,14 +167,14 @@ const newPathsList = allMenuItems
 
 const MainNavbarMenuItems = PatchComponent(
   "MainNavBar.MenuItems",
-  (props: React.PropsWithChildren<{}>) => {
+  (props: React.PropsWithChildren<unknown>) => {
     return <Nav>{props.children}</Nav>;
   }
 );
 
 const MainNavbarUtilityItems = PatchComponent(
   "MainNavBar.UtilityItems",
-  (props: React.PropsWithChildren<{}>) => {
+  (props: React.PropsWithChildren<unknown>) => {
     return <>{props.children}</>;
   }
 );
@@ -211,18 +211,15 @@ export const MainNavbar: React.FC = () => {
   const navbarRef = useRef<HTMLElement | null>(null);
   const intl = useIntl();
 
-  const maybeCollapse = useCallback(
-    (event: Event) => {
-      if (
-        navbarRef.current &&
-        event.target instanceof Node &&
-        !navbarRef.current.contains(event.target)
-      ) {
-        setExpanded(false);
-      }
-    },
-    [setExpanded]
-  );
+  const maybeCollapse = useCallback((event: Event) => {
+    if (
+      navbarRef.current &&
+      event.target instanceof Node &&
+      !navbarRef.current.contains(event.target)
+    ) {
+      setExpanded(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (expanded) {
@@ -248,7 +245,7 @@ export const MainNavbar: React.FC = () => {
   const pathname = location.pathname.replace(/\/$/, "");
   let newPath = newPathsList.includes(pathname) ? `${pathname}/new` : null;
   if (newPath !== null) {
-    let queryParam = new URLSearchParams(location.search).get("q");
+    const queryParam = new URLSearchParams(location.search).get("q");
     if (queryParam) {
       newPath += "?q=" + encodeURIComponent(queryParam);
     }
@@ -259,9 +256,9 @@ export const MainNavbar: React.FC = () => {
     Mousetrap.bind("?", () => openManual());
     Mousetrap.bind("g z", () => goto("/settings"));
 
-    menuItems.forEach((item) =>
-      Mousetrap.bind(item.hotkey, () => goto(item.href))
-    );
+    menuItems.forEach((item) => {
+      Mousetrap.bind(item.hotkey, () => goto(item.href));
+    });
 
     if (newPath) {
       Mousetrap.bind("n", () => history.push(String(newPath)));
@@ -270,7 +267,9 @@ export const MainNavbar: React.FC = () => {
     return () => {
       Mousetrap.unbind("?");
       Mousetrap.unbind("g z");
-      menuItems.forEach((item) => Mousetrap.unbind(item.hotkey));
+      menuItems.forEach((item) => {
+        Mousetrap.unbind(item.hotkey);
+      });
 
       if (newPath) {
         Mousetrap.unbind("n");
@@ -292,7 +291,7 @@ export const MainNavbar: React.FC = () => {
     }
   }
 
-  const handleDismiss = useCallback(() => setExpanded(false), [setExpanded]);
+  const handleDismiss = useCallback(() => setExpanded(false), []);
 
   function renderUtilityButtons() {
     return (
@@ -347,70 +346,68 @@ export const MainNavbar: React.FC = () => {
   }
 
   return (
-    <>
-      <Navbar
-        collapseOnSelect
-        fixed="top"
-        variant="dark"
-        bg="dark"
-        className="top-nav"
-        expand="xl"
-        expanded={expanded}
-        onToggle={setExpanded}
-        ref={navbarRef}
-      >
-        <Navbar.Collapse className="bg-dark order-sm-1">
-          <MainNavbarMenuItems>
-            {menuItems.map(({ href, icon, message }) => (
-              <Nav.Link
-                eventKey={href}
-                as="div"
-                key={href}
-                className="col-4 col-sm-3 col-md-2 col-lg-auto"
-              >
-                <LinkContainer activeClassName="active" exact to={href}>
-                  <Button className="minimal p-4 p-xl-2 d-flex d-xl-inline-block flex-column justify-content-between align-items-center">
-                    <Icon
-                      {...{ icon }}
-                      className="nav-menu-icon d-block d-xl-inline mb-2 mb-xl-0"
-                    />
-                    <span>{intl.formatMessage(message)}</span>
-                  </Button>
-                </LinkContainer>
-              </Nav.Link>
-            ))}
-          </MainNavbarMenuItems>
-          <Nav>
-            <MainNavbarUtilityItems>
-              {renderUtilityButtons()}
-            </MainNavbarUtilityItems>
-          </Nav>
-        </Navbar.Collapse>
-
-        <Navbar.Brand as="div" onClick={handleDismiss}>
-          <Link to="/">
-            <Button className="minimal brand-link d-inline-block">Stash</Button>
-          </Link>
-        </Navbar.Brand>
-
-        <Nav className="navbar-buttons flex-row ml-auto order-xl-2">
-          {!!newPath && (
-            <div className="mr-2">
-              <Link to={newPath}>
-                <Button variant="primary">
-                  <FormattedMessage id="new" defaultMessage="New" />
+    <Navbar
+      collapseOnSelect
+      fixed="top"
+      variant="dark"
+      bg="dark"
+      className="top-nav"
+      expand="xl"
+      expanded={expanded}
+      onToggle={setExpanded}
+      ref={navbarRef}
+    >
+      <Navbar.Collapse className="bg-dark order-sm-1">
+        <MainNavbarMenuItems>
+          {menuItems.map(({ href, icon, message }) => (
+            <Nav.Link
+              eventKey={href}
+              as="div"
+              key={href}
+              className="col-4 col-sm-3 col-md-2 col-lg-auto"
+            >
+              <LinkContainer activeClassName="active" exact to={href}>
+                <Button className="minimal p-4 p-xl-2 d-flex d-xl-inline-block flex-column justify-content-between align-items-center">
+                  <Icon
+                    {...{ icon }}
+                    className="nav-menu-icon d-block d-xl-inline mb-2 mb-xl-0"
+                  />
+                  <span>{intl.formatMessage(message)}</span>
                 </Button>
-              </Link>
-            </div>
-          )}
+              </LinkContainer>
+            </Nav.Link>
+          ))}
+        </MainNavbarMenuItems>
+        <Nav>
           <MainNavbarUtilityItems>
             {renderUtilityButtons()}
           </MainNavbarUtilityItems>
-          <Navbar.Toggle className="nav-menu-toggle ml-sm-2">
-            <Icon icon={expanded ? faTimes : faBars} />
-          </Navbar.Toggle>
         </Nav>
-      </Navbar>
-    </>
+      </Navbar.Collapse>
+
+      <Navbar.Brand as="div" onClick={handleDismiss}>
+        <Link to="/">
+          <Button className="minimal brand-link d-inline-block">Stash</Button>
+        </Link>
+      </Navbar.Brand>
+
+      <Nav className="navbar-buttons flex-row ml-auto order-xl-2">
+        {!!newPath && (
+          <div className="mr-2">
+            <Link to={newPath}>
+              <Button variant="primary" data-action="new">
+                <FormattedMessage id="new" defaultMessage="New" />
+              </Button>
+            </Link>
+          </div>
+        )}
+        <MainNavbarUtilityItems>
+          {renderUtilityButtons()}
+        </MainNavbarUtilityItems>
+        <Navbar.Toggle className="nav-menu-toggle ml-sm-2">
+          <Icon icon={expanded ? faTimes : faBars} />
+        </Navbar.Toggle>
+      </Nav>
+    </Navbar>
   );
 };

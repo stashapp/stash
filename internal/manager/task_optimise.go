@@ -35,7 +35,7 @@ func (j *OptimiseDatabaseJob) Execute(ctx context.Context, progress *job.Progres
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf("Error analyzing database: %w", err)
+		return fmt.Errorf("error analyzing database: %w", err)
 	}
 
 	progress.ExecuteTask("Vacuuming database", func() {

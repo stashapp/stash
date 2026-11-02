@@ -186,9 +186,9 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
 
     const state = props.selected;
     let updateTagIds: string[] = [];
-    let updateHeight: string | undefined | null = undefined;
-    let updateWeight: string | undefined | null = undefined;
-    let updatePenisLength: string | undefined | null = undefined;
+    let updateHeight: string | undefined | null;
+    let updateWeight: string | undefined | null;
+    let updatePenisLength: string | undefined | null;
     let first = true;
 
     state.forEach((performer: GQL.SlimPerformerDataFragment) => {

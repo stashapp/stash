@@ -170,7 +170,6 @@ export const SceneQueryModal: React.FC<IProps> = ({
         </div>
         <ul className={CLASSNAME_LIST}>
           {scenes.map((s, i) => (
-            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions, react/no-array-index-key
             <li key={i} onClick={() => onSelectScene(s)}>
               <SceneSearchResult scene={s} />
             </li>

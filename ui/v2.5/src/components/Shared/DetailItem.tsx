@@ -23,7 +23,7 @@ export const DetailItem: React.FC<IDetailItem> = ({
   showEmpty = false,
 }) => {
   if (!id || (!showEmpty && (!value || value === "Na"))) {
-    return <></>;
+    return null;
   }
 
   const message = label ?? <FormattedMessage id={id} />;

@@ -34,7 +34,7 @@ export const DoubleRangeInput: React.FC<{
           step={1}
           value={minValue}
           onChange={(e) => {
-            const rawValue = parseInt(e.target.value);
+            const rawValue = parseInt(e.target.value, 10);
             if (rawValue < maxValue) {
               onChange([rawValue, maxValue]);
             }
@@ -48,7 +48,7 @@ export const DoubleRangeInput: React.FC<{
           step={1}
           value={maxValue}
           onChange={(e) => {
-            const rawValue = parseInt(e.target.value);
+            const rawValue = parseInt(e.target.value, 10);
             if (rawValue > minValue) {
               onChange([minValue, rawValue]);
             }

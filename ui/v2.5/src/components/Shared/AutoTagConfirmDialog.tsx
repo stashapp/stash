@@ -1,6 +1,10 @@
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { useConfigureUISetting } from "src/core/StashService";
+import { SettingStateContext } from "src/components/Settings/context";
+import { useToast } from "src/hooks/Toast";
 import { ModalComponent } from "./Modal";
 import { Icon } from "./Icon";
 
@@ -31,6 +35,29 @@ export const AutoTagConfirmDialog: React.FC<IAutoTagConfirmDialog> = ({
   onCancel,
 }) => {
   const intl = useIntl();
+  const Toast = useToast();
+  const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [saveUISetting] = useConfigureUISetting();
+  const settingsContext = useContext(SettingStateContext);
+
+  useEffect(() => {
+    if (show) {
+      setDontShowAgain(false);
+    }
+  }, [show]);
+
+  function handleConfirm() {
+    if (dontShowAgain) {
+      if (settingsContext) {
+        settingsContext.saveUI({ disableAutoTagWarning: true });
+      } else {
+        saveUISetting({
+          variables: { key: "disableAutoTagWarning", value: true },
+        }).catch((e: unknown) => Toast.error(e));
+      }
+    }
+    onConfirm();
+  }
 
   return (
     <ModalComponent
@@ -40,13 +67,21 @@ export const AutoTagConfirmDialog: React.FC<IAutoTagConfirmDialog> = ({
       accept={{
         text: intl.formatMessage({ id: "actions.confirm" }),
         variant: "danger",
-        onClick: onConfirm,
+        onClick: handleConfirm,
       }}
       cancel={{
         onClick: onCancel,
       }}
     >
       <AutoTagWarning />
+      <Form.Check
+        id="auto-tag-dont-show-again"
+        checked={dontShowAgain}
+        onChange={(e) => setDontShowAgain(e.currentTarget.checked)}
+        label={intl.formatMessage({
+          id: "dialogs.dont_show_again",
+        })}
+      />
     </ModalComponent>
   );
 };

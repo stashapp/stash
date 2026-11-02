@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable react-hooks/exhaustive-deps */
+/* biome-ignore-all lint/suspicious/noExplicitAny: don't know how to change this to be properly typed */
+/* biome-ignore-all lint/correctness/useExhaustiveDependencies: seems like a false positive for function arguments */
 import { DebouncedFunc, DebounceSettings, throttle } from "lodash-es";
 import { useCallback, useRef } from "react";
 
@@ -13,6 +13,7 @@ export function useThrottle<T extends (...args: any) => any>(
   return useCallback(
     throttle(
       function (this: any) {
+        // biome-ignore lint/complexity/noArguments: not sure how to re-implement this without using arguments
         return func.current.apply(this, arguments as any);
       },
       wait,

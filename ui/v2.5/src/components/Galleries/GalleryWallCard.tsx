@@ -5,7 +5,8 @@ import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { TruncatedText } from "src/components/Shared/TruncatedText";
 import TextUtils from "src/utils/text";
-import { useGalleryLightbox } from "src/hooks/Lightbox/hooks";
+import { useGalleriesLightbox } from "src/hooks/Lightbox/hooks";
+import { useConfigurationContext } from "src/hooks/Config";
 import { galleryTitle } from "src/core/galleries";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import { GalleryPreviewScrubber } from "./GalleryPreviewScrubber";
@@ -42,7 +43,10 @@ const GalleryWallCard: React.FC<IProps> = ({
     React.useState<Orientation>("landscape");
   const [imageOrientation, setImageOrientation] =
     React.useState<Orientation>("landscape");
-  const showLightbox = useGalleryLightbox(gallery.id, gallery.chapters);
+  const { configuration } = useConfigurationContext();
+  const showLightbox = useGalleriesLightbox();
+  const autostartSlideshow =
+    configuration?.ui.autostartGallerySlideshow ?? false;
 
   const { dragProps } = useDragMoveSelect({
     selecting: selecting || false,
@@ -87,7 +91,7 @@ const GalleryWallCard: React.FC<IProps> = ({
       return;
     }
 
-    showLightbox(0);
+    showLightbox(gallery, 0, true, autostartSlideshow);
   }
 
   const imgClassname =
@@ -96,75 +100,71 @@ const GalleryWallCard: React.FC<IProps> = ({
   let shiftKey = false;
 
   return (
-    <>
-      <section
-        className={`${CLASSNAME} ${CLASSNAME}-${coverOrientation} wall-item`}
-        onClick={handleCardClick}
-        onKeyPress={() => showLightboxStart()}
-        role="button"
-        tabIndex={0}
-        {...dragProps}
-      >
-        {onSelectedChanged && (
-          <Form.Control
-            type="checkbox"
-            className="wall-item-check mousetrap"
-            checked={selected}
-            onChange={() => onSelectedChanged(!selected, shiftKey)}
-            onClick={(
-              event: React.MouseEvent<HTMLInputElement, MouseEvent>
-            ) => {
-              shiftKey = event.shiftKey;
-              event.stopPropagation();
-            }}
-          />
-        )}
-        <RatingSystem value={gallery.rating100} disabled withoutContext />
-        <img
-          loading="lazy"
-          src={imgSrc}
-          alt=""
-          className={cx(CLASSNAME_IMG, imgClassname)}
-          // set orientation based on cover only
-          onLoad={imgSrc === cover ? onCoverLoad : onNonCoverLoad}
+    <section
+      className={`${CLASSNAME} ${CLASSNAME}-${coverOrientation} wall-item`}
+      onClick={handleCardClick}
+      onKeyPress={() => showLightboxStart()}
+      role="button"
+      tabIndex={0}
+      {...dragProps}
+    >
+      {onSelectedChanged && (
+        <Form.Control
+          type="checkbox"
+          className="wall-item-check mousetrap"
+          checked={selected}
+          onChange={() => onSelectedChanged(!selected, shiftKey)}
+          onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
+            shiftKey = event.shiftKey;
+            event.stopPropagation();
+          }}
         />
-        <div className="lineargradient">
-          <footer className={CLASSNAME_FOOTER}>
-            <Link
-              to={`/galleries/${gallery.id}`}
-              onClick={(e) => {
-                if (selecting) {
-                  e.preventDefault();
-                  handleCardClick(e);
-                }
-                e.stopPropagation();
-              }}
-            >
-              {title && (
-                <TruncatedText
-                  text={title}
-                  lineCount={1}
-                  className={CLASSNAME_TITLE}
-                />
-              )}
-              <TruncatedText text={performers.join(", ")} />
-              <div>
-                {gallery.date && TextUtils.formatFuzzyDate(intl, gallery.date)}
-              </div>
-            </Link>
-          </footer>
-          <GalleryPreviewScrubber
-            previewPath={gallery.paths.preview}
-            defaultPath={cover ?? ""}
-            imageCount={gallery.image_count}
-            onClick={(i) => {
-              showLightbox(i);
+      )}
+      <RatingSystem value={gallery.rating100} disabled withoutContext />
+      <img
+        loading="lazy"
+        src={imgSrc}
+        alt=""
+        className={cx(CLASSNAME_IMG, imgClassname)}
+        // set orientation based on cover only
+        onLoad={imgSrc === cover ? onCoverLoad : onNonCoverLoad}
+      />
+      <div className="lineargradient">
+        <footer className={CLASSNAME_FOOTER}>
+          <Link
+            to={`/galleries/${gallery.id}`}
+            onClick={(e) => {
+              if (selecting) {
+                e.preventDefault();
+                handleCardClick(e);
+              }
+              e.stopPropagation();
             }}
-            onPathChanged={setImgSrc}
-          />
-        </div>
-      </section>
-    </>
+          >
+            {title && (
+              <TruncatedText
+                text={title}
+                lineCount={1}
+                className={CLASSNAME_TITLE}
+              />
+            )}
+            <TruncatedText text={performers.join(", ")} />
+            <div>
+              {gallery.date && TextUtils.formatFuzzyDate(intl, gallery.date)}
+            </div>
+          </Link>
+        </footer>
+        <GalleryPreviewScrubber
+          previewPath={gallery.paths.preview}
+          defaultPath={cover ?? ""}
+          imageCount={gallery.image_count}
+          onClick={(i) => {
+            showLightbox(gallery, i, true, autostartSlideshow);
+          }}
+          onPathChanged={setImgSrc}
+        />
+      </div>
+    </section>
   );
 };
 

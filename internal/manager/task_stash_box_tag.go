@@ -27,6 +27,7 @@ type stashBoxBatchPerformerTagTask struct {
 	stashID        *string
 	performer      *models.Performer
 	excludedFields []string
+	mergeFields    []string
 }
 
 func (t *stashBoxBatchPerformerTagTask) getName() string {
@@ -54,8 +55,13 @@ func (t *stashBoxBatchPerformerTagTask) Start(ctx context.Context) {
 		excluded[field] = true
 	}
 
+	merge := map[string]bool{}
+	for _, field := range t.mergeFields {
+		merge[field] = true
+	}
+
 	if performer != nil {
-		t.processMatchedPerformer(ctx, performer, excluded)
+		t.processMatchedPerformer(ctx, performer, excluded, merge)
 	} else {
 		logger.Infof("No match found for %s", t.getName())
 	}
@@ -157,7 +163,7 @@ func (t *stashBoxBatchPerformerTagTask) handleMergedPerformer(ctx context.Contex
 	return mergedPerformer, nil
 }
 
-func (t *stashBoxBatchPerformerTagTask) processMatchedPerformer(ctx context.Context, p *models.ScrapedPerformer, excluded map[string]bool) {
+func (t *stashBoxBatchPerformerTagTask) processMatchedPerformer(ctx context.Context, p *models.ScrapedPerformer, excluded map[string]bool, merge map[string]bool) {
 	if t.performer != nil {
 		storedID, _ := strconv.Atoi(*p.StoredID)
 
@@ -176,7 +182,7 @@ func (t *stashBoxBatchPerformerTagTask) processMatchedPerformer(ctx context.Cont
 				return err
 			}
 
-			partial := p.ToPartial(t.box.Endpoint, excluded, existingStashIDs)
+			partial := p.ToPartial(t.box.Endpoint, excluded, merge, existingStashIDs)
 
 			// if we're setting the performer's aliases, and not the name, then filter out the name
 			// from the aliases to avoid duplicates

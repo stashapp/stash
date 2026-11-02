@@ -33,8 +33,10 @@ type MetadataOptions struct {
 	SetCoverImage *bool `json:"setCoverImage"`
 	SetOrganized  *bool `json:"setOrganized"`
 	// defaults to true if not provided
+
 	// Deprecated: use PerformerGenders instead
 	IncludeMalePerformers *bool `json:"includeMalePerformers"`
+
 	// Filter to only include performers with these genders. If not provided, all genders are included.
 	PerformerGenders []models.GenderEnum `json:"performerGenders"`
 	// defaults to true if not provided

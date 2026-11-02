@@ -32,16 +32,18 @@ type ToastFn = (item: IToast) => void;
 
 const ToastContext = createContext<ToastFn | null>(null);
 
-export const ToastProvider: React.FC = ({ children }) => {
+export const ToastProvider: React.FC<React.PropsWithChildren<unknown>> = ({
+  children,
+}) => {
   const [toast, setToast] = useState<IActiveToast>();
   const [hiding, setHiding] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
-  function expand() {
-    setExpanded(true);
-  }
-
   const toastItem = useMemo(() => {
+    function expand() {
+      setExpanded(true);
+    }
+
     if (!toast || expanded) return null;
 
     return (
@@ -80,7 +82,7 @@ export const ToastProvider: React.FC = ({ children }) => {
   function copyToClipboard() {
     const { content } = toast ?? {};
 
-    if (!!content && typeof content === "string" && navigator.clipboard) {
+    if (content && typeof content === "string" && navigator.clipboard) {
       navigator.clipboard.writeText(content);
     }
   }
@@ -101,13 +103,11 @@ export const ToastProvider: React.FC = ({ children }) => {
           header={<FormattedMessage id="errors.header" />}
           icon={faTriangleExclamation}
           footerButtons={
-            <>
-              {!!navigator.clipboard && (
-                <Button variant="secondary" onClick={() => copyToClipboard()}>
-                  <FormattedMessage id="actions.copy_to_clipboard" />
-                </Button>
-              )}
-            </>
+            !!navigator.clipboard && (
+              <Button variant="secondary" onClick={() => copyToClipboard()}>
+                <FormattedMessage id="actions.copy_to_clipboard" />
+              </Button>
+            )
           }
         >
           {toast?.content}

@@ -1,7 +1,9 @@
 import videojs, { VideoJsPlayer } from "video.js";
 
 // prettier-ignore
-const BigPlayButton = videojs.getComponent("BigPlayButton") as unknown as typeof videojs.BigPlayButton;
+const BigPlayButton = videojs.getComponent(
+  "BigPlayButton"
+) as unknown as typeof videojs.BigPlayButton;
 
 class BigPlayPauseButton extends BigPlayButton {
   handleClick(event: videojs.EventTarget.Event) {
@@ -56,13 +58,12 @@ videojs.registerComponent("BigButtonGroup", BigButtonGroup);
 videojs.registerComponent("BigPlayPauseButton", BigPlayPauseButton);
 videojs.registerPlugin("bigButtons", BigButtonsPlugin);
 
-/* eslint-disable @typescript-eslint/naming-convention */
 declare module "video.js" {
   interface VideoJsPlayer {
     bigButtons: () => BigButtonsPlugin;
   }
   interface VideoJsPlayerPluginOptions {
-    bigButtons?: {};
+    bigButtons?: object;
   }
 }
 

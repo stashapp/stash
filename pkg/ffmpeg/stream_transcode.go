@@ -202,6 +202,10 @@ func (o TranscodeOptions) makeStreamArgs(sm *StreamManager) Args {
 	args = append(args, extraInputArgs...)
 
 	if o.StartTime != 0 {
+		if codec == VideoCodecCopy {
+			// #7103 - keep audio aligned with copied video, which can only start at a keyframe
+			args = args.NoAccurateSeek()
+		}
 		args = args.Seek(o.StartTime)
 	}
 

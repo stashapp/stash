@@ -1,11 +1,4 @@
-import React, {
-  useRef,
-  useState,
-  useEffect,
-  useCallback,
-  MouseEvent,
-  useMemo,
-} from "react";
+import React, { useRef, useState, useEffect, MouseEvent, useMemo } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
@@ -134,25 +127,28 @@ export const WallItem = <T extends WallItemType>({
 
   const previews = useMemo(() => {
     switch (type) {
-      case "scene":
+      case "scene": {
         const scene = data as GQL.SlimSceneDataFragment;
         return {
           video: scene.paths.preview ?? undefined,
           animation: scene.paths.webp ?? undefined,
           image: scene.paths.screenshot ?? undefined,
         };
-      case "sceneMarker":
+      }
+      case "sceneMarker": {
         const sceneMarker = data as GQL.SceneMarkerDataFragment;
         return {
           video: sceneMarker.stream,
           animation: sceneMarker.preview,
           image: sceneMarker.screenshot,
         };
-      case "image":
+      }
+      case "image": {
         const image = data as GQL.SlimImageDataFragment;
         return {
           image: image.paths.thumbnail ?? undefined,
         };
+      }
       default:
         // this is unreachable, inference fails for some reason
         return type as never;
@@ -160,27 +156,31 @@ export const WallItem = <T extends WallItemType>({
   }, [type, data]);
   const linkSrc = useMemo(() => {
     switch (type) {
-      case "scene":
+      case "scene": {
         const scene = data as GQL.SlimSceneDataFragment;
         return sceneQueue
           ? sceneQueue.makeLink(scene.id, { sceneIndex: index })
           : `/scenes/${scene.id}`;
-      case "sceneMarker":
+      }
+      case "sceneMarker": {
         const sceneMarker = data as GQL.SceneMarkerDataFragment;
         return NavUtils.makeSceneMarkerUrl(sceneMarker);
-      case "image":
+      }
+      case "image": {
         const image = data as GQL.SlimImageDataFragment;
         return `/images/${image.id}`;
+      }
       default:
         return type;
     }
   }, [type, data, sceneQueue, index]);
   const title = useMemo(() => {
     switch (type) {
-      case "scene":
+      case "scene": {
         const scene = data as GQL.SlimSceneDataFragment;
         return objectTitle(scene);
-      case "sceneMarker":
+      }
+      case "sceneMarker": {
         const sceneMarker = data as GQL.SceneMarkerDataFragment;
         const newTitle = markerTitle(sceneMarker);
         const seconds = TextUtils.formatTimestampRange(
@@ -192,6 +192,7 @@ export const WallItem = <T extends WallItemType>({
         } else {
           return seconds;
         }
+      }
       case "image":
         return "";
       default:
@@ -205,19 +206,20 @@ export const WallItem = <T extends WallItemType>({
     }
   }, [type, data]);
 
-  const setInactive = () => setActive(false);
-  const toggleActive = useCallback((e: TransitionEvent) => {
-    if (e.propertyName === "transform" && e.elapsedTime === 0) {
-      // Get the current scale of the wall-item. If it's smaller than 1.1 the item is being scaled up, otherwise down.
-      const matrixScale = getComputedStyle(itemEl.current!).transform.match(
-        /-?\d+\.?\d+|\d+/g
-      )?.[0];
-      const scale = Number.parseFloat(matrixScale ?? "2") || 2;
-      setActive((value) => scale <= 1.1 && !value);
-    }
-  }, []);
-
   useEffect(() => {
+    const setInactive = () => setActive(false);
+
+    function toggleActive(e: TransitionEvent) {
+      if (e.propertyName === "transform" && e.elapsedTime === 0) {
+        // Get the current scale of the wall-item. If it's smaller than 1.1 the item is being scaled up, otherwise down.
+        const matrixScale = getComputedStyle(itemEl.current!).transform.match(
+          /-?\d+\.?\d+|\d+/g
+        )?.[0];
+        const scale = Number.parseFloat(matrixScale ?? "2") || 2;
+        setActive((value) => scale <= 1.1 && !value);
+      }
+    }
+
     const item = itemEl.current!;
     item.addEventListener("transitioncancel", setInactive);
     item.addEventListener("transitionstart", toggleActive);
@@ -225,7 +227,7 @@ export const WallItem = <T extends WallItemType>({
       item.removeEventListener("transitioncancel", setInactive);
       item.removeEventListener("transitionstart", toggleActive);
     };
-  }, [toggleActive]);
+  }, []);
 
   const onClick = (e: MouseEvent) => {
     clickHandler?.(e, data);

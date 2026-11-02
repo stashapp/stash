@@ -55,7 +55,6 @@ class WakeSentinelPlugin extends videojs.getPlugin("plugin") {
 
 videojs.registerPlugin("wakeSentinel", WakeSentinelPlugin);
 
-/* eslint-disable @typescript-eslint/naming-convention */
 declare module "video.js" {
   interface VideoJsPlayer {
     wakeSentinel: () => WakeSentinelPlugin;

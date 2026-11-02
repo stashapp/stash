@@ -408,71 +408,69 @@ export const SettingsServicesPanel: React.FC = () => {
 
   const DLNASettingsForm: React.FC = () => {
     return (
-      <>
-        <SettingSection headingID="settings">
-          <StringSetting
-            headingID="config.dlna.server_display_name"
-            subHeading={intl.formatMessage(
-              { id: "config.dlna.server_display_name_desc" },
-              { server_name: <code>stash</code> }
-            )}
-            value={dlna.serverName ?? undefined}
-            onChange={(v) => saveDLNA({ serverName: v })}
-          />
+      <SettingSection headingID="settings">
+        <StringSetting
+          headingID="config.dlna.server_display_name"
+          subHeading={intl.formatMessage(
+            { id: "config.dlna.server_display_name_desc" },
+            { server_name: <code>stash</code> }
+          )}
+          value={dlna.serverName ?? undefined}
+          onChange={(v) => saveDLNA({ serverName: v })}
+        />
 
-          <NumberSetting
-            headingID="config.dlna.server_port"
-            subHeading={intl.formatMessage({
-              id: "config.dlna.server_port_desc",
-            })}
-            value={dlna.port ?? undefined}
-            onChange={(v) => saveDLNA({ port: v ? v : defaultDLNAPort })}
-          />
+        <NumberSetting
+          headingID="config.dlna.server_port"
+          subHeading={intl.formatMessage({
+            id: "config.dlna.server_port_desc",
+          })}
+          value={dlna.port ?? undefined}
+          onChange={(v) => saveDLNA({ port: v ? v : defaultDLNAPort })}
+        />
 
-          <BooleanSetting
-            id="dlna-enabled-by-default"
-            headingID="config.dlna.enabled_by_default"
-            checked={dlna.enabled ?? undefined}
-            onChange={(v) => saveDLNA({ enabled: v })}
-          />
+        <BooleanSetting
+          id="dlna-enabled-by-default"
+          headingID="config.dlna.enabled_by_default"
+          checked={dlna.enabled ?? undefined}
+          onChange={(v) => saveDLNA({ enabled: v })}
+        />
 
-          <StringListSetting
-            id="dlna-network-interfaces"
-            headingID="config.dlna.network_interfaces"
-            subHeadingID="config.dlna.network_interfaces_desc"
-            value={dlna.interfaces ?? undefined}
-            onChange={(v) => saveDLNA({ interfaces: v })}
-          />
+        <StringListSetting
+          id="dlna-network-interfaces"
+          headingID="config.dlna.network_interfaces"
+          subHeadingID="config.dlna.network_interfaces_desc"
+          value={dlna.interfaces ?? undefined}
+          onChange={(v) => saveDLNA({ interfaces: v })}
+        />
 
-          <StringListSetting
-            id="dlna-default-ip-whitelist"
-            headingID="config.dlna.default_ip_whitelist"
-            subHeading={intl.formatMessage(
-              { id: "config.dlna.default_ip_whitelist_desc" },
-              { wildcard: <code>*</code> }
-            )}
-            defaultNewValue="*"
-            value={dlna.whitelistedIPs ?? undefined}
-            onChange={(v) => saveDLNA({ whitelistedIPs: v })}
-          />
+        <StringListSetting
+          id="dlna-default-ip-whitelist"
+          headingID="config.dlna.default_ip_whitelist"
+          subHeading={intl.formatMessage(
+            { id: "config.dlna.default_ip_whitelist_desc" },
+            { wildcard: <code>*</code> }
+          )}
+          defaultNewValue="*"
+          value={dlna.whitelistedIPs ?? undefined}
+          onChange={(v) => saveDLNA({ whitelistedIPs: v })}
+        />
 
-          <SelectSetting
-            id="video-sort-order"
-            headingID="config.dlna.video_sort_order"
-            subHeadingID="config.dlna.video_sort_order_desc"
-            value={dlna.videoSortOrder ?? defaultVideoSort}
-            onChange={(v) => saveDLNA({ videoSortOrder: v })}
-          >
-            {Array.from(videoSortOrderIntlMap.entries()).map((v) => (
-              <option key={v[0]} value={v[0]}>
-                {intl.formatMessage({
-                  id: v[1],
-                })}
-              </option>
-            ))}
-          </SelectSetting>
-        </SettingSection>
-      </>
+        <SelectSetting
+          id="video-sort-order"
+          headingID="config.dlna.video_sort_order"
+          subHeadingID="config.dlna.video_sort_order_desc"
+          value={dlna.videoSortOrder ?? defaultVideoSort}
+          onChange={(v) => saveDLNA({ videoSortOrder: v })}
+        >
+          {Array.from(videoSortOrderIntlMap.entries()).map((v) => (
+            <option key={v[0]} value={v[0]}>
+              {intl.formatMessage({
+                id: v[1],
+              })}
+            </option>
+          ))}
+        </SelectSetting>
+      </SettingSection>
     );
   };
 

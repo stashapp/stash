@@ -34,7 +34,7 @@ interface ILocalForage<T> {
 }
 
 const Loading: Record<string, boolean> = {};
-const Cache: Record<string, {}> = {};
+const Cache: Record<string, object> = {};
 
 export function useLocalForage<T extends {}>(
   key: string,

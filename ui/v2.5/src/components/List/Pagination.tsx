@@ -55,7 +55,7 @@ const PageCount: React.FC<{
   }, [totalPages, currentPage]);
 
   function onCustomChangePage() {
-    const newPage = Number.parseInt(pageInput.current?.value ?? "0");
+    const newPage = Number.parseInt(pageInput.current?.value ?? "0", 10);
     if (newPage) {
       onChangePage(newPage);
     }

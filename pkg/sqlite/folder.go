@@ -296,12 +296,11 @@ func (qb *FolderStore) FindMany(ctx context.Context, ids []models.FolderID) ([]*
 }
 
 func (qb *FolderStore) FindByPath(ctx context.Context, p string, caseSensitive bool) (*models.Folder, error) {
-	// use like for case insensitive search
-	var criterion exp.BooleanExpression
+	var criterion exp.Expression
 	if caseSensitive {
 		criterion = qb.table().Col("path").Eq(p)
 	} else {
-		criterion = qb.table().Col("path").ILike(p)
+		criterion = pathEqNoCase(qb.table().Col("path"), p)
 	}
 
 	q := qb.selectDataset().Prepared(true).Where(criterion)
@@ -547,26 +546,6 @@ func (qb *FolderStore) validateFilter(fileFilter *models.FolderFilterType) error
 	return nil
 }
 
-func (qb *FolderStore) makeFilter(ctx context.Context, folderFilter *models.FolderFilterType) *filterBuilder {
-	query := &filterBuilder{}
-
-	if folderFilter.And != nil {
-		query.and(qb.makeFilter(ctx, folderFilter.And))
-	}
-	if folderFilter.Or != nil {
-		query.or(qb.makeFilter(ctx, folderFilter.Or))
-	}
-	if folderFilter.Not != nil {
-		query.not(qb.makeFilter(ctx, folderFilter.Not))
-	}
-
-	filter := filterBuilderFromHandler(ctx, &folderFilterHandler{
-		folderFilter: folderFilter,
-	})
-
-	return filter
-}
-
 func (qb *FolderStore) Query(ctx context.Context, options models.FolderQueryOptions) (*models.FolderQueryResult, error) {
 	folderFilter := options.FolderFilter
 	findFilter := options.FindFilter
@@ -590,7 +569,10 @@ func (qb *FolderStore) Query(ctx context.Context, options models.FolderQueryOpti
 	if err := qb.validateFilter(folderFilter); err != nil {
 		return nil, err
 	}
-	filter := qb.makeFilter(ctx, folderFilter)
+
+	filter := filterBuilderFromHandler(ctx, &folderFilterHandler{
+		folderFilter: folderFilter,
+	})
 
 	if err := query.addFilter(filter); err != nil {
 		return nil, err

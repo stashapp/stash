@@ -12,6 +12,7 @@ export const sceneFields = [
   "title",
   "code",
   "date",
+  "production_date",
   "director",
   "details",
   "url",

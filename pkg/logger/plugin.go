@@ -187,25 +187,57 @@ func (log *PluginLogger) handleStderrLine(line string) {
 	}
 }
 
+// maxLogLineLength is the maximum length of a single log line read from a plugin.
+// Longer lines are truncated to this length.
+const maxLogLineLength = 64 * 1024
+
+const truncatedSuffix = " [truncated]"
+
 // ReadLogMessages reads plugin log messages from src, forwarding them to the PluginLoggers Logger.
 // ProgressLevel messages are parsed as float64 and forwarded to ProgressChan. If ProgressChan is full,
 // then the progress message is not forwarded.
+// Log lines longer than maxLogLineLength are truncated.
 // This method only returns when it reaches the end of src or encounters an error while reading src.
 // This method closes src before returning.
 func (log *PluginLogger) ReadLogMessages(src io.ReadCloser) {
-	// pipe plugin stderr to our logging
-	scanner := bufio.NewScanner(src)
-	for scanner.Scan() {
-		str := scanner.Text()
-		if str != "" {
-			log.handleStderrLine(str)
+	defer src.Close()
+
+	// pipe plugin stderr to our logging.
+	// bufio.Scanner is unsuitable here: it aborts permanently on lines longer than
+	// its buffer, which would stop us reading the remainder of the plugin's output
+	// and break the plugin's stderr pipe.
+	reader := bufio.NewReader(src)
+
+	var line strings.Builder
+	truncated := false
+
+	for {
+		chunk, isPrefix, err := reader.ReadLine()
+
+		if remaining := maxLogLineLength - line.Len(); remaining < len(chunk) {
+			line.Write(chunk[:max(remaining, 0)])
+			truncated = true
+		} else {
+			line.Write(chunk)
+		}
+
+		// isPrefix indicates that the line was too long for the read buffer and
+		// will be continued by the next read
+		if !isPrefix {
+			str := line.String()
+			if truncated {
+				str += truncatedSuffix
+			}
+			if str != "" {
+				log.handleStderrLine(str)
+			}
+
+			line.Reset()
+			truncated = false
+		}
+
+		if err != nil {
+			return
 		}
 	}
-
-	str := scanner.Text()
-	if str != "" {
-		log.handleStderrLine(str)
-	}
-
-	src.Close()
 }

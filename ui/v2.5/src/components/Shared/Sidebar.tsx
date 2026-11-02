@@ -78,10 +78,9 @@ export const SidebarToggleButton: React.FC<{
   );
 };
 
-export const SidebarPaneContent: React.FC<{ onSidebarToggle: () => void }> = ({
-  onSidebarToggle,
-  children,
-}) => {
+export const SidebarPaneContent: React.FC<
+  React.PropsWithChildren<{ onSidebarToggle: () => void }>
+> = ({ onSidebarToggle, children }) => {
   return (
     <div className="sidebar-pane-content">
       <SidebarToggleButton onClick={onSidebarToggle} />
@@ -121,7 +120,7 @@ export const SidebarSection: React.FC<
   const openState =
     !contextState || !sectionID
       ? undefined
-      : contextState.sectionOpen[sectionID] ?? undefined;
+      : (contextState.sectionOpen[sectionID] ?? undefined);
 
   function onOpenInternal(open: boolean) {
     if (contextState && sectionID) {
@@ -226,7 +225,7 @@ export function useSidebarState(view?: View) {
       history.replace({
         ...history.location,
         state: {
-          ...(history.location.state as {}),
+          ...(history.location.state as object),
           sectionOpen: newSectionOpen,
         },
       });

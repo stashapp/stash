@@ -86,5 +86,7 @@ export const PERFORMER_FIELDS = [
   "details",
 ];
 
+export const PERFORMER_MERGEABLE_FIELDS = ["aliases", "urls"];
+
 export const STUDIO_FIELDS = ["name", "image", "url", "parent_studio"];
 export const TAG_FIELDS = ["name", "description", "aliases", "parent_tags"];

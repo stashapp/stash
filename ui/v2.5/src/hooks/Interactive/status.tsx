@@ -8,7 +8,7 @@ import {
   InteractiveContext,
 } from "./context";
 
-export const SceneInteractiveStatus: React.FC = ({}) => {
+export const SceneInteractiveStatus: React.FC = () => {
   const { state, error } = React.useContext(InteractiveContext);
 
   function getStateClass() {
@@ -31,7 +31,7 @@ export const SceneInteractiveStatus: React.FC = ({}) => {
   }
 
   if (state === ConnectionState.Missing) {
-    return <></>;
+    return null;
   }
 
   return (

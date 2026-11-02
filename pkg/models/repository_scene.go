@@ -18,6 +18,7 @@ type SceneGetter interface {
 // SceneFinder provides methods to find scenes.
 type SceneFinder interface {
 	SceneGetter
+	IDsFromFileIDsLoader
 	FindByFingerprints(ctx context.Context, fp []Fingerprint) ([]*Scene, error)
 	FindByChecksum(ctx context.Context, checksum string) ([]*Scene, error)
 	FindByOSHash(ctx context.Context, oshash string) ([]*Scene, error)
@@ -27,7 +28,7 @@ type SceneFinder interface {
 	FindByPerformerID(ctx context.Context, performerID int) ([]*Scene, error)
 	FindByGalleryID(ctx context.Context, performerID int) ([]*Scene, error)
 	FindByGroupID(ctx context.Context, groupID int) ([]*Scene, error)
-	FindDuplicates(ctx context.Context, distance int, durationDiff float64) ([][]*Scene, error)
+	FindDuplicates(ctx context.Context, distance int, durationDiff float64, filter *SceneFilterType) ([][]*Scene, error)
 }
 
 // SceneQueryer provides methods to query scenes.
@@ -45,7 +46,7 @@ type SceneCounter interface {
 	CountMissingOSHash(ctx context.Context) (int, error)
 	OCountByPerformerID(ctx context.Context, performerID int) (int, error)
 	OCountByGroupID(ctx context.Context, groupID int) (int, error)
-	OCountByStudioID(ctx context.Context, studioID int) (int, error)
+	OCountByStudioID(ctx context.Context, studioID int, depth int) (int, error)
 }
 
 // SceneCreator provides methods to create scenes.

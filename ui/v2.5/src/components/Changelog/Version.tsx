@@ -12,7 +12,7 @@ interface IVersionProps {
   openState: Record<string, boolean>;
 }
 
-const Version: React.FC<IVersionProps> = ({
+const Version: React.FC<React.PropsWithChildren<IVersionProps>> = ({
   version,
   date,
   defaultOpen,

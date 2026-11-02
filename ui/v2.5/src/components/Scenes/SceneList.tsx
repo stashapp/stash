@@ -466,7 +466,8 @@ export const FilteredSceneList = PatchComponent(
         Mousetrap.unbind("e");
         Mousetrap.unbind("d d");
       };
-    }, [onSelectAll, onSelectNone, hasSelection, onEdit, onDelete]);
+    }, [hasSelection, onEdit, onDelete]);
+
     useZoomKeybinds({
       zoomIndex: filter.zoomIndex,
       onChangeZoom: (zoom) => setFilter(filter.setZoom(zoom)),
@@ -488,7 +489,7 @@ export const FilteredSceneList = PatchComponent(
     const playFirst = usePlayFirst();
 
     function onCreateNew() {
-      let queryParam = new URLSearchParams(location.search).get("q");
+      const queryParam = new URLSearchParams(location.search).get("q");
       let newPath = "/scenes/new";
       if (queryParam) {
         newPath += "?q=" + encodeURIComponent(queryParam);
@@ -678,6 +679,7 @@ export const FilteredSceneList = PatchComponent(
                 />
 
                 <FilterTags
+                  view={view}
                   criteria={filter.criteria}
                   onEditCriterion={(c) =>
                     showEditFilter(c.criterionOption.type)

@@ -1,4 +1,4 @@
-# Troubleshooting Mode
+# Troubleshooting mode
 
 Troubleshooting mode disables all plugins and all custom CSS, JavaScript, and locales. It also temporarily sets the log level to `DEBUG`. This is useful when you are experiencing issues with your Stash instance to eliminate the possibility that a plugin or custom code is causing the issue.
 

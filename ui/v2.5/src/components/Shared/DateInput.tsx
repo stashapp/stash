@@ -98,7 +98,7 @@ const _DateInput: React.FC<IProps> = (props: IProps) => {
         onChange={(e) => props.onValueChange(e.currentTarget.value)}
         placeholder={
           !props.disabled
-            ? props.placeholderOverride ?? placeholderText
+            ? (props.placeholderOverride ?? placeholderText)
             : undefined
         }
         isInvalid={!!props.error}
@@ -162,8 +162,8 @@ export const BulkUpdateDateInput: React.FC<IBulkUpdateDateInputProps> = ({
     props.value === null
       ? `<${intl.formatMessage({ id: "empty_value" })}>`
       : props.value === undefined
-      ? `<${intl.formatMessage({ id: "existing_value" })}>`
-      : undefined;
+        ? `<${intl.formatMessage({ id: "existing_value" })}>`
+        : undefined;
 
   function outValue(v: string | undefined) {
     if (v === "") {

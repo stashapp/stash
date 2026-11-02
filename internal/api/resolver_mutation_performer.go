@@ -654,7 +654,7 @@ func (r *mutationResolver) PerformerMerge(ctx context.Context, input PerformerMe
 		}
 		legacyURLs := legacyPerformerURLsFromInput(*input.Values, translator)
 		if legacyURLs.AnySet() {
-			return nil, errors.New("Merging legacy performer URLs is not supported")
+			return nil, errors.New("merging legacy performer URLs is not supported")
 		}
 
 		if input.Values.Image != nil {

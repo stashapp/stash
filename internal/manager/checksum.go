@@ -22,7 +22,8 @@ type SceneMissingHashCounter interface {
 // will ensure that all oshash values are set on all scenes.
 func ValidateVideoFileNamingAlgorithm(ctx context.Context, qb SceneMissingHashCounter, newValue models.HashAlgorithm) error {
 	// if algorithm is being set to MD5, then all checksums must be present
-	if newValue == models.HashAlgorithmMd5 {
+	switch newValue {
+	case models.HashAlgorithmMd5:
 		missingMD5, err := qb.CountMissingChecksum(ctx)
 		if err != nil {
 			return err
@@ -31,7 +32,7 @@ func ValidateVideoFileNamingAlgorithm(ctx context.Context, qb SceneMissingHashCo
 		if missingMD5 > 0 {
 			return errors.New("some checksums are missing on scenes. Run Scan with calculateMD5 set to true")
 		}
-	} else if newValue == models.HashAlgorithmOshash {
+	case models.HashAlgorithmOshash:
 		missingOSHash, err := qb.CountMissingOSHash(ctx)
 		if err != nil {
 			return err

@@ -60,7 +60,14 @@ func (g Generator) screenshot(input string, options screenshotOptions) generateF
 		}
 
 		args := transcoder.ScreenshotTime(input, options.Time, ssOptions)
+		if err := g.generate(lockCtx, args); err != nil {
+			logger.Warnf("[generator] fast screenshot seek failed for %s at %.3fs, retrying with accurate seek: %v", input, options.Time, err)
 
-		return g.generate(lockCtx, args)
+			ssOptions.SlowSeek = true
+			args = transcoder.ScreenshotTime(input, options.Time, ssOptions)
+			return g.generate(lockCtx, args)
+		}
+
+		return nil
 	}
 }

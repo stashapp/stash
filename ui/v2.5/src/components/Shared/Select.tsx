@@ -121,19 +121,19 @@ const LimitedSelectMenu = <T extends boolean>(
     if (Array.isArray(props.children)) {
       // limit the number of select options showing in the select dropdowns
       // always showing the 'Create "..."' option when it exists
-      let creationOptionIndex = (props.children as React.ReactNode[]).findIndex(
-        (child: React.ReactNode) => {
-          let maybeCreatableOption = child as React.ReactElement<
-            OptionProps<
-              Option & { __isNew__: boolean },
-              T,
-              GroupBase<Option & { __isNew__: boolean }>
-            >,
-            ""
-          >;
-          return maybeCreatableOption?.props?.data?.__isNew__;
-        }
-      );
+      const creationOptionIndex = (
+        props.children as React.ReactNode[]
+      ).findIndex((child: React.ReactNode) => {
+        const maybeCreatableOption = child as React.ReactElement<
+          OptionProps<
+            Option & { __isNew__: boolean },
+            T,
+            GroupBase<Option & { __isNew__: boolean }>
+          >,
+          ""
+        >;
+        return maybeCreatableOption?.props?.data?.__isNew__;
+      });
       if (creationOptionIndex >= maxOptionsShown) {
         setHiddenCount(props.children.length - maxOptionsShown - 1);
         return props.children
@@ -182,10 +182,9 @@ const SelectComponent = <T extends boolean>({
   noOptionsMessage = type !== "tags" ? "None" : null,
 }: ISelectProps<T> & ITypeProps) => {
   const values = items.filter((item) => initialIds?.indexOf(item.value) !== -1);
-  const defaultValue = (isMulti ? values : values[0] ?? null) as OnChangeValue<
-    Option,
-    T
-  >;
+  const defaultValue = (
+    isMulti ? values : (values[0] ?? null)
+  ) as OnChangeValue<Option, T>;
 
   const options = groupHeader
     ? [

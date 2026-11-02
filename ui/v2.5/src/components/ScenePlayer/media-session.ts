@@ -61,7 +61,6 @@ class MediaSessionPlugin extends videojs.getPlugin("plugin") {
 
 videojs.registerPlugin("mediaSession", MediaSessionPlugin);
 
-/* eslint-disable @typescript-eslint/naming-convention */
 declare module "video.js" {
   interface VideoJsPlayer {
     mediaSession: () => MediaSessionPlugin;

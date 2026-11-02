@@ -276,6 +276,11 @@ func (s *xpathScraper) getXPathQuery(doc *html.Node, url string) *xpathQuery {
 	}
 }
 
+var (
+	multiSpaceRE = regexp.MustCompile("  +")
+	newlineRE    = regexp.MustCompile("\n")
+)
+
 type xpathQuery struct {
 	doc       *html.Node
 	scraper   *xpathScraper
@@ -325,12 +330,10 @@ func (q *xpathQuery) nodeText(n *html.Node) string {
 	ret = strings.TrimSpace(ret)
 
 	// remove multiple whitespace
-	re := regexp.MustCompile("  +")
-	ret = re.ReplaceAllString(ret, " ")
+	ret = multiSpaceRE.ReplaceAllString(ret, " ")
 
 	// TODO - make this optional
-	re = regexp.MustCompile("\n")
-	ret = re.ReplaceAllString(ret, "")
+	ret = newlineRE.ReplaceAllString(ret, "")
 
 	return ret
 }
