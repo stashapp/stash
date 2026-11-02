@@ -7,7 +7,7 @@
         "allow": "İzin Ver",
         "allow_temporarily": "Geçici olarak izin ver",
         "apply": "Uygula",
-        "auto_tag": "Otomatik Etiket",
+        "auto_tag": "Otomatik etiket",
         "backup": "Yedekle",
         "browse_for_image": "Resim için gözat…",
         "cancel": "İptal",
@@ -29,7 +29,7 @@
         "delete_generated_supporting_files": "Oluşturulan ek dosyaları sil",
         "disallow": "İzin verme",
         "download": "İndir",
-        "download_backup": "Yedekleme Dosyasını İndir",
+        "download_backup": "Yedekleme dosyasını indir",
         "edit": "Düzenle",
         "export": "Dışa Aktar",
         "export_all": "Tümünü dışa aktar…",
@@ -37,8 +37,8 @@
         "finish": "Bitir",
         "from_file": "Dosyadan…",
         "from_url": "URL'den…",
-        "full_export": "Tam Dışa Aktarım",
-        "full_import": "Tam İçe Aktarma",
+        "full_export": "Tam dışa aktarım",
+        "full_import": "Tam içe aktarım",
         "generate": "Oluştur",
         "generate_thumb_default": "Varsayılan küçük resim oluştur",
         "generate_thumb_from_current": "Mevcut görüntüden küçük resim oluştur",
@@ -77,9 +77,9 @@
         "select_all": "Tümünü Seç",
         "select_folders": "Dizinleri seç",
         "select_none": "Hiçbirini Seçme",
-        "selective_auto_tag": "Seçerek Otomatik Etiketle",
-        "selective_clean": "Seçerek Temizle",
-        "selective_scan": "Seçerek Tara",
+        "selective_auto_tag": "Seçerek otomatik etiketle",
+        "selective_clean": "Seçerek temizle",
+        "selective_scan": "Seçerek tara",
         "set_as_default": "Varsayılan olarak ayarla",
         "set_back_image": "Arka kapak resmi…",
         "set_front_image": "Ön kapak resmi…",
@@ -126,12 +126,12 @@
         "clean_generated": "Oluşturulan dosyaları temizle",
         "open_in_external_player": "Harici oynatıcıda aç",
         "clear_date_data": "Tarih verisini temizle",
-        "optimise_database": "Veritabanını Optimize Et",
+        "optimise_database": "Veritabanını optimize et",
         "create_parent_studio": "Ana stüdyo oluştur",
-        "migrate_scene_screenshots": "Sahne Ekran Görüntülerini Aktar",
+        "migrate_scene_screenshots": "Sahne ekran görüntülerini aktar",
         "add_o": "O Ekle",
         "add_play": "Oynatma ekle",
-        "migrate_blobs": "Blob'ları Aktar",
+        "migrate_blobs": "Blob'ları aktar",
         "assign_stashid_to_parent_studio": "Mevcut ana stüdyoya Stash ID atayın ve üstverileri güncelleyin",
         "download_anonymised": "Anonim olarak indir",
         "add_manual_date": "Elle tarih ekle",
@@ -149,7 +149,17 @@
         "show_count_results": "{count} sonucu göster",
         "load": "Yükle",
         "load_filter": "Filtre yükle",
-        "select_directory": "Dizin seç"
+        "select_directory": "Dizin seç",
+        "add_stash_id": "Stash ID'si ekle",
+        "create_new": "Yeni oluştur",
+        "from_clipboard": "Panodan",
+        "reveal_in_file_manager": "Dosya Yöneticisi'nde göster",
+        "invert_selection": "Tersini Seç",
+        "selective_generate": "Seçerek oluştur",
+        "create_parent_tag": "Üst etiket oluştur",
+        "exclude_lowercase": "hariç tut",
+        "save_and_new": "Kaydet ve Yeni Oluştur",
+        "set_as_performer_image": "Oyuncu resmi olarak ayarla"
     },
     "actions_name": "Eylemler",
     "age": "Yaş",
@@ -185,7 +195,13 @@
             "source": "Kaynak",
             "errors": {
                 "blacklist_duplicate": "Yinelenen kara liste öğesi"
-            }
+            },
+            "performer_genders": {
+                "heading": "Oyuncu cinsiyetleri",
+                "description": "Sahneleri etiketlerken bu cinsiyetlere sahip oyuncular gösterilecektir."
+            },
+            "mark_organized_label": "Kaydederken \"Düzenlendi\" olarak işaretle",
+            "mark_organized_desc": "Kaydettikten hemen sonra sahneyi \"Düzenlendi\" olarak işaretle."
         },
         "noun_query": "Sorgu",
         "results": {
@@ -198,7 +214,6 @@
             "match_failed_already_tagged": "Sahne zaten etiketlendi",
             "match_failed_no_result": "Sonuç bulunamadı",
             "match_success": "Sahne başarıyla etiketlendi",
-            "phash_matches": "{count} PHash eşleşiyor",
             "unnamed": "İsimsiz"
         },
         "verb_match_fp": "Parmak İzlerini Eşleştir",
@@ -206,7 +221,8 @@
         "verb_scrape_all": "Tümü için Veri Topla",
         "verb_submit_fp": "{fpCount, plural, one{# Parmak izi} other{# Parmak izlerini}} gönder",
         "verb_toggle_config": "{toggle} {configuration}",
-        "verb_toggle_unmatched": "{toggle} eşleşmeyen sahneler"
+        "verb_toggle_unmatched": "{toggle} eşleşmeyen sahneler",
+        "verb_add_as_alias": "Toplanan adı diğer ad olarak ekle"
     },
     "config": {
         "about": {
@@ -214,12 +230,14 @@
             "build_time": "Sürüm zamanı:",
             "check_for_new_version": "Yeni sürümü kontrol et",
             "latest_version": "Son Sürüm",
-            "latest_version_build_hash": "Son Sürüm İmzası:",
+            "latest_version_build_hash": "Son sürüm imzası:",
             "new_version_notice": "[YENİ]",
-            "stash_home": "{url} üzerinde Stash sayfası",
-            "stash_wiki": "Stash {url} sayfası",
+            "stash_home": "Stash'i {url} adresinde ziyaret edin.",
+            "stash_wiki": "Stash'in {url} adresindeki sitesine göz atın.",
             "version": "Sürüm",
-            "release_date": "Yayın tarihi:"
+            "release_date": "Yayın tarihi:",
+            "stash_community": "{forumUrl} veya {discordUrl} topluluk sunucumuza katılın.",
+            "support_us": "Bizi {openCollectiveUrl} veya {githubSponsorsUrl} üzerinden destekleyin."
         },
         "application_paths": {
             "heading": "Uygulama Yolları"
@@ -241,13 +259,13 @@
         "dlna": {
             "allow_temp_ip": "{tempIP} IP adresine izin ver",
             "allowed_ip_addresses": "İzinli IP adresleri",
-            "default_ip_whitelist": "Varsayılan IP Beyaz Listesi",
+            "default_ip_whitelist": "Varsayılan IP izin listesi",
             "default_ip_whitelist_desc": "Varsayılan IP adresleri DLNA'e erişme izni verir. Tüm IP adreslerine izin vermek için {wildcard} kullanın.",
             "enabled_by_default": "Varsayılan olarak etkin",
             "network_interfaces": "Arayüzler",
             "network_interfaces_desc": "DLNA sunucusunu göstermek için arayüzler. Listeyi boş bırakmak tüm arabirimler üzerinde çalışmayla sonuçlanır. Değişiklikten sonra DLNA'in yeniden başlatılması gerekir.",
             "recent_ip_addresses": "Son IP adresleri",
-            "server_display_name": "Sunucunun Görünen Adı",
+            "server_display_name": "Görünen sunucu adı",
             "server_display_name_desc": "DLNA sunucusu için kullanılacak isim. Boş ise {server_name} kullanılır.",
             "until_restart": "yeniden başlatana kadar",
             "disallowed_ip": "İzin verilmeyen IP",
@@ -266,23 +284,25 @@
                 "authentication": "Kimlik Doğrulama",
                 "clear_api_key": "API anahtarını temizle",
                 "credentials": {
-                    "description": "Stash erişimini kısıtlamak için giriş bilgileri.",
+                    "description": "Stash'e erişimi kısıtlamak için kimlik bilgileri.",
                     "heading": "Giriş Bilgileri"
                 },
                 "generate_api_key": "API anahtarı oluştur",
                 "log_file": "Kayıt dosyası",
                 "log_file_desc": "Kayıtların tutulacağı dosyanın yolu. Kayıt tutmayı kapatmak için boş bırakın. Yeniden başlatma gerektirir.",
-                "log_http": "HTTP erişimini kayıt altına al",
+                "log_http": "HTTP erişimini günlüğe kaydet",
                 "log_http_desc": "HTTP erişimini terminalde gösterir. Yeniden başlatma gerektirir.",
                 "log_to_terminal": "Terminale kaydet",
                 "log_to_terminal_desc": "Dosyanın yanı sıra terminale de kayıt gösterir. Dosyaya kayıt kapalı ise her zaman etkindir. Yeniden başlatma gerektirir.",
-                "maximum_session_age": "Maksimum Oturum Süresi",
+                "maximum_session_age": "Maksimum oturum süresi",
                 "maximum_session_age_desc": "Oturumun süresi dolmadan önce maksimum boşta kalma süresi (saniye cinsinden). Yeniden başlatma gerektirir.",
                 "password": "Parola",
                 "password_desc": "Stash'e erişim için parola. Kullanıcı kimlik doğrulamasını devre dışı bırakmak için boş bırakın",
                 "stash-box_integration": "Stash-box entegrasyonu",
                 "username": "Kullanıcı adı",
-                "username_desc": "Stash'e erişim için kullanıcı adı. Kullanıcı kimlik doğrulamasını devre dışı bırakmak için boş bırakın"
+                "username_desc": "Stash'e erişim için kullanıcı adı. Kullanıcı kimlik doğrulamasını devre dışı bırakmak için boş bırakın",
+                "log_file_max_size": "Maksimum günlük boyutu",
+                "log_file_max_size_desc": "Sıkıştırılmadan önceki günlük dosyasının megabayt cinsinden maksimum boyutu. 0MB devre dışıdır. Yeniden başlatma gerektirir."
             },
             "cache_location": "Önbellek dizininin konumudur. HLS (Apple cihazlarında olduğu gibi) veya DASH kullanılarak akış yapılıyorsa gereklidir.",
             "cache_path_head": "Önbellek yolu",
@@ -292,48 +312,48 @@
             "check_for_insecure_certificates_desc": "Bazı siteler güvensiz SSL sertifikası kullanıyor olabilir. Bu seçenek kapalı ise veri toplayıcı sertifika doğrulama adımını yapmaz. Veri toplarken sertifika hatası alıyorsanız bu işareti kaldırabilirsiniz.",
             "chrome_cdp_path": "Chrome CDP yolu",
             "chrome_cdp_path_desc": "Chrome yürütülebilir dosyasının dosya yolu veya bir Chrome örneğinin uzak adresi (http:// veya https:// ile başlayan, örneğin http://localhost:9222/json/version).",
-            "create_galleries_from_folders_desc": "Seçili ise resim içeren dizinlerden galeriler oluşturur.",
+            "create_galleries_from_folders_desc": "",
             "create_galleries_from_folders_label": "Resim içeren dizinlerden galeri oluştur",
             "db_path_head": "Veritabanı yolu",
             "directory_locations_to_your_content": "İçeriğiniz için dizin konumları",
             "excluded_image_gallery_patterns_desc": "Tarama ve Temizleme işlemine eklenmeyecek Resim ve Galeri dosyaları/dosya konumları için kurallı ifadeler (Regexp)",
-            "excluded_image_gallery_patterns_head": "Dışta tutulan Resim/Galeri Kuralları",
+            "excluded_image_gallery_patterns_head": "Hariç tutulan resim/galeri kalıpları",
             "excluded_video_patterns_desc": "Tarama ve Temizleme işlemine eklenmeyecek Video dosyaları/dosya konumları için kurallı ifadeler (Regexp)",
-            "excluded_video_patterns_head": "Dışta tutulan Video Kuralları",
+            "excluded_video_patterns_head": "Hariç tutulan video kalıpları",
             "gallery_ext_desc": "Galeri ZIP dosyaları olarak tanımlanacak dosya uzantıları listesi (virgülle ayrılmış).",
-            "gallery_ext_head": "Galeri ZIP Uzantıları",
+            "gallery_ext_head": "Galeri ZIP uzantıları",
             "generated_file_naming_hash_desc": "Oluşturulacak dosya isimleri için MD5 veya oshash kullanın. Bu değeri değiştirmek, tüm sahneler için MD5/oshash hesaplaması gerektirir. Bu değeri değiştirdikten sonra mevcut tüm ek dosyalar yeniden oluşturulacak veya yer değiştirecektir. Yer değiştirme işlemleri için Görevler sayfasını ziyaret edin.",
             "generated_file_naming_hash_head": "Oluşturulan dosya adı imzası",
-            "generated_files_location": "Oluşturulan ek dosyalar için dizin konumu (yer işaretleri, sahne önizlemeler, küçük resimler vb.)",
-            "generated_path_head": "Oluşturulan Yolu",
+            "generated_files_location": "Oluşturulan ek dosyalar için dizin konumu (yer işaretleri, sahne önizlemeler, küçük resimler vb.).",
+            "generated_path_head": "Oluşturulan dosya yolu",
             "hashing": "Dosya imzası hesaplama (Hashing)",
             "image_ext_desc": "Resim olarak tanımlanacak dosya uzantıları listesi (virgülle ayrılmış).",
-            "image_ext_head": "Resim Dosyası Uzantıları",
+            "image_ext_head": "Resim uzantıları",
             "include_audio_desc": "Önizleme oluştururken videodan sesleri de ekler.",
             "include_audio_head": "Sesi ekle",
             "logging": "Kayıt Tutma",
-            "maximum_streaming_transcode_size_desc": "Dönüştürülmüş video yayınları için maksimum boyut",
+            "maximum_streaming_transcode_size_desc": "Dönüştürülmüş akışlar için maksimum boyut.",
             "maximum_streaming_transcode_size_head": "Maksimum yayınlanacak dönüştürülmüş video boyutu",
-            "maximum_transcode_size_desc": "Dönüştürülmüş videolar için maksimum boyut",
+            "maximum_transcode_size_desc": "Dönüştürülmüş videolar için maksimum boyut.",
             "maximum_transcode_size_head": "Maksimum dönüştürülmüş video boyutu",
             "metadata_path": {
-                "description": "Tam bir dışa veya içe aktarma gerçekleştirirken kullanılan dizin konumu",
-                "heading": "Üstveri Yolu"
+                "description": "Tam bir dışa veya içe aktarma gerçekleştirirken kullanılan dizin konumu.",
+                "heading": "Üstveri yolu"
             },
-            "number_of_parallel_task_for_scan_generation_desc": "Otomatik algılama için 0 olarak ayarlayın. Uyarı: %100 işlemci kullanımına ulaşmak için gerekenden daha fazla görev çalıştırmak, performansı düşürecek ve potansiyel olarak başka sorunlara neden olacaktır.",
+            "number_of_parallel_task_for_scan_generation_desc": "Otomatik algılama için 0 olarak ayarlayın. Uyarı: %100 CPU kullanımına ulaşmak için gerekenden daha fazla görev çalıştırmak, performansı düşürecek ve potansiyel olarak başka sorunlara neden olacaktır.",
             "number_of_parallel_task_for_scan_generation_head": "Tarama/oluşturma için paralel görev sayısı",
             "parallel_scan_head": "Paralel Tarama/Oluşturma",
             "preview_generation": "Önizleme Oluşturma",
             "scraper_user_agent": "Veri Toplama Kimliği",
             "scraper_user_agent_desc": "Veri Toplama sırasında HTTP istekleri için kullanılacak Kimliği (User Agent)",
             "scrapers_path": {
-                "description": "Veri toplayıcı yapılandırma dosyalarının dizin konumu",
-                "heading": "Veri Toplayıcı Yolu"
+                "description": "Veri toplayıcı yapılandırma dosyalarının dizin konumu.",
+                "heading": "Veri toplayıcı yolu"
             },
             "scraping": "Veri Toplama",
             "sqlite_location": "SQLite veritabanı için dosya konumu (yeniden başlatma gerektirir). UYARI: Veritabanını, Stash sunucusunun çalıştığı sistemden farklı bir sistemde (yani ağ üzerinden) depolamak desteklenmemektedir!",
             "video_ext_desc": "Video olarak işlem görecek dosya uzantı listesi (virgülle ayrılmış).",
-            "video_ext_head": "Video Uzantıları",
+            "video_ext_head": "Video uzantıları",
             "video_head": "Video",
             "database": "Veritabanı",
             "funscript_heatmap_draw_range": "Oluşturulan ısı haritalarına aralığı dahil et",
@@ -350,38 +370,38 @@
                     "description": "FFmpeg'i yapılandırma dizinine indirir ve ffmpeg ve ffprobe yollarını yapılandırma dizininden çözümlemek için temizler."
                 },
                 "ffmpeg_path": {
-                    "heading": "FFmpeg Yürütülebilir Yolu",
-                    "description": "Ffmpeg yürütülebilir dosyasının yolu (yalnızca klasörün değil). Boşsa, ffmpeg ortamdan $PATH yapılandırma dizini veya $HOME/.stash aracılığıyla çözümlenecektir"
+                    "heading": "FFmpeg yürütülebilir yolu",
+                    "description": "Ffmpeg yürütülebilir dosyasının yolu (yalnızca klasörün değil). Boşsa, ffmpeg ortamdan $PATH yapılandırma dizini veya $HOME/.stash aracılığıyla çözümlenecektir."
                 },
                 "ffprobe_path": {
-                    "heading": "FFprobe Yürütülebilir Yolu",
-                    "description": "Ffprobe yürütülebilir dosyasının yolu (yalnızca klasörün değil). Boşsa, ffprobe ortamdan $PATH yapılandırma dizini veya $HOME/.stash aracılığıyla çözümlenecektir"
+                    "heading": "FFprobe yürütülebilir yolu",
+                    "description": "Ffprobe yürütülebilir dosyasının yolu (yalnızca klasörün değil). Boşsa, ffprobe ortamdan $PATH yapılandırma dizini veya $HOME/.stash aracılığıyla çözümlenecektir."
                 },
                 "transcode": {
                     "output_args": {
-                        "heading": "FFmpeg Video Dönüştürme Çıkış Değişkenleri",
+                        "heading": "FFmpeg video dönüştürme çıkış değişkenleri",
                         "desc": "Gelişmiş: Video oluştururken çıkış alanından önce ffmpeg'e iletilecek ek değişkenler."
                     },
                     "input_args": {
                         "desc": "Gelişmiş: Video oluştururken giriş alanından önce ffmpeg'e iletilecek ek değişkenler.",
-                        "heading": "FFmpeg Video Dönüştürme Giriş Değişkenleri"
+                        "heading": "FFmpeg video dönüştürme giriş değişkenleri"
                     }
                 },
                 "live_transcode": {
                     "output_args": {
-                        "heading": "FFmpeg Canlı Video Dönüştürme Çıkış Değişkenleri",
+                        "heading": "FFmpeg canlı video dönüştürme çıkış değişkenleri",
                         "desc": "Gelişmiş: Canlı video dönüştürme sırasında çıkış alanından önce ffmpeg'e iletilecek ek değişkenler."
                     },
                     "input_args": {
-                        "heading": "FFmpeg Canlı Video Dönüştürme Giriş Değişkenleri",
+                        "heading": "FFmpeg canlı video dönüştürme giriş değişkenleri",
                         "desc": "Gelişmiş: Canlı video dönüştürme sırasında giriş alanından önce ffmpeg'e iletilecek ek değişkenler."
                     }
                 }
             },
             "gallery_cover_regex_label": "Galeri kapak deseni",
             "plugins_path": {
-                "description": "Eklenti yapılandırma dosyalarının dizin konumu",
-                "heading": "Eklenti Yolu"
+                "description": "Eklenti yapılandırma dosyalarının dizin konumu.",
+                "heading": "Eklenti yolu"
             },
             "blobs_path": {
                 "heading": "İkili veri dosya sistemi yolu"
@@ -392,19 +412,36 @@
                 "description": "SQLite veritabanı dosya yedekleri için dizin konumu."
             },
             "python_path": {
-                "heading": "Python Yürütülebilir Yolu",
-                "description": "Python yürütülebilir dosyasının yolu (yalnızca klasörün değil). Komut dosyası veri kazıyıcılar ve eklentiler için kullanılır. Boşsa, python ortamdan çözümlenecektir"
+                "heading": "Python yürütülebilir yolu",
+                "description": "Python yürütülebilir dosyasının yolu (yalnızca klasörün değil). Komut dosyası veri kazıyıcılar ve eklentiler için kullanılır. Boşsa, Python ortamdan çözümlenecektir."
             },
             "heatmap_generation": "Funscript Isı Haritası Oluşturma",
-            "funscript_heatmap_draw_range_desc": "Oluşturulan ısı haritasının y ekseninde hareket aralığını çizin. Değişiklik yapıldıktan sonra mevcut ısı haritalarının yeniden oluşturulması gerekecektir."
+            "funscript_heatmap_draw_range_desc": "Oluşturulan ısı haritasının y ekseninde hareket aralığını çizin. Değişiklik yapıldıktan sonra mevcut ısı haritalarının yeniden oluşturulması gerekecektir.",
+            "delete_trash_path": {
+                "description": "Silinen dosyaların kalıcı olarak silinmesi yerine taşınacağı yol. Dosyaları kalıcı olarak silmek için boş bırakın.",
+                "heading": "Çöp yolu"
+            },
+            "sprite_generation_head": "Sprite Oluşturma",
+            "sprite_interval_desc": "Oluşturulan her sprite arasındaki saniye cinsinden süre.",
+            "sprite_interval_head": "Sprite aralığı",
+            "sprite_maximum_desc": "Bir sahne için oluşturulacak maksimum sprite sayısı. Sınırı devre dışı bırakmak için 0 olarak ayarlayın.",
+            "sprite_maximum_head": "Maksimum sprite sayısı",
+            "sprite_minimum_desc": "Bir sahne için oluşturulacak minimum sprite sayısı",
+            "sprite_minimum_head": "Minimum sprite sayısı",
+            "sprite_screenshot_size_desc": "Her bir sprite'ın istenen piksel cinsinden boyutu.",
+            "sprite_screenshot_size_head": "Sprite boyutu",
+            "use_custom_sprite_interval_head": "Özel sprite aralığı kullan",
+            "use_custom_sprite_interval_desc": "Aşağıdaki ayarlara göre özel sprite aralığını etkinleştirin.",
+            "default_marker_preview_duration_head": "Varsayılan işaretleyici önizleme süresi",
+            "max_marker_preview_duration_head": "Maksimum işaretleyici önizleme süresi"
         },
         "library": {
             "exclusions": "Dışta Tutulanlar",
-            "gallery_and_image_options": "Galeri ve Resim seçenekleri",
+            "gallery_and_image_options": "Galeri ve Resim Seçenekleri",
             "media_content_extensions": "Medya İçeriği Uzantıları"
         },
         "logs": {
-            "log_level": "Kayıt Tutma Seviyesi"
+            "log_level": "Günlük Tutma Düzeyi"
         },
         "plugins": {
             "hooks": "Kancalar",
@@ -416,7 +453,7 @@
             "entity_metadata": "{entityType} Üst Verisi",
             "entity_scrapers": "{entityType} veri toplayıcıları",
             "excluded_tag_patterns_desc": "Veri toplama sonuçlarına eklenmeyecek etiketler için kurallı ifadeler",
-            "excluded_tag_patterns_head": "Dışta Tutulan Etiket Kuralları",
+            "excluded_tag_patterns_head": "Hariç tutulan etiket kalıpları",
             "scraper": "Veri Toplayıcı",
             "scrapers": "Veri Toplayıcılar",
             "search_by_name": "Ada göre ara",
@@ -443,10 +480,14 @@
             "added_job_to_queue": "{operation_name} işlem kuyruğuna eklendi",
             "auto_tag": {
                 "auto_tagging_all_paths": "Tüm yollar otomatik etiketleniyor",
-                "auto_tagging_paths": "Aşağıdaki yollar otomatik etiketleniyor"
+                "auto_tagging_paths": "Aşağıdaki yollar otomatik etiketleniyor",
+                "disable_warning": {
+                    "description": "Otomatik etiketlemeyi çalıştırmadan önce gösterilen onay uyarısını devre dışı bırakın.",
+                    "heading": "Otomatik etiketleme uyarısını devre dışı bırak"
+                }
             },
-            "auto_tag_based_on_filenames": "İçeriği dosya adlarına göre otomatik etiketle.",
-            "auto_tagging": "Otomatik Etiketleme",
+            "auto_tag_based_on_filenames": "İçeriği dosya yollarına göre otomatik etiketle.",
+            "auto_tagging": "Otomatik etiketleme",
             "backing_up_database": "Veritabanı yedekleniyor",
             "backup_and_download": "Veritabanını yedekler ve yedek dosyasını kaydetmenizi sağlar.",
             "cleanup_desc": "Eksik dosyaları kontrol eder ve veritabanından siler. Bu geri döndürülemez bir işlemdir.",
@@ -489,7 +530,13 @@
                 "sources": "Kaynaklar",
                 "strategy": "Strateji",
                 "skip_multiple_matches": "Birden fazla sonucu olan eşleşmeleri atla",
-                "skip_multiple_matches_tooltip": "Bu etkinleştirilmezse ve birden fazla sonuç döndürülürse, eşleşmesi için rastgele bir sonuç seçilecektir"
+                "skip_multiple_matches_tooltip": "Bu etkinleştirilmezse ve birden fazla sonuç döndürülürse, eşleşmesi için rastgele bir sonuç seçilecektir",
+                "performer_genders": "Oyuncu cinsiyetleri",
+                "tag_skipped_performers": "Atlanan oyuncuları şununla etiketle",
+                "tag_skipped_matches": "Atlanan eşleşmeleri şununla etiketle",
+                "performer_genders_desc": "Tanımlamaya seçili cinsiyetlere sahip oyuncular dahil edilecektir.",
+                "skip_single_name_performers": "Ad ayrımı olmayan tek isimli oyuncuları atla",
+                "skip_single_name_performers_tooltip": "Bu etkinleştirilmezse, Samantha veya Olga gibi genel isimlere sahip oyuncular eşleştirilecektir"
             },
             "import_from_exported_json": "Üstveri dizinindeki dışa aktarılan JSON'dan içe aktarır. Mevcut veritabanını siler.",
             "incremental_import": "Sağlanan bir dışa aktarma zip dosyasından artımlı içe aktarır.",
@@ -507,16 +554,18 @@
             "set_name_date_details_from_metadata_if_present": "Gömülü dosya üstverilerinden ad, tarih ve ayrıntıları ayarlayın",
             "clean_generated": {
                 "description": "İlgili veritabanı girişi olmadan oluşturulan dosyaları kaldırır.",
-                "markers": "İşaretleyici Önizlemeleri",
-                "previews": "Sahne Önizlemeleri",
+                "markers": "İşaretleyici önizlemeleri",
+                "previews": "Sahne önizlemeleri",
                 "blob_files": "Blob dosyaları",
-                "transcodes": "Sahne Video Dönüştürmeleri",
-                "image_thumbnails": "Resim Küçük Resimleri",
+                "transcodes": "Sahne video dönüştürmeleri",
+                "image_thumbnails": "Resim küçük resimleri",
                 "previews_desc": "Sahne önizlemeleri ve küçük resimler",
-                "image_thumbnails_desc": "Resim küçük resimleri ve klipler"
+                "image_thumbnails_desc": "Resim küçük resimleri ve klipler",
+                "sprites": "Sahne sprite'ları"
             },
             "migrate_blobs": {
-                "delete_old": "Eski verileri sil"
+                "delete_old": "Eski verileri sil",
+                "description": "Blob'ları mevcut blob depolama sistemine taşıyın. Bu taşıma işlemi, blob depolama sistemi değiştirildikten sonra gerçekleştirilmelidir. İsteğe bağlı olarak, taşıma işleminden sonra eski veriler silinebilir."
             },
             "rescan": "Dosyaları yeniden tara",
             "generate_video_covers_during_scan": "Sahne kapakları oluştur",
@@ -527,13 +576,32 @@
             "anonymise_database": "Tüm hassas verileri anonimleştirerek veritabanının bir kopyasını yedekler dizinine alır. Bu daha sonra sorun giderme ve hata ayıklama amacıyla başkalarına sağlanabilir. Orijinal veritabanı değiştirilmez. Anonimleştirilmiş veritabanı {filename_format} dosya adı biçimini kullanır.",
             "migrate_scene_screenshots": {
                 "delete_files": "Ekran görüntülerini sil",
-                "overwrite_existing": "Mevcut blob'ları ekran görüntüsü verileriyle üzerine yaz"
+                "overwrite_existing": "Mevcut blob'ları ekran görüntüsü verileriyle üzerine yaz",
+                "description": "Sahne ekran görüntülerini yeni blob depolama sistemine taşıyın. Bu taşıma işlemi, mevcut sistemi 0.20 sürümüne geçirdikten sonra gerçekleştirilmelidir. İsteğe bağlı olarak, taşıma işleminden sonra eski ekran görüntülerini silinebilir."
             },
             "rescan_tooltip": "Yoldaki her dosyayı yeniden tarayın. Dosya üstverilerini güncellemeyi zorlamak ve zip dosyalarını yeniden taramak için kullanılır.",
-            "generate_clip_previews_during_scan": "Resim klipleri için önizlemeler oluştur"
+            "generate_clip_previews_during_scan": "Resim klipleri için önizlemeler oluştur",
+            "auto_tag_warning": "Bu işlem geri alınamaz ve hatalı eşleşmelere yol açabilir.",
+            "backup_database": {
+                "description": "Veritabanının ve blob dosyalarının yedeğini alır.",
+                "download": "Yedeği indir",
+                "include_blobs": "Yedeklemeye blob'ları dahil et",
+                "include_blobs_desc": "Yalnızca SQLite veritabanı dosyasını yedeklemek için devre dışı bırakın.",
+                "to_directory": "{directory} konumuna",
+                "destination": "Konum",
+                "sqlite": "Yedek dosya, {filename_format} dosya adıyla SQLite veritabanı dosyasının bir kopyası olacaktır",
+                "zip": "SQLite veritabanı dosyası ve blob dosyaları, {filename_format} dosya adıyla tek bir dosyaya sıkıştırılacaktır",
+                "warning_blobs": "Blob dosyaları yedeklemeye dahil edilmeyecektir. Bu nedenle, yedekten başarılı bir şekilde geri yükleme yapabilmek için blob dosyalarının blob depolama konumunda mevcut olması gerekmektedir."
+            },
+            "clean_ignore_zip_contents_desc": "Daha hızlıdır ancak zip dosyalarının içindeki silinmiş dosyaları algılayamaz. Zip dosyalarının içindeki dosyaları silmiyorsanız bu seçeneği etkinleştirebilirsiniz.",
+            "auto_tag_confirm": "Bu işlem, içeriğinizi mevcut üstverilerle eşleştirmeye çalışacaktır.",
+            "clean_ignore_zip_contents": "Zip dosyası içeriklerini yok say",
+            "generate_image_phashes_during_scan_tooltip": "Tekilleştirme ve tanımlama için.",
+            "generate_image_phashes_during_scan": "Resim algısal hash değerleri oluştur",
+            "anonymising_database": "Veritabanı anonimleştiriliyor"
         },
         "tools": {
-            "scene_duplicate_checker": "Yinelenen Sahne Denetleyicisi",
+            "scene_duplicate_checker": "Yinelenen sahne denetleyici",
             "scene_filename_parser": {
                 "add_field": "Alan Ekle",
                 "capitalize_title": "Başlığın ilk harflerini büyük harf yap",
@@ -570,20 +638,20 @@
             },
             "desktop_integration": {
                 "desktop_integration": "Masaüstü Entegrasyonu",
-                "skip_opening_browser": "Tarayıcıyı Açmayı Atla",
-                "skip_opening_browser_on_startup": "Başlangıçta tarayıcıyı otomatik açmayı atla",
-                "notifications_enabled": "Bildirimleri Etkinleştir",
-                "send_desktop_notifications_for_events": "Etkinlikler için masaüstü bildirimleri gönder"
+                "skip_opening_browser": "Tarayıcıyı açmayı atla",
+                "skip_opening_browser_on_startup": "Başlangıçta tarayıcıyı otomatik açmayı atla.",
+                "notifications_enabled": "Bildirimleri etkinleştir",
+                "send_desktop_notifications_for_events": "Etkinlikler için masaüstü bildirimleri gönder."
             },
             "editing": {
                 "disable_dropdown_create": {
-                    "description": "Açılır menülerden yeni nesne oluşturma özelliğini kaldır",
+                    "description": "Açılır menülerden yeni nesne oluşturma özelliğini kaldır.",
                     "heading": "Açılır menüden yeni veri oluşturmayı devre dışı bırak"
                 },
                 "heading": "Düzenleme",
                 "rating_system": {
                     "type": {
-                        "label": "Derecelendirme Sistemi Türü",
+                        "label": "Derecelendirme sistemi türü",
                         "options": {
                             "decimal": "Ondalık",
                             "stars": "Yıldızlar"
@@ -608,8 +676,8 @@
                 "heading": "Funscript Süre Farkı (ms)"
             },
             "handy_connection_key": {
-                "description": "Etkileşimli sahneler içinHandy bağlantı anahtarı. Bu anahtarı kullanırsanız, Stash izlediğiniz sahne bilgisini handyfeeling.com ile paylaşacaktır",
-                "heading": "Handy Bağlantı Anahtarı"
+                "description": "Etkileşimli sahneler için kullanılacak Handy bağlantı anahtarı. Bu anahtarı ayarlamanız, Stash'in geçerli sahne bilgilerini handyfeeling.com ile paylaşmasını sağlar.",
+                "heading": "Handy bağlantı anahtarı"
             },
             "images": {
                 "heading": "Resimler",
@@ -633,14 +701,14 @@
                 "heading": "Maksimum döngü süresi"
             },
             "menu_items": {
-                "description": "Gezinti çubuğunda farklı içerik türlerini göster veya gizle",
+                "description": "Gezinti çubuğunda farklı içerik türlerini göster veya gizle.",
                 "heading": "Menü Öğeleri"
             },
             "performers": {
                 "options": {
                     "image_location": {
                         "description": "Varsayılan oyuncu resimleri için özel yol. Yerleşik varsayılanları kullanmak için boş bırak",
-                        "heading": "Özel Oyuncu Resmi Yolu"
+                        "heading": "Özel oyuncu resmi yolu"
                     }
                 }
             },
@@ -648,13 +716,13 @@
                 "description": "Varsayılan seçenek video (mp4) önizlemeleridir. Gezinirken daha az CPU kullanımı için hareketli görüntü (webp) önizlemelerini kullanabilirsiniz. Ancak bunların video önizlemelerine ek olarak oluşturulması gerekir ve daha büyük dosyalardır.",
                 "heading": "Önizleme Türü",
                 "options": {
-                    "animated": "Hareketli Resim",
+                    "animated": "Hareketli resim",
                     "static": "Hareketsiz Resim",
                     "video": "Video"
                 }
             },
             "scene_list": {
-                "heading": "Sahne Listesi",
+                "heading": "Izgara Görünümü",
                 "options": {
                     "show_studio_as_text": "Stüdyo katmanını metin olarak görüntüle"
                 }
@@ -668,20 +736,20 @@
                         "heading": "Seçilen oynatılırken videoyu otomatik başlat"
                     },
                     "continue_playlist_default": {
-                        "description": "Video bitince sıradaki sahneyi oynat",
+                        "description": "Video bitince sıradaki sahneyi oynat.",
                         "heading": "Varsayılan olarak oynatma listesine devam et"
                     },
                     "always_start_from_beginning": "Videoyu her zaman baştan başlat",
                     "vr_tag": {
-                        "heading": "VR Etiketi",
+                        "heading": "VR etiketi",
                         "description": "VR butonu yalnızca bu etikete sahip sahneler için görüntülenecektir."
                     },
-                    "track_activity": "Sahne Oynatma Geçmişi'ni etkinleştir",
+                    "track_activity": "Sahne oynatma geçmişini etkinleştir",
                     "enable_chromecast": "Chromecast'i Etkinleştir",
                     "show_ab_loop_controls": "AB Loop eklenti kontrollerini göster",
-                    "show_scrubber": "Video İlerleme Çubuğunu Göster",
+                    "show_scrubber": "Video ilerleme çubuğunu göster",
                     "disable_mobile_media_auto_rotate": "Mobil cihazlarda tam ekran medyanın otomatik döndürülmesini devre dışı bırak",
-                    "show_range_markers": "Zaman İşaretleyicilerini Göster"
+                    "show_range_markers": "Zaman işaretleyicilerini göster"
                 }
             },
             "scene_wall": {
@@ -693,7 +761,7 @@
             },
             "slideshow_delay": {
                 "description": "Galeri sayfasında Duvar görünümü seçilirse slayt gösterisi yapılabilir",
-                "heading": "Slayt Gösterisi Gecikmesi (saniye)"
+                "heading": "Slayt gösterisi gecikmesi (saniye)"
             },
             "title": "Kullanıcı Arayüzü",
             "detail": {
@@ -704,17 +772,21 @@
                 },
                 "show_all_details": {
                     "heading": "Tüm ayrıntıları göster",
-                    "description": "Etkinleştirildiğinde, varsayılan olarak tüm içerik ayrıntıları gösterilecek ve her ayrıntı öğesi tek bir sütuna sığacak"
+                    "description": "Etkinleştirildiğinde, varsayılan olarak tüm içerik ayrıntıları gösterilecek ve her ayrıntı öğesi tek bir sütuna sığacak."
                 },
                 "compact_expanded_details": {
                     "heading": "Kompakt genişletilmiş ayrıntılar",
-                    "description": "Bu seçenek etkinleştirildiğinde, kompakt görünüm korunurken genişletilmiş ayrıntılar gösterilir"
+                    "description": "Bu seçenek etkinleştirildiğinde, kompakt görünüm korunurken genişletilmiş ayrıntılar gösterilir."
+                },
+                "show_studio_text": {
+                    "heading": "Stüdyoyu metin olarak göster",
+                    "description": "Ayrıntılar görünümlerinde stüdyo adını her zaman simge yerine metin olarak göster."
                 }
             },
             "custom_javascript": {
-                "heading": "Özel Javascript",
-                "option_label": "Özel Javascript etkin",
-                "description": "Değişikliklerin etkili olması için sayfanın yeniden yüklenmesi gerekir. Özel Javascript ile Stash'in gelecekteki sürümleri arasında uyumluluk garantisi yoktur."
+                "heading": "Özel JavaScript",
+                "option_label": "Özel JavaScript etkin",
+                "description": "Değişikliklerin etkili olması için sayfanın yeniden yüklenmesi gerekir. Özel JavaScript ile Stash'in gelecekteki sürümleri arasında uyumluluk garantisi yoktur."
             },
             "custom_locales": {
                 "heading": "Özel Yerelleştirme",
@@ -745,7 +817,7 @@
             },
             "minimum_play_percent": {
                 "description": "Bir sahnenin oynatma sayısı artırılmadan önce oynatılması gereken sürenin yüzdesi.",
-                "heading": "Minimum Oynatma Yüzdesi"
+                "heading": "Minimum oynatma yüzdesi"
             },
             "image_wall": {
                 "heading": "Resim Duvarı",
@@ -770,9 +842,56 @@
             },
             "scroll_attempts_before_change": {
                 "heading": "Geçiş Öncesi Kaydırma Denemeleri"
+            },
+            "troubleshooting_mode": {
+                "button": "Sorun giderme modu",
+                "dialog_title": "Sorun giderme modunu etkinleştir",
+                "dialog_description": "Bu işlem, sorunları denetlemeye yardımcı olmak için tüm özelleştirmeleri geçici olarak devre dışı bırakacaktır:",
+                "dialog_item_plugins": "Tüm eklentiler",
+                "dialog_item_css": "Özel CSS",
+                "dialog_item_js": "Özel JavaScript",
+                "dialog_log_level": "Ayrıntılı denetleme için günlük seviyesi “Debug” olarak ayarlanacaktır.",
+                "dialog_reload_note": "Sayfa otomatik olarak yeniden yüklenecektir.",
+                "enable": "Etkinleştir ve Yeniden Yükle",
+                "overlay_message": "Sorun giderme modu etkin. Tüm özelleştirmeler devre dışı.",
+                "exit": "Çıkış",
+                "dialog_item_locales": "Özel yerelleştirmeler"
+            },
+            "scene_view": {
+                "heading": "Sahne Görünümü",
+                "options": {
+                    "preview_volume": {
+                        "description": "Bir sahnenin üzerine fareyi getirdiğinizde önizleme ses seviyesi. Sesi kapatmak için 0 olarak ayarlayın.",
+                        "heading": "Önizleme sesi"
+                    }
+                }
+            },
+            "sfw_mode": {
+                "heading": "SFW içerik modu"
+            },
+            "performer_list": {
+                "heading": "Oyuncu Listesi",
+                "options": {
+                    "show_links_on_grid_card": {
+                        "heading": "Oyuncu kartlarında bağlantıları göster"
+                    }
+                }
+            },
+            "custom_title": {
+                "description": "Sayfa başlığına eklenecek özel metin. Boş bırakılırsa, varsayılan olarak ‘Stash’ kullanılır.",
+                "heading": "Özel başlık"
+            },
+            "autostart_gallery_slideshow": {
+                "heading": "Galeri slayt gösterisini otomatik olarak başlat"
+            },
+            "image_lightbox": {
+                "heading": "Resim Lightbox'ı"
             }
         },
-        "advanced_mode": "Gelişmiş Mod"
+        "advanced_mode": "Gelişmiş mod",
+        "changelog": {
+            "header": "Değişiklik Günlüğü"
+        }
     },
     "configuration": "Yapılandırma",
     "countables": {
@@ -792,7 +911,8 @@
     "criterion": {
         "greater_than": "Büyüktür",
         "less_than": "Küçüktür",
-        "value": "Değer"
+        "value": "Değer",
+        "unsupported": "{type} (desteklenmiyor)"
     },
     "criterion_modifier": {
         "between": "arasında",
@@ -850,23 +970,23 @@
             },
             "scroll_mode": {
                 "description": "Geçici olarak diğer modu kullanmak için Shift tuşuna basılı tutun.",
-                "label": "Kaydırma Modu",
+                "label": "Kaydırma modu",
                 "pan_y": "Y Ekseninde Çevir",
                 "zoom": "Yakınlaştırma"
             },
-            "page_header": "Sayfa {page} / {total}"
+            "disable_animation": "Resimler arasındaki geçiş animasyonunu devre dışı bırak"
         },
         "scene_gen": {
             "force_transcodes": "Dönüştürülmüş video oluşturmayı zorla",
             "force_transcodes_tooltip": "Varsayılan olarak, video yalnızca video dosyası tarayıcı tarafından desteklenmediğinde dönüştürülür. Etkinleştirildiğinde, video dosyası tarayıcı tarafından destekleniyorsa bile video dönüştürülür.",
-            "image_previews": "Hareketli Resim Önizlemeleri",
+            "image_previews": "Hareketli resim önizlemeleri",
             "image_previews_tooltip": "Ayrıca hareketli (webp) önizlemeler oluşturun, yalnızca Sahne/İşaretleyici Duvarı Önizleme Türü, Hareketli Görüntü olarak ayarlandığında gereklidir. Gezinirken video önizlemelerinden daha az CPU kullanırlar, ancak bunlara ek olarak oluşturulurlar ve daha büyük dosyalardır.",
             "interactive_heatmap_speed": "Etkileşimli sahneler için ısı haritaları ve hız kayıtları oluştur",
-            "marker_image_previews": "İşaretleyici Hareketli Resim Önizlemeleri",
-            "marker_image_previews_tooltip": "Hareketli Yer İmi WebP önizlemeleri, Önizleme Türü sadece Hareketli Resim olarak seçilmişse gereklidir.",
-            "marker_screenshots": "İşaretleyici Ekran Görüntüleri",
+            "marker_image_previews": "İşaretleyici hareketli resim önizlemeleri",
+            "marker_image_previews_tooltip": "Hareketli (WebP) resim önizlemelerini de oluşturur. Yalnızca Sahne/İşaretleyici Duvarı Önizleme türü \"hareketli resim\" olarak ayarlandığında gereklidir. Göz atarken, video önizlemelerine göre daha az CPU kullanırlar ancak onlara ek olarak oluşturulurlar ve dosya boyutları daha büyüktür.",
+            "marker_screenshots": "İşaretleyici ekran görüntüleri",
             "marker_screenshots_tooltip": "Yer İmi hareketsiz JPG resimleri",
-            "markers": "İşaretleyici Önizlemeleri",
+            "markers": "İşaretleyici önizlemeleri",
             "markers_tooltip": "Belirlenen zamandan itibaren başlayan 20 saniyelik videolar.",
             "overwrite": "Varolan oluşturulmuş dosyaların üzerine yaz",
             "phash": "Algısal dosya imzaları (kopya dosyaları tespit için)",
@@ -889,10 +1009,13 @@
             "video_previews": "Önizlemeler",
             "video_previews_tooltip": "Fare sahne üzerinde iken video önizlemeleri",
             "covers": "Sahne kapakları",
-            "override_preview_generation_options": "Önizleme Oluşturma Seçeneklerini Geçersiz Kıl",
-            "image_thumbnails": "Resim Önizlemeleri",
+            "override_preview_generation_options": "Önizleme oluşturma seçeneklerini geçersiz kıl",
+            "image_thumbnails": "Resim önizlemeleri",
             "override_preview_generation_options_desc": "Bu işlem için Önizleme Oluşturma Seçeneklerini geçersiz kılın. Varsayılanlar Sistem -> Önizleme Oluşturma bölümünde ayarlanır.",
-            "clip_previews": "Resim Klibi Önizlemeleri"
+            "clip_previews": "Resim klibi önizlemeleri",
+            "image_phash": "Algısal resim hash değerleri",
+            "image_phash_tooltip": "Tekilleştirme ve tanımlama için",
+            "phash_tooltip": "Tekilleştirme ve sahne tanımlama için"
         },
         "scenes_found": "{count} sahne bulundu",
         "scrape_entity_query": "{entity_type} Veri Toplama Sorgusu",
@@ -905,7 +1028,8 @@
         "merge": {
             "source": "Kaynak",
             "destination": "Hedef",
-            "empty_results": "Hedef alan değerleri değişmeyecektir."
+            "empty_results": "Hedef alan değerleri değişmeyecektir.",
+            "combined": "Birleştirilmiş"
         },
         "dont_show_until_updated": "Sonraki güncellemeye kadar gösterme",
         "clear_o_history_confirm": "O geçmişini temizlemek istediğinize emin misiniz?",
@@ -923,7 +1047,16 @@
             "destination": "Şuraya yeniden ata"
         },
         "reassign_entity_title": "{count, plural, one {Yeniden ata {singularEntity}} other {Yeniden ata {pluralEntity}}}",
-        "set_default_filter_confirm": "Bu filtreyi varsayılan olarak ayarlamak istediğinize emin misiniz?"
+        "set_default_filter_confirm": "Bu filtreyi varsayılan olarak ayarlamak istediğinize emin misiniz?",
+        "stashid_exists_warning": "",
+        "clear_o_history_confirm_sfw": "Beğeni geçmişini silmek istediğinize emin misiniz?",
+        "overwrite_filter_warning": "Kaydedilmiş \"{entityName}\" filtresi üzerine yazılacaktır.",
+        "studios_found": "{count} stüdyo bulundu",
+        "tags_found": "{count} etiket bulundu",
+        "scrape_results_missing": "Eksik",
+        "delete_entity_simple_desc": "{count, plural, one {{singularEntity} öğesini silmek istediğinize emin misiniz?} other {{pluralEntity} öğesini silmek istediğinize emin misiniz??}}",
+        "dont_show_again": "Bu uyarıyı bir daha gösterme",
+        "edit_entity_count_title": "{count} {count, plural, one {{singularEntity}} other {{pluralEntity}}} düzenle"
     },
     "dimensions": "Boyutlar",
     "director": "Yönetmen",
@@ -1035,7 +1168,11 @@
         "video_codec": "Video Kodlayıcı",
         "play_duration": "Oynatma Süresi",
         "play_count": "Oynatma Sayısı",
-        "o_count": "O Sayısı"
+        "o_count": "O Sayısı",
+        "md5": "MD5 Sağlaması",
+        "oshash": "oshash",
+        "oshash_meaning": "OpenSubtitles Hash Değeri",
+        "phash_meaning": "Algısal Hash Değeri"
     },
     "megabits_per_second": "{value} mbps",
     "metadata": "Üst Veri",
@@ -1079,7 +1216,8 @@
         "saved_filters": "Kaydedilmiş filtreler",
         "update_filter": "Filtreyi Güncelle",
         "edit_filter": "Filtreyi Düzenle",
-        "search_term": "Arama terimi"
+        "search_term": "Arama terimi",
+        "more_filter_criteria": "+{count} tane daha"
     },
     "seconds": "Saniye",
     "settings": "Ayarlar",
@@ -1092,7 +1230,8 @@
             "nearly_there": "Bitmek üzere!",
             "stash_library_directories": "Stash kütüphane dizinleri",
             "blobs_directory": "İkili veri dizini",
-            "cache_directory": "Önbellek dizini"
+            "cache_directory": "Önbellek dizini",
+            "password_set_warning": "Not: Sistem oluşturulduktan sonra kimlik bilgilerinizi girmeniz istenecektir."
         },
         "creating": {
             "creating_your_system": "Sisteminiz oluşturuluyor"
@@ -1133,14 +1272,18 @@
             "where_can_stash_store_its_generated_content": "Stash için oluşturulan ek dosyalar nereye kaydedilsin?",
             "where_can_stash_store_its_generated_content_description": "Stash, önizlemeler için küçük hareketli resimler ve videolar oluşturur. Ayrıca web tarayıcınızın desteklemediği video dosyaları için dönüştürülmüş video dosyaları da oluşturulur. Bu amaçla, varsayılan olarak yapılandırma dosyasının bulunduğu <code>generated</code> dizini kullanılır. Bu dizini değiştirmek isterseniz, yapılandırma dosyasının bulunduğu dizinin tam konumunu girin. Eğer dizin bulunamazsa otomatik olarak oluşturulacaktır.",
             "where_is_your_porn_located": "Porno koleksiyonunuz hangi dizinde?",
-            "where_is_your_porn_located_description": "Fotoğraf ve videoların bulunduğu dizinleri ekleyin. Stash, tarama sırasında bu dizinleri kullanacaktır.",
+            "where_is_your_porn_located_description": "Videolarınızı ve resimlerinizi içeren dizinleri ekleyin. Stash, tarama sırasında videoları ve resimleri bulmak için bu dizinleri kullanacaktır.",
             "where_can_stash_store_blobs": "Stash veritabanı ikili verilerini nerede saklayabilir?",
             "where_can_stash_store_cache_files": "Stash önbellek dosyalarını nerede saklayabilir?",
             "path_to_cache_directory_empty_for_default": "önbellek dizini yolu (varsayılan için boş bırakın)",
             "store_blobs_in_database": "Blob'ları veritabanında depola",
             "path_to_blobs_directory_empty_for_default": "blobs dizini yolu (varsayılan için boş bırakın)",
             "where_can_stash_store_cache_files_description": "Stash, HLS/DASH canlı video dönüştürme gibi bazı işlevlerin çalışabilmesi için geçici dosyalara yönelik bir önbellek dizini gerektirir. Varsayılan olarak, Stash yapılandırma dosyanızı içeren dizin içinde bir <code>cache</code> dizini oluşturacaktır. Bunu değiştirmek istiyorsanız, lütfen mutlak veya göreceli (geçerli çalışma dizinine) bir yol girin. Mevcut değilse, Stash bu dizini oluşturacaktır.",
-            "where_can_stash_store_blobs_description_addendum": "Alternatif olarak bu verileri veritabanında saklayabilirsiniz. <strong>Not:</strong>Bu işlem veritabanınızın boyutunu artıracak ve veritabanı taşıma süresini uzatacaktır."
+            "where_can_stash_store_blobs_description_addendum": "Alternatif olarak bu verileri veritabanında saklayabilirsiniz. <strong>Not:</strong> Bu işlem veritabanınızın boyutunu artıracak ve veritabanı taşıma süresini uzatacaktır.",
+            "use_sfw_content_mode": "SFW içerik modunu kullan",
+            "sfw_content_settings": "Stash'i SFW içerikler için mi kullanıyorsunuz?",
+            "where_can_stash_store_blobs_description": "Stash; sahne kapakları, oyuncu, stüdyo ve etiket resimleri gibi ikili verileri veritabanında ya da dosya sisteminde depolayabilir.",
+            "where_can_stash_store_its_database_warning": "UYARI: Veritabanını Stash'in çalıştığı sistemden farklı bir sistemde depolamak (örneğin veritabanını bir NAS'ta depolarken Stash sunucusunu başka bir bilgisayarda çalıştırmak) <strong>desteklenmemektedir</strong>! SQLite, ağ üzerinden kullanılmak üzere tasarlanmamıştır. Bunu denemek veritabanınızın tamamen bozulmasına yol açabilir."
         },
         "stash_setup_wizard": "Stash Kurulum Sihirbazı",
         "success": {
@@ -1160,10 +1303,10 @@
         "welcome": {
             "config_path_logic_explained": "Stash (<code>config.yml</code>) yapılandırma dosyasını ilk olarak mevcut dizinde bulmaya çalışır. Eğer bulamazsa, <code>$HOME/.stash/config.yml</code> dizinini (Windows işletim sistemi için <code>%USERPROFILE%\\.stash\\config.yml</code> dizini) araştırır. Öte yandan <code>-c '<path to config file>'</code> veya <code>--config '<path to config file>'</code> seçeneklerini kullanarak özelleştirilmiş bir yapılandırma dosyası da kullanabilirsiniz.",
             "in_current_stash_directory": "<code>{path}</code> yolunda:",
-            "in_the_current_working_directory": "",
+            "in_the_current_working_directory": "Şu anda çalışma dizini olan <code>{path}</code> içinde:",
             "next_step": "Eğer yeni bir sistem oluşturmak için hazırsanız, yapılandırma dosyasının nereye kaydedileceğini seçin ve Sonraki düğmesine basın.",
             "store_stash_config": "Stash yapılandırmasını nereye kaydetmek istiyorsunuz?",
-            "unable_to_locate_config": "Eğer bunu okuyorsanız, Stash herhangi bir mevcut yapılandırma bulamamış demektir. Bu sihirbaz yeni bir yapılandırma sırasında size yol gösterecektir.",
+            "unable_to_locate_config": "Eğer bunu okuyorsanız, Stash mevcut bir yapılandırma bulamadı demektir. Bu sihirbaz, yeni bir yapılandırma oluşturma sürecinde size yol gösterecektir.",
             "unexpected_explained": "Eğer beklenmedik bir şekilde bu ekranı gördüyseniz, Stash uygulamasını doğru dizinden başlatın veya başlatma komutuna <code>-c</code> değişkenini ekleyin.",
             "in_the_current_working_directory_disabled": "<code>{path}</code> yolundaki çalışma dizini:"
         },
@@ -1172,10 +1315,16 @@
             "next_step": "Yeni bir sistem oluşturmak için hazır olduğunuzda Sonraki düğmesine basın.",
             "unable_to_locate_specified_config": "Eğer bunu okuyorsanız, Stash yapılandırma dosyasını bulamamış demektir. Bu sihirbaz yeni bir yapılandırma sırasında size yol gösterecektir."
         },
-        "welcome_to_stash": "Stash uygulamasına hoşgeldiniz"
+        "welcome_to_stash": "Stash uygulamasına hoşgeldiniz",
+        "credentials": {
+            "heading": "Kimlik bilgilerinizi ayarlayın",
+            "password_invalid": "Kullanıcı adı girilmişse, şifre boş olmamalıdır.",
+            "username_invalid": "Kullanıcı adının başında veya sonunda boşluk bulunmamalıdır.",
+            "description": "Stash sistemine giriş yapmak için kullanmak istediğiniz kullanıcı adı ve şifreyi girin. Sisteme erişmek için kullanıcı adı ve şifre girmek istemiyorsanız bu alanları boş bırakabilirsiniz. Sisteme genel internet üzerinden erişiyorsanız, kullanıcı adı ve şifre gereklidir."
+        }
     },
-    "stash_id": "Stash Kimliği",
-    "stash_ids": "Stash Kimliği",
+    "stash_id": "Stash ID",
+    "stash_ids": "Stash ID'leri",
     "stats": {
         "image_size": "Toplam resim boyutu",
         "scenes_duration": "Toplam sahne süresi",
@@ -1183,7 +1332,8 @@
         "total_play_count": "Toplam Oynatma Sayısı",
         "total_play_duration": "Toplam Oynatma Süresi",
         "scenes_played": "Oynatılan Sahneler",
-        "total_o_count": "Toplam O Sayısı"
+        "total_o_count": "Toplam O Sayısı",
+        "total_o_count_sfw": "Toplam Beğeni"
     },
     "status": "Durum: {statusText}",
     "studio": "Stüdyo",
@@ -1215,7 +1365,12 @@
         "updated_entity": "{entity} güncellendi",
         "merged_scenes": "Birleştirilmiş sahneler",
         "reassign_past_tense": "Dosya yeniden atandı",
-        "removed_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} kaldırıldı"
+        "removed_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} kaldırıldı",
+        "clipboard_access_denied": "Panoya erişim reddedildi. Tarayıcı izinlerinizi kontrol edin",
+        "clipboard_no_image": "Panoda resim bulunamadı",
+        "image_index_too_large": "Hata: Resim dizini, Galeri'deki resim sayısından daha büyük",
+        "clipboard_image_pasted": "Panodan yapıştırılan resim",
+        "merged_performers": "Birleştirilmiş oyuncular"
     },
     "total": "Toplam",
     "true": "Doğru",
@@ -1231,12 +1386,13 @@
         "websocket_connection_failed": "Websocket bağlantısı kurulamıyor: Ayrıntılar için tarayıcı konsoluna bakın"
     },
     "image_index": "Resim #",
-    "stash_id_endpoint": "Stash ID Uç Noktası",
+    "stash_id_endpoint": "Stash ID Uç Nokta URL'si",
     "studio_tagger": {
         "add_new_studios": "Yeni Stüdyo Ekle",
         "batch_add_studios": "Toplu Stüdyo Ekle",
         "config": {
-            "create_parent_label": "Ana stüdyo oluştur"
+            "create_parent_label": "Ana stüdyo oluştur",
+            "create_parent_desc": "Eksik üst stüdyoları oluştur veya adı tam eşleşen mevcut üst stüdyoları etiketleyip verilerini ve resimlerini güncelle"
         },
         "batch_update_studios": "Stüdyoları Toplu Güncelle",
         "failed_to_save_studio": "Stüdyo kaydedilemedi \"{studio}\"",
@@ -1257,10 +1413,11 @@
         "untagged_studios": "Etiketlenmemiş stüdyolar",
         "updating_untagged_studios_description": "Etiketlenmemiş stüdyoları güncellemek, stashid'si olmayan tüm stüdyoları eşleştirmeye ve üstverileri güncellemeye çalışacaktır.",
         "name_already_exists": "Ad zaten mevcut",
-        "status_tagging_job_queued": "Durum: Etiketleme işi sıraya alındı",
+        "status_tagging_job_queued": "Durum: Etiketleme işi kuyruğa alındı",
         "any_names_entered_will_be_queried": "Girilen tüm isimler karşıdaki Stash-Box oturumundan sorgulanacak ve bulunursa eklenecektir. Yalnızca tam eşleşmeler bir eşleşme olarak kabul edilecektir.",
         "refreshing_will_update_the_data": "Yenileme işlemi stash-box oturumundaki tüm etiketli stüdyoların verilerini güncelleyecektir.",
-        "to_use_the_studio_tagger": "Stüdyo etiketleyiciyi kullanmak için bir stash-box oturumunun yapılandırılması gerekir."
+        "to_use_the_studio_tagger": "Stüdyo etiketleyiciyi kullanmak için bir stash-box oturumunun yapılandırılması gerekir.",
+        "studio_names_or_stashids_separated_by_comma": "Virgülle ayrılmış stüdyo adları veya StashID'ler"
     },
     "blobs_storage_type": {
         "database": "Veritabanı",
@@ -1295,7 +1452,8 @@
         "version": "Sürüm",
         "confirm_delete_source": "Kaynağı silmek istediğinize emin misiniz {name} ({url})?",
         "required_by": "{packages} için gerekli",
-        "confirm_uninstall": "{number} paketi kaldırmak istediğinize emin misiniz?"
+        "confirm_uninstall": "{number} paketi kaldırmak istediğinize emin misiniz?",
+        "selected_only": "Sadece seçili"
     },
     "penis": "Penis",
     "penis_length": "Penis Uzunluğu",
@@ -1324,7 +1482,12 @@
         "refresh_tagged_performers": "Etiketlenmiş oyuncuları yenile",
         "performer_already_tagged": "Oyuncu zaten etikelenmiş",
         "any_names_entered_will_be_queried": "Girilen tüm isimler karşıdaki Stash-Box oturumundan sorgulanacak ve bulunursa eklenecektir. Yalnızca tam eşleşmeler bir eşleşme olarak kabul edilecektir.",
-        "refreshing_will_update_the_data": "Yenileme işlemi stash-box oturumundaki tüm etiketli oyuncuların verisini güncelleyecektir."
+        "refreshing_will_update_the_data": "Yenileme işlemi stash-box oturumundaki tüm etiketli oyuncuların verisini güncelleyecektir.",
+        "performer_names_or_stashids_separated_by_comma": "Virgülle ayrılmış oyuncu adları veya StashID'ler",
+        "configure_fields": "Alanları Yapılandır",
+        "field_options": "Alan Seçenekleri",
+        "field_options_description": "Her alanın nasıl güncelleneceğini seçin: \"Üzerine yaz\" mevcut veriyi değiştirir, \"birleştir\" mevcut verilere ekleme yapar, \"atla\" ise değişiklik yapmaz.",
+        "to_use_the_performer_tagger": "Oyuncu etiketleyicisini kullanmak için bir stash-box örneğinin yapılandırılmış olması gerekir."
     },
     "photographer": "Fotoğrafçı",
     "play_count": "Oynatma Sayısı",
@@ -1341,7 +1504,8 @@
         "submission_successful": "Gönderim başarılı",
         "selected_stash_box": "Seçilen Stash-Box uç noktası",
         "source": "Stash-Box Kaynağı",
-        "go_review_draft": "Taslağı incelemek için {endpoint_name} adresine gidin."
+        "go_review_draft": "Taslağı incelemek için {endpoint_name} adresine gidin.",
+        "submit_update": "{endpoint_name} içinde zaten mevcut"
     },
     "statistics": "İstatistikler",
     "studio_count": "Stüdyo Sayısı",
@@ -1366,7 +1530,8 @@
             "field_name_required": "Alan adı gereklidir",
             "field_name_whitespace": "Alan adının başında veya sonunda boşluk bulunamaz",
             "field_name_length": "Alan adı 65 karakterden az olmalıdır"
-        }
+        },
+        "image_index_greater_than_zero": "Görsel dizini 0'dan büyük olmalıdır"
     },
     "sub_group_order": "Alt Grup Sırası",
     "validation": {
@@ -1395,7 +1560,8 @@
         "error": "Handy'e bağlanırken hata oluştu",
         "ready": "Hazır",
         "uploading": "Komut dosyası yükleniyor",
-        "syncing": "Sunucu ile senkronize ediliyor"
+        "syncing": "Sunucu ile senkronize ediliyor",
+        "missing": "Yok"
     },
     "o_count": "O Sayısı",
     "o_history": "O Geçmişi",
@@ -1420,7 +1586,8 @@
     "criterion_modifier_values": {
         "only": "Sadece",
         "none": "Hiçbiri",
-        "any_of": "Herhangi biri"
+        "any_of": "Herhangi biri",
+        "any": "Herhangi"
     },
     "history": "Geçmiş",
     "existing_value": "mevcut değer",
@@ -1448,7 +1615,7 @@
     "index_of_total": "{index}/{total}",
     "performer_favorite": "Oyuncu Favorilere Eklendi",
     "scene_updated_at": "Sahne Güncelleme Tarihi",
-    "ignore_auto_tag": "Otomatik Etiketi Yok Say",
+    "ignore_auto_tag": "Otomatik etiketi yok say",
     "playdate_recorded_no": "Oynatma Tarihi Kaydedilmedi",
     "duplicated_phash": "Yinelenen (pHash)",
     "captions": "Alt yazılar",
@@ -1472,5 +1639,84 @@
     },
     "age_on_date": "Videoda {age} yaşında",
     "time": "Başlangıç Zamanı",
-    "disambiguation": "Ad Ayrımı"
+    "disambiguation": "Ad Ayrımı",
+    "career_end": "Kariyer Sonu",
+    "career_start": "Kariyer Başlangıcı",
+    "stash_id_count": "Stash ID Sayısı",
+    "stashbox_search": {
+        "placeholder_name_or_id": "{entityType} adı veya StashID...",
+        "no_results": "Sonuç bulunamadı.",
+        "header": "StashBox'tan {entityType} ara",
+        "select_stashbox": "StashBox seç..."
+    },
+    "tag_tagger": {
+        "tag_names_or_stashids_separated_by_comma": "Virgülle ayrılmış etiket adları veya StashID'ler",
+        "batch_add_tags": "Toplu Etiket Ekle",
+        "batch_update_tags": "Toplu Etiket Güncelle",
+        "failed_to_save_tag": "\"{tag}\" etiketi kaydedilemedi",
+        "network_error": "Ağ Hatası",
+        "no_results_found": "Sonuç bulunamadı.",
+        "number_of_tags_will_be_processed": "{tag_count} etiket işlenecektir",
+        "query_all_tags_in_the_database": "Veritabanındaki tüm etiketler",
+        "status_tagging_job_queued": "Durum: Etiketleme işi kuyruğa alındı",
+        "tag_selection": "Etiket seçimi",
+        "tag_successfully_tagged": "Etiket başarıyla etiketlendi",
+        "tag_status": "Etiket Durumu",
+        "untagged_tags": "Etiketlenmemiş etiketler",
+        "update_tags": "Etiketleri Güncelle",
+        "refresh_tagged_tags": "Etiketlenmiş etiketleri yenile",
+        "status_tagging_tags": "Durum: Etiketler etiketleniyor",
+        "add_new_tags": "Yeni Etiketler Ekle",
+        "any_names_entered_will_be_queried": "Girilen tüm adlar uzak StashBox örneğinde aranacak ve bulunursa eklenecektir. Yalnızca tam eşleşmeler eşleşme olarak kabul edilir.",
+        "config": {
+            "create_parent_label": "Üst etiketler oluştur",
+            "create_parent_desc": "Stash-box kategorilerinden eksik üst etiketleri oluştur veya adı tam eşleşen mevcut üst etiketleri etiketle"
+        },
+        "create_or_tag_parent_tags": "Eksik üst etiketleri oluştur veya mevcut üst etiketleri etiketle",
+        "current_page": "Geçerli sayfa",
+        "name_already_exists": "Ad zaten mevcut",
+        "refreshing_will_update_the_data": "Yenileme işlemi, etiketlenmiş tüm etiketlerin verilerini StashBox örneğinden güncelleyecektir.",
+        "tag_already_tagged": "Etiket zaten etiketlenmiş",
+        "to_use_the_tag_tagger": "Etiket etiketleyicisini kullanabilmek için bir StashBox örneği yapılandırılmalıdır.",
+        "updating_untagged_tags_description": "Etiketlenmemiş etiketleri güncellemek, StashID'si olmayan etiketleri eşleştirmeye çalışacak ve üstverilerini güncelleyecektir."
+    },
+    "duplicated": "Yinelenen",
+    "duplicated_stash_id": "Yinelenen (Stash ID)",
+    "duplicated_title": "Yinelenen (Başlık)",
+    "empty_value": "boş",
+    "hasChapters": "Bölümler",
+    "include_sub_folders": "Alt klasörleri dahil et",
+    "sort_name": "Ada Göre Sırala",
+    "o_count_sfw": "Beğeni",
+    "o_history_sfw": "Beğeni Geçmişi",
+    "odate_recorded_no": "Kaydedilen O Tarihi Yok",
+    "odate_recorded_no_sfw": "Kaydedilen Beğeni Tarihi Yok",
+    "parent_folder": "Üst Klasör",
+    "refer_to": "Lütfen {link} adresine bakın.",
+    "related_studios": "İlgili",
+    "scenes_duration": "Sahne Süresi",
+    "scenes_size": "Sahne Boyutu",
+    "sub_folders": "Alt klasörler",
+    "tagger": {
+        "config": {
+            "excluded_fields": "Hariç tutulan alanlar:",
+            "edit_excluded_fields": "Hariç Tutulan Alanları Düzenle",
+            "no_fields_are_excluded": "Hiçbir alan hariç tutulmadı",
+            "fields_will_not_be_changed": "{entity} güncellenirken bu alanlar değişmeyecektir.",
+            "active_stash-box_instance": "Etkin stash-box örneği:",
+            "no_instances_found": "Hiç örnek bulunamadı"
+        }
+    },
+    "unsupported_criteria": "Desteklenmeyen kriter: {criteria}",
+    "latest_scene": "Son Sahne",
+    "sub_folder_depth": "Alt klasör derinliği (tümü için boş bırakın)",
+    "performer_count_all": "Oyuncu Sayısı (Tümü)",
+    "scene_marker_count": "Sahne İşaretleyici Sayısı",
+    "sub_group_description": "Alt Grup Açıklaması",
+    "tag_parent_tooltip": "Üst etiketleri var",
+    "tag_sub_tag_tooltip": "Alt etiketleri var",
+    "distance": "Uzaklık",
+    "last_o_at_sfw": "Son Beğeni",
+    "o_count_all": "O Sayısı (Tümü)",
+    "resume_time": "Kaldığı Yer"
 }

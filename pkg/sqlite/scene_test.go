@@ -2679,6 +2679,48 @@ func TestSceneQueryPathAndRating(t *testing.T) {
 	})
 }
 
+// mirrors how the performer scene_count resolver scopes its count: the
+// performer criterion is combined with the surrounding list's filter
+func TestSceneQueryCountPerformerAndStudio(t *testing.T) {
+	performerCriterion := models.MultiCriterionInput{
+		Value:    []string{strconv.Itoa(performerIDs[performerIdxWithTwoSceneStudio])},
+		Modifier: models.CriterionModifierIncludes,
+	}
+
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
+
+		// the performer has one scene in each of two different studios
+		unscoped, err := sqb.QueryCount(ctx, &models.SceneFilterType{
+			Performers: &performerCriterion,
+		}, nil)
+		if err != nil {
+			t.Errorf("Error querying scene count: %s", err.Error())
+			return nil
+		}
+		assert.Equal(t, 2, unscoped)
+
+		scoped, err := sqb.QueryCount(ctx, &models.SceneFilterType{
+			OperatorFilter: models.OperatorFilter[models.SceneFilterType]{
+				And: &models.SceneFilterType{
+					Studios: &models.HierarchicalMultiCriterionInput{
+						Value:    []string{strconv.Itoa(studioIDs[studioIdx1WithTwoScenePerformer])},
+						Modifier: models.CriterionModifierIncludes,
+					},
+				},
+			},
+			Performers: &performerCriterion,
+		}, nil)
+		if err != nil {
+			t.Errorf("Error querying scene count: %s", err.Error())
+			return nil
+		}
+		assert.Equal(t, 1, scoped)
+
+		return nil
+	})
+}
+
 func TestSceneQueryPathNotRating(t *testing.T) {
 	const sceneIdx = 1
 

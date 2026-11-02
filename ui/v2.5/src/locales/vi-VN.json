@@ -212,7 +212,6 @@
             "match_failed_already_tagged": "Phân cảnh đã được gắn thẻ",
             "match_failed_no_result": "Không có kết quả được tìm thấy",
             "match_success": "Phân cảnh đã được gán thẻ thành công",
-            "phash_matches": "Khớp với {count} PHashes",
             "duration_off": "Thời gian tắt ít nhất {number} giây",
             "fp_found": "{fpCount, plural, =0 {Không có dấu vết trùng khớp mới được tìm thấy} other {# dấu vết trùng khớp mới đã được tìm thấy}}",
             "unnamed": "Chưa được đặt tên"
@@ -835,7 +834,6 @@
                 "original": "Bản gốc"
             },
             "options": "Tùy Chọn",
-            "page_header": "Trang {page} / {total}",
             "reset_zoom_on_nav": "Đặt lại mức thu phóng khi đổi ảnh",
             "scroll_mode": {
                 "description": "Giữ phím Shift để tạm thời dùng chế độ khác.",
