@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"path/filepath"
 	"testing"
 
 	"github.com/stashapp/stash/internal/manager/config"
@@ -30,6 +31,45 @@ func TestIsAdminRequest(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := isAdminRequest(tt.ctx); got != tt.want {
 				t.Errorf("isAdminRequest() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCheckDirectoryAccess(t *testing.T) {
+	root := t.TempDir()
+	library := filepath.Join(root, "library")
+	other := filepath.Join(root, "other")
+	stashes := config.StashConfigs{{Path: library}}
+
+	admin := session.SetCurrentUser(context.Background(), models.User{ID: 1, Username: "admin", Roles: models.Roles{models.RoleEnumAdmin}})
+	reader := session.SetCurrentUser(context.Background(), models.User{ID: 2, Username: "reader", Roles: models.Roles{models.RoleEnumRead}})
+
+	tests := []struct {
+		name    string
+		ctx     context.Context
+		dir     string
+		allowed bool
+	}{
+		{"admin outside library", admin, other, true},
+		{"no user outside library", context.Background(), other, true},
+		{"reader library root", reader, library, true},
+		{"reader library subdirectory", reader, filepath.Join(library, "a", "b"), true},
+		{"reader outside library", reader, other, false},
+		{"reader parent of library", reader, root, false},
+		{"reader traversal out of library", reader, filepath.Join(library, "..", "other"), false},
+		{"reader sibling with library prefix", reader, library + "2", false},
+		{"reader relative path", reader, "library", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := checkDirectoryAccess(tt.ctx, tt.dir, stashes)
+			if tt.allowed && err != nil {
+				t.Errorf("expected access to %q, got %v", tt.dir, err)
+			}
+			if !tt.allowed && err == nil {
+				t.Errorf("expected access to %q to be denied", tt.dir)
 			}
 		})
 	}

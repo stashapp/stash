@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -89,6 +90,11 @@ func (r *queryResolver) Directory(ctx context.Context, path, locale *string) (*D
 		dirPath = strings.Trim(*path, "\"")
 	}
 	currentDir := getDir(dirPath)
+
+	if err := checkDirectoryAccess(ctx, currentDir, config.GetInstance().GetStashPaths()); err != nil {
+		return directory, err
+	}
+
 	directories, err := listDir(col, currentDir)
 	if err != nil {
 		return directory, err
@@ -99,6 +105,23 @@ func (r *queryResolver) Directory(ctx context.Context, path, locale *string) (*D
 	directory.Directories = directories
 
 	return directory, err
+}
+
+var errDirectoryAccessDenied = errors.New("access denied: directory is outside the library paths")
+
+// checkDirectoryAccess returns an error if the current user may not browse dir.
+// Administrators may browse any directory. Other users may only browse within the
+// library paths, which they can already see through file paths.
+func checkDirectoryAccess(ctx context.Context, dir string, stashes config.StashConfigs) error {
+	if isAdminRequest(ctx) {
+		return nil
+	}
+
+	if stashes.GetStashFromDirPath(dir) == nil {
+		return errDirectoryAccessDenied
+	}
+
+	return nil
 }
 
 func getDir(path string) string {
