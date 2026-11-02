@@ -1,4 +1,4 @@
-package dlna
+package ip
 
 import (
 	"slices"
@@ -16,16 +16,31 @@ type tempIPWhitelist struct {
 	until   *time.Time
 }
 
-type ipWhitelistManager struct {
+type IPTime struct {
+	IPAddress string `json:"ipAddress"`
+	// Time until IP will be no longer allowed/disallowed
+	Until *time.Time `json:"until"`
+}
+
+type WhitelistManager struct {
+	defaultWhitelist []string
+
 	recentIPAddresses []string
-	config            Config
-	tempWhitelist     []tempIPWhitelist
-	mutex             sync.Mutex
+	// config            Config
+	tempWhitelist []tempIPWhitelist
+	mutex         sync.Mutex
+}
+
+func (m *WhitelistManager) SetDefaultWhitelist(list []string) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	m.defaultWhitelist = list
 }
 
 // addRecent adds the provided address to the recent IP addresses list if it
 // was not already present. Returns true if it was already present.
-func (m *ipWhitelistManager) addRecent(addr string) bool {
+func (m *WhitelistManager) AddRecent(addr string) bool {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -50,18 +65,18 @@ func (m *ipWhitelistManager) addRecent(addr string) bool {
 	return i != -1
 }
 
-func (m *ipWhitelistManager) getRecent() []string {
+func (m *WhitelistManager) GetRecent() []string {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	return m.recentIPAddresses
 }
 
-func (m *ipWhitelistManager) getTempAllowed() []*Dlnaip {
+func (m *WhitelistManager) GetTempAllowed() []*IPTime {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	var ret []*Dlnaip
+	var ret []*IPTime
 
 	now := time.Now()
 	removeExpired := false
@@ -71,7 +86,7 @@ func (m *ipWhitelistManager) getTempAllowed() []*Dlnaip {
 			continue
 		}
 
-		ret = append(ret, &Dlnaip{
+		ret = append(ret, &IPTime{
 			IPAddress: a.pattern,
 			Until:     a.until,
 		})
@@ -84,11 +99,11 @@ func (m *ipWhitelistManager) getTempAllowed() []*Dlnaip {
 	return ret
 }
 
-func (m *ipWhitelistManager) ipAllowed(addr string) bool {
+func (m *WhitelistManager) IPAllowed(addr string) bool {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	for _, a := range m.config.GetDLNADefaultIPWhitelist() {
+	for _, a := range m.defaultWhitelist {
 		if a == wildcard {
 			return true
 		}
@@ -122,7 +137,7 @@ func (m *ipWhitelistManager) ipAllowed(addr string) bool {
 	return false
 }
 
-func (m *ipWhitelistManager) removeExpiredWhitelists() {
+func (m *WhitelistManager) removeExpiredWhitelists() {
 	// assumes mutex is already held
 	var newList []tempIPWhitelist
 	now := time.Now()
@@ -138,7 +153,7 @@ func (m *ipWhitelistManager) removeExpiredWhitelists() {
 	m.tempWhitelist = newList
 }
 
-func (m *ipWhitelistManager) allowPattern(pattern string, duration *time.Duration) {
+func (m *WhitelistManager) AllowPattern(pattern string, duration *time.Duration) {
 	if pattern == "" {
 		return
 	}
@@ -176,7 +191,7 @@ func (m *ipWhitelistManager) allowPattern(pattern string, duration *time.Duratio
 	m.tempWhitelist = newList
 }
 
-func (m *ipWhitelistManager) removePattern(pattern string) bool {
+func (m *WhitelistManager) RemovePattern(pattern string) bool {
 	if pattern == "" {
 		return false
 	}

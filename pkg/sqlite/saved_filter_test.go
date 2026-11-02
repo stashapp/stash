@@ -9,6 +9,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSavedFilterFind(t *testing.T) {
@@ -102,3 +103,63 @@ func TestSavedFilterDestroy(t *testing.T) {
 // TODO GetMarkerStrings
 // TODO Wall
 // TODO Query
+
+func TestSavedFilterPerUser(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		qb := db.SavedFilter
+
+		other := models.User{
+			Username: "other",
+			Roles:    models.Roles{models.RoleEnumModify},
+		}
+		require.NoError(t, db.User.Create(ctx, &other, ""))
+		otherCtx := models.WithUserID(ctx, other.ID)
+		guestCtx := models.WithUserID(ctx, 0)
+
+		const name = "per user filter"
+		newFilter := models.SavedFilter{
+			Name: name,
+			Mode: models.FilterModeScenes,
+		}
+		require.NoError(t, qb.Create(ctx, &newFilter))
+
+		// other users may use the same name
+		otherFilter := models.SavedFilter{
+			Name: name,
+			Mode: models.FilterModeScenes,
+		}
+		require.NoError(t, qb.Create(otherCtx, &otherFilter))
+
+		// the guest user cannot create filters
+		assert.Error(t, qb.Create(guestCtx, &models.SavedFilter{Name: name, Mode: models.FilterModeScenes}))
+
+		// users only see their own filters
+		f, err := qb.Find(otherCtx, newFilter.ID)
+		require.NoError(t, err)
+		assert.Nil(t, f)
+
+		f, err = qb.Find(guestCtx, newFilter.ID)
+		require.NoError(t, err)
+		assert.Nil(t, f)
+
+		all, err := qb.All(otherCtx)
+		require.NoError(t, err)
+		require.Len(t, all, 1)
+		assert.Equal(t, otherFilter.ID, all[0].ID)
+
+		byMode, err := qb.FindByMode(guestCtx, models.FilterModeScenes)
+		require.NoError(t, err)
+		assert.Empty(t, byMode)
+
+		// users cannot change or remove other users' filters
+		assert.Error(t, qb.Update(otherCtx, &models.SavedFilter{ID: newFilter.ID, Name: "changed", Mode: models.FilterModeScenes}))
+		assert.Error(t, qb.Destroy(otherCtx, newFilter.ID))
+
+		f, err = qb.Find(ctx, newFilter.ID)
+		require.NoError(t, err)
+		require.NotNil(t, f)
+		assert.Equal(t, name, f.Name)
+
+		return nil
+	})
+}

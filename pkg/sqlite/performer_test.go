@@ -14,6 +14,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var testCustomFields = map[string]interface{}{
@@ -2842,3 +2843,80 @@ func TestPerformerMerge(t *testing.T) {
 // TODO Destroy
 // TODO Find
 // TODO Query
+
+func TestPerformerStore_UserData(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		qb := db.Performer
+
+		newPerformer := models.Performer{
+			Name: "user data",
+		}
+		require.NoError(t, qb.Create(ctx, &models.CreatePerformerInput{Performer: &newPerformer}))
+		performerID := newPerformer.ID
+
+		scene := models.Scene{
+			Title:        "user data performer scene",
+			PerformerIDs: models.NewRelatedIDs([]int{performerID}),
+		}
+		require.NoError(t, db.Scene.Create(ctx, &scene, nil))
+
+		other := models.User{
+			Username: "other",
+			Roles:    models.Roles{models.RoleEnumModify},
+		}
+		require.NoError(t, db.User.Create(ctx, &other, ""))
+		otherCtx := models.WithUserID(ctx, other.ID)
+		guestCtx := models.WithUserID(ctx, 0)
+
+		rating := 60
+		_, err := qb.UpdatePartial(ctx, performerID, models.PerformerPartial{
+			Rating:   models.NewOptionalInt(rating),
+			Favorite: models.NewOptionalBool(true),
+		})
+		require.NoError(t, err)
+
+		// the user who set the data sees it
+		p, err := qb.Find(ctx, performerID)
+		require.NoError(t, err)
+		assert.Equal(t, &rating, p.Rating)
+		assert.True(t, p.Favorite)
+
+		// other users and the guest user do not
+		for name, c := range map[string]context.Context{"other user": otherCtx, "guest": guestCtx} {
+			p, err := qb.Find(c, performerID)
+			require.NoError(t, err)
+			assert.Nil(t, p.Rating, name)
+			assert.False(t, p.Favorite, name)
+		}
+
+		// filtering by favorite only matches the current user's favorites
+		favorite := true
+		perPage := -1
+		allResults := &models.FindFilterType{PerPage: &perPage}
+		findIDs := func(c context.Context, favorite bool) []int {
+			var ids []int
+			for _, p := range queryPerformers(c, t, &models.PerformerFilterType{FilterFavorites: &favorite}, allResults) {
+				ids = append(ids, p.ID)
+			}
+			return ids
+		}
+		assert.Contains(t, findIDs(ctx, true), performerID)
+		assert.NotContains(t, findIDs(otherCtx, true), performerID)
+		assert.Contains(t, findIDs(otherCtx, false), performerID)
+
+		// filtering scenes by performer favorite only matches the current user's favorites
+		findSceneIDs := func(c context.Context, favorite bool) []int {
+			var ids []int
+			for _, s := range queryScene(c, t, db.Scene, &models.SceneFilterType{PerformerFavorite: &favorite}, allResults) {
+				ids = append(ids, s.ID)
+			}
+			return ids
+		}
+		assert.Contains(t, findSceneIDs(ctx, favorite), scene.ID)
+		assert.NotContains(t, findSceneIDs(ctx, !favorite), scene.ID)
+		assert.NotContains(t, findSceneIDs(otherCtx, favorite), scene.ID)
+		assert.Contains(t, findSceneIDs(otherCtx, !favorite), scene.ID)
+
+		return nil
+	})
+}

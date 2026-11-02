@@ -28,13 +28,20 @@ const (
 	tagRelationsTable = "tags_relations"
 	tagParentIDColumn = "parent_id"
 	tagChildIDColumn  = "child_id"
+
+	tagsUserDataTable = "tags_user_data"
 )
+
+var tagUserData = userDataTable{
+	table:       tagsUserDataTable,
+	idColumn:    tagIDColumn,
+	objectTable: tagTable,
+}
 
 type tagRow struct {
 	ID            int         `db:"id" goqu:"skipinsert"`
 	Name          null.String `db:"name"` // TODO: make schema non-nullable
 	SortName      zero.String `db:"sort_name"`
-	Favorite      bool        `db:"favorite"`
 	Description   zero.String `db:"description"`
 	IgnoreAutoTag bool        `db:"ignore_auto_tag"`
 	CreatedAt     Timestamp   `db:"created_at"`
@@ -48,7 +55,6 @@ func (r *tagRow) fromTag(o models.Tag) {
 	r.ID = o.ID
 	r.Name = null.StringFrom(o.Name)
 	r.SortName = zero.StringFrom((o.SortName))
-	r.Favorite = o.Favorite
 	r.Description = zero.StringFrom(o.Description)
 	r.IgnoreAutoTag = o.IgnoreAutoTag
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
@@ -60,7 +66,6 @@ func (r *tagRow) resolve() *models.Tag {
 		ID:            r.ID,
 		Name:          r.Name.String,
 		SortName:      r.SortName.String,
-		Favorite:      r.Favorite,
 		Description:   r.Description.String,
 		IgnoreAutoTag: r.IgnoreAutoTag,
 		CreatedAt:     r.CreatedAt.Timestamp,
@@ -84,6 +89,31 @@ func (r *tagPathRow) resolve() *models.TagPath {
 	return ret
 }
 
+// tagUserDataRow is a row of a user's data for a tag.
+type tagUserDataRow struct {
+	TagID    int  `db:"tag_id"`
+	UserID   int  `db:"user_id"`
+	Favorite bool `db:"favorite"`
+}
+
+func (r tagUserDataRow) apply(t *models.Tag) {
+	t.Favorite = r.Favorite
+}
+
+func tagUserDataRecord(o models.Tag) goqu.Record {
+	return goqu.Record{
+		"favorite": o.Favorite,
+	}
+}
+
+func tagUserDataPartialRecord(o models.TagPartial) goqu.Record {
+	r := updateRecord{
+		Record: make(exp.Record),
+	}
+	r.setBool("favorite", o.Favorite)
+	return goqu.Record(r.Record)
+}
+
 type tagRowRecord struct {
 	updateRecord
 }
@@ -92,7 +122,6 @@ func (r *tagRowRecord) fromPartial(o models.TagPartial) {
 	r.setString("name", o.Name)
 	r.setNullString("sort_name", o.SortName)
 	r.setNullString("description", o.Description)
-	r.setBool("favorite", o.Favorite)
 	r.setBool("ignore_auto_tag", o.IgnoreAutoTag)
 	r.setTimestamp("created_at", o.CreatedAt)
 	r.setTimestamp("updated_at", o.UpdatedAt)
@@ -220,6 +249,10 @@ func (qb *TagStore) Create(ctx context.Context, newObject *models.CreateTagInput
 		return err
 	}
 
+	if err := tagUserData.upsert(ctx, id, tagUserDataRecord(*newObject.Tag)); err != nil {
+		return err
+	}
+
 	if newObject.Aliases.Loaded() {
 		if err := tagsAliasesTableMgr.insertJoins(ctx, id, newObject.Aliases.List()); err != nil {
 			return err
@@ -274,6 +307,10 @@ func (qb *TagStore) UpdatePartial(ctx context.Context, id int, partial models.Ta
 		}
 	}
 
+	if err := tagUserData.upsert(ctx, id, tagUserDataPartialRecord(partial)); err != nil {
+		return nil, err
+	}
+
 	if partial.Aliases != nil {
 		if err := tagsAliasesTableMgr.modifyJoins(ctx, id, partial.Aliases.Values, partial.Aliases.Mode); err != nil {
 			return nil, err
@@ -310,6 +347,10 @@ func (qb *TagStore) Update(ctx context.Context, updatedObject *models.UpdateTagI
 	r.fromTag(*updatedObject.Tag)
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
+		return err
+	}
+
+	if err := tagUserData.upsert(ctx, updatedObject.ID, tagUserDataRecord(*updatedObject.Tag)); err != nil {
 		return err
 	}
 
@@ -456,6 +497,10 @@ func (qb *TagStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mode
 		ret = append(ret, s)
 		return nil
 	}); err != nil {
+		return nil, err
+	}
+
+	if err := qb.loadUserData(ctx, ret); err != nil {
 		return nil, err
 	}
 
@@ -897,6 +942,10 @@ func (qb *TagStore) queryTags(ctx context.Context, query string, args []interfac
 		return nil, err
 	}
 
+	if err := qb.loadUserData(ctx, ret); err != nil {
+		return nil, err
+	}
+
 	return ret, nil
 }
 
@@ -917,7 +966,48 @@ func (qb *TagStore) queryTagPaths(ctx context.Context, query string, args []inte
 		return nil, err
 	}
 
+	tags := make([]*models.Tag, len(ret))
+	for i, t := range ret {
+		tags[i] = &t.Tag
+	}
+	if err := qb.loadUserData(ctx, tags); err != nil {
+		return nil, err
+	}
+
 	return ret, nil
+}
+
+// loadUserData sets the current user's data on the provided tags.
+func (qb *TagStore) loadUserData(ctx context.Context, tags []*models.Tag) error {
+	if _, ok := models.UserIDFromContext(ctx); !ok || len(tags) == 0 {
+		return nil
+	}
+
+	// the same tag may be present more than once, such as in tag paths
+	byID := make(map[int][]*models.Tag, len(tags))
+	var ids []int
+	for _, t := range tags {
+		if _, found := byID[t.ID]; !found {
+			ids = append(ids, t.ID)
+		}
+		byID[t.ID] = append(byID[t.ID], t)
+	}
+
+	return batchExec(ids, defaultBatchSize, func(batch []int) error {
+		q := tagUserData.selectForUser(ctx, batch)
+		const single = false
+		return queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+			var r tagUserDataRow
+			if err := rows.StructScan(&r); err != nil {
+				return err
+			}
+
+			for _, t := range byID[r.TagID] {
+				r.apply(t)
+			}
+			return nil
+		})
+	})
 }
 
 func (qb *TagStore) GetImage(ctx context.Context, tagID int) ([]byte, error) {

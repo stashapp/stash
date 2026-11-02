@@ -107,7 +107,7 @@ input SceneCreateInput {
   production_date: String
   # rating expressed as 1-100
   rating100: Int
-  organized: Boolean
+  organized: Boolean @hasRole(role: ADMIN)
   studio_id: ID
   gallery_ids: [ID!]
   performer_ids: [ID!]
@@ -143,7 +143,7 @@ input SceneUpdateInput {
   rating100: Int
   o_counter: Int
     @deprecated(reason: "Unsupported - Use sceneIncrementO/sceneDecrementO")
-  organized: Boolean
+  organized: Boolean @hasRole(role: ADMIN)
   studio_id: ID
   gallery_ids: [ID!]
   performer_ids: [ID!]
@@ -193,7 +193,7 @@ input BulkSceneUpdateInput {
   production_date: String
   # rating expressed as 1-100
   rating100: Int
-  organized: Boolean
+  organized: Boolean @hasRole(role: ADMIN)
   studio_id: ID
   gallery_ids: BulkUpdateIds
   performer_ids: BulkUpdateIds

@@ -44,7 +44,7 @@ input ImageUpdateInput {
   code: String
   # rating expressed as 1-100
   rating100: Int
-  organized: Boolean
+  organized: Boolean @hasRole(role: ADMIN)
   url: String @deprecated(reason: "Use urls")
   urls: [String!]
   date: String
@@ -67,7 +67,7 @@ input BulkImageUpdateInput {
   code: String
   # rating expressed as 1-100
   rating100: Int
-  organized: Boolean
+  organized: Boolean @hasRole(role: ADMIN)
   url: String @deprecated(reason: "Use urls")
   urls: BulkUpdateStrings
   date: String

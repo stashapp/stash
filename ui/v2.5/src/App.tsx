@@ -11,12 +11,14 @@ import { Helmet } from "react-helmet";
 import cloneDeep from "lodash-es/cloneDeep";
 import mergeWith from "lodash-es/mergeWith";
 import { ToastProvider } from "src/hooks/Toast";
+import { CurrentUserProvider } from "src/hooks/CurrentUser";
 import { LightboxProvider } from "src/hooks/Lightbox/context";
 import { initPolyfills } from "src/polyfills";
 
 import locales, { NestedMessage, registerCountry } from "src/locales";
 import {
   useConfiguration,
+  useMe,
   useConfigureUI,
   useSystemStatus,
 } from "src/core/StashService";
@@ -141,6 +143,7 @@ function translateLanguageLocale(l: string) {
 
 export const App: React.FC = () => {
   const config = useConfiguration();
+  const me = useMe();
   const [saveUI] = useConfigureUI();
 
   const { data: systemStatusData } = useSystemStatus();
@@ -333,7 +336,7 @@ export const App: React.FC = () => {
     );
   }
 
-  if (config.loading) {
+  if (config.loading || me.loading) {
     return renderSimple(<LoadingIndicator />);
   }
 
@@ -367,23 +370,25 @@ export const App: React.FC = () => {
           >
             <AppContainer>
               <ConfigurationProvider configuration={config.data!.configuration}>
-                {maybeRenderReleaseNotes()}
-                <ConnectionMonitor />
-                <TroubleshootingModeOverlay />
-                <Suspense fallback={<LoadingIndicator />}>
-                  <LightboxProvider>
-                    <ManualProvider>
-                      <InteractiveProvider>
-                        <Helmet
-                          {...titleProps}
-                          htmlAttributes={htmlAttributes}
-                        />
-                        {maybeRenderNavbar()}
-                        <MainContainer>{renderContent()}</MainContainer>
-                      </InteractiveProvider>
-                    </ManualProvider>
-                  </LightboxProvider>
-                </Suspense>
+                <CurrentUserProvider user={me.data?.me ?? null}>
+                  {maybeRenderReleaseNotes()}
+                  <ConnectionMonitor />
+                  <TroubleshootingModeOverlay />
+                  <Suspense fallback={<LoadingIndicator />}>
+                    <LightboxProvider>
+                      <ManualProvider>
+                        <InteractiveProvider>
+                          <Helmet
+                            {...titleProps}
+                            htmlAttributes={htmlAttributes}
+                          />
+                          {maybeRenderNavbar()}
+                          <MainContainer>{renderContent()}</MainContainer>
+                        </InteractiveProvider>
+                      </ManualProvider>
+                    </LightboxProvider>
+                  </Suspense>
+                </CurrentUserProvider>
               </ConfigurationProvider>
             </AppContainer>
           </PluginsLoader>

@@ -15,6 +15,7 @@ import { ParseMode, TagOperation } from "../constants";
 import { TaggerStateContext } from "../context";
 import { GenderEnum } from "src/core/generated-graphql";
 import { genderList } from "src/utils/gender";
+import { useIsAdmin } from "src/hooks/CurrentUser";
 
 const Blacklist: React.FC<{
   list: string[];
@@ -119,6 +120,7 @@ interface IConfigProps {
 const Config: React.FC<IConfigProps> = ({ show }) => {
   const { config, setConfig } = useContext(TaggerStateContext);
   const intl = useIntl();
+  const isAdmin = useIsAdmin();
 
   function renderGenderCheckbox(gender: GenderEnum) {
     const performerGenders = config.performerGenders || genderList.slice();
@@ -269,23 +271,25 @@ const Config: React.FC<IConfigProps> = ({ show }) => {
                 })}
               </Form.Text>
             </Form.Group>
-            <Form.Group controlId="toggle-organized">
-              <Form.Check
-                label={
-                  <FormattedMessage id="component_tagger.config.mark_organized_label" />
-                }
-                checked={config.markSceneAsOrganizedOnSave}
-                onChange={(e) =>
-                  setConfig({
-                    ...config,
-                    markSceneAsOrganizedOnSave: e.currentTarget.checked,
-                  })
-                }
-              />
-              <Form.Text>
-                <FormattedMessage id="component_tagger.config.mark_organized_desc" />
-              </Form.Text>
-            </Form.Group>
+            {isAdmin && (
+              <Form.Group controlId="toggle-organized">
+                <Form.Check
+                  label={
+                    <FormattedMessage id="component_tagger.config.mark_organized_label" />
+                  }
+                  checked={config.markSceneAsOrganizedOnSave}
+                  onChange={(e) =>
+                    setConfig({
+                      ...config,
+                      markSceneAsOrganizedOnSave: e.currentTarget.checked,
+                    })
+                  }
+                />
+                <Form.Text>
+                  <FormattedMessage id="component_tagger.config.mark_organized_desc" />
+                </Form.Text>
+              </Form.Group>
+            )}
           </Form>
           <div className="col-md-6">
             <Blacklist

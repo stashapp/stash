@@ -95,7 +95,7 @@ func TestScannerScanFileMatchesCaseOnlyRenameOnCaseInsensitiveFilesystem(t *test
 	scanner := Scanner{
 		FS: scanTestFS{caseSensitive: false},
 		Repository: Repository{
-			TxnManager: db,
+			TxnManager: db.Repository().TxnManager,
 			File:       db.File,
 			Folder:     db.Folder,
 		},

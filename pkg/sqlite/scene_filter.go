@@ -120,7 +120,7 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 			criterion: sceneFilter.PhashDistance,
 		},
 
-		intCriterionHandler(sceneFilter.Rating100, "scenes.rating", nil),
+		sceneUserData.intCriterionHandler(sceneFilter.Rating100, sceneUserData.column("rating")),
 		qb.oCountCriterionHandler(sceneFilter.OCounter),
 		boolCriterionHandler(sceneFilter.Organized, "scenes.organized", nil),
 
@@ -162,13 +162,13 @@ func (qb *sceneFilterHandler) criterionHandler() criterionHandler {
 
 		qb.captionCriterionHandler(sceneFilter.Captions),
 
-		floatIntCriterionHandler(sceneFilter.ResumeTime, "scenes.resume_time", nil),
-		floatIntCriterionHandler(sceneFilter.PlayDuration, "scenes.play_duration", nil),
+		sceneUserData.floatIntCriterionHandler(sceneFilter.ResumeTime, sceneUserData.columnOrDefault("resume_time", "0")),
+		sceneUserData.floatIntCriterionHandler(sceneFilter.PlayDuration, sceneUserData.columnOrDefault("play_duration", "0")),
 		qb.playCountCriterionHandler(sceneFilter.PlayCount),
 		criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 			if sceneFilter.LastPlayedAt != nil {
 				f.addLeftJoin(
-					fmt.Sprintf("(SELECT %s, MAX(%s) as last_played_at FROM %s GROUP BY %s)", sceneIDColumn, sceneViewDateColumn, scenesViewDatesTable, sceneIDColumn),
+					fmt.Sprintf("(SELECT %s, MAX(%s) as last_played_at FROM %s WHERE %s = %d GROUP BY %s)", sceneIDColumn, sceneViewDateColumn, scenesViewDatesTable, userIDColumn, currentUserID(ctx), sceneIDColumn),
 					"scene_last_view",
 					fmt.Sprintf("scene_last_view.%s = scenes.id", sceneIDColumn),
 				)
@@ -295,6 +295,7 @@ func (qb *sceneFilterHandler) playCountCriterionHandler(count *models.IntCriteri
 		primaryTable: sceneTable,
 		joinTable:    scenesViewDatesTable,
 		primaryFK:    sceneIDColumn,
+		perUser:      true,
 	}
 
 	return h.handler(count)
@@ -305,6 +306,7 @@ func (qb *sceneFilterHandler) oCountCriterionHandler(count *models.IntCriterionI
 		primaryTable: sceneTable,
 		joinTable:    scenesODatesTable,
 		primaryFK:    sceneIDColumn,
+		perUser:      true,
 	}
 
 	return h.handler(count)
@@ -448,9 +450,12 @@ func (qb *sceneFilterHandler) isMissingCriterionHandler(isMissing *string) crite
 				f.addWhere("fingerprints_phash.fingerprint IS NULL")
 			case "cover":
 				f.addWhere("scenes.cover_blob IS NULL")
+			case "rating":
+				sceneUserData.join(ctx, f)
+				f.addWhere(sceneUserData.column("rating") + " IS NULL")
 			default:
 				if err := validateIsMissing(*isMissing, []string{
-					"title", "code", "details", "director", "rating",
+					"title", "code", "details", "director",
 				}); err != nil {
 					f.setError(err)
 					return
@@ -579,13 +584,13 @@ func (qb *sceneFilterHandler) performerFavoriteCriterionHandler(performerfavorit
 
 			if *performerfavorite {
 				// contains at least one favorite
-				f.addLeftJoin("performers", "", "performers.id = performers_scenes.performer_id")
-				f.addWhere("performers.favorite = 1")
+				f.addLeftJoin(performersUserDataTable, "", fmt.Sprintf("performers_user_data.performer_id = performers_scenes.performer_id AND performers_user_data.user_id = %d", currentUserID(ctx)))
+				f.addWhere("performers_user_data.favorite = 1")
 			} else {
 				// contains zero favorites
-				f.addLeftJoin(`(SELECT performers_scenes.scene_id as id FROM performers_scenes
-JOIN performers ON performers.id = performers_scenes.performer_id
-GROUP BY performers_scenes.scene_id HAVING SUM(performers.favorite) = 0)`, "nofaves", "scenes.id = nofaves.id")
+				f.addLeftJoin(fmt.Sprintf(`(SELECT performers_scenes.scene_id as id FROM performers_scenes
+LEFT JOIN performers_user_data ON performers_user_data.performer_id = performers_scenes.performer_id AND performers_user_data.user_id = %d
+GROUP BY performers_scenes.scene_id HAVING SUM(COALESCE(performers_user_data.favorite, 0)) = 0)`, currentUserID(ctx)), "nofaves", "scenes.id = nofaves.id")
 				f.addWhere("performers_scenes.scene_id IS NULL OR nofaves.id IS NOT NULL")
 			}
 		}

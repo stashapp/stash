@@ -34,7 +34,7 @@ input TagCreateInput {
   description: String
   "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
   aliases: [String!]
-  ignore_auto_tag: Boolean
+  ignore_auto_tag: Boolean @hasRole(role: ADMIN)
   favorite: Boolean
   "This should be a URL or a base64 encoded data URL"
   image: String
@@ -54,7 +54,7 @@ input TagUpdateInput {
   description: String
   "Duplicate aliases and those equal to name will be ignored (case-insensitive)"
   aliases: [String!]
-  ignore_auto_tag: Boolean
+  ignore_auto_tag: Boolean @hasRole(role: ADMIN)
   favorite: Boolean
   "This should be a URL or a base64 encoded data URL"
   image: String
@@ -87,7 +87,7 @@ input BulkTagUpdateInput {
   description: String
   "Duplicate aliases and those equal to name will result in an error (case-insensitive)"
   aliases: BulkUpdateStrings
-  ignore_auto_tag: Boolean
+  ignore_auto_tag: Boolean @hasRole(role: ADMIN)
   favorite: Boolean
 
   parent_ids: BulkUpdateIds

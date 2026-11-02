@@ -66,7 +66,7 @@ func (qb *tagFilterHandler) criterionHandler() criterionHandler {
 		stringCriterionHandler(tagFilter.SortName, tagTable+".sort_name"),
 		qb.aliasCriterionHandler(tagFilter.Aliases),
 
-		boolCriterionHandler(tagFilter.Favorite, tagTable+".favorite", nil),
+		tagUserData.boolCriterionHandler(tagFilter.Favorite, tagUserData.columnOrDefault("favorite", "0")),
 		stringCriterionHandler(tagFilter.Description, tagTable+".description"),
 		boolCriterionHandler(tagFilter.IgnoreAutoTag, tagTable+".ignore_auto_tag", nil),
 

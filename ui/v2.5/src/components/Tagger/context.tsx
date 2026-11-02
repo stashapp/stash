@@ -19,6 +19,7 @@ import {
 } from "src/core/StashService";
 import { useToast } from "src/hooks/Toast";
 import { useConfigurationContext } from "src/hooks/Config";
+import { useIsAdmin } from "src/hooks/CurrentUser";
 import { ITaggerSource, SCRAPER_PREFIX, STASH_BOX_PREFIX } from "./constants";
 import { errorToString } from "src/utils";
 import { mergeStudioStashIDs } from "./utils";
@@ -126,6 +127,7 @@ export const TaggerContext: React.FC<React.PropsWithChildren<unknown>> = ({
   const stopping = useRef(false);
 
   const { configuration: stashConfig } = useConfigurationContext();
+  const isAdmin = useIsAdmin();
   const { config, setConfig } = useTaggerConfig();
 
   const Scrapers = useListSceneScrapers();
@@ -495,8 +497,10 @@ export const TaggerContext: React.FC<React.PropsWithChildren<unknown>> = ({
         variables: {
           input: {
             ...sceneCreateInput,
-            // only set organized if it is enabled in the config
-            organized: config?.markSceneAsOrganizedOnSave || undefined,
+            // only set organized if it is enabled in the config.
+            // organized may only be changed by administrators
+            organized:
+              (isAdmin && config?.markSceneAsOrganizedOnSave) || undefined,
           },
         },
       });

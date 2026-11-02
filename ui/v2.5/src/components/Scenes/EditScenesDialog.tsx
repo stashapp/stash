@@ -7,6 +7,7 @@ import { StudioSelect } from "../Shared/Select";
 import { ModalComponent } from "../Shared/Modal";
 import { MultiSet } from "../Shared/MultiSet";
 import { useToast } from "src/hooks/Toast";
+import { useIsAdmin } from "src/hooks/CurrentUser";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
   getAggregateInputValue,
@@ -41,6 +42,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
 ) => {
   const intl = useIntl();
+  const isAdmin = useIsAdmin();
   const Toast = useToast();
 
   const [updateInput, setUpdateInput] = useState<GQL.BulkSceneUpdateInput>({
@@ -126,6 +128,11 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
       updateInput.rating100,
       aggregateState.state.rating100
     );
+
+    // organized may only be changed by administrators
+    if (!isAdmin) {
+      sceneInput.organized = undefined;
+    }
 
     return sceneInput;
   }
@@ -294,13 +301,15 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
             />
           </BulkUpdateFormGroup>
 
-          <Form.Group controlId="organized">
-            <IndeterminateCheckbox
-              label={intl.formatMessage({ id: "organized" })}
-              setChecked={(checked) => setUpdateField({ organized: checked })}
-              checked={updateInput.organized ?? undefined}
-            />
-          </Form.Group>
+          {isAdmin && (
+            <Form.Group controlId="organized">
+              <IndeterminateCheckbox
+                label={intl.formatMessage({ id: "organized" })}
+                setChecked={(checked) => setUpdateField({ organized: checked })}
+                checked={updateInput.organized ?? undefined}
+              />
+            </Form.Group>
+          )}
         </Form>
       </ModalComponent>
     );

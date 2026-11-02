@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -9,11 +10,72 @@ import (
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/session"
 	"golang.org/x/text/collate"
 )
 
 func (r *queryResolver) Configuration(ctx context.Context) (*ConfigResult, error) {
-	return makeConfigResult(), nil
+	ret := makeConfigResult()
+
+	if !isAdminRequest(ctx) {
+		redactConfigResult(ret)
+	}
+
+	ui, err := r.getUIConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
+	ret.UI = ui
+
+	return ret, nil
+}
+
+// isAdminRequest returns true if the current user is an administrator.
+// Requests without a current user are only possible when no authentication is
+// required (such as during setup), and are treated as administrator requests,
+// consistent with HasRoleDirective.
+func isAdminRequest(ctx context.Context) bool {
+	currentUser := session.GetCurrentUser(ctx)
+	return currentUser == nil || currentUser.Roles.HasRole(models.RoleEnumAdmin)
+}
+
+// redactConfigResult blanks configuration values that non-administrators must not see:
+// credentials, and server paths and executables that are only used by administrator settings.
+// Values used by the UI for non-administrators (such as stash-box endpoints, library paths
+// and the trash path used by delete dialogs) are kept.
+func redactConfigResult(ret *ConfigResult) {
+	if g := ret.General; g != nil {
+		g.DatabasePath = ""
+		g.BackupDirectoryPath = ""
+		g.GeneratedPath = ""
+		g.MetadataPath = ""
+		g.ConfigFilePath = ""
+		g.ScrapersPath = ""
+		g.PluginsPath = ""
+		g.CachePath = ""
+		g.BlobsPath = ""
+		g.FfmpegPath = ""
+		g.FfprobePath = ""
+		g.PythonPath = ""
+		g.LogFile = nil
+		g.CustomPerformerImageLocation = nil
+		g.TranscodeInputArgs = []string{}
+		g.TranscodeOutputArgs = []string{}
+		g.LiveTranscodeInputArgs = []string{}
+		g.LiveTranscodeOutputArgs = []string{}
+
+		boxes := make([]*models.StashBox, len(g.StashBoxes))
+		for i, box := range g.StashBoxes {
+			redacted := *box
+			redacted.APIKey = ""
+			boxes[i] = &redacted
+		}
+		g.StashBoxes = boxes
+	}
+
+	if s := ret.Scraping; s != nil {
+		s.ScraperCDPPath = nil
+	}
 }
 
 func (r *queryResolver) Directory(ctx context.Context, path, locale *string) (*Directory, error) {
@@ -28,6 +90,11 @@ func (r *queryResolver) Directory(ctx context.Context, path, locale *string) (*D
 		dirPath = strings.Trim(*path, "\"")
 	}
 	currentDir := getDir(dirPath)
+
+	if err := checkDirectoryAccess(ctx, currentDir, config.GetInstance().GetStashPaths()); err != nil {
+		return directory, err
+	}
+
 	directories, err := listDir(col, currentDir)
 	if err != nil {
 		return directory, err
@@ -38,6 +105,23 @@ func (r *queryResolver) Directory(ctx context.Context, path, locale *string) (*D
 	directory.Directories = directories
 
 	return directory, err
+}
+
+var errDirectoryAccessDenied = errors.New("access denied: directory is outside the library paths")
+
+// checkDirectoryAccess returns an error if the current user may not browse dir.
+// Administrators may browse any directory. Other users may only browse within the
+// library paths, which they can already see through file paths.
+func checkDirectoryAccess(ctx context.Context, dir string, stashes config.StashConfigs) error {
+	if isAdminRequest(ctx) {
+		return nil
+	}
+
+	if stashes.GetStashFromDirPath(dir) == nil {
+		return errDirectoryAccessDenied
+	}
+
+	return nil
 }
 
 func getDir(path string) string {
@@ -65,7 +149,6 @@ func makeConfigResult() *ConfigResult {
 		Dlna:      makeConfigDLNAResult(),
 		Scraping:  makeConfigScrapingResult(),
 		Defaults:  makeConfigDefaultsResult(),
-		UI:        makeConfigUIResult(),
 	}
 }
 
@@ -115,9 +198,10 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		WriteImageThumbnails:          config.IsWriteImageThumbnails(),
 		CreateImageClipsFromVideos:    config.IsCreateImageClipsFromVideos(),
 		GalleryCoverRegex:             config.GetGalleryCoverRegex(),
-		APIKey:                        config.GetAPIKey(),
-		Username:                      config.GetUsername(),
-		Password:                      config.GetPasswordHash(),
+		APIKey:                        "",
+		Username:                      nil,
+		Password:                      nil,
+		GuestAccountEnabled:           config.GetGuestUserEnabled(),
 		MaxSessionAge:                 config.GetMaxSessionAge(),
 		LogFile:                       &logFile,
 		LogOut:                        config.GetLogOut(),
@@ -244,10 +328,6 @@ func makeConfigDefaultsResult() *ConfigDefaultSettingsResult {
 		DeleteFile:      &deleteFileDefault,
 		DeleteGenerated: &deleteGeneratedDefault,
 	}
-}
-
-func makeConfigUIResult() map[string]interface{} {
-	return config.GetInstance().GetUIConfiguration()
 }
 
 func (r *queryResolver) ValidateStashBoxCredentials(ctx context.Context, input config.StashBoxInput) (*StashBoxValidationResult, error) {

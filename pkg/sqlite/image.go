@@ -27,20 +27,24 @@ const (
 	imagesFilesTable      = "images_files"
 	imagesURLsTable       = "image_urls"
 	imageURLColumn        = "url"
+	imagesUserDataTable   = "images_user_data"
 )
 
+var imageUserData = userDataTable{
+	table:       imagesUserDataTable,
+	idColumn:    imageIDColumn,
+	objectTable: imageTable,
+}
+
 type imageRow struct {
-	ID    int         `db:"id" goqu:"skipinsert"`
-	Title zero.String `db:"title"`
-	Code  zero.String `db:"code"`
-	// expressed as 1-100
-	Rating        null.Int    `db:"rating"`
+	ID            int         `db:"id" goqu:"skipinsert"`
+	Title         zero.String `db:"title"`
+	Code          zero.String `db:"code"`
 	Date          NullDate    `db:"date"`
 	DatePrecision null.Int    `db:"date_precision"`
 	Details       zero.String `db:"details"`
 	Photographer  zero.String `db:"photographer"`
 	Organized     bool        `db:"organized"`
-	OCounter      int         `db:"o_counter"`
 	StudioID      null.Int    `db:"studio_id,omitempty"`
 	CreatedAt     Timestamp   `db:"created_at"`
 	UpdatedAt     Timestamp   `db:"updated_at"`
@@ -50,16 +54,44 @@ func (r *imageRow) fromImage(i models.Image) {
 	r.ID = i.ID
 	r.Title = zero.StringFrom(i.Title)
 	r.Code = zero.StringFrom(i.Code)
-	r.Rating = intFromPtr(i.Rating)
 	r.Date = NullDateFromDatePtr(i.Date)
 	r.DatePrecision = datePrecisionFromDatePtr(i.Date)
 	r.Details = zero.StringFrom(i.Details)
 	r.Photographer = zero.StringFrom(i.Photographer)
 	r.Organized = i.Organized
-	r.OCounter = i.OCounter
 	r.StudioID = intFromPtr(i.StudioID)
 	r.CreatedAt = Timestamp{Timestamp: i.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: i.UpdatedAt}
+}
+
+// imageUserDataRow is a row of a user's data for an image.
+type imageUserDataRow struct {
+	ImageID int `db:"image_id"`
+	UserID  int `db:"user_id"`
+	// expressed as 1-100
+	Rating   null.Int `db:"rating"`
+	OCounter int      `db:"o_counter"`
+}
+
+func (r imageUserDataRow) apply(i *models.Image) {
+	i.Rating = nullIntPtr(r.Rating)
+	i.OCounter = r.OCounter
+}
+
+func imageUserDataRecord(i models.Image) goqu.Record {
+	return goqu.Record{
+		"rating":    intFromPtr(i.Rating),
+		"o_counter": i.OCounter,
+	}
+}
+
+func imageUserDataPartialRecord(i models.ImagePartial) goqu.Record {
+	r := updateRecord{
+		Record: make(exp.Record),
+	}
+	r.setNullInt("rating", i.Rating)
+	r.setInt("o_counter", i.OCounter)
+	return goqu.Record(r.Record)
 }
 
 type imageQueryRow struct {
@@ -75,12 +107,10 @@ func (r *imageQueryRow) resolve() *models.Image {
 		ID:           r.ID,
 		Title:        r.Title.String,
 		Code:         r.Code.String,
-		Rating:       nullIntPtr(r.Rating),
 		Date:         r.Date.DatePtr(r.DatePrecision),
 		Details:      r.Details.String,
 		Photographer: r.Photographer.String,
 		Organized:    r.Organized,
-		OCounter:     r.OCounter,
 		StudioID:     nullIntPtr(r.StudioID),
 
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
@@ -104,12 +134,10 @@ type imageRowRecord struct {
 func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 	r.setNullString("title", i.Title)
 	r.setNullString("code", i.Code)
-	r.setNullInt("rating", i.Rating)
 	r.setNullDate("date", "date_precision", i.Date)
 	r.setNullString("details", i.Details)
 	r.setNullString("photographer", i.Photographer)
 	r.setBool("organized", i.Organized)
-	r.setInt("o_counter", i.OCounter)
 	r.setNullInt("studio_id", i.StudioID)
 	r.setTimestamp("created_at", i.CreatedAt)
 	r.setTimestamp("updated_at", i.UpdatedAt)
@@ -200,7 +228,7 @@ func NewImageStore(r *storeRepository) *ImageStore {
 			fk:    imagesCustomFieldsTable.Col(imageIDColumn),
 		},
 		tableMgr:        imageTableMgr,
-		oCounterManager: oCounterManager{imageTableMgr},
+		oCounterManager: oCounterManager{tableMgr: imageTableMgr, userData: imageUserData},
 		repo:            r,
 	}
 }
@@ -248,6 +276,10 @@ func (qb *ImageStore) Create(ctx context.Context, newObject *models.CreateImageI
 
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {
+		return err
+	}
+
+	if err := imageUserData.upsert(ctx, id, imageUserDataRecord(*newObject.Image)); err != nil {
 		return err
 	}
 
@@ -313,6 +345,10 @@ func (qb *ImageStore) UpdatePartial(ctx context.Context, id int, partial models.
 		}
 	}
 
+	if err := imageUserData.upsert(ctx, id, imageUserDataPartialRecord(partial)); err != nil {
+		return nil, err
+	}
+
 	if partial.GalleryIDs != nil {
 		if err := imageGalleriesTableMgr.modifyJoins(ctx, id, partial.GalleryIDs.IDs, partial.GalleryIDs.Mode); err != nil {
 			return nil, err
@@ -353,6 +389,10 @@ func (qb *ImageStore) Update(ctx context.Context, updatedObject *models.Image) e
 	r.fromImage(*updatedObject)
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
+		return err
+	}
+
+	if err := imageUserData.upsert(ctx, updatedObject.ID, imageUserDataRecord(*updatedObject)); err != nil {
 		return err
 	}
 
@@ -496,7 +536,41 @@ func (qb *ImageStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 		return nil, err
 	}
 
+	if err := qb.loadUserData(ctx, ret); err != nil {
+		return nil, err
+	}
+
 	return ret, nil
+}
+
+// loadUserData sets the current user's data on the provided images.
+func (qb *ImageStore) loadUserData(ctx context.Context, images []*models.Image) error {
+	if _, ok := models.UserIDFromContext(ctx); !ok || len(images) == 0 {
+		return nil
+	}
+
+	byID := make(map[int]*models.Image, len(images))
+	ids := make([]int, len(images))
+	for i, img := range images {
+		byID[img.ID] = img
+		ids[i] = img.ID
+	}
+
+	return batchExec(ids, defaultBatchSize, func(batch []int) error {
+		q := imageUserData.selectForUser(ctx, batch)
+		const single = false
+		return queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+			var r imageUserDataRow
+			if err := rows.StructScan(&r); err != nil {
+				return err
+			}
+
+			if img := byID[r.ImageID]; img != nil {
+				r.apply(img)
+			}
+			return nil
+		})
+	})
 }
 
 // Returns the custom cover for the gallery, if one has been set.
@@ -720,9 +794,12 @@ func (qb *ImageStore) CountByGalleryID(ctx context.Context, galleryID int) (int,
 }
 
 func (qb *ImageStore) OCountByPerformerID(ctx context.Context, performerID int) (int, error) {
-	table := qb.table()
+	userData := imageUserData.goquTable()
 	joinTable := performersImagesJoinTable
-	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table).InnerJoin(joinTable, goqu.On(table.Col(idColumn).Eq(joinTable.Col(imageIDColumn)))).Where(joinTable.Col(performerIDColumn).Eq(performerID))
+	q := dialect.Select(goqu.COALESCE(goqu.SUM(userData.Col("o_counter")), 0)).From(userData).InnerJoin(joinTable, goqu.On(userData.Col(imageIDColumn).Eq(joinTable.Col(imageIDColumn)))).Where(
+		joinTable.Col(performerIDColumn).Eq(performerID),
+		userData.Col(userIDColumn).Eq(currentUserID(ctx)),
+	)
 
 	var ret int
 	if err := querySimple(ctx, q, &ret); err != nil {
@@ -740,7 +817,11 @@ func (qb *ImageStore) OCountByStudioID(ctx context.Context, studioID int, depth 
 	}
 
 	table := qb.table()
-	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table).Where(
+	userData := imageUserData.goquTable()
+	q := dialect.Select(goqu.COALESCE(goqu.SUM(userData.Col("o_counter")), 0)).From(table).InnerJoin(userData, goqu.On(
+		userData.Col(imageIDColumn).Eq(table.Col(idColumn)),
+		userData.Col(userIDColumn).Eq(currentUserID(ctx)),
+	)).Where(
 		table.Col(studioIDColumn).Eq(studioID),
 	)
 
@@ -752,9 +833,11 @@ func (qb *ImageStore) OCountByStudioID(ctx context.Context, studioID int, depth 
 }
 
 func (qb *ImageStore) OCount(ctx context.Context) (int, error) {
-	table := qb.table()
+	userData := imageUserData.goquTable()
 
-	q := dialect.Select(goqu.COALESCE(goqu.SUM("o_counter"), 0)).From(table)
+	q := dialect.Select(goqu.COALESCE(goqu.SUM(userData.Col("o_counter")), 0)).From(userData).Where(
+		userData.Col(userIDColumn).Eq(currentUserID(ctx)),
+	)
 	var ret int
 	if err := querySimple(ctx, q, &ret); err != nil {
 		return 0, err
@@ -772,10 +855,11 @@ func (qb *ImageStore) oCountByStudioIDRecursive(ctx context.Context, studioID in
 		INNER JOIN sub_studios ss ON s.parent_id = ss.id
 		WHERE ss.level < ? OR ? < 0
 	)
-	SELECT COALESCE(SUM(o_counter), 0) FROM images
+	SELECT COALESCE(SUM(images_user_data.o_counter), 0) FROM images
+	INNER JOIN images_user_data ON images_user_data.image_id = images.id AND images_user_data.user_id = ?
 	WHERE images.studio_id IN (SELECT id FROM sub_studios)`
 
-	rows, err := dbWrapper.QueryxContext(ctx, q, studioID, depth, depth)
+	rows, err := dbWrapper.QueryxContext(ctx, q, studioID, depth, depth, currentUserID(ctx))
 	if err != nil {
 		return 0, fmt.Errorf("querying image o_count by studio: %w", err)
 	}
@@ -916,7 +1000,7 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 		return nil, err
 	}
 
-	if err := qb.setImageSortAndPagination(&query, findFilter); err != nil {
+	if err := qb.setImageSortAndPagination(ctx, &query, findFilter); err != nil {
 		return nil, err
 	}
 
@@ -1037,7 +1121,7 @@ var imageSortOptions = sortOptions{
 	"updated_at",
 }
 
-func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *models.FindFilterType) error {
+func (qb *ImageStore) setImageSortAndPagination(ctx context.Context, q *queryBuilder, findFilter *models.FindFilterType) error {
 	sortClause := ""
 
 	if findFilter != nil && findFilter.Sort != nil && *findFilter.Sort != "" {
@@ -1101,6 +1185,12 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 				onClause: "images_files.file_id = image_files.file_id",
 			})
 			sortClause = " ORDER BY MIN(image_files.width, image_files.height) " + direction
+		case "rating":
+			imageUserData.joinSort(ctx, q)
+			sortClause = getSort(sort, direction, imagesUserDataTable)
+		case "o_counter":
+			imageUserData.joinSort(ctx, q)
+			sortClause = " ORDER BY " + imageUserData.columnOrDefault(sort, "0") + " " + getSortDirection(direction)
 		case "title":
 			addFilesJoin()
 			addFolderJoin()

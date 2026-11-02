@@ -23,6 +23,7 @@ const (
 
 type savedFilterRow struct {
 	ID           int               `db:"id" goqu:"skipinsert"`
+	UserID       int               `db:"user_id"`
 	Mode         models.FilterMode `db:"mode"`
 	Name         string            `db:"name"`
 	FindFilter   string            `db:"find_filter"`
@@ -107,13 +108,34 @@ func (qb *SavedFilterStore) table() exp.IdentifierExpression {
 	return qb.tableMgr.table
 }
 
-func (qb *SavedFilterStore) selectDataset() *goqu.SelectDataset {
-	return dialect.From(qb.table()).Select(qb.table().All())
+// selectDataset returns a dataset selecting the saved filters of the current user.
+// Saved filters are private to the user that created them.
+func (qb *SavedFilterStore) selectDataset(ctx context.Context) *goqu.SelectDataset {
+	table := qb.table()
+	return dialect.From(table).Select(table.All()).Where(table.Col(userIDColumn).Eq(currentUserID(ctx)))
+}
+
+// checkOwned returns an error if the saved filter does not exist or is not owned by the current user.
+func (qb *SavedFilterStore) checkOwned(ctx context.Context, id int) error {
+	if _, err := qb.find(ctx, id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("saved filter with id %d not found", id)
+		}
+		return err
+	}
+
+	return nil
 }
 
 func (qb *SavedFilterStore) Create(ctx context.Context, newObject *models.SavedFilter) error {
+	userID, ok := models.UserIDFromContext(ctx)
+	if !ok {
+		return fmt.Errorf("creating saved filter: %w", errNoCurrentUser)
+	}
+
 	var r savedFilterRow
 	r.fromSavedFilter(*newObject)
+	r.UserID = userID
 
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {
@@ -131,8 +153,13 @@ func (qb *SavedFilterStore) Create(ctx context.Context, newObject *models.SavedF
 }
 
 func (qb *SavedFilterStore) Update(ctx context.Context, updatedObject *models.SavedFilter) error {
+	if err := qb.checkOwned(ctx, updatedObject.ID); err != nil {
+		return err
+	}
+
 	var r savedFilterRow
 	r.fromSavedFilter(*updatedObject)
+	r.UserID = currentUserID(ctx)
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
@@ -142,6 +169,10 @@ func (qb *SavedFilterStore) Update(ctx context.Context, updatedObject *models.Sa
 }
 
 func (qb *SavedFilterStore) Destroy(ctx context.Context, id int) error {
+	if err := qb.checkOwned(ctx, id); err != nil {
+		return err
+	}
+
 	return qb.destroyExisting(ctx, []int{id})
 }
 
@@ -158,7 +189,7 @@ func (qb *SavedFilterStore) FindMany(ctx context.Context, ids []int, ignoreNotFo
 	ret := make([]*models.SavedFilter, len(ids))
 
 	table := qb.table()
-	q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(ids))
+	q := qb.selectDataset(ctx).Prepared(true).Where(table.Col(idColumn).In(ids))
 	unsorted, err := qb.getMany(ctx, q)
 	if err != nil {
 		return nil, err
@@ -182,7 +213,7 @@ func (qb *SavedFilterStore) FindMany(ctx context.Context, ids []int, ignoreNotFo
 
 // returns nil, sql.ErrNoRows if not found
 func (qb *SavedFilterStore) find(ctx context.Context, id int) (*models.SavedFilter, error) {
-	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
+	q := qb.selectDataset(ctx).Where(qb.tableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil {
@@ -242,7 +273,7 @@ func (qb *SavedFilterStore) FindByMode(ctx context.Context, mode models.FilterMo
 		whereClause = table.Col("mode").Eq(mode)
 	}
 
-	sq := qb.selectDataset().Prepared(true).Where(whereClause).Order(table.Col("name").Asc())
+	sq := qb.selectDataset(ctx).Prepared(true).Where(whereClause).Order(table.Col("name").Asc())
 	ret, err := qb.getMany(ctx, sq)
 
 	if err != nil {
@@ -253,5 +284,5 @@ func (qb *SavedFilterStore) FindByMode(ctx context.Context, mode models.FilterMo
 }
 
 func (qb *SavedFilterStore) All(ctx context.Context) ([]*models.SavedFilter, error) {
-	return qb.getMany(ctx, qb.selectDataset())
+	return qb.getMany(ctx, qb.selectDataset(ctx))
 }

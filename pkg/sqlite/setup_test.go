@@ -634,8 +634,25 @@ func TestMain(m *testing.M) {
 	os.Exit(ret)
 }
 
+// testUserID is the ID of the user that tests run as. It is set in populateDB.
+var testUserID int
+
 func withTxn(f func(ctx context.Context) error) error {
-	return txn.WithTxn(context.Background(), db, f)
+	ctx := models.WithUserID(context.Background(), testUserID)
+	return txn.WithTxn(ctx, db, f)
+}
+
+func createTestUser(ctx context.Context) error {
+	u := models.User{
+		Username: "test",
+		Roles:    models.Roles{models.RoleEnumAdmin},
+	}
+	if err := db.User.Create(ctx, &u, ""); err != nil {
+		return err
+	}
+
+	testUserID = u.ID
+	return nil
 }
 
 func withRollbackTxn(f func(ctx context.Context) error) error {
@@ -685,7 +702,7 @@ func runTests(m *testing.M) int {
 		// don't use filesystem
 	})
 
-	if err := db.Open(databaseFile); err != nil {
+	if err := db.Open(context.Background(), databaseFile); err != nil {
 		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
 	}
 
@@ -702,6 +719,10 @@ func runTests(m *testing.M) int {
 }
 
 func populateDB() error {
+	if err := withTxn(createTestUser); err != nil {
+		return fmt.Errorf("creating test user: %w", err)
+	}
+
 	if err := withTxn(func(ctx context.Context) error {
 		if err := createFolders(ctx); err != nil {
 			return fmt.Errorf("creating folders: %w", err)

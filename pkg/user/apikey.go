@@ -1,4 +1,4 @@
-package manager
+package user
 
 import (
 	"errors"
@@ -17,7 +17,7 @@ type APIKeyClaims struct {
 	jwt.RegisteredClaims
 }
 
-func GenerateAPIKey(userID string) (string, error) {
+func generateAPIKey(userID string) (string, error) {
 	claims := &APIKeyClaims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -44,7 +44,7 @@ func GetUserIDFromAPIKey(apiKey string) (string, error) {
 	})
 
 	if err != nil {
-		return "", err
+		return "", ErrInvalidToken
 	}
 
 	if !token.Valid {

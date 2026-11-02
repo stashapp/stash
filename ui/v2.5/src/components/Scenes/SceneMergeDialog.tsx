@@ -14,6 +14,7 @@ import {
 } from "src/core/StashService";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useToast } from "src/hooks/Toast";
+import { useIsAdmin } from "src/hooks/CurrentUser";
 import { faExchangeAlt, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
 import {
   ScrapeDialogRow,
@@ -74,6 +75,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
   onClose,
 }) => {
   const intl = useIntl();
+  const isAdmin = useIsAdmin();
 
   const [loading, setLoading] = useState(true);
 
@@ -580,28 +582,30 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           result={details}
           onChange={(value) => setDetails(value)}
         />
-        <ScrapeDialogRow
-          field="organized"
-          title={intl.formatMessage({ id: "organized" })}
-          result={organized}
-          originalField={
-            <FormControl
-              value={organized.originalValue ? trueString : falseString}
-              readOnly
-              onChange={() => {}}
-              className="bg-secondary text-white border-secondary"
-            />
-          }
-          newField={
-            <FormControl
-              value={organized.newValue ? trueString : falseString}
-              readOnly
-              onChange={() => {}}
-              className="bg-secondary text-white border-secondary"
-            />
-          }
-          onChange={(value) => setOrganized(value)}
-        />
+        {isAdmin && (
+          <ScrapeDialogRow
+            field="organized"
+            title={intl.formatMessage({ id: "organized" })}
+            result={organized}
+            originalField={
+              <FormControl
+                value={organized.originalValue ? trueString : falseString}
+                readOnly
+                onChange={() => {}}
+                className="bg-secondary text-white border-secondary"
+              />
+            }
+            newField={
+              <FormControl
+                value={organized.newValue ? trueString : falseString}
+                readOnly
+                onChange={() => {}}
+                className="bg-secondary text-white border-secondary"
+              />
+            }
+            onChange={(value) => setOrganized(value)}
+          />
+        )}
         <ScrapeDialogRow
           field="stash_ids"
           title={intl.formatMessage({ id: "stash_id" })}
@@ -673,7 +677,8 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
         }),
         tag_ids: tags.getNewValue()?.map((t) => t.stored_id!),
         details: details.getNewValue(),
-        organized: organized.getNewValue(),
+        // organized may only be changed by administrators
+        organized: isAdmin ? organized.getNewValue() : undefined,
         stash_ids: stashIDs.getNewValue(),
         cover_image: coverImage,
         custom_fields: {

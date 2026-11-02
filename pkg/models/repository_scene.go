@@ -142,6 +142,8 @@ type SceneWriter interface {
 	ViewHistoryWriter
 	SaveActivity(ctx context.Context, sceneID int, resumeTime *float64, playDuration *float64) (bool, error)
 	ResetActivity(ctx context.Context, sceneID int, resetResume bool, resetDuration bool) (bool, error)
+	// MergeUserData moves the per-user data of all users from the source scenes to the destination scene.
+	MergeUserData(ctx context.Context, destinationID int, sourceIDs []int, includeViewHistory bool, includeOHistory bool) error
 	CustomFieldsWriter
 }
 
