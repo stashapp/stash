@@ -1334,10 +1334,10 @@ func (i *Config) GetGuestUserEnabled() bool {
 }
 
 func (i *Config) SetGuestUserEnabled(enabled bool) {
-	i.RLock()
-	defer i.RUnlock()
+	i.Lock()
+	defer i.Unlock()
 	i.set(GuestAccountEnabled, enabled)
-	_ = i.Write()
+	_ = i.writeNoLock()
 }
 
 func (i *Config) GetUserGraphqlRateLimit() int {
