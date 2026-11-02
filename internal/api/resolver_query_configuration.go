@@ -9,11 +9,16 @@ import (
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/session"
 	"golang.org/x/text/collate"
 )
 
 func (r *queryResolver) Configuration(ctx context.Context) (*ConfigResult, error) {
 	ret := makeConfigResult()
+
+	if !isAdminRequest(ctx) {
+		redactConfigResult(ret)
+	}
 
 	ui, err := r.getUIConfig(ctx)
 	if err != nil {
@@ -22,6 +27,54 @@ func (r *queryResolver) Configuration(ctx context.Context) (*ConfigResult, error
 	ret.UI = ui
 
 	return ret, nil
+}
+
+// isAdminRequest returns true if the current user is an administrator.
+// Requests without a current user are only possible when no authentication is
+// required (such as during setup), and are treated as administrator requests,
+// consistent with HasRoleDirective.
+func isAdminRequest(ctx context.Context) bool {
+	currentUser := session.GetCurrentUser(ctx)
+	return currentUser == nil || currentUser.Roles.HasRole(models.RoleEnumAdmin)
+}
+
+// redactConfigResult blanks configuration values that non-administrators must not see:
+// credentials, and server paths and executables that are only used by administrator settings.
+// Values used by the UI for non-administrators (such as stash-box endpoints, library paths
+// and the trash path used by delete dialogs) are kept.
+func redactConfigResult(ret *ConfigResult) {
+	if g := ret.General; g != nil {
+		g.DatabasePath = ""
+		g.BackupDirectoryPath = ""
+		g.GeneratedPath = ""
+		g.MetadataPath = ""
+		g.ConfigFilePath = ""
+		g.ScrapersPath = ""
+		g.PluginsPath = ""
+		g.CachePath = ""
+		g.BlobsPath = ""
+		g.FfmpegPath = ""
+		g.FfprobePath = ""
+		g.PythonPath = ""
+		g.LogFile = nil
+		g.CustomPerformerImageLocation = nil
+		g.TranscodeInputArgs = []string{}
+		g.TranscodeOutputArgs = []string{}
+		g.LiveTranscodeInputArgs = []string{}
+		g.LiveTranscodeOutputArgs = []string{}
+
+		boxes := make([]*models.StashBox, len(g.StashBoxes))
+		for i, box := range g.StashBoxes {
+			redacted := *box
+			redacted.APIKey = ""
+			boxes[i] = &redacted
+		}
+		g.StashBoxes = boxes
+	}
+
+	if s := ret.Scraping; s != nil {
+		s.ScraperCDPPath = nil
+	}
 }
 
 func (r *queryResolver) Directory(ctx context.Context, path, locale *string) (*Directory, error) {
