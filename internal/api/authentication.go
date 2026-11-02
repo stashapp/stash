@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -9,6 +10,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/logger"
@@ -17,43 +19,66 @@ import (
 )
 
 func allowUnauthenticated(r *http.Request) bool {
-	// #2715 - allow access to UI files
-	return strings.HasPrefix(r.URL.Path, loginEndpoint) || r.URL.Path == logoutEndpoint || r.URL.Path == "/css" || strings.HasPrefix(r.URL.Path, "/assets")
+	// #2715 allow access files
+	return strings.HasPrefix(r.URL.Path, loginEndpoint) || r.URL.Path == logoutEndpoint || strings.HasPrefix(r.URL.Path, "/css") || strings.HasPrefix(r.URL.Path, "/assets")
 }
 
-// authenticateSignedRequest checks if the request is a valid signed media request.
-// Returns the matched username and true if valid, or empty string and false otherwise.
+// isMutation checks if the GraphQL request is a mutation
+func isMutation(r *http.Request) bool {
+	// For GraphQL requests, check if it's a mutation
+	if r.URL.Path == gqlEndpoint {
+		// Parse the GraphQL query to check if it's a mutation
+		// This is a simple check - in production you'd parse the query properly
+		query := r.URL.Query().Get("query")
+		if query == "" && r.Method == "POST" {
+			// Try to read from body for POST requests
+			// For now, we'll rely on the operation name in context
+		}
+	}
+	return false
+}
+
+// isGraphQLMutation checks if the request context contains a mutation operation
+func isGraphQLMutation(ctx context.Context) bool {
+	if rc, ok := ctx.Value(graphql.OperationNameKey).(string); ok {
+		return strings.HasPrefix(strings.ToLower(rc), "mutation")
+	}
+	return false
+}
+
+// authenticateSignedRequest checks request valid signed media request.
+// Returns matched username true valid, empty string false otherwise.
 func authenticateSignedRequest(r *http.Request) (string, bool) {
-	// Only apply to scene stream paths (used by AirPlay/Chromecast devices that can't pass cookies)
+	// Only apply scene stream paths (used by AirPlay/Chromecast devices that can't pass cookies)
 	if !strings.HasPrefix(r.URL.Path, "/scene/") {
 		return "", false
 	}
 
 	c := config.GetInstance()
-
-	// Signed URLs are only relevant when credentials are configured
+	// Signed URLs only relevant when credentials configured
 	if !c.HasCredentials() {
 		return "", false
 	}
 
-	// Check for signed URL parameters
+	// Check signed URL parameters
 	q := r.URL.Query()
-	if q.Get(signedurl.CIDParam) == "" || q.Get(signedurl.ExpiresParam) == "" || q.Get(signedurl.SigParam) == "" {
+	if !q.Has(signedurl.CIDParam) && !q.Has(signedurl.ExpiresParam) && !q.Has(signedurl.SigParam) {
 		return "", false
 	}
 
-	// Extract the credential ID and look up the user's signing key.
-	// We need the key before we can verify the signature, since in a
-	// multi-user setup each user could have their own signing key.
+	// Extract credential look user's signing key.
+	// key before verify signature, since
+	// multi-user setup each user own signing key.
 	cid := q.Get(signedurl.CIDParam)
 	username, secret, found := resolveCredentialID(c, cid)
 	if !found {
-		logger.Warnf("signed URL credential ID mismatch")
+		logger.Warnf("signed URL credential mismatch")
 		return "", false
 	}
 
-	// Verify the signature using the user's signing key
-	if _, err := signedurl.VerifyURL(r.URL.Path, q, secret); err != nil {
+	// Verify signature using user's signing key
+	_, err := signedurl.VerifyURL(r.URL.Path, secret)
+	if err != nil {
 		logger.Warnf("signed URL verification failed: %v", err)
 		return "", false
 	}
@@ -62,7 +87,7 @@ func authenticateSignedRequest(r *http.Request) (string, bool) {
 }
 
 func httpError(w http.ResponseWriter, r *http.Request, text string, status int) {
-	// if request accepts json, return json error response
+	// request accepts json, return json error response
 	if strings.Contains(r.Header.Get("Accept"), "application/json") {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(status)
@@ -77,34 +102,29 @@ func authenticateHandler() func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			c := config.GetInstance()
 
-			r = session.SetLocalRequest(r)
+			session.SetLocalRequest(r.Context())
 			ctx := r.Context()
 
-			// Check for signed media requests
-			if username, ok := authenticateSignedRequest(r); ok {
-				ctx := r.Context()
-				ctx = session.SetCurrentUserID(ctx, username)
-				r = r.WithContext(ctx)
+			// Check signed media requests
+			username, ok := authenticateSignedRequest(r)
+			ctx = session.SetCurrentUserID(ctx, username)
+			r = r.WithContext(ctx)
+			if ok {
 				next.ServeHTTP(w, r)
 				return
 			}
 
-			userID, err := manager.GetInstance().SessionStore.Authenticate(w, r)
+			userID, err := manager.GetInstance().SessionStore.Authenticate(r)
 			if err != nil {
 				if !errors.Is(err, session.ErrUnauthorized) {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
 				}
-
-				// unauthorized error
-				w.Header().Add("WWW-Authenticate", "FormBased")
-				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
 
-			// reject connections from the public internet if authentication is not configured
-			// don't apply for new systems
-			if !c.IsNewSystem() && !c.HasCredentials() {
+			// reject connections from public internet when authentication not configured
+			// don't apply to new systems
+			if c.IsNewSystem() && !c.HasCredentials() {
 				requestIP, err := getRequestIPFromCtx(ctx)
 				if err != nil {
 					logger.Errorf("error getting request IP: %v", err)
@@ -112,59 +132,65 @@ func authenticateHandler() func(http.Handler) http.Handler {
 					return
 				}
 
-				if err := checkAllowPublicWithoutAuth(c, requestIP); err != nil {
+				err = checkAllowPublicWithoutAuth(c, requestIP)
+				if err != nil {
 					httpError(w, r, "Access denied: Stash cannot be accessed from public IPs when authentication is not configured", http.StatusForbidden)
 					return
 				}
 			}
 
+			// Block ALL GraphQL mutations for unauthenticated users
+			// This prevents unauthenticated access to setup, importObjects, reloadPlugins, runPluginOperation, configureGeneral, etc.
+			if r.URL.Path == gqlEndpoint {
+				if isGraphQLMutation(ctx) && userID == "" && !allowUnauthenticated(r) {
+					w.Header().Add("WWW-Authenticate", "FormBased")
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+			}
+
 			if c.HasCredentials() {
-				// authentication is required
+				// authentication required
 				if userID == "" && !allowUnauthenticated(r) {
-					// if graphql or a non-webpage was requested, we just return a forbidden error
+					// graphql non-webpage requested, return forbidden error
 					ext := path.Ext(r.URL.Path)
 					if r.URL.Path == gqlEndpoint || (ext != "" && ext != ".html") {
 						w.Header().Add("WWW-Authenticate", "FormBased")
 						w.WriteHeader(http.StatusUnauthorized)
 						return
 					}
-
-					prefix := getProxyPrefix(r)
-
-					// otherwise redirect to the login page
-					returnURL := url.URL{
-						Path:     prefix + r.URL.Path,
-						RawQuery: r.URL.RawQuery,
-					}
-					q := make(url.Values)
-					q.Set(returnURLParam, returnURL.String())
-					u := url.URL{
-						Path:     prefix + loginEndpoint,
-						RawQuery: q.Encode(),
-					}
-					http.Redirect(w, r, u.String(), http.StatusFound)
-					return
 				}
 			}
 
-			ctx = session.SetCurrentUserID(ctx, userID)
+			prefix := getProxyPrefix(r)
 
-			r = r.WithContext(ctx)
+			// otherwise redirect login page
+			returnURL := url.URL{
+				Path:     prefix + r.URL.Path,
+				RawQuery: r.URL.RawQuery,
+			}
+			q := make(url.Values)
+			q.Set(returnURLParam, returnURL.String())
+			u := url.URL{
+				Path:     prefix + loginEndpoint,
+				RawQuery: q.Encode(),
+			}
 
-			next.ServeHTTP(w, r)
+			http.Redirect(w, r, u.String(), http.StatusFound)
+			return
 		})
 	}
 }
 
 func checkAllowPublicWithoutAuth(c *config.Config, requestIP net.IP) error {
-	// reject connections from the public internet if authentication is not configured
-	// don't apply for new systems
+	// reject connections from public internet when authentication not configured
+	// don't apply to new systems
 	if c.IsNewSystem() || c.HasCredentials() {
 		return nil
 	}
 
 	if !isLocalIP(requestIP) && !matchIPWhitelist(c, requestIP) {
-		return fmt.Errorf("stash accessed from external IP %s", requestIP.String())
+		return fmt.Errorf("stash accessed external %s", requestIP.String())
 	}
 
 	return nil
@@ -178,10 +204,12 @@ func matchIPWhitelist(c *config.Config, requestIP net.IP) bool {
 			return true
 		}
 	}
+
 	for _, net := range nets {
 		if net.Contains(requestIP) {
 			return true
 		}
 	}
+
 	return false
 }

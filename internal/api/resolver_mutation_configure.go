@@ -423,19 +423,31 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	}
 
 	if input.TranscodeInputArgs != nil {
-		c.SetInterface(config.TranscodeInputArgs, input.TranscodeInputArgs)
+		err := c.SetTranscodeInputArgs(input.TranscodeInputArgs)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if input.TranscodeOutputArgs != nil {
-		c.SetInterface(config.TranscodeOutputArgs, input.TranscodeOutputArgs)
+		err := c.SetTranscodeOutputArgs(input.TranscodeOutputArgs)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if input.LiveTranscodeInputArgs != nil {
-		c.SetInterface(config.LiveTranscodeInputArgs, input.LiveTranscodeInputArgs)
+		err := c.SetLiveTranscodeInputArgs(input.LiveTranscodeInputArgs)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if input.LiveTranscodeOutputArgs != nil {
-		c.SetInterface(config.LiveTranscodeOutputArgs, input.LiveTranscodeOutputArgs)
+		err := c.SetLiveTranscodeOutputArgs(input.LiveTranscodeOutputArgs)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	r.setConfigBool(config.DrawFunscriptHeatmapRange, input.DrawFunscriptHeatmapRange)
+	r.setConfigBool(config.DrawFunscriptHeatmapRange, input.DrawFunscriptHeatmapRange)pRange)
 
 	if input.ScraperPackageSources != nil {
 		c.SetInterface(config.ScraperPackageSources, input.ScraperPackageSources)
