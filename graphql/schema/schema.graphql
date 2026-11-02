@@ -470,8 +470,7 @@ type Mutation {
 
   # Saved filters
   saveFilter(input: SaveFilterInput!): SavedFilter! @hasRole(role: READ)
-  destroySavedFilter(input: DestroyFilterInput!): Boolean!
-    @hasRole(role: READ)
+  destroySavedFilter(input: DestroyFilterInput!): Boolean! @hasRole(role: READ)
   setDefaultFilter(input: SetDefaultFilterInput!): Boolean!
     @deprecated(reason: "now uses UI config")
     @hasRole(role: READ)
