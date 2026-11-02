@@ -41,14 +41,23 @@ const (
 	sceneCoverBlobColumn = "cover_blob"
 )
 
+// sceneAgeDateExpr is the scene date used when calculating a performer's age
+// for a scene. The production date is when the scene was actually shot, so it
+// is preferred over the release date where one is set. NULLIF is needed because
+// dates are stored as empty strings in some older databases, and an empty
+// production date must not mask a valid release date.
+const sceneAgeDateExpr = "COALESCE(NULLIF(scenes.production_date, ''), scenes.date)"
+
 type sceneRow struct {
-	ID            int         `db:"id" goqu:"skipinsert"`
-	Title         zero.String `db:"title"`
-	Code          zero.String `db:"code"`
-	Details       zero.String `db:"details"`
-	Director      zero.String `db:"director"`
-	Date          NullDate    `db:"date"`
-	DatePrecision null.Int    `db:"date_precision"`
+	ID                      int         `db:"id" goqu:"skipinsert"`
+	Title                   zero.String `db:"title"`
+	Code                    zero.String `db:"code"`
+	Details                 zero.String `db:"details"`
+	Director                zero.String `db:"director"`
+	Date                    NullDate    `db:"date"`
+	DatePrecision           null.Int    `db:"date_precision"`
+	ProductionDate          NullDate    `db:"production_date"`
+	ProductionDatePrecision null.Int    `db:"production_date_precision"`
 	// expressed as 1-100
 	Rating       null.Int  `db:"rating"`
 	Organized    bool      `db:"organized"`
@@ -70,6 +79,8 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.Director = zero.StringFrom(o.Director)
 	r.Date = NullDateFromDatePtr(o.Date)
 	r.DatePrecision = datePrecisionFromDatePtr(o.Date)
+	r.ProductionDate = NullDateFromDatePtr(o.ProductionDate)
+	r.ProductionDatePrecision = datePrecisionFromDatePtr(o.ProductionDate)
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
 	r.StudioID = intFromPtr(o.StudioID)
@@ -90,15 +101,16 @@ type sceneQueryRow struct {
 
 func (r *sceneQueryRow) resolve() *models.Scene {
 	ret := &models.Scene{
-		ID:        r.ID,
-		Title:     r.Title.String,
-		Code:      r.Code.String,
-		Details:   r.Details.String,
-		Director:  r.Director.String,
-		Date:      r.Date.DatePtr(r.DatePrecision),
-		Rating:    nullIntPtr(r.Rating),
-		Organized: r.Organized,
-		StudioID:  nullIntPtr(r.StudioID),
+		ID:             r.ID,
+		Title:          r.Title.String,
+		Code:           r.Code.String,
+		Details:        r.Details.String,
+		Director:       r.Director.String,
+		Date:           r.Date.DatePtr(r.DatePrecision),
+		ProductionDate: r.ProductionDate.DatePtr(r.ProductionDatePrecision),
+		Rating:         nullIntPtr(r.Rating),
+		Organized:      r.Organized,
+		StudioID:       nullIntPtr(r.StudioID),
 
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
 		OSHash:        r.PrimaryFileOshash.String,
@@ -128,6 +140,7 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullString("details", o.Details)
 	r.setNullString("director", o.Director)
 	r.setNullDate("date", "date_precision", o.Date)
+	r.setNullDate("production_date", "production_date_precision", o.ProductionDate)
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
 	r.setNullInt("studio_id", o.StudioID)
@@ -721,20 +734,25 @@ func (qb *SceneStore) FindByPath(ctx context.Context, p string) ([]*models.Scene
 	basename := filepath.Base(p)
 	dir := filepath.Dir(p)
 
-	// replace wildcards
-	basename = strings.ReplaceAll(basename, "*", "%")
-	dir = strings.ReplaceAll(dir, "*", "%")
-
 	sq := dialect.From(scenesFilesJoinTable).InnerJoin(
 		filesTable,
 		goqu.On(filesTable.Col(idColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn))),
 	).InnerJoin(
 		foldersTable,
 		goqu.On(foldersTable.Col(idColumn).Eq(filesTable.Col("parent_folder_id"))),
-	).Select(scenesFilesJoinTable.Col(sceneIDColumn)).Where(
-		foldersTable.Col("path").Like(dir),
-		filesTable.Col("basename").Like(basename),
-	)
+	).Select(scenesFilesJoinTable.Col(sceneIDColumn))
+
+	if pathHasWildcard(basename) || pathHasWildcard(dir) {
+		sq = sq.Where(
+			pathLike(foldersTable.Col("path"), dir),
+			pathLike(filesTable.Col("basename"), basename),
+		)
+	} else {
+		sq = sq.Where(
+			pathEqNoCase(foldersTable.Col("path"), dir),
+			pathEqNoCase(filesTable.Col("basename"), basename),
+		)
+	}
 
 	ret, err := qb.findBySubquery(ctx, sq)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -823,7 +841,13 @@ func (qb *SceneStore) OCountByGroupID(ctx context.Context, groupID int) (int, er
 	return ret, nil
 }
 
-func (qb *SceneStore) OCountByStudioID(ctx context.Context, studioID int) (int, error) {
+func (qb *SceneStore) OCountByStudioID(ctx context.Context, studioID int, depth int) (int, error) {
+	var ret int
+
+	if depth != 0 {
+		return qb.oCountByStudioIDRecursive(ctx, studioID, depth)
+	}
+
 	table := qb.table()
 	oHistoryTable := goqu.T(scenesODatesTable)
 
@@ -832,11 +856,41 @@ func (qb *SceneStore) OCountByStudioID(ctx context.Context, studioID int) (int, 
 		goqu.On(table.Col(idColumn).Eq(oHistoryTable.Col(sceneIDColumn))),
 	).Where(table.Col(studioIDColumn).Eq(studioID))
 
-	var ret int
 	if err := querySimple(ctx, q, &ret); err != nil {
 		return 0, err
 	}
 
+	return ret, nil
+}
+
+func (qb *SceneStore) oCountByStudioIDRecursive(ctx context.Context, studioID int, depth int) (int, error) {
+	q := `
+	WITH RECURSIVE sub_studios AS (
+		SELECT id, 0 AS level FROM studios WHERE id = ?
+		UNION ALL
+		SELECT s.id, ss.level + 1 FROM studios s
+		INNER JOIN sub_studios ss ON s.parent_id = ss.id
+		WHERE ss.level < ? OR ? < 0
+	)
+	SELECT COUNT(*) FROM scenes
+	INNER JOIN scenes_o_dates ON scenes.id = scenes_o_dates.scene_id
+	WHERE scenes.studio_id IN (SELECT id FROM sub_studios)`
+
+	rows, err := dbWrapper.QueryxContext(ctx, q, studioID, depth, depth)
+	if err != nil {
+		return 0, fmt.Errorf("querying scene o_count by studio: %w", err)
+	}
+	defer rows.Close()
+
+	var ret int
+	for rows.Next() {
+		if err := rows.Scan(&ret); err != nil {
+			return 0, fmt.Errorf("scanning scene o_count: %w", err)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return 0, fmt.Errorf("iterating scene o_count rows: %w", err)
+	}
 	return ret, nil
 }
 
@@ -1124,6 +1178,7 @@ var sceneSortOptions = sortOptions{
 	"created_at",
 	"code",
 	"date",
+	"production_date",
 	"file_count",
 	"filesize",
 	"duration",
@@ -1249,8 +1304,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		addVideoFileTable()
 		query.sortAndPagination += fmt.Sprintf(" ORDER BY MIN(%s.width, %s.height) %s", videoFileTable, videoFileTable, getSortDirection(direction))
 	case "filesize":
-		addFileTable()
-		query.sortAndPagination += getSort(sort, direction, fileTable)
+		query.sortAndPagination += getFileSizeSort(sceneTable, scenesFilesTable, sceneIDColumn, direction)
 	case "duration":
 		addVideoFileTable()
 		query.sortAndPagination += getSort(sort, direction, videoFileTable)
@@ -1282,8 +1336,9 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 			fallback = "9223372036854775807"
 		}
 		query.sortAndPagination += fmt.Sprintf(
-			" ORDER BY (SELECT COALESCE(%s(JulianDay(scenes.date) - JulianDay(performers.birthdate)), %s) FROM %s as performers INNER JOIN %s AS aggregation WHERE performers.id = aggregation.%s AND aggregation.%s = %s.id) %s",
+			" ORDER BY (SELECT COALESCE(%s(JulianDay(%s) - JulianDay(performers.birthdate)), %s) FROM %s as performers INNER JOIN %s AS aggregation WHERE performers.id = aggregation.%s AND aggregation.%s = %s.id) %s",
 			aggregation,
+			sceneAgeDateExpr,
 			fallback,
 			performerTable,
 			performersScenesTable,

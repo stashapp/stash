@@ -12,6 +12,11 @@ import { getStashboxBase } from "src/utils/stashbox";
 import { ExternalLink } from "src/components/Shared/ExternalLink";
 import { Link } from "react-router-dom";
 import { LinkButton } from "../LinkButton";
+import { PerformerCollisionWarningButton } from "../PerformerCollisionWarningButton";
+import {
+  getPerformerCollisionMessageIds,
+  TaggerPerformerPopover,
+} from "./TaggerPerformerPopover";
 
 const PerformerLink: React.FC<{
   performer: GQL.ScrapedPerformer | Performer;
@@ -73,8 +78,13 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       stashID.endpoint === endpoint &&
       stashID.stash_id === performer.remote_site_id
   );
-
   const [selectedPerformer, setSelectedPerformer] = useState<Performer>();
+
+  const { data: selectedPerformerData } = GQL.useFindPerformerQuery({
+    variables: { id: selectedID ?? "" },
+    skip: !selectedID,
+  });
+  const selectedLocalPerformer = selectedPerformerData?.findPerformer;
 
   const stashboxPerformerPrefix = endpoint
     ? `${getStashboxBase(endpoint)}performers/`
@@ -115,10 +125,15 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
         <div className="entity-name">
           <FormattedMessage id="countables.performers" values={{ count: 1 }} />:
           <b className="ml-2">
-            <PerformerLink
-              performer={performer}
-              url={`${stashboxPerformerPrefix}${performer.remote_site_id}`}
-            />
+            <TaggerPerformerPopover
+              scrapedPerformer={performer}
+              endpoint={endpoint}
+            >
+              <PerformerLink
+                performer={performer}
+                url={`${stashboxPerformerPrefix}${performer.remote_site_id}`}
+              />
+            </TaggerPerformerPopover>
           </b>
         </div>
         <span className="ml-auto">
@@ -147,6 +162,13 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
   }
 
   const selectedSource = !selectedID ? "skip" : "existing";
+  const collisionMessageIds = selectedLocalPerformer
+    ? getPerformerCollisionMessageIds(
+        performer,
+        selectedLocalPerformer,
+        endpoint
+      )
+    : [];
 
   const safeBuildPerformerScraperLink = (id: string | null | undefined) => {
     return stashboxPerformerPrefix && id
@@ -159,10 +181,15 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
       <div className="entity-name">
         <FormattedMessage id="countables.performers" values={{ count: 1 }} />:
         <b className="ml-2">
-          <PerformerLink
-            performer={performer}
-            url={safeBuildPerformerScraperLink(performer.remote_site_id)}
-          />
+          <TaggerPerformerPopover
+            scrapedPerformer={performer}
+            endpoint={endpoint}
+          >
+            <PerformerLink
+              performer={performer}
+              url={safeBuildPerformerScraperLink(performer.remote_site_id)}
+            />
+          </TaggerPerformerPopover>
         </b>
       </div>
       <ButtonGroup>
@@ -181,7 +208,25 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
           active={selectedSource === "existing"}
           isClearable={false}
           ageFromDate={ageFromDate}
+          wrapValueContainer={(container, selected) => (
+            <TaggerPerformerPopover
+              performer={
+                selectedLocalPerformer?.id === selected.id
+                  ? selectedLocalPerformer
+                  : undefined
+              }
+              performerID={selected.id}
+              scrapedPerformer={performer}
+              endpoint={endpoint}
+              triggerClassName="performer-select-value-hover-trigger"
+            >
+              {container}
+            </TaggerPerformerPopover>
+          )}
         />
+        {collisionMessageIds.length > 0 && (
+          <PerformerCollisionWarningButton messageIds={collisionMessageIds} />
+        )}
         {endpoint && onLink && (
           <LinkButton disabled={selectedID === undefined} onLink={onLink} />
         )}

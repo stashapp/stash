@@ -210,6 +210,7 @@ export type CriterionType =
   | "stash_id_endpoint"
   | "stash_id_count"
   | "date"
+  | "production_date"
   | "created_at"
   | "updated_at"
   | "birthdate"

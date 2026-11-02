@@ -25,6 +25,11 @@ export function useTagsEdit(
     setFieldValue(items.map((item) => item.id));
   }
 
+  function resetTagsState() {
+    setTags(srcTags ?? []);
+    setNewTags(undefined);
+  }
+
   useEffect(() => {
     setTags(srcTags ?? []);
   }, [srcTags]);
@@ -150,6 +155,7 @@ export function useTagsEdit(
   return {
     tags,
     onSetTags,
+    resetTagsState,
     tagsControl,
     updateTagsStateFromScraper,
   };

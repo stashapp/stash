@@ -6,8 +6,9 @@ import { useHistory, useLocation } from "react-router-dom";
 import { useToast } from "src/hooks/Toast";
 import * as GQL from "src/core/generated-graphql";
 import { usePerformerCreate } from "src/core/StashService";
+import { PatchComponent } from "src/patch";
 
-const PerformerCreate: React.FC = () => {
+const PerformerCreate: React.FC = PatchComponent("PerformerCreate", () => {
   const Toast = useToast();
   const history = useHistory();
   const intl = useIntl();
@@ -83,6 +84,6 @@ const PerformerCreate: React.FC = () => {
       </div>
     </div>
   );
-};
+});
 
 export default PerformerCreate;

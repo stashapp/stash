@@ -110,6 +110,13 @@
     top: 0;
   }
 
+  // the cover is a plain block (not flex like the image card), so the
+  // absolutely-positioned preview button needs an explicit offset to overlay
+  // the cover rather than falling to its static position below it.
+  .preview-button {
+    top: 0;
+  }
+
   &-image {
     object-fit: contain;
   }

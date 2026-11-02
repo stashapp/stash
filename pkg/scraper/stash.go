@@ -327,6 +327,12 @@ func (f stashVideoFile) SceneFileType() models.SceneFileType {
 	return ret
 }
 
+// Fields listed here are requested from the remote stash server, so a field
+// that the remote server does not know about fails GraphQL validation and the
+// whole scrape errors out rather than degrading. production_date is therefore
+// deliberately absent: adding it would break this scraper against every
+// currently released stash version. It can be added once the field is widely
+// deployed, or once this scraper negotiates the remote schema.
 type scrapedSceneStash struct {
 	ID         string                   `graphql:"id" json:"id"`
 	Title      *string                  `graphql:"title" json:"title"`

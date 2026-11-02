@@ -20,6 +20,13 @@ fragment StudioFragment on Studio {
   parent {
     name
     id
+    aliases
+    urls {
+      ...URLFragment
+    }
+    images {
+      ...ImageFragment
+    }
   }
   images {
     ...ImageFragment
@@ -97,6 +104,7 @@ fragment FingerprintFragment on Fingerprint {
   algorithm
   hash
   duration
+  submissions
 }
 
 fragment SceneFragment on Scene {
@@ -107,6 +115,7 @@ fragment SceneFragment on Scene {
   director
   duration
   date
+  production_date
   urls {
     ...URLFragment
   }

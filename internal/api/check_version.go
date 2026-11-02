@@ -20,11 +20,20 @@ import (
 )
 
 // we use the github REST V3 API as no login is required
-const apiReleases string = "https://api.github.com/repos/stashapp/stash/releases"
-const apiTags string = "https://api.github.com/repos/stashapp/stash/tags"
+const apiRepoBase string = "https://api.github.com/repos/"
 const apiAcceptHeader string = "application/vnd.github.v3+json"
 const developmentTag string = "latest_develop"
 const defaultSHLength int = 8 // default length of SHA short hash returned by <git rev-parse --short HEAD>
+
+// apiReleasesURL and apiTagsURL build the GitHub API endpoints for the
+// repository configured via build.UpdateRepo (defaults to stashapp/stash).
+func apiReleasesURL() string {
+	return apiRepoBase + build.UpdateRepo() + "/releases"
+}
+
+func apiTagsURL() string {
+	return apiRepoBase + build.UpdateRepo() + "/tags"
+}
 
 var stashReleases = func() map[string]string {
 	return map[string]string{
@@ -190,7 +199,7 @@ func GetLatestRelease(ctx context.Context) (*LatestRelease, error) {
 	platform := fmt.Sprintf("%s/%s", runtime.GOOS, arch)
 	wantedRelease := getWantedRelease(platform)
 
-	url := apiReleases
+	url := apiReleasesURL()
 	if build.IsDevelop() {
 		// get the release tagged with the development tag
 		url += "/tags/" + developmentTag
@@ -258,7 +267,7 @@ func getReleaseHash(ctx context.Context, tagName string) (string, error) {
 
 	// Limit to 5 pages, ie 500 tags - should be plenty
 	for page := 1; page <= 5; {
-		url := fmt.Sprintf("%s?per_page=%d&page=%d", apiTags, perPage, page)
+		url := fmt.Sprintf("%s?per_page=%d&page=%d", apiTagsURL(), perPage, page)
 		tags := []githubTagResponse{}
 		err := makeGithubRequest(ctx, url, &tags)
 		if err != nil {

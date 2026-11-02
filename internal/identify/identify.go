@@ -386,6 +386,28 @@ func getFieldOptions(options []MetadataOptions) map[string]*FieldOptions {
 	return ret
 }
 
+// setPartialDate sets target from the scraped date value, if the field strategy
+// allows it and the scraped value differs from the existing one. fieldName is
+// used for logging only. Parse failures are logged and target is left unset,
+// rather than failing the whole identify operation over one bad field.
+func setPartialDate(target *models.OptionalDate, scrapedDate *string, existing *models.Date, options *FieldOptions, fieldName string) {
+	if scrapedDate == nil || (existing != nil && existing.String() == *scrapedDate) {
+		return
+	}
+
+	if !shouldSetSingleValueField(options, existing != nil) {
+		return
+	}
+
+	d, err := models.ParseDate(*scrapedDate)
+	if err != nil {
+		logger.Warnf("Ignoring scraped %s %q: %v", fieldName, *scrapedDate, err)
+		return
+	}
+
+	*target = models.NewOptionalDate(d)
+}
+
 func getScenePartial(scene *models.Scene, scraped *models.ScrapedScene, fieldOptions map[string]*FieldOptions, setOrganized bool) models.ScenePartial {
 	partial := models.ScenePartial{}
 
@@ -394,14 +416,8 @@ func getScenePartial(scene *models.Scene, scraped *models.ScrapedScene, fieldOpt
 			partial.Title = models.NewOptionalString(*scraped.Title)
 		}
 	}
-	if scraped.Date != nil && (scene.Date == nil || scene.Date.String() != *scraped.Date) {
-		if shouldSetSingleValueField(fieldOptions["date"], scene.Date != nil) {
-			d, err := models.ParseDate(*scraped.Date)
-			if err == nil {
-				partial.Date = models.NewOptionalDate(d)
-			}
-		}
-	}
+	setPartialDate(&partial.Date, scraped.Date, scene.Date, fieldOptions["date"], "date")
+	setPartialDate(&partial.ProductionDate, scraped.ProductionDate, scene.ProductionDate, fieldOptions["production_date"], "production date")
 	if scraped.Details != nil && (scene.Details != *scraped.Details) {
 		if shouldSetSingleValueField(fieldOptions["details"], scene.Details != "") {
 			partial.Details = models.NewOptionalString(*scraped.Details)

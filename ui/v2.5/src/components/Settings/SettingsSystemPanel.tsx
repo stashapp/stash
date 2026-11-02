@@ -423,6 +423,22 @@ export const SettingsConfigurationPanel: React.FC = () => {
             return null;
           }}
         />
+
+        <NumberSetting
+          id="max-marker-preview-duration"
+          headingID="config.general.max_marker_preview_duration_head"
+          subHeadingID="config.general.max_marker_preview_duration_desc"
+          value={general.maxMarkerPreviewDuration ?? 0}
+          onChange={(v) => saveGeneral({ maxMarkerPreviewDuration: v })}
+        />
+
+        <NumberSetting
+          id="default-marker-preview-duration"
+          headingID="config.general.default_marker_preview_duration_head"
+          subHeadingID="config.general.default_marker_preview_duration_desc"
+          value={general.defaultMarkerPreviewDuration ?? 20}
+          onChange={(v) => saveGeneral({ defaultMarkerPreviewDuration: v })}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.general.sprite_generation_head">

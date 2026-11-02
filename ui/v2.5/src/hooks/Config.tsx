@@ -23,10 +23,9 @@ export const useConfigurationContextOptional = () => {
   return React.useContext(ConfigurationContext);
 };
 
-export const ConfigurationProvider: React.FC<IContext> = ({
-  configuration,
-  children,
-}) => {
+export const ConfigurationProvider: React.FC<
+  React.PropsWithChildren<IContext>
+> = ({ configuration, children }) => {
   return (
     <ConfigurationContext.Provider
       value={{

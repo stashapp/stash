@@ -29,7 +29,10 @@ ifdef OUTPUT
   PHASHER_OUTPUT := $(OUTPUT)
 endif
 ifdef STASH_OUTPUT
+  STASH_BINARY := $(STASH_OUTPUT)
   STASH_OUTPUT := -o $(STASH_OUTPUT)
+else
+  STASH_BINARY := stash
 endif
 ifdef PHASHER_OUTPUT
   PHASHER_OUTPUT := -o $(PHASHER_OUTPUT)
@@ -122,6 +125,9 @@ build-flags: build-info
 	$(eval BUILD_LDFLAGS += -X 'github.com/stashapp/stash/internal/build.githash=$(GITHASH)')
 	$(eval BUILD_LDFLAGS += -X 'github.com/stashapp/stash/internal/build.version=$(STASH_VERSION)')
 	$(eval BUILD_LDFLAGS += -X 'github.com/stashapp/stash/internal/build.officialBuild=$(OFFICIAL_BUILD)')
+ifdef UPDATE_REPO
+	$(eval BUILD_LDFLAGS += -X 'github.com/stashapp/stash/internal/build.updateRepo=$(UPDATE_REPO)')
+endif
 	$(eval BUILD_FLAGS := -v -tags "$(GO_BUILD_TAGS)" $(GO_BUILD_FLAGS) -ldflags "$(BUILD_LDFLAGS)")
 
 .PHONY: stash
@@ -452,8 +458,8 @@ remove-compiler-container:
 install:
 ifdef IS_WIN_SHELL
 	@if not exist "$(PREFIX)" mkdir $(PREFIX)
-	@copy "dist\\stash-win.exe" "$(PREFIX)\\stash-win.exe"
+	@copy "$(STASH_BINARY).exe" "$(PREFIX)\\stash.exe"
 else
 	@mkdir -p $(PREFIX)/bin
-	@install -m 755 $(STASH_OUTPUT) $(PREFIX)/bin/stash
+	@install -m 755 $(STASH_BINARY) $(PREFIX)/bin/stash
 endif

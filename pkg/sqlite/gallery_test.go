@@ -1586,6 +1586,43 @@ func TestGalleryQueryPath(t *testing.T) {
 	}
 }
 
+func TestGalleryQueryParentFolderExcludes(t *testing.T) {
+	tests := []struct {
+		name      string
+		folderIdx int
+		depth     int
+	}{
+		{
+			name:      "exact folder",
+			folderIdx: folderIdxWithGalleryFiles,
+			depth:     0,
+		},
+		{
+			name:      "parent folder recursively",
+			folderIdx: folderIdxForObjectFiles,
+			depth:     -1,
+		},
+	}
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			galleries, count, err := db.Gallery.Query(ctx, &models.GalleryFilterType{
+				ParentFolder: &models.HierarchicalMultiCriterionInput{
+					Value: []string{
+						strconv.Itoa(int(folderIDs[tt.folderIdx])),
+					},
+					Modifier: models.CriterionModifierExcludes,
+					Depth:    &tt.depth,
+				},
+			}, nil)
+			require.NoError(t, err)
+			require.Equal(t, 1, count)
+			require.Len(t, galleries, 1)
+			assert.Equal(t, galleryIDs[galleryIdxWithoutFile], galleries[0].ID)
+		})
+	}
+}
+
 func verifyGalleriesPath(ctx context.Context, t *testing.T, pathCriterion models.StringCriterionInput) {
 	galleryFilter := models.GalleryFilterType{
 		Path: &pathCriterion,

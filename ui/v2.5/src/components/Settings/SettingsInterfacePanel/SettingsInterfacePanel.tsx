@@ -560,6 +560,14 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             onChange={(v) => saveLightboxSettings({ slideshowDelay: v })}
           />
 
+          <BooleanSetting
+            id="autostart-gallery-slideshow"
+            headingID="config.ui.autostart_gallery_slideshow.heading"
+            subHeadingID="config.ui.autostart_gallery_slideshow.description"
+            checked={ui.autostartGallerySlideshow ?? undefined}
+            onChange={(v) => saveUI({ autostartGallerySlideshow: v })}
+          />
+
           <SelectSetting
             id="lightbox_display_mode"
             headingID="dialogs.lightbox.display_mode.label"

@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import { QueryResult } from "@apollo/client";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { PageSizeSelector, SearchTermInput, SortBySelect } from "./ListFilter";
+import { PageSizeSelector, SearchTermInput } from "./ListFilter";
+import { SortBySelect } from "./SortBySelect";
 import { ListViewButtonGroup } from "./ListViewOptions";
 import {
   IListFilterOperation,
@@ -18,6 +19,9 @@ import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { faSquareCheck } from "@fortawesome/free-regular-svg-icons";
 import { useIntl } from "react-intl";
 import cx from "classnames";
+import { useConfigurationContext } from "src/hooks/Config";
+import { useConfigureUI } from "src/core/StashService";
+import { useToast } from "src/hooks/Toast";
 
 const SelectionSection: React.FC<{
   filter: ListFilterModel;
@@ -98,6 +102,62 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
   filterable = true,
   sortable = true,
 }) => {
+  const { configuration } = useConfigurationContext();
+  const { pinnedSortBy = {} } = configuration.ui;
+
+  const Toast = useToast();
+
+  const [saveUI] = useConfigureUI();
+
+  const pinnedOptions = useMemo(
+    () => (view ? (pinnedSortBy[view] ?? []) : []),
+    [view, pinnedSortBy]
+  );
+
+  const updatePinnedSortBy = useCallback(
+    async (value: string[]) => {
+      if (!view) {
+        return;
+      }
+
+      try {
+        await saveUI({
+          variables: {
+            input: {
+              ...configuration?.ui,
+              pinnedSortBy: {
+                ...configuration?.ui.pinnedSortBy,
+                [view]: value,
+              },
+            },
+          },
+        });
+      } catch (e) {
+        Toast.error(e);
+      }
+    },
+    [view, saveUI, configuration.ui, Toast]
+  );
+
+  const togglePinSortBy = useCallback(
+    (sortBy: string) => {
+      if (!view) {
+        return;
+      }
+
+      let newPinned: string[];
+
+      if (pinnedOptions.includes(sortBy)) {
+        newPinned = pinnedOptions.filter((s) => s !== sortBy);
+      } else {
+        newPinned = [...pinnedOptions, sortBy];
+      }
+
+      updatePinnedSortBy(newPinned);
+    },
+    [view, pinnedOptions, updatePinnedSortBy]
+  );
+
   const filterOptions = filter.options;
   // Something in the popper layout for groups.sub-groups tab to double calculates the offset
   // causing the dropdown to be misaligned. Portal to document.body to fix this.
@@ -160,6 +220,8 @@ export const FilteredListToolbar: React.FC<IFilteredListToolbar> = ({
               sortBy={filter.sortBy}
               sortDirection={filter.sortDirection}
               options={filterOptions.sortByOptions}
+              pinnedOptions={pinnedOptions}
+              togglePinSortBy={togglePinSortBy}
               onChangeSortBy={(e) =>
                 setFilter(filter.setSortBy(e ?? undefined))
               }

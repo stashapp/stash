@@ -145,13 +145,21 @@ func makeScannedFile(f models.FS, path string, info fs.FileInfo, zipFile *file.S
 		return nil, err
 	}
 
+	// #4425 - store the NFC-normalized path so search matches user input.
+	// Filtering and filesystem access use the original path; zip
+	// entries are matched byte-exact so are left unnormalized.
+	storedPath := path
+	if zipFile == nil {
+		storedPath = fsutil.NormalizePath(path)
+	}
+
 	ff := file.ScannedFile{
 		BaseFile: &models.BaseFile{
 			DirEntry: models.DirEntry{
 				ModTime: file.ModTime(info),
 			},
-			Path:     path,
-			Basename: filepath.Base(path),
+			Path:     storedPath,
+			Basename: filepath.Base(storedPath),
 			Size:     size,
 		},
 		FS:   f,
@@ -621,7 +629,7 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo, 
 	}
 
 	// Check .stashignore files, bounded to the library root.
-	if !f.stashIgnoreFilter.Accept(ctx, path, info, s.Path, zipFilePath) {
+	if !f.stashIgnoreFilter.Accept(ctx, path, info, f.stashPaths.GetStashRootFromDirPath(path), zipFilePath) {
 		logger.Debugf("Skipping %s due to .stashignore", path)
 		return false
 	}

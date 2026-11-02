@@ -30,6 +30,7 @@ import {
 import { ScrapedTagsRow } from "../Shared/ScrapeDialog/ScrapedObjectsRow";
 import { ScrapeDialog } from "../Shared/ScrapeDialog/ScrapeDialog";
 import { StashIDsField } from "../Shared/StashID";
+import { PatchComponent } from "src/patch";
 
 interface ITagMergeDetailsProps {
   sources: GQL.TagDataFragment[];
@@ -406,187 +407,188 @@ interface ITagMergeModalProps {
   tags: Tag[];
 }
 
-export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
-  show,
-  onClose,
-  tags,
-}) => {
-  const [src, setSrc] = useState<Tag[]>([]);
-  const [dest, setDest] = useState<Tag | null>(null);
+export const TagMergeModal: React.FC<ITagMergeModalProps> = PatchComponent(
+  "TagMergeModal",
+  ({ show, onClose, tags }) => {
+    const [src, setSrc] = useState<Tag[]>([]);
+    const [dest, setDest] = useState<Tag | null>(null);
 
-  const [loadedSources, setLoadedSources] = useState<GQL.TagDataFragment[]>([]);
-  const [loadedDest, setLoadedDest] = useState<GQL.TagDataFragment>();
+    const [loadedSources, setLoadedSources] = useState<GQL.TagDataFragment[]>(
+      []
+    );
+    const [loadedDest, setLoadedDest] = useState<GQL.TagDataFragment>();
 
-  const [secondStep, setSecondStep] = useState(false);
+    const [secondStep, setSecondStep] = useState(false);
 
-  const [running, setRunning] = useState(false);
+    const [running, setRunning] = useState(false);
 
-  const [mergeTags] = useTagsMerge();
+    const [mergeTags] = useTagsMerge();
 
-  const intl = useIntl();
-  const Toast = useToast();
+    const intl = useIntl();
+    const Toast = useToast();
 
-  const title = intl.formatMessage({
-    id: "actions.merge",
-  });
+    const title = intl.formatMessage({
+      id: "actions.merge",
+    });
 
-  const srcIDs = useMemo(() => src.map((s) => s.id), [src]);
-  const destID = useMemo(() => (dest ? [dest.id] : []), [dest]);
+    const srcIDs = useMemo(() => src.map((s) => s.id), [src]);
+    const destID = useMemo(() => (dest ? [dest.id] : []), [dest]);
 
-  useEffect(() => {
-    if (tags.length > 0) {
-      setDest(tags[0]);
-      setSrc(tags.slice(1));
-    }
-  }, [tags]);
-
-  async function loadTags() {
-    try {
-      const tagIDs = src.map((s) => s.id);
-      tagIDs.push(dest!.id);
-      const query = await queryFindTagsByID(tagIDs);
-      const { tags: loadedTags } = query.data.findTags;
-
-      setLoadedDest(loadedTags.find((s) => s.id === dest!.id));
-      setLoadedSources(loadedTags.filter((s) => s.id !== dest!.id));
-      setSecondStep(true);
-    } catch (e) {
-      Toast.error(e);
-      return;
-    }
-  }
-
-  async function onMerge(values: GQL.TagUpdateInput) {
-    if (!dest) return;
-
-    const source = src.map((s) => s.id);
-    const destination = dest.id;
-
-    try {
-      setRunning(true);
-      const result = await mergeTags({
-        variables: {
-          source,
-          destination,
-          values,
-        },
-      });
-      if (result.data?.tagsMerge) {
-        Toast.success(intl.formatMessage({ id: "toast.merged_tags" }));
-        onClose(dest.id);
+    useEffect(() => {
+      if (tags.length > 0) {
+        setDest(tags[0]);
+        setSrc(tags.slice(1));
       }
-    } catch (e) {
-      Toast.error(e);
-    } finally {
-      setRunning(false);
+    }, [tags]);
+
+    async function loadTags() {
+      try {
+        const tagIDs = src.map((s) => s.id);
+        tagIDs.push(dest!.id);
+        const query = await queryFindTagsByID(tagIDs);
+        const { tags: loadedTags } = query.data.findTags;
+
+        setLoadedDest(loadedTags.find((s) => s.id === dest!.id));
+        setLoadedSources(loadedTags.filter((s) => s.id !== dest!.id));
+        setSecondStep(true);
+      } catch (e) {
+        Toast.error(e);
+        return;
+      }
     }
-  }
 
-  function canMerge() {
-    return src.length > 0 && dest !== null;
-  }
+    async function onMerge(values: GQL.TagUpdateInput) {
+      if (!dest) return;
 
-  function switchTags() {
-    if (src.length && dest !== null) {
-      const newDest = src[0];
-      setSrc([...src.slice(1), dest]);
-      setDest(newDest);
+      const source = src.map((s) => s.id);
+      const destination = dest.id;
+
+      try {
+        setRunning(true);
+        const result = await mergeTags({
+          variables: {
+            source,
+            destination,
+            values,
+          },
+        });
+        if (result.data?.tagsMerge) {
+          Toast.success(intl.formatMessage({ id: "toast.merged_tags" }));
+          onClose(dest.id);
+        }
+      } catch (e) {
+        Toast.error(e);
+      } finally {
+        setRunning(false);
+      }
     }
-  }
 
-  if (secondStep && dest) {
+    function canMerge() {
+      return src.length > 0 && dest !== null;
+    }
+
+    function switchTags() {
+      if (src.length && dest !== null) {
+        const newDest = src[0];
+        setSrc([...src.slice(1), dest]);
+        setDest(newDest);
+      }
+    }
+
+    if (secondStep && dest) {
+      return (
+        <TagMergeDetails
+          sources={loadedSources}
+          dest={loadedDest!}
+          onClose={(values) => {
+            setSecondStep(false);
+            if (values) {
+              onMerge(values);
+            } else {
+              onClose();
+            }
+          }}
+        />
+      );
+    }
+
     return (
-      <TagMergeDetails
-        sources={loadedSources}
-        dest={loadedDest!}
-        onClose={(values) => {
-          setSecondStep(false);
-          if (values) {
-            onMerge(values);
-          } else {
-            onClose();
-          }
+      <ModalComponent
+        show={show}
+        header={title}
+        icon={faSignInAlt}
+        accept={{
+          text: intl.formatMessage({ id: "actions.merge" }),
+          onClick: () => loadTags(),
         }}
-      />
+        disabled={!canMerge()}
+        cancel={{
+          variant: "secondary",
+          onClick: () => onClose(),
+        }}
+        isRunning={running}
+      >
+        <div className="form-container row px-3">
+          <div className="col-12 col-lg-6 col-xl-12">
+            <Form.Group controlId="source" as={Row}>
+              {FormUtils.renderLabel({
+                title: intl.formatMessage({ id: "dialogs.merge.source" }),
+                labelProps: {
+                  column: true,
+                  sm: 3,
+                  xl: 12,
+                },
+              })}
+              <Col sm={9} xl={12}>
+                <TagSelect
+                  isMulti
+                  creatable={false}
+                  onSelect={(items) => setSrc(items)}
+                  values={src}
+                  excludeIds={destID}
+                  menuPortalTarget={document.body}
+                />
+              </Col>
+            </Form.Group>
+            <Form.Group
+              controlId="switch"
+              as={Row}
+              className="justify-content-center"
+            >
+              <Button
+                variant="secondary"
+                onClick={() => switchTags()}
+                disabled={!src.length || !dest}
+                title={intl.formatMessage({ id: "actions.swap" })}
+              >
+                <Icon className="fa-fw" icon={faExchangeAlt} />
+              </Button>
+            </Form.Group>
+            <Form.Group controlId="destination" as={Row}>
+              {FormUtils.renderLabel({
+                title: intl.formatMessage({
+                  id: "dialogs.merge.destination",
+                }),
+                labelProps: {
+                  column: true,
+                  sm: 3,
+                  xl: 12,
+                },
+              })}
+              <Col sm={9} xl={12}>
+                <TagSelect
+                  isMulti={false}
+                  creatable={false}
+                  onSelect={(items) => setDest(items[0])}
+                  values={dest ? [dest] : undefined}
+                  excludeIds={srcIDs}
+                  menuPortalTarget={document.body}
+                />
+              </Col>
+            </Form.Group>
+          </div>
+        </div>
+      </ModalComponent>
     );
   }
-
-  return (
-    <ModalComponent
-      show={show}
-      header={title}
-      icon={faSignInAlt}
-      accept={{
-        text: intl.formatMessage({ id: "actions.merge" }),
-        onClick: () => loadTags(),
-      }}
-      disabled={!canMerge()}
-      cancel={{
-        variant: "secondary",
-        onClick: () => onClose(),
-      }}
-      isRunning={running}
-    >
-      <div className="form-container row px-3">
-        <div className="col-12 col-lg-6 col-xl-12">
-          <Form.Group controlId="source" as={Row}>
-            {FormUtils.renderLabel({
-              title: intl.formatMessage({ id: "dialogs.merge.source" }),
-              labelProps: {
-                column: true,
-                sm: 3,
-                xl: 12,
-              },
-            })}
-            <Col sm={9} xl={12}>
-              <TagSelect
-                isMulti
-                creatable={false}
-                onSelect={(items) => setSrc(items)}
-                values={src}
-                excludeIds={destID}
-                menuPortalTarget={document.body}
-              />
-            </Col>
-          </Form.Group>
-          <Form.Group
-            controlId="switch"
-            as={Row}
-            className="justify-content-center"
-          >
-            <Button
-              variant="secondary"
-              onClick={() => switchTags()}
-              disabled={!src.length || !dest}
-              title={intl.formatMessage({ id: "actions.swap" })}
-            >
-              <Icon className="fa-fw" icon={faExchangeAlt} />
-            </Button>
-          </Form.Group>
-          <Form.Group controlId="destination" as={Row}>
-            {FormUtils.renderLabel({
-              title: intl.formatMessage({
-                id: "dialogs.merge.destination",
-              }),
-              labelProps: {
-                column: true,
-                sm: 3,
-                xl: 12,
-              },
-            })}
-            <Col sm={9} xl={12}>
-              <TagSelect
-                isMulti={false}
-                creatable={false}
-                onSelect={(items) => setDest(items[0])}
-                values={dest ? [dest] : undefined}
-                excludeIds={srcIDs}
-                menuPortalTarget={document.body}
-              />
-            </Col>
-          </Form.Group>
-        </div>
-      </div>
-    </ModalComponent>
-  );
-};
+);

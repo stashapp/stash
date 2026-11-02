@@ -5,6 +5,7 @@ import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
+  IPerformerCountFilters,
   queryFindPerformers,
   useFindPerformers,
   usePerformersDestroy,
@@ -15,7 +16,10 @@ import { DisplayMode } from "src/models/list-filter/types";
 import { PerformerTagger } from "../Tagger/performers/PerformerTagger";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { DeleteEntityDialog } from "../Shared/DeleteEntityDialog";
-import { IPerformerCardExtraCriteria } from "./PerformerCard";
+import {
+  IPerformerCardExtraCriteria,
+  PerformerCardPerformer,
+} from "./PerformerCard";
 import { PerformerListTable } from "./PerformerListTable";
 import { EditPerformersDialog } from "./EditPerformersDialog";
 import { cmToImperial, cmToInches, kgToLbs } from "src/utils/units";
@@ -58,6 +62,10 @@ import { FavoritePerformerCriterionOption } from "src/models/list-filter/criteri
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
 import { SidebarOptionFilter } from "../List/Filters/OptionFilter";
 import { GenderCriterionOption } from "src/models/list-filter/criteria/gender";
+import {
+  CriterionValue,
+  ModifierCriterion,
+} from "src/models/list-filter/criteria/criterion";
 
 export const FormatHeight = (height?: number | null) => {
   const intl = useIntl();
@@ -191,6 +199,41 @@ export const FormatPenisLength = (penis_length?: number | null) => {
   );
 };
 
+function criteriaToFilter<T>(
+  mode: GQL.FilterMode,
+  criteria?: ModifierCriterion<CriterionValue>[]
+): T | undefined {
+  if (!criteria?.length) return undefined;
+
+  const filter = new ListFilterModel(mode, undefined);
+  filter.criteria = criteria;
+  return filter.makeFilter() as T;
+}
+
+// converts the criteria the list is scoped by into filters for the performer
+// count fields, so that the card counts match what the card links to
+function makeCountFilters(
+  extraCriteria?: IPerformerCardExtraCriteria
+): IPerformerCountFilters | undefined {
+  if (!extraCriteria) return undefined;
+
+  const countFilters: IPerformerCountFilters = {
+    scene_filter: criteriaToFilter(GQL.FilterMode.Scenes, extraCriteria.scenes),
+    image_filter: criteriaToFilter(GQL.FilterMode.Images, extraCriteria.images),
+    gallery_filter: criteriaToFilter(
+      GQL.FilterMode.Galleries,
+      extraCriteria.galleries
+    ),
+    group_filter: criteriaToFilter(GQL.FilterMode.Groups, extraCriteria.groups),
+  };
+
+  if (Object.values(countFilters).every((f) => f === undefined)) {
+    return undefined;
+  }
+
+  return countFilters;
+}
+
 interface IPerformerList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   view?: View;
@@ -200,7 +243,7 @@ interface IPerformerList {
 }
 
 const PerformerList: React.FC<{
-  performers: GQL.PerformerDataFragment[];
+  performers: PerformerCardPerformer[];
   filter: ListFilterModel;
   selectedIds: Set<string>;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
@@ -229,6 +272,7 @@ const PerformerList: React.FC<{
           performers={performers}
           selectedIds={selectedIds}
           onSelectChange={onSelectChange}
+          extraCriteria={extraCriteria}
         />
       );
     }
@@ -377,6 +421,10 @@ export const FilteredPerformerList = PatchComponent(
       extraOperations = [],
     } = props;
 
+    const countFilters = makeCountFilters(extraCriteria);
+    const usePerformersResult = (f: ListFilterModel) =>
+      useFindPerformers(f, countFilters);
+
     // States
     const {
       showSidebar,
@@ -394,7 +442,7 @@ export const FilteredPerformerList = PatchComponent(
           useURL: alterQuery,
         },
         queryResultProps: {
-          useResult: useFindPerformers,
+          useResult: usePerformersResult,
           getCount: (r) => r.data?.findPerformers.count ?? 0,
           getItems: (r) => r.data?.findPerformers.performers ?? [],
           filterHook,
@@ -608,6 +656,7 @@ export const FilteredPerformerList = PatchComponent(
               />
 
               <FilterTags
+                view={view}
                 criteria={filter.criteria}
                 onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
                 onRemoveCriterion={removeCriterion}

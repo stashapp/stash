@@ -536,7 +536,7 @@ interface IConstantSetting<T> extends ISetting {
   renderValue?: (v: T | undefined) => JSX.Element;
 }
 
-export const _ConstantSetting = <T extends {}>(props: IConstantSetting<T>) => {
+export const _ConstantSetting = <T,>(props: IConstantSetting<T>) => {
   const { id, headingID, subHeading, subHeadingID, renderValue, value } = props;
   const intl = useIntl();
 
@@ -545,7 +545,9 @@ export const _ConstantSetting = <T extends {}>(props: IConstantSetting<T>) => {
       <div>
         <h3>{headingID ? intl.formatMessage({ id: headingID }) : undefined}</h3>
 
-        <div className="value">{renderValue ? renderValue(value) : value}</div>
+        <div className="value">
+          {renderValue ? renderValue(value) : (value as React.ReactNode)}
+        </div>
 
         {subHeadingID ? (
           <div className="sub-heading">

@@ -120,6 +120,8 @@ declare module "@blaineam/videojs-vr" {
       scene: THREE.Scene;
       renderer: THREE.Renderer;
       cameraVector: THREE.Vector3;
+      videoTexture?: THREE.VideoTexture;
+      posterTexture?: THREE.Texture | null;
     }
   }
 

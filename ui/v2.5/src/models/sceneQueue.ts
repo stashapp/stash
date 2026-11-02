@@ -1,8 +1,10 @@
 import { FilterMode, Scene } from "src/core/generated-graphql";
 import { ListFilterModel } from "./list-filter/filter";
 import { INamedObject } from "src/utils/navigation";
+import { IFile } from "src/core/files";
 
 export type QueuedScene = Pick<Scene, "id" | "title" | "date" | "paths"> & {
+  files: IFile[];
   performers?: INamedObject[] | null;
   studio?: INamedObject | null;
 };

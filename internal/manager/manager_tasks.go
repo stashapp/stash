@@ -144,8 +144,9 @@ func (s *Manager) makeScanner(rescan bool, minModTime time.Time) *file.Scanner {
 		// FileHandlers must be set during execute as it needs progress reference
 		ScanFilters:            []file.PathFilter{newScanFilter(cfg, repo, minModTime)},
 		HandlerRequiredFilters: []file.Filter{newHandlerRequiredFilter(cfg, repo)},
-		RootPaths:              cfg.GetStashPaths().Paths(),
-		Rescan:                 rescan,
+		// #4425 - isRootPath compares these against the NFC paths stored during scanning
+		RootPaths: fsutil.NormalizePaths(cfg.GetStashPaths().Paths()),
+		Rescan:    rescan,
 	}
 }
 

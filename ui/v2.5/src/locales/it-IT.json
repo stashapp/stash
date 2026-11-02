@@ -1,14 +1,14 @@
 {
     "actions": {
         "add": "Aggiungi",
-        "add_directory": "Aggiungi Cartella",
+        "add_directory": "Aggiungi cartella",
         "add_entity": "Aggiungi {entityType}",
         "add_to_entity": "Aggiungi a {entityType}",
         "allow": "Acconsenti",
         "allow_temporarily": "Acconsenti temporaneamente",
         "anonymise": "Anonimizza",
         "apply": "Applica",
-        "auto_tag": "Tag Automatico",
+        "auto_tag": "Tag automatico",
         "backup": "Backup",
         "browse_for_image": "Sfoglia per immagine…",
         "cancel": "Cancella",
@@ -34,7 +34,7 @@
         "disallow": "Non Acconsentire",
         "download": "Scarica",
         "download_anonymised": "Scarica anonimamente",
-        "download_backup": "Scarica Backup",
+        "download_backup": "Scarica backup",
         "edit": "Edita",
         "edit_entity": "Modifica {entityType}",
         "export": "Esporta",
@@ -43,8 +43,8 @@
         "finish": "Finito",
         "from_file": "Dal file…",
         "from_url": "Dall'URL…",
-        "full_export": "Esporta Completo",
-        "full_import": "Importa Completo",
+        "full_export": "Esporta tutto",
+        "full_import": "Importa tutto",
         "generate": "Genera",
         "generate_thumb_default": "Genera thumbnail predefinito",
         "generate_thumb_from_current": "Genera thumbnail dall'attuale schermata",
@@ -90,9 +90,9 @@
         "select_entity": "Seleziona {entityType}",
         "select_folders": "Seleziona cartelle",
         "select_none": "Deseleziona Tutto",
-        "selective_auto_tag": "Tag Automatico Selettivo",
-        "selective_clean": "Pulizia Selettiva",
-        "selective_scan": "Scansione Selettiva",
+        "selective_auto_tag": "Tag automatico selettivo",
+        "selective_clean": "Pulizia selettiva",
+        "selective_scan": "Scansione selettiva",
         "set_as_default": "Imposta come Predefinito",
         "set_back_image": "Immagine Retro…",
         "set_front_image": "Immagine Frontale…",
@@ -128,9 +128,9 @@
         "assign_stashid_to_parent_studio": "Assegna StashID ad uno Studio esistente e aggiorna i dati",
         "clear_date_data": "Cancella le date",
         "create_parent_studio": "Crea Studio Padre",
-        "migrate_blobs": "Migra i Blobs (Oggetti di grandi dimensioni)",
-        "migrate_scene_screenshots": "Migra gli Screenshot delle scene",
-        "optimise_database": "Ottimizza il Database",
+        "migrate_blobs": "Migra i Blobs",
+        "migrate_scene_screenshots": "Migra gli screenshot delle scene",
+        "optimise_database": "Ottimizza database",
         "reload": "Ricarica",
         "remove_date": "Rimuovi la data",
         "view_history": "Visualizza cronologia",
@@ -152,7 +152,15 @@
             "close": "Chiudi barra laterale",
             "open": "Apri barra laterale",
             "toggle": "Attiva/disattiva barra laterale"
-        }
+        },
+        "create_parent_tag": "Crea tag principale",
+        "exclude_lowercase": "escludi",
+        "from_clipboard": "Dagli appunti",
+        "reveal_in_file_manager": "Apri percorso file",
+        "reset_resume_time": "Azzera il tempo di visione",
+        "save_and_new": "Salva e crea nuovo",
+        "selective_generate": "Generazione selettiva",
+        "set_as_performer_image": "Imposta come immagine dell'attore"
     },
     "actions_name": "Azioni",
     "age": "Età",
@@ -215,7 +223,6 @@
             "match_failed_already_tagged": "Scena già taggato",
             "match_failed_no_result": "Nessun risultato trovato",
             "match_success": "Scena taggata con successo",
-            "phash_matches": "{count} PHashes uguali",
             "unnamed": "Senza nome"
         },
         "verb_match_fp": "Compara Impronte",
@@ -226,7 +233,8 @@
         "verb_toggle_unmatched": "{toggle} scene non uguali",
         "verb_add_as_alias": "aggiungi nomi ottenuti con scrape come alias",
         "verb_match_tag": "Compara Tag",
-        "verb_scrape_selected": "Scrape Selezionato"
+        "verb_scrape_selected": "Scrape Selezionato",
+        "verb_link_existing": "Collega a esistente"
     },
     "config": {
         "about": {
@@ -234,12 +242,14 @@
             "build_time": "Data della build:",
             "check_for_new_version": "Cerca nuova versione",
             "latest_version": "Ultima Versione",
-            "latest_version_build_hash": "Hash dell'ultima Versione:",
+            "latest_version_build_hash": "Hash dell'ultima versione:",
             "new_version_notice": "[NUOVA]",
             "release_date": "Data di rilascio:",
-            "stash_home": "Stash homepage su {url}",
-            "stash_wiki": "Pagina {url} di Stash",
-            "version": "Versione"
+            "stash_home": "Visita Stash su {url}",
+            "stash_wiki": "Visita il sito di Stash {url}",
+            "version": "Versione",
+            "stash_community": "Unisciti al forum {forumUrl} o al server {discordUrl} della community.",
+            "support_us": "Supportaci tramite {openCollectiveUrl} oppure {githubSponsorsUrl}."
         },
         "application_paths": {
             "heading": "Percorsi Applicazione"
@@ -262,7 +272,7 @@
             "allow_temp_ip": "Acconsenti {tempIP}",
             "allowed_ip_addresses": "Indirizzi IP con Accesso",
             "allowed_ip_temporarily": "Permettere IP temporaneamente",
-            "default_ip_whitelist": "Lista Bianca degli indirizzi IP predefiniti",
+            "default_ip_whitelist": "Whitelist degli indirizzi IP predefiniti",
             "default_ip_whitelist_desc": "Indirizzi IP predefiniti con accesso DLNA. Usare {wildcard} per consentire tutti gli inditizzi IP.",
             "disabled_dlna_temporarily": "Disabilitare DLNA temporaneamente",
             "disallowed_ip": "IP Non consentito",
@@ -271,12 +281,14 @@
             "network_interfaces": "Interfacce",
             "network_interfaces_desc": "Interfacce sulle quali esporre il server DLNA. Una lista vuota implicherà l'uso di tutte le interfacce. Richiede il riavvio del server DLNA dopo le modifiche.",
             "recent_ip_addresses": "Indirizzi IP Recenti",
-            "server_display_name": "Nome del Server",
+            "server_display_name": "Nome del server",
             "server_display_name_desc": "Nome visualizzato per il server DLNA. Predefinito come {server_name} se lasciato vuoto.",
             "successfully_cancelled_temporary_behaviour": "Funzionamento temporaneo cancellato con successo",
             "until_restart": "fino al riavvio",
-            "video_sort_order": "Ordinamento dei video di default",
-            "server_port": "Porta del server"
+            "video_sort_order": "Ordine di visualizzazione predefinito dei video",
+            "server_port": "Porta del server",
+            "server_port_desc": "Porta per eseguire il server DLNA. Richiede un riavvio dello stesso dopo la modifica.",
+            "video_sort_order_desc": "Imposta l'ordinamento predefinito dei video."
         },
         "general": {
             "auth": {
@@ -285,17 +297,17 @@
                 "authentication": "Autenticazione",
                 "clear_api_key": "Elimina chiave API",
                 "credentials": {
-                    "description": "Credenziali per restringere l'accesso a Stash.",
+                    "description": "Credenziali per l'accesso a Stash.",
                     "heading": "Credenziali"
                 },
                 "generate_api_key": "Genera chiave API",
                 "log_file": "File di Log",
                 "log_file_desc": "Percorso al file di log. Vuoto per disabilitare log su file. Richiede riavvio.",
-                "log_http": "Salva log accesso http",
-                "log_http_desc": "Salva log accesso http sul terminale. Richiede riavvio.",
+                "log_http": "Salva log di accesso HTTP",
+                "log_http_desc": "Salva log accesso HTTP sul terminale. Richiede riavvio.",
                 "log_to_terminal": "Salva log sul terminale",
                 "log_to_terminal_desc": "Salva log sul terminale oltre che sul file. Sempre attivo se il logging su file è disabilitato. Richiede riavvio.",
-                "maximum_session_age": "Tempo Massimo Sessione",
+                "maximum_session_age": "Tempo massimo sessione",
                 "maximum_session_age_desc": "Massimo tempo di inutilizzo prima che la sessione espiri, in secondi.",
                 "password": "Password",
                 "password_desc": "Password per accedere a Stash. Lasciare vuota per disabilitare l'autenticazione utente",
@@ -306,19 +318,19 @@
                 "log_file_max_size_desc": "Massima grandezza in megabytes del file di log prima che sia compresso. 0MB è disabilitato. Richiede riavvio."
             },
             "backup_directory_path": {
-                "description": "Percorso della directory per i file di backup del database SQLite",
-                "heading": "Percorso Directory di Backup"
+                "description": "Percorso della directory per i file di backup del database SQLite.",
+                "heading": "Percorso directory di backup"
             },
             "blobs_path": {
                 "heading": "Percorso dei dati binari",
                 "description": "Dove salvare dati binari nel filesystem. Applicabile solo quando si utilizza Filesystem con archiviazione Blob. ATTENZIONE: cambiare questo richiede spostare manualmente i dati esistenti."
             },
             "cache_location": "Percorso della Cartella cache",
-            "cache_path_head": "Percorso Cache",
+            "cache_path_head": "Percorso cache",
             "calculate_md5_and_ohash_desc": "Calcola l'MD5 checksum oltre l'oshash. Attivare la funzione causerà una prima scansione più lenta. L'hash dei nomi file dev'essere impostata su oshash per disabilitare il calcolo MD5.",
             "calculate_md5_and_ohash_label": "Calcolare l'MD5 per i video",
             "check_for_insecure_certificates": "Controlla certificati non sicuri",
-            "check_for_insecure_certificates_desc": "Alcuni siti usano certificati ssl non sicuri. Quando non selezionato lo scraper salta il controllo e acconsente lo scraping di questi siti. Se ricevete un errore di certificato durante lo scraping spuntate la casella.",
+            "check_for_insecure_certificates_desc": "Alcuni siti usano certificati SSL non sicuri. Quando non selezionato lo scraper salta il controllo e acconsente lo scraping di questi siti. Se ricevete un errore di certificato durante lo scraping spuntate la casella.",
             "chrome_cdp_path": "Percorso al Chrome CDP",
             "chrome_cdp_path_desc": "Percorso all'eseguibile di Chrome, o indirizzo remoto (iniziando con http:// o https://, per esempio http://localhost:9222/json/version) verso un'istanza Chrome.",
             "create_galleries_from_folders_desc": "Se spuntato, crea gallerie dalle cartelle che contengono immagini.",
@@ -709,7 +721,7 @@
             },
             "title": "Interfaccia Utente"
         },
-        "advanced_mode": "Modalità Avanzata",
+        "advanced_mode": "Modalità avanzata",
         "changelog": {
             "header": "Registro delle modifiche"
         }
@@ -1226,5 +1238,8 @@
     "sub_group_of": "Sottogruppo di {parent}",
     "sub_group_order": "Ordine Sottogruppi",
     "sub_groups": "Sottogruppi",
-    "subsidiary_studio_count": "Numero di Studi sussidiari"
+    "subsidiary_studio_count": "Numero di Studi sussidiari",
+    "age_on_date": "{age} durante le riprese",
+    "career_end": "Fine carriera",
+    "career_start": "Inizio carriera"
 }

@@ -159,7 +159,8 @@
         "exclude_lowercase": "excluir",
         "from_clipboard": "Desde el portapapeles",
         "selective_generate": "Generación selectiva",
-        "create_parent_tag": "Crear etiqueta principal"
+        "create_parent_tag": "Crear etiqueta principal",
+        "set_as_performer_image": "Establecer como imagen del intérprete"
     },
     "actions_name": "Acciones",
     "age": "Edad",
@@ -217,12 +218,12 @@
             "fp_found": "{fpCount, plural, =0 {No se han encontrado nuevas huellas dactilares} other {# resultados de huellas dactilares encontrados}}",
             "fp_matches": "La duración coincide",
             "fp_matches_multi": "{matchCount}/{durationsLength} cincidencias de fingerprint(s)",
-            "hash_matches": "{hash_type} coincide",
+            "hash_matches": "{count, plural, one {# {hash_type} coincidencia} other {# {hash_type} coincidencias}}",
             "match_failed_already_tagged": "Escena ya etiquetada",
             "match_failed_no_result": "No se han encontrado resultados",
             "match_success": "Escena etiquetada correctamente",
-            "phash_matches": "{count} PHash(es) coincide(n)",
-            "unnamed": "Sin nombre"
+            "unnamed": "Sin nombre",
+            "hash_submissions": "{count} propuestas"
         },
         "verb_match_fp": "huellas dactilares",
         "verb_matched": "Coincidencia",
@@ -445,7 +446,11 @@
             "sprite_screenshot_size_desc": "Tamaño deseado de cada sprite en píxeles.",
             "sprite_screenshot_size_head": "Tamaño del sprite",
             "use_custom_sprite_interval_head": "Usar intervalo de sprites personalizado",
-            "use_custom_sprite_interval_desc": "Habilita el intervalo de sprites personalizado según la configuración siguiente."
+            "use_custom_sprite_interval_desc": "Habilita el intervalo de sprites personalizado según la configuración siguiente.",
+            "default_marker_preview_duration_desc": "Duración (en segundos) de las vistas previas de los marcadores que no tienen finalización. Debe ser mayor que 0.",
+            "default_marker_preview_duration_head": "Duración predeterminada de la vista previa del marcador",
+            "max_marker_preview_duration_desc": "Duración máxima (en segundos) de las vistas previas de los marcadores. El valor 0 desactiva el límite.",
+            "max_marker_preview_duration_head": "Duración máxima de la vista previa del marcador"
         },
         "library": {
             "exclusions": "Exclusiones",
@@ -495,7 +500,11 @@
             "anonymising_database": "Aninimizando base de datos",
             "auto_tag": {
                 "auto_tagging_all_paths": "Etiquetar automáticamente todas las rutas",
-                "auto_tagging_paths": "Etiquetar automáticamente las siguientes rutas"
+                "auto_tagging_paths": "Etiquetar automáticamente las siguientes rutas",
+                "disable_warning": {
+                    "description": "Desactive la advertencia de confirmación que se muestra antes de ejecutar el etiquetado automático.",
+                    "heading": "Desactivar la advertencia de etiquetado automático"
+                }
             },
             "auto_tag_based_on_filenames": "Etiquetado automatizado del contenido basado en nombres de archivo.",
             "auto_tagging": "Etiquetado automático",
@@ -590,7 +599,7 @@
             "generate_sprites_during_scan_tooltip": "El conjunto de imágenes que se muestra bajo el reproductor de vídeo para facilitar la navegación.",
             "optimise_database_warning": "Advertencia: mientras se esté ejecutando esta tarea, cualquier operación que modifique la base de datos fallará, y dependiendo del tamaño de su base de datos, podría tardar varios minutos en completarse. También requiere como mínimo tanto espacio libre en disco como grande sea su base de datos, pero se recomienda 1.5 veces más.",
             "optimise_database": "Intentar mejorar el rendimiento mediante el análisis y posterior reconstrucción del archivo de base de datos completo.",
-            "rescan_tooltip": "Volver a escanear cada archivo en la ruta.  Se utiliza para forzar la actualización de los metadatos de los archivos y volver a escanear los archivos zip.",
+            "rescan_tooltip": "Volver a escanear cada archivo en la ruta. Se utiliza para forzar la actualización de los metadatos de los archivos y volver a escanear los archivos zip.",
             "rescan": "Reanalizar archivos",
             "generate_image_phashes_during_scan": "Generar hash perceptuales de imágenes",
             "generate_image_phashes_during_scan_tooltip": "Para la deduplicación y la identificación.",
@@ -602,7 +611,7 @@
                 "include_blobs_desc": "Desactivar para realizar únicamente una copia de seguridad del archivo de base de datos SQLite.",
                 "sqlite": "El archivo de copia de seguridad será una copia del archivo de base de datos SQLite, con el nombre de archivo {filename_format}",
                 "to_directory": "A {directory}",
-                "warning_blobs": "Los archivos blob no se incluirán en la copia de seguridad. Esto significa que, para restaurar correctamente desde la copia de seguridad, los archivos blob deben estar presentes en la ubicación de almacenamiento de blobs.",
+                "warning_blobs": "Los archivos blob no se incluirán en la copia de seguridad. Esto significa que, para restaurar con éxito a partir de la copia de seguridad, los archivos blob deben estar presentes en la ubicación de almacenamiento de blobs.",
                 "zip": "El archivo de base de datos SQLite y los archivos blob se comprimirán en un único archivo, con el nombre de archivo {filename_format}"
             },
             "auto_tag_confirm": "Esto intentará comparar tu contenido con los metadatos existentes.",
@@ -898,6 +907,10 @@
                         "heading": "Volumen de vista previa"
                     }
                 }
+            },
+            "autostart_gallery_slideshow": {
+                "description": "Iniciar automáticamente la presentación de diapositivas al abrir la ventana emergente de una galería desde la página de galerías.",
+                "heading": "Iniciar automáticamente la presentación de diapositivas de la galería"
             }
         },
         "advanced_mode": "Modo avanzado",
@@ -986,7 +999,6 @@
                 "pan_y": "Panorámica eje Y",
                 "zoom": "Zoom"
             },
-            "page_header": "Página {page} / {total}",
             "disable_animation": "Desactivar la animación de transición entre imágenes"
         },
         "scene_gen": {
@@ -1000,7 +1012,7 @@
             "marker_screenshots": "Capturas de pantalla de marcadores",
             "marker_screenshots_tooltip": "Imágenes estáticas JPG de marcadores",
             "markers": "Vistas previas de marcadores",
-            "markers_tooltip": "Vídeos de 20 segundos de duración que comienzan a partir del tiempo seleccionado.",
+            "markers_tooltip": "Vistas previas de vídeo que comienzan a partir del tiempo seleccionado.",
             "override_preview_generation_options": "Sobrescribir opciones para la generación de vistas previas",
             "override_preview_generation_options_desc": "Sobrescribir opciones de generación de vistas previas para esta operación. Las opciones por defecto se configuran en Sistema -> Generación de vistas previas.",
             "overwrite": "Sobreescribir archivos generados ya existentes",
@@ -1069,7 +1081,8 @@
         "studios_found": "{count} estudios encontrados",
         "tags_found": "{count} etiquetas encontradas",
         "scrape_results_missing": "Faltante",
-        "edit_entity_count_title": "Editar {count} {count, plural, una {{singularEntity}} otra {{pluralEntity}}}"
+        "edit_entity_count_title": "Editar {count} {count, plural, una {{singularEntity}} otra {{pluralEntity}}}",
+        "dont_show_again": "No mostrar esta advertencia de nuevo"
     },
     "dimensions": "Dimensiones",
     "director": "Director",
@@ -1204,7 +1217,7 @@
         "play_duration": "Tiempo de reproducción",
         "o_count": "Contador de orgasmos",
         "md5": "Suma de comprobación MD5",
-        "oshash": "oshash",
+        "oshash": "OSHash",
         "oshash_meaning": "Hash de OpenSubtitles",
         "phash_meaning": "Hash perceptual"
     },
@@ -1232,13 +1245,13 @@
     "performer": "Actriz/Actor",
     "performer_age": "Edad de la actriz/actor",
     "performer_count": "Número de actrices/actores",
-    "performer_favorite": "Actriz/actor favorita/o",
-    "performer_image": "Imagen de actriz/actor",
+    "performer_favorite": "Artista favorito",
+    "performer_image": "Imagen del artista",
     "performer_tagger": {
-        "add_new_performers": "Añadir nuevas/os actrices/actores",
-        "any_names_entered_will_be_queried": "Cualquier nombre introducido será consultado desde una instancia Stash-Box remota y añadido si es encontrado. Solo se aceptan coincidencias exactas.",
-        "batch_add_performers": "Adición automatizada de actrices/actores",
-        "batch_update_performers": "Actualización automatizada de actrices/actores",
+        "add_new_performers": "Añadir nuevos artistas",
+        "any_names_entered_will_be_queried": "Los nombres introducidos se consultarán en la instancia remota de Stash-Box y se añadirán si se encuentran. Solo se considerarán coincidencias exactas.",
+        "batch_add_performers": "Añadir intérpretes por lotes",
+        "batch_update_performers": "Actualización masiva de intérpretes",
         "current_page": "Página actual",
         "failed_to_save_performer": "Error al guardar \"{performer}\"",
         "name_already_exists": "El nombre ya existe",
@@ -1259,7 +1272,10 @@
         "update_performer": "Actualizar actriz/actor",
         "update_performers": "Actualizar actrices/actores",
         "updating_untagged_performers_description": "Actualizar a los artistas sin etiqueta intentará emparejar a cualquier artista que carezca de un stashid y actualizar los metadatos.",
-        "performer_names_or_stashids_separated_by_comma": "Nombres de actores o StashIDs separados por comas"
+        "performer_names_or_stashids_separated_by_comma": "Nombres de actores o StashIDs separados por comas",
+        "configure_fields": "Configurar campos",
+        "field_options": "Opciones del campo",
+        "field_options_description": "Elige cómo se actualiza cada campo: sobrescribir reemplaza los datos existentes, combinar agrega datos y omitir lo deja sin cambios."
     },
     "performer_tags": "Etiquetas de actriz/actor",
     "performers": "Actrices/Actores",
@@ -1295,7 +1311,8 @@
             "stash_library_directories": "Directorio/s que contiene/n la librería de archivos de Stash",
             "cache_directory": "Carpeta de la caché",
             "blobs_directory": "Directorio de datos binarios",
-            "blobs_use_database": "<uso de base de datos>"
+            "blobs_use_database": "<uso de base de datos>",
+            "password_set_warning": "Nota: se le pedirá que introduzca sus credenciales una vez creado el sistema."
         },
         "creating": {
             "creating_your_system": "Creando tu nuevo entorno"
@@ -1381,7 +1398,13 @@
             "next_step": "Cuando estés preparado para la creación de un nuevo entorno pulsa Siguiente.",
             "unable_to_locate_specified_config": "Si estás leyendo esto es que Stash no ha podido encontrar el fichero de configuración especificado en la línea de comandos o en el entorno en el que está instalado. Este asistente te guiará durante el proceso de creación de una nueva configuración."
         },
-        "welcome_to_stash": "Bienvenido a Stash"
+        "welcome_to_stash": "Bienvenido a Stash",
+        "credentials": {
+            "description": "Ingrese el nombre de usuario y la contraseña que desea usar para iniciar sesión en el sistema Stash. Puede dejar estos campos en blanco si no desea ingresar un nombre de usuario ni una contraseña para acceder al sistema. Se requieren credenciales si accede al sistema desde internet.",
+            "heading": "Configura tus credenciales",
+            "password_invalid": "Si se ha configurado un nombre de usuario, la contraseña no debe estar vacía.",
+            "username_invalid": "El nombre de usuario no debe contener espacios en blanco al principio ni al final."
+        }
     },
     "stash_id": "Identificador único Stash",
     "stash_ids": "Stash IDs",
@@ -1438,7 +1461,8 @@
         "merged_performers": "Actores fusionados",
         "clipboard_access_denied": "Acceso al portapapeles denegado. Comprueba los permisos de tu navegador",
         "clipboard_image_pasted": "Imagen pegada desde el portapapeles",
-        "clipboard_no_image": "No se ha encontrado ninguna imagen en el portapapeles"
+        "clipboard_no_image": "No se ha encontrado ninguna imagen en el portapapeles",
+        "screenshot_generated": "Captura de pantalla generada"
     },
     "total": "Total",
     "true": "Sí",
@@ -1694,7 +1718,8 @@
             "create_parent_desc": "Crear etiquetas principales que falten a partir de las categorías de stash-box, o etiquetar las etiquetas principales existentes con nombres que coincidan exactamente",
             "create_parent_label": "Crear etiquetas principales"
         },
-        "create_or_tag_parent_tags": "Crear las etiquetas principales que falten o etiquetar las ya existentes"
+        "create_or_tag_parent_tags": "Crear las etiquetas principales que falten o etiquetar las ya existentes",
+        "parent_tag_no_remote_site_id_warning": "La etiqueta principal no tiene un ID de sitio remoto y no se vinculará a la instancia de stash-box."
     },
     "tagger": {
         "config": {
@@ -1704,6 +1729,13 @@
             "fields_will_not_be_changed": "Estos campos no se modificarán al actualizar {entity}.",
             "no_fields_are_excluded": "No se excluye ningún campo",
             "no_instances_found": "No se han encontrado instancias"
+        },
+        "performers": {
+            "birthdate": "El intérprete correspondiente tiene una fecha de nacimiento diferente.",
+            "country": "El artista seleccionado es de otro país.",
+            "ethnicity": "Las razas de los actores emparejados son diferentes.",
+            "gender": "Los actores emparejados son de género diferente.",
+            "stash_mismatch": "El ID de almacenamiento del actor coincidente es inconsistente."
         }
     },
     "unsupported_criteria": "Criterios no admitidos: {criteria}",
@@ -1713,5 +1745,11 @@
     "sub_folders": "Subcarpetas",
     "empty_value": "vacío",
     "refer_to": "Consulte {enlace}.",
-    "scenes_size": "Tamaño de la escena"
+    "scenes_size": "Tamaño de la escena",
+    "related_studios": "Relacionado",
+    "sub_group_description": "Descripción del subgrupo",
+    "scene_marker_count": "Recuento de marcadores de escena",
+    "performer_count_all": "Total de Intérpretes",
+    "o_count_all": "Contar todo",
+    "stash_id_endpoint_any": "Cualquier terminal"
 }

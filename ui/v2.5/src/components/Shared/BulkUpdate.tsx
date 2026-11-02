@@ -66,6 +66,7 @@ export const BulkUpdateFormGroup: React.FC<{
   name: string;
   messageId?: string;
   inline?: boolean;
+  children?: React.ReactNode;
 }> = ({ name, messageId = name, inline = true, children }) => {
   if (inline) {
     return (

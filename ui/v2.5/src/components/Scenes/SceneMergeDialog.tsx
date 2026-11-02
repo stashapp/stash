@@ -7,6 +7,7 @@ import { GallerySelect } from "../Shared/Select";
 import * as FormUtils from "src/utils/form";
 import ImageUtils from "src/utils/image";
 import TextUtils from "src/utils/text";
+import { sceneAgeFromDate } from "src/utils/scene";
 import {
   mutateSceneMerge,
   queryFindFullScenesByID,
@@ -46,6 +47,7 @@ import {
 } from "../Shared/ScrapeDialog/ScrapedObjectsRow";
 import { Scene, SceneSelect } from "src/components/Scenes/SceneSelect";
 import { StashIDsField } from "../Shared/StashID";
+import { PatchComponent } from "src/patch";
 
 type MergeOptions = {
   values: GQL.SceneUpdateInput;
@@ -86,6 +88,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
   );
   const [date, setDate] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(dest.date)
+  );
+  const [productionDate, setProductionDate] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(dest.production_date)
   );
 
   const [rating, setRating] = useState(
@@ -202,6 +207,13 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     setURL(new ScrapeResult(dest.urls, uniq(all.flatMap((s) => s.urls))));
     setDate(
       new ScrapeResult(dest.date, sources.find((s) => s.date)?.date, !dest.date)
+    );
+    setProductionDate(
+      new ScrapeResult(
+        dest.production_date,
+        sources.find((s) => s.production_date)?.production_date,
+        !dest.production_date
+      )
     );
 
     const foundStudio = sources.find((s) => s.studio)?.studio;
@@ -346,6 +358,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
         code,
         url,
         date,
+        productionDate,
         rating,
         oCounter,
         galleries,
@@ -364,6 +377,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     code,
     url,
     date,
+    productionDate,
     rating,
     oCounter,
     galleries,
@@ -424,6 +438,13 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           placeholder="YYYY-MM-DD"
           result={date}
           onChange={(value) => setDate(value)}
+        />
+        <ScrapedInputGroupRow
+          field="production_date"
+          title={intl.formatMessage({ id: "production_date" })}
+          placeholder="YYYY-MM-DD"
+          result={productionDate}
+          onChange={(value) => setProductionDate(value)}
         />
         <ScrapeDialogRow
           field="rating"
@@ -536,7 +557,10 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           title={intl.formatMessage({ id: "performers" })}
           result={performers}
           onChange={(value) => setPerformers(value)}
-          ageFromDate={date.useNewValue ? date.newValue : date.originalValue}
+          ageFromDate={sceneAgeFromDate(
+            productionDate.currentValue(),
+            date.currentValue()
+          )}
         />
         <ScrapedGroupsRow
           field="groups"
@@ -629,6 +653,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
         code: code.getNewValue(),
         urls: url.getNewValue(),
         date: date.getNewValue(),
+        production_date: productionDate.getNewValue(),
         rating100: rating.getNewValue(),
         o_counter: oCounter.getNewValue(),
         play_count: playCount.getNewValue(),
@@ -699,182 +724,180 @@ interface ISceneMergeModalProps {
   scenes: { id: string; title: string }[];
 }
 
-export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
-  show,
-  onClose,
-  scenes,
-}) => {
-  const [sourceScenes, setSourceScenes] = useState<Scene[]>([]);
-  const [destScene, setDestScene] = useState<Scene[]>([]);
+export const SceneMergeModal: React.FC<ISceneMergeModalProps> = PatchComponent(
+  "SceneMergeModal",
+  ({ show, onClose, scenes }) => {
+    const [sourceScenes, setSourceScenes] = useState<Scene[]>([]);
+    const [destScene, setDestScene] = useState<Scene[]>([]);
 
-  const [loadedSources, setLoadedSources] = useState<GQL.SceneDataFragment[]>(
-    []
-  );
-  const [loadedDest, setLoadedDest] = useState<GQL.SceneDataFragment>();
+    const [loadedSources, setLoadedSources] = useState<GQL.SceneDataFragment[]>(
+      []
+    );
+    const [loadedDest, setLoadedDest] = useState<GQL.SceneDataFragment>();
 
-  const [running, setRunning] = useState(false);
-  const [secondStep, setSecondStep] = useState(false);
+    const [running, setRunning] = useState(false);
+    const [secondStep, setSecondStep] = useState(false);
 
-  const intl = useIntl();
-  const Toast = useToast();
+    const intl = useIntl();
+    const Toast = useToast();
 
-  const title = intl.formatMessage({
-    id: "actions.merge",
-  });
+    const title = intl.formatMessage({
+      id: "actions.merge",
+    });
 
-  const srcIDs = useMemo(() => sourceScenes.map((s) => s.id), [sourceScenes]);
-  const destID = useMemo(
-    () => (destScene[0] ? [destScene[0].id] : []),
-    [destScene]
-  );
+    const srcIDs = useMemo(() => sourceScenes.map((s) => s.id), [sourceScenes]);
+    const destID = useMemo(
+      () => (destScene[0] ? [destScene[0].id] : []),
+      [destScene]
+    );
 
-  useEffect(() => {
-    if (scenes.length > 0) {
-      // set the first scene as the destination, others as source
-      setDestScene([scenes[0]]);
+    useEffect(() => {
+      if (scenes.length > 0) {
+        // set the first scene as the destination, others as source
+        setDestScene([scenes[0]]);
 
-      if (scenes.length > 1) {
-        setSourceScenes(scenes.slice(1));
+        if (scenes.length > 1) {
+          setSourceScenes(scenes.slice(1));
+        }
+      }
+    }, [scenes]);
+
+    async function loadScenes() {
+      const sceneIDs = sourceScenes.map((s) => parseInt(s.id, 10));
+      sceneIDs.push(parseInt(destScene[0].id, 10));
+      const query = await queryFindFullScenesByID(sceneIDs);
+      const { scenes: loadedScenes } = query.data.findScenes;
+
+      setLoadedDest(loadedScenes.find((s) => s.id === destScene[0].id));
+      setLoadedSources(loadedScenes.filter((s) => s.id !== destScene[0].id));
+      setSecondStep(true);
+    }
+
+    async function onMerge(options: MergeOptions) {
+      const { values, includeViewHistory, includeOHistory } = options;
+      try {
+        setRunning(true);
+        const result = await mutateSceneMerge(
+          destScene[0].id,
+          sourceScenes.map((s) => s.id),
+          values,
+          includeViewHistory,
+          includeOHistory
+        );
+        if (result.data?.sceneMerge) {
+          Toast.success(intl.formatMessage({ id: "toast.merged_scenes" }));
+          onClose(destScene[0].id);
+        }
+      } catch (e) {
+        Toast.error(e);
+      } finally {
+        setRunning(false);
       }
     }
-  }, [scenes]);
 
-  async function loadScenes() {
-    const sceneIDs = sourceScenes.map((s) => parseInt(s.id, 10));
-    sceneIDs.push(parseInt(destScene[0].id, 10));
-    const query = await queryFindFullScenesByID(sceneIDs);
-    const { scenes: loadedScenes } = query.data.findScenes;
+    function canMerge() {
+      return sourceScenes.length > 0 && destScene.length !== 0;
+    }
 
-    setLoadedDest(loadedScenes.find((s) => s.id === destScene[0].id));
-    setLoadedSources(loadedScenes.filter((s) => s.id !== destScene[0].id));
-    setSecondStep(true);
-  }
+    function switchScenes() {
+      if (sourceScenes.length && destScene.length) {
+        const newDest = sourceScenes[0];
+        setSourceScenes([...sourceScenes.slice(1), destScene[0]]);
+        setDestScene([newDest]);
+      }
+    }
 
-  async function onMerge(options: MergeOptions) {
-    const { values, includeViewHistory, includeOHistory } = options;
-    try {
-      setRunning(true);
-      const result = await mutateSceneMerge(
-        destScene[0].id,
-        sourceScenes.map((s) => s.id),
-        values,
-        includeViewHistory,
-        includeOHistory
+    if (secondStep && destScene.length > 0) {
+      return (
+        <SceneMergeDetails
+          sources={loadedSources}
+          dest={loadedDest!}
+          onClose={(values) => {
+            setSecondStep(false);
+            if (values) {
+              onMerge(values);
+            } else {
+              onClose();
+            }
+          }}
+        />
       );
-      if (result.data?.sceneMerge) {
-        Toast.success(intl.formatMessage({ id: "toast.merged_scenes" }));
-        onClose(destScene[0].id);
-      }
-      onClose();
-    } catch (e) {
-      Toast.error(e);
-    } finally {
-      setRunning(false);
     }
-  }
 
-  function canMerge() {
-    return sourceScenes.length > 0 && destScene.length !== 0;
-  }
-
-  function switchScenes() {
-    if (sourceScenes.length && destScene.length) {
-      const newDest = sourceScenes[0];
-      setSourceScenes([...sourceScenes.slice(1), destScene[0]]);
-      setDestScene([newDest]);
-    }
-  }
-
-  if (secondStep && destScene.length > 0) {
     return (
-      <SceneMergeDetails
-        sources={loadedSources}
-        dest={loadedDest!}
-        onClose={(values) => {
-          setSecondStep(false);
-          if (values) {
-            onMerge(values);
-          } else {
-            onClose();
-          }
+      <ModalComponent
+        show={show}
+        header={title}
+        icon={faSignInAlt}
+        accept={{
+          text: intl.formatMessage({ id: "actions.next_action" }),
+          onClick: () => loadScenes(),
         }}
-      />
+        disabled={!canMerge()}
+        cancel={{
+          variant: "secondary",
+          onClick: () => onClose(),
+        }}
+        isRunning={running}
+      >
+        <div className="form-container row px-3">
+          <div className="col-12 col-lg-6 col-xl-12">
+            <Form.Group controlId="source" as={Row}>
+              {FormUtils.renderLabel({
+                title: intl.formatMessage({ id: "dialogs.merge.source" }),
+                labelProps: {
+                  column: true,
+                  sm: 3,
+                  xl: 12,
+                },
+              })}
+              <Col sm={9} xl={12}>
+                <SceneSelect
+                  isMulti
+                  onSelect={(items) => setSourceScenes(items)}
+                  values={sourceScenes}
+                  menuPortalTarget={document.body}
+                  excludeIds={destID}
+                />
+              </Col>
+            </Form.Group>
+            <Form.Group
+              controlId="switch"
+              as={Row}
+              className="justify-content-center"
+            >
+              <Button
+                variant="secondary"
+                onClick={() => switchScenes()}
+                disabled={!sourceScenes.length || !destScene.length}
+                title={intl.formatMessage({ id: "actions.swap" })}
+              >
+                <Icon className="fa-fw" icon={faExchangeAlt} />
+              </Button>
+            </Form.Group>
+            <Form.Group controlId="destination" as={Row}>
+              {FormUtils.renderLabel({
+                title: intl.formatMessage({
+                  id: "dialogs.merge.destination",
+                }),
+                labelProps: {
+                  column: true,
+                  sm: 3,
+                  xl: 12,
+                },
+              })}
+              <Col sm={9} xl={12}>
+                <SceneSelect
+                  onSelect={(items) => setDestScene(items)}
+                  values={destScene}
+                  menuPortalTarget={document.body}
+                  excludeIds={srcIDs}
+                />
+              </Col>
+            </Form.Group>
+          </div>
+        </div>
+      </ModalComponent>
     );
   }
-
-  return (
-    <ModalComponent
-      show={show}
-      header={title}
-      icon={faSignInAlt}
-      accept={{
-        text: intl.formatMessage({ id: "actions.next_action" }),
-        onClick: () => loadScenes(),
-      }}
-      disabled={!canMerge()}
-      cancel={{
-        variant: "secondary",
-        onClick: () => onClose(),
-      }}
-      isRunning={running}
-    >
-      <div className="form-container row px-3">
-        <div className="col-12 col-lg-6 col-xl-12">
-          <Form.Group controlId="source" as={Row}>
-            {FormUtils.renderLabel({
-              title: intl.formatMessage({ id: "dialogs.merge.source" }),
-              labelProps: {
-                column: true,
-                sm: 3,
-                xl: 12,
-              },
-            })}
-            <Col sm={9} xl={12}>
-              <SceneSelect
-                isMulti
-                onSelect={(items) => setSourceScenes(items)}
-                values={sourceScenes}
-                menuPortalTarget={document.body}
-                excludeIds={destID}
-              />
-            </Col>
-          </Form.Group>
-          <Form.Group
-            controlId="switch"
-            as={Row}
-            className="justify-content-center"
-          >
-            <Button
-              variant="secondary"
-              onClick={() => switchScenes()}
-              disabled={!sourceScenes.length || !destScene.length}
-              title={intl.formatMessage({ id: "actions.swap" })}
-            >
-              <Icon className="fa-fw" icon={faExchangeAlt} />
-            </Button>
-          </Form.Group>
-          <Form.Group controlId="destination" as={Row}>
-            {FormUtils.renderLabel({
-              title: intl.formatMessage({
-                id: "dialogs.merge.destination",
-              }),
-              labelProps: {
-                column: true,
-                sm: 3,
-                xl: 12,
-              },
-            })}
-            <Col sm={9} xl={12}>
-              <SceneSelect
-                onSelect={(items) => setDestScene(items)}
-                values={destScene}
-                menuPortalTarget={document.body}
-                excludeIds={srcIDs}
-              />
-            </Col>
-          </Form.Group>
-        </div>
-      </div>
-    </ModalComponent>
-  );
-};
+);

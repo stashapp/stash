@@ -55,6 +55,7 @@ import { PatchFunction } from "./patch";
 import moment from "moment/min/moment-with-locales";
 import { ErrorMessage } from "./components/Shared/ErrorMessage";
 import cx from "classnames";
+import Welcome from "./components/Setup/Welcome";
 
 const Performers = lazyComponent(
   () => import("./components/Performers/Performers")
@@ -108,7 +109,9 @@ const AppContainer: React.FC<React.PropsWithChildren<unknown>> = PatchFunction(
   }
 ) as React.FC;
 
-const MainContainer: React.FC = ({ children }) => {
+const MainContainer: React.FC<React.PropsWithChildren<unknown>> = ({
+  children,
+}) => {
   // use optional here because the configuration may have be loading or errored
   const { configuration } = useConfigurationContextOptional() || {};
   const { sfwContentMode } = configuration?.interface || {};
@@ -203,7 +206,7 @@ export const App: React.FC = () => {
 
   const location = useLocation();
   const history = useHistory();
-  const setupMatch = useRouteMatch(["/setup", "/migrate"]);
+  const setupMatch = useRouteMatch(["/setup", "/migrate", "/welcome"]);
 
   // dispatch event when location changes
   useEffect(() => {
@@ -270,6 +273,7 @@ export const App: React.FC = () => {
               component={SceneDuplicateChecker}
             />
             <Route path="/setup" component={Setup} />
+            <Route path="/welcome" component={Welcome} />
             <Route path="/migrate" component={Migrate} />
             <PluginRoutes />
             <Route component={PageNotFound} />
@@ -310,6 +314,7 @@ export const App: React.FC = () => {
 
   const title = config.data?.configuration.ui.title || "Stash";
   const titleProps = makeTitleProps(title);
+  const htmlAttributes = { lang: language };
 
   if (!messages) {
     return null;
@@ -322,6 +327,7 @@ export const App: React.FC = () => {
         messages={messages}
         formats={intlFormats}
       >
+        <Helmet htmlAttributes={htmlAttributes} />
         <MainContainer>{content}</MainContainer>
       </IntlProvider>
     );
@@ -368,7 +374,10 @@ export const App: React.FC = () => {
                   <LightboxProvider>
                     <ManualProvider>
                       <InteractiveProvider>
-                        <Helmet {...titleProps} />
+                        <Helmet
+                          {...titleProps}
+                          htmlAttributes={htmlAttributes}
+                        />
                         {maybeRenderNavbar()}
                         <MainContainer>{renderContent()}</MainContainer>
                       </InteractiveProvider>

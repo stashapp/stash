@@ -19,8 +19,25 @@ export const OperationDropdown: React.FC<
     className?: string;
     menuPortalTarget?: HTMLElement;
     menuClassName?: string;
+    icon?: IconDefinition;
+    id?: string;
+    title?: string;
+    toggleClassName?: string;
+    size?: "sm" | "lg";
+    onClick?: (e: React.MouseEvent) => void;
   }>
-> = ({ className, menuPortalTarget, menuClassName, children }) => {
+> = ({
+  className,
+  menuPortalTarget,
+  menuClassName,
+  icon = faEllipsisH,
+  id = "more-menu",
+  title,
+  toggleClassName,
+  size,
+  onClick,
+  children,
+}) => {
   if (!children) return null;
 
   const menu = (
@@ -30,9 +47,15 @@ export const OperationDropdown: React.FC<
   );
 
   return (
-    <Dropdown className={className} as={ButtonGroup}>
-      <Dropdown.Toggle variant="secondary" id="more-menu">
-        <Icon icon={faEllipsisH} />
+    <Dropdown className={className} as={ButtonGroup} onClick={onClick}>
+      <Dropdown.Toggle
+        variant="secondary"
+        id={id}
+        className={toggleClassName}
+        size={size}
+        title={title}
+      >
+        <Icon icon={icon} />
       </Dropdown.Toggle>
       {menuPortalTarget ? createPortal(menu, menuPortalTarget) : menu}
     </Dropdown>

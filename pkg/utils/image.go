@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -32,7 +33,32 @@ func ProcessImageInput(ctx context.Context, imageInput string) ([]byte, error) {
 	}
 
 	// assume input is a URL. Read it.
-	return ReadImageFromURL(ctx, imageInput)
+	d, err := ReadImageFromURL(ctx, imageInput)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := validateImageData(d); err != nil {
+		return nil, err
+	}
+
+	return d, nil
+}
+
+// validateImageData rejects HTML content, which is not a valid image and would
+// execute as a document if served back to a browser. SVG (detected as XML or
+// plain text) is still accepted and sandboxed on output by ServeImage.
+func validateImageData(data []byte) error {
+	if len(data) == 0 {
+		return nil
+	}
+
+	contentType := http.DetectContentType(data)
+	if strings.HasPrefix(contentType, "text/html") {
+		return fmt.Errorf("unsupported image content type %q", contentType)
+	}
+
+	return nil
 }
 
 // ReadImageFromURL returns image data from a URL
@@ -97,6 +123,10 @@ func ProcessBase64Image(imageString string) ([]byte, error) {
 		return nil, err
 	}
 
+	if err := validateImageData(imageData); err != nil {
+		return nil, err
+	}
+
 	return imageData, nil
 }
 
@@ -112,9 +142,21 @@ func GetBase64StringFromData(data []byte) string {
 
 func ServeImage(w http.ResponseWriter, r *http.Request, image []byte) {
 	contentType := http.DetectContentType(image)
+
+	// SVG images are detected as XML or plain text; serve them as SVG so they
+	// render. The sandboxing CSP below prevents any embedded script running.
 	if contentType == "text/xml; charset=utf-8" || contentType == "text/plain; charset=utf-8" {
 		contentType = "image/svg+xml"
+	} else if strings.HasPrefix(contentType, "text/") {
+		// any other text type (e.g. HTML) is not a valid image - never render it
+		contentType = "application/octet-stream"
+		w.Header().Set("Content-Disposition", "attachment")
 	}
+
+	// sandbox every image response so a stored SVG cannot execute script or
+	// exfiltrate data; harmless for raster images.
+	w.Header().Set("Content-Security-Policy", "default-src 'none'; img-src data:; style-src 'unsafe-inline'; sandbox")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
 
 	w.Header().Set("Content-Type", contentType)
 	ServeStaticContent(w, r, image)

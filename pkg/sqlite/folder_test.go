@@ -238,6 +238,48 @@ func Test_FolderStore_FindByPath(t *testing.T) {
 	}
 }
 
+func TestFolderStore_FindByPathCaseInsensitiveTreatsLikeWildcardsLiterally(t *testing.T) {
+	qb := db.Folder
+
+	runWithRollbackTxn(t, "literal wildcards", func(t *testing.T, ctx context.Context) {
+		now := time.Now()
+		makeTestFolder := func(path string) *models.Folder {
+			return &models.Folder{
+				Path: path,
+				DirEntry: models.DirEntry{
+					ModTime: now,
+				},
+				CreatedAt: now,
+				UpdatedAt: now,
+			}
+		}
+
+		ambiguous := makeTestFolder("folder_lookup_AB1")
+		if !assert.NoError(t, qb.Create(ctx, ambiguous)) {
+			return
+		}
+
+		got, err := qb.FindByPath(ctx, "folder_lookup_A_1", false)
+		assert.NoError(t, err)
+		assert.Nil(t, got)
+
+		got, err = qb.FindByPath(ctx, "folder_lookup_A%1", false)
+		assert.NoError(t, err)
+		assert.Nil(t, got)
+
+		literalUnderscore := makeTestFolder("folder_lookup_A_1")
+		if !assert.NoError(t, qb.Create(ctx, literalUnderscore)) {
+			return
+		}
+
+		got, err = qb.FindByPath(ctx, "FOLDER_LOOKUP_a_1", false)
+		assert.NoError(t, err)
+		if assert.NotNil(t, got) {
+			assert.Equal(t, literalUnderscore.ID, got.ID)
+		}
+	})
+}
+
 func Test_FolderStore_GetManyParentFolderIDs(t *testing.T) {
 	var empty []models.FolderID
 	emptyResult := [][]models.FolderID{empty}

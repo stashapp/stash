@@ -188,6 +188,8 @@ These options are typically not exposed in the UI and must be changed manually i
 | `proxy` | The url of a HTTP(S) proxy to be used when stash makes calls to online services. Example: https://user:password@my.proxy:8080. Note: SOCKS5 proxies are unsupported. |
 | `no_proxy` | A list of domains for which the proxy must not be used. Default is all local LAN: localhost,127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12 |
 | `sequential_scanning` | Modifies behaviour of the scanning functionality to generate support files (previews/sprites/phash) at the same time as fingerprinting/screenshotting. Useful when scanning cached remote files. |
+| `trusted_proxies` | A list of trusted proxy IPs or CIDR ranges. If a request comes from a trusted proxy or if the request IP address is a local address, the `X-FORWARDED-FOR` header will be used to determine the client's real IP address. Default is empty (no trusted proxies). |
+| `public_whitelist` | A list of public IP addresses or subnets (in CIDR range format eg: `192.168.1.0/24`) that are allowed to access the system when no credentials are configured. |
 | `signed_url_expiry` | The expiry time for signed URLs, in seconds. Signed URLs are used when authentication is required. Defaults to 4 hours to accommodate long video playback sessions. |
 
 The following environment variables are also supported:

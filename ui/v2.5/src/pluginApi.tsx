@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import * as ReactDOMClient from "react-dom/client";
 import * as ReactRouterDOM from "react-router-dom";
 import Mousetrap from "mousetrap";
 import MousetrapPause from "mousetrap-pause";
@@ -69,6 +70,7 @@ function registerRoute(path: string, component: React.FC) {
 export const PluginApi = {
   React,
   ReactDOM,
+  ReactDOMClient,
   GQL,
   libraries: {
     ReactRouterDOM,
@@ -112,6 +114,10 @@ export const PluginApi = {
     GalleryViewer: () => import("src/components/Galleries/GalleryViewer"),
 
     DeleteScenesDialog: () => import("./components/Scenes/DeleteScenesDialog"),
+    SceneMergeDialog: () => import("./components/Scenes/SceneMergeDialog"),
+    PerformerMergeDialog: () =>
+      import("./components/Performers/PerformerMergeDialog"),
+    TagMergeDialog: () => import("./components/Tags/TagMergeDialog"),
     SceneList: () => import("./components/Scenes/SceneList"),
     SceneMarkerList: () => import("./components/Scenes/SceneMarkerList"),
     Scene: () => import("./components/Scenes/SceneDetails/Scene"),

@@ -42,8 +42,8 @@ const defaultSortBy = "date";
 const sortByOptions = [
   "organized",
   "date",
+  "production_date",
   "file_count",
-  "filesize",
   "duration",
   "framerate",
   "resolution",
@@ -61,6 +61,10 @@ const sortByOptions = [
 ]
   .map(ListFilterOptions.createSortBy)
   .concat([
+    {
+      messageID: "files_size",
+      value: "filesize",
+    },
     {
       messageID: "o_count",
       value: "o_counter",
@@ -142,6 +146,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("interactive_speed"),
   createMandatoryNumberCriterionOption("file_count"),
   createDateCriterionOption("date"),
+  createDateCriterionOption("production_date"),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),
   CustomFieldsCriterionOption,

@@ -1,5 +1,5 @@
 import { Button, ButtonGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { MouseEvent, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { GridCard } from "../Shared/GridCard/GridCard";
 import { HoverPopover } from "../Shared/HoverPopover";
@@ -10,22 +10,27 @@ import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import NavUtils from "src/utils/navigation";
 import { RatingBanner } from "../Shared/RatingBanner";
-import { faBox, faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBox,
+  faPlayCircle,
+  faSearch,
+  faTag,
+} from "@fortawesome/free-solid-svg-icons";
 import { galleryTitle } from "src/core/galleries";
 import { StudioOverlay } from "../Shared/GridCard/StudioOverlay";
 import { GalleryPreviewScrubber } from "./GalleryPreviewScrubber";
 import cx from "classnames";
-import { useHistory } from "react-router-dom";
 import { PatchComponent } from "src/patch";
 
 interface IGalleryPreviewProps {
   gallery: GQL.SlimGalleryDataFragment;
   onScrubberClick?: (index: number) => void;
+  onPreview?: (ev: MouseEvent) => void;
   disabled?: boolean;
 }
 
 export const GalleryPreview: React.FC<IGalleryPreviewProps> = React.memo(
-  ({ gallery, onScrubberClick, disabled }) => {
+  ({ gallery, onScrubberClick, onPreview, disabled }) => {
     const [imgSrc, setImgSrc] = useState<string | undefined>(
       gallery.paths.cover ?? undefined
     );
@@ -50,6 +55,13 @@ export const GalleryPreview: React.FC<IGalleryPreviewProps> = React.memo(
             disabled={disabled}
           />
         )}
+        {onPreview && gallery.image_count > 0 ? (
+          <div className="preview-button">
+            <Button onClick={onPreview}>
+              <Icon icon={faSearch} />
+            </Button>
+          </div>
+        ) : undefined}
       </div>
     );
   }
@@ -62,6 +74,7 @@ interface IGalleryCardProps {
   selected?: boolean | undefined;
   zoomIndex?: number;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
+  onPreview?: (index: number, ev?: MouseEvent) => void;
 }
 
 const GalleryCardPopovers = React.memo(
@@ -208,20 +221,14 @@ const GalleryCardOverlays = React.memo(
 
 const GalleryCardImage = React.memo(
   PatchComponent("GalleryCard.Image", (props: IGalleryCardProps) => {
-    const history = useHistory();
-
-    const onScrubberClick = useCallback(
-      (i: number) => {
-        history.push(`/galleries/${props.gallery.id}/images/${i}`);
-      },
-      [props.gallery.id, history]
-    );
+    const onPreview = props.selecting ? undefined : props.onPreview;
 
     return (
       <>
         <GalleryPreview
           gallery={props.gallery}
-          onScrubberClick={onScrubberClick}
+          onScrubberClick={onPreview ? (i) => onPreview(i) : undefined}
+          onPreview={onPreview ? (ev) => onPreview(0, ev) : undefined}
           disabled={props.selecting}
         />
         <RatingBanner rating={props.gallery.rating100} />

@@ -88,6 +88,7 @@ title
 studio  
 url  
 date  
+production_date (date the scene was shot, if different to the release date. Format is YYYY-MM-DD)  
 rating (integer)  
 details  
 performers (list of strings, performers name)  

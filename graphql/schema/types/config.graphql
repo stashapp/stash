@@ -13,6 +13,9 @@ input SetupInput {
   storeBlobsInDatabase: Boolean!
   "Empty to indicate default - only applicable if storeBlobsInDatabase is false"
   blobsLocation: String!
+
+  initialUsername: String
+  initialPassword: String
 }
 
 enum StreamingResolutionEnum {
@@ -101,6 +104,10 @@ input ConfigGeneralInput {
   previewSegments: Int
   "Preview segment duration, in seconds"
   previewSegmentDuration: Float
+  "Maximum duration (in seconds) for generated marker preview videos. 0 disables the ceiling."
+  maxMarkerPreviewDuration: Int
+  "Duration (in seconds) for marker preview videos without an explicit end time. Must be positive."
+  defaultMarkerPreviewDuration: Int
   "Duration of start of video to exclude when generating previews"
   previewExcludeStart: String
   "Duration of end of video to exclude when generating previews"
@@ -239,6 +246,10 @@ type ConfigGeneralResult {
   previewSegments: Int!
   "Preview segment duration, in seconds"
   previewSegmentDuration: Float!
+  "Maximum duration (in seconds) for generated marker preview videos. 0 disables the ceiling."
+  maxMarkerPreviewDuration: Int!
+  "Duration (in seconds) for marker preview videos without an explicit end time. Must be positive."
+  defaultMarkerPreviewDuration: Int!
   "Duration of start of video to exclude when generating previews"
   previewExcludeStart: String!
   "Duration of end of video to exclude when generating previews"

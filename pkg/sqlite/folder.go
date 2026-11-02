@@ -296,12 +296,11 @@ func (qb *FolderStore) FindMany(ctx context.Context, ids []models.FolderID) ([]*
 }
 
 func (qb *FolderStore) FindByPath(ctx context.Context, p string, caseSensitive bool) (*models.Folder, error) {
-	// use like for case insensitive search
-	var criterion exp.BooleanExpression
+	var criterion exp.Expression
 	if caseSensitive {
 		criterion = qb.table().Col("path").Eq(p)
 	} else {
-		criterion = qb.table().Col("path").ILike(p)
+		criterion = pathEqNoCase(qb.table().Col("path"), p)
 	}
 
 	q := qb.selectDataset().Prepared(true).Where(criterion)

@@ -86,6 +86,7 @@ type ScrapedScene {
   url: String @deprecated(reason: "use urls")
   urls: [String!]
   date: String
+  production_date: String
 
   "This should be a base64 encoded data URL"
   image: String
@@ -110,6 +111,7 @@ input ScrapedSceneInput {
   url: String @deprecated(reason: "use urls")
   urls: [String!]
   date: String
+  production_date: String
 
   # no image, file, duration or relationships
 
@@ -289,6 +291,7 @@ type StashBoxFingerprint {
   algorithm: String!
   hash: String!
   duration: Int!
+  submissions: Int!
 }
 
 """

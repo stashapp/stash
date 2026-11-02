@@ -86,14 +86,14 @@ const PerformerBatchUpdateModal: React.FC<IPerformerBatchUpdateModal> = ({
   const [refresh, setRefresh] = useState(false);
   const [showFieldSelect, setShowFieldSelect] = useState(false);
 
-  const [fieldModes, setFieldModes] = useState<Record<string, FieldMode>>(() =>
-    PERFORMER_FIELDS.reduce(
-      (acc, field) => ({
-        ...acc,
-        [field]: initialExcludedFields.includes(field) ? "skip" : "overwrite",
-      }),
-      {} as Record<string, FieldMode>
-    )
+  const [fieldModes, setFieldModes] = useState<Record<string, FieldMode>>(
+    () =>
+      Object.fromEntries(
+        PERFORMER_FIELDS.map((field) => [
+          field,
+          initialExcludedFields.includes(field) ? "skip" : "overwrite",
+        ])
+      ) as Record<string, FieldMode>
   );
 
   const excludedFieldsList = useMemo(

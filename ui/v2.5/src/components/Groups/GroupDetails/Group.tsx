@@ -76,7 +76,7 @@ const GroupTabs: React.FC<{
     return "scenes";
   }, [sceneCount, performerCount, groupCount]);
 
-  const { setTabKey } = useTabKey({
+  const { activeTabKey, setTabKey } = useTabKey({
     tabKey,
     validTabs,
     defaultTabKey: populatedDefaultTab,
@@ -88,7 +88,7 @@ const GroupTabs: React.FC<{
       id="group-tabs"
       mountOnEnter
       unmountOnExit
-      activeKey={tabKey}
+      activeKey={activeTabKey}
       onSelect={setTabKey}
     >
       <Tab
@@ -101,7 +101,7 @@ const GroupTabs: React.FC<{
           />
         }
       >
-        <GroupScenesPanel active={tabKey === "scenes"} group={group} />
+        <GroupScenesPanel active={activeTabKey === "scenes"} group={group} />
       </Tab>
       <Tab
         eventKey="performers"
@@ -113,7 +113,10 @@ const GroupTabs: React.FC<{
           />
         }
       >
-        <GroupPerformersPanel active={tabKey === "performers"} group={group} />
+        <GroupPerformersPanel
+          active={activeTabKey === "performers"}
+          group={group}
+        />
       </Tab>
       <Tab
         eventKey="subgroups"
@@ -125,7 +128,10 @@ const GroupTabs: React.FC<{
           />
         }
       >
-        <GroupSubGroupsPanel active={tabKey === "subgroups"} group={group} />
+        <GroupSubGroupsPanel
+          active={activeTabKey === "subgroups"}
+          group={group}
+        />
       </Tab>
     </Tabs>
   );

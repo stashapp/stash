@@ -129,7 +129,7 @@ const ImageWall: React.FC<IImageWallProps> = ({
   });
 
   const showLightboxOnClick = useCallback(
-    (_event, { index }) => {
+    (_event: React.MouseEvent, { index }: { index: number }) => {
       handleImageOpen(index);
     },
     [handleImageOpen]
@@ -212,6 +212,7 @@ interface IImageListImages {
   selectedIds: Set<string>;
   onChangePage: (page: number) => void;
   pageCount: number;
+  totalCount: number;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
   slideshowRunning: boolean;
   setSlideshowRunning: (running: boolean) => void;
@@ -226,6 +227,7 @@ const ImageList: React.FC<IImageListImages> = PatchComponent(
     selectedIds,
     onChangePage,
     pageCount,
+    totalCount,
     onSelectChange,
     slideshowRunning,
     setSlideshowRunning,
@@ -269,12 +271,14 @@ const ImageList: React.FC<IImageListImages> = PatchComponent(
         page: filter.currentPage,
         pages: pageCount,
         pageSize: filter.itemsPerPage,
+        totalCount,
         slideshowEnabled: slideshowRunning,
         onClose: handleClose,
       };
     }, [
       images,
       pageCount,
+      totalCount,
       filter.currentPage,
       filter.itemsPerPage,
       slideshowRunning,
@@ -291,7 +295,7 @@ const ImageList: React.FC<IImageListImages> = PatchComponent(
     );
 
     const handleImageOpen = useCallback(
-      (index) => {
+      (index: number) => {
         setSlideshowRunning(true);
         showLightbox({ initialIndex: index, slideshowEnabled: true });
       },
@@ -740,6 +744,7 @@ export const FilteredImageList = PatchComponent(
         />
 
         <FilterTags
+          view={view}
           criteria={filter.criteria}
           onEditCriterion={(c) => showEditFilter(c.criterionOption.type)}
           onRemoveCriterion={removeCriterion}
@@ -769,6 +774,7 @@ export const FilteredImageList = PatchComponent(
             onChangePage={setPage}
             onSelectChange={onSelectChange}
             pageCount={pageCount}
+            totalCount={totalCount}
             selectedIds={selectedIds}
             slideshowRunning={slideshowRunning}
             setSlideshowRunning={setSlideshowRunning}
