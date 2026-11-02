@@ -755,7 +755,15 @@ func (i *Config) GetExtraBlobsPaths() []string {
 }
 
 func (i *Config) GetBlobsStorage() BlobsStorageType {
-	ret := BlobsStorageType(i.getString(BlobsStorage))
+	i.RLock()
+	defer i.RUnlock()
+
+	return i.getBlobsStorage()
+}
+
+func (i *Config) getBlobsStorage() BlobsStorageType {
+	// assumes read lock held
+	ret := BlobsStorageType(i.forKey(BlobsStorage).String(BlobsStorage))
 
 	if !ret.IsValid() {
 		// default to database storage
@@ -1946,7 +1954,7 @@ func (i *Config) Validate() error {
 		}
 	}
 
-	if i.GetBlobsStorage() == BlobStorageTypeFilesystem && i.forKey(BlobsPath).String(BlobsPath) == "" {
+	if i.getBlobsStorage() == BlobStorageTypeFilesystem && i.forKey(BlobsPath).String(BlobsPath) == "" {
 		return MissingConfigError{
 			missingFields: []string{BlobsPath},
 		}
