@@ -142,7 +142,7 @@ type Query {
   "Organize scene markers by tag for a given scene ID"
   sceneMarkerTags(scene_id: ID!): [SceneMarkerTag!]!
 
-  logs: [LogEntry!]!
+  logs: [LogEntry!]! @hasRole(role: ADMIN)
 
   # Scrapers
 
@@ -232,9 +232,10 @@ type Query {
 
   # Packages
   "List installed packages"
-  installedPackages(type: PackageType!): [Package!]!
+  installedPackages(type: PackageType!): [Package!]! @hasRole(role: ADMIN)
   "List available packages"
   availablePackages(type: PackageType!, source: String!): [Package!]!
+    @hasRole(role: ADMIN)
 
   # Config
   "Returns the current, complete configuration"
@@ -247,6 +248,7 @@ type Query {
     locale: String = "en"
   ): Directory!
   validateStashBoxCredentials(input: StashBoxInput!): StashBoxValidationResult!
+    @hasRole(role: ADMIN)
 
   # System status
   systemStatus: SystemStatus!
@@ -255,7 +257,7 @@ type Query {
   jobQueue: [Job!]
   findJob(input: FindJobInput!): Job
 
-  dlnaStatus: DLNAStatus!
+  dlnaStatus: DLNAStatus! @hasRole(role: ADMIN)
 
   # Get everything
 
@@ -667,7 +669,7 @@ type Subscription {
   "Update from the metadata manager"
   jobsSubscribe: JobStatusUpdate!
 
-  loggingSubscribe: [LogEntry!]!
+  loggingSubscribe: [LogEntry!]! @hasRole(role: ADMIN)
 
   scanCompleteSubscribe: Boolean!
 }
