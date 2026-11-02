@@ -60,7 +60,7 @@ type Query {
   parseSceneFilenames(
     filter: FindFilterType
     config: SceneParserInput!
-  ): SceneParserResultType!
+  ): SceneParserResultType! @hasRole(role: MODIFY)
 
   "A function which queries SceneMarker objects"
   findSceneMarkers(
@@ -147,82 +147,86 @@ type Query {
   # Scrapers
 
   "List available scrapers"
-  listScrapers(types: [ScrapeContentType!]!): [Scraper!]!
+  listScrapers(types: [ScrapeContentType!]!): [Scraper!]! @hasRole(role: MODIFY)
 
   "Scrape for a single scene"
   scrapeSingleScene(
     source: ScraperSourceInput!
     input: ScrapeSingleSceneInput!
-  ): [ScrapedScene!]!
+  ): [ScrapedScene!]! @hasRole(role: MODIFY)
   "Scrape for multiple scenes"
   scrapeMultiScenes(
     source: ScraperSourceInput!
     input: ScrapeMultiScenesInput!
-  ): [[ScrapedScene!]!]!
+  ): [[ScrapedScene!]!]! @hasRole(role: MODIFY)
 
   "Scrape for a single studio"
   scrapeSingleStudio(
     source: ScraperSourceInput!
     input: ScrapeSingleStudioInput!
-  ): [ScrapedStudio!]!
+  ): [ScrapedStudio!]! @hasRole(role: MODIFY)
 
   "Scrape for a single tag"
   scrapeSingleTag(
     source: ScraperSourceInput!
     input: ScrapeSingleTagInput!
-  ): [ScrapedTag!]!
+  ): [ScrapedTag!]! @hasRole(role: MODIFY)
 
   "Scrape for a single performer"
   scrapeSinglePerformer(
     source: ScraperSourceInput!
     input: ScrapeSinglePerformerInput!
-  ): [ScrapedPerformer!]!
+  ): [ScrapedPerformer!]! @hasRole(role: MODIFY)
   "Scrape for multiple performers"
   scrapeMultiPerformers(
     source: ScraperSourceInput!
     input: ScrapeMultiPerformersInput!
-  ): [[ScrapedPerformer!]!]!
+  ): [[ScrapedPerformer!]!]! @hasRole(role: MODIFY)
 
   "Scrape for a single gallery"
   scrapeSingleGallery(
     source: ScraperSourceInput!
     input: ScrapeSingleGalleryInput!
-  ): [ScrapedGallery!]!
+  ): [ScrapedGallery!]! @hasRole(role: MODIFY)
 
   "Scrape for a single movie"
   scrapeSingleMovie(
     source: ScraperSourceInput!
     input: ScrapeSingleMovieInput!
-  ): [ScrapedMovie!]! @deprecated(reason: "Use scrapeSingleGroup instead")
+  ): [ScrapedMovie!]!
+    @deprecated(reason: "Use scrapeSingleGroup instead")
+    @hasRole(role: MODIFY)
 
   "Scrape for a single group"
   scrapeSingleGroup(
     source: ScraperSourceInput!
     input: ScrapeSingleGroupInput!
-  ): [ScrapedGroup!]!
+  ): [ScrapedGroup!]! @hasRole(role: MODIFY)
 
   "Scrape for a single image"
   scrapeSingleImage(
     source: ScraperSourceInput!
     input: ScrapeSingleImageInput!
-  ): [ScrapedImage!]!
+  ): [ScrapedImage!]! @hasRole(role: MODIFY)
 
   "Scrapes content based on a URL"
   scrapeURL(url: String!, ty: ScrapeContentType!): ScrapedContent
+    @hasRole(role: MODIFY)
 
   "Scrapes a complete performer record based on a URL"
-  scrapePerformerURL(url: String!): ScrapedPerformer
+  scrapePerformerURL(url: String!): ScrapedPerformer @hasRole(role: MODIFY)
   "Scrapes a complete scene record based on a URL"
-  scrapeSceneURL(url: String!): ScrapedScene
+  scrapeSceneURL(url: String!): ScrapedScene @hasRole(role: MODIFY)
   "Scrapes a complete gallery record based on a URL"
-  scrapeGalleryURL(url: String!): ScrapedGallery
+  scrapeGalleryURL(url: String!): ScrapedGallery @hasRole(role: MODIFY)
   "Scrapes a complete image record based on a URL"
-  scrapeImageURL(url: String!): ScrapedImage
+  scrapeImageURL(url: String!): ScrapedImage @hasRole(role: MODIFY)
   "Scrapes a complete movie record based on a URL"
   scrapeMovieURL(url: String!): ScrapedMovie
     @deprecated(reason: "Use scrapeGroupURL instead")
+    @hasRole(role: MODIFY)
   "Scrapes a complete group record based on a URL"
-  scrapeGroupURL(url: String!): ScrapedGroup
+  scrapeGroupURL(url: String!): ScrapedGroup @hasRole(role: MODIFY)
 
   # Plugins
   "List loaded plugins"
@@ -465,6 +469,7 @@ type Mutation {
   destroyFiles(ids: [ID!]!): Boolean! @hasRole(role: MODIFY)
 
   fileSetFingerprints(input: FileSetFingerprintsInput!): Boolean!
+    @hasRole(role: MODIFY)
   "Reveal the file in the system file manager"
   revealFileInFileManager(id: ID!): Boolean!
   "Reveal the folder in the system file manager"
