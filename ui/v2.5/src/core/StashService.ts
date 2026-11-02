@@ -342,12 +342,26 @@ export const queryFindPerformer = (id: string) =>
     variables: { id },
   });
 
-export const useFindPerformers = (filter?: ListFilterModel) =>
+// filters used to scope the performer count fields to the content the list is
+// restricted to. When provided, the scoped_* count fields are requested.
+export interface IPerformerCountFilters {
+  scene_filter?: GQL.SceneFilterType;
+  image_filter?: GQL.ImageFilterType;
+  gallery_filter?: GQL.GalleryFilterType;
+  group_filter?: GQL.GroupFilterType;
+}
+
+export const useFindPerformers = (
+  filter?: ListFilterModel,
+  countFilters?: IPerformerCountFilters
+) =>
   GQL.useFindPerformersQuery({
     skip: filter === undefined,
     variables: {
       filter: filter?.makeFindFilter(),
       performer_filter: filter?.makeFilter(),
+      scoped_counts: countFilters !== undefined,
+      ...countFilters,
     },
   });
 

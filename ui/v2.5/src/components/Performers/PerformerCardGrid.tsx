@@ -1,6 +1,9 @@
 import React from "react";
-import * as GQL from "src/core/generated-graphql";
-import { IPerformerCardExtraCriteria, PerformerCard } from "./PerformerCard";
+import {
+  IPerformerCardExtraCriteria,
+  PerformerCard,
+  PerformerCardPerformer,
+} from "./PerformerCard";
 import {
   useCardWidth,
   useContainerDimensions,
@@ -8,7 +11,7 @@ import {
 import { PatchComponent } from "src/patch";
 
 interface IPerformerCardGrid {
-  performers: GQL.PerformerDataFragment[];
+  performers: PerformerCardPerformer[];
   selectedIds: Set<string>;
   zoomIndex: number;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
