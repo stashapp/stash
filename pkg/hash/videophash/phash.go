@@ -17,14 +17,30 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-const (
-	screenshotSize = 160
-	columns        = 5
-	rows           = 5
-)
+const screenshotSize = 160
+
+// spriteColumns returns the width and height in frames of the phash sprite grid.
+// Short videos use fewer frames: sampled close together they are near-identical,
+// and the repetitive sprite that results hashes alike across unrelated videos.
+// See https://github.com/stashapp/stash/issues/3722.
+func spriteColumns(duration float64) int {
+	switch {
+	// duration is not always known - treat it as full length
+	case duration <= 0:
+		return 5
+	case duration <= 45:
+		return 2
+	case duration <= 90:
+		return 3
+	case duration <= 150:
+		return 4
+	default:
+		return 5
+	}
+}
 
 func Generate(encoder *ffmpeg.FFMpeg, videoFile *models.VideoFile) (*uint64, error) {
-	sprite, err := generateSprite(encoder, videoFile)
+	sprite, err := generateSprite(encoder, videoFile, spriteColumns(videoFile.Duration))
 	if err != nil {
 		return nil, err
 	}
@@ -61,15 +77,15 @@ func generateSpriteScreenshot(encoder *ffmpeg.FFMpeg, input string, t float64, s
 	return img, nil
 }
 
-func combineImages(images []image.Image) image.Image {
+func combineImages(images []image.Image, columns int) image.Image {
 	width := images[0].Bounds().Size().X
 	height := images[0].Bounds().Size().Y
 	canvasWidth := width * columns
-	canvasHeight := height * rows
+	canvasHeight := height * columns
 	montage := imaging.New(canvasWidth, canvasHeight, color.NRGBA{})
 	for index := 0; index < len(images); index++ {
 		x := width * (index % columns)
-		y := height * int(math.Floor(float64(index)/float64(rows)))
+		y := height * int(math.Floor(float64(index)/float64(columns)))
 		img := images[index]
 		montage = imaging.Paste(montage, img, image.Pt(x, y))
 	}
@@ -77,11 +93,11 @@ func combineImages(images []image.Image) image.Image {
 	return montage
 }
 
-func generateSprite(encoder *ffmpeg.FFMpeg, videoFile *models.VideoFile) (image.Image, error) {
+func generateSprite(encoder *ffmpeg.FFMpeg, videoFile *models.VideoFile, columns int) (image.Image, error) {
 	logger.Infof("[generator] generating phash sprite for %s", videoFile.Path)
 
 	// Generate sprite image offset by 5% on each end to avoid intro/outros
-	chunkCount := columns * rows
+	chunkCount := columns * columns
 	offset := 0.05 * videoFile.Duration
 	stepSize := (0.9 * videoFile.Duration) / float64(chunkCount)
 	var images []image.Image
@@ -109,5 +125,5 @@ func generateSprite(encoder *ffmpeg.FFMpeg, videoFile *models.VideoFile) (image.
 		return nil, fmt.Errorf("images slice is empty, failed to generate phash sprite for %s", videoFile.Path)
 	}
 
-	return combineImages(images), nil
+	return combineImages(images, columns), nil
 }
