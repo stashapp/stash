@@ -2,7 +2,9 @@ import React from "react";
 import { TagLink } from "src/components/Shared/TagLink";
 import { DetailItem } from "src/components/Shared/DetailItem";
 import { StashIDPill } from "src/components/Shared/StashID";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import * as GQL from "src/core/generated-graphql";
+import { useTagUpdate } from "src/core/StashService";
 import { CustomFields } from "src/components/Shared/CustomFields";
 
 interface ITagDetails {
@@ -11,6 +13,19 @@ interface ITagDetails {
 }
 
 export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
+  const [updateTag] = useTagUpdate();
+
+  function setRating(v: number | null) {
+    updateTag({
+      variables: {
+        input: {
+          id: tag.id,
+          rating100: v,
+        },
+      },
+    });
+  }
+
   function renderParentsField() {
     if (!tag.parents?.length) {
       return;
@@ -77,6 +92,11 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
         fullWidth={fullWidth}
       />
       <DetailItem
+        id="rating"
+        value={<RatingSystem value={tag.rating100} onSetRating={setRating} />}
+        fullWidth={fullWidth}
+      />
+      <DetailItem
         id="parent_tags"
         value={renderParentsField()}
         fullWidth={fullWidth}
@@ -97,6 +117,19 @@ export const TagDetailsPanel: React.FC<ITagDetails> = ({ tag, fullWidth }) => {
 };
 
 export const CompressedTagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
+  const [updateTag] = useTagUpdate();
+
+  function setRating(v: number | null) {
+    updateTag({
+      variables: {
+        input: {
+          id: tag.id,
+          rating100: v,
+        },
+      },
+    });
+  }
+
   function scrollToTop() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -111,6 +144,14 @@ export const CompressedTagDetailsPanel: React.FC<ITagDetails> = ({ tag }) => {
           <>
             <span className="detail-divider">/</span>
             <span className="tag-desc">{tag.description}</span>
+          </>
+        ) : (
+          ""
+        )}
+        {tag.rating100 !== null ? (
+          <>
+            <span className="detail-divider">/</span>
+            <RatingSystem value={tag.rating100} onSetRating={setRating} />
           </>
         ) : (
           ""

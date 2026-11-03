@@ -631,6 +631,9 @@ input TagFilterType {
   "Filter by tag description"
   description: StringCriterionInput
 
+  # rating expressed as 1-100
+  rating100: IntCriterionInput
+
   "Filter to only include tags missing this property"
   is_missing: String
 
