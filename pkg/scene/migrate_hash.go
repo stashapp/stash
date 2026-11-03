@@ -48,31 +48,68 @@ func MigrateHash(p *paths.Paths, oldHash string, newHash string) {
 	migrateSceneFolder(oldPath, newPath)
 }
 
-func migrateSceneFiles(oldName, newName string) {
-	oldExists, err := fsutil.FileExists(oldName)
+// InvalidateGeneratedFiles removes the generated files for hash. Used
+// instead of MigrateHash when content changed at the same path - the old
+// hash's files are stale, not valid to rename onto the new one.
+func InvalidateGeneratedFiles(p *paths.Paths, hash string) {
+	scenePaths := p.Scene
+	removeSceneFile(scenePaths.GetVideoPreviewPath(hash))
+	removeSceneFile(scenePaths.GetWebpPreviewPath(hash))
+	removeSceneFile(scenePaths.GetTranscodePath(hash))
+	removeSceneFile(scenePaths.GetSpriteVttFilePath(hash))
+	removeSceneFile(scenePaths.GetSpriteImageFilePath(hash))
+	removeSceneFile(scenePaths.GetInteractiveHeatmapPath(hash))
+
+	removeSceneFolder(p.SceneMarkers.GetFolderPath(hash))
+}
+
+// existsForAction reports whether path exists, ready to be renamed or
+// removed, tolerating the check itself reporting IsNotExist as "doesn't
+// exist" rather than an error.
+func existsForAction(existsFn func(string) (bool, error), path string) bool {
+	exists, err := existsFn(path)
 	if err != nil && !os.IsNotExist(err) {
-		logger.Errorf("Error checking existence of %s: %s", oldName, err.Error())
+		logger.Errorf("Error checking existence of %s: %s", path, err.Error())
+		return false
+	}
+
+	return exists
+}
+
+func removeSceneFile(path string) {
+	removePath(fsutil.FileExists, os.Remove, "file", path)
+}
+
+func removeSceneFolder(path string) {
+	removePath(fsutil.DirExists, fsutil.RemoveDir, "folder", path)
+}
+
+func removePath(existsFn func(string) (bool, error), removeFn func(string) error, kind, path string) {
+	if !existsForAction(existsFn, path) {
 		return
 	}
 
-	if oldExists {
-		logger.Infof("renaming %s to %s", oldName, newName)
-		if err := os.Rename(oldName, newName); err != nil {
-			logger.Errorf("error renaming %s to %s: %s", oldName, newName, err.Error())
-		}
+	logger.Infof("removing outdated generated %s %s", kind, path)
+	if err := removeFn(path); err != nil {
+		logger.Errorf("error removing %s: %s", path, err.Error())
+	}
+}
+
+func migrateSceneFiles(oldName, newName string) {
+	if !existsForAction(fsutil.FileExists, oldName) {
+		return
+	}
+
+	logger.Infof("renaming %s to %s", oldName, newName)
+	if err := os.Rename(oldName, newName); err != nil {
+		logger.Errorf("error renaming %s to %s: %s", oldName, newName, err.Error())
 	}
 }
 
 // #2481: migrate vtt file contents in addition to renaming
 func migrateVttFile(vttPath, oldSpritePath, newSpritePath string) {
 	// #3356 - don't try to migrate if the file doesn't exist
-	exists, err := fsutil.FileExists(vttPath)
-	if err != nil && !os.IsNotExist(err) {
-		logger.Errorf("Error checking existence of %s: %s", vttPath, err.Error())
-		return
-	}
-
-	if !exists {
+	if !existsForAction(fsutil.FileExists, vttPath) {
 		return
 	}
 
@@ -94,16 +131,12 @@ func migrateVttFile(vttPath, oldSpritePath, newSpritePath string) {
 }
 
 func migrateSceneFolder(oldName, newName string) {
-	oldExists, err := fsutil.DirExists(oldName)
-	if err != nil && !os.IsNotExist(err) {
-		logger.Errorf("Error checking existence of %s: %s", oldName, err.Error())
+	if !existsForAction(fsutil.DirExists, oldName) {
 		return
 	}
 
-	if oldExists {
-		logger.Infof("renaming %s to %s", oldName, newName)
-		if err := os.Rename(oldName, newName); err != nil {
-			logger.Errorf("error renaming %s to %s: %s", oldName, newName, err.Error())
-		}
+	logger.Infof("renaming %s to %s", oldName, newName)
+	if err := os.Rename(oldName, newName); err != nil {
+		logger.Errorf("error renaming %s to %s: %s", oldName, newName, err.Error())
 	}
 }
