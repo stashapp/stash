@@ -11,7 +11,9 @@ import (
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/internal/manager/task"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 func (r *mutationResolver) MetadataScan(ctx context.Context, input manager.ScanMetadataInput) (string, error) {
@@ -96,6 +98,33 @@ func (r *mutationResolver) MetadataIdentify(ctx context.Context, input identify.
 
 func (r *mutationResolver) MetadataClean(ctx context.Context, input manager.CleanMetadataInput) (string, error) {
 	jobID := manager.GetInstance().Clean(ctx, input)
+	return strconv.Itoa(jobID), nil
+}
+
+func (r *mutationResolver) VerifyPaths(ctx context.Context, input VerifyPathsInput) (string, error) {
+	dryRun := utils.IsTrue(input.DryRun)
+
+	options := file.VerifyOptions{
+		Paths:                 input.Paths,
+		IgnoreZipFileContents: !utils.IsTrue(input.CheckZipFileContents),
+		DryRun:                dryRun,
+		PurgeMissing:          !dryRun && utils.IsTrue(input.PurgeMissing),
+	}
+
+	jobID := manager.GetInstance().VerifyPaths(ctx, options)
+	return strconv.Itoa(jobID), nil
+}
+
+func (r *mutationResolver) PurgeMissing(ctx context.Context, input PurgeMissingInput) (string, error) {
+	dryRun := utils.IsTrue(input.DryRun)
+
+	options := file.PurgeMissingOptions{
+		Paths:              input.Paths,
+		DryRun:             dryRun,
+		MissingSinceBefore: input.MissingSinceBefore,
+	}
+
+	jobID := manager.GetInstance().PurgeMissing(ctx, options)
 	return strconv.Itoa(jobID), nil
 }
 
