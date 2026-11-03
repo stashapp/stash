@@ -106,7 +106,9 @@ flags-static-windows:
 .PHONY: build-info
 build-info:
 ifndef BUILD_DATE
-	$(eval BUILD_DATE := $(shell GOOS=$$(go env GOHOSTOS) GOARCH=$$(go env GOHOSTARCH) go run scripts/getDate.go))
+	$(eval GOOS := $(shell go env GOHOSTOS))
+	$(eval GOARCH := $(shell go env GOHOSTARCH))
+	$(eval BUILD_DATE := $(GOOS) $(GOARCH) $(shell go run scripts/getDate.go))
 endif
 ifndef GITHASH
 	$(eval GITHASH := $(shell git rev-parse --short HEAD))
