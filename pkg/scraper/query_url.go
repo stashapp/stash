@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"net/url"
 	"path/filepath"
 	"strings"
 
@@ -16,6 +17,7 @@ func queryURLParametersFromScene(scene *models.Scene) queryURLParameters {
 	ret["checksum"] = scene.Checksum
 	ret["oshash"] = scene.OSHash
 	ret["filename"] = filepath.Base(scene.Path)
+	ret["path"] = scene.Path
 
 	// pull phash from primary file
 	phashFingerprints := scene.Files.Primary().Base().Fingerprints.Filter(models.FingerprintTypePhash)
@@ -107,10 +109,29 @@ func (p queryURLParameters) applyReplacements(r queryURLReplacements) {
 	}
 }
 
-func (p queryURLParameters) constructURL(url string) string {
-	ret := url
+func (p queryURLParameters) constructURL(urlStr string) string {
+	ret := urlStr
 	for k, v := range p {
 		ret = strings.ReplaceAll(ret, "{"+k+"}", v)
+	}
+
+	// URL-encode special characters in the query string values
+	if idx := strings.IndexByte(ret, '?'); idx >= 0 {
+		queryStr := ret[idx+1:]
+		// Parse key=value pairs and re-encode only the values
+		pairs := strings.Split(queryStr, "&")
+		encodedPairs := make([]string, 0, len(pairs))
+		for _, pair := range pairs {
+			if eq := strings.IndexByte(pair, '='); eq >= 0 {
+				key := pair[:eq]
+				value := pair[eq+1:]
+				// Encode the value but not the key
+				encodedPairs = append(encodedPairs, key+"="+url.QueryEscape(value))
+			} else {
+				encodedPairs = append(encodedPairs, pair)
+			}
+		}
+		ret = ret[:idx+1] + strings.Join(encodedPairs, "&")
 	}
 
 	return ret
