@@ -22,6 +22,13 @@ declare module "videojs-abloop" {
     class Plugin extends videojs.Plugin {
       getOptions(): Options;
       setOptions(o: Options): void;
+      // assignable by callers to be notified whenever the loop options
+      // change, whether via setOptions() or any other API method
+      onOptionsChange?: (
+        details: unknown,
+        api: Plugin,
+        player: videojs.Player
+      ) => void;
     }
   }
 
