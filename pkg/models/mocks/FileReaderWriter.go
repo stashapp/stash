@@ -326,6 +326,20 @@ func (_m *FileReaderWriter) ModifyFingerprints(ctx context.Context, fileID model
 	return r0
 }
 
+// ModifyVideoFileMetadata provides a mock function with given fields: ctx, fileID, projection, stereoMode, vrCorrections
+func (_m *FileReaderWriter) ModifyVideoFileMetadata(ctx context.Context, fileID models.FileID, projection *models.ProjectionEnum, stereoMode *models.StereoModeEnum, vrCorrections *models.VRCorrections) error {
+	ret := _m.Called(ctx, fileID, projection, stereoMode, vrCorrections)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, models.FileID, *models.ProjectionEnum, *models.StereoModeEnum, *models.VRCorrections) error); ok {
+		r0 = rf(ctx, fileID, projection, stereoMode, vrCorrections)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Query provides a mock function with given fields: ctx, options
 func (_m *FileReaderWriter) Query(ctx context.Context, options models.FileQueryOptions) (*models.FileQueryResult, error) {
 	ret := _m.Called(ctx, options)

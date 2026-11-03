@@ -93,6 +93,10 @@ type VideoFile implements BaseFile {
   frame_rate: Float!
   bit_rate: Int!
 
+  projection: String
+  stereo_mode: String
+  vr_corrections: VRCorrections
+
   scenes: [Scene!]!
 
   created_at: Time!
@@ -170,9 +174,28 @@ input SetFingerprintsInput {
 }
 
 input FileSetFingerprintsInput {
-  id: ID!
-  "only supplied fingerprint types will be modified"
-  fingerprints: [SetFingerprintsInput!]!
+	id: ID!
+	"only supplied fingerprint types modified"
+	fingerprints: [SetFingerprintsInput!]!
+}
+
+type VRCorrections {
+	horizontal_offset: Float
+	vertical_offset: Float
+	alpha_mode: String
+}
+
+input FileSetVRMetadataInput {
+	id: ID!
+	projection: String
+	stereo_mode: String
+	vr_corrections: VRCorrectionsInput
+}
+
+input VRCorrectionsInput {
+	horizontal_offset: Float
+	vertical_offset: Float
+	alpha_mode: String
 }
 
 type FindFilesResultType {

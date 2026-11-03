@@ -331,6 +331,41 @@ func (r *mutationResolver) FileSetFingerprints(ctx context.Context, input FileSe
 	return true, nil
 }
 
+func (r *mutationResolver) FileSetVRMetadata(ctx context.Context, input FileSetVRMetadataInput) (bool, error) {
+	fileIDInt, err := strconv.Atoi(input.ID)
+	if err != nil {
+		return false, fmt.Errorf("converting id: %w", err)
+	}
+	fileID := models.FileID(fileIDInt)
+
+	var projection *models.ProjectionEnum
+	if input.Projection != nil && *input.Projection != "" {
+		p := models.ProjectionEnum(*input.Projection)
+		projection = &p
+	}
+
+	var stereoMode *models.StereoModeEnum
+	if input.StereoMode != nil && *input.StereoMode != "" {
+		sm := models.StereoModeEnum(*input.StereoMode)
+		stereoMode = &sm
+	}
+
+	var vrCorrections *models.VRCorrections
+	if input.VrCorrections != nil {
+		vrCorrections = &models.VRCorrections{
+			HorizontalOffset: input.VrCorrections.HorizontalOffset,
+			VerticalOffset:   input.VrCorrections.VerticalOffset,
+			AlphaMode:        input.VrCorrections.AlphaMode,
+		}
+	}
+
+	if err := r.repository.File.ModifyVideoFileMetadata(ctx, fileID, projection, stereoMode, vrCorrections); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
 func (r *mutationResolver) RevealFileInFileManager(ctx context.Context, id string) (bool, error) {
 	// disallow if request did not come from localhost
 	if !session.IsLocalRequest(ctx) {
