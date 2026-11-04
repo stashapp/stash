@@ -105,6 +105,8 @@ Web browsers support a limited number of video and audio codecs and containers. 
 
 Stash has since implemented live transcoding, so transcodes are essentially unnecessary now. Further, transcodes use up a significant amount of disk space and are not guaranteed to be lossless.
 
+By default, transcodes are generated for any video not encoded with `h264`. If your devices can play other codecs natively, add them to **Codecs that skip transcoding** in the Transcoding section of the System settings. The value is a comma-separated list of codec names as reported by ffprobe, for example `h264, hevc, av1`.
+
 ### Image gallery thumbnails
 
 These are generated when the gallery is first viewed, so generating them beforehand is not necessary.
