@@ -58,6 +58,12 @@ type SceneIdentifier struct {
 }
 
 func (t *SceneIdentifier) Identify(ctx context.Context, scene *models.Scene) error {
+	// organized scenes are never modified by Identify, even when explicitly selected
+	if scene.Organized {
+		logger.Debugf("Identify skipped for organized scene %s", scene.Path)
+		return nil
+	}
+
 	result, err := t.scrapeScene(ctx, scene)
 	var multipleMatchErr *MultipleMatchesFoundError
 	if err != nil {
