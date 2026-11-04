@@ -410,8 +410,8 @@ func (i *Config) initialisePublicWhitelist() error {
 		_, ipNet, err := net.ParseCIDR(ip)
 		if err == nil {
 			i.publicIPWhitelist.nets = append(i.publicIPWhitelist.nets, *ipNet)
-		} else if ip := net.ParseIP(ip); ip == nil {
-			i.publicIPWhitelist.addrs = append(i.publicIPWhitelist.addrs, ip)
+		} else if addr := net.ParseIP(ip); addr != nil {
+			i.publicIPWhitelist.addrs = append(i.publicIPWhitelist.addrs, addr)
 		} else {
 			return fmt.Errorf("invalid entry in public whitelist: %s", ip)
 		}
