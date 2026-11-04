@@ -34,7 +34,8 @@ var (
 	ErrUnsupportedAudioCodecContainer = errors.New("audio codec/container combination is unsupported for browser streaming")
 )
 
-var validForOtherCodecs = []Container{Mp4, Matroska, Webm}
+var validForOtherCodecsMkv = []Container{Mp4, Webm, Matroska}
+var validForOtherCodecs = []Container{Mp4, Webm}
 
 // IsStreamable returns nil if the file is streamable, or an error if it is not.
 // supportedVideoCodecs are ffprobe codec names (eg h264, hevc, av1).
@@ -127,6 +128,9 @@ func isValidCombo(codecName string, format Container, supportedVideoCodecs []str
 		}
 	default:
 		// user-whitelisted codecs without specific rules (eg av1, vvc)
+		if supportMKV {
+			return isValidForContainer(format, validForOtherCodecsMkv)
+		}
 		return isValidForContainer(format, validForOtherCodecs)
 	}
 	return false
