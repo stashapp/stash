@@ -5,8 +5,9 @@ import (
 	"fmt"
 )
 
-// only support H264 by default, since Safari does not support VP8/VP9
-var defaultSupportedCodecs = []string{H264, H265}
+// DefaultSupportedCodecs is used when no codecs are configured.
+// Only H264 is safe across all browsers.
+var DefaultSupportedCodecs = []string{H264}
 
 var validForH264Mkv = []Container{Mp4, Matroska}
 var validForH264 = []Container{Mp4}
@@ -33,9 +34,11 @@ var (
 	ErrUnsupportedAudioCodecContainer = errors.New("audio codec/container combination is unsupported for browser streaming")
 )
 
+var validForOtherCodecs = []Container{Mp4, Matroska, Webm}
+
 // IsStreamable returns nil if the file is streamable, or an error if it is not.
-func IsStreamable(videoCodec string, audioCodec ProbeAudioCodec, container Container) error {
-	supportedVideoCodecs := defaultSupportedCodecs
+// supportedVideoCodecs are ffprobe codec names (eg h264, hevc, av1).
+func IsStreamable(videoCodec string, audioCodec ProbeAudioCodec, container Container, supportedVideoCodecs []string) error {
 
 	// check if the video codec matches the supported codecs
 	if !isValidCodec(videoCodec, supportedVideoCodecs) {
@@ -122,6 +125,9 @@ func isValidCombo(codecName string, format Container, supportedVideoCodecs []str
 			}
 			return isValidForContainer(format, validForHevc)
 		}
+	default:
+		// user-whitelisted codecs without specific rules (eg av1, vvc)
+		return isValidForContainer(format, validForOtherCodecs)
 	}
 	return false
 }
