@@ -485,9 +485,19 @@ $sceneTabWidth: 450px;
 .scene-player-no-file {
   align-items: center;
   background-color: #000;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
   color: $text-muted;
   display: flex;
   justify-content: center;
+
+  // keep the message readable on top of bright cover images
+  span {
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 0.25rem;
+    padding: 0.5rem 1rem;
+  }
 }
 
 .scrubber-wrapper {

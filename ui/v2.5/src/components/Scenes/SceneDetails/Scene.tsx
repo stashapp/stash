@@ -1083,8 +1083,17 @@ const SceneLoader: React.FC<RouteComponentProps<ISceneParams>> = ({
           />
         ) : (
           <div className="VideoPlayer">
-            <div className="video-wrapper scene-player-no-file">
-              <FormattedMessage id="scene_has_no_file" />
+            <div
+              className="video-wrapper scene-player-no-file"
+              style={
+                scene.paths.screenshot
+                  ? { backgroundImage: `url("${scene.paths.screenshot}")` }
+                  : undefined
+              }
+            >
+              <span>
+                <FormattedMessage id="scene_has_no_file" />
+              </span>
             </div>
           </div>
         )}
