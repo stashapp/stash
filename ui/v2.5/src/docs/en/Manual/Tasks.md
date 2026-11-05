@@ -105,7 +105,7 @@ Web browsers support a limited number of video and audio codecs and containers. 
 
 Stash has since implemented live transcoding, so transcodes are essentially unnecessary now. Further, transcodes use up a significant amount of disk space and are not guaranteed to be lossless.
 
-By default, transcodes are generated for any video not encoded with `h264`. If your devices can play other codecs natively, add them to **Codecs that skip transcoding** in the Transcoding section of the System settings. The value is a comma-separated list of codec names as reported by ffprobe, for example `h264, hevc, av1`. Files in MKV containers are always transcoded, since not all browsers (notably Safari) can play MKV.
+By default, transcodes are generated for any video not encoded with `h264`. If your devices can play other codecs natively, add them to **Codecs that skip transcoding** in the Transcoding section of the System settings. The value is a comma-separated list of codec names as reported by ffprobe, for example `h264, hevc, av1`. The list replaces the default, so include `h264` if you still want it skipped. Files in MKV containers are always transcoded, since not all browsers (notably Safari) can play MKV.
 
 ### Image gallery thumbnails
 

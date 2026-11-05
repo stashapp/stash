@@ -9,16 +9,11 @@ import (
 // Only H264 is safe across all browsers.
 var DefaultSupportedCodecs = []string{H264}
 
-var validForH264Mkv = []Container{Mp4, Matroska}
+// mkv is never listed: not all browsers (notably Safari) can play it, so mkv files are always transcoded.
 var validForH264 = []Container{Mp4}
-var validForH265Mkv = []Container{Mp4, Matroska}
-var validForH265 = []Container{Mp4}
 var validForVp8 = []Container{Webm}
-var validForVp9Mkv = []Container{Webm, Matroska}
 var validForVp9 = []Container{Webm}
-var validForHevcMkv = []Container{Mp4, Matroska}
 var validForHevc = []Container{Mp4}
-var validForOtherCodecsMkv = []Container{Mp4, Webm, Matroska}
 var validForOtherCodecs = []Container{Mp4, Webm}
 
 var validAudioForMkv = []ProbeAudioCodec{Aac, Mp3, Vorbis, Opus}
@@ -44,7 +39,7 @@ func IsStreamable(videoCodec string, audioCodec ProbeAudioCodec, container Conta
 		return fmt.Errorf("%w: %s", ErrUnsupportedVideoCodecForBrowser, videoCodec)
 	}
 
-	if !isValidCombo(videoCodec, container, supportedVideoCodecs) {
+	if !isValidCombo(videoCodec, container) {
 		return fmt.Errorf("%w: %s/%s", ErrUnsupportedVideoCodecContainer, videoCodec, container)
 	}
 
@@ -95,43 +90,20 @@ func IsValidAudioForContainer(audio ProbeAudioCodec, format Container) bool {
 
 // isValidCombo checks if a codec/container combination is valid.
 // Returns true on validity, false otherwise
-func isValidCombo(codecName string, format Container, supportedVideoCodecs []string) bool {
-	supportMKV := isValidCodec(Mkv, supportedVideoCodecs)
-	supportHEVC := isValidCodec(Hevc, supportedVideoCodecs)
-
+func isValidCombo(codecName string, format Container) bool {
 	switch codecName {
 	case H264:
-		if supportMKV {
-			return isValidForContainer(format, validForH264Mkv)
-		}
 		return isValidForContainer(format, validForH264)
-	case H265:
-		if supportMKV {
-			return isValidForContainer(format, validForH265Mkv)
-		}
-		return isValidForContainer(format, validForH265)
+	case H265, Hevc:
+		return isValidForContainer(format, validForHevc)
 	case Vp8:
 		return isValidForContainer(format, validForVp8)
 	case Vp9:
-		if supportMKV {
-			return isValidForContainer(format, validForVp9Mkv)
-		}
 		return isValidForContainer(format, validForVp9)
-	case Hevc:
-		if supportHEVC {
-			if supportMKV {
-				return isValidForContainer(format, validForHevcMkv)
-			}
-			return isValidForContainer(format, validForHevc)
-		}
 	default:
 		// user-whitelisted codecs without specific rules (eg av1, vvc)
-		if supportMKV {
-			return isValidForContainer(format, validForOtherCodecsMkv)
-		}
 		return isValidForContainer(format, validForOtherCodecs)
 	}
-	return false
 }
 
 func isValidForContainer(format Container, validContainers []Container) bool {
