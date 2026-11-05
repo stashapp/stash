@@ -107,6 +107,29 @@ export function makeBulkUpdateIds(
   };
 }
 
+function isNoOpBulkIds(v: unknown) {
+  const ids = v as Partial<GQL.BulkUpdateIds> | null;
+  return (
+    !!ids?.mode && ids.mode !== GQL.BulkUpdateIdMode.Set && !ids.ids?.length
+  );
+}
+
+// Keeps only the fields the user changed: drops values every selected item
+// already shares and add/remove id lists with no ids. The server can then
+// tell a rating-only change apart, which organized items accept.
+export function getChangedBulkInput<T extends object>(
+  input: T,
+  aggregate: Partial<T>
+): T {
+  return Object.fromEntries(
+    Object.entries(input).filter(
+      ([k, v]) =>
+        !isNoOpBulkIds(v) &&
+        (!(k in aggregate) || !isEqual(v, aggregate[k as keyof T]))
+    )
+  ) as T;
+}
+
 export function getAggregateInputValue<V>(
   inputValue: V | null | undefined,
   aggregateValue: V | null | undefined
