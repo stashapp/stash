@@ -38,6 +38,7 @@ fragment SceneData on Scene {
     vtt
     sprite
     funscript
+    interactive_csv
     interactive_heatmap
     caption
   }
