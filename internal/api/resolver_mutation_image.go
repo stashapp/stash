@@ -266,6 +266,10 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 				return fmt.Errorf("image with id %d not found", imageID)
 			}
 
+			if skipOrganizedInBulk(i.Organized, translator, input.Organized) {
+				continue
+			}
+
 			if updatedImage.GalleryIDs != nil {
 				// ensure gallery IDs are loaded
 				if err := i.LoadGalleryIDs(ctx, r.repository.Image); err != nil {
