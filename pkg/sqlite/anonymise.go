@@ -904,7 +904,6 @@ func (db *Anonymiser) anonymiseGroups(ctx context.Context) error {
 			query := dialect.From(table).Select(
 				table.Col(idColumn),
 				table.Col("name"),
-				table.Col("aliases"),
 				table.Col("description"),
 				table.Col("director"),
 			).Where(table.Col(idColumn).Gt(lastID)).Limit(1000)
@@ -916,7 +915,6 @@ func (db *Anonymiser) anonymiseGroups(ctx context.Context) error {
 				var (
 					id          int
 					name        sql.NullString
-					aliases     sql.NullString
 					description sql.NullString
 					director    sql.NullString
 				)
@@ -924,7 +922,6 @@ func (db *Anonymiser) anonymiseGroups(ctx context.Context) error {
 				if err := rows.Scan(
 					&id,
 					&name,
-					&aliases,
 					&description,
 					&director,
 				); err != nil {
@@ -933,7 +930,6 @@ func (db *Anonymiser) anonymiseGroups(ctx context.Context) error {
 
 				set := goqu.Record{}
 				db.obfuscateNullString(set, "name", name)
-				db.obfuscateNullString(set, "aliases", aliases)
 				db.obfuscateNullString(set, "description", description)
 				db.obfuscateNullString(set, "director", director)
 
@@ -958,6 +954,10 @@ func (db *Anonymiser) anonymiseGroups(ctx context.Context) error {
 		}); err != nil {
 			return err
 		}
+	}
+
+	if err := db.anonymiseAliases(ctx, goqu.T(groupAliasesTable), "group_id"); err != nil {
+		return err
 	}
 
 	if err := db.anonymiseURLs(ctx, goqu.T(groupURLsTable), "group_id"); err != nil {

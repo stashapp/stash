@@ -131,9 +131,12 @@ func (qb *groupFilterHandler) missingCriterionHandler(isMissing *string) criteri
 			case "tags":
 				groupRepository.tags.leftJoin(f, "tags_join", "groups.id")
 				f.addWhere("tags_join.group_id IS NULL")
+			case "aliases":
+				groupAliasesTableMgr.leftJoin(f, "", "groups.id")
+				f.addWhere("group_aliases.alias IS NULL")
 			default:
 				if err := validateIsMissing(*isMissing, []string{
-					"aliases", "description", "director", "date", "rating",
+					"description", "director", "date", "rating",
 				}); err != nil {
 					f.setError(err)
 					return

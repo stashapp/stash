@@ -117,6 +117,7 @@ func (r *queryResolver) ScrapeGroupURL(ctx context.Context, url string) (*models
 		StoredID:   ret.StoredID,
 		Name:       ret.Name,
 		Aliases:    ret.Aliases,
+		AliasList:  ret.AliasList,
 		Duration:   ret.Duration,
 		Date:       ret.Date,
 		Rating:     ret.Rating,
