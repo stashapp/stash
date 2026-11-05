@@ -200,6 +200,19 @@ The following environment variables are also supported:
 | `STASH_HW_TEST_TIMEOUT` | Sets the Hardware Acceleration test timeout in seconds. Default is 10 seconds
 | `STASH_HW_DRI_DEVICE` | Overrides the default `/dev/dri` device used for VAAPI hardware acceleration. Default is `/dev/dri/renderD128`
 
+### Public whitelist
+
+The `public_whitelist` option is not exposed in the UI and must be added to `config.yml` manually. Entries can be single IP addresses or CIDR subnets. The following is an example configuration:
+
+```
+public_whitelist:
+  - 203.0.113.45
+  - 203.0.113.0/24
+  - 2001:db8::/56
+```
+
+Restart stash after changing this option.
+
 ### Custom favicon
 
 You can provide a custom favicon by placing a `favicon.ico` file in the configuration directory. The configuration directory is located alongside the `config.yml` file.
