@@ -29,6 +29,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   defaultMarkerPreviewDuration
   transcodeHardwareAcceleration
   maxTranscodeSize
+  transcodeSkipCodecs
   maxStreamingTranscodeSize
   writeImageThumbnails
   createImageClipsFromVideos

@@ -326,6 +326,21 @@ export const SettingsConfigurationPanel: React.FC = () => {
           ))}
         </SelectSetting>
 
+        <StringSetting
+          id="transcode-skip-codecs"
+          headingID="config.general.transcode_skip_codecs_head"
+          subHeadingID="config.general.transcode_skip_codecs_desc"
+          onChange={(v) =>
+            saveGeneral({
+              transcodeSkipCodecs: v
+                .split(",")
+                .map((c) => c.trim())
+                .filter((c) => c),
+            })
+          }
+          value={general.transcodeSkipCodecs?.join(", ")}
+        />
+
         <BooleanSetting
           id="hardware-encoding"
           headingID="config.general.ffmpeg.hardware_acceleration.heading"
