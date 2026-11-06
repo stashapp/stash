@@ -12,6 +12,7 @@ import (
 
 type GeneratePreviewTask struct {
 	Scene        models.Scene
+	VideoPreview bool
 	ImagePreview bool
 
 	Options generate.PreviewOptions
@@ -84,6 +85,10 @@ func (t *GeneratePreviewTask) required() bool {
 }
 
 func (t *GeneratePreviewTask) videoPreviewRequired() bool {
+	if !t.VideoPreview {
+		return false
+	}
+
 	if t.Scene.Path == "" {
 		return false
 	}

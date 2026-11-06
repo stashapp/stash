@@ -477,6 +477,8 @@ type Mutation {
   metadataExport: ID!
   "Start a scan. Returns the job ID"
   metadataScan(input: ScanMetadataInput!): ID!
+  "Scans a single file, returning the file metadata."
+  scanFile(input: ScanFileInput!): BaseFile!
   "Start generating content. Returns the job ID"
   metadataGenerate(input: GenerateMetadataInput!): ID!
   "Start auto-tagging. Returns the job ID"
