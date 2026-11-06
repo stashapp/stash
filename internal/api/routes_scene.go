@@ -192,6 +192,11 @@ func (rs sceneRoutes) streamManifest(w http.ResponseWriter, r *http.Request, str
 	}
 
 	resolution := r.Form.Get("resolution")
+	alignment := r.Form.Get(ffmpeg.AlignmentParamKey)
+	if !ffmpeg.ValidHLSAlignment(streamType, alignment) {
+		http.Error(w, "unsupported stream alignment", http.StatusBadRequest)
+		return
+	}
 
 	logger.Debugf("[transcode] returning %s manifest for scene %d", logName, scene.ID)
 	streamManager.ServeManifest(w, r, streamType, f, resolution)
@@ -231,11 +236,17 @@ func (rs sceneRoutes) streamSegment(w http.ResponseWriter, r *http.Request, stre
 
 	segment := chi.URLParam(r, "segment")
 	resolution := r.Form.Get("resolution")
+	alignment := r.Form.Get(ffmpeg.AlignmentParamKey)
+	if !ffmpeg.ValidHLSAlignment(streamType, alignment) {
+		http.Error(w, "unsupported stream alignment", http.StatusBadRequest)
+		return
+	}
 
 	options := ffmpeg.StreamOptions{
 		StreamType: streamType,
 		VideoFile:  f,
 		Resolution: resolution,
+		Alignment:  alignment,
 		Hash:       sceneHash,
 		Segment:    segment,
 	}
