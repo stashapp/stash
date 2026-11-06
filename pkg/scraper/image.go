@@ -11,7 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func setPerformerImage(ctx context.Context, client *http.Client, p *models.ScrapedPerformer, globalConfig GlobalConfig) error {
+func setPerformerImage(ctx context.Context, getter imageGetter, p *models.ScrapedPerformer) error {
 	// backwards compatibility: we fetch the image if it's a URL and set it to the first image
 	// Image is deprecated, so only do this if Images is unset
 	if p.Image == nil || len(p.Images) > 0 {
@@ -25,7 +25,7 @@ func setPerformerImage(ctx context.Context, client *http.Client, p *models.Scrap
 		return nil
 	}
 
-	img, err := getImage(ctx, *p.Image, client, globalConfig)
+	img, err := getter.getImage(ctx, *p.Image)
 	if err != nil {
 		return err
 	}
@@ -37,7 +37,7 @@ func setPerformerImage(ctx context.Context, client *http.Client, p *models.Scrap
 	return nil
 }
 
-func setStudioImage(ctx context.Context, client *http.Client, p *models.ScrapedStudio, globalConfig GlobalConfig) error {
+func setStudioImage(ctx context.Context, getter imageGetter, p *models.ScrapedStudio) error {
 	// backwards compatibility: we fetch the image if it's a URL and set it to the first image
 	// Image is deprecated, so only do this if Images is unset
 	if p.Image == nil || len(p.Images) > 0 {
@@ -51,7 +51,7 @@ func setStudioImage(ctx context.Context, client *http.Client, p *models.ScrapedS
 		return nil
 	}
 
-	img, err := getImage(ctx, *p.Image, client, globalConfig)
+	img, err := getter.getImage(ctx, *p.Image)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func setStudioImage(ctx context.Context, client *http.Client, p *models.ScrapedS
 	return nil
 }
 
-func processImageField(ctx context.Context, imageField *string, client *http.Client, globalConfig GlobalConfig) error {
+func processImageField(ctx context.Context, imageField *string, getter imageGetter) error {
 	if imageField == nil {
 		return nil
 	}
@@ -74,7 +74,7 @@ func processImageField(ctx context.Context, imageField *string, client *http.Cli
 		return nil
 	}
 
-	img, err := getImage(ctx, *imageField, client, globalConfig)
+	img, err := getter.getImage(ctx, *imageField)
 	if err != nil {
 		return err
 	}
@@ -86,6 +86,7 @@ func processImageField(ctx context.Context, imageField *string, client *http.Cli
 type imageGetter struct {
 	client          *http.Client
 	globalConfig    GlobalConfig
+	definition      *Definition
 	requestModifier func(req *http.Request)
 }
 
@@ -95,9 +96,19 @@ func (i *imageGetter) getImage(ctx context.Context, url string) (*string, error)
 		return nil, err
 	}
 
-	userAgent := i.globalConfig.GetScraperUserAgent()
-	if userAgent != "" {
-		req.Header.Set("User-Agent", userAgent)
+	useSurf := i.definition != nil && i.definition.DriverOptions != nil && i.definition.DriverOptions.UseSurf
+	client := i.client
+	if useSurf {
+		var err error
+		client, _, err = newSurfHTTPClient(*i.definition, i.globalConfig)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		userAgent := i.globalConfig.GetScraperUserAgent()
+		if userAgent != "" {
+			req.Header.Set("User-Agent", userAgent)
+		}
 	}
 
 	// assume is a URL for now
@@ -107,11 +118,19 @@ func (i *imageGetter) getImage(ctx context.Context, url string) (*string, error)
 		req.Header.Set("Referer", req.URL.Scheme+"://"+req.Host+"/")
 	}
 
+	if useSurf {
+		for _, h := range i.definition.DriverOptions.Headers {
+			// Keep Surf's browser User-Agent aligned with its TLS fingerprint.
+			if h.Key != "" && !strings.EqualFold(h.Key, "user-agent") {
+				req.Header.Set(h.Key, h.Value)
+			}
+		}
+	}
 	if i.requestModifier != nil {
 		i.requestModifier(req)
 	}
 
-	resp, err := i.client.Do(req)
+	resp, err := client.Do(req)
 
 	if err != nil {
 		return nil, err
@@ -135,15 +154,6 @@ func (i *imageGetter) getImage(ctx context.Context, url string) (*string, error)
 
 	img := "data:" + contentType + ";base64," + utils.GetBase64StringFromData(body)
 	return &img, nil
-}
-
-func getImage(ctx context.Context, url string, client *http.Client, globalConfig GlobalConfig) (*string, error) {
-	g := imageGetter{
-		client:       client,
-		globalConfig: globalConfig,
-	}
-
-	return g.getImage(ctx, url)
 }
 
 func getStashPerformerImage(ctx context.Context, stashURL string, performerID string, imageGetter imageGetter) (*string, error) {
