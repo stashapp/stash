@@ -30,7 +30,7 @@ func (s *jsonScraper) getJsonScraper(name string) (*mappedScraper, error) {
 }
 
 func (s *jsonScraper) loadURL(ctx context.Context, url string) (string, error) {
-	r, err := loadURL(ctx, url, s.client, s.definition, s.globalConfig)
+	r, err := loadURL(ctx, url, s.client, s.definition, s.globalConfig, true /* preferRawJSON */)
 	if err != nil {
 		return "", err
 	}
