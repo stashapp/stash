@@ -134,6 +134,13 @@ func (db *Database) SetBlobStoreOptions(options BlobStoreOptions) {
 // Ready returns an error if the database is not ready to begin transactions.
 func (db *Database) Ready() error {
 	if db.readDB == nil || db.writeDB == nil {
+		// schemaVersion is only set once Open has read an existing database
+		if db.schemaVersion != 0 && db.needsMigration() {
+			return &MigrationNeededError{
+				CurrentSchemaVersion:  db.schemaVersion,
+				RequiredSchemaVersion: appSchemaVersion,
+			}
+		}
 		return ErrDatabaseNotInitialized
 	}
 
