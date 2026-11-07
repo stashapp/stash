@@ -18,7 +18,7 @@ func NotNilFields(subject interface{}, tag string) []string {
 		field := value.Field(i)
 
 		kind := field.Type().Kind()
-		if (kind == reflect.Ptr || kind == reflect.Slice) && !field.IsNil() {
+		if (kind == reflect.Pointer || kind == reflect.Slice) && !field.IsNil() {
 			tagValue := structType.Field(i).Tag.Get(tag)
 			if tagValue != "" {
 				ret = append(ret, tagValue)
