@@ -52,10 +52,13 @@ func (s mappedConfig) process(ctx context.Context, q mappedQuery, common commonM
 
 // processList processes a list of sub-objects (performers, tags, movies, groups).
 // Each attribute is a separate list joined by index, so per-attribute cleaning
-// would misalign them. Instead, objects are assembled first and then those with
-// an empty or duplicate Name are removed.
+// would misalign them. Instead, objects are assembled first and then, if the
+// config maps a Name, those with an empty or duplicate Name are removed.
 func (s mappedConfig) processList(ctx context.Context, q mappedQuery, common commonMappedConfig) mappedResults {
 	results := s.processAttrs(ctx, q, common, nil, false)
+	if _, ok := s["Name"]; !ok {
+		return results
+	}
 
 	var ret mappedResults
 	seen := make(map[string]bool)

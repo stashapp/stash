@@ -128,6 +128,8 @@ jsonScrapers:
         Gender: models.#.gender
       Tags:
         Name: tags
+      Groups:
+        URL: groups
 `
 	// repeated and empty genders must stay with their performer;
 	// duplicate and nameless performers/tags are dropped
@@ -142,7 +144,8 @@ jsonScrapers:
     {"name": "Jane Doe", "gender": "Female"},
     {"name": "", "gender": "Male"}
   ],
-  "tags": ["a", "b", "a", ""]
+  "tags": ["a", "b", "a", ""],
+  "groups": ["https://example.com/g1", "https://example.com/g2"]
 }`
 
 	c := &Definition{}
@@ -166,5 +169,10 @@ jsonScrapers:
 
 	if len(scene.Tags) != 2 || scene.Tags[0].Name != "a" || scene.Tags[1].Name != "b" {
 		t.Errorf("unexpected tags: %v", scene.Tags)
+	}
+
+	// a list config without a Name mapping must not be filtered
+	if len(scene.Groups) != 2 {
+		t.Errorf("got %d groups, want 2", len(scene.Groups))
 	}
 }
