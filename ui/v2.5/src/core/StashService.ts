@@ -2576,6 +2576,8 @@ export const useListGalleryScrapers = () => GQL.useListGalleryScrapersQuery();
 
 export const useListImageScrapers = () => GQL.useListImageScrapersQuery();
 
+export const useScraperURLConflicts = () => GQL.useScraperUrlConflictsQuery();
+
 export const queryScrapeGallery = (scraperId: string, galleryId: string) =>
   client.query<GQL.ScrapeSingleGalleryQuery>({
     query: GQL.ScrapeSingleGalleryDocument,
@@ -2692,6 +2694,7 @@ export const scraperMutationImpactedQueries = [
   GQL.ListImageScrapersDocument,
   GQL.InstalledScraperPackagesDocument,
   GQL.InstalledScraperPackagesStatusDocument,
+  GQL.ScraperUrlConflictsDocument,
 ];
 
 export const mutateReloadScrapers = () =>
