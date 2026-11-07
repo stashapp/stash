@@ -50,7 +50,7 @@ func (s mappedScraper) scrapePerformer(ctx context.Context, q mappedQuery) (*mod
 
 	if performerTagsMap != nil {
 		logger.Debug(`Processing performer tags:`)
-		tagResults = performerTagsMap.process(ctx, q, s.Common, nil)
+		tagResults = performerTagsMap.processList(ctx, q, s.Common)
 	}
 
 	if len(results) == 0 {
@@ -91,7 +91,7 @@ func (s mappedScraper) processSceneRelationships(ctx context.Context, q mappedQu
 	if sceneTagsMap != nil {
 		logger.Debug(`Processing scene tags:`)
 
-		ret.Tags = sceneTagsMap.process(ctx, q, s.Common, nil).scrapedTags()
+		ret.Tags = sceneTagsMap.processList(ctx, q, s.Common).scrapedTags()
 	}
 
 	if sceneStudioMap != nil {
@@ -107,12 +107,12 @@ func (s mappedScraper) processSceneRelationships(ctx context.Context, q mappedQu
 
 	if sceneMoviesMap != nil {
 		logger.Debug(`Processing scene movies:`)
-		ret.Movies = sceneMoviesMap.process(ctx, q, s.Common, nil).scrapedMovies()
+		ret.Movies = sceneMoviesMap.processList(ctx, q, s.Common).scrapedMovies()
 	}
 
 	if sceneGroupsMap != nil {
 		logger.Debug(`Processing scene groups:`)
-		ret.Groups = sceneGroupsMap.process(ctx, q, s.Common, nil).scrapedGroups()
+		ret.Groups = sceneGroupsMap.processList(ctx, q, s.Common).scrapedGroups()
 	}
 
 	return len(ret.Performers) > 0 || len(ret.Tags) > 0 || ret.Studio != nil || len(ret.Movies) > 0 || len(ret.Groups) > 0
@@ -124,15 +124,14 @@ func (s mappedScraper) processPerformers(ctx context.Context, performersMap mapp
 	// now apply the performers and tags
 	if performersMap.mappedConfig != nil {
 		logger.Debug(`Processing performers:`)
-		// isMulti is nil because it will behave incorrect when scraping multiple performers
-		performerResults := performersMap.process(ctx, q, s.Common, nil)
+		performerResults := performersMap.processList(ctx, q, s.Common)
 
 		scenePerformerTagsMap := performersMap.Tags
 
 		// process performer tags once
 		var performerTagResults mappedResults
 		if scenePerformerTagsMap != nil {
-			performerTagResults = scenePerformerTagsMap.process(ctx, q, s.Common, nil)
+			performerTagResults = scenePerformerTagsMap.processList(ctx, q, s.Common)
 		}
 
 		for _, p := range performerResults {
@@ -227,12 +226,12 @@ func (s mappedScraper) scrapeImage(ctx context.Context, q mappedQuery) (*models.
 	// now apply the performers and tags
 	if imagePerformersMap != nil {
 		logger.Debug(`Processing image performers:`)
-		ret.Performers = imagePerformersMap.process(ctx, q, s.Common, nil).scrapedPerformers()
+		ret.Performers = imagePerformersMap.processList(ctx, q, s.Common).scrapedPerformers()
 	}
 
 	if imageTagsMap != nil {
 		logger.Debug(`Processing image tags:`)
-		ret.Tags = imageTagsMap.process(ctx, q, s.Common, nil).scrapedTags()
+		ret.Tags = imageTagsMap.processList(ctx, q, s.Common).scrapedTags()
 	}
 
 	if imageStudioMap != nil {
@@ -276,14 +275,14 @@ func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*model
 	// now apply the performers and tags
 	if galleryPerformersMap != nil {
 		logger.Debug(`Processing gallery performers:`)
-		performerResults := galleryPerformersMap.process(ctx, q, s.Common, urlsIsMulti)
+		performerResults := galleryPerformersMap.processList(ctx, q, s.Common)
 
 		ret.Performers = performerResults.scrapedPerformers()
 	}
 
 	if galleryTagsMap != nil {
 		logger.Debug(`Processing gallery tags:`)
-		tagResults := galleryTagsMap.process(ctx, q, s.Common, nil)
+		tagResults := galleryTagsMap.processList(ctx, q, s.Common)
 		ret.Tags = tagResults.scrapedTags()
 	}
 
@@ -340,7 +339,7 @@ func (s mappedScraper) scrapeGroup(ctx context.Context, q mappedQuery) (*models.
 	// now apply the tags
 	if groupTagsMap != nil {
 		logger.Debug(`Processing group tags:`)
-		tagResults := groupTagsMap.process(ctx, q, s.Common, nil)
+		tagResults := groupTagsMap.processList(ctx, q, s.Common)
 
 		ret.Tags = tagResults.scrapedTags()
 	}

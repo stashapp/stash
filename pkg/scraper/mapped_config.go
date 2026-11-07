@@ -47,6 +47,31 @@ func extractHostname(urlStr string) string {
 type isMultiFunc func(key string) bool
 
 func (s mappedConfig) process(ctx context.Context, q mappedQuery, common commonMappedConfig, isMulti isMultiFunc) mappedResults {
+	return s.processAttrs(ctx, q, common, isMulti, true)
+}
+
+// processList processes a list of sub-objects (performers, tags, movies, groups).
+// Each attribute is a separate list joined by index, so per-attribute cleaning
+// would misalign them. Instead, objects are assembled first and then those with
+// an empty or duplicate Name are removed.
+func (s mappedConfig) processList(ctx context.Context, q mappedQuery, common commonMappedConfig) mappedResults {
+	results := s.processAttrs(ctx, q, common, nil, false)
+
+	var ret mappedResults
+	seen := make(map[string]bool)
+	for _, r := range results {
+		name, _ := r.string("Name")
+		if name == "" || seen[name] {
+			continue
+		}
+		seen[name] = true
+		ret = append(ret, r)
+	}
+
+	return ret
+}
+
+func (s mappedConfig) processAttrs(ctx context.Context, q mappedQuery, common commonMappedConfig, isMulti isMultiFunc, clean bool) mappedResults {
 	var ret mappedResults
 
 	for k, attrConfig := range s {
@@ -71,7 +96,7 @@ func (s mappedConfig) process(ctx context.Context, q mappedQuery, common commonM
 			}
 
 			if len(found) > 0 {
-				result := s.postProcess(ctx, q, attrConfig, found)
+				result := s.postProcess(ctx, q, attrConfig, found, clean)
 
 				// HACK - if the key is URLs, then we need to set the value as a multi-value
 				isMulti := isMulti != nil && isMulti(k)
@@ -89,7 +114,10 @@ func (s mappedConfig) process(ctx context.Context, q mappedQuery, common commonM
 	return ret
 }
 
-func (s mappedConfig) postProcess(ctx context.Context, q mappedQuery, attrConfig mappedScraperAttrConfig, found []string) []string {
+func (s mappedConfig) postProcess(ctx context.Context, q mappedQuery, attrConfig mappedScraperAttrConfig, found []string, clean bool) []string {
+	// skip cleaning when the query is used for searching
+	clean = clean && q.getType() != SearchQuery
+
 	// check if we're concatenating the results into a single result
 	var ret []string
 	if attrConfig.hasConcat() {
@@ -97,11 +125,9 @@ func (s mappedConfig) postProcess(ctx context.Context, q mappedQuery, attrConfig
 		result = attrConfig.postProcess(ctx, result, q)
 		if attrConfig.hasSplit() {
 			results := attrConfig.splitString(result)
-			// skip cleaning when the query is used for searching
-			if q.getType() == SearchQuery {
-				return results
+			if clean {
+				results = attrConfig.cleanResults(results)
 			}
-			results = attrConfig.cleanResults(results)
 			return results
 		}
 
@@ -115,12 +141,9 @@ func (s mappedConfig) postProcess(ctx context.Context, q mappedQuery, attrConfig
 
 			ret = append(ret, text)
 		}
-		// skip cleaning when the query is used for searching
-		if q.getType() == SearchQuery {
-			return ret
+		if clean {
+			ret = attrConfig.cleanResults(ret)
 		}
-		ret = attrConfig.cleanResults(ret)
-
 	}
 
 	return ret
