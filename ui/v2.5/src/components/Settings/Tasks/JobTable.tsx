@@ -144,11 +144,12 @@ const Task: React.FC<IJob> = ({ job }) => {
       const start = new Date(job.startTime);
       const nowMS = now.valueOf();
       const startMS = start.valueOf();
-      const estimatedLength = (nowMS - startMS) / job.progress;
-      const estLenStr = moment.duration(estimatedLength).humanize();
+      const elapsed = nowMS - startMS;
+      const remaining = (elapsed * (1 - job.progress)) / job.progress;
+      const remainingStr = moment.duration(remaining).humanize();
       return (
         <span className="job-eta">
-          <FormattedMessage id="eta" />: {estLenStr}
+          <FormattedMessage id="eta" />: {remainingStr}
         </span>
       );
     }
