@@ -62,7 +62,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) error {
 	nTasks := cfg.GetParallelTasksWithAutoDetection()
 
 	// HACK - these should really be set in the scanner initialization
-	j.scanner.FileHandlers = getScanHandlers(j.generateOptions, j.taskQueue, progress)
+	j.scanner.FileHandlers = getScanHandlers(j.generateOptions, j.taskQueue)
 
 	logger.Infof("Starting scan of %d paths with %d parallel tasks", len(paths), nTasks)
 
@@ -688,7 +688,7 @@ func galleryFileFilter(ctx context.Context, f models.File) bool {
 	return isZip(f.Base().Basename)
 }
 
-func getScanHandlers(options ScanGenerateOptions, taskQueue *job.TaskQueue, progress *job.Progress) []file.Handler {
+func getScanHandlers(options ScanGenerateOptions, taskQueue *job.TaskQueue) []file.Handler {
 	mgr := GetInstance()
 	c := mgr.Config
 	r := mgr.Repository

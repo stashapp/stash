@@ -194,9 +194,10 @@ func makeGenerateOptions(input ScanMetadataInput) ScanGenerateOptions {
 	return ScanGenerateOptions{
 		// covers should be generated synchronously to ensure they are available
 		// when the scene is created, as they are used as the default cover
-		GenerateCovers:        setTimingSync(input.ScanGenerateCovers),
-		GeneratePreviews:      setTiming(input.ScanGeneratePreviews),
-		GenerateImagePreviews: setTiming(input.ScanGenerateImagePreviews),
+		GenerateCovers:   setTimingSync(input.ScanGenerateCovers),
+		GeneratePreviews: setTiming(input.ScanGeneratePreviews),
+		// image previews are a sub-option of video previews in the scan UI
+		GenerateImagePreviews: setTiming(input.ScanGeneratePreviews && input.ScanGenerateImagePreviews),
 		GenerateSprites:       setTiming(input.ScanGenerateSprites),
 		GenerateVideoPhashes:  setTiming(input.ScanGeneratePhashes),
 		GenerateThumbnails:    setTiming(input.ScanGenerateThumbnails),
@@ -219,23 +220,9 @@ func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error
 
 	// we want the generate task to run concurrently, but it shouldn't be created first
 	jobID := s.JobManager.Add(ctx, "Scanning...", job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
-		taskQueueChan := make(chan *job.TaskQueue)
-
-		// add the generate task in here
-		s.JobManager.Start(ctx, "Generating for scanned files...", job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
-			const taskQueueSize = 200000
-			nTasks := s.Config.GetParallelTasksWithAutoDetection()
-			taskQueue := job.NewTaskQueue(ctx, progress, taskQueueSize, nTasks)
-
-			taskQueueChan <- taskQueue
-			close(taskQueueChan)
-
-			taskQueue.Wait()
-			logger.Debug("Finished generating from scanned files")
-			return nil
-		}))
-
-		taskQueue := <-taskQueueChan
+		taskQueue := s.startGenerateJob(ctx, "Generating for scanned files...")
+		// close in defer so the generate job still finishes if the scan panics
+		defer taskQueue.Close()
 
 		scanJob := ScanJob{
 			scanner:         scanner,
@@ -248,13 +235,31 @@ func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error
 		// scan job does not return error
 		_ = scanJob.Execute(ctx, progress)
 
-		// close task queue
-		taskQueue.Close()
-
 		return nil
 	}))
 
 	return jobID, nil
+}
+
+// startGenerateJob immediately starts a job, concurrent with other jobs, that
+// runs the tasks added to the returned queue. The job finishes once the queue
+// is closed and all of its tasks are done.
+func (s *Manager) startGenerateJob(ctx context.Context, description string) *job.TaskQueue {
+	taskQueueChan := make(chan *job.TaskQueue)
+
+	s.JobManager.Start(ctx, description, job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
+		const taskQueueSize = 200000
+		nTasks := s.Config.GetParallelTasksWithAutoDetection()
+		taskQueue := job.NewTaskQueue(ctx, progress, taskQueueSize, nTasks)
+
+		taskQueueChan <- taskQueue
+
+		taskQueue.Wait()
+		logger.Debugf("Finished %s", description)
+		return nil
+	}))
+
+	return <-taskQueueChan
 }
 
 type ScanFileInput struct {
@@ -270,23 +275,12 @@ func (s *Manager) ScanFile(ctx context.Context, input ScanFileInput) (models.Fil
 		return nil, err
 	}
 
-	taskQueueChan := make(chan *job.TaskQueue)
-
-	s.JobManager.Add(ctx, "Generating for scanned file...", job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
-		nTasks := s.Config.GetParallelTasksWithAutoDetection()
-
-		const taskQueueSize = 200000
-		taskQueue := job.NewTaskQueue(ctx, progress, taskQueueSize, nTasks)
-		taskQueueChan <- taskQueue
-		close(taskQueueChan)
-		taskQueue.Wait()
-		return nil
-	}))
-
-	taskQueue := <-taskQueueChan
+	taskQueue := s.startGenerateJob(ctx, "Generating for scanned file...")
+	// close in defer so the generate job still finishes if the scan panics
+	defer taskQueue.Close()
 
 	scanner := s.makeScanner(utils.IsTrue(input.Rescan), time.Time{})
-	scanner.FileHandlers = getScanHandlers(input.ScanGenerateOptions, taskQueue, nil)
+	scanner.FileHandlers = getScanHandlers(input.ScanGenerateOptions, taskQueue)
 
 	scanJob := ScanJob{
 		scanner:         scanner,
@@ -294,7 +288,6 @@ func (s *Manager) ScanFile(ctx context.Context, input ScanFileInput) (models.Fil
 	}
 
 	f, err := scanJob.scanFile(ctx, input.Path)
-	taskQueue.Close()
 
 	s.scanSubs.notify()
 

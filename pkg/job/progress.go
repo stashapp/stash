@@ -24,10 +24,6 @@ type task struct {
 }
 
 func (p *Progress) updated() {
-	if p == nil {
-		return
-	}
-
 	var details []string
 	for _, t := range p.currentTasks {
 		details = append(details, t.description)
@@ -38,10 +34,6 @@ func (p *Progress) updated() {
 
 // Indefinite sets the progress to an indefinite amount.
 func (p *Progress) Indefinite() {
-	if p == nil {
-		return
-	}
-
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
@@ -52,10 +44,6 @@ func (p *Progress) Indefinite() {
 
 // Definite notifies that the total is known.
 func (p *Progress) Definite() {
-	if p == nil {
-		return
-	}
-
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
@@ -66,10 +54,6 @@ func (p *Progress) Definite() {
 // SetTotal sets the total number of work units and sets definite to true.
 // This is used to calculate the progress percentage.
 func (p *Progress) SetTotal(total int) {
-	if p == nil {
-		return
-	}
-
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
@@ -81,10 +65,6 @@ func (p *Progress) SetTotal(total int) {
 // AddTotal adds to the total number of work units. This is used to calculate the
 // progress percentage.
 func (p *Progress) AddTotal(total int) {
-	if p == nil {
-		return
-	}
-
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
@@ -95,10 +75,6 @@ func (p *Progress) AddTotal(total int) {
 // SetProcessed sets the number of work units completed. This is used to
 // calculate the progress percentage.
 func (p *Progress) SetProcessed(processed int) {
-	if p == nil {
-		return
-	}
-
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
@@ -107,10 +83,6 @@ func (p *Progress) SetProcessed(processed int) {
 }
 
 func (p *Progress) calculatePercent() {
-	if p == nil {
-		return
-	}
-
 	switch {
 	case !p.defined || p.total <= 0:
 		p.percent = ProgressIndefinite
@@ -130,10 +102,6 @@ func (p *Progress) calculatePercent() {
 // overwritten if Indefinite, SetTotal, Increment or SetProcessed is called.
 // Constrains the percent value between 0 and 1, inclusive.
 func (p *Progress) SetPercent(percent float64) {
-	if p == nil {
-		return
-	}
-
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
@@ -150,10 +118,6 @@ func (p *Progress) SetPercent(percent float64) {
 // Increment increments the number of processed work units. This is used to calculate the percentage.
 // If total is set already, then the number of processed work units will not exceed the total.
 func (p *Progress) Increment() {
-	if p == nil {
-		return
-	}
-
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
@@ -166,10 +130,6 @@ func (p *Progress) Increment() {
 // AddProcessed increments the number of processed work units by the provided
 // amount. This is used to calculate the percentage.
 func (p *Progress) AddProcessed(v int) {
-	if p == nil {
-		return
-	}
-
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
@@ -183,10 +143,6 @@ func (p *Progress) AddProcessed(v int) {
 }
 
 func (p *Progress) addTask(t *task) {
-	if p == nil {
-		return
-	}
-
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
@@ -195,10 +151,6 @@ func (p *Progress) addTask(t *task) {
 }
 
 func (p *Progress) removeTask(t *task) {
-	if p == nil {
-		return
-	}
-
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
