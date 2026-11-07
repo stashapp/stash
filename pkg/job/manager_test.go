@@ -126,6 +126,57 @@ func TestAdd(t *testing.T) {
 	assert.NotNil(j2.StartTime)
 }
 
+func TestStart(t *testing.T) {
+	m := NewManager()
+
+	// occupy the queue so a queued job could not run
+	blocker := newTestExec(make(chan struct{}))
+	m.Add(context.Background(), "blocker", blocker)
+	<-blocker.started
+
+	exec := newTestExec(make(chan struct{}))
+	jobID := m.Start(context.Background(), "started job", exec)
+
+	// expect the started job to run concurrently with the blocker
+	select {
+	case <-exec.started:
+	case <-time.After(time.Second):
+		t.Fatal("started job did not run concurrently")
+	}
+
+	close(exec.finish)
+	time.Sleep(sleepTime)
+
+	// expect the finished job to be moved from the queue to the graveyard
+	m.mutex.Lock()
+	_, inQueue := m.getJob(m.queue, jobID)
+	_, inGraveyard := m.getJob(m.graveyard, jobID)
+	m.mutex.Unlock()
+
+	assert.Nil(t, inQueue)
+	assert.NotNil(t, inGraveyard)
+	assert.Equal(t, StatusFinished, m.GetJob(jobID).Status)
+
+	close(blocker.finish)
+}
+
+func TestTaskQueueProgress(t *testing.T) {
+	m := NewManager()
+	j := &Job{}
+	p := m.newProgress(j)
+
+	tq := NewTaskQueue(context.Background(), p, 10, 2)
+	for range 3 {
+		tq.Add("task", func(ctx context.Context) {})
+	}
+	tq.Close()
+	tq.Wait()
+
+	assert.Equal(t, 3, p.total)
+	assert.Equal(t, 3, p.processed)
+	assert.Equal(t, float64(1), p.percent)
+}
+
 func TestCancel(t *testing.T) {
 	m := NewManager()
 
