@@ -150,6 +150,8 @@ func Test_createMissingPerformer(t *testing.T) {
 	remoteSiteID := "remoteSiteID"
 	validName := "validName"
 	invalidName := "invalidName"
+	validImage := "data:image/png;base64,AAAA"
+	invalidImage := "data:image/png;base64,%%%%"
 	performerID := 1
 
 	db := mocks.NewDatabase()
@@ -164,6 +166,8 @@ func Test_createMissingPerformer(t *testing.T) {
 	db.Performer.On("Create", testCtx, mock.MatchedBy(func(p *models.CreatePerformerInput) bool {
 		return p.Name == invalidName
 	})).Return(errors.New("error creating performer"))
+
+	db.Performer.On("UpdateImage", testCtx, performerID, mock.AnythingOfType("[]uint8")).Return(errors.New("error updating performer image"))
 
 	type args struct {
 		endpoint string
@@ -193,6 +197,32 @@ func Test_createMissingPerformer(t *testing.T) {
 				emptyEndpoint,
 				&models.ScrapedPerformer{
 					Name:         &invalidName,
+					RemoteSiteID: &remoteSiteID,
+				},
+			},
+			nil,
+			true,
+		},
+		{
+			"error getting image",
+			args{
+				emptyEndpoint,
+				&models.ScrapedPerformer{
+					Name:         &validName,
+					Images:       []string{invalidImage},
+					RemoteSiteID: &remoteSiteID,
+				},
+			},
+			nil,
+			true,
+		},
+		{
+			"error updating image",
+			args{
+				emptyEndpoint,
+				&models.ScrapedPerformer{
+					Name:         &validName,
+					Images:       []string{validImage},
 					RemoteSiteID: &remoteSiteID,
 				},
 			},

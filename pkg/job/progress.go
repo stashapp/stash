@@ -24,6 +24,10 @@ type task struct {
 }
 
 func (p *Progress) updated() {
+	if p.updater == nil {
+		return
+	}
+
 	var details []string
 	for _, t := range p.currentTasks {
 		details = append(details, t.description)

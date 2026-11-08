@@ -10,6 +10,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -34,6 +35,9 @@ type mockHookExecutor struct {
 func (s mockHookExecutor) ExecuteSceneUpdatePostHooks(ctx context.Context, input models.SceneUpdateInput, inputFields []string) {
 }
 
+func (s mockHookExecutor) ExecuteGalleryUpdatePostHooks(ctx context.Context, input models.GalleryUpdateInput, inputFields []string) {
+}
+
 func TestSceneIdentifier_Identify(t *testing.T) {
 	const (
 		errID1 = iota
@@ -43,6 +47,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 		found2ID
 		multiFoundID
 		multiFound2ID
+		multiInvalidTagID
 		errUpdateID
 	)
 
@@ -54,6 +59,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 	var (
 		scrapedTitle  = "scrapedTitle"
 		scrapedTitle2 = "scrapedTitle2"
+		invalidTagID  = "invalid"
 
 		boolFalse = false
 		boolTrue  = true
@@ -101,6 +107,14 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 						},
 					},
 					multiFound2ID: {
+						{
+							Title: &scrapedTitle,
+						},
+						{
+							Title: &scrapedTitle2,
+						},
+					},
+					multiInvalidTagID: {
 						{
 							Title: &scrapedTitle,
 						},
@@ -184,6 +198,15 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 				SkipMultipleMatchTag: &skipMultipleTagIDStr,
 			},
 			false,
+		},
+		{
+			"multiple found - invalid tag",
+			multiInvalidTagID,
+			&MetadataOptions{
+				SkipMultipleMatches:  &boolTrue,
+				SkipMultipleMatchTag: &invalidTagID,
+			},
+			true,
 		},
 	}
 
@@ -279,6 +302,166 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 	}
 }
 
+func TestSceneIdentifier_modifyScene_paths(t *testing.T) {
+	const sceneID = 1
+	scrapedTitle := "scrapedTitle"
+	scrapedCode := "scrapedCode"
+	invalidID := "invalid"
+	boolFalse := false
+	sourceOptions := &MetadataOptions{SetCoverImage: &boolFalse}
+
+	tests := []struct {
+		name     string
+		scene    *models.Scene
+		scraped  *models.ScrapedScene
+		executor SceneUpdatePostHookExecutor
+		setup    func(db *mocks.Database)
+		wantErr  bool
+	}{
+		{
+			name: "load URLs error",
+			scene: &models.Scene{
+				ID:           sceneID,
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+			},
+			setup: func(db *mocks.Database) {
+				db.Scene.On("GetURLs", mock.Anything, sceneID).Return(nil, errors.New("load URLs error"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "load performers error",
+			scene: &models.Scene{
+				ID:       sceneID,
+				URLs:     models.NewRelatedStrings([]string{}),
+				TagIDs:   models.NewRelatedIDs([]int{}),
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{}),
+			},
+			setup: func(db *mocks.Database) {
+				db.Scene.On("GetPerformerIDs", mock.Anything, sceneID).Return(nil, errors.New("load performers error"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "load tags error",
+			scene: &models.Scene{
+				ID:           sceneID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+			},
+			setup: func(db *mocks.Database) {
+				db.Scene.On("GetTagIDs", mock.Anything, sceneID).Return(nil, errors.New("load tags error"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "load stash IDs error",
+			scene: &models.Scene{
+				ID:           sceneID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+			},
+			setup: func(db *mocks.Database) {
+				db.Scene.On("GetStashIDs", mock.Anything, sceneID).Return(nil, errors.New("load stash IDs error"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "updater error",
+			scene: &models.Scene{
+				ID:           sceneID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+			},
+			scraped: &models.ScrapedScene{
+				Studio: &models.ScrapedStudio{StoredID: &invalidID},
+			},
+			wantErr: true,
+		},
+		{
+			name: "update error",
+			scene: &models.Scene{
+				ID:           sceneID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+			},
+			scraped: &models.ScrapedScene{Title: &scrapedTitle},
+			setup: func(db *mocks.Database) {
+				db.Scene.On("UpdatePartial", mock.Anything, sceneID, mock.AnythingOfType("models.ScenePartial")).Return(nil, errors.New("update error"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "success with title",
+			scene: &models.Scene{
+				ID:           sceneID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+			},
+			scraped:  &models.ScrapedScene{Title: &scrapedTitle},
+			executor: mockHookExecutor{},
+			setup: func(db *mocks.Database) {
+				db.Scene.On("UpdatePartial", mock.Anything, sceneID, mock.AnythingOfType("models.ScenePartial")).Return(&models.Scene{ID: sceneID}, nil)
+			},
+		},
+		{
+			name: "success without title",
+			scene: &models.Scene{
+				ID:           sceneID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+			},
+			scraped:  &models.ScrapedScene{Code: &scrapedCode},
+			executor: mockHookExecutor{},
+			setup: func(db *mocks.Database) {
+				db.Scene.On("UpdatePartial", mock.Anything, sceneID, mock.AnythingOfType("models.ScenePartial")).Return(&models.Scene{ID: sceneID}, nil)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db := mocks.NewDatabase()
+			if tt.setup != nil {
+				tt.setup(db)
+			}
+
+			identifier := SceneIdentifier{
+				TxnManager:                  db,
+				SceneReaderUpdater:          db.Scene,
+				StudioReaderWriter:          db.Studio,
+				PerformerCreator:            db.Performer,
+				TagFinderCreator:            db.Tag,
+				SceneUpdatePostHookExecutor: tt.executor,
+			}
+			result := &scrapeResult{
+				source: ScraperSource{Options: sourceOptions},
+				result: tt.scraped,
+			}
+
+			err := identifier.modifyScene(testCtx, tt.scene, result)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
 func Test_getFieldOptions(t *testing.T) {
 	const (
 		inFirst  = "inFirst"
@@ -344,6 +527,221 @@ func Test_getFieldOptions(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := getFieldOptions(tt.args.options); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getFieldOptions() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMultipleMatchesFoundError_Error(t *testing.T) {
+	err := &MultipleMatchesFoundError{
+		Source: ScraperSource{Name: "Test Source"},
+	}
+
+	assert.Equal(t, "multiple matches found for Test Source", err.Error())
+}
+
+func Test_mergeSharedMetadataOptions(t *testing.T) {
+	boolFalse := false
+	emptyTag := ""
+	tag := "tag"
+	genders := []models.GenderEnum{models.GenderEnumFemale}
+
+	base := MetadataOptions{
+		SetOrganized:               &boolFalse,
+		IncludeMalePerformers:      &boolFalse,
+		PerformerGenders:           genders,
+		SkipMultipleMatches:        &boolFalse,
+		SkipMultipleMatchTag:       &emptyTag,
+		SkipSingleNamePerformers:   &boolFalse,
+		SkipSingleNamePerformerTag: &emptyTag,
+	}
+
+	assert.Equal(t, base, mergeSharedMetadataOptions(base, nil))
+
+	override := &MetadataOptions{
+		SetOrganized:               &boolFalse,
+		IncludeMalePerformers:      &boolFalse,
+		PerformerGenders:           genders,
+		SkipMultipleMatches:        &boolFalse,
+		SkipMultipleMatchTag:       &tag,
+		SkipSingleNamePerformers:   &boolFalse,
+		SkipSingleNamePerformerTag: &tag,
+	}
+
+	assert.Equal(t, *override, mergeSharedMetadataOptions(base, override))
+}
+
+func Test_getSceneUpdater_errorsAndSourceOptions(t *testing.T) {
+	const sceneID = 1
+
+	var (
+		boolFalse     = false
+		boolTrue      = true
+		createMissing = true
+		singleName    = "Single"
+		studioID      = "1"
+		tagID         = "2"
+		skipTagID     = 3
+		invalidID     = "invalid"
+		remoteSiteID  = "remote"
+		emptyImage    = ""
+		invalidImage  = "data:image/png;base64,%%%%"
+	)
+
+	skipTagIDStr := strconv.Itoa(skipTagID)
+
+	tests := []struct {
+		name     string
+		options  *MetadataOptions
+		scraped  *models.ScrapedScene
+		setup    func(db *mocks.Database)
+		wantErr  bool
+		validate func(t *testing.T, updater *scene.UpdateSet)
+	}{
+		{
+			name: "source options with skipped performer tag and stash IDs",
+			options: &MetadataOptions{
+				SetCoverImage: &boolFalse,
+				FieldOptions: []*FieldOptions{
+					{
+						Field:         "performers",
+						Strategy:      FieldStrategyMerge,
+						CreateMissing: &createMissing,
+					},
+				},
+				SkipSingleNamePerformers:   &boolTrue,
+				SkipSingleNamePerformerTag: &skipTagIDStr,
+			},
+			scraped: &models.ScrapedScene{
+				Studio:       &models.ScrapedStudio{StoredID: &studioID},
+				Performers:   []*models.ScrapedPerformer{{Name: &singleName}},
+				Tags:         []*models.ScrapedTag{{StoredID: &tagID}},
+				RemoteSiteID: &remoteSiteID,
+			},
+			validate: func(t *testing.T, updater *scene.UpdateSet) {
+				assert.True(t, updater.Partial.StudioID.Set)
+				assert.Equal(t, []int{2, skipTagID}, updater.Partial.TagIDs.IDs)
+				assert.Len(t, updater.Partial.StashIDs.StashIDs, 1)
+				assert.Equal(t, "endpoint", updater.Partial.StashIDs.StashIDs[0].Endpoint)
+				assert.Equal(t, remoteSiteID, updater.Partial.StashIDs.StashIDs[0].StashID)
+			},
+		},
+		{
+			name: "invalid skipped performer tag",
+			options: &MetadataOptions{
+				SetCoverImage: &boolFalse,
+				FieldOptions: []*FieldOptions{
+					{
+						Field:         "performers",
+						Strategy:      FieldStrategyMerge,
+						CreateMissing: &createMissing,
+					},
+				},
+				SkipSingleNamePerformers:   &boolTrue,
+				SkipSingleNamePerformerTag: &invalidID,
+			},
+			scraped: &models.ScrapedScene{
+				Performers: []*models.ScrapedPerformer{{Name: &singleName}},
+			},
+			wantErr: true,
+		},
+		{
+			name: "skipped performer without tag",
+			options: &MetadataOptions{
+				SetCoverImage: &boolFalse,
+				FieldOptions: []*FieldOptions{
+					{
+						Field:         "performers",
+						Strategy:      FieldStrategyMerge,
+						CreateMissing: &createMissing,
+					},
+				},
+				SkipSingleNamePerformers: &boolTrue,
+			},
+			scraped: &models.ScrapedScene{
+				Performers: []*models.ScrapedPerformer{{Name: &singleName}},
+			},
+			validate: func(t *testing.T, updater *scene.UpdateSet) {
+				assert.Nil(t, updater.Partial.PerformerIDs)
+				assert.Nil(t, updater.Partial.TagIDs)
+			},
+		},
+		{
+			name:    "studio error",
+			options: &MetadataOptions{SetCoverImage: &boolFalse},
+			scraped: &models.ScrapedScene{Studio: &models.ScrapedStudio{StoredID: &invalidID}},
+			wantErr: true,
+		},
+		{
+			name:    "performer error",
+			options: &MetadataOptions{SetCoverImage: &boolFalse},
+			scraped: &models.ScrapedScene{Performers: []*models.ScrapedPerformer{{StoredID: &invalidID}}},
+			wantErr: true,
+		},
+		{
+			name:    "tag error",
+			options: &MetadataOptions{SetCoverImage: &boolFalse},
+			scraped: &models.ScrapedScene{Tags: []*models.ScrapedTag{{StoredID: &invalidID}}},
+			wantErr: true,
+		},
+		{
+			name:    "cover called with empty image",
+			options: &MetadataOptions{SetCoverImage: &boolTrue},
+			scraped: &models.ScrapedScene{Image: &emptyImage},
+			validate: func(t *testing.T, updater *scene.UpdateSet) {
+				assert.Nil(t, updater.CoverImage)
+			},
+		},
+		{
+			name:    "cover error",
+			options: &MetadataOptions{SetCoverImage: &boolTrue},
+			scraped: &models.ScrapedScene{Image: &invalidImage},
+			setup: func(db *mocks.Database) {
+				db.Scene.On("GetCover", testCtx, sceneID).Return(nil, nil)
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db := mocks.NewDatabase()
+			if tt.setup != nil {
+				tt.setup(db)
+			}
+
+			identifier := SceneIdentifier{
+				SceneReaderUpdater: db.Scene,
+				StudioReaderWriter: db.Studio,
+				PerformerCreator:   db.Performer,
+				TagFinderCreator:   db.Tag,
+			}
+			sceneObj := &models.Scene{
+				ID:           sceneID,
+				URLs:         models.NewRelatedStrings([]string{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+			}
+			result := &scrapeResult{
+				source: ScraperSource{
+					Options:    tt.options,
+					RemoteSite: "endpoint",
+				},
+				result: tt.scraped,
+			}
+
+			updater, err := identifier.getSceneUpdater(testCtx, sceneObj, result)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.Nil(t, updater)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, updater)
+				if tt.validate != nil {
+					tt.validate(t, updater)
+				}
 			}
 		})
 	}
@@ -497,6 +895,23 @@ func Test_getScenePartial(t *testing.T) {
 				false,
 			},
 			models.ScenePartial{},
+		},
+		{
+			"overwrite url removal",
+			args{
+				originalScene,
+				&models.ScrapedScene{
+					URLs: []string{scrapedURL},
+				},
+				overwriteAll,
+				false,
+			},
+			models.ScenePartial{
+				URLs: &models.UpdateStrings{
+					Values: []string{scrapedURL},
+					Mode:   models.RelationshipUpdateModeSet,
+				},
+			},
 		},
 		{
 			"set organized",
