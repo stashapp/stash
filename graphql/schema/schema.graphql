@@ -248,6 +248,9 @@ type Query {
   ): Directory!
   validateStashBoxCredentials(input: StashBoxInput!): StashBoxValidationResult!
 
+  # Validate remote CDP path
+  ValidateCDPPath: CDPValidationResult!
+
   # System status
   systemStatus: SystemStatus!
 
