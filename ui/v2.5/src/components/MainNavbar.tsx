@@ -5,14 +5,8 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import {
-  defineMessages,
-  FormattedMessage,
-  MessageDescriptor,
-  useIntl,
-} from "react-intl";
+import { defineMessages, FormattedMessage, useIntl } from "react-intl";
 import { Nav, Navbar, Button } from "react-bootstrap";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { LinkContainer } from "react-router-bootstrap";
 import { Link, NavLink, useLocation, useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
@@ -20,8 +14,13 @@ import Mousetrap from "mousetrap";
 import SessionUtils from "src/utils/session";
 import { Icon } from "src/components/Shared/Icon";
 import { useConfigurationContext } from "src/hooks/Config";
+import * as GQL from "src/core/generated-graphql";
 import { ManualStateContext } from "./Help/context";
 import { SettingsButton } from "./SettingsButton";
+import {
+  buildMainNavbarMenuItems,
+  type INavbarMenuItem,
+} from "./MainNavbar/menuItems";
 import {
   faBars,
   faChartColumn,
@@ -41,14 +40,6 @@ import {
 import { baseURL } from "src/core/createClient";
 import { PatchComponent } from "src/patch";
 
-interface IMenuItem {
-  name: string;
-  message: MessageDescriptor;
-  href: string;
-  icon: IconDefinition;
-  hotkey: string;
-  userCreatable?: boolean;
-}
 const messages = defineMessages({
   scenes: {
     id: "scenes",
@@ -96,7 +87,7 @@ const messages = defineMessages({
   },
 });
 
-const allMenuItems: IMenuItem[] = [
+const allMenuItems: INavbarMenuItem[] = [
   {
     name: "scenes",
     message: messages.scenes,
@@ -184,28 +175,24 @@ export const MainNavbar: React.FC = () => {
   const location = useLocation();
   const { configuration } = useConfigurationContext();
   const { openManual } = React.useContext(ManualStateContext);
+  const { savedFilterMenuItems } = configuration.ui;
+  const { data: savedFilterData } = GQL.useFindSavedFiltersQuery({
+    variables: { mode: GQL.FilterMode.Galleries },
+    skip: !savedFilterMenuItems?.length,
+  });
 
   const [expanded, setExpanded] = useState(false);
 
   // Show all menu items by default, unless config says otherwise
   const menuItems = useMemo(() => {
-    let cfgMenuItems = configuration?.interface.menuItems;
-    if (!cfgMenuItems) {
-      return allMenuItems;
-    }
-
-    // translate old movies menu item to groups
-    cfgMenuItems = cfgMenuItems.map((item) => {
-      if (item === "movies") {
-        return "groups";
-      }
-      return item;
-    });
-
-    return allMenuItems.filter((menuItem) =>
-      cfgMenuItems!.includes(menuItem.name)
+    return buildMainNavbarMenuItems(
+      allMenuItems,
+      configuration?.interface.menuItems,
+      savedFilterMenuItems,
+      savedFilterData?.findSavedFilters ?? [],
+      configuration
     );
-  }, [configuration]);
+  }, [configuration, savedFilterData?.findSavedFilters, savedFilterMenuItems]);
 
   // react-bootstrap typing bug
   const navbarRef = useRef<HTMLElement | null>(null);
@@ -257,7 +244,9 @@ export const MainNavbar: React.FC = () => {
     Mousetrap.bind("g z", () => goto("/settings"));
 
     menuItems.forEach((item) => {
-      Mousetrap.bind(item.hotkey, () => goto(item.href));
+      if (item.hotkey) {
+        Mousetrap.bind(item.hotkey, () => goto(item.href));
+      }
     });
 
     if (newPath) {
@@ -268,7 +257,9 @@ export const MainNavbar: React.FC = () => {
       Mousetrap.unbind("?");
       Mousetrap.unbind("g z");
       menuItems.forEach((item) => {
-        Mousetrap.unbind(item.hotkey);
+        if (item.hotkey) {
+          Mousetrap.unbind(item.hotkey);
+        }
       });
 
       if (newPath) {
@@ -359,11 +350,11 @@ export const MainNavbar: React.FC = () => {
     >
       <Navbar.Collapse className="bg-dark order-sm-1">
         <MainNavbarMenuItems>
-          {menuItems.map(({ href, icon, message }) => (
+          {menuItems.map(({ href, icon, label, message, name }) => (
             <Nav.Link
               eventKey={href}
               as="div"
-              key={href}
+              key={name}
               className="col-4 col-sm-3 col-md-2 col-lg-auto"
             >
               <LinkContainer activeClassName="active" exact to={href}>
@@ -372,7 +363,7 @@ export const MainNavbar: React.FC = () => {
                     {...{ icon }}
                     className="nav-menu-icon d-block d-xl-inline mb-2 mb-xl-0"
                   />
-                  <span>{intl.formatMessage(message)}</span>
+                  <span>{message ? intl.formatMessage(message) : label}</span>
                 </Button>
               </LinkContainer>
             </Nav.Link>

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { DurationInput } from "src/components/Shared/DurationInput";
@@ -43,7 +43,10 @@ import {
   defaultImageWallMargin,
 } from "src/utils/imageWall";
 import { defaultMaxOptionsShown, defaultPreviewVolume } from "src/core/config";
+import { useFindSavedFilters } from "src/core/StashService";
 import { PatchComponent } from "src/patch";
+import { Icon } from "src/components/Shared/Icon";
+import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 const allMenuItems = [
   { id: "scenes", headingID: "scenes" },
@@ -96,6 +99,19 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
     } = React.useContext(InteractiveContext);
 
     const [, setInterfaceLocalForage] = useInterfaceLocalForage();
+    const { data: savedFilterData, loading: loadingSavedFilters } =
+      useFindSavedFilters(GQL.FilterMode.Galleries);
+    const savedGalleryFilters = savedFilterData?.findSavedFilters ?? [];
+    const savedFilterMenuItems = ui.savedFilterMenuItems ?? [];
+    const [selectedSavedFilterID, setSelectedSavedFilterID] = useState("");
+    const [savedFilterMenuLabel, setSavedFilterMenuLabel] = useState("");
+
+    const selectedSavedFilter = savedGalleryFilters.find(
+      (filter) => filter.id === selectedSavedFilterID
+    );
+    const selectedSavedFilterAlreadyAdded = savedFilterMenuItems.some(
+      (item) => item.filterId === selectedSavedFilterID
+    );
 
     function saveLightboxSettings(v: Partial<GQL.ConfigImageLightboxInput>) {
       // save in local forage as well for consistency
@@ -148,6 +164,44 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
           ...(ui.ratingSystemOptions ?? defaultRatingSystemOptions),
           starPrecision: p,
         },
+      });
+    }
+
+    function onSelectSavedFilterMenuItem(filterID: string) {
+      const savedFilter = savedGalleryFilters.find(
+        (filter) => filter.id === filterID
+      );
+
+      setSelectedSavedFilterID(filterID);
+      setSavedFilterMenuLabel(savedFilter?.name ?? "");
+    }
+
+    function addSavedFilterMenuItem() {
+      if (!selectedSavedFilter || selectedSavedFilterAlreadyAdded) {
+        return;
+      }
+
+      saveUI({
+        savedFilterMenuItems: [
+          ...savedFilterMenuItems,
+          {
+            id: `saved-filter-${selectedSavedFilter.id}-${Date.now()}`,
+            label: savedFilterMenuLabel.trim() || selectedSavedFilter.name,
+            filterId: selectedSavedFilter.id,
+            mode: selectedSavedFilter.mode,
+          },
+        ],
+      });
+
+      setSelectedSavedFilterID("");
+      setSavedFilterMenuLabel("");
+    }
+
+    function removeSavedFilterMenuItem(id: string) {
+      saveUI({
+        savedFilterMenuItems: savedFilterMenuItems.filter(
+          (item) => item.id !== id
+        ),
       });
     }
 
@@ -281,6 +335,109 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
                 saveInterface({ menuItems: massageMenuItems(v) })
               }
             />
+          </div>
+
+          <div className="setting-group">
+            <div className="setting">
+              <div>
+                <h3>
+                  <FormattedMessage
+                    id="config.ui.saved_filter_menu_items.heading"
+                    defaultMessage="Saved filter menu items"
+                  />
+                </h3>
+                <div className="sub-heading">
+                  <FormattedMessage
+                    id="config.ui.saved_filter_menu_items.description"
+                    defaultMessage="Add saved gallery filters to the main navigation. Use this to create sections such as Manga or Doujin."
+                  />
+                </div>
+              </div>
+              <div />
+            </div>
+
+            {savedFilterMenuItems.map((item) => (
+              <div className="setting" key={item.id}>
+                <div>
+                  <span>{item.label}</span>
+                  <div className="sub-heading">
+                    {
+                      savedGalleryFilters.find(
+                        (filter) => filter.id === item.filterId
+                      )?.name
+                    }
+                  </div>
+                </div>
+                <Button
+                  variant="danger"
+                  onClick={() => removeSavedFilterMenuItem(item.id)}
+                  title={intl.formatMessage({ id: "actions.delete" })}
+                >
+                  <Icon icon={faTrash} />
+                </Button>
+              </div>
+            ))}
+
+            <Form.Group>
+              <Form.Label>
+                <FormattedMessage
+                  id="config.ui.saved_filter_menu_items.filter"
+                  defaultMessage="Saved gallery filter"
+                />
+              </Form.Label>
+              <Form.Control
+                as="select"
+                value={selectedSavedFilterID}
+                disabled={
+                  loadingSavedFilters || savedGalleryFilters.length === 0
+                }
+                onChange={(e) =>
+                  onSelectSavedFilterMenuItem(e.currentTarget.value)
+                }
+              >
+                <option value="">
+                  {intl.formatMessage({
+                    id: "actions.select",
+                    defaultMessage: "Select",
+                  })}
+                </option>
+                {savedGalleryFilters.map((filter) => (
+                  <option key={filter.id} value={filter.id}>
+                    {filter.name}
+                  </option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+
+            <Form.Group>
+              <Form.Label>
+                <FormattedMessage
+                  id="config.ui.saved_filter_menu_items.label"
+                  defaultMessage="Menu label"
+                />
+              </Form.Label>
+              <Form.Control
+                type="text"
+                value={savedFilterMenuLabel}
+                disabled={!selectedSavedFilter}
+                placeholder="Manga"
+                onChange={(e) => setSavedFilterMenuLabel(e.currentTarget.value)}
+              />
+            </Form.Group>
+
+            <Button
+              variant="primary"
+              disabled={!selectedSavedFilter || selectedSavedFilterAlreadyAdded}
+              onClick={addSavedFilterMenuItem}
+            >
+              <Icon icon={faPlus} />
+              <span className="ml-2">
+                <FormattedMessage
+                  id="config.ui.saved_filter_menu_items.add"
+                  defaultMessage="Add menu item"
+                />
+              </span>
+            </Button>
           </div>
 
           <BooleanSetting
