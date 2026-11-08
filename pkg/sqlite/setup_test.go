@@ -1528,8 +1528,10 @@ func createGroups(ctx context.Context, mqb models.GroupReaderWriter, n int, o in
 		// groups [ i ] and [ n + o - i - 1  ] should have similar names with only the Name!=NaMe part different
 
 		name = getGroupStringValue(index, name)
+		aliases := getGroupEmptyString(i, "Aliases")
 		group := models.Group{
-			Name: name,
+			Name:    name,
+			Aliases: aliases,
 			URLs: models.NewRelatedStrings([]string{
 				getGroupEmptyString(i, urlField),
 			}),
