@@ -68,7 +68,7 @@ func TestGalleryPerformers(t *testing.T) {
 
 				return galleryPartialsEqual(got, expected)
 			})
-			db.Gallery.On("UpdatePartial", testCtx, galleryID, matchPartial).Return(nil, nil).Once()
+			db.Gallery.On("UpdatePartial", mock.Anything, galleryID, matchPartial).Return(nil, nil).Once()
 		}
 
 		gallery := models.Gallery{
@@ -76,7 +76,8 @@ func TestGalleryPerformers(t *testing.T) {
 			Path:         test.Path,
 			PerformerIDs: models.NewRelatedIDs([]int{}),
 		}
-		err := GalleryPerformers(testCtx, &gallery, db.Gallery, db.Performer, nil)
+		tagger := &Tagger{TxnManager: db, Cache: nil}
+		err := tagger.GalleryPerformersAtPath(testCtx, &gallery, db.Gallery, db.Performer)
 
 		assert.Nil(err)
 		db.AssertExpectations(t)
@@ -114,14 +115,15 @@ func TestGalleryStudios(t *testing.T) {
 
 				return galleryPartialsEqual(got, expected)
 			})
-			db.Gallery.On("UpdatePartial", testCtx, galleryID, matchPartial).Return(nil, nil).Once()
+			db.Gallery.On("UpdatePartial", mock.Anything, galleryID, matchPartial).Return(nil, nil).Once()
 		}
 
 		gallery := models.Gallery{
 			ID:   galleryID,
 			Path: test.Path,
 		}
-		err := GalleryStudios(testCtx, &gallery, db.Gallery, db.Studio, nil)
+		tagger := &Tagger{TxnManager: db, Cache: nil}
+		err := tagger.GalleryStudiosAtPath(testCtx, &gallery, db.Gallery, db.Studio)
 
 		assert.Nil(err)
 		db.AssertExpectations(t)
@@ -189,7 +191,7 @@ func TestGalleryTags(t *testing.T) {
 
 				return galleryPartialsEqual(got, expected)
 			})
-			db.Gallery.On("UpdatePartial", testCtx, galleryID, matchPartial).Return(nil, nil).Once()
+			db.Gallery.On("UpdatePartial", mock.Anything, galleryID, matchPartial).Return(nil, nil).Once()
 		}
 
 		gallery := models.Gallery{
@@ -197,7 +199,8 @@ func TestGalleryTags(t *testing.T) {
 			Path:   test.Path,
 			TagIDs: models.NewRelatedIDs([]int{}),
 		}
-		err := GalleryTags(testCtx, &gallery, db.Gallery, db.Tag, nil)
+		tagger := &Tagger{TxnManager: db, Cache: nil}
+		err := tagger.GalleryTagsAtPath(testCtx, &gallery, db.Gallery, db.Tag)
 
 		assert.Nil(err)
 		db.AssertExpectations(t)
