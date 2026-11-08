@@ -12,6 +12,7 @@ type Tag struct {
 	Favorite      bool      `json:"favorite"`
 	Description   string    `json:"description"`
 	IgnoreAutoTag bool      `json:"ignore_auto_tag"`
+	Rating        *int      `json:"rating"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`
 
@@ -71,6 +72,7 @@ type TagPartial struct {
 	Description   OptionalString
 	Favorite      OptionalBool
 	IgnoreAutoTag OptionalBool
+	Rating        OptionalInt
 	CreatedAt     OptionalTime
 	UpdatedAt     OptionalTime
 

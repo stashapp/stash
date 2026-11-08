@@ -45,7 +45,9 @@ import { FilterTags } from "../List/FilterTags";
 import { Pagination, PaginationIndex } from "../List/Pagination";
 import { LoadedContent } from "../List/PagedList";
 import { SidebarBooleanFilter } from "../List/Filters/BooleanFilter";
+import { SidebarRatingFilter } from "../List/Filters/RatingFilter";
 import { FavoriteTagCriterionOption } from "src/models/list-filter/criteria/favorite";
+import { RatingCriterionOption } from "src/models/list-filter/criteria/rating";
 import { TagListTable } from "./TagListTable";
 
 const TagList: React.FC<{
@@ -132,6 +134,11 @@ const SidebarContent: React.FC<{
           setFilter={setFilter}
           filterHook={filterHook}
         /> */}
+        <SidebarRatingFilter
+          filter={filter}
+          setFilter={setFilter}
+          option={RatingCriterionOption}
+        />
         <SidebarBooleanFilter
           title={<FormattedMessage id="favourite" />}
           filter={filter}
