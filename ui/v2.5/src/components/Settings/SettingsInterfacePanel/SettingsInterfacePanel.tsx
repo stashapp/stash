@@ -490,6 +490,43 @@ export const SettingsInterfacePanel: React.FC = PatchComponent(
             checked={ui.showAbLoopControls ?? undefined}
             onChange={(v) => saveUI({ showAbLoopControls: v })}
           />
+          <SelectSetting
+            id="default-stream-type"
+            headingID="config.ui.scene_player.options.default_stream_type.heading"
+            subHeadingID="config.ui.scene_player.options.default_stream_type.description"
+            value={ui.defaultStreamType ?? ""}
+            onChange={(v) => saveUI({ defaultStreamType: v })}
+          >
+            <option value="">
+              {intl.formatMessage({
+                id: "config.ui.scene_player.options.default_stream_type.no_preference",
+              })}
+            </option>
+            <option value="direct">Direct stream</option>
+            <option value="mkv">MKV</option>
+            <option value="mp4">MP4</option>
+            <option value="webm">WEBM</option>
+            <option value="hls">HLS</option>
+            <option value="dash">DASH</option>
+          </SelectSetting>
+          <SelectSetting
+            id="default-streaming-resolution"
+            headingID="config.ui.scene_player.options.default_streaming_resolution.heading"
+            subHeadingID="config.ui.scene_player.options.default_streaming_resolution.description"
+            value={ui.defaultStreamingResolution ?? ""}
+            onChange={(v) => saveUI({ defaultStreamingResolution: v })}
+          >
+            <option value="ORIGINAL">
+              {intl.formatMessage({
+                id: "config.ui.scene_player.options.default_streaming_resolution.original",
+              })}
+            </option>
+            <option value="FOUR_K">4K (2160p)</option>
+            <option value="FULL_HD">Full HD (1080p)</option>
+            <option value="STANDARD_HD">HD (720p)</option>
+            <option value="STANDARD">Standard (480p)</option>
+            <option value="LOW">Low (240p)</option>
+          </SelectSetting>
         </SettingSection>
         <SettingSection headingID="config.ui.tag_panel.heading">
           <BooleanSetting
