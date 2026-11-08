@@ -5,6 +5,8 @@ services:
     image: stashapp/stash:latest
     container_name: stash
     restart: unless-stopped
+    ## To run as a non-root user, uncomment the next line and replace the IDs with your own.
+    # user: "1000:1000"
     ## the container's port must be the same with the STASH_PORT in the environment section
     ports:
       - "9999:9999"
@@ -25,12 +27,17 @@ services:
       ## Set your timezone, e.g. America/New_York or Europe/Berlin
       ## see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
       - TZ=Etc/UTC
+      ## When running as a non-root user, uncomment the next three lines and use /config below.
+      # - HOME=/config
+      # - USER=stash
+      # - STASH_CONFIG_FILE=/config/config.yml
     volumes:
       ## Adjust below paths (the left part) to your liking.
       ## E.g. you can change ./config:/root/.stash to ./stash:/root/.stash
       ## The left part is the path on your host, the right part is the path in the stash container.
 
       ## Keep configs, scrapers, and plugins here.
+      ## When running as a non-root user, change the container path to /config.
       - ./config:/root/.stash
       ## Point this at your collection.
       ## The left side is where your collection is on your host, the right side is where it will be in stash.

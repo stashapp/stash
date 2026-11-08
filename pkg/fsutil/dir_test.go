@@ -25,6 +25,20 @@ func TestIsPathInDirNormalization(t *testing.T) {
 	assert.True(t, IsPathInDir(filepath.Join("/library", gaNFC), filepath.Join("/library", gaNFC, "video.mp4")))
 }
 
+func TestGetHomeDirectoryFromEnvironment(t *testing.T) {
+	homeDir := t.TempDir()
+	switch runtime.GOOS {
+	case "windows":
+		t.Setenv("USERPROFILE", homeDir)
+	case "plan9":
+		t.Setenv("home", homeDir)
+	default:
+		t.Setenv("HOME", homeDir)
+	}
+
+	assert.Equal(t, homeDir, GetHomeDirectory())
+}
+
 func TestIsPathInDir(t *testing.T) {
 	type test struct {
 		dir         string
