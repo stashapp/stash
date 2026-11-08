@@ -11,6 +11,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -95,6 +96,7 @@ type ServerConfig interface {
 	HasTLSConfig() bool
 	GetPluginsPath() string
 	GetDisabledPlugins() []string
+	GetPluginConfiguration(pluginID string) map[string]interface{}
 	GetPythonPath() string
 }
 
@@ -227,7 +229,7 @@ func (c Cache) ListPluginTasks() []*PluginTask {
 	return ret
 }
 
-func buildPluginInput(plugin *Config, operation *OperationConfig, serverConnection common.StashServerConnection, args OperationInput) common.PluginInput {
+func (c Cache) buildPluginInput(plugin *Config, operation *OperationConfig, serverConnection common.StashServerConnection, args OperationInput) common.PluginInput {
 	if args == nil {
 		args = make(OperationInput)
 	}
@@ -235,9 +237,19 @@ func buildPluginInput(plugin *Config, operation *OperationConfig, serverConnecti
 		applyDefaultArgs(args, operation.DefaultArgs)
 	}
 	serverConnection.PluginDir = plugin.getConfigPath()
+	// Each invocation receives its own settings snapshot so that plugin code and
+	// subsequent configuration updates cannot change an in-flight invocation.
+	settings := maps.Clone(c.config.GetPluginConfiguration(plugin.id))
+	// Keep the plugin input shape stable: an unconfigured plugin should receive
+	// an empty settings object rather than null.
+	if settings == nil {
+		settings = make(map[string]interface{})
+	}
+
 	return common.PluginInput{
 		ServerConnection: serverConnection,
 		Args:             toPluginArgs(args),
+		Settings:         settings,
 	}
 }
 
@@ -287,7 +299,7 @@ func (c Cache) CreateTask(ctx context.Context, pluginID string, operationName *s
 	task := pluginTask{
 		plugin:       plugin,
 		operation:    operation,
-		input:        buildPluginInput(plugin, operation, serverConnection, args),
+		input:        c.buildPluginInput(plugin, operation, serverConnection, args),
 		progress:     progress,
 		gqlHandler:   c.gqlHandler,
 		serverConfig: c.config,
@@ -305,7 +317,7 @@ func (c Cache) RunPlugin(ctx context.Context, pluginID string, args OperationInp
 	// find the plugin
 	plugin := c.getPlugin(pluginID)
 
-	pluginInput := buildPluginInput(plugin, nil, serverConnection, args)
+	pluginInput := c.buildPluginInput(plugin, nil, serverConnection, args)
 
 	pt := pluginTask{
 		plugin:       plugin,
@@ -404,7 +416,7 @@ func (c Cache) executePostHooks(ctx context.Context, hookType hook.TriggerEnum, 
 			newCtx := session.AddVisitedPluginHook(ctx, p.id, hookType)
 			serverConnection := c.makeServerConnection(newCtx)
 
-			pluginInput := buildPluginInput(&p, &h.OperationConfig, serverConnection, nil)
+			pluginInput := c.buildPluginInput(&p, &h.OperationConfig, serverConnection, nil)
 			addHookContext(pluginInput.Args, hookContext)
 
 			pt := pluginTask{
