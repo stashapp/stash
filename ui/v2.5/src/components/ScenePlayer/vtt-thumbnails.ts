@@ -155,9 +155,13 @@ class VTTThumbnailsPlugin extends videojs.getPlugin("plugin") {
     progressBar.addEventListener("pointerout", this.onBarPointerLeave);
   }
 
-  private onBarPointerEnter = () => {
-    this.showThumbnailHolder();
+  private onBarPointerEnter = (e: Event) => {
     this.progressBar?.addEventListener("pointermove", this.onBarPointerMove);
+    // reposition immediately using this same event, rather than waiting for
+    // the first pointermove - on touch, that doesn't fire until the finger
+    // actually starts moving, so without this the thumbnail would flash up
+    // at wherever it was left from the previous touch before catching up
+    this.onBarPointerMove(e);
   };
 
   private onBarPointerMove = (e: Event) => {
@@ -177,7 +181,7 @@ class VTTThumbnailsPlugin extends videojs.getPlugin("plugin") {
   };
 
   private getStyleForTime(time: number) {
-    if (!this.vttData) return null;
+    if (!this.vttData || this.vttData.length === 0) return null;
 
     for (const element of this.vttData) {
       const item = element;
@@ -187,7 +191,15 @@ class VTTThumbnailsPlugin extends videojs.getPlugin("plugin") {
       }
     }
 
-    return null;
+    // time is at or past every cue's end (most commonly: sitting exactly on
+    // the video's duration, which is typically also the last cue's end, so
+    // the strict "< end" above never matches it) - fall back to the last
+    // cue rather than showing nothing. On a long video that gap is an
+    // imperceptible sliver at the very last pixel of the bar; on a short
+    // one the last cue can cover a large fraction of the timeline, making
+    // "no thumbnail near the end" easy to notice.
+    const lastCue = this.vttData[this.vttData.length - 1];
+    return time >= lastCue.start ? lastCue.style : null;
   }
 
   private showThumbnailHolder() {
