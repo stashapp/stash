@@ -130,6 +130,20 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
           value={props.file.audio_codec ?? ""}
           truncate
         />
+        {props.file.projection && (
+          <TextField
+            id="media_info.projection"
+            value={props.file.projection}
+            truncate
+          />
+        )}
+        {props.file.stereo_mode && (
+          <TextField
+            id="media_info.stereo_mode"
+            value={props.file.stereo_mode}
+            truncate
+          />
+        )}
       </dl>
       {props.ofMany && props.onSetPrimaryFile && !props.primary && (
         <div>
