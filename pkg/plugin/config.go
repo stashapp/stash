@@ -72,6 +72,7 @@ type PluginCSP struct {
 	ScriptSrc  []string `json:"script-src" yaml:"script-src"`
 	StyleSrc   []string `json:"style-src" yaml:"style-src"`
 	ConnectSrc []string `json:"connect-src" yaml:"connect-src"`
+	MediaSrc   []string `json:"media-src" yaml:"media-src"`
 }
 
 type UIConfig struct {
