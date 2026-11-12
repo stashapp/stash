@@ -247,10 +247,14 @@ func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error
 func (s *Manager) startGenerateJob(ctx context.Context, description string) *job.TaskQueue {
 	taskQueueChan := make(chan *job.TaskQueue)
 
+	// shortcut: sized from parallelTasks on first use, so a later change needs a restart; make it resizable if that matters
+	s.generateSlotsOnce.Do(func() {
+		s.generateSlots = make(chan struct{}, s.Config.GetParallelTasksWithAutoDetection())
+	})
+
 	s.JobManager.Start(ctx, description, job.MakeJobExec(func(ctx context.Context, progress *job.Progress) error {
 		const taskQueueSize = 200000
-		nTasks := s.Config.GetParallelTasksWithAutoDetection()
-		taskQueue := job.NewTaskQueue(ctx, progress, taskQueueSize, nTasks)
+		taskQueue := job.NewTaskQueue(ctx, progress, taskQueueSize, s.generateSlots)
 
 		taskQueueChan <- taskQueue
 
