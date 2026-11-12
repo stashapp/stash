@@ -160,6 +160,26 @@ func TestStart(t *testing.T) {
 	close(blocker.finish)
 }
 
+// a job queued while a started job is still running must still be dispatched
+func TestAddWhileStartedJobRunning(t *testing.T) {
+	m := NewManager()
+
+	started := newTestExec(make(chan struct{}))
+	m.Start(context.Background(), "started job", started)
+	<-started.started
+
+	exec := newTestExec(nil)
+	m.Add(context.Background(), "queued job", exec)
+
+	select {
+	case <-exec.started:
+	case <-time.After(time.Second):
+		t.Fatal("queued job was not dispatched while a started job was running")
+	}
+
+	close(started.finish)
+}
+
 func TestTaskQueueProgress(t *testing.T) {
 	m := NewManager()
 	j := &Job{}
@@ -285,6 +305,29 @@ func TestCancelAll(t *testing.T) {
 		t.Error("cancelled exec was started")
 	default:
 	}
+}
+
+// CancelAll must remove every ready job, not every other one
+func TestCancelAllReadyJobs(t *testing.T) {
+	m := NewManager()
+
+	running := newTestExec(make(chan struct{}))
+	m.Add(context.Background(), "running job", running)
+	<-running.started
+
+	for range 4 {
+		m.Add(context.Background(), "ready job", newTestExec(nil))
+	}
+
+	m.CancelAll()
+
+	// only the running job (now stopping) remains
+	queue := m.GetQueue()
+	if assert.Len(t, queue, 1) {
+		assert.Equal(t, StatusStopping, queue[0].Status)
+	}
+
+	close(running.finish)
 }
 
 func TestSubscribe(t *testing.T) {
