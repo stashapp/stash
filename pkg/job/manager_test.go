@@ -2,6 +2,7 @@ package job
 
 import (
 	"context"
+	"sync"
 	"testing"
 	"time"
 
@@ -185,7 +186,7 @@ func TestTaskQueueProgress(t *testing.T) {
 	j := &Job{}
 	p := m.newProgress(j)
 
-	tq := NewTaskQueue(context.Background(), p, 10, 2)
+	tq := NewTaskQueue(context.Background(), p, 10, make(chan struct{}, 2))
 	for range 3 {
 		tq.Add("task", func(ctx context.Context) {})
 	}
@@ -195,6 +196,43 @@ func TestTaskQueueProgress(t *testing.T) {
 	assert.Equal(t, 3, p.total)
 	assert.Equal(t, 3, p.processed)
 	assert.Equal(t, float64(1), p.percent)
+}
+
+// queues sharing slots must not run more than cap(slots) tasks between them
+func TestTaskQueueSharedSlots(t *testing.T) {
+	m := NewManager()
+	slots := make(chan struct{}, 2)
+
+	var mu sync.Mutex
+	running, maxRunning := 0, 0
+	task := func(ctx context.Context) {
+		mu.Lock()
+		running++
+		maxRunning = max(maxRunning, running)
+		mu.Unlock()
+
+		time.Sleep(sleepTime)
+
+		mu.Lock()
+		running--
+		mu.Unlock()
+	}
+
+	var queues []*TaskQueue
+	for range 3 {
+		tq := NewTaskQueue(context.Background(), m.newProgress(&Job{}), 10, slots)
+		for range 4 {
+			tq.Add("task", task)
+		}
+		tq.Close()
+		queues = append(queues, tq)
+	}
+
+	for _, tq := range queues {
+		tq.Wait()
+	}
+
+	assert.Equal(t, 2, maxRunning)
 }
 
 func TestCancel(t *testing.T) {

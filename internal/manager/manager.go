@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sync"
 	"time"
 
 	"github.com/remeh/sizedwaitgroup"
@@ -69,6 +70,10 @@ type Manager struct {
 	GroupService   GroupService
 
 	scanSubs *subscriptionManager
+
+	// generateSlots caps the tasks running across all generate jobs started by scans
+	generateSlots     chan struct{}
+	generateSlotsOnce sync.Once
 }
 
 var instance *Manager
