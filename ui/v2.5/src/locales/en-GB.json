@@ -1330,6 +1330,7 @@
   "odate_recorded_no_sfw": "No Like Date Recorded",
   "operations": "Operations",
   "organized": "Organised",
+  "organized_items_skipped": "{count, plural, one {# organised item was} other {# organised items were}} skipped. Bulk edits don't change organised items; edit them one at a time instead.",
   "orientation": "Orientation",
   "package_manager": {
     "add_source": "Add source",

@@ -7,9 +7,11 @@ import { StudioSelect } from "../Shared/Select";
 import { ModalComponent } from "../Shared/Modal";
 import { MultiSet } from "../Shared/MultiSet";
 import { useToast } from "src/hooks/Toast";
+import { toastBulkUpdated } from "src/components/Shared/BulkUpdateToast";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
   getAggregateInputValue,
+  getChangedBulkInput,
   getAggregateGroupIds,
   getAggregatePerformerIds,
   getAggregateStateObject,
@@ -127,18 +129,21 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
       aggregateState.state.rating100
     );
 
-    return sceneInput;
+    return getChangedBulkInput(sceneInput, aggregateState.state);
   }
 
   async function onSave() {
     setIsUpdating(true);
     try {
-      await updateScenes({ variables: { input: getSceneInput() } });
-      Toast.success(
-        intl.formatMessage(
-          { id: "toast.updated_entity" },
-          { entity: intl.formatMessage({ id: "scenes" }).toLocaleLowerCase() }
-        )
+      const result = await updateScenes({
+        variables: { input: getSceneInput() },
+      });
+      toastBulkUpdated(
+        Toast,
+        intl,
+        "scenes",
+        props.selected.length,
+        result.data?.bulkSceneUpdate
       );
       props.onClose(true);
     } catch (e) {

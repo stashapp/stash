@@ -22,6 +22,7 @@
     "favourite": "Favorite",
     "hair_color": "Hair Color",
     "organized": "Organized",
+    "organized_items_skipped": "{count, plural, one {# organized item was} other {# organized items were}} skipped. Bulk edits don't change organized items; edit them one at a time instead.",
     "performer_favorite": "Performer Favorited",
     "component_tagger": {
         "config": {
