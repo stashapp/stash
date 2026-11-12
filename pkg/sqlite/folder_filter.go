@@ -73,6 +73,7 @@ func (qb *folderFilterHandler) criterionHandler() criterionHandler {
 
 		qb.galleryCountCriterionHandler(folderFilter.GalleryCount),
 
+		&timestampCriterionHandler{folderFilter.MissingSince, qb.table.Col("missing_since"), nil},
 		&timestampCriterionHandler{folderFilter.CreatedAt, qb.table.Col("created_at"), nil},
 		&timestampCriterionHandler{folderFilter.UpdatedAt, qb.table.Col("updated_at"), nil},
 

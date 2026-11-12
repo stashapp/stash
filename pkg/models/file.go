@@ -36,6 +36,7 @@ type FileFilterType struct {
 	ScenesFilter    *SceneFilterType                 `json:"scenes_filter"`
 	ImagesFilter    *ImageFilterType                 `json:"images_filter"`
 	GalleriesFilter *GalleryFilterType               `json:"galleries_filter"`
+	MissingSince    *TimestampCriterionInput         `json:"missing_since"`
 	CreatedAt       *TimestampCriterionInput         `json:"created_at"`
 	UpdatedAt       *TimestampCriterionInput         `json:"updated_at"`
 }
