@@ -250,7 +250,7 @@ func (s *xpathFragmentScraper) scrapeImageByImage(ctx context.Context, image *mo
 }
 
 func (s *xpathScraper) loadURL(ctx context.Context, url string) (*html.Node, error) {
-	r, err := loadURL(ctx, url, s.client, s.definition, s.globalConfig)
+	r, err := loadURL(ctx, url, s.client, s.definition, s.globalConfig, false /* preferRawJSON */)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load URL %q: %w", url, err)
 	}
