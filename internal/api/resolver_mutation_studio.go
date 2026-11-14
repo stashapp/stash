@@ -362,6 +362,17 @@ func (r *mutationResolver) BulkStudioUpdate(ctx context.Context, input BulkStudi
 		qb := r.repository.Studio
 
 		for _, id := range ids {
+			s, err := qb.Find(ctx, id)
+			if err != nil {
+				return err
+			}
+			if s == nil {
+				return fmt.Errorf("studio with id %d not found", id)
+			}
+			if skipOrganizedInBulk(s.Organized, translator, input.Organized) {
+				continue
+			}
+
 			local := partial
 			local.ID = id
 			if err := studio.ValidateModify(ctx, local, qb); err != nil {

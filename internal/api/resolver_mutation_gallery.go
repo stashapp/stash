@@ -313,6 +313,17 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 		qb := r.repository.Gallery
 
 		for _, galleryID := range galleryIDs {
+			g, err := qb.Find(ctx, galleryID)
+			if err != nil {
+				return err
+			}
+			if g == nil {
+				return fmt.Errorf("gallery with id %d not found", galleryID)
+			}
+			if skipOrganizedInBulk(g.Organized, translator, input.Organized) {
+				continue
+			}
+
 			gallery, err := qb.UpdatePartial(ctx, galleryID, updatedGallery)
 			if err != nil {
 				return err

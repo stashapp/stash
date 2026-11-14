@@ -7,9 +7,11 @@ import { StudioSelect } from "../Shared/Select";
 import { ModalComponent } from "../Shared/Modal";
 import { MultiSet } from "../Shared/MultiSet";
 import { useToast } from "src/hooks/Toast";
+import { toastBulkUpdated } from "src/components/Shared/BulkUpdateToast";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
   getAggregateInputValue,
+  getChangedBulkInput,
   getAggregatePerformerIds,
   getAggregateStateObject,
   getAggregateTagIds,
@@ -117,20 +119,21 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
       aggregateState.state.rating100
     );
 
-    return galleryInput;
+    return getChangedBulkInput(galleryInput, aggregateState.state);
   }
 
   async function onSave() {
     setIsUpdating(true);
     try {
-      await updateGalleries({ variables: { input: getGalleryInput() } });
-      Toast.success(
-        intl.formatMessage(
-          { id: "toast.updated_entity" },
-          {
-            entity: intl.formatMessage({ id: "galleries" }).toLocaleLowerCase(),
-          }
-        )
+      const result = await updateGalleries({
+        variables: { input: getGalleryInput() },
+      });
+      toastBulkUpdated(
+        Toast,
+        intl,
+        "galleries",
+        props.selected.length,
+        result.data?.bulkGalleryUpdate
       );
       props.onClose(true);
     } catch (e) {

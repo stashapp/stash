@@ -825,3 +825,39 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 		})
 	}
 }
+
+func TestSceneIdentifier_IdentifySkipsOrganized(t *testing.T) {
+	const sceneID = 1
+	title := "scrapedTitle"
+	boolFalse := false
+
+	db := mocks.NewDatabase()
+	db.Scene.On("GetURLs", mock.Anything, mock.Anything).Return(nil, nil)
+	db.Scene.On("UpdatePartial", mock.Anything, mock.Anything, mock.Anything).Return(nil, nil)
+
+	identifier := SceneIdentifier{
+		TxnManager:         db,
+		SceneReaderUpdater: db.Scene,
+		StudioReaderWriter: db.Studio,
+		PerformerCreator:   db.Performer,
+		TagFinderCreator:   db.Tag,
+		DefaultOptions:     &MetadataOptions{SetOrganized: &boolFalse, SetCoverImage: &boolFalse, SkipSingleNamePerformers: &boolFalse},
+		Sources: []ScraperSource{{Scraper: mockSceneScraper{
+			results: map[int][]*models.ScrapedScene{sceneID: {{Title: &title}}},
+		}}},
+		SceneUpdatePostHookExecutor: mockHookExecutor{},
+	}
+
+	scene := &models.Scene{
+		ID:           sceneID,
+		Organized:    true,
+		PerformerIDs: models.NewRelatedIDs([]int{}),
+		TagIDs:       models.NewRelatedIDs([]int{}),
+		StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+	}
+
+	if err := identifier.Identify(testCtx, scene); err != nil {
+		t.Fatalf("Identify() error = %v", err)
+	}
+	db.Scene.AssertNotCalled(t, "UpdatePartial", mock.Anything, mock.Anything, mock.Anything)
+}

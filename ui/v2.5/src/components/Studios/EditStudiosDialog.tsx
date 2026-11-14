@@ -5,10 +5,12 @@ import { useBulkStudioUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { ModalComponent } from "../Shared/Modal";
 import { useToast } from "src/hooks/Toast";
+import { toastBulkUpdated } from "src/components/Shared/BulkUpdateToast";
 import { MultiSet } from "../Shared/MultiSet";
 import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
   getAggregateInputValue,
+  getChangedBulkInput,
   getAggregateState,
   getAggregateStateObject,
 } from "src/utils/bulkUpdate";
@@ -101,24 +103,23 @@ export const EditStudiosDialog: React.FC<IListOperationProps> = (
       aggregateState.state.rating100
     );
 
-    return studioInput;
+    return getChangedBulkInput(studioInput, aggregateState.state);
   }
 
   async function onSave() {
     setIsUpdating(true);
     try {
-      await updateStudios({
+      const result = await updateStudios({
         variables: {
           input: getStudioInput(),
         },
       });
-      Toast.success(
-        intl.formatMessage(
-          { id: "toast.updated_entity" },
-          {
-            entity: intl.formatMessage({ id: "studios" }).toLocaleLowerCase(),
-          }
-        )
+      toastBulkUpdated(
+        Toast,
+        intl,
+        "studios",
+        props.selected.length,
+        result.data?.bulkStudioUpdate
       );
       props.onClose(true);
     } catch (e) {
