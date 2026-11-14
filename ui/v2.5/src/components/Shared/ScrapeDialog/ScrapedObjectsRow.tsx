@@ -324,11 +324,9 @@ export const ScrapedGroupsRow: React.FC<
     const value = resultValue ?? [];
 
     const selectValue = value.map((p) => {
-      const aliases: string = "";
       return {
         id: p.stored_id ?? "",
         name: p.name ?? "",
-        aliases,
       };
     });
 
@@ -340,7 +338,12 @@ export const ScrapedGroupsRow: React.FC<
         onSelect={(items) => {
           if (onChangeFn) {
             // map the id back to stored_id
-            onChangeFn(items.map((p) => ({ ...p, stored_id: p.id })));
+            onChangeFn(
+              items.map((p) => ({
+                ...p,
+                stored_id: p.id,
+              }))
+            );
           }
         }}
         values={selectValue}

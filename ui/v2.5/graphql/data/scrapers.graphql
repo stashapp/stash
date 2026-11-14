@@ -93,7 +93,7 @@ fragment ScrapedGroupStudioData on ScrapedStudio {
 
 fragment ScrapedGroupData on ScrapedGroup {
   name
-  aliases
+  alias_list
   duration
   date
   rating
@@ -114,7 +114,7 @@ fragment ScrapedGroupData on ScrapedGroup {
 fragment ScrapedSceneGroupData on ScrapedGroup {
   stored_id
   name
-  aliases
+  alias_list
   duration
   date
   rating
