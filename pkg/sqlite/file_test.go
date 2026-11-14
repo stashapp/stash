@@ -5,6 +5,8 @@ package sqlite_test
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"path/filepath"
 	"testing"
 	"time"
@@ -512,6 +514,56 @@ func Test_fileStore_Find(t *testing.T) {
 			}
 
 			assert.Equal(tt.want, got[0])
+		})
+	}
+}
+
+func Test_fileStore_FindMultiple(t *testing.T) {
+	zip := fileIDs[fileIdxZip]
+	inZip := fileIDs[fileIdxInZip]
+	video := fileIDs[fileIdxStartVideoFiles]
+	image := fileIDs[fileIdxStartImageFiles]
+
+	tests := []struct {
+		name    string
+		ids     []models.FileID
+		want    []int // file indexes, in expected order
+		wantErr bool
+	}{
+		{"none", nil, nil, false},
+		{"in id order", []models.FileID{zip, inZip, video, image},
+			[]int{fileIdxZip, fileIdxInZip, fileIdxStartVideoFiles, fileIdxStartImageFiles}, false},
+		{"reverse order", []models.FileID{image, video, inZip, zip},
+			[]int{fileIdxStartImageFiles, fileIdxStartVideoFiles, fileIdxInZip, fileIdxZip}, false},
+		{"duplicates", []models.FileID{video, zip, video},
+			[]int{fileIdxStartVideoFiles, fileIdxZip, fileIdxStartVideoFiles}, false},
+		{"one missing", []models.FileID{zip, models.FileID(invalidID), video}, nil, true},
+	}
+
+	qb := db.File
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.Find(ctx, tt.ids...)
+			if tt.wantErr {
+				assert.True(errors.Is(err, sql.ErrNoRows), "want sql.ErrNoRows, got %v", err)
+				assert.Nil(got)
+				return
+			}
+			if !assert.NoError(err) {
+				return
+			}
+
+			var want []models.File
+			for _, idx := range tt.want {
+				f := makeFileWithID(idx)
+				if idx == fileIdxInZip {
+					f.Base().ZipFile = makeZipFileWithID(fileIdxZip)
+				}
+				want = append(want, f)
+			}
+			assert.Equal(want, got)
 		})
 	}
 }
