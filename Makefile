@@ -103,10 +103,14 @@ flags-static-windows:
 	$(eval GO_BUILD_FLAGS += -buildmode=pie)
 	$(eval GO_BUILD_TAGS += sqlite_omit_load_extension osusergo)
 
+.PHONY: build-date
+build-date:
+	@go run scripts/getDate.go
+
 .PHONY: build-info
 build-info:
 ifndef BUILD_DATE
-	$(eval BUILD_DATE := $(shell GOOS=$$(go env GOHOSTOS) GOARCH=$$(go env GOHOSTARCH) go run scripts/getDate.go))
+	$(eval BUILD_DATE := $(shell $(MAKE) --no-print-directory GOOS=$(shell go env GOHOSTOS) GOARCH=$(shell go env GOHOSTARCH) build-date))
 endif
 ifndef GITHASH
 	$(eval GITHASH := $(shell git rev-parse --short HEAD))
