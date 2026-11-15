@@ -44,6 +44,12 @@ These are the scraper sources maintained by the stashapp organisation:
 
 Installed scrapers can be updated or uninstalled from the `Installed Scrapers` section.
 
+### URL pattern conflicts
+
+URL scrapers declare the URL patterns they can handle. If two installed scrapers declare overlapping patterns, Stash cannot reliably determine which one to use when scraping by URL, and the choice becomes effectively random. This commonly happens when a scraper is replaced or consolidated into another scraper upstream, leaving the old one still installed.
+
+When this happens, a warning icon is shown next to the affected URL patterns in the `Scrapers` section of `Settings > Metadata Providers`. Clicking the icon opens a dialog explaining the conflict and offering to uninstall one of the scrapers. The dialog highlights the scraper with the older package as the more likely candidate for removal, but this is only a suggestion, the correct choice depends on which scraper you still want to use.
+
 ### Source URLs
 
 The source URL must return a yaml file containing all the available packages for the source. An example source yaml file looks like the following:
