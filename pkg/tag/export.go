@@ -32,6 +32,10 @@ func ToJSON(ctx context.Context, reader FinderAliasImageGetter, tag *models.Tag)
 		UpdatedAt:     json.JSONTime{Time: tag.UpdatedAt},
 	}
 
+	if tag.Rating != nil {
+		newTagJSON.Rating = *tag.Rating
+	}
+
 	aliases, err := reader.GetAliases(ctx, tag.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting tag aliases: %v", err)
