@@ -663,6 +663,89 @@ func TestFileStore_FindByFingerprint(t *testing.T) {
 	}
 }
 
+func TestFileStore_ModifyVRMetadata(t *testing.T) {
+	proj := models.ProjectionEnumEquirectangular
+	stereo := models.StereoModeEnumSBS
+	hOff := -0.5
+	vOff := 0.25
+	alpha := "yes"
+
+	tests := []struct {
+		name        string
+		projection  *models.ProjectionEnum
+		stereoMode  *models.StereoModeEnum
+		corrections *models.VRCorrections
+	}{
+		{
+			"set all fields",
+			&proj,
+			&stereo,
+			&models.VRCorrections{
+				HorizontalOffset: &hOff,
+				VerticalOffset:   &vOff,
+				AlphaMode:        &alpha,
+			},
+		},
+		{
+			"projection only",
+			&proj,
+			nil,
+			nil,
+		},
+		{
+			"clear all",
+			nil,
+			nil,
+			nil,
+		},
+	}
+
+	fileID := sceneFileIDs[sceneIdx1WithPerformer]
+	qb := db.File
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			err := qb.ModifyVideoFileMetadata(ctx, fileID, tt.projection, tt.stereoMode, tt.corrections)
+			assert.NoError(err)
+
+			files, err := qb.Find(ctx, fileID)
+			assert.NoError(err)
+			assert.Len(files, 1)
+
+			vf, ok := files[0].(*models.VideoFile)
+			if !assert.True(ok, "expected VideoFile") {
+				return
+			}
+
+			if tt.projection != nil {
+				if assert.NotNil(vf.Projection) {
+					assert.Equal(*tt.projection, *vf.Projection)
+				}
+			} else {
+				assert.Nil(vf.Projection)
+			}
+
+			if tt.stereoMode != nil {
+				if assert.NotNil(vf.StereoMode) {
+					assert.Equal(*tt.stereoMode, *vf.StereoMode)
+				}
+			} else {
+				assert.Nil(vf.StereoMode)
+			}
+
+			if tt.corrections != nil {
+				if assert.NotNil(vf.VRCorrections) {
+					assert.Equal(*tt.corrections, *vf.VRCorrections)
+				}
+			} else {
+				assert.Nil(vf.VRCorrections)
+			}
+		})
+	}
+}
+
 func TestFileStore_IsPrimary(t *testing.T) {
 	tests := []struct {
 		name   string
