@@ -563,19 +563,6 @@ func (qb *FileStore) countDataset() *goqu.SelectDataset {
 	)
 }
 
-func (qb *FileStore) get(ctx context.Context, q *goqu.SelectDataset) (models.File, error) {
-	ret, err := qb.getMany(ctx, q)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(ret) == 0 {
-		return nil, sql.ErrNoRows
-	}
-
-	return ret[0], nil
-}
-
 func (qb *FileStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]models.File, error) {
 	const single = false
 	var rows fileQueryRows
@@ -594,30 +581,45 @@ func (qb *FileStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]mode
 	return rows.resolve(), nil
 }
 
+// Find returns the files with the given IDs, in the same order as ids.
+// Returns an error wrapping sql.ErrNoRows if any of the IDs does not exist.
 func (qb *FileStore) Find(ctx context.Context, ids ...models.FileID) ([]models.File, error) {
-	var files []models.File
-	for _, id := range ids {
-		file, err := qb.find(ctx, id)
-		if err != nil {
-			return nil, err
-		}
-
-		if file == nil {
-			return nil, fmt.Errorf("file with id %d not found", id)
-		}
-
-		files = append(files, file)
+	if len(ids) == 0 {
+		return nil, nil
 	}
 
-	return files, nil
-}
+	byID := make(map[models.FileID]models.File, len(ids))
 
-func (qb *FileStore) find(ctx context.Context, id models.FileID) (models.File, error) {
-	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
+	table := qb.table()
+	if err := batchExec(ids, defaultBatchSize, func(batch []models.FileID) error {
+		// Ordered by id so that the rows for each file (one per fingerprint)
+		// are adjacent, as fileQueryRows.resolve requires.
+		q := qb.selectDataset().Prepared(true).
+			Where(table.Col(idColumn).In(batch)).
+			Order(table.Col(idColumn).Asc())
 
-	ret, err := qb.get(ctx, q)
-	if err != nil {
-		return nil, fmt.Errorf("getting file by id %d: %w", id, err)
+		found, err := qb.getMany(ctx, q)
+		if err != nil {
+			return err
+		}
+
+		for _, f := range found {
+			byID[f.Base().ID] = f
+		}
+
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("getting files by id: %w", err)
+	}
+
+	ret := make([]models.File, len(ids))
+	for i, id := range ids {
+		f, ok := byID[id]
+		if !ok {
+			return nil, fmt.Errorf("getting file by id %d: %w", id, sql.ErrNoRows)
+		}
+
+		ret[i] = f
 	}
 
 	return ret, nil
