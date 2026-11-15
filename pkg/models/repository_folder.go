@@ -1,6 +1,9 @@
 package models
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 // FolderGetter provides methods to get folders by ID.
 type FolderGetter interface {
@@ -12,6 +15,7 @@ type FolderGetter interface {
 type FolderFinder interface {
 	FolderGetter
 	FindAllInPaths(ctx context.Context, p []string, includeZipContents bool, limit, offset int) ([]*Folder, error)
+	FindMissingInPaths(ctx context.Context, p []string, missingSinceBefore *time.Time, limit, offset int) ([]*Folder, error)
 	FindByPath(ctx context.Context, path string, caseSensitive bool) (*Folder, error)
 	FindByZipFileID(ctx context.Context, zipFileID FileID) ([]*Folder, error)
 	FindByParentFolderID(ctx context.Context, parentFolderID FolderID) ([]*Folder, error)
@@ -25,6 +29,7 @@ type FolderQueryer interface {
 
 type FolderCounter interface {
 	CountAllInPaths(ctx context.Context, p []string) (int, error)
+	CountMissingInPaths(ctx context.Context, p []string, missingSinceBefore *time.Time) (int, error)
 }
 
 // FolderCreator provides methods to create folders.
@@ -35,6 +40,7 @@ type FolderCreator interface {
 // FolderUpdater provides methods to update folders.
 type FolderUpdater interface {
 	Update(ctx context.Context, f *Folder) error
+	SetMissing(ctx context.Context, id FolderID, missingSince *time.Time) error
 }
 
 type FolderDestroyer interface {
