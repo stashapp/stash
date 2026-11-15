@@ -7,6 +7,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"os"
 	"regexp"
@@ -98,30 +99,10 @@ func loadURL(ctx context.Context, loadURL string, client *http.Client, def Defin
 // func urlFromSurf uses enetx/surf with TLS browser emulation to bypass fingerprint-based blocking.
 // this is a step down from CDP but faster and more lightweight and can succeed where CDP might fail
 func urlFromSurf(ctx context.Context, loadURL string, driverOptions scraperDriverOptions, def Definition, globalConfig GlobalConfig) (io.Reader, error) {
-	// get cookies
-	jar, err := def.jar()
+	client, jar, err := newSurfHTTPClient(def, globalConfig)
 	if err != nil {
-		return nil, fmt.Errorf("error creating cookie jar: %w", err)
+		return nil, err
 	}
-
-	// create client
-	builder := surf.NewClient().
-		Builder().
-		Impersonate().Chrome()
-
-	// get global proxy
-	proxyURL := globalConfig.GetProxy()
-	if proxyURL != "" {
-		builder = builder.Proxy(g.String(proxyURL))
-	}
-
-	client := builder.
-		Build().
-		Unwrap().
-		Std() // use stdlib adapter
-
-	// pass in jar directly
-	client.Jar = jar
 
 	// try to mimic normal method above
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, loadURL, nil)
@@ -159,6 +140,22 @@ func urlFromSurf(ctx context.Context, loadURL string, driverOptions scraperDrive
 	bodyReader := bytes.NewReader(body)
 	printCookies(jar, def, "Jar cookies found for scraper urls")
 	return charset.NewReader(bodyReader, resp.Header.Get("Content-Type"))
+}
+
+func newSurfHTTPClient(def Definition, globalConfig GlobalConfig) (*http.Client, *cookiejar.Jar, error) {
+	jar, err := def.jar()
+	if err != nil {
+		return nil, nil, fmt.Errorf("error creating cookie jar: %w", err)
+	}
+
+	builder := surf.NewClient().Builder().Impersonate().Chrome()
+	if proxyURL := globalConfig.GetProxy(); proxyURL != "" {
+		builder = builder.Proxy(g.String(proxyURL))
+	}
+
+	client := builder.Build().Unwrap().Std()
+	client.Jar = jar
+	return client, jar, nil
 }
 
 // func urlFromCDP uses chrome cdp and DOM to load and process the url

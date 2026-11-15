@@ -262,9 +262,9 @@ func (c Cache) ScrapeName(ctx context.Context, id, query string, ty ScrapeConten
 		return nil, fmt.Errorf("error while name scraping with scraper %s: %w", id, err)
 	}
 
-	pp := postScraper{
-		Cache:        c,
-		excludeTagRE: c.compileExcludeTagPatterns(),
+	pp, err := newPostScraper(c, s)
+	if err != nil {
+		return nil, err
 	}
 	if err := c.repository.WithReadTxn(ctx, func(ctx context.Context) error {
 		for i, cc := range content {
@@ -303,7 +303,7 @@ func (c Cache) ScrapeFragment(ctx context.Context, id string, input Input) (Scra
 		return nil, fmt.Errorf("error while fragment scraping with scraper %s: %w", id, err)
 	}
 
-	return c.postScrapeSingle(ctx, content)
+	return c.postScrapeSingle(ctx, content, s)
 }
 
 // ScrapeURL scrapes a given url for the given content. Searches the scraper cache
@@ -325,7 +325,7 @@ func (c Cache) ScrapeURL(ctx context.Context, url string, ty ScrapeContentType) 
 				return ret, nil
 			}
 
-			return c.postScrapeSingle(ctx, ret)
+			return c.postScrapeSingle(ctx, ret, s)
 		}
 	}
 
@@ -410,7 +410,14 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty Scrape
 		}
 	}
 
-	return c.postScrapeSingle(ctx, ret)
+	return c.postScrapeSingle(ctx, ret, s)
+}
+
+func definitionForScraper(s scraper) *Definition {
+	if defined, ok := s.(definedScraper); ok {
+		return &defined.config
+	}
+	return nil
 }
 
 func (c Cache) getScene(ctx context.Context, sceneID int) (*models.Scene, error) {

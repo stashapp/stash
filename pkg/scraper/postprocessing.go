@@ -14,9 +14,27 @@ import (
 type postScraper struct {
 	Cache
 	excludeTagRE []*regexp.Regexp
+	imageFetcher imageGetter
 
 	// ignoredTags is a list of tags that were ignored during post-processing
 	ignoredTags []string
+}
+
+func newPostScraper(c Cache, s scraper) (postScraper, error) {
+	imageFetcher, err := newImageGetter(c.client, c.globalConfig, definitionForScraper(s))
+	if err != nil {
+		return postScraper{}, err
+	}
+
+	return postScraper{
+		Cache:        c,
+		excludeTagRE: c.compileExcludeTagPatterns(),
+		imageFetcher: imageFetcher,
+	}, nil
+}
+
+func (c *postScraper) imageGetter() imageGetter {
+	return c.imageFetcher
 }
 
 // postScrape handles post-processing of scraped content. If the content
@@ -93,7 +111,7 @@ func (c *postScraper) postScrapePerformer(ctx context.Context, p models.ScrapedP
 	// post-process - set the image if applicable
 	// don't set image for related performers to avoid excessive network calls
 	if !related {
-		if err := setPerformerImage(ctx, c.client, &p, c.globalConfig); err != nil {
+		if err := setPerformerImage(ctx, c.imageGetter(), &p); err != nil {
 			logger.Warnf("Could not set image using URL %s: %s", *p.Image, err.Error())
 		}
 	}
@@ -216,10 +234,10 @@ func (c *postScraper) postScrapeMovie(ctx context.Context, m models.ScrapedMovie
 	// post-process - set the image if applicable
 	// don't set images for related movies to avoid excessive network calls
 	if !related {
-		if err := processImageField(ctx, m.FrontImage, c.client, c.globalConfig); err != nil {
+		if err := processImageField(ctx, m.FrontImage, c.imageGetter()); err != nil {
 			logger.Warnf("could not set front image using URL %s: %v", *m.FrontImage, err)
 		}
-		if err := processImageField(ctx, m.BackImage, c.client, c.globalConfig); err != nil {
+		if err := processImageField(ctx, m.BackImage, c.imageGetter()); err != nil {
 			logger.Warnf("could not set back image using URL %s: %v", *m.BackImage, err)
 		}
 	}
@@ -260,10 +278,10 @@ func (c *postScraper) postScrapeGroup(ctx context.Context, m models.ScrapedGroup
 	// post-process - set the image if applicable
 	// don't set images for related groups to avoid excessive network calls
 	if !related {
-		if err := processImageField(ctx, m.FrontImage, c.client, c.globalConfig); err != nil {
+		if err := processImageField(ctx, m.FrontImage, c.imageGetter()); err != nil {
 			logger.Warnf("could not set front image using URL %s: %v", *m.FrontImage, err)
 		}
-		if err := processImageField(ctx, m.BackImage, c.client, c.globalConfig); err != nil {
+		if err := processImageField(ctx, m.BackImage, c.imageGetter()); err != nil {
 			logger.Warnf("could not set back image using URL %s: %v", *m.BackImage, err)
 		}
 	}
@@ -354,7 +372,7 @@ func (c *postScraper) postScrapeStudio(ctx context.Context, s models.ScrapedStud
 	// post-process - set the image if applicable
 	// don't set image for related studios to avoid excessive network calls
 	if !related {
-		if err := setStudioImage(ctx, c.client, &s, c.globalConfig); err != nil {
+		if err := setStudioImage(ctx, c.imageGetter(), &s); err != nil {
 			logger.Warnf("Could not set image using URL %s: %s", *s.Image, err.Error())
 		}
 	}
@@ -446,7 +464,7 @@ func (c *postScraper) postScrapeScene(ctx context.Context, scene models.ScrapedS
 	}
 
 	// post-process - set the image if applicable
-	if err := processImageField(ctx, scene.Image, c.client, c.globalConfig); err != nil {
+	if err := processImageField(ctx, scene.Image, c.imageGetter()); err != nil {
 		logger.Warnf("Could not set image using URL %s: %v", *scene.Image, err)
 	}
 
@@ -506,10 +524,10 @@ func (c *postScraper) postScrapeImage(ctx context.Context, image models.ScrapedI
 
 // postScrapeSingle handles post-processing of a single scraped content item.
 // This is a convenience function that includes logging the ignored tags, as opposed to logging them in the caller.
-func (c Cache) postScrapeSingle(ctx context.Context, content ScrapedContent) (ret ScrapedContent, err error) {
-	pp := postScraper{
-		Cache:        c,
-		excludeTagRE: c.compileExcludeTagPatterns(),
+func (c Cache) postScrapeSingle(ctx context.Context, content ScrapedContent, s scraper) (ret ScrapedContent, err error) {
+	pp, err := newPostScraper(c, s)
+	if err != nil {
+		return nil, err
 	}
 
 	if err := c.repository.WithReadTxn(ctx, func(ctx context.Context) error {
