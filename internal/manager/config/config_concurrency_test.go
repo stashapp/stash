@@ -119,6 +119,7 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.SetInterface(AutostartVideoOnPlaySelected, i.GetAutostartVideoOnPlaySelected())
 				i.SetInterface(ContinuePlaylistDefault, i.GetContinuePlaylistDefault())
 				i.SetInterface(PythonPath, i.GetPythonPath())
+				i.SetInterface(SFWContentMode, i.GetSFWContentMode())
 				t.Logf("Worker %v iteration %v took %v", wk, l, time.Since(start))
 			}
 			wg.Done()
@@ -126,4 +127,84 @@ func TestConcurrentConfigAccess(t *testing.T) {
 	}
 
 	wg.Wait()
+}
+
+func TestNoNestedRLockDeadlock(t *testing.T) {
+	i := InitializeEmpty()
+	i.SetString(Database, "stash-go.sqlite")
+	i.SetString(Generated, "generated")
+	i.SetString(BlobsStorage, string(BlobStorageTypeFilesystem))
+	i.SetString(BlobsPath, "blobs")
+
+	// 1. Deterministic check for lock-assuming helper called inside Validate()
+	// while RLock is held and a writer is queued on Lock().
+	i.RLock()
+	writerReady := make(chan struct{})
+	writerDone := make(chan struct{})
+	go func() {
+		close(writerReady)
+		i.Lock()
+		i.Unlock()
+		close(writerDone)
+	}()
+	<-writerReady
+	time.Sleep(20 * time.Millisecond)
+
+	helperDone := make(chan struct{})
+	go func() {
+		_ = i.getBlobsStorage()
+		close(helperDone)
+	}()
+
+	select {
+	case <-helperDone:
+	case <-time.After(time.Second):
+		t.Fatal("getBlobsStorage deadlocked while outer RLock was held with a pending writer")
+	}
+
+	i.RUnlock()
+	<-writerDone
+
+	// 2. Focused contention test on GetSFWContentMode() and Validate() against a tight writer
+	// to catch any nested RLock acquisition within the same goroutine.
+	stopWriter := make(chan struct{})
+	writerExited := make(chan struct{})
+	go func() {
+		defer close(writerExited)
+		for {
+			select {
+			case <-stopWriter:
+				return
+			default:
+				i.Lock()
+				i.Unlock()
+			}
+		}
+	}()
+
+	readersDone := make(chan struct{})
+	go func() {
+		var wg sync.WaitGroup
+		for r := 0; r < 4; r++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				for n := 0; n < 2000; n++ {
+					_ = i.GetSFWContentMode()
+					_ = i.Validate()
+				}
+			}()
+		}
+		wg.Wait()
+		close(readersDone)
+	}()
+
+	select {
+	case <-readersDone:
+		close(stopWriter)
+		<-writerExited
+	case <-time.After(5 * time.Second):
+		close(stopWriter)
+		t.Fatal("GetSFWContentMode or Validate deadlocked under concurrent writer contention")
+	}
 }
