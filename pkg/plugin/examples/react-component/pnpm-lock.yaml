@@ -9,19 +9,19 @@ importers:
   .:
     devDependencies:
       '@types/react':
-        specifier: ^18.3.26
+        specifier: ^18.2.31
         version: 18.3.26
       '@types/react-dom':
-        specifier: ^18.3.7
+        specifier: ^18.2.14
         version: 18.3.7(@types/react@18.3.26)
       cpx:
         specifier: ^1.5.0
         version: 1.5.0
       sass:
-        specifier: ^1.93.2
+        specifier: ^1.69.4
         version: 1.93.2
       typescript:
-        specifier: ^5.9.3
+        specifier: ^5.2.2
         version: 5.9.3
 
 packages:
@@ -676,8 +676,8 @@ packages:
     resolution: {integrity: sha512-JxHc1weCN68wRY0fhCoXpyK55m/XPHafOmK4UWD7m2CI14GMcFypt4w/0+NV5f/ZMby2F6S2wwA7fgynh9gWSw==}
     engines: {node: '>=0.10.0'}
 
-  shell-quote@1.8.3:
-    resolution: {integrity: sha512-ObmnIF4hXNg1BqhnHmgbDETF8dLPCggZWBjkQfhZpbszZnYur5DUljTcCHii5LC3J5E0yeO/1LIMyH+UvHQgyw==}
+  shell-quote@1.12.0:
+    resolution: {integrity: sha512-PcByqNyT/38F2kDNi006HAMRJaULuBzq/FOsw3qdZvX/GA9W/jamDaRskgHjubHiftXK5sIFxLNkvrXUwcof6Q==}
     engines: {node: '>= 0.4'}
 
   snapdragon-node@2.1.1:
@@ -987,7 +987,7 @@ snapshots:
       mkdirp: 0.5.6
       resolve: 1.22.11
       safe-buffer: 5.2.1
-      shell-quote: 1.8.3
+      shell-quote: 1.12.0
       subarg: 1.0.0
     transitivePeerDependencies:
       - supports-color
@@ -1476,7 +1476,7 @@ snapshots:
       is-plain-object: 2.0.4
       split-string: 3.1.0
 
-  shell-quote@1.8.3: {}
+  shell-quote@1.12.0: {}
 
   snapdragon-node@2.1.1:
     dependencies:
