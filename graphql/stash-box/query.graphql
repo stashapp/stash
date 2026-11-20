@@ -109,6 +109,7 @@ fragment FingerprintFragment on Fingerprint {
 
 fragment SceneFragment on Scene {
   id
+  deleted
   title
   code
   details
