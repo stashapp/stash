@@ -40,7 +40,7 @@ RUN make flags-release flags-pie stash
 FROM nvidia/cuda:${CUDA_VERSION}-base-ubuntu24.04
 RUN apt update && apt upgrade -y && apt install -y \
     # stash dependencies
-    ca-certificates libvips-tools ffmpeg \
+    ca-certificates libvips-tools ffmpeg git \
     # intel dependencies
     intel-media-va-driver-non-free vainfo \
     # python tools
