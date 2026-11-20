@@ -28,6 +28,9 @@ type Client struct {
 
 	// tag patterns to be excluded
 	excludeTagRE []*regexp.Regexp
+
+	// don't download scene cover images
+	skipImages bool
 }
 
 type ClientOption func(*Client)
@@ -35,6 +38,13 @@ type ClientOption func(*Client)
 func ExcludeTagPatterns(patterns []string) ClientOption {
 	return func(c *Client) {
 		c.excludeTagRE = scraper.CompileExclusionRegexps(patterns)
+	}
+}
+
+// SkipImages stops scene lookups from downloading each scene's cover image.
+func SkipImages(skip bool) ClientOption {
+	return func(c *Client) {
+		c.skipImages = skip
 	}
 }
 

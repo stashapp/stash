@@ -10,8 +10,9 @@ import (
 	"github.com/stashapp/stash/pkg/stashbox"
 )
 
-func (r *Resolver) newStashBoxClient(box models.StashBox) *stashbox.Client {
-	return stashbox.NewClient(box, stashbox.ExcludeTagPatterns(manager.GetInstance().Config.GetScraperExcludeTagPatterns()))
+func (r *Resolver) newStashBoxClient(box models.StashBox, options ...stashbox.ClientOption) *stashbox.Client {
+	options = append([]stashbox.ClientOption{stashbox.ExcludeTagPatterns(manager.GetInstance().Config.GetScraperExcludeTagPatterns())}, options...)
+	return stashbox.NewClient(box, options...)
 }
 
 func resolveStashBoxFn(indexField, endpointField string) func(index *int, endpoint *string) (*models.StashBox, error) {

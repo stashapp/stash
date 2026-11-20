@@ -189,11 +189,15 @@ input ScrapeSingleSceneInput {
   scene_id: ID
   "Instructs to query by scene fragment"
   scene_input: ScrapedSceneInput
+  "Stash-box sources only: do not download the scenes' cover images (image is left null)"
+  skip_images: Boolean
 }
 
 input ScrapeMultiScenesInput {
   "Instructs to query by scene fingerprints"
   scene_ids: [ID!]
+  "Stash-box sources only: do not download the scenes' cover images (image is left null)"
+  skip_images: Boolean
 }
 
 input ScrapeSingleStudioInput {
