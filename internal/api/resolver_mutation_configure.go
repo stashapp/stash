@@ -333,15 +333,11 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.SetString(config.GalleryCoverRegex, *input.GalleryCoverRegex)
 	}
 
-	if input.Username != nil && *input.Username != c.GetUsername() {
-		c.SetString(config.Username, *input.Username)
-		if *input.Password == "" {
-			logger.Info("Username cleared")
-		} else {
-			logger.Info("Username changed")
-		}
-	}
-
+	// Validate / set the password before the username block so that a too-long
+	// password fails atomically, without first mutating the username in the
+	// in-memory config. The username block below inspects *input.Password to
+	// decide its log message, so the order swap does not change its behaviour.
+	// See https://github.com/stashapp/stash/issues/7135.
 	if input.Password != nil {
 		// bit of a hack - check if the passed in password is the same as the stored hash
 		// and only set if they are different
@@ -353,7 +349,18 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 			} else {
 				logger.Info("Password changed")
 			}
-			c.SetPassword(*input.Password)
+			if err := c.SetPassword(*input.Password); err != nil {
+				return makeConfigGeneralResult(), fmt.Errorf("error setting password: %v", err)
+			}
+		}
+	}
+
+	if input.Username != nil && *input.Username != c.GetUsername() {
+		c.SetString(config.Username, *input.Username)
+		if *input.Password == "" {
+			logger.Info("Username cleared")
+		} else {
+			logger.Info("Username changed")
 		}
 	}
 
