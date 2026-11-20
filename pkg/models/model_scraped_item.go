@@ -691,6 +691,8 @@ type ScrapedScene struct {
 	RemoteSiteID *string                `json:"remote_site_id"`
 	Duration     *int                   `json:"duration"`
 	Fingerprints []*StashBoxFingerprint `json:"fingerprints"`
+	// Stash-box sources only: the scene is deleted or merged on the stash-box
+	RemoteDeleted *bool `json:"remote_deleted"`
 }
 
 func (ScrapedScene) IsScrapedContent() {}

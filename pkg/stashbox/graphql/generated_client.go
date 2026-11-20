@@ -433,6 +433,7 @@ func (t *FingerprintFragment) GetSubmissions() int {
 
 type SceneFragment struct {
 	ID             string                         "json:\"id\" graphql:\"id\""
+	Deleted        bool                           "json:\"deleted\" graphql:\"deleted\""
 	Title          *string                        "json:\"title,omitempty\" graphql:\"title\""
 	Code           *string                        "json:\"code,omitempty\" graphql:\"code\""
 	Details        *string                        "json:\"details,omitempty\" graphql:\"details\""
@@ -453,6 +454,12 @@ func (t *SceneFragment) GetID() string {
 		t = &SceneFragment{}
 	}
 	return t.ID
+}
+func (t *SceneFragment) GetDeleted() bool {
+	if t == nil {
+		t = &SceneFragment{}
+	}
+	return t.Deleted
 }
 func (t *SceneFragment) GetTitle() *string {
 	if t == nil {
@@ -1132,6 +1139,7 @@ const FindScenesBySceneFingerprintsDocument = `query FindScenesBySceneFingerprin
 }
 fragment SceneFragment on Scene {
 	id
+	deleted
 	title
 	code
 	details
@@ -1284,6 +1292,7 @@ const SearchSceneDocument = `query SearchScene ($term: String!) {
 }
 fragment SceneFragment on Scene {
 	id
+	deleted
 	title
 	code
 	details
@@ -1594,6 +1603,7 @@ const FindSceneByIDDocument = `query FindSceneByID ($id: ID!) {
 }
 fragment SceneFragment on Scene {
 	id
+	deleted
 	title
 	code
 	details

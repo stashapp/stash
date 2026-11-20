@@ -168,6 +168,7 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 		Duration:       s.Duration,
 		RemoteSiteID:   &stashID,
 		Fingerprints:   getFingerprints(s),
+		RemoteDeleted:  &s.Deleted,
 		// Image
 		// stash_id
 	}

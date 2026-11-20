@@ -101,6 +101,9 @@ type ScrapedScene {
   remote_site_id: String
   duration: Int
   fingerprints: [StashBoxFingerprint!]
+
+  "Stash-box sources only: the scene is deleted (or merged) on the stash-box"
+  remote_deleted: Boolean
 }
 
 input ScrapedSceneInput {
