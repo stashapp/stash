@@ -65,11 +65,15 @@ func (t *jsPluginTask) initVM() error {
 
 		// Arguments to the plugin operation.
 		Args map[string]interface{}
+
+		// Configured settings for the plugin.
+		Settings map[string]interface{}
 	}
 
 	input := pluginInput{
 		ServerConnection: t.input.ServerConnection,
 		Args:             t.input.Args.ToMap(),
+		Settings:         t.input.Settings,
 	}
 
 	if err := t.vm.Set("input", input); err != nil {

@@ -10,7 +10,9 @@ Stash currently supports JavaScript embedded plugin tasks using [goja](https://g
 
 ### Plugin input
 
-The input is provided to JavaScript plugin tasks using the `input` global variable, and is an object based on the structure provided in the `Plugin input` section of the [Plugins](/help/Plugins.md) page. 
+The input is provided to JavaScript plugin tasks using the `input` global variable, and is an object based on the structure provided in the `Plugin input` section of the [Plugins](/help/Plugins.md) page.
+
+Note that unlike other plugin types, the values contained by `input` use PascalCase: `input.ServerConnection`, `input.Args`, and `input.Settings`.
 
 > **⚠️ Note:** `server_connection` field should not be necessary in most embedded plugins.
 
