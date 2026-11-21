@@ -3,7 +3,6 @@ package identify
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -17,9 +16,9 @@ type PerformerCreator interface {
 func getPerformerID(ctx context.Context, endpoint string, w PerformerCreator, p *models.ScrapedPerformer, createMissing bool, skipSingleNamePerformers bool) (*int, error) {
 	if p.StoredID != nil {
 		// existing performer, just add it
-		performerID, err := strconv.Atoi(*p.StoredID)
+		performerID, err := parsePerformerID(*p.StoredID)
 		if err != nil {
-			return nil, fmt.Errorf("error converting performer ID %s: %w", *p.StoredID, err)
+			return nil, err
 		}
 
 		return &performerID, nil
