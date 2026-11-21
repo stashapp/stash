@@ -21,6 +21,7 @@ type generatedPaths struct {
 	Downloads          string
 	Tmp                string
 	InteractiveHeatmap string
+	Captions           string
 }
 
 func newGeneratedPaths(path string) *generatedPaths {
@@ -33,6 +34,7 @@ func newGeneratedPaths(path string) *generatedPaths {
 	gp.Downloads = filepath.Join(path, "download_stage")
 	gp.Tmp = filepath.Join(path, "tmp")
 	gp.InteractiveHeatmap = filepath.Join(path, "interactive_heatmaps")
+	gp.Captions = filepath.Join(path, "captions")
 	return &gp
 }
 

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/asticode/go-astisub"
+	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
@@ -21,6 +22,61 @@ var CaptionExts = []string{"vtt", "srt"} // in a case where vtt and srt files ar
 // ISO 639-1 uses 2 or 3 a-z chars for codes so 00 is a safe non valid choise
 // https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
 const LangUnknown = "00"
+
+const EmbeddedCaptionType = "embedded"
+
+// iso639_2BTo1 maps ISO 639-2/B bibliographic codes commonly emitted by ffprobe
+// (e.g. from MKV containers) to their ISO 639-1 equivalents.
+var iso639_2BTo1 = map[string]string{
+	"alb": "sq", "arm": "hy", "baq": "eu", "bur": "my", "chi": "zh",
+	"cze": "cs", "dut": "nl", "fre": "fr", "geo": "ka", "ger": "de",
+	"gre": "el", "ice": "is", "mac": "mk", "mao": "mi", "may": "ms",
+	"per": "fa", "rum": "ro", "slo": "sk", "tib": "bo", "wel": "cy",
+}
+
+// NormalizeSubtitleLanguage normalizes an ffprobe subtitle language tag
+// (e.g. ISO 639-2 "eng", "jpn", "fre", "und") into an ISO 639-1/base code (e.g. "en", "ja", "fr")
+// or LangUnknown ("00") when absent or undetermined.
+func NormalizeSubtitleLanguage(raw string) string {
+	raw = strings.ToLower(strings.TrimSpace(raw))
+	if raw == "" || raw == "und" || raw == LangUnknown {
+		return LangUnknown
+	}
+	if mapped, ok := iso639_2BTo1[raw]; ok {
+		return mapped
+	}
+	base, err := language.ParseBase(raw)
+	if err != nil {
+		return LangUnknown
+	}
+	code := base.String()
+	if code == "" || code == "und" {
+		return LangUnknown
+	}
+	return code
+}
+
+// EmbeddedCaptionsFromStreams converts ffprobe text subtitle streams into
+// deduplicated VideoCaption entries suitable for storing in video_captions.
+func EmbeddedCaptionsFromStreams(streams []*ffmpeg.FFProbeStream) []*models.VideoCaption {
+	captions := make([]*models.VideoCaption, 0, len(streams))
+	langCounts := make(map[string]int, len(streams))
+
+	for _, stream := range streams {
+		if stream == nil || !ffmpeg.IsTextSubtitleCodec(stream.CodecName) {
+			continue
+		}
+		lang := NormalizeSubtitleLanguage(stream.Tags.Language)
+		langCounts[lang]++
+		captionType := EmbeddedCaptionType
+		if langCounts[lang] > 1 {
+			captionType = fmt.Sprintf("%s-%d", EmbeddedCaptionType, langCounts[lang])
+		}
+		captions = append(captions, models.NewEmbeddedVideoCaption(lang, stream.Index, captionType))
+	}
+
+	return captions
+}
 
 // GetCaptionPath generates the path of a caption
 // from a given file path, wanted language and caption sufffix
@@ -175,6 +231,10 @@ func CleanCaptions(ctx context.Context, f *models.VideoFile, txnMgr txn.Manager,
 	var newCaptions []*models.VideoCaption
 
 	for _, caption := range captions {
+		if caption.IsEmbedded() {
+			newCaptions = append(newCaptions, caption)
+			continue
+		}
 		captionPath := caption.Path(filePath)
 		_, err := os.Stat(captionPath)
 		if errors.Is(err, os.ErrNotExist) {
@@ -205,4 +265,62 @@ func CleanCaptions(ctx context.Context, f *models.VideoFile, txnMgr txn.Manager,
 	}
 
 	return nil
+}
+
+// SyncEmbeddedCaptions merges the embedded subtitle tracks discovered on f with
+// any existing sidecar captions in storage and persists updates when changed.
+func SyncEmbeddedCaptions(ctx context.Context, f *models.VideoFile, txnMgr txn.Manager, w CaptionUpdater) error {
+	if f == nil || f.EmbeddedCaptions == nil {
+		return nil
+	}
+
+	existing, err := w.GetCaptions(ctx, f.ID)
+	if err != nil {
+		return fmt.Errorf("getting captions for file %s: %w", f.Path, err)
+	}
+
+	var merged []*models.VideoCaption
+	var existingEmbedded []*models.VideoCaption
+	for _, c := range existing {
+		if c.IsEmbedded() {
+			existingEmbedded = append(existingEmbedded, c)
+		} else {
+			merged = append(merged, c)
+		}
+	}
+
+	if captionsEqual(existingEmbedded, f.EmbeddedCaptions) {
+		return nil
+	}
+
+	merged = append(merged, f.EmbeddedCaptions...)
+
+	fn := func(ctx context.Context) error {
+		return w.UpdateCaptions(ctx, f.ID, merged)
+	}
+
+	if txnMgr == nil {
+		err = fn(ctx)
+	} else {
+		err = txn.WithTxn(ctx, txnMgr, fn)
+	}
+	if err != nil {
+		return fmt.Errorf("updating embedded captions for file %s: %w", f.Path, err)
+	}
+
+	return nil
+}
+
+func captionsEqual(a, b []*models.VideoCaption) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i].LanguageCode != b[i].LanguageCode ||
+			a[i].Filename != b[i].Filename ||
+			a[i].CaptionType != b[i].CaptionType {
+			return false
+		}
+	}
+	return true
 }

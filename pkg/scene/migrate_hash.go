@@ -46,6 +46,10 @@ func MigrateHash(p *paths.Paths, oldHash string, newHash string) {
 	oldPath = markerPaths.GetFolderPath(oldHash)
 	newPath = markerPaths.GetFolderPath(newHash)
 	migrateSceneFolder(oldPath, newPath)
+
+	oldPath = scenePaths.GetCaptionsFolderPath(oldHash)
+	newPath = scenePaths.GetCaptionsFolderPath(newHash)
+	migrateSceneFolder(oldPath, newPath)
 }
 
 func migrateSceneFiles(oldName, newName string) {

@@ -3,8 +3,10 @@ package models
 import (
 	"context"
 	"errors"
+	"fmt"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -287,6 +289,10 @@ type SceneFileType struct {
 	Bitrate    *int     `graphql:"bitrate" json:"bitrate"`
 }
 
+// EmbeddedCaptionPrefix is used in VideoCaption.Filename to distinguish
+// embedded subtitle tracks (stored as "embedded:<streamIndex>") from sidecar files.
+const EmbeddedCaptionPrefix = "embedded:"
+
 type VideoCaption struct {
 	LanguageCode string `json:"language_code"`
 	Filename     string `json:"filename"`
@@ -295,4 +301,28 @@ type VideoCaption struct {
 
 func (c VideoCaption) Path(filePath string) string {
 	return filepath.Join(filepath.Dir(filePath), c.Filename)
+}
+
+func (c VideoCaption) IsEmbedded() bool {
+	return strings.HasPrefix(c.Filename, EmbeddedCaptionPrefix)
+}
+
+func (c VideoCaption) EmbeddedStreamIndex() (int, bool) {
+	if !c.IsEmbedded() {
+		return 0, false
+	}
+	idxStr := strings.TrimPrefix(c.Filename, EmbeddedCaptionPrefix)
+	idx, err := strconv.Atoi(idxStr)
+	if err != nil || idx < 0 {
+		return 0, false
+	}
+	return idx, true
+}
+
+func NewEmbeddedVideoCaption(languageCode string, streamIndex int, captionType string) *VideoCaption {
+	return &VideoCaption{
+		LanguageCode: languageCode,
+		Filename:     fmt.Sprintf("%s%d", EmbeddedCaptionPrefix, streamIndex),
+		CaptionType:  captionType,
+	}
 }

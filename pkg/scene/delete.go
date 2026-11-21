@@ -38,6 +38,15 @@ func (d *FileDeleter) MarkGeneratedFiles(scene *models.Scene) error {
 		}
 	}
 
+	captionsFolder := d.Paths.Scene.GetCaptionsFolderPath(sceneHash)
+
+	exists, _ = fsutil.FileExists(captionsFolder)
+	if exists {
+		if err := d.DirsWithoutTrash([]string{captionsFolder}); err != nil {
+			return err
+		}
+	}
+
 	var files []string
 
 	streamPreviewPath := d.Paths.Scene.GetVideoPreviewPath(sceneHash)

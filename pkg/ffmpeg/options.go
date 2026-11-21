@@ -106,6 +106,16 @@ func (a Args) SkipAudio() Args {
 	return append(a, "-an")
 }
 
+// SkipVideo adds the skip video flag (-vn) and returns the result.
+func (a Args) SkipVideo() Args {
+	return append(a, "-vn")
+}
+
+// Map adds the stream mapping flag (-map) and returns the result.
+func (a Args) Map(spec string) Args {
+	return append(a, "-map", spec)
+}
+
 // VideoCodec adds the given video codec and returns the result.
 func (a Args) VideoCodec(c VideoCodec) Args {
 	return append(a, c.Args()...)

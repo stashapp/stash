@@ -91,6 +91,10 @@ func (h *ScanHandler) Handle(ctx context.Context, f models.File, oldFile models.
 		}
 	}
 
+	if err := video.SyncEmbeddedCaptions(ctx, videoFile, nil, h.CaptionUpdater); err != nil {
+		return fmt.Errorf("syncing embedded captions: %w", err)
+	}
+
 	// try to match the file to a scene
 	existing, err := h.CreatorUpdater.FindByFileID(ctx, f.Base().ID)
 	if err != nil {

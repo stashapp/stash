@@ -112,7 +112,8 @@ type VideoFile struct {
 	Rotation     int64
 	FrameCount   int64
 
-	AudioCodec string
+	AudioCodec      string
+	SubtitleStreams []*FFProbeStream
 }
 
 // TranscodeScale calculates the dimension scaling for a transcode, where maxSize is the maximum size of the longest dimension of the input video.
@@ -343,6 +344,8 @@ func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
 		}
 	}
 
+	result.SubtitleStreams = result.getSubtitleStreams()
+
 	return result, nil
 }
 
@@ -379,6 +382,46 @@ func (v *VideoFile) getVideoStream() *FFProbeStream {
 		return &v.JSON.Streams[index]
 	}
 	return nil
+}
+
+func (v *VideoFile) getSubtitleStreams() []*FFProbeStream {
+	var streams []*FFProbeStream
+	for i := range v.JSON.Streams {
+		if v.JSON.Streams[i].CodecType == "subtitle" {
+			streams = append(streams, &v.JSON.Streams[i])
+		}
+	}
+	return streams
+}
+
+// IsTextSubtitleCodec reports whether codecName is a text-based subtitle codec
+// that ffmpeg can convert to WebVTT (excluding bitmap/image formats like PGS/VobSub).
+func IsTextSubtitleCodec(codecName string) bool {
+	switch strings.ToLower(strings.TrimSpace(codecName)) {
+	case "subrip", "srt", "ass", "ssa", "mov_text", "webvtt", "text",
+		"microdvd", "jacosub", "mpl2", "pjs", "realtext", "sami",
+		"stl", "subviewer", "subviewer1", "vplayer", "ttml",
+		"eia_608", "cc_dec":
+		return true
+	default:
+		return false
+	}
+}
+
+// GetTextSubtitleStreams returns all embedded subtitle streams that can be
+// converted to WebVTT by ffmpeg.
+func (v *VideoFile) GetTextSubtitleStreams() []*FFProbeStream {
+	var streams []*FFProbeStream
+	source := v.SubtitleStreams
+	if len(source) == 0 && len(v.JSON.Streams) > 0 {
+		source = v.getSubtitleStreams()
+	}
+	for _, s := range source {
+		if IsTextSubtitleCodec(s.CodecName) {
+			streams = append(streams, s)
+		}
+	}
+	return streams
 }
 
 func (v *VideoFile) getStreamIndex(fileType string, probeJSON FFProbeJSON) int {

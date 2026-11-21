@@ -1,6 +1,7 @@
 package paths
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -52,4 +53,12 @@ func (sp *scenePaths) GetSpriteVttFilePath(checksum string) string {
 
 func (sp *scenePaths) GetInteractiveHeatmapPath(checksum string) string {
 	return filepath.Join(sp.InteractiveHeatmap, checksum+".png")
+}
+
+func (sp *scenePaths) GetCaptionsFolderPath(checksum string) string {
+	return filepath.Join(sp.Captions, checksum)
+}
+
+func (sp *scenePaths) GetCaptionPath(checksum string, streamIndex int) string {
+	return filepath.Join(sp.GetCaptionsFolderPath(checksum), fmt.Sprintf("%d.vtt", streamIndex))
 }

@@ -289,6 +289,11 @@ type VideoFile struct {
 
 	Interactive      bool `json:"interactive"`
 	InteractiveSpeed *int `json:"interactive_speed"`
+
+	// EmbeddedCaptions holds text subtitle tracks discovered during ffprobe decoration.
+	// It is not serialized or stored directly on the files table; instead it is synced
+	// into video_captions during scene scanning.
+	EmbeddedCaptions []*VideoCaption `json:"-"`
 }
 
 func (f VideoFile) GetWidth() int {
@@ -306,6 +311,15 @@ func (f VideoFile) GetFormat() string {
 func (f VideoFile) Clone() (ret File) {
 	clone := f
 	clone.BaseFile = f.BaseFile.Clone().(*BaseFile)
+	if f.EmbeddedCaptions != nil {
+		clone.EmbeddedCaptions = make([]*VideoCaption, len(f.EmbeddedCaptions))
+		for i, c := range f.EmbeddedCaptions {
+			if c != nil {
+				cc := *c
+				clone.EmbeddedCaptions[i] = &cc
+			}
+		}
+	}
 	ret = &clone
 	return
 }

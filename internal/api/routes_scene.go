@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/go-chi/chi/v5"
 
@@ -18,6 +19,7 @@ import (
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene/generate"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -405,6 +407,13 @@ func (rs sceneRoutes) InteractiveHeatmap(w http.ResponseWriter, r *http.Request)
 	utils.ServeStaticFile(w, r, filepath)
 }
 
+var embeddedCaptionLocks sync.Map
+
+func getEmbeddedCaptionLock(cachePath string) *sync.Mutex {
+	mu, _ := embeddedCaptionLocks.LoadOrStore(cachePath, &sync.Mutex{})
+	return mu.(*sync.Mutex)
+}
+
 func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang string, ext string) {
 	s := r.Context().Value(sceneKey).(*models.Scene)
 
@@ -434,6 +443,11 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 			continue
 		}
 
+		if caption.IsEmbedded() {
+			rs.serveEmbeddedCaption(w, r, s, caption)
+			return
+		}
+
 		sub, err := video.ReadSubs(caption.Path(s.Path))
 		if err != nil {
 			logger.Warnf("error while reading subs: %v", err)
@@ -453,6 +467,48 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 		utils.ServeStaticContent(w, r, buf.Bytes())
 		return
 	}
+}
+
+func (rs sceneRoutes) serveEmbeddedCaption(w http.ResponseWriter, r *http.Request, s *models.Scene, caption *models.VideoCaption) {
+	streamIndex, ok := caption.EmbeddedStreamIndex()
+	if !ok {
+		http.Error(w, "invalid embedded caption stream index", http.StatusInternalServerError)
+		return
+	}
+
+	instance := manager.GetInstance()
+	sceneHash := s.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm())
+	cachePath := instance.Paths.Scene.GetCaptionPath(sceneHash, streamIndex)
+
+	exists, _ := fsutil.FileExists(cachePath)
+	if !exists {
+		mu := getEmbeddedCaptionLock(cachePath)
+		mu.Lock()
+		exists, _ = fsutil.FileExists(cachePath)
+		var extractErr error
+		if !exists {
+			g := generate.Generator{
+				Encoder:      instance.FFMpeg,
+				FFMpegConfig: instance.Config,
+				LockManager:  instance.ReadLockManager,
+				ScenePaths:   instance.Paths.Scene,
+			}
+			extractErr = g.ExtractSubtitle(r.Context(), s.Path, streamIndex, cachePath)
+		}
+		mu.Unlock()
+
+		if extractErr != nil {
+			if errors.Is(extractErr, context.Canceled) {
+				return
+			}
+			logger.Warnf("error extracting embedded subtitle stream %d from %s: %v", streamIndex, s.Path, extractErr)
+			http.Error(w, extractErr.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	w.Header().Set("Content-Type", "text/vtt")
+	utils.ServeStaticFile(w, r, cachePath)
 }
 
 func (rs sceneRoutes) CaptionLang(w http.ResponseWriter, r *http.Request) {
