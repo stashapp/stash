@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
@@ -109,6 +110,9 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 		PreviewExcludeStart:           config.GetPreviewExcludeStart(),
 		PreviewExcludeEnd:             config.GetPreviewExcludeEnd(),
 		PreviewPreset:                 config.GetPreviewPreset(),
+		PreviewCodec:                  config.GetPreviewCodec(),
+		TranscodeCodec:                config.GetTranscodeCodec(),
+		AvailableVideoCodecs:          manager.SupportedGeneratedVideoCodecs(),
 		TranscodeHardwareAcceleration: config.GetTranscodeHardwareAcceleration(),
 		MaxTranscodeSize:              &maxTranscodeSize,
 		MaxStreamingTranscodeSize:     &maxStreamingTranscodeSize,

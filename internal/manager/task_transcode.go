@@ -18,6 +18,7 @@ type GenerateTranscodeTask struct {
 
 	// is true, generate even if video is browser-supported
 	Force bool
+	Codec models.GeneratedVideoCodec
 
 	g *generate.Generator
 }
@@ -88,6 +89,7 @@ func (t *GenerateTranscodeTask) Start(ctx context.Context) {
 		options := generate.TranscodeOptions{
 			Width:  w,
 			Height: h,
+			Codec:  t.Codec,
 		}
 
 		if audioCodec == ffmpeg.MissingUnsupported {
