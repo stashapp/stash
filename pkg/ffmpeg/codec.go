@@ -26,6 +26,7 @@ var (
 	VideoCodecVP9     = makeVideoCodec("VPX-VP9", "libvpx-vp9")
 	VideoCodecVPX     = makeVideoCodec("VPX-VP8", "libvpx")
 	VideoCodecLibX265 = makeVideoCodec("x265", "libx265")
+	VideoCodecSVTAV1  = makeVideoCodec("SVT-AV1", "libsvtav1")
 	VideoCodecCopy    = makeVideoCodec("Copy", "copy")
 )
 

@@ -3,6 +3,25 @@ package ffmpeg
 
 import "testing"
 
+func TestParseEncoders(t *testing.T) {
+	out := `Encoders:
+ V..... = Video
+ ------
+ V....D libx264              libx264 H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10 (codec h264)
+ V....D libsvtav1            SVT-AV1(Scalable Video Technology for AV1) encoder (codec av1)
+ A....D aac                  AAC (Advanced Audio Coding)
+`
+	got := parseEncoders(out)
+	for _, name := range []string{"libx264", "libsvtav1", "aac"} {
+		if !got[name] {
+			t.Errorf("missing encoder %s", name)
+		}
+	}
+	if got["libx265"] {
+		t.Error("libx265 should not be detected")
+	}
+}
+
 func TestFFMpegVersion_GreaterThan(t *testing.T) {
 	tests := []struct {
 		name  string

@@ -221,6 +221,7 @@ type FFMpeg struct {
 	version             Version
 	hwCodecSupport      []VideoCodec
 	hwCodecSupportMutex sync.RWMutex
+	encoders            map[string]bool
 }
 
 // Creates a new FFMpeg encoder
@@ -232,7 +233,30 @@ func NewEncoder(ffmpegPath string) *FFMpeg {
 		logger.Warnf("FFMpeg version not detected %v", err)
 	}
 
+	out, err := stashExec.Command(ffmpegPath, "-hide_banner", "-encoders").Output()
+	if err != nil {
+		logger.Warnf("FFMpeg encoders not detected %v", err)
+	}
+	ret.encoders = parseEncoders(string(out))
+
 	return ret
+}
+
+// parseEncoders returns the encoder names listed by `ffmpeg -encoders`.
+// Each entry line is "<flags> <name> <description>"; header lines add harmless junk names.
+func parseEncoders(output string) map[string]bool {
+	ret := make(map[string]bool)
+	for line := range strings.SplitSeq(output, "\n") {
+		if fields := strings.Fields(line); len(fields) >= 2 {
+			ret[fields[1]] = true
+		}
+	}
+	return ret
+}
+
+// SupportsEncoder returns true if this ffmpeg binary can encode with codec.
+func (f *FFMpeg) SupportsEncoder(codec VideoCodec) bool {
+	return f.encoders[codec.CodeName]
 }
 
 // Returns an exec.Cmd that can be used to run ffmpeg using args.
