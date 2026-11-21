@@ -17,6 +17,7 @@ type ScenePathsType {
   vtt: String # Resolver
   sprite: String # Resolver
   funscript: String # Resolver
+  interactive_csv: String # Resolver
   interactive_heatmap: String # Resolver
   caption: String # Resolver
 }

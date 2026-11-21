@@ -45,7 +45,10 @@ export interface IState {
   currentScript?: string;
   error?: string;
   initialise: () => Promise<void>;
-  uploadScript: (funscriptPath: string) => Promise<void>;
+  uploadScript: (
+    funscriptPath: string,
+    interactiveCsvPath?: string
+  ) => Promise<void>;
   sync: () => Promise<void>;
 }
 
@@ -204,7 +207,7 @@ export const InteractiveProvider: React.FC<
   }, [interactive, state, setConfig, initialised]);
 
   const uploadScript = useCallback(
-    async (funscriptPath: string) => {
+    async (funscriptPath: string, interactiveCsvPath?: string) => {
       await interactive.pause();
       if (
         !interactive.handyKey ||
@@ -218,7 +221,8 @@ export const InteractiveProvider: React.FC<
       try {
         await interactive.uploadScript(
           funscriptPath,
-          stashConfig?.general?.apiKey
+          stashConfig?.general?.apiKey,
+          interactiveCsvPath
         );
         setCurrentScript(funscriptPath);
         setState(ConnectionState.Ready);
