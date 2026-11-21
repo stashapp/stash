@@ -46,7 +46,7 @@ RUN cd /opt/cross-freebsd/usr/lib && \
     ln -s libc++.so libstdc++.so
 
 ### BUILDER
-FROM golang:1.25.9 AS builder
+FROM golang:1.27.4 AS builder
 ENV PATH=/opt/osx-ndk-x86/bin:$PATH
 
 # copy in nodejs instead of using nodesource :thumbsup:
