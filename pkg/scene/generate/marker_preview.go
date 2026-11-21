@@ -47,7 +47,15 @@ func markerPreviewDuration(seconds float64, endSeconds *float64, maxDuration int
 	return duration, duration > 0
 }
 
-func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash string, seconds float64, endSeconds *float64, includeAudio bool, maxDuration int, defaultDuration int, codec models.GeneratedVideoCodec) error {
+// MarkerPreviewVideoOptions holds the settings for generating a marker preview video.
+type MarkerPreviewVideoOptions struct {
+	IncludeAudio    bool
+	MaxDuration     int
+	DefaultDuration int
+	Codec           models.GeneratedVideoCodec
+}
+
+func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash string, seconds float64, endSeconds *float64, options MarkerPreviewVideoOptions) error {
 	lockCtx := g.LockManager.ReadLock(ctx, input)
 	defer lockCtx.Cancel()
 
@@ -58,7 +66,7 @@ func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash st
 		}
 	}
 
-	duration, generate := markerPreviewDuration(seconds, endSeconds, maxDuration, defaultDuration)
+	duration, generate := markerPreviewDuration(seconds, endSeconds, options.MaxDuration, options.DefaultDuration)
 	if !generate {
 		logger.Warnf("[generator] marker at %.2fs resolved to a non-positive preview duration (%.2fs); skipping video preview generation — check the Default marker preview duration setting", seconds, duration)
 		return nil
@@ -67,8 +75,8 @@ func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash st
 	if err := g.generateFile(lockCtx, g.MarkerPaths, mp4Pattern, output, g.markerPreviewVideo(input, sceneMarkerOptions{
 		Seconds:  seconds,
 		Duration: duration,
-		Audio:    includeAudio,
-		Codec:    codec,
+		Audio:    options.IncludeAudio,
+		Codec:    options.Codec,
 	})); err != nil {
 		return err
 	}
