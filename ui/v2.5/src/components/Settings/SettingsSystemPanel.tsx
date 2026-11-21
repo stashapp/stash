@@ -163,6 +163,24 @@ export const SettingsConfigurationPanel: React.FC = () => {
     });
   }
 
+  function renderVideoCodecSubHeading(
+    descID: string,
+    codec: GQL.GeneratedVideoCodec | null | undefined
+  ) {
+    return (
+      <>
+        {intl.formatMessage({ id: descID })}
+        {codec && !browserCanPlay(codec) && (
+          <div className="text-warning">
+            {intl.formatMessage({
+              id: "config.general.video_codec_browser_unsupported",
+            })}
+          </div>
+        )}
+      </>
+    );
+  }
+
   if (error) return <h1>{error.message}</h1>;
   if (loading) return <LoadingIndicator />;
 
@@ -333,21 +351,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <SelectSetting
           id="transcode-codec"
           headingID="config.general.transcode_codec_head"
-          subHeading={
-            <>
-              {intl.formatMessage({
-                id: "config.general.transcode_codec_desc",
-              })}
-              {general.transcodeCodec &&
-                !browserCanPlay(general.transcodeCodec) && (
-                  <div className="text-warning">
-                    {intl.formatMessage({
-                      id: "config.general.video_codec_browser_unsupported",
-                    })}
-                  </div>
-                )}
-            </>
-          }
+          subHeading={renderVideoCodecSubHeading(
+            "config.general.transcode_codec_desc",
+            general.transcodeCodec
+          )}
           value={general.transcodeCodec ?? undefined}
           onChange={(v) =>
             saveGeneral({ transcodeCodec: v as GQL.GeneratedVideoCodec })
@@ -466,7 +473,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <SelectSetting
           id="scene-gen-preview-codec"
           headingID="config.general.preview_codec_head"
-          subHeadingID="config.general.preview_codec_desc"
+          subHeading={renderVideoCodecSubHeading(
+            "config.general.preview_codec_desc",
+            general.previewCodec
+          )}
           value={general.previewCodec ?? undefined}
           onChange={(v) =>
             saveGeneral({ previewCodec: v as GQL.GeneratedVideoCodec })
