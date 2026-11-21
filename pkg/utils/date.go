@@ -13,9 +13,21 @@ func ParseDateStringAsTime(dateString string) (time.Time, error) {
 		return t, nil
 	}
 
-	t, e = time.Parse("2006-01-02", dateString)
-	if e == nil {
-		return t, nil
+	for _, format := range []string{
+		"2006-01-02",
+		"2006-1-2",
+		"20060102",
+		"2006.01.02",
+		"2006.1.2",
+		"06-01-02",
+		"06-1-2",
+		"06.01.02",
+		"06.1.2",
+	} {
+		t, e = time.Parse(format, dateString)
+		if e == nil {
+			return t, nil
+		}
 	}
 
 	t, e = time.Parse("2006-01-02 15:04:05", dateString)

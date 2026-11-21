@@ -51,14 +51,22 @@ func ParseDate(s string) (Date, error) {
 
 	errs = append(errs, err)
 
-	// try month and year precision
-	for i, format := range dateFormatPrecision[1:] {
+	// Try month and year precision
+	for _, format := range []string{"2006-01", "2006.01"} {
 		ret, err := time.Parse(format, s)
 		if err == nil {
-			return Date{Time: ret, Precision: DatePrecision(i + 1)}, nil
+			return Date{Time: ret, Precision: DatePrecisionMonth}, nil
 		}
 		errs = append(errs, err)
 	}
+
+	// Try year precision
+	ret, err = time.Parse("2006", s)
+	if err == nil {
+		return Date{Time: ret, Precision: DatePrecisionYear}, nil
+	}
+
+	errs = append(errs, err)
 
 	return Date{}, fmt.Errorf("failed to parse date %q: %v", s, errs)
 }

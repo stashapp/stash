@@ -18,9 +18,16 @@ func TestParseDateStringAsTime(t *testing.T) {
 		{"RFC3339", "2014-01-02T15:04:05Z", Date{Time: time.Date(2014, 1, 2, 15, 4, 5, 0, time.UTC), Precision: DatePrecisionDay}, false},
 		{"Date only", "2014-01-02", Date{Time: time.Date(2014, 1, 2, 0, 0, 0, 0, time.UTC), Precision: DatePrecisionDay}, false},
 		{"Date with time", "2014-01-02 15:04:05", Date{Time: time.Date(2014, 1, 2, 15, 4, 5, 0, time.UTC), Precision: DatePrecisionDay}, false},
+		{"Unpadded date", "2014-1-2", Date{Time: time.Date(2014, 1, 2, 0, 0, 0, 0, time.UTC), Precision: DatePrecisionDay}, false},
+		{"Partially padded date", "2014-01-2", Date{Time: time.Date(2014, 1, 2, 0, 0, 0, 0, time.UTC), Precision: DatePrecisionDay}, false},
+		{"Compact date", "20140102", Date{Time: time.Date(2014, 1, 2, 0, 0, 0, 0, time.UTC), Precision: DatePrecisionDay}, false},
+		{"Dotted date", "2014.01.02", Date{Time: time.Date(2014, 1, 2, 0, 0, 0, 0, time.UTC), Precision: DatePrecisionDay}, false},
+		{"Two-digit year date", "14-01-02", Date{Time: time.Date(2014, 1, 2, 0, 0, 0, 0, time.UTC), Precision: DatePrecisionDay}, false},
+		{"Two-digit year dotted date", "14.01.02", Date{Time: time.Date(2014, 1, 2, 0, 0, 0, 0, time.UTC), Precision: DatePrecisionDay}, false},
 
 		// Partial date formats (new support)
 		{"Year-Month", "2006-08", Date{Time: time.Date(2006, 8, 1, 0, 0, 0, 0, time.UTC), Precision: DatePrecisionMonth}, false},
+		{"Dotted year-month", "2006.08", Date{Time: time.Date(2006, 8, 1, 0, 0, 0, 0, time.UTC), Precision: DatePrecisionMonth}, false},
 		{"Year only", "2014", Date{Time: time.Date(2014, 1, 1, 0, 0, 0, 0, time.UTC), Precision: DatePrecisionYear}, false},
 
 		// Invalid formats
