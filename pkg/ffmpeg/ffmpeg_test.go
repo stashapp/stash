@@ -22,6 +22,21 @@ func TestParseEncoders(t *testing.T) {
 	}
 }
 
+func TestSupportsEncoder(t *testing.T) {
+	undetected := &FFMpeg{}
+	if !undetected.SupportsEncoder(VideoCodecLibX265) {
+		t.Error("failed detection should allow every encoder")
+	}
+
+	detected := &FFMpeg{encoders: map[string]bool{"libx264": true}}
+	if !detected.SupportsEncoder(VideoCodecLibX264) {
+		t.Error("libx264 should be supported")
+	}
+	if detected.SupportsEncoder(VideoCodecLibX265) {
+		t.Error("libx265 should not be supported")
+	}
+}
+
 func TestFFMpegVersion_GreaterThan(t *testing.T) {
 	tests := []struct {
 		name  string

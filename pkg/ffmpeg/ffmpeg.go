@@ -235,9 +235,11 @@ func NewEncoder(ffmpegPath string) *FFMpeg {
 
 	out, err := stashExec.Command(ffmpegPath, "-hide_banner", "-encoders").Output()
 	if err != nil {
+		// leave encoders nil so SupportsEncoder allows everything, as before detection existed
 		logger.Warnf("FFMpeg encoders not detected %v", err)
+	} else {
+		ret.encoders = parseEncoders(string(out))
 	}
-	ret.encoders = parseEncoders(string(out))
 
 	return ret
 }
@@ -254,9 +256,10 @@ func parseEncoders(output string) map[string]bool {
 	return ret
 }
 
-// SupportsEncoder returns true if this ffmpeg binary can encode with codec.
-func (f *FFMpeg) SupportsEncoder(codec VideoCodec) bool {
-	return f.encoders[codec.CodeName]
+// SupportsEncoder returns true if this ffmpeg binary can encode with encoder.
+// If encoder detection failed, every encoder is assumed supported.
+func (f *FFMpeg) SupportsEncoder(encoder VideoCodec) bool {
+	return f.encoders == nil || f.encoders[encoder.CodeName]
 }
 
 // Returns an exec.Cmd that can be used to run ffmpeg using args.
