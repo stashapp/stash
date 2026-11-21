@@ -25,6 +25,9 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   previewExcludeStart
   previewExcludeEnd
   previewPreset
+  previewCodec
+  transcodeCodec
+  availableVideoCodecs
   maxMarkerPreviewDuration
   defaultMarkerPreviewDuration
   transcodeHardwareAcceleration

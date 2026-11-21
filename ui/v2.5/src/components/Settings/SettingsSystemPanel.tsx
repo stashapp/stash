@@ -20,6 +20,27 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Button } from "react-bootstrap";
 import { useToast } from "src/hooks/Toast";
 import { useHistory } from "react-router-dom";
+import { useConfigurationContext } from "src/hooks/Config";
+
+const videoCodecLabels: Record<GQL.GeneratedVideoCodec, string> = {
+  [GQL.GeneratedVideoCodec.H264]: "H.264",
+  [GQL.GeneratedVideoCodec.Hevc]: "HEVC (H.265)",
+  [GQL.GeneratedVideoCodec.Av1]: "AV1",
+};
+
+// representative mp4 codec strings, used only to ask this browser whether it can decode the codec
+const videoCodecMimeTypes: Record<GQL.GeneratedVideoCodec, string> = {
+  [GQL.GeneratedVideoCodec.H264]: 'video/mp4; codecs="avc1.640028"',
+  [GQL.GeneratedVideoCodec.Hevc]: 'video/mp4; codecs="hvc1.1.6.L93.B0"',
+  [GQL.GeneratedVideoCodec.Av1]: 'video/mp4; codecs="av01.0.05M.08"',
+};
+
+function browserCanPlay(codec: GQL.GeneratedVideoCodec) {
+  return (
+    document.createElement("video").canPlayType(videoCodecMimeTypes[codec]) !==
+    ""
+  );
+}
 
 export const SettingsConfigurationPanel: React.FC = () => {
   const intl = useIntl();
@@ -27,6 +48,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const history = useHistory();
 
   const { general, loading, error, saveGeneral } = useSettings();
+  const availableVideoCodecs =
+    useConfigurationContext().configuration.general.availableVideoCodecs;
   const [mutateDownloadFFMpeg] = GQL.useDownloadFfMpegMutation();
 
   const transcodeQualities = [
@@ -122,6 +145,22 @@ export const SettingsConfigurationPanel: React.FC = () => {
     } catch (e) {
       Toast.error(e);
     }
+  }
+
+  // codecs the server's ffmpeg can't encode stay visible but disabled
+  function renderVideoCodecOptions() {
+    return Object.values(GQL.GeneratedVideoCodec).map((c) => {
+      const available = availableVideoCodecs?.includes(c) ?? true;
+      return (
+        <option key={c} value={c} disabled={!available}>
+          {videoCodecLabels[c]}
+          {!available &&
+            ` (${intl.formatMessage({
+              id: "config.general.video_codec_unavailable",
+            })})`}
+        </option>
+      );
+    });
   }
 
   if (error) return <h1>{error.message}</h1>;
@@ -292,6 +331,32 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
       <SettingSection headingID="config.system.transcoding">
         <SelectSetting
+          id="transcode-codec"
+          headingID="config.general.transcode_codec_head"
+          subHeading={
+            <>
+              {intl.formatMessage({
+                id: "config.general.transcode_codec_desc",
+              })}
+              {general.transcodeCodec &&
+                !browserCanPlay(general.transcodeCodec) && (
+                  <div className="text-warning">
+                    {intl.formatMessage({
+                      id: "config.general.video_codec_browser_unsupported",
+                    })}
+                  </div>
+                )}
+            </>
+          }
+          value={general.transcodeCodec ?? undefined}
+          onChange={(v) =>
+            saveGeneral({ transcodeCodec: v as GQL.GeneratedVideoCodec })
+          }
+        >
+          {renderVideoCodecOptions()}
+        </SelectSetting>
+
+        <SelectSetting
           advanced
           id="transcode-size"
           headingID="config.general.maximum_transcode_size_head"
@@ -396,6 +461,18 @@ export const SettingsConfigurationPanel: React.FC = () => {
               {p}
             </option>
           ))}
+        </SelectSetting>
+
+        <SelectSetting
+          id="scene-gen-preview-codec"
+          headingID="config.general.preview_codec_head"
+          subHeadingID="config.general.preview_codec_desc"
+          value={general.previewCodec ?? undefined}
+          onChange={(v) =>
+            saveGeneral({ previewCodec: v as GQL.GeneratedVideoCodec })
+          }
+        >
+          {renderVideoCodecOptions()}
         </SelectSetting>
 
         <BooleanSetting
