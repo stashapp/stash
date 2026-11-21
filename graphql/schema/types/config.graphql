@@ -121,7 +121,7 @@ input ConfigGeneralInput {
   previewExcludeEnd: String
   "Preset when generating preview"
   previewPreset: PreviewPreset
-  "Codec for generated scene and marker previews"
+  "Codec for generated previews and marker previews"
   previewCodec: GeneratedVideoCodec
   "Codec for generated transcodes"
   transcodeCodec: GeneratedVideoCodec
@@ -267,7 +267,7 @@ type ConfigGeneralResult {
   previewExcludeEnd: String!
   "Preset when generating preview"
   previewPreset: PreviewPreset!
-  "Codec for generated scene and marker previews"
+  "Codec for generated previews and marker previews"
   previewCodec: GeneratedVideoCodec!
   "Codec for generated transcodes"
   transcodeCodec: GeneratedVideoCodec!

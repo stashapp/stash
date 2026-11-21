@@ -102,7 +102,7 @@ func TestGenerateJobResolveCodecs(t *testing.T) {
 		assert.True(t, j.input.Transcodes)
 	})
 
-	t.Run("unsupported preview codec skips video previews and marker previews only", func(t *testing.T) {
+	t.Run("unsupported preview codec skips previews and marker previews only", func(t *testing.T) {
 		j := &GenerateJob{input: GenerateMetadataInput{
 			Previews: true, ImagePreviews: true, Markers: true, MarkerScreenshots: true, Transcodes: true,
 			PreviewOptions: &GeneratePreviewOptionsInput{PreviewCodec: &hevc},

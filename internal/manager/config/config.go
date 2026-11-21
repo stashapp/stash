@@ -1124,7 +1124,7 @@ func (i *Config) GetPreviewPreset() models.PreviewPreset {
 	return models.PreviewPreset(ret)
 }
 
-// GetPreviewCodec returns the codec for generated scene and marker previews. Defaults to H264.
+// GetPreviewCodec returns the codec for generated previews and marker previews. Defaults to H264.
 func (i *Config) GetPreviewCodec() models.GeneratedVideoCodec {
 	return getGeneratedVideoCodec(i.getString(PreviewCodec))
 }

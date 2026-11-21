@@ -60,7 +60,7 @@ type GeneratePreviewOptionsInput struct {
 	PreviewExcludeEnd *string `json:"previewExcludeEnd"`
 	// Preset when generating preview
 	PreviewPreset *models.PreviewPreset `json:"previewPreset"`
-	// Codec for scene and marker previews; defaults to the configured preview codec
+	// Codec for previews and marker previews; defaults to the configured preview codec
 	PreviewCodec *models.GeneratedVideoCodec `json:"previewCodec"`
 }
 

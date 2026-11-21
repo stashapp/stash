@@ -46,7 +46,7 @@ input GeneratePreviewOptionsInput {
   previewExcludeEnd: String
   "Preset when generating preview"
   previewPreset: PreviewPreset
-  "Codec for scene and marker previews. Defaults to the configured preview codec"
+  "Codec for previews and marker previews. Defaults to the configured preview codec"
   previewCodec: GeneratedVideoCodec
 }
 
