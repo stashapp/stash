@@ -13,6 +13,7 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 const (
@@ -31,6 +32,7 @@ type PreviewOptions struct {
 	ExcludeEnd      string
 
 	Preset string
+	Codec  models.GeneratedVideoCodec
 
 	Audio bool
 }
@@ -129,6 +131,7 @@ func (g *Generator) previewVideo(input string, videoDuration float64, options Pr
 				OutputPath: chunkFile.Name(),
 				Audio:      options.Audio,
 				Preset:     options.Preset,
+				Codec:      options.Codec,
 			}
 
 			if err := g.previewVideoChunk(lockCtx, input, chunkOptions, fallback, useVsync2); err != nil {
@@ -158,6 +161,7 @@ func (g *Generator) previewVideoSingle(input string, videoDuration float64, opti
 			OutputPath: tmpFn,
 			Audio:      options.Audio,
 			Preset:     options.Preset,
+			Codec:      options.Codec,
 		}
 
 		return g.previewVideoChunk(lockCtx, input, chunkOptions, fallback, useVsync2)
@@ -170,6 +174,7 @@ type previewChunkOptions struct {
 	OutputPath string
 	Audio      bool
 	Preset     string
+	Codec      models.GeneratedVideoCodec
 }
 
 func (g Generator) previewVideoChunk(lockCtx *fsutil.LockContext, fn string, options previewChunkOptions, fallback bool, useVsync2 bool) error {
@@ -179,12 +184,9 @@ func (g Generator) previewVideoChunk(lockCtx *fsutil.LockContext, fn string, opt
 	var videoArgs ffmpeg.Args
 	videoArgs = videoArgs.VideoFilter(videoFilter)
 
+	videoCodec, codecArgs := videoEncoderArgs(options.Codec, options.Preset, 21)
+	videoArgs = append(videoArgs, codecArgs...)
 	videoArgs = append(videoArgs,
-		"-pix_fmt", "yuv420p",
-		"-profile:v", "high",
-		"-level", "4.2",
-		"-preset", options.Preset,
-		"-crf", "21",
 		"-threads", "4",
 		"-strict", "-2",
 	)
@@ -201,7 +203,7 @@ func (g Generator) previewVideoChunk(lockCtx *fsutil.LockContext, fn string, opt
 		XError:   !fallback,
 		SlowSeek: fallback,
 
-		VideoCodec: ffmpeg.VideoCodecLibX264,
+		VideoCodec: videoCodec,
 		VideoArgs:  videoArgs,
 
 		ExtraInputArgs:  g.FFMpegConfig.GetTranscodeInputArgs(),

@@ -7,6 +7,7 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 const (
@@ -46,7 +47,15 @@ func markerPreviewDuration(seconds float64, endSeconds *float64, maxDuration int
 	return duration, duration > 0
 }
 
-func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash string, seconds float64, endSeconds *float64, includeAudio bool, maxDuration int, defaultDuration int) error {
+// MarkerPreviewVideoOptions holds the settings for generating a marker preview video.
+type MarkerPreviewVideoOptions struct {
+	IncludeAudio    bool
+	MaxDuration     int
+	DefaultDuration int
+	Codec           models.GeneratedVideoCodec
+}
+
+func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash string, seconds float64, endSeconds *float64, options MarkerPreviewVideoOptions) error {
 	lockCtx := g.LockManager.ReadLock(ctx, input)
 	defer lockCtx.Cancel()
 
@@ -57,7 +66,7 @@ func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash st
 		}
 	}
 
-	duration, generate := markerPreviewDuration(seconds, endSeconds, maxDuration, defaultDuration)
+	duration, generate := markerPreviewDuration(seconds, endSeconds, options.MaxDuration, options.DefaultDuration)
 	if !generate {
 		logger.Warnf("[generator] marker at %.2fs resolved to a non-positive preview duration (%.2fs); skipping video preview generation — check the Default marker preview duration setting", seconds, duration)
 		return nil
@@ -66,7 +75,8 @@ func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash st
 	if err := g.generateFile(lockCtx, g.MarkerPaths, mp4Pattern, output, g.markerPreviewVideo(input, sceneMarkerOptions{
 		Seconds:  seconds,
 		Duration: duration,
-		Audio:    includeAudio,
+		Audio:    options.IncludeAudio,
+		Codec:    options.Codec,
 	})); err != nil {
 		return err
 	}
@@ -76,10 +86,20 @@ func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash st
 	return nil
 }
 
+// markerPreviewPreset returns the fixed (not user-configurable) preset for marker previews.
+// x265 veryslow is ~10x slower than x264 veryslow (33s vs 3s per 20s clip), so HEVC uses slow.
+func markerPreviewPreset(codec models.GeneratedVideoCodec) string {
+	if codec == models.GeneratedVideoCodecHevc {
+		return "slow"
+	}
+	return "veryslow"
+}
+
 type sceneMarkerOptions struct {
 	Seconds  float64
 	Duration float64
 	Audio    bool
+	Codec    models.GeneratedVideoCodec
 }
 
 func (g Generator) markerPreviewVideo(input string, options sceneMarkerOptions) generateFn {
@@ -90,12 +110,9 @@ func (g Generator) markerPreviewVideo(input string, options sceneMarkerOptions) 
 		var videoArgs ffmpeg.Args
 		videoArgs = videoArgs.VideoFilter(videoFilter)
 
+		videoCodec, codecArgs := videoEncoderArgs(options.Codec, markerPreviewPreset(options.Codec), 24)
+		videoArgs = append(videoArgs, codecArgs...)
 		videoArgs = append(videoArgs,
-			"-pix_fmt", "yuv420p",
-			"-profile:v", "high",
-			"-level", "4.2",
-			"-preset", "veryslow",
-			"-crf", "24",
 			"-movflags", "+faststart",
 			"-threads", "4",
 			"-sws_flags", "lanczos",
@@ -106,7 +123,7 @@ func (g Generator) markerPreviewVideo(input string, options sceneMarkerOptions) 
 			Duration:   options.Duration,
 			StartTime:  options.Seconds,
 			OutputPath: tmpFn,
-			VideoCodec: ffmpeg.VideoCodecLibX264,
+			VideoCodec: videoCodec,
 			VideoArgs:  videoArgs,
 		}
 

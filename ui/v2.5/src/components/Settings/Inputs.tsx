@@ -178,12 +178,22 @@ interface ISelectSetting extends ISetting {
 export const SelectSetting: React.FC<PropsWithChildren<ISelectSetting>> =
   PatchComponent(
     "SelectSetting",
-    ({ id, headingID, subHeadingID, value, children, onChange, advanced }) => {
+    ({
+      id,
+      headingID,
+      subHeadingID,
+      subHeading,
+      value,
+      children,
+      onChange,
+      advanced,
+    }) => {
       return (
         <Setting
           advanced={advanced}
           headingID={headingID}
           subHeadingID={subHeadingID}
+          subHeading={subHeading}
           id={id}
         >
           <Form.Control

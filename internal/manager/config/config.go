@@ -107,6 +107,8 @@ const (
 	spriteScreenshotSizeDefault = 160
 
 	PreviewPreset                 = "preview_preset"
+	PreviewCodec                  = "preview_codec"
+	TranscodeCodec                = "transcode_codec"
 	TranscodeHardwareAcceleration = "ffmpeg.hardware_acceleration"
 
 	SequentialScanning        = "sequential_scanning"
@@ -1120,6 +1122,24 @@ func (i *Config) GetPreviewPreset() models.PreviewPreset {
 	}
 
 	return models.PreviewPreset(ret)
+}
+
+// GetPreviewCodec returns the codec for generated previews and marker previews. Defaults to H264.
+func (i *Config) GetPreviewCodec() models.GeneratedVideoCodec {
+	return getGeneratedVideoCodec(i.getString(PreviewCodec))
+}
+
+// GetTranscodeCodec returns the codec for generated transcodes. Defaults to H264.
+func (i *Config) GetTranscodeCodec() models.GeneratedVideoCodec {
+	return getGeneratedVideoCodec(i.getString(TranscodeCodec))
+}
+
+func getGeneratedVideoCodec(v string) models.GeneratedVideoCodec {
+	ret := models.GeneratedVideoCodec(v)
+	if !ret.IsValid() {
+		return models.GeneratedVideoCodecH264
+	}
+	return ret
 }
 
 func (i *Config) GetTranscodeHardwareAcceleration() bool {
