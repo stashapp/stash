@@ -204,10 +204,11 @@ func TestScenePerformers(t *testing.T) {
 
 				return scenePartialsEqual(got, expected)
 			})
-			db.Scene.On("UpdatePartial", testCtx, sceneID, matchPartial).Return(nil, nil).Once()
+			db.Scene.On("UpdatePartial", mock.Anything, sceneID, matchPartial).Return(nil, nil).Once()
 		}
 
-		err := ScenePerformers(testCtx, &scene, db.Scene, db.Performer, nil)
+		tagger := &Tagger{TxnManager: db, Cache: nil}
+		err := tagger.ScenePerformersAtPath(testCtx, &scene, db.Scene, db.Performer)
 
 		assert.Nil(err)
 		db.AssertExpectations(t)
@@ -247,14 +248,15 @@ func TestSceneStudios(t *testing.T) {
 
 				return scenePartialsEqual(got, expected)
 			})
-			db.Scene.On("UpdatePartial", testCtx, sceneID, matchPartial).Return(nil, nil).Once()
+			db.Scene.On("UpdatePartial", mock.Anything, sceneID, matchPartial).Return(nil, nil).Once()
 		}
 
 		scene := models.Scene{
 			ID:   sceneID,
 			Path: test.Path,
 		}
-		err := SceneStudios(testCtx, &scene, db.Scene, db.Studio, nil)
+		tagger := &Tagger{TxnManager: db, Cache: nil}
+		err := tagger.SceneStudiosAtPath(testCtx, &scene, db.Scene, db.Studio)
 
 		assert.Nil(err)
 		db.AssertExpectations(t)
@@ -322,7 +324,7 @@ func TestSceneTags(t *testing.T) {
 
 				return scenePartialsEqual(got, expected)
 			})
-			db.Scene.On("UpdatePartial", testCtx, sceneID, matchPartial).Return(nil, nil).Once()
+			db.Scene.On("UpdatePartial", mock.Anything, sceneID, matchPartial).Return(nil, nil).Once()
 		}
 
 		scene := models.Scene{
@@ -330,7 +332,8 @@ func TestSceneTags(t *testing.T) {
 			Path:   test.Path,
 			TagIDs: models.NewRelatedIDs([]int{}),
 		}
-		err := SceneTags(testCtx, &scene, db.Scene, db.Tag, nil)
+		tagger := &Tagger{TxnManager: db, Cache: nil}
+		err := tagger.SceneTagsAtPath(testCtx, &scene, db.Scene, db.Tag)
 
 		assert.Nil(err)
 		db.AssertExpectations(t)
