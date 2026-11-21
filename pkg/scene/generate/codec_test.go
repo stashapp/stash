@@ -18,7 +18,7 @@ func TestVideoEncoderArgs(t *testing.T) {
 		{"", "slow", ffmpeg.VideoCodecLibX264, []string{"-profile:v", "high", "-preset", "slow", "-crf", "21"}},
 		{models.GeneratedVideoCodecH264, "slow", ffmpeg.VideoCodecLibX264, []string{"-preset", "slow", "-crf", "21"}},
 		{models.GeneratedVideoCodecHevc, "slow", ffmpeg.VideoCodecLibX265, []string{"-preset", "slow", "-crf", "26", "-tag:v", "hvc1"}},
-		{models.GeneratedVideoCodecHevc, "veryslow", ffmpeg.VideoCodecLibX265, []string{"-preset", "slow"}},
+		{models.GeneratedVideoCodecHevc, "veryslow", ffmpeg.VideoCodecLibX265, []string{"-preset", "veryslow"}}, // user's preview preset is honoured
 		{models.GeneratedVideoCodecH264, "veryslow", ffmpeg.VideoCodecLibX264, []string{"-preset", "veryslow"}},
 		{models.GeneratedVideoCodecAv1, "veryslow", ffmpeg.VideoCodecSVTAV1, []string{"-preset", "4", "-crf", "33"}},
 		{models.GeneratedVideoCodecAv1, "bogus", ffmpeg.VideoCodecSVTAV1, []string{"-preset", "7"}},

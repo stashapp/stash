@@ -42,10 +42,6 @@ func videoEncoderArgs(codec models.GeneratedVideoCodec, preset string, crf int) 
 
 	switch enc {
 	case ffmpeg.VideoCodecLibX265:
-		// x265 veryslow is ~10x slower than x264 veryslow (33s per 20s marker clip); slow keeps bulk generation usable
-		if preset == "veryslow" {
-			preset = "slow"
-		}
 		// x265 CRF 28 ~ x264 CRF 23 per the ffmpeg wiki; hvc1 tag is required for Safari playback
 		args = append(args, "-preset", preset, "-crf", strconv.Itoa(crf+5), "-tag:v", "hvc1", "-x265-params", "log-level=error")
 	case ffmpeg.VideoCodecSVTAV1:

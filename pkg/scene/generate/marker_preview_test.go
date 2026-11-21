@@ -1,6 +1,10 @@
 package generate
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stashapp/stash/pkg/models"
+)
 
 func TestMarkerPreviewDuration(t *testing.T) {
 	ptr := func(v float64) *float64 { return &v }
@@ -145,5 +149,18 @@ func TestMarkerPreviewDuration(t *testing.T) {
 				t.Errorf("generate = %v, want %v", gotGenerate, tt.wantGenerate)
 			}
 		})
+	}
+}
+
+func TestMarkerPreviewPreset(t *testing.T) {
+	for codec, want := range map[models.GeneratedVideoCodec]string{
+		"":                             "veryslow",
+		models.GeneratedVideoCodecH264: "veryslow",
+		models.GeneratedVideoCodecHevc: "slow",
+		models.GeneratedVideoCodecAv1:  "veryslow",
+	} {
+		if got := markerPreviewPreset(codec); got != want {
+			t.Errorf("markerPreviewPreset(%q) = %q, want %q", codec, got, want)
+		}
 	}
 }

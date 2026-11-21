@@ -78,6 +78,15 @@ func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash st
 	return nil
 }
 
+// markerPreviewPreset returns the fixed (not user-configurable) preset for marker previews.
+// x265 veryslow is ~10x slower than x264 veryslow (33s vs 3s per 20s clip), so HEVC uses slow.
+func markerPreviewPreset(codec models.GeneratedVideoCodec) string {
+	if codec == models.GeneratedVideoCodecHevc {
+		return "slow"
+	}
+	return "veryslow"
+}
+
 type sceneMarkerOptions struct {
 	Seconds  float64
 	Duration float64
@@ -93,7 +102,7 @@ func (g Generator) markerPreviewVideo(input string, options sceneMarkerOptions) 
 		var videoArgs ffmpeg.Args
 		videoArgs = videoArgs.VideoFilter(videoFilter)
 
-		videoCodec, codecArgs := videoEncoderArgs(options.Codec, "veryslow", 24)
+		videoCodec, codecArgs := videoEncoderArgs(options.Codec, markerPreviewPreset(options.Codec), 24)
 		videoArgs = append(videoArgs, codecArgs...)
 		videoArgs = append(videoArgs,
 			"-movflags", "+faststart",
