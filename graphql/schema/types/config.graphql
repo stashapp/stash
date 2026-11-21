@@ -50,6 +50,13 @@ enum PreviewPreset {
   veryslow
 }
 
+"Codec used for generated video assets"
+enum GeneratedVideoCodec {
+  H264
+  HEVC
+  AV1
+}
+
 enum HashAlgorithm {
   MD5
   "oshash"
@@ -114,6 +121,10 @@ input ConfigGeneralInput {
   previewExcludeEnd: String
   "Preset when generating preview"
   previewPreset: PreviewPreset
+  "Codec for generated scene and marker previews"
+  previewCodec: GeneratedVideoCodec
+  "Codec for generated transcodes"
+  transcodeCodec: GeneratedVideoCodec
   "Transcode Hardware Acceleration"
   transcodeHardwareAcceleration: Boolean
   "Max generated transcode size"
@@ -256,6 +267,12 @@ type ConfigGeneralResult {
   previewExcludeEnd: String!
   "Preset when generating preview"
   previewPreset: PreviewPreset!
+  "Codec for generated scene and marker previews"
+  previewCodec: GeneratedVideoCodec!
+  "Codec for generated transcodes"
+  transcodeCodec: GeneratedVideoCodec!
+  "Codecs the configured ffmpeg can encode generated videos with"
+  availableVideoCodecs: [GeneratedVideoCodec!]!
   "Transcode Hardware Acceleration"
   transcodeHardwareAcceleration: Boolean!
   "Max generated transcode size"
