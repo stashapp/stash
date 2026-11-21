@@ -7,6 +7,7 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 const (
@@ -46,7 +47,7 @@ func markerPreviewDuration(seconds float64, endSeconds *float64, maxDuration int
 	return duration, duration > 0
 }
 
-func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash string, seconds float64, endSeconds *float64, includeAudio bool, maxDuration int, defaultDuration int) error {
+func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash string, seconds float64, endSeconds *float64, includeAudio bool, maxDuration int, defaultDuration int, codec models.GeneratedVideoCodec) error {
 	lockCtx := g.LockManager.ReadLock(ctx, input)
 	defer lockCtx.Cancel()
 
@@ -67,6 +68,7 @@ func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash st
 		Seconds:  seconds,
 		Duration: duration,
 		Audio:    includeAudio,
+		Codec:    codec,
 	})); err != nil {
 		return err
 	}
@@ -80,6 +82,7 @@ type sceneMarkerOptions struct {
 	Seconds  float64
 	Duration float64
 	Audio    bool
+	Codec    models.GeneratedVideoCodec
 }
 
 func (g Generator) markerPreviewVideo(input string, options sceneMarkerOptions) generateFn {
@@ -90,12 +93,9 @@ func (g Generator) markerPreviewVideo(input string, options sceneMarkerOptions) 
 		var videoArgs ffmpeg.Args
 		videoArgs = videoArgs.VideoFilter(videoFilter)
 
+		videoCodec, codecArgs := videoEncoderArgs(options.Codec, "veryslow", 24)
+		videoArgs = append(videoArgs, codecArgs...)
 		videoArgs = append(videoArgs,
-			"-pix_fmt", "yuv420p",
-			"-profile:v", "high",
-			"-level", "4.2",
-			"-preset", "veryslow",
-			"-crf", "24",
 			"-movflags", "+faststart",
 			"-threads", "4",
 			"-sws_flags", "lanczos",
@@ -106,7 +106,7 @@ func (g Generator) markerPreviewVideo(input string, options sceneMarkerOptions) 
 			Duration:   options.Duration,
 			StartTime:  options.Seconds,
 			OutputPath: tmpFn,
-			VideoCodec: ffmpeg.VideoCodecLibX264,
+			VideoCodec: videoCodec,
 			VideoArgs:  videoArgs,
 		}
 
