@@ -695,8 +695,7 @@ func getScanHandlers(options ScanGenerateOptions, taskQueue *job.TaskQueue) []fi
 	pluginCache := mgr.PluginCache
 
 	// one error per scan rather than an ffmpeg failure per scene; image previews still run
-	if options.GeneratePreviews != nil && !IsGeneratedVideoCodecSupported(c.GetPreviewCodec()) {
-		logger.Errorf("[scan] ffmpeg cannot encode %s (%s): skipping video preview generation", c.GetPreviewCodec(), generate.VideoEncoder(c.GetPreviewCodec()).CodeName)
+	if options.GeneratePreviews != nil && !canEncode(IsGeneratedVideoCodecSupported, c.GetPreviewCodec(), "scan", "preview generation") {
 		options.GeneratePreviews = nil
 	}
 

@@ -398,9 +398,19 @@ func SupportedGeneratedVideoCodecs() []models.GeneratedVideoCodec {
 	return ret
 }
 
+// IsGeneratedVideoCodecSupported returns true if the configured ffmpeg can encode generated videos with c.
 func IsGeneratedVideoCodecSupported(c models.GeneratedVideoCodec) bool {
 	f := GetInstance().FFMpeg
 	return f != nil && f.SupportsEncoder(generate.VideoEncoder(c))
+}
+
+// canEncode reports whether c is supported, logging which generated assets are skipped when it isn't.
+func canEncode(supported func(models.GeneratedVideoCodec) bool, c models.GeneratedVideoCodec, logPrefix string, skipped string) bool {
+	if supported(c) {
+		return true
+	}
+	logger.Errorf("[%s] ffmpeg cannot encode %s (%s): skipping %s", logPrefix, c, generate.VideoEncoder(c).CodeName, skipped)
+	return false
 }
 
 // resolveCodecs sets the job's codecs and skips video asset types whose encoder ffmpeg lacks.
@@ -417,14 +427,12 @@ func (j *GenerateJob) resolveCodecs(supported func(models.GeneratedVideoCodec) b
 		j.transcodeCodec = *j.input.TranscodeCodec
 	}
 
-	if (j.input.Previews || j.input.Markers) && !supported(j.previewCodec) {
-		logger.Errorf("[generate] ffmpeg cannot encode %s (%s): skipping video previews and marker previews", j.previewCodec, generate.VideoEncoder(j.previewCodec).CodeName)
+	if (j.input.Previews || j.input.Markers) && !canEncode(supported, j.previewCodec, "generate", "previews and marker previews") {
 		j.skipVideoPreviews = true
 		j.input.Markers = false
 	}
 
-	if j.input.Transcodes && !supported(j.transcodeCodec) {
-		logger.Errorf("[generate] ffmpeg cannot encode %s (%s): skipping transcodes", j.transcodeCodec, generate.VideoEncoder(j.transcodeCodec).CodeName)
+	if j.input.Transcodes && !canEncode(supported, j.transcodeCodec, "generate", "transcodes") {
 		j.input.Transcodes = false
 	}
 }
