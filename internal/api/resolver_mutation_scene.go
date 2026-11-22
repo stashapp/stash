@@ -222,6 +222,13 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 
 	updatedScene.URLs = translator.optionalURLs(input.Urls, input.URL)
 
+	if translator.hasField("locked_fields") {
+		updatedScene.LockedFields = &models.UpdateStrings{
+			Values: lockedFieldStrings(input.LockedFields),
+			Mode:   models.RelationshipUpdateModeSet,
+		}
+	}
+
 	updatedScene.PrimaryFileID, err = translator.fileIDPtrFromString(input.PrimaryFileID)
 	if err != nil {
 		return nil, fmt.Errorf("converting primary file id: %w", err)
@@ -255,6 +262,14 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 	return &updatedScene, nil
 }
 
+func lockedFieldStrings(fields []models.SceneLockableField) []string {
+	ret := make([]string, len(fields))
+	for i, f := range fields {
+		ret[i] = f.String()
+	}
+	return sliceutil.AppendUniques(nil, ret)
+}
+
 func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUpdateInput, translator changesetTranslator) (*models.Scene, error) {
 	sceneID, err := strconv.Atoi(input.ID)
 	if err != nil {
@@ -275,6 +290,14 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 	// Populate scene from the input
 	updatedScene, err := scenePartialFromInput(input, translator)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := scene.LoadLockState(ctx, originalScene, qb); err != nil {
+		return nil, err
+	}
+
+	if err := scene.CheckLockedFields(originalScene, *updatedScene); err != nil {
 		return nil, err
 	}
 

@@ -23,20 +23,22 @@ import (
 )
 
 const (
-	sceneTable            = "scenes"
-	scenesFilesTable      = "scenes_files"
-	sceneIDColumn         = "scene_id"
-	sceneDateColumn       = "date"
-	performersScenesTable = "performers_scenes"
-	scenesTagsTable       = "scenes_tags"
-	scenesGalleriesTable  = "scenes_galleries"
-	groupsScenesTable     = "groups_scenes"
-	scenesURLsTable       = "scene_urls"
-	sceneURLColumn        = "url"
-	scenesViewDatesTable  = "scenes_view_dates"
-	sceneViewDateColumn   = "view_date"
-	scenesODatesTable     = "scenes_o_dates"
-	sceneODateColumn      = "o_date"
+	sceneTable              = "scenes"
+	scenesFilesTable        = "scenes_files"
+	sceneIDColumn           = "scene_id"
+	sceneDateColumn         = "date"
+	performersScenesTable   = "performers_scenes"
+	scenesTagsTable         = "scenes_tags"
+	scenesGalleriesTable    = "scenes_galleries"
+	groupsScenesTable       = "groups_scenes"
+	scenesURLsTable         = "scene_urls"
+	sceneURLColumn          = "url"
+	scenesLockedFieldsTable = "scene_locked_fields"
+	sceneLockedFieldColumn  = "field"
+	scenesViewDatesTable    = "scenes_view_dates"
+	sceneViewDateColumn     = "view_date"
+	scenesODatesTable       = "scenes_o_dates"
+	sceneODateColumn        = "o_date"
 
 	sceneCoverBlobColumn = "cover_blob"
 )
@@ -307,6 +309,12 @@ func (qb *SceneStore) Create(ctx context.Context, newObject *models.Scene, fileI
 		}
 	}
 
+	if newObject.LockedFields.Loaded() {
+		if err := scenesLockedFieldsTableMgr.insertJoins(ctx, id, newObject.LockedFields.List()); err != nil {
+			return err
+		}
+	}
+
 	if newObject.PerformerIDs.Loaded() {
 		if err := scenesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs.List()); err != nil {
 			return err
@@ -366,6 +374,11 @@ func (qb *SceneStore) UpdatePartial(ctx context.Context, id int, partial models.
 			return nil, err
 		}
 	}
+	if partial.LockedFields != nil {
+		if err := scenesLockedFieldsTableMgr.modifyJoins(ctx, id, partial.LockedFields.Values, partial.LockedFields.Mode); err != nil {
+			return nil, err
+		}
+	}
 	if partial.PerformerIDs != nil {
 		if err := scenesPerformersTableMgr.modifyJoins(ctx, id, partial.PerformerIDs.IDs, partial.PerformerIDs.Mode); err != nil {
 			return nil, err
@@ -410,6 +423,12 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 
 	if updatedObject.URLs.Loaded() {
 		if err := scenesURLsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.URLs.List()); err != nil {
+			return err
+		}
+	}
+
+	if updatedObject.LockedFields.Loaded() {
+		if err := scenesLockedFieldsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.LockedFields.List()); err != nil {
 			return err
 		}
 	}
@@ -1410,6 +1429,10 @@ func (qb *SceneStore) ResetActivity(ctx context.Context, id int, resetResume boo
 
 func (qb *SceneStore) GetURLs(ctx context.Context, sceneID int) ([]string, error) {
 	return scenesURLsTableMgr.get(ctx, sceneID)
+}
+
+func (qb *SceneStore) GetLockedFields(ctx context.Context, sceneID int) ([]string, error) {
+	return scenesLockedFieldsTableMgr.get(ctx, sceneID)
 }
 
 func (qb *SceneStore) GetCover(ctx context.Context, sceneID int) ([]byte, error) {

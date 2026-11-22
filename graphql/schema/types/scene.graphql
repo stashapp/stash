@@ -44,6 +44,8 @@ type Scene {
   director: String
   url: String @deprecated(reason: "Use urls")
   urls: [String!]!
+  "Fields that cannot be changed until unlocked"
+  locked_fields: [SceneLockableField!]!
   date: String
   production_date: String
   # rating expressed as 1-100
@@ -166,7 +168,21 @@ input SceneUpdateInput {
 
   primary_file_id: ID
 
+  "Replaces the set of locked fields. Locked fields cannot be changed until unlocked."
+  locked_fields: [SceneLockableField!]
+
   custom_fields: CustomFieldsInput
+}
+
+enum SceneLockableField {
+  TITLE
+  CODE
+  DETAILS
+  DIRECTOR
+  DATE
+  PRODUCTION_DATE
+  STUDIO
+  URLS
 }
 
 enum BulkUpdateIdMode {

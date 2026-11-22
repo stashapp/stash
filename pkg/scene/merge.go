@@ -38,6 +38,18 @@ func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int,
 		return fmt.Errorf("finding destination scene ID %d: %w", destinationID, err)
 	}
 
+	if dest == nil {
+		return fmt.Errorf("destination scene ID %d not found", destinationID)
+	}
+
+	if err := LoadLockState(ctx, dest, s.Repository); err != nil {
+		return err
+	}
+
+	if err := CheckLockedFields(dest, scenePartial); err != nil {
+		return err
+	}
+
 	sources, err := s.Repository.FindMany(ctx, sourceIDs)
 	if err != nil {
 		return fmt.Errorf("finding source scenes: %w", err)

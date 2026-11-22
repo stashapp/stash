@@ -23,13 +23,14 @@ var (
 	galleriesURLsJoinTable       = goqu.T(galleriesURLsTable)
 	galleriesCustomFieldsTable   = goqu.T("gallery_custom_fields")
 
-	scenesFilesJoinTable      = goqu.T(scenesFilesTable)
-	scenesTagsJoinTable       = goqu.T(scenesTagsTable)
-	scenesPerformersJoinTable = goqu.T(performersScenesTable)
-	scenesStashIDsJoinTable   = goqu.T("scene_stash_ids")
-	scenesGroupsJoinTable     = goqu.T(groupsScenesTable)
-	scenesURLsJoinTable       = goqu.T(scenesURLsTable)
-	scenesCustomFieldsTable   = goqu.T("scene_custom_fields")
+	scenesFilesJoinTable        = goqu.T(scenesFilesTable)
+	scenesTagsJoinTable         = goqu.T(scenesTagsTable)
+	scenesPerformersJoinTable   = goqu.T(performersScenesTable)
+	scenesStashIDsJoinTable     = goqu.T("scene_stash_ids")
+	scenesGroupsJoinTable       = goqu.T(groupsScenesTable)
+	scenesURLsJoinTable         = goqu.T(scenesURLsTable)
+	scenesLockedFieldsJoinTable = goqu.T(scenesLockedFieldsTable)
+	scenesCustomFieldsTable     = goqu.T("scene_custom_fields")
 
 	sceneMarkersTagsJoinTable = goqu.T(sceneMarkersTagsTable)
 
@@ -227,6 +228,14 @@ var (
 			idColumn: scenesURLsJoinTable.Col(sceneIDColumn),
 		},
 		valueColumn: scenesURLsJoinTable.Col(sceneURLColumn),
+	}
+
+	scenesLockedFieldsTableMgr = &stringTable{
+		table: table{
+			table:    scenesLockedFieldsJoinTable,
+			idColumn: scenesLockedFieldsJoinTable.Col(sceneIDColumn),
+		},
+		stringColumn: scenesLockedFieldsJoinTable.Col(sceneLockedFieldColumn),
 	}
 
 	scenesViewTableMgr = &viewHistoryTable{
