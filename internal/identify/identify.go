@@ -198,13 +198,20 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	setOrganized := utils.IsTrue(options.SetOrganized)
 	ret.Partial = getScenePartial(s, scraped, fieldOptions, setOrganized)
 
-	studioID, err := rel.studio(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("error getting studio: %w", err)
+	// skip a locked studio up front so that a missing studio isn't created for nothing
+	if !scene.IsFieldLocked(s, models.SceneLockableFieldStudio) {
+		studioID, err := rel.studio(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("error getting studio: %w", err)
+		}
+
+		if studioID != nil {
+			ret.Partial.StudioID = models.NewOptionalInt(*studioID)
+		}
 	}
 
-	if studioID != nil {
-		ret.Partial.StudioID = models.NewOptionalInt(*studioID)
+	if removed := scene.RemoveLockedFields(s, &ret.Partial); len(removed) > 0 {
+		logger.Infof("Skipping locked fields %v for %s", removed, s.DisplayName())
 	}
 
 	// Determine allowed genders for performer filtering
@@ -286,7 +293,7 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, s *models.Scene, resu
 	var updater *scene.UpdateSet
 	if err := txn.WithTxn(ctx, t.TxnManager, func(ctx context.Context) error {
 		// load scene relationships
-		if err := s.LoadURLs(ctx, t.SceneReaderUpdater); err != nil {
+		if err := scene.LoadLockState(ctx, s, t.SceneReaderUpdater); err != nil {
 			return err
 		}
 		if err := s.LoadPerformerIDs(ctx, t.SceneReaderUpdater); err != nil {

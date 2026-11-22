@@ -12,6 +12,7 @@ import (
 type SceneFinderUpdater interface {
 	models.SceneQueryer
 	models.SceneUpdater
+	models.LockedFieldLoader
 }
 
 type ScenePerformerUpdater interface {
@@ -58,10 +59,18 @@ func ScenePerformers(ctx context.Context, s *models.Scene, rw ScenePerformerUpda
 
 // SceneStudios tags the provided scene with the first studio whose name matches the scene's path.
 //
-// Scenes will not be tagged if studio is already set.
+// Scenes will not be tagged if studio is already set or locked.
 func SceneStudios(ctx context.Context, s *models.Scene, rw SceneFinderUpdater, studioReader models.StudioAutoTagQueryer, cache *match.Cache) error {
 	if s.StudioID != nil {
 		// don't modify
+		return nil
+	}
+
+	if err := s.LoadLockedFields(ctx, rw); err != nil {
+		return err
+	}
+
+	if scene.IsFieldLocked(s, models.SceneLockableFieldStudio) {
 		return nil
 	}
 

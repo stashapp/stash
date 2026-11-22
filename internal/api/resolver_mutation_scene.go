@@ -457,18 +457,36 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 		qb := r.repository.Scene
 
 		for _, sceneID := range sceneIDs {
-			scene, err := qb.UpdatePartial(ctx, sceneID, updatedScene)
+			original, err := qb.Find(ctx, sceneID)
+			if err != nil {
+				return err
+			}
+			if original == nil {
+				return fmt.Errorf("scene with id %d not found", sceneID)
+			}
+
+			if err := scene.LoadLockState(ctx, original, qb); err != nil {
+				return err
+			}
+
+			// bulk edits skip locked fields rather than failing the whole batch
+			partial := updatedScene
+			if removed := scene.RemoveLockedFields(original, &partial); len(removed) > 0 {
+				logger.Infof("Bulk update: skipping locked fields %v for scene %d", removed, sceneID)
+			}
+
+			s, err := qb.UpdatePartial(ctx, sceneID, partial)
 			if err != nil {
 				return err
 			}
 
 			if customFields != nil {
-				if err := qb.SetCustomFields(ctx, scene.ID, *customFields); err != nil {
+				if err := qb.SetCustomFields(ctx, s.ID, *customFields); err != nil {
 					return err
 				}
 			}
 
-			ret = append(ret, scene)
+			ret = append(ret, s)
 		}
 
 		return nil

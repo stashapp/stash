@@ -104,6 +104,7 @@ func createFullScene(id int) models.Scene {
 		Rating:         &rating,
 		Organized:      organized,
 		URLs:           models.NewRelatedStrings([]string{url}),
+		LockedFields:   models.NewRelatedStrings([]string{"TITLE"}),
 		Files: models.NewRelatedVideoFiles([]*models.VideoFile{
 			{
 				BaseFile: &models.BaseFile{
@@ -129,10 +130,11 @@ func createEmptyScene(id int) models.Scene {
 				},
 			},
 		}),
-		URLs:      models.NewRelatedStrings([]string{}),
-		StashIDs:  models.NewRelatedStashIDs([]models.StashID{}),
-		CreatedAt: createTime,
-		UpdatedAt: updateTime,
+		URLs:         models.NewRelatedStrings([]string{}),
+		LockedFields: models.NewRelatedStrings([]string{}),
+		StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+		CreatedAt:    createTime,
+		UpdatedAt:    updateTime,
 	}
 }
 
@@ -146,6 +148,7 @@ func createFullJSONScene(image string, customFields map[string]interface{}) *jso
 		Rating:         rating,
 		Organized:      organized,
 		URLs:           []string{url},
+		LockedFields:   []string{"TITLE"},
 		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},
@@ -162,8 +165,9 @@ func createFullJSONScene(image string, customFields map[string]interface{}) *jso
 
 func createEmptyJSONScene() *jsonschema.Scene {
 	return &jsonschema.Scene{
-		URLs:  []string{},
-		Files: []string{path},
+		URLs:         []string{},
+		LockedFields: []string{},
+		Files:        []string{path},
 		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},

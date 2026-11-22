@@ -250,6 +250,8 @@ func TestSceneStudios(t *testing.T) {
 			db.Scene.On("UpdatePartial", testCtx, sceneID, matchPartial).Return(nil, nil).Once()
 		}
 
+		db.Scene.On("GetLockedFields", testCtx, sceneID).Return(nil, nil).Once()
+
 		scene := models.Scene{
 			ID:   sceneID,
 			Path: test.Path,
@@ -286,6 +288,17 @@ func TestSceneStudios(t *testing.T) {
 
 		doTest(db, test)
 	}
+
+	// locked studio is not set
+	db := mocks.NewDatabase()
+	db.Studio.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Studio{&studio}, nil).Maybe()
+	lockedScene := models.Scene{
+		ID:           sceneID,
+		Path:         "/" + studioName + "/file" + sceneExt,
+		LockedFields: models.NewRelatedStrings([]string{models.SceneLockableFieldStudio.String()}),
+	}
+	assert.Nil(SceneStudios(testCtx, &lockedScene, db.Scene, db.Studio, nil))
+	db.Scene.AssertNotCalled(t, "UpdatePartial", mock.Anything, mock.Anything, mock.Anything)
 }
 
 func TestSceneTags(t *testing.T) {

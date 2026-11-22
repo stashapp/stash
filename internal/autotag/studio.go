@@ -5,6 +5,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -78,7 +79,7 @@ func getStudioTagger(p *models.Studio, aliases []string, cache *match.Cache) []t
 	return ret
 }
 
-// StudioScenes searches for scenes whose path matches the provided studio name and tags the scene with the studio, if studio is not already set on the scene.
+// StudioScenes searches for scenes whose path matches the provided studio name and tags the scene with the studio, if studio is not already set or locked on the scene.
 func (tagger *Tagger) StudioScenes(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw SceneFinderUpdater) error {
 	t := getStudioTagger(p, aliases, tagger.Cache)
 
@@ -93,13 +94,23 @@ func (tagger *Tagger) StudioScenes(ctx context.Context, p *models.Studio, paths 
 			scenePartial := models.NewScenePartial()
 			scenePartial.StudioID = models.NewOptionalInt(p.ID)
 
+			tagged := false
 			if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
+				if err := o.LoadLockedFields(ctx, rw); err != nil {
+					return err
+				}
+
+				if scene.IsFieldLocked(o, models.SceneLockableFieldStudio) {
+					return nil
+				}
+
 				_, err := rw.UpdatePartial(ctx, o.ID, scenePartial)
+				tagged = err == nil
 				return err
 			}); err != nil {
 				return false, err
 			}
-			return true, nil
+			return tagged, nil
 		}); err != nil {
 			return err
 		}

@@ -52,6 +52,7 @@ type Scene struct {
 	ProductionDate string   `json:"production_date,omitempty"`
 	Rating         int      `json:"rating,omitempty"`
 	Organized      bool     `json:"organized,omitempty"`
+	LockedFields   []string `json:"locked_fields,omitempty"`
 
 	// deprecated - for import only
 	OCounter int `json:"o_counter,omitempty"`
