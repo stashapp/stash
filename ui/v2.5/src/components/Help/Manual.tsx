@@ -23,6 +23,7 @@ import Interactive from "src/docs/en/Manual/Interactive.md";
 import Captions from "src/docs/en/Manual/Captions.md";
 import Identify from "src/docs/en/Manual/Identify.md";
 import Browsing from "src/docs/en/Manual/Browsing.md";
+import LockedFields from "src/docs/en/Manual/LockedFields.md";
 import TroubleshootingMode from "src/docs/en/Manual/TroubleshootingMode.md";
 import { MarkdownPage } from "../Shared/MarkdownPage";
 
@@ -88,6 +89,11 @@ export const Manual: React.FC<IManualProps> = ({
       key: "Browsing.md",
       title: "Browsing",
       content: Browsing,
+    },
+    {
+      key: "LockedFields.md",
+      title: "Locked Fields",
+      content: LockedFields,
     },
     {
       key: "Images.md",

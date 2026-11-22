@@ -93,6 +93,7 @@ rating (integer)
 details  
 performers (list of strings, performers name)  
 tags (list of strings)  
+locked_fields (list of strings, one or more of TITLE, CODE, DETAILS, DIRECTOR, DATE, PRODUCTION_DATE, STUDIO, URLS)  
 markers     
   title  
   seconds  
