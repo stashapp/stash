@@ -186,19 +186,18 @@ export function formikUtils<V extends FormikValues>(
 
     return (
       <Form.Group controlId={field} as={Row} data-field={field}>
-        <Form.Label {...(props?.labelProps ?? labelProps)}>
-          {title}
-          {lock && (
-            <LockFieldButton
-              locked={lock.locked}
-              fieldName={title}
-              onToggle={lock.onToggle}
-            />
-          )}
-        </Form.Label>
+        <Form.Label {...(props?.labelProps ?? labelProps)}>{title}</Form.Label>
         <Col {...(props?.fieldProps ?? fieldProps)}>
           {lock ? (
-            <fieldset disabled={lock.locked}>{control}</fieldset>
+            <div className="lockable-field">
+              <fieldset disabled={lock.locked}>{control}</fieldset>
+              {/* outside the fieldset so that locking doesn't disable the toggle */}
+              <LockFieldButton
+                locked={lock.locked}
+                fieldName={title}
+                onToggle={lock.onToggle}
+              />
+            </div>
           ) : (
             control
           )}

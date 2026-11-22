@@ -4,7 +4,7 @@ Individual scene fields can be locked once you know they are correct. A locked f
 
 ## Locking a field
 
-On the scene's Edit tab, click the lock icon next to a field's label to lock or unlock it, then save the scene. A locked field's input is disabled. Locked fields are listed on the scene's Details tab.
+On the scene's Edit tab, click the lock icon to the right of a field to lock or unlock it, then save the scene. A locked field's input is disabled. Locked fields are listed on the scene's Details tab.
 
 The following scene fields can be locked:
 
