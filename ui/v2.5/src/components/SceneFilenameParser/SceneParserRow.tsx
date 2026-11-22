@@ -4,6 +4,7 @@ import clone from "lodash-es/clone";
 import { Form } from "react-bootstrap";
 import {
   ParseSceneFilenamesQuery,
+  SceneLockableField,
   SlimSceneDataFragment,
 } from "src/core/generated-graphql";
 import {
@@ -59,13 +60,21 @@ export class SceneParserResult {
     this.tags.setOriginalValue(this.scene.tags.map((t) => t.id));
     this.studio.setOriginalValue(this.scene.studio?.id);
 
-    this.title.setValue(result.title ?? undefined);
-    this.date.setValue(result.date ?? undefined);
+    // parsed values for locked fields are ignored
+    const locked = this.scene.locked_fields;
+    if (!locked.includes(SceneLockableField.Title)) {
+      this.title.setValue(result.title ?? undefined);
+    }
+    if (!locked.includes(SceneLockableField.Date)) {
+      this.date.setValue(result.date ?? undefined);
+    }
     this.rating.setValue(result.rating ?? undefined);
 
     this.performers.setValue(result.performer_ids ?? undefined);
     this.tags.setValue(result.tag_ids ?? undefined);
-    this.studio.setValue(result.studio_id ?? undefined);
+    if (!locked.includes(SceneLockableField.Studio)) {
+      this.studio.setValue(result.studio_id ?? undefined);
+    }
   }
 
   // returns true if any of its fields have set == true

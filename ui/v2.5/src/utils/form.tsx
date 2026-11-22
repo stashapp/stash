@@ -14,6 +14,7 @@ import { IntlShape } from "react-intl";
 import { DateInput } from "src/components/Shared/DateInput";
 import { DurationInput } from "src/components/Shared/DurationInput";
 import { Icon } from "src/components/Shared/Icon";
+import { LockFieldButton } from "src/components/Shared/LockFieldButton";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { LinkType, StashIDPill } from "src/components/Shared/StashID";
 import { StringListInput } from "src/components/Shared/StringListInput";
@@ -83,9 +84,16 @@ export const NumberField: React.FC<
 
 type Formik<V extends FormikValues> = ReturnType<typeof useFormik<V>>;
 
+interface ILockProps {
+  locked: boolean;
+  onToggle: () => void;
+}
+
 interface IProps {
   labelProps?: FormLabelProps;
   fieldProps?: ColProps;
+  // shows a lock toggle on the label, and disables the control while locked
+  lock?: ILockProps;
 }
 
 export function formikUtils<V extends FormikValues>(
@@ -174,10 +182,27 @@ export function formikUtils<V extends FormikValues>(
     control: React.ReactNode,
     props?: IProps
   ) {
+    const lock = props?.lock;
+
     return (
       <Form.Group controlId={field} as={Row} data-field={field}>
-        <Form.Label {...(props?.labelProps ?? labelProps)}>{title}</Form.Label>
-        <Col {...(props?.fieldProps ?? fieldProps)}>{control}</Col>
+        <Form.Label {...(props?.labelProps ?? labelProps)}>
+          {title}
+          {lock && (
+            <LockFieldButton
+              locked={lock.locked}
+              fieldName={title}
+              onToggle={lock.onToggle}
+            />
+          )}
+        </Form.Label>
+        <Col {...(props?.fieldProps ?? fieldProps)}>
+          {lock ? (
+            <fieldset disabled={lock.locked}>{control}</fieldset>
+          ) : (
+            control
+          )}
+        </Col>
       </Form.Group>
     );
   }

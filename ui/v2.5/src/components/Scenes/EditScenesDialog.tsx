@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Form } from "react-bootstrap";
+import { Alert, Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { useBulkSceneUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
@@ -35,6 +35,19 @@ const sceneFields = [
   "director",
   "date",
   "production_date",
+];
+
+// bulk input fields that map to lockable scene fields
+const lockableInputFields: [
+  keyof GQL.BulkSceneUpdateInput,
+  GQL.SceneLockableField,
+][] = [
+  ["code", GQL.SceneLockableField.Code],
+  ["details", GQL.SceneLockableField.Details],
+  ["director", GQL.SceneLockableField.Director],
+  ["date", GQL.SceneLockableField.Date],
+  ["production_date", GQL.SceneLockableField.ProductionDate],
+  ["studio_id", GQL.SceneLockableField.Studio],
 ];
 
 export const EditScenesDialog: React.FC<IListOperationProps> = (
@@ -108,6 +121,21 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     );
   }, [updateInput.production_date, intl]);
 
+  // number of selected scenes where a changed field is locked, and so will be skipped
+  const lockedSceneCount = useMemo(() => {
+    const changed = lockableInputFields
+      .filter(
+        ([key]) =>
+          updateInput[key] !== undefined &&
+          updateInput[key] !== aggregateState.state[key]
+      )
+      .map(([, field]) => field);
+
+    return props.selected.filter((s) =>
+      s.locked_fields.some((f) => changed.includes(f))
+    ).length;
+  }, [updateInput, aggregateState, props.selected]);
+
   function setUpdateField(input: Partial<GQL.BulkSceneUpdateInput>) {
     setUpdateInput((current) => ({ ...current, ...input }));
   }
@@ -172,6 +200,14 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         }}
         isRunning={isUpdating}
       >
+        {lockedSceneCount > 0 && (
+          <Alert variant="warning">
+            {intl.formatMessage(
+              { id: "dialogs.bulk_edit_locked_fields_warning" },
+              { count: lockedSceneCount }
+            )}
+          </Alert>
+        )}
         <Form>
           <BulkUpdateFormGroup name="rating">
             <RatingSystem

@@ -1269,3 +1269,12 @@ input[type="range"].double-range-slider-max {
   margin-top: 0.5rem;
   text-align: center;
 }
+
+button.btn.lock-field-button {
+  opacity: 0.5;
+  padding: 0 0.25rem;
+
+  &.locked {
+    opacity: 1;
+  }
+}

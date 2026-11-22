@@ -75,6 +75,7 @@
     "import_from_file": "Import from file",
     "load": "Load",
     "load_filter": "Load filter",
+    "lock_field": "Lock {field}",
     "logout": "Log out",
     "make_primary": "Make Primary",
     "merge": "Merge",
@@ -158,6 +159,7 @@
     },
     "temp_disable": "Disable temporarily…",
     "temp_enable": "Enable temporarily…",
+    "unlock_field": "Unlock {field}",
     "unset": "Unset",
     "use_default": "Use default",
     "view_history": "View history",
@@ -1001,6 +1003,7 @@
   "details": "Details",
   "developmentVersion": "Development Version",
   "dialogs": {
+    "bulk_edit_locked_fields_warning": "{count, plural, one {# scene has} other {# scenes have}} locked fields that will not be changed.",
     "clear_o_history_confirm": "Are you sure you want to clear the O history?",
     "clear_o_history_confirm_sfw": "Are you sure you want to clear the like history?",
     "clear_play_history_confirm": "Are you sure you want to clear the play history?",
@@ -1286,6 +1289,7 @@
     "generic": "Loading…",
     "plugins": "Loading plugins…"
   },
+  "locked": "Locked",
   "login": {
     "login": "Login",
     "username": "Username",

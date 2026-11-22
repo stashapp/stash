@@ -127,6 +127,9 @@ input SceneCreateInput {
   """
   file_ids: [ID!]
 
+  "Locked fields cannot be changed until unlocked."
+  locked_fields: [SceneLockableField!]
+
   custom_fields: Map
 }
 

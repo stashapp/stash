@@ -198,8 +198,9 @@ type SceneCreateInput struct {
 	// The first id will be assigned as primary.
 	// Files will be reassigned from existing scenes if applicable.
 	// Files must not already be primary for another scene.
-	FileIds      []string       `json:"file_ids"`
-	CustomFields map[string]any `json:"custom_fields,omitempty"`
+	FileIds      []string             `json:"file_ids"`
+	LockedFields []SceneLockableField `json:"locked_fields"`
+	CustomFields map[string]any       `json:"custom_fields,omitempty"`
 }
 
 type SceneUpdateInput struct {
