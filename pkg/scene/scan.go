@@ -32,6 +32,7 @@ type ScanCreatorUpdater interface {
 	Create(ctx context.Context, newScene *models.Scene, fileIDs []models.FileID) error
 	UpdatePartial(ctx context.Context, id int, updatedScene models.ScenePartial) (*models.Scene, error)
 	AddFileID(ctx context.Context, id int, fileID models.FileID) error
+	models.LockedFieldLoader
 }
 
 type ScanGalleryFinderUpdater interface {
@@ -189,9 +190,19 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 }
 
 func (h *ScanHandler) associateGallery(ctx context.Context, existing []*models.Scene, f models.File) error {
-	sceneIDs := make([]int, len(existing))
-	for i, s := range existing {
-		sceneIDs[i] = s.ID
+	var sceneIDs []int
+	for _, s := range existing {
+		if err := s.LoadLockedFields(ctx, h.CreatorUpdater); err != nil {
+			return err
+		}
+		if IsFieldLocked(s, models.SceneLockableFieldGalleries) {
+			continue
+		}
+		sceneIDs = append(sceneIDs, s.ID)
+	}
+
+	if len(sceneIDs) == 0 {
+		return nil
 	}
 
 	path := f.Base().Path
