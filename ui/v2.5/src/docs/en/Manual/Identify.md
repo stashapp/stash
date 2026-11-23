@@ -16,7 +16,7 @@ Scenes that have the Organized flag added to them will not be modified by Identi
 
 ### Locked fields
 
-[Locked fields](/help/LockedFields.md) are never modified by Identify, regardless of the field strategy.
+[Locked fields](/help/LockedFields.md), including performers, tags and studio, are never modified by Identify, regardless of the field strategy. Missing performers, tags and studios are not created for a locked field.
 
 ## Options
 

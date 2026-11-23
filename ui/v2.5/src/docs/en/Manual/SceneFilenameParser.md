@@ -19,7 +19,7 @@ To use this tool, a filename pattern must be entered. The pattern accepts the fo
 | `studio` | Sets the studio performer, based on the text captured. |
 | `{}` | Matches any characters. Not captured. |
 
-Parsed values are ignored for a scene's [locked](/help/LockedFields.md) title, date and studio.
+Parsed values are ignored for a scene's [locked](/help/LockedFields.md) title, date, studio, performers and tags.
 
 > **⚠️ Note:** `performer`, `tag` and `studio` fields will only match against Performers/Tags/Studios that already exist in the system.
 
