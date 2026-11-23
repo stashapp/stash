@@ -70,6 +70,14 @@ func RemoveLockedFields(s *models.Scene, partial *models.ScenePartial) []models.
 			partial.StudioID = models.OptionalInt{}
 		case models.SceneLockableFieldUrls:
 			partial.URLs = nil
+		case models.SceneLockableFieldPerformers:
+			partial.PerformerIDs = nil
+		case models.SceneLockableFieldTags:
+			partial.TagIDs = nil
+		case models.SceneLockableFieldGroups:
+			partial.GroupIDs = nil
+		case models.SceneLockableFieldGalleries:
+			partial.GalleryIDs = nil
 		}
 	}
 
@@ -79,9 +87,14 @@ func RemoveLockedFields(s *models.Scene, partial *models.ScenePartial) []models.
 type LockStateLoader interface {
 	models.LockedFieldLoader
 	models.URLLoader
+	models.PerformerIDLoader
+	models.TagIDLoader
+	models.SceneGroupLoader
+	models.GalleryIDLoader
 }
 
 // LoadLockState loads the relationships needed by LockViolations.
+// Relationship fields are only loaded when locked.
 func LoadLockState(ctx context.Context, s *models.Scene, l LockStateLoader) error {
 	if err := s.LoadLockedFields(ctx, l); err != nil {
 		return fmt.Errorf("loading locked fields: %w", err)
@@ -89,6 +102,56 @@ func LoadLockState(ctx context.Context, s *models.Scene, l LockStateLoader) erro
 	if err := s.LoadURLs(ctx, l); err != nil {
 		return fmt.Errorf("loading urls: %w", err)
 	}
+	if IsFieldLocked(s, models.SceneLockableFieldPerformers) {
+		if err := s.LoadPerformerIDs(ctx, l); err != nil {
+			return fmt.Errorf("loading performers: %w", err)
+		}
+	}
+	if IsFieldLocked(s, models.SceneLockableFieldTags) {
+		if err := s.LoadTagIDs(ctx, l); err != nil {
+			return fmt.Errorf("loading tags: %w", err)
+		}
+	}
+	if IsFieldLocked(s, models.SceneLockableFieldGroups) {
+		if err := s.LoadGroups(ctx, l); err != nil {
+			return fmt.Errorf("loading groups: %w", err)
+		}
+	}
+	if IsFieldLocked(s, models.SceneLockableFieldGalleries) {
+		if err := s.LoadGalleryIDs(ctx, l); err != nil {
+			return fmt.Errorf("loading galleries: %w", err)
+		}
+	}
+	return nil
+}
+
+type LockedFieldFinder interface {
+	models.SceneGetter
+	models.LockedFieldLoader
+}
+
+// CheckGalleriesLocked returns a LockedFieldsError naming the first scene in
+// sceneIDs that has its galleries locked. Used when a gallery-side edit would
+// change the scenes' gallery links.
+func CheckGalleriesLocked(ctx context.Context, r LockedFieldFinder, sceneIDs []int) error {
+	if len(sceneIDs) == 0 {
+		return nil
+	}
+
+	scenes, err := r.FindByIDs(ctx, sceneIDs)
+	if err != nil {
+		return err
+	}
+
+	for _, s := range scenes {
+		if err := s.LoadLockedFields(ctx, r); err != nil {
+			return fmt.Errorf("loading locked fields: %w", err)
+		}
+		if IsFieldLocked(s, models.SceneLockableFieldGalleries) {
+			return fmt.Errorf("scene %q: %w", s.DisplayName(), &LockedFieldsError{Fields: []models.SceneLockableField{models.SceneLockableFieldGalleries}})
+		}
+	}
+
 	return nil
 }
 
@@ -115,6 +178,54 @@ func fieldChanged(s *models.Scene, partial models.ScenePartial, f models.SceneLo
 		return partial.StudioID.Set && !intPtrEqual(s.StudioID, partial.StudioID.Ptr())
 	case models.SceneLockableFieldUrls:
 		return partial.URLs != nil && !slices.Equal(s.URLs.List(), partial.URLs.Apply(s.URLs.List()))
+	case models.SceneLockableFieldPerformers:
+		return len(partial.PerformerIDs.ImpactedIDs(s.PerformerIDs.List())) > 0
+	case models.SceneLockableFieldTags:
+		return len(partial.TagIDs.ImpactedIDs(s.TagIDs.List())) > 0
+	case models.SceneLockableFieldGalleries:
+		return len(partial.GalleryIDs.ImpactedIDs(s.GalleryIDs.List())) > 0
+	case models.SceneLockableFieldGroups:
+		return groupsChanged(s.Groups.List(), partial.GroupIDs)
+	}
+
+	return false
+}
+
+// groupsChanged mirrors the add/remove/set semantics of the scenes_groups store.
+func groupsChanged(existing []models.GroupsScenes, u *models.UpdateGroupIDs) bool {
+	if u == nil {
+		return false
+	}
+
+	has := func(list []models.GroupsScenes, v models.GroupsScenes, matchIndex bool) bool {
+		return slices.ContainsFunc(list, func(e models.GroupsScenes) bool {
+			return e.GroupID == v.GroupID && (!matchIndex || intPtrEqual(e.SceneIndex, v.SceneIndex))
+		})
+	}
+
+	switch u.Mode {
+	case models.RelationshipUpdateModeAdd:
+		// existing groups are not modified by add
+		for _, v := range u.Groups {
+			if !has(existing, v, false) {
+				return true
+			}
+		}
+	case models.RelationshipUpdateModeRemove:
+		for _, v := range u.Groups {
+			if has(existing, v, false) {
+				return true
+			}
+		}
+	case models.RelationshipUpdateModeSet:
+		if len(existing) != len(u.Groups) {
+			return true
+		}
+		for _, v := range u.Groups {
+			if !has(existing, v, true) {
+				return true
+			}
+		}
 	}
 
 	return false

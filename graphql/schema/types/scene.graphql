@@ -186,6 +186,10 @@ enum SceneLockableField {
   PRODUCTION_DATE
   STUDIO
   URLS
+  PERFORMERS
+  TAGS
+  GROUPS
+  GALLERIES
 }
 
 enum BulkUpdateIdMode {

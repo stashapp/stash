@@ -18,6 +18,10 @@ const (
 	SceneLockableFieldProductionDate SceneLockableField = "PRODUCTION_DATE"
 	SceneLockableFieldStudio         SceneLockableField = "STUDIO"
 	SceneLockableFieldUrls           SceneLockableField = "URLS"
+	SceneLockableFieldPerformers     SceneLockableField = "PERFORMERS"
+	SceneLockableFieldTags           SceneLockableField = "TAGS"
+	SceneLockableFieldGroups         SceneLockableField = "GROUPS"
+	SceneLockableFieldGalleries      SceneLockableField = "GALLERIES"
 )
 
 var AllSceneLockableField = []SceneLockableField{
@@ -29,12 +33,17 @@ var AllSceneLockableField = []SceneLockableField{
 	SceneLockableFieldProductionDate,
 	SceneLockableFieldStudio,
 	SceneLockableFieldUrls,
+	SceneLockableFieldPerformers,
+	SceneLockableFieldTags,
+	SceneLockableFieldGroups,
+	SceneLockableFieldGalleries,
 }
 
 func (e SceneLockableField) IsValid() bool {
 	switch e {
 	case SceneLockableFieldTitle, SceneLockableFieldCode, SceneLockableFieldDetails, SceneLockableFieldDirector,
-		SceneLockableFieldDate, SceneLockableFieldProductionDate, SceneLockableFieldStudio, SceneLockableFieldUrls:
+		SceneLockableFieldDate, SceneLockableFieldProductionDate, SceneLockableFieldStudio, SceneLockableFieldUrls,
+		SceneLockableFieldPerformers, SceneLockableFieldTags, SceneLockableFieldGroups, SceneLockableFieldGalleries:
 		return true
 	}
 	return false
