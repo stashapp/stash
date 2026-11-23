@@ -21,6 +21,7 @@ import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
 import { BulkUpdateFormGroup, BulkUpdateTextInput } from "../Shared/BulkUpdate";
 import { BulkUpdateDateInput } from "../Shared/DateInput";
 import { getDateError } from "src/utils/yup";
+import { lockableFieldMessageIDs } from "../Shared/LockFieldButton";
 
 interface IListOperationProps {
   selected: GQL.SlimSceneDataFragment[];
@@ -49,20 +50,6 @@ const lockableInputFields: [
   ["production_date", GQL.SceneLockableField.ProductionDate],
   ["studio_id", GQL.SceneLockableField.Studio],
 ];
-
-// locale ids of the lockable fields that the bulk dialog can change
-const lockableFieldMessageIDs: Partial<Record<GQL.SceneLockableField, string>> =
-  {
-    [GQL.SceneLockableField.Code]: "scene_code",
-    [GQL.SceneLockableField.Details]: "details",
-    [GQL.SceneLockableField.Director]: "director",
-    [GQL.SceneLockableField.Date]: "date",
-    [GQL.SceneLockableField.ProductionDate]: "production_date",
-    [GQL.SceneLockableField.Studio]: "studio",
-    [GQL.SceneLockableField.Performers]: "performers",
-    [GQL.SceneLockableField.Tags]: "tags",
-    [GQL.SceneLockableField.Groups]: "groups",
-  };
 
 function idsChanged(ids: GQL.BulkUpdateIds) {
   return ids.mode === GQL.BulkUpdateIdMode.Set || !!ids.ids?.length;

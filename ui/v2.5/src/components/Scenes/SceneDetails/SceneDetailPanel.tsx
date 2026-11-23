@@ -10,21 +10,7 @@ import { DirectorLink } from "src/components/Shared/Link";
 import { CustomFields } from "src/components/Shared/CustomFields";
 import { Icon } from "src/components/Shared/Icon";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
-
-const lockedFieldMessageIDs: Record<GQL.SceneLockableField, string> = {
-  [GQL.SceneLockableField.Title]: "title",
-  [GQL.SceneLockableField.Code]: "scene_code",
-  [GQL.SceneLockableField.Details]: "details",
-  [GQL.SceneLockableField.Director]: "director",
-  [GQL.SceneLockableField.Date]: "date",
-  [GQL.SceneLockableField.ProductionDate]: "production_date",
-  [GQL.SceneLockableField.Studio]: "studio",
-  [GQL.SceneLockableField.Urls]: "urls",
-  [GQL.SceneLockableField.Performers]: "performers",
-  [GQL.SceneLockableField.Tags]: "tags",
-  [GQL.SceneLockableField.Groups]: "groups",
-  [GQL.SceneLockableField.Galleries]: "galleries",
-};
+import { lockableFieldMessageIDs } from "src/components/Shared/LockFieldButton";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
@@ -98,7 +84,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   function renderLockedFields() {
     if (props.scene.locked_fields.length === 0) return;
     const names = props.scene.locked_fields.map((f) =>
-      intl.formatMessage({ id: lockedFieldMessageIDs[f] })
+      intl.formatMessage({ id: lockableFieldMessageIDs[f] })
     );
     return (
       <h6 className="scene-locked-fields">

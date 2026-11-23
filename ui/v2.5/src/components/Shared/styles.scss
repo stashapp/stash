@@ -1299,7 +1299,7 @@ input[type="range"].double-range-slider-max {
   &.locked {
     .form-control,
     .react-select__control {
-      background-color: rgba(16, 22, 26, 0.6);
+      background-color: $locked-field-bg;
       color: $text-muted;
     }
 

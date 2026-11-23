@@ -94,14 +94,20 @@ export class SceneParserResult {
   }
 
   public toSceneUpdateInput() {
+    // locked fields are never sent, even if the user set or edited them,
+    // so one locked row doesn't fail the whole batch
+    const locked = this.scene.locked_fields;
+    const value = <T,>(r: ParserResult<T>, f?: SceneLockableField) =>
+      r.isSet && !(f && locked.includes(f)) ? r.value : undefined;
+
     return {
       id: this.id,
-      rating: this.rating.isSet ? this.rating.value : undefined,
-      title: this.title.isSet ? this.title.value : undefined,
-      date: this.date.isSet ? this.date.value : undefined,
-      studio_id: this.studio.isSet ? this.studio.value : undefined,
-      performer_ids: this.performers.isSet ? this.performers.value : undefined,
-      tag_ids: this.tags.isSet ? this.tags.value : undefined,
+      rating: value(this.rating),
+      title: value(this.title, SceneLockableField.Title),
+      date: value(this.date, SceneLockableField.Date),
+      studio_id: value(this.studio, SceneLockableField.Studio),
+      performer_ids: value(this.performers, SceneLockableField.Performers),
+      tag_ids: value(this.tags, SceneLockableField.Tags),
     };
   }
 }
