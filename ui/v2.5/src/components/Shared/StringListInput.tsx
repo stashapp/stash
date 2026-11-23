@@ -127,8 +127,8 @@ export const StringListInput: React.FC<IStringListInputProps> = (origProps) => {
                 className={props.errorIdx?.includes(i) ? "is-invalid" : ""}
                 readOnly={props.readOnly}
               />
+              {i === 0 && <LockFieldButton />}
               <InputGroup.Append>
-                {i === 0 && <LockFieldButton />}
                 {AppendComponent && <AppendComponent value={v} />}
                 {!props.readOnly && values.length > 2 && orderable && (
                   <Button

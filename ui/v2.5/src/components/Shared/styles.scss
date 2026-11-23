@@ -1286,9 +1286,15 @@ input[type="range"].double-range-slider-max {
     top: 0;
   }
 
-  // inside input groups (date, urls), match the input's background
-  .input-group-append > .lock-field-button {
-    background-color: $textfield-bg;
+  // inside input groups (date, urls) the toggle stays in the flex flow, pulled
+  // back over the input's right edge so it sits before any appended buttons
+  .input-group > .form-control {
+    padding-right: 2rem;
+  }
+
+  .input-group > .lock-field-button {
+    margin-left: -2rem;
+    z-index: 4;
   }
 
   &:hover .lock-field-button,

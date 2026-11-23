@@ -106,9 +106,9 @@ const _DateInput: React.FC<IProps> = (origProps: IProps) => {
         }
         isInvalid={!!props.error}
       />
+      <LockFieldButton />
       <InputGroup.Append>
         {props.appendBefore}
-        <LockFieldButton />
         {maybeRenderButton()}
         {props.appendAfter}
       </InputGroup.Append>
