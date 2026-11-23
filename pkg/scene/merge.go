@@ -46,8 +46,9 @@ func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int,
 		return err
 	}
 
-	if err := CheckLockedFields(dest, scenePartial); err != nil {
-		return err
+	// the destination keeps its own values for locked fields
+	if skipped := RemoveLockedFields(dest, &scenePartial); len(skipped) > 0 {
+		logger.Infof("Merge: keeping locked fields %v on scene %d", skipped, destinationID)
 	}
 
 	sources, err := s.Repository.FindMany(ctx, sourceIDs)
