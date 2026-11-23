@@ -9,6 +9,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { useIntl } from "react-intl";
 import { PatchComponent } from "src/patch";
 import { faBan, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { LockFieldButton, useFieldLocked } from "./LockFieldButton";
 
 interface IProps {
   groupClassName?: string;
@@ -35,8 +36,10 @@ const ShowPickerButton = forwardRef<
   </Button>
 ));
 
-const _DateInput: React.FC<IProps> = (props: IProps) => {
+const _DateInput: React.FC<IProps> = (origProps: IProps) => {
   const intl = useIntl();
+  const locked = useFieldLocked();
+  const props = locked ? { ...origProps, disabled: true } : origProps;
 
   const {
     groupClassName = "date-input-group",
@@ -105,6 +108,7 @@ const _DateInput: React.FC<IProps> = (props: IProps) => {
       />
       <InputGroup.Append>
         {props.appendBefore}
+        <LockFieldButton />
         {maybeRenderButton()}
         {props.appendAfter}
       </InputGroup.Append>

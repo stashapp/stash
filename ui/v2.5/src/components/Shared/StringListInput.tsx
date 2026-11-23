@@ -2,6 +2,7 @@ import { faGripVertical, faMinus } from "@fortawesome/free-solid-svg-icons";
 import React, { ComponentType, useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import { Icon } from "./Icon";
+import { LockFieldButton, useFieldLocked } from "./LockFieldButton";
 
 interface IListInputComponentProps {
   value: string;
@@ -49,10 +50,14 @@ export const StringInput: React.FC<IListInputComponentProps> = ({
   );
 };
 
-export const StringListInput: React.FC<IStringListInputProps> = (props) => {
+export const StringListInput: React.FC<IStringListInputProps> = (origProps) => {
+  const locked = useFieldLocked();
+  const props = locked ? { ...origProps, readOnly: true } : origProps;
   const Input = props.inputComponent ?? StringInput;
   const AppendComponent = props.appendComponent;
-  const values = props.value.concat("");
+  // no empty row for adding values while locked, unless it is the only row
+  const values =
+    locked && props.value.length ? props.value : props.value.concat("");
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
 
   const { orderable = true } = props;
@@ -123,6 +128,7 @@ export const StringListInput: React.FC<IStringListInputProps> = (props) => {
                 readOnly={props.readOnly}
               />
               <InputGroup.Append>
+                {i === 0 && <LockFieldButton />}
                 {AppendComponent && <AppendComponent value={v} />}
                 {!props.readOnly && values.length > 2 && orderable && (
                   <Button

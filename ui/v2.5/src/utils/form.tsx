@@ -14,7 +14,11 @@ import { IntlShape } from "react-intl";
 import { DateInput } from "src/components/Shared/DateInput";
 import { DurationInput } from "src/components/Shared/DurationInput";
 import { Icon } from "src/components/Shared/Icon";
-import { LockFieldButton } from "src/components/Shared/LockFieldButton";
+import {
+  LockContext,
+  LockFieldButton,
+} from "src/components/Shared/LockFieldButton";
+import cx from "classnames";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { LinkType, StashIDPill } from "src/components/Shared/StashID";
 import { StringListInput } from "src/components/Shared/StringListInput";
@@ -92,7 +96,7 @@ interface ILockProps {
 interface IProps {
   labelProps?: FormLabelProps;
   fieldProps?: ColProps;
-  // shows a lock toggle on the label, and disables the control while locked
+  // shows a lock toggle inside the control, and disables the control while locked
   lock?: ILockProps;
 }
 
@@ -114,7 +118,12 @@ export function formikUtils<V extends FormikValues>(
   type Field = keyof V & string;
   type ErrorMessage = string | undefined;
 
-  function renderFormControl(field: Field, type: string, placeholder: string) {
+  function renderFormControl(
+    field: Field,
+    type: string,
+    placeholder: string,
+    disabled?: boolean
+  ) {
     const formikProps = formik.getFieldProps({ name: field, type: type });
     const error = formik.errors[field] as ErrorMessage;
 
@@ -131,6 +140,7 @@ export function formikUtils<V extends FormikValues>(
           {...formikProps}
           value={value}
           isInvalid={!!error}
+          disabled={disabled}
         />
       );
     } else if (type === "textarea") {
@@ -142,6 +152,7 @@ export function formikUtils<V extends FormikValues>(
           {...formikProps}
           value={value}
           isInvalid={!!error}
+          disabled={disabled}
         />
       );
     } else if (type === "number") {
@@ -153,6 +164,7 @@ export function formikUtils<V extends FormikValues>(
           {...formikProps}
           value={value}
           isInvalid={!!error}
+          disabled={disabled}
         />
       );
     } else {
@@ -164,6 +176,7 @@ export function formikUtils<V extends FormikValues>(
           {...formikProps}
           value={value}
           isInvalid={!!error}
+          disabled={disabled}
         />
       );
     }
@@ -171,6 +184,7 @@ export function formikUtils<V extends FormikValues>(
     return (
       <>
         {control}
+        <LockFieldButton />
         <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
       </>
     );
@@ -189,15 +203,12 @@ export function formikUtils<V extends FormikValues>(
         <Form.Label {...(props?.labelProps ?? labelProps)}>{title}</Form.Label>
         <Col {...(props?.fieldProps ?? fieldProps)}>
           {lock ? (
-            <div className="lockable-field">
-              <fieldset disabled={lock.locked}>{control}</fieldset>
-              {/* outside the fieldset so that locking doesn't disable the toggle */}
-              <LockFieldButton
-                locked={lock.locked}
-                fieldName={title}
-                onToggle={lock.onToggle}
-              />
-            </div>
+            // the control disables itself and renders the toggle from the context
+            <LockContext.Provider value={{ ...lock, fieldName: title }}>
+              <div className={cx("lockable-field", { locked: lock.locked })}>
+                {control}
+              </div>
+            </LockContext.Provider>
           ) : (
             control
           )}
@@ -213,7 +224,7 @@ export function formikUtils<V extends FormikValues>(
     props?: IProps
   ) {
     const title = intl.formatMessage({ id: messageID });
-    const control = renderFormControl(field, type, title);
+    const control = renderFormControl(field, type, title, props?.lock?.locked);
 
     return renderField(field, title, control, props);
   }

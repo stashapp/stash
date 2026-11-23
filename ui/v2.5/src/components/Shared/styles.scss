@@ -1270,22 +1270,56 @@ input[type="range"].double-range-slider-max {
   text-align: center;
 }
 
+/* stylelint-disable selector-class-pattern */
+// the lock toggle sits inside the control, at its right edge
 .lockable-field {
-  align-items: flex-start;
-  display: flex;
+  position: relative;
 
-  > fieldset {
-    flex: 1;
-    min-width: 0;
+  // text inputs and textareas: overlay the toggle on the input's right edge
+  > .form-control {
+    padding-right: 2rem;
+  }
+
+  > .lock-field-button {
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+
+  // inside input groups (date, urls), match the input's background
+  .input-group-append > .lock-field-button {
+    background-color: $textfield-bg;
+  }
+
+  &:hover .lock-field-button,
+  .lock-field-button:focus-visible {
+    opacity: 1;
+  }
+
+  &.locked {
+    .form-control,
+    .react-select__control {
+      background-color: rgba(16, 22, 26, 0.6);
+      color: $text-muted;
+    }
+
+    .react-select__single-value,
+    .react-select__multi-value {
+      color: $text-muted;
+    }
   }
 }
 
 button.btn.lock-field-button {
-  margin-left: 0.25rem;
-  opacity: 0.5;
+  box-shadow: none;
+  color: $text-color;
+  opacity: 0.35;
   padding: 0.375rem 0.5rem;
+  // react-select disables pointer events on a disabled select
+  pointer-events: auto;
 
   &.locked {
     opacity: 1;
   }
 }
+/* stylelint-enable selector-class-pattern */

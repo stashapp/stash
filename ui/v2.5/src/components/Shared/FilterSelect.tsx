@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from "react";
 import {
+  components as reactSelectComponents,
+  IndicatorsContainerProps,
   OnChangeValue,
   StylesConfig,
   GroupBase,
@@ -15,6 +17,7 @@ import cx from "classnames";
 import { useToast } from "src/hooks/Toast";
 import { useDebounce } from "src/hooks/debounce";
 import { IHasID } from "src/utils/data";
+import { LockFieldButton, useFieldLocked } from "./LockFieldButton";
 
 export type Option<T> = { value: string; object: T };
 
@@ -53,18 +56,31 @@ const getSelectedItems = <T,>(
   }
 };
 
+// renders the lock toggle of a lockable field before the clear and dropdown
+// indicators. Disabling the select hides those, leaving only the lock.
+const LockIndicatorsContainer = <T, IsMulti extends boolean>(
+  props: IndicatorsContainerProps<Option<T>, IsMulti, GroupBase<Option<T>>>
+) => (
+  <reactSelectComponents.IndicatorsContainer {...props}>
+    <LockFieldButton />
+    {props.children}
+  </reactSelectComponents.IndicatorsContainer>
+);
+
 const SelectComponent = <T, IsMulti extends boolean>(
   props: ISelectProps<T, IsMulti>
 ) => {
+  const locked = useFieldLocked();
   const {
     selectedOptions,
-    isDisabled = false,
+    isDisabled: disabledProp = false,
     creatable = false,
     components,
     placeholder,
     showDropdown = true,
     noOptionsMessageText: noOptionsMessage = "None",
   } = props;
+  const isDisabled = disabledProp || locked;
 
   const styles: StylesConfig<Option<T>, IsMulti> = {
     option: (base) => ({
@@ -83,6 +99,7 @@ const SelectComponent = <T, IsMulti extends boolean>(
 
   const componentProps = {
     ...props,
+    isDisabled,
     styles,
     defaultOptions: true,
     isClearable: true,
@@ -92,6 +109,7 @@ const SelectComponent = <T, IsMulti extends boolean>(
     noOptionsMessage: () => noOptionsMessage,
     placeholder: isDisabled ? "" : placeholder,
     components: {
+      IndicatorsContainer: LockIndicatorsContainer,
       ...components,
       IndicatorSeparator: () => null,
       ...((!showDropdown || isDisabled) && { DropdownIndicator: () => null }),
@@ -100,7 +118,7 @@ const SelectComponent = <T, IsMulti extends boolean>(
   };
 
   return creatable ? (
-    <AsyncCreatableSelect {...componentProps} isDisabled={isDisabled} />
+    <AsyncCreatableSelect {...componentProps} />
   ) : (
     <AsyncSelect {...componentProps} />
   );
