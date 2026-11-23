@@ -1728,6 +1728,7 @@
     "filter_name_exists": "A filter named \"{entityName}\" already exists.",
     "generating_screenshot": "Generating screenshot…",
     "screenshot_generated": "Screenshot generated",
+    "scenes_skipped_locked": "{count, plural, one {# scene} other {# scenes}} skipped ({field} locked)",
     "image_index_too_large": "Error: Image index is larger than the number of images in the Gallery",
     "merged_performers": "Merged performers",
     "merged_scenes": "Merged scenes",

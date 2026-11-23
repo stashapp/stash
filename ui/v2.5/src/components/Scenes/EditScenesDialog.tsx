@@ -50,6 +50,24 @@ const lockableInputFields: [
   ["studio_id", GQL.SceneLockableField.Studio],
 ];
 
+// locale ids of the lockable fields that the bulk dialog can change
+const lockableFieldMessageIDs: Partial<Record<GQL.SceneLockableField, string>> =
+  {
+    [GQL.SceneLockableField.Code]: "scene_code",
+    [GQL.SceneLockableField.Details]: "details",
+    [GQL.SceneLockableField.Director]: "director",
+    [GQL.SceneLockableField.Date]: "date",
+    [GQL.SceneLockableField.ProductionDate]: "production_date",
+    [GQL.SceneLockableField.Studio]: "studio",
+    [GQL.SceneLockableField.Performers]: "performers",
+    [GQL.SceneLockableField.Tags]: "tags",
+    [GQL.SceneLockableField.Groups]: "groups",
+  };
+
+function idsChanged(ids: GQL.BulkUpdateIds) {
+  return ids.mode === GQL.BulkUpdateIdMode.Set || !!ids.ids?.length;
+}
+
 export const EditScenesDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
 ) => {
@@ -121,8 +139,9 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     );
   }, [updateInput.production_date, intl]);
 
-  // number of selected scenes where a changed field is locked, and so will be skipped
-  const lockedSceneCount = useMemo(() => {
+  // changed fields that are locked on some selected scenes, which the
+  // backend skips for those scenes
+  const changedLockedFields = useMemo(() => {
     const changed = lockableInputFields
       .filter(
         ([key]) =>
@@ -130,11 +149,37 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
           updateInput[key] !== aggregateState.state[key]
       )
       .map(([, field]) => field);
+    if (idsChanged(performerIds))
+      changed.push(GQL.SceneLockableField.Performers);
+    if (idsChanged(tagIds)) changed.push(GQL.SceneLockableField.Tags);
+    if (idsChanged(groupIds)) changed.push(GQL.SceneLockableField.Groups);
+    return changed;
+  }, [updateInput, aggregateState, performerIds, tagIds, groupIds]);
 
-    return props.selected.filter((s) =>
-      s.locked_fields.some((f) => changed.includes(f))
-    ).length;
-  }, [updateInput, aggregateState, props.selected]);
+  // number of selected scenes where a changed field is locked
+  const lockedSceneCount = useMemo(
+    () =>
+      props.selected.filter((s) =>
+        s.locked_fields.some((f) => changedLockedFields.includes(f))
+      ).length,
+    [changedLockedFields, props.selected]
+  );
+
+  function skippedMessages() {
+    return changedLockedFields.flatMap((field) => {
+      const count = props.selected.filter((s) =>
+        s.locked_fields.includes(field)
+      ).length;
+      if (count === 0) return [];
+      return intl.formatMessage(
+        { id: "toast.scenes_skipped_locked" },
+        {
+          count,
+          field: intl.formatMessage({ id: lockableFieldMessageIDs[field] }),
+        }
+      );
+    });
+  }
 
   function setUpdateField(input: Partial<GQL.BulkSceneUpdateInput>) {
     setUpdateInput((current) => ({ ...current, ...input }));
@@ -162,12 +207,21 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     setIsUpdating(true);
     try {
       await updateScenes({ variables: { input: getSceneInput() } });
-      Toast.success(
-        intl.formatMessage(
-          { id: "toast.updated_entity" },
-          { entity: intl.formatMessage({ id: "scenes" }).toLocaleLowerCase() }
-        )
+      const updated = intl.formatMessage(
+        { id: "toast.updated_entity" },
+        { entity: intl.formatMessage({ id: "scenes" }).toLocaleLowerCase() }
       );
+      const skipped = skippedMessages();
+      if (skipped.length > 0) {
+        // one toast is shown at a time, so the notice goes in the same toast
+        Toast.toast({
+          variant: "warning",
+          content: [updated, ...skipped].join(". "),
+          delay: 5000,
+        });
+      } else {
+        Toast.success(updated);
+      }
       props.onClose(true);
     } catch (e) {
       Toast.error(e);

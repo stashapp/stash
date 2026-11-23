@@ -456,6 +456,15 @@ export const SceneEditPanel: React.FC<IProps> = ({
         case GQL.SceneLockableField.Urls:
           ret.urls = null;
           break;
+        case GQL.SceneLockableField.Performers:
+          ret.performers = null;
+          break;
+        case GQL.SceneLockableField.Tags:
+          ret.tags = null;
+          break;
+        case GQL.SceneLockableField.Groups:
+          ret.groups = null;
+          break;
       }
     }
     return ret;
@@ -763,7 +772,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
       />
     );
 
-    return renderField("gallery_ids", title, control);
+    return renderField(
+      "gallery_ids",
+      title,
+      control,
+      lockProps(GQL.SceneLockableField.Galleries)
+    );
   }
 
   function renderStudioField() {
@@ -772,7 +786,6 @@ export const SceneEditPanel: React.FC<IProps> = ({
       <StudioSelect
         onSelect={(items) => onSetStudio(items.length > 0 ? items[0] : null)}
         values={studio ? [studio] : []}
-        isDisabled={!isNew && isLocked(GQL.SceneLockableField.Studio)}
       />
     );
 
@@ -808,7 +821,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
       />
     );
 
-    return renderField("performer_ids", title, control, fullWidthProps);
+    return renderField(
+      "performer_ids",
+      title,
+      control,
+      lockProps(GQL.SceneLockableField.Performers, fullWidthProps)
+    );
   }
 
   function onSetGroupEntries(input: IGroupEntry[]) {
@@ -828,12 +846,22 @@ export const SceneEditPanel: React.FC<IProps> = ({
       <SceneGroupTable value={groupEntries} onUpdate={onSetGroupEntries} />
     );
 
-    return renderField("groups", title, control, fullWidthProps);
+    return renderField(
+      "groups",
+      title,
+      control,
+      lockProps(GQL.SceneLockableField.Groups, fullWidthProps)
+    );
   }
 
   function renderTagsField() {
     const title = intl.formatMessage({ id: "tags" });
-    return renderField("tag_ids", title, tagsControl(), fullWidthProps);
+    return renderField(
+      "tag_ids",
+      title,
+      tagsControl(),
+      lockProps(GQL.SceneLockableField.Tags, fullWidthProps)
+    );
   }
 
   function renderDetailsField() {

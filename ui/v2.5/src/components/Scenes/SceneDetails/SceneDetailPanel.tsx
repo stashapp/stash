@@ -20,6 +20,10 @@ const lockedFieldMessageIDs: Record<GQL.SceneLockableField, string> = {
   [GQL.SceneLockableField.ProductionDate]: "production_date",
   [GQL.SceneLockableField.Studio]: "studio",
   [GQL.SceneLockableField.Urls]: "urls",
+  [GQL.SceneLockableField.Performers]: "performers",
+  [GQL.SceneLockableField.Tags]: "tags",
+  [GQL.SceneLockableField.Groups]: "groups",
+  [GQL.SceneLockableField.Galleries]: "galleries",
 };
 
 interface ISceneDetailProps {

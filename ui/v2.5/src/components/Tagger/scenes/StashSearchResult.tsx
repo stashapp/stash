@@ -246,6 +246,10 @@ const taggerFieldNames: Record<GQL.SceneLockableField, string> = {
   [GQL.SceneLockableField.ProductionDate]: "production_date",
   [GQL.SceneLockableField.Studio]: "studio",
   [GQL.SceneLockableField.Urls]: "url",
+  [GQL.SceneLockableField.Performers]: "performers",
+  [GQL.SceneLockableField.Tags]: "tags",
+  [GQL.SceneLockableField.Groups]: "groups",
+  [GQL.SceneLockableField.Galleries]: "galleries",
 };
 
 interface IStashSearchResultProps {
@@ -422,13 +426,19 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         scene.production_date
       ),
       performer_ids: uniq(
-        stashScene.performers.map((p) => p.id).concat(filteredPerformerIDs)
+        stashScene.performers
+          .map((p) => p.id)
+          .concat(
+            lockedFields.includes("performers") ? [] : filteredPerformerIDs
+          )
       ),
       studio_id: lockedFields.includes("studio")
         ? stashScene.studio?.id
         : studioID,
       cover_image: resolveField("cover_image", undefined, imgData),
-      tag_ids: tagIDs,
+      tag_ids: lockedFields.includes("tags")
+        ? stashScene.tags.map((t) => t.id)
+        : tagIDs,
       stash_ids: stashScene.stash_ids ?? [],
       code: resolveField("code", stashScene.code, scene.code),
       director: resolveField("director", stashScene.director, scene.director),
@@ -773,8 +783,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     }
   };
 
+  // locked studio, performers and tags are hidden, so that missing objects
+  // are not offered for creation or linking
   const maybeRenderStudioField = () => {
-    if (scene.studio) {
+    if (scene.studio && !lockedFields.includes("studio")) {
       return (
         <div className="mt-2">
           <StudioResult
@@ -848,7 +860,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   );
 
   function maybeRenderTagsField() {
-    if (!config.setTags) return;
+    if (!config.setTags || lockedFields.includes("tags")) return;
 
     const createTags = scene.tags?.filter((t) => !t.stored_id);
 
@@ -945,7 +957,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       {isActive && (
         <div className="col-lg-6">
           {maybeRenderStudioField()}
-          {renderPerformerField()}
+          {!lockedFields.includes("performers") && renderPerformerField()}
           {maybeRenderTagsField()}
 
           <div className="row no-gutters mt-2 align-items-center justify-content-end">

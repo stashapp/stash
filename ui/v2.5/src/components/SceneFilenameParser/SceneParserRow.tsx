@@ -70,8 +70,12 @@ export class SceneParserResult {
     }
     this.rating.setValue(result.rating ?? undefined);
 
-    this.performers.setValue(result.performer_ids ?? undefined);
-    this.tags.setValue(result.tag_ids ?? undefined);
+    if (!locked.includes(SceneLockableField.Performers)) {
+      this.performers.setValue(result.performer_ids ?? undefined);
+    }
+    if (!locked.includes(SceneLockableField.Tags)) {
+      this.tags.setValue(result.tag_ids ?? undefined);
+    }
     if (!locked.includes(SceneLockableField.Studio)) {
       this.studio.setValue(result.studio_id ?? undefined);
     }
