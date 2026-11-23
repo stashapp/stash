@@ -15,6 +15,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/plugin/hook"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -88,6 +89,10 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 
 	// Start the transaction and save the gallery
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		if err := scene.CheckGalleriesLocked(ctx, r.repository.Scene, newGallery.SceneIDs.List()); err != nil {
+			return err
+		}
+
 		qb := r.repository.Gallery
 		if err := qb.Create(ctx, &newGallery); err != nil {
 			return err
@@ -250,6 +255,10 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 		updatedGallery.CustomFields = handleUpdateCustomFields(*input.CustomFields)
 	}
 
+	if err := r.checkGallerySceneLocks(ctx, originalGallery, updatedGallery.SceneIDs); err != nil {
+		return nil, err
+	}
+
 	// gallery scene is set from the scene only
 
 	gallery, err := qb.UpdatePartial(ctx, galleryID, updatedGallery)
@@ -313,6 +322,19 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 		qb := r.repository.Gallery
 
 		for _, galleryID := range galleryIDs {
+			if updatedGallery.SceneIDs != nil {
+				original, err := qb.Find(ctx, galleryID)
+				if err != nil {
+					return err
+				}
+				if original == nil {
+					return fmt.Errorf("gallery with id %d not found", galleryID)
+				}
+				if err := r.checkGallerySceneLocks(ctx, original, updatedGallery.SceneIDs); err != nil {
+					return err
+				}
+			}
+
 			gallery, err := qb.UpdatePartial(ctx, galleryID, updatedGallery)
 			if err != nil {
 				return err
@@ -340,6 +362,20 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 	}
 
 	return newRet, nil
+}
+
+// checkGallerySceneLocks returns an error if update would add or remove g from
+// a scene whose galleries are locked.
+func (r *mutationResolver) checkGallerySceneLocks(ctx context.Context, g *models.Gallery, update *models.UpdateIDs) error {
+	if update == nil {
+		return nil
+	}
+
+	if err := g.LoadSceneIDs(ctx, r.repository.Gallery); err != nil {
+		return err
+	}
+
+	return scene.CheckGalleriesLocked(ctx, r.repository.Scene, update.ImpactedIDs(g.SceneIDs.List()))
 }
 
 func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.GalleryDestroyInput) (bool, error) {
