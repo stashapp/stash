@@ -14,7 +14,6 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/stashbox"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 func (r *queryResolver) ScrapeURL(ctx context.Context, url string, ty scraper.ScrapeContentType) (scraper.ScrapedContent, error) {
@@ -213,7 +212,7 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source scraper.So
 			return nil, err
 		}
 
-		client := r.newStashBoxClient(*b, stashbox.SkipImages(utils.IsTrue(input.SkipImages)))
+		client := r.newStashBoxClient(*b, stashbox.SkipImages(!collectQueryFields(ctx).Has("image")))
 
 		switch {
 		case input.SceneID != nil:
@@ -257,7 +256,7 @@ func (r *queryResolver) ScrapeMultiScenes(ctx context.Context, source scraper.So
 			return nil, err
 		}
 
-		client := r.newStashBoxClient(*b, stashbox.SkipImages(utils.IsTrue(input.SkipImages)))
+		client := r.newStashBoxClient(*b, stashbox.SkipImages(!collectQueryFields(ctx).Has("image")))
 
 		sceneIDs, err := stringslice.StringSliceToIntSlice(input.SceneIds)
 		if err != nil {

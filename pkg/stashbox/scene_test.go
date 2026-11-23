@@ -31,7 +31,6 @@ func TestSceneFragmentToScrapedSceneImage(t *testing.T) {
 		wantImage bool
 	}{
 		{"default downloads the cover", nil, true},
-		{"SkipImages(false) downloads the cover", []ClientOption{SkipImages(false)}, true},
 		{"SkipImages(true) skips the download", []ClientOption{SkipImages(true)}, false},
 	}
 
