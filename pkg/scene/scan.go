@@ -195,7 +195,7 @@ func (h *ScanHandler) associateGallery(ctx context.Context, existing []*models.S
 		if err := s.LoadLockedFields(ctx, h.CreatorUpdater); err != nil {
 			return err
 		}
-		if IsFieldLocked(s, models.SceneLockableFieldGalleries) {
+		if s.IsLocked(models.SceneLockableFieldGalleries) {
 			continue
 		}
 		sceneIDs = append(sceneIDs, s.ID)

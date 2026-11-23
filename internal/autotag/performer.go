@@ -62,7 +62,7 @@ func (tagger *Tagger) PerformerScenes(ctx context.Context, p *models.Performer, 
 			if err := o.LoadLockedFields(ctx, rw); err != nil {
 				return false, err
 			}
-			if scene.IsFieldLocked(o, models.SceneLockableFieldPerformers) {
+			if o.IsLocked(models.SceneLockableFieldPerformers) {
 				return false, nil
 			}
 

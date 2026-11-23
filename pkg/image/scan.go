@@ -14,7 +14,6 @@ import (
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/plugin/hook"
-	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -357,7 +356,7 @@ func (h *ScanHandler) associateScene(ctx context.Context, existing *models.Galle
 		if err := s.LoadLockedFields(ctx, h.SceneFinderUpdater); err != nil {
 			return err
 		}
-		if scene.IsFieldLocked(s, models.SceneLockableFieldGalleries) {
+		if s.IsLocked(models.SceneLockableFieldGalleries) {
 			logger.Infof("associate: skipping scene %d for gallery %s: galleries are locked", s.ID, path)
 			continue
 		}

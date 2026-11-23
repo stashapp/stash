@@ -60,7 +60,7 @@ func (tagger *Tagger) TagScenes(ctx context.Context, p *models.Tag, paths []stri
 			if err := o.LoadLockedFields(ctx, rw); err != nil {
 				return false, err
 			}
-			if scene.IsFieldLocked(o, models.SceneLockableFieldTags) {
+			if o.IsLocked(models.SceneLockableFieldTags) {
 				return false, nil
 			}
 

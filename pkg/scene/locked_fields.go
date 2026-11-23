@@ -102,22 +102,22 @@ func LoadLockState(ctx context.Context, s *models.Scene, l LockStateLoader) erro
 	if err := s.LoadURLs(ctx, l); err != nil {
 		return fmt.Errorf("loading urls: %w", err)
 	}
-	if IsFieldLocked(s, models.SceneLockableFieldPerformers) {
+	if s.IsLocked(models.SceneLockableFieldPerformers) {
 		if err := s.LoadPerformerIDs(ctx, l); err != nil {
 			return fmt.Errorf("loading performers: %w", err)
 		}
 	}
-	if IsFieldLocked(s, models.SceneLockableFieldTags) {
+	if s.IsLocked(models.SceneLockableFieldTags) {
 		if err := s.LoadTagIDs(ctx, l); err != nil {
 			return fmt.Errorf("loading tags: %w", err)
 		}
 	}
-	if IsFieldLocked(s, models.SceneLockableFieldGroups) {
+	if s.IsLocked(models.SceneLockableFieldGroups) {
 		if err := s.LoadGroups(ctx, l); err != nil {
 			return fmt.Errorf("loading groups: %w", err)
 		}
 	}
-	if IsFieldLocked(s, models.SceneLockableFieldGalleries) {
+	if s.IsLocked(models.SceneLockableFieldGalleries) {
 		if err := s.LoadGalleryIDs(ctx, l); err != nil {
 			return fmt.Errorf("loading galleries: %w", err)
 		}
@@ -147,17 +147,12 @@ func CheckGalleriesLocked(ctx context.Context, r LockedFieldFinder, sceneIDs []i
 		if err := s.LoadLockedFields(ctx, r); err != nil {
 			return fmt.Errorf("loading locked fields: %w", err)
 		}
-		if IsFieldLocked(s, models.SceneLockableFieldGalleries) {
+		if s.IsLocked(models.SceneLockableFieldGalleries) {
 			return fmt.Errorf("scene %q: %w", s.DisplayName(), &LockedFieldsError{Fields: []models.SceneLockableField{models.SceneLockableFieldGalleries}})
 		}
 	}
 
 	return nil
-}
-
-// IsFieldLocked returns true if f is locked on s. s must have its LockedFields loaded.
-func IsFieldLocked(s *models.Scene, f models.SceneLockableField) bool {
-	return slices.Contains(s.LockedFields.List(), f.String())
 }
 
 func fieldChanged(s *models.Scene, partial models.ScenePartial, f models.SceneLockableField) bool {

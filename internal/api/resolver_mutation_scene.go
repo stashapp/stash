@@ -476,18 +476,18 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 				logger.Infof("Bulk update: skipping locked fields %v for scene %d", removed, sceneID)
 			}
 
-			s, err := qb.UpdatePartial(ctx, sceneID, partial)
+			updated, err := qb.UpdatePartial(ctx, sceneID, partial)
 			if err != nil {
 				return err
 			}
 
 			if customFields != nil {
-				if err := qb.SetCustomFields(ctx, s.ID, *customFields); err != nil {
+				if err := qb.SetCustomFields(ctx, updated.ID, *customFields); err != nil {
 					return err
 				}
 			}
 
-			ret = append(ret, s)
+			ret = append(ret, updated)
 		}
 
 		return nil

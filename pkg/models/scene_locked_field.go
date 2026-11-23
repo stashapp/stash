@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"io"
+	"slices"
 	"strconv"
 )
 
@@ -68,4 +69,9 @@ func (e *SceneLockableField) UnmarshalGQL(v interface{}) error {
 
 func (e SceneLockableField) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+// IsLocked returns true if f is locked on s. s must have its LockedFields loaded.
+func (s *Scene) IsLocked(f SceneLockableField) bool {
+	return slices.Contains(s.LockedFields.List(), f.String())
 }

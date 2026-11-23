@@ -5,7 +5,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/txn"
 )
 
@@ -100,7 +99,7 @@ func (tagger *Tagger) StudioScenes(ctx context.Context, p *models.Studio, paths 
 					return err
 				}
 
-				if scene.IsFieldLocked(o, models.SceneLockableFieldStudio) {
+				if o.IsLocked(models.SceneLockableFieldStudio) {
 					return nil
 				}
 

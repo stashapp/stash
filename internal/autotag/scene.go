@@ -45,7 +45,7 @@ func ScenePerformers(ctx context.Context, s *models.Scene, rw ScenePerformerUpda
 		return err
 	}
 
-	if scene.IsFieldLocked(s, models.SceneLockableFieldPerformers) {
+	if s.IsLocked(models.SceneLockableFieldPerformers) {
 		return nil
 	}
 
@@ -82,7 +82,7 @@ func SceneStudios(ctx context.Context, s *models.Scene, rw SceneFinderUpdater, s
 		return err
 	}
 
-	if scene.IsFieldLocked(s, models.SceneLockableFieldStudio) {
+	if s.IsLocked(models.SceneLockableFieldStudio) {
 		return nil
 	}
 
@@ -101,7 +101,7 @@ func SceneTags(ctx context.Context, s *models.Scene, rw SceneTagUpdater, tagRead
 		return err
 	}
 
-	if scene.IsFieldLocked(s, models.SceneLockableFieldTags) {
+	if s.IsLocked(models.SceneLockableFieldTags) {
 		return nil
 	}
 

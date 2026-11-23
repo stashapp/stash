@@ -199,7 +199,7 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	ret.Partial = getScenePartial(s, scraped, fieldOptions, setOrganized)
 
 	// skip a locked studio up front so that a missing studio isn't created for nothing
-	if !scene.IsFieldLocked(s, models.SceneLockableFieldStudio) {
+	if !s.IsLocked(models.SceneLockableFieldStudio) {
 		studioID, err := rel.studio(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("error getting studio: %w", err)
@@ -231,7 +231,7 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 
 	// locked performers and tags are skipped up front so that missing ones aren't created
 	addSkipSingleNamePerformerTag := false
-	if !scene.IsFieldLocked(s, models.SceneLockableFieldPerformers) {
+	if !s.IsLocked(models.SceneLockableFieldPerformers) {
 		performerIDs, err := rel.performers(ctx, allowedGenders)
 		if err != nil {
 			if errors.Is(err, ErrSkipSingleNamePerformer) {
@@ -248,7 +248,7 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		}
 	}
 
-	if !scene.IsFieldLocked(s, models.SceneLockableFieldTags) {
+	if !s.IsLocked(models.SceneLockableFieldTags) {
 		tagIDs, err := rel.tags(ctx)
 		if err != nil {
 			return nil, err
@@ -361,7 +361,7 @@ func (t *SceneIdentifier) addTagToScene(ctx context.Context, s *models.Scene, ta
 		if err := s.LoadLockedFields(ctx, t.SceneReaderUpdater); err != nil {
 			return err
 		}
-		if scene.IsFieldLocked(s, models.SceneLockableFieldTags) {
+		if s.IsLocked(models.SceneLockableFieldTags) {
 			return nil
 		}
 

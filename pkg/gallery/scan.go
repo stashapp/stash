@@ -10,7 +10,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/plugin/hook"
-	"github.com/stashapp/stash/pkg/scene"
 )
 
 type ScanCreatorUpdater interface {
@@ -170,7 +169,7 @@ func (h *ScanHandler) associateScene(ctx context.Context, existing []*models.Gal
 		if err := s.LoadLockedFields(ctx, h.SceneFinderUpdater); err != nil {
 			return err
 		}
-		if scene.IsFieldLocked(s, models.SceneLockableFieldGalleries) {
+		if s.IsLocked(models.SceneLockableFieldGalleries) {
 			logger.Infof("associate: skipping scene %d for gallery %s: galleries are locked", s.ID, path)
 			continue
 		}
