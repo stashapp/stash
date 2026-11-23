@@ -191,6 +191,7 @@ func TestScenePerformers(t *testing.T) {
 			ID:           sceneID,
 			Path:         test.Path,
 			PerformerIDs: models.NewRelatedIDs([]int{}),
+			LockedFields: models.NewRelatedStrings([]string{}),
 		}
 
 		if test.Matches {
@@ -339,9 +340,10 @@ func TestSceneTags(t *testing.T) {
 		}
 
 		scene := models.Scene{
-			ID:     sceneID,
-			Path:   test.Path,
-			TagIDs: models.NewRelatedIDs([]int{}),
+			ID:           sceneID,
+			Path:         test.Path,
+			TagIDs:       models.NewRelatedIDs([]int{}),
+			LockedFields: models.NewRelatedStrings([]string{}),
 		}
 		err := SceneTags(testCtx, &scene, db.Scene, db.Tag, nil)
 
@@ -375,4 +377,22 @@ func TestSceneTags(t *testing.T) {
 
 		doTest(db, test)
 	}
+}
+
+func TestSceneLockedPerformersTags(t *testing.T) {
+	db := mocks.NewDatabase()
+	db.Performer.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Performer{{ID: 2, Name: "performer"}}, nil).Maybe()
+	db.Tag.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Tag{{ID: 2, Name: "tag"}}, nil).Maybe()
+
+	s := models.Scene{
+		ID:           1,
+		Path:         "/performer tag/file.mp4",
+		PerformerIDs: models.NewRelatedIDs([]int{}),
+		TagIDs:       models.NewRelatedIDs([]int{}),
+		LockedFields: models.NewRelatedStrings([]string{models.SceneLockableFieldPerformers.String(), models.SceneLockableFieldTags.String()}),
+	}
+
+	assert.Nil(t, ScenePerformers(testCtx, &s, db.Scene, db.Performer, nil))
+	assert.Nil(t, SceneTags(testCtx, &s, db.Scene, db.Tag, nil))
+	db.Scene.AssertNotCalled(t, "UpdatePartial", mock.Anything, mock.Anything, mock.Anything)
 }

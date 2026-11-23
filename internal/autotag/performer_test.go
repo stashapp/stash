@@ -56,8 +56,17 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 			ID:           i + 1,
 			Path:         p,
 			PerformerIDs: models.NewRelatedIDs([]int{}),
+			LockedFields: models.NewRelatedStrings([]string{}),
 		})
 	}
+
+	// matching scene with locked performers must not be updated
+	scenes = append(scenes, &models.Scene{
+		ID:           len(scenes) + 1,
+		Path:         matchingPaths[0],
+		PerformerIDs: models.NewRelatedIDs([]int{}),
+		LockedFields: models.NewRelatedStrings([]string{models.SceneLockableFieldPerformers.String()}),
+	})
 
 	performer := models.Performer{
 		ID:      performerID,

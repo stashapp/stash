@@ -15,6 +15,7 @@ import (
 type SceneQueryPerformerUpdater interface {
 	models.SceneQueryer
 	models.PerformerIDLoader
+	models.LockedFieldLoader
 	models.SceneUpdater
 }
 
@@ -58,6 +59,13 @@ func (tagger *Tagger) PerformerScenes(ctx context.Context, p *models.Performer, 
 
 	for _, tt := range t {
 		if err := tt.tagScenes(ctx, paths, rw, func(o *models.Scene) (bool, error) {
+			if err := o.LoadLockedFields(ctx, rw); err != nil {
+				return false, err
+			}
+			if scene.IsFieldLocked(o, models.SceneLockableFieldPerformers) {
+				return false, nil
+			}
+
 			if err := o.LoadPerformerIDs(ctx, rw); err != nil {
 				return false, err
 			}

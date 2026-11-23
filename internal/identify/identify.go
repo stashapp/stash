@@ -229,40 +229,47 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	}
 	// nil allowedGenders means include all performers
 
+	// locked performers and tags are skipped up front so that missing ones aren't created
 	addSkipSingleNamePerformerTag := false
-	performerIDs, err := rel.performers(ctx, allowedGenders)
-	if err != nil {
-		if errors.Is(err, ErrSkipSingleNamePerformer) {
-			addSkipSingleNamePerformerTag = true
-		} else {
+	if !scene.IsFieldLocked(s, models.SceneLockableFieldPerformers) {
+		performerIDs, err := rel.performers(ctx, allowedGenders)
+		if err != nil {
+			if errors.Is(err, ErrSkipSingleNamePerformer) {
+				addSkipSingleNamePerformerTag = true
+			} else {
+				return nil, err
+			}
+		}
+		if performerIDs != nil {
+			ret.Partial.PerformerIDs = &models.UpdateIDs{
+				IDs:  performerIDs,
+				Mode: models.RelationshipUpdateModeSet,
+			}
+		}
+	}
+
+	if !scene.IsFieldLocked(s, models.SceneLockableFieldTags) {
+		tagIDs, err := rel.tags(ctx)
+		if err != nil {
 			return nil, err
 		}
-	}
-	if performerIDs != nil {
-		ret.Partial.PerformerIDs = &models.UpdateIDs{
-			IDs:  performerIDs,
-			Mode: models.RelationshipUpdateModeSet,
+		if addSkipSingleNamePerformerTag && options.SkipSingleNamePerformerTag != nil {
+			tagID, err := strconv.ParseInt(*options.SkipSingleNamePerformerTag, 10, 64)
+			if err != nil {
+				return nil, fmt.Errorf("error converting tag ID %s: %w", *options.SkipSingleNamePerformerTag, err)
+			}
+
+			tagIDs = sliceutil.AppendUnique(tagIDs, int(tagID))
+		}
+		if tagIDs != nil {
+			ret.Partial.TagIDs = &models.UpdateIDs{
+				IDs:  tagIDs,
+				Mode: models.RelationshipUpdateModeSet,
+			}
 		}
 	}
 
-	tagIDs, err := rel.tags(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if addSkipSingleNamePerformerTag && options.SkipSingleNamePerformerTag != nil {
-		tagID, err := strconv.ParseInt(*options.SkipSingleNamePerformerTag, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("error converting tag ID %s: %w", *options.SkipSingleNamePerformerTag, err)
-		}
-
-		tagIDs = sliceutil.AppendUnique(tagIDs, int(tagID))
-	}
-	if tagIDs != nil {
-		ret.Partial.TagIDs = &models.UpdateIDs{
-			IDs:  tagIDs,
-			Mode: models.RelationshipUpdateModeSet,
-		}
-	}
+	var err error
 
 	// SetCoverImage defaults to true if unset
 	if options.SetCoverImage == nil || *options.SetCoverImage {
@@ -349,6 +356,13 @@ func (t *SceneIdentifier) addTagToScene(ctx context.Context, s *models.Scene, ta
 		tagID, err := strconv.Atoi(tagToAdd)
 		if err != nil {
 			return fmt.Errorf("error converting tag ID %s: %w", tagToAdd, err)
+		}
+
+		if err := s.LoadLockedFields(ctx, t.SceneReaderUpdater); err != nil {
+			return err
+		}
+		if scene.IsFieldLocked(s, models.SceneLockableFieldTags) {
+			return nil
 		}
 
 		if err := s.LoadTagIDs(ctx, t.SceneReaderUpdater); err != nil {

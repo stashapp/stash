@@ -28,6 +28,8 @@ type SceneReaderUpdater interface {
 	models.StashIDLoader
 	models.URLLoader
 	models.LockedFieldLoader
+	models.SceneGroupLoader
+	models.GalleryIDLoader
 }
 
 type sceneRelationships struct {

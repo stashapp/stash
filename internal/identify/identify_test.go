@@ -734,6 +734,7 @@ func Test_getSceneUpdater_performerGenders(t *testing.T) {
 func Test_getSceneUpdater_lockedFields(t *testing.T) {
 	db := mocks.NewDatabase()
 	boolFalse := false
+	boolTrue := true
 
 	scrapedTitle := "scrapedTitle"
 	scrapedDetails := "scrapedDetails"
@@ -743,7 +744,7 @@ func Test_getSceneUpdater_lockedFields(t *testing.T) {
 		ID:           1,
 		Title:        "title",
 		URLs:         models.NewRelatedStrings([]string{}),
-		LockedFields: models.NewRelatedStrings([]string{"TITLE", "STUDIO"}),
+		LockedFields: models.NewRelatedStrings([]string{"TITLE", "STUDIO", "PERFORMERS", "TAGS"}),
 		PerformerIDs: models.NewRelatedIDs([]int{}),
 		TagIDs:       models.NewRelatedIDs([]int{}),
 		StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
@@ -760,6 +761,9 @@ func Test_getSceneUpdater_lockedFields(t *testing.T) {
 			FieldOptions: []*FieldOptions{
 				{Field: "title", Strategy: FieldStrategyOverwrite},
 				{Field: "studio", Strategy: FieldStrategyOverwrite},
+				// missing performers/tags must not be created for locked fields
+				{Field: "performers", Strategy: FieldStrategyOverwrite, CreateMissing: &boolTrue},
+				{Field: "tags", Strategy: FieldStrategyOverwrite, CreateMissing: &boolTrue},
 			},
 		},
 	}
@@ -767,9 +771,11 @@ func Test_getSceneUpdater_lockedFields(t *testing.T) {
 	result := &scrapeResult{
 		source: ScraperSource{},
 		result: &models.ScrapedScene{
-			Title:   &scrapedTitle,
-			Details: &scrapedDetails,
-			Studio:  &models.ScrapedStudio{StoredID: &studioID},
+			Title:      &scrapedTitle,
+			Details:    &scrapedDetails,
+			Studio:     &models.ScrapedStudio{StoredID: &studioID},
+			Performers: []*models.ScrapedPerformer{{Name: &scrapedTitle}},
+			Tags:       []*models.ScrapedTag{{Name: scrapedTitle}},
 		},
 	}
 
@@ -777,6 +783,10 @@ func Test_getSceneUpdater_lockedFields(t *testing.T) {
 	assert.NoError(t, err)
 	assert.False(t, updater.Partial.Title.Set, "locked title should not be set")
 	assert.False(t, updater.Partial.StudioID.Set, "locked studio should not be set")
+	assert.Nil(t, updater.Partial.PerformerIDs, "locked performers should not be set")
+	assert.Nil(t, updater.Partial.TagIDs, "locked tags should not be set")
+	db.Performer.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
+	db.Tag.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 	assert.Equal(t, scrapedDetails, updater.Partial.Details.Value)
 }
 
