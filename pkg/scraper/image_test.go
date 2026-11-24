@@ -7,6 +7,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/stashapp/stash/pkg/models"
 )
 
 func TestImageGetterUsesSurfWithoutScraperHeaders(t *testing.T) {
@@ -37,21 +39,32 @@ func TestImageGetterUsesSurfWithoutScraperHeaders(t *testing.T) {
 			}},
 		},
 	}
-	getter, err := newImageGetter(server.Client(), mockGlobalConfig{}, definition)
-	if err != nil {
-		t.Fatalf("newImageGetter() error = %v", err)
-	}
-	client := getter.client
+	getter := newImageGetter(server.Client(), mockGlobalConfig{}, definition)
+	ctx, done := withSurfSession(context.Background())
+	defer done()
 
 	want := "data:image/png;base64," + base64.StdEncoding.EncodeToString([]byte("image bytes"))
-	for range 2 {
-		image, err := getter.getImage(context.Background(), server.URL)
-		if err != nil {
-			t.Fatalf("getImage() error = %v", err)
-		}
-		if *image != want {
-			t.Fatalf("getImage() = %q, want %q", *image, want)
-		}
+	image, err := getter.getImage(ctx, server.URL)
+	if err != nil {
+		t.Fatalf("getImage() error = %v", err)
+	}
+	if *image != want {
+		t.Fatalf("getImage() = %q, want %q", *image, want)
+	}
+
+	// Images field is downloaded eagerly for Surf scrapers
+	p := models.ScrapedPerformer{Images: []string{server.URL, "data:image/png;base64,AA=="}}
+	if err := setPerformerImage(ctx, getter, &p); err != nil {
+		t.Fatalf("setPerformerImage() error = %v", err)
+	}
+	if p.Images[0] != want || p.Images[1] != "data:image/png;base64,AA==" {
+		t.Errorf("Images = %v, want first downloaded and second unchanged", p.Images)
+	}
+
+	first, _, _ := surfClient(ctx, *definition, mockGlobalConfig{})
+	second, _, _ := surfClient(ctx, *definition, mockGlobalConfig{})
+	if first != second {
+		t.Error("Surf client not shared within a scrape session")
 	}
 
 	for range 2 {
@@ -65,8 +78,5 @@ func TestImageGetterUsesSurfWithoutScraperHeaders(t *testing.T) {
 		if !strings.Contains(request.cookie, "scraper=surf") {
 			t.Errorf("Cookie = %q, want scraper=surf", request.cookie)
 		}
-	}
-	if getter.client != client {
-		t.Error("Surf client changed while retrieving images")
 	}
 }

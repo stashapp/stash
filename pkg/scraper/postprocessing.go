@@ -20,17 +20,12 @@ type postScraper struct {
 	ignoredTags []string
 }
 
-func newPostScraper(c Cache, s scraper) (postScraper, error) {
-	imageFetcher, err := newImageGetter(c.client, c.globalConfig, definitionForScraper(s))
-	if err != nil {
-		return postScraper{}, err
-	}
-
+func newPostScraper(c Cache, s scraper) postScraper {
 	return postScraper{
 		Cache:        c,
 		excludeTagRE: c.compileExcludeTagPatterns(),
-		imageFetcher: imageFetcher,
-	}, nil
+		imageFetcher: newImageGetter(c.client, c.globalConfig, definitionForScraper(s)),
+	}
 }
 
 func (c *postScraper) imageGetter() imageGetter {
@@ -525,10 +520,7 @@ func (c *postScraper) postScrapeImage(ctx context.Context, image models.ScrapedI
 // postScrapeSingle handles post-processing of a single scraped content item.
 // This is a convenience function that includes logging the ignored tags, as opposed to logging them in the caller.
 func (c Cache) postScrapeSingle(ctx context.Context, content ScrapedContent, s scraper) (ret ScrapedContent, err error) {
-	pp, err := newPostScraper(c, s)
-	if err != nil {
-		return nil, err
-	}
+	pp := newPostScraper(c, s)
 
 	if err := c.repository.WithReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = pp.postScrape(ctx, content)
