@@ -66,6 +66,10 @@ func TestImageGetterUsesSurfWithoutScraperHeaders(t *testing.T) {
 	if first != second {
 		t.Error("Surf client not shared within a scrape session")
 	}
+	other, _, _ := surfClient(ctx, Definition{ID: "other"}, mockGlobalConfig{})
+	if other == first {
+		t.Error("different scrapers share a Surf client within a session")
+	}
 
 	for range 2 {
 		request := <-requests

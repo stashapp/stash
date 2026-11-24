@@ -123,8 +123,7 @@ func newImageGetter(client *http.Client, globalConfig GlobalConfig, definition *
 		globalConfig: globalConfig,
 	}
 
-	// same precedence as loadURL: CDP wins over Surf
-	if definition != nil && definition.DriverOptions != nil && definition.DriverOptions.UseSurf && !definition.DriverOptions.UseCDP {
+	if definition != nil && definition.usesSurf() {
 		ret.surfDef = definition
 	}
 

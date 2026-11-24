@@ -37,7 +37,7 @@ func loadURL(ctx context.Context, loadURL string, client *http.Client, def Defin
 		switch {
 		case driverOptions.UseCDP:
 			return urlFromCDP(ctx, loadURL, *driverOptions, globalConfig)
-		case driverOptions.UseSurf:
+		case def.usesSurf():
 			return urlFromSurf(ctx, loadURL, *driverOptions, def, globalConfig)
 		}
 	}
@@ -143,30 +143,40 @@ func urlFromSurf(ctx context.Context, loadURL string, driverOptions scraperDrive
 	return charset.NewReader(bodyReader, resp.Header.Get("Content-Type"))
 }
 
+// usesSurf reports whether loadURL fetches this scraper's pages with Surf.
+// CDP takes precedence over Surf.
+func (d Definition) usesSurf() bool {
+	return d.DriverOptions != nil && d.DriverOptions.UseSurf && !d.DriverOptions.UseCDP
+}
+
 type surfSessionKey struct{}
 
-// surfSession shares one Surf client and cookie jar between the page loads
-// and image downloads of a single scrape.
-type surfSession struct {
-	mu     sync.Mutex
+type surfConn struct {
 	client *http.Client
 	jar    *cookiejar.Jar
 }
 
+// surfSession shares one Surf client and cookie jar per scraper between the
+// page loads and image downloads of a single scrape.
+type surfSession struct {
+	mu    sync.Mutex
+	conns map[string]surfConn // keyed by scraper ID
+}
+
 // withSurfSession scopes Surf clients created through ctx to one scrape.
-// The returned func closes the client's idle connections.
+// The returned func closes the clients' idle connections.
 func withSurfSession(ctx context.Context) (context.Context, func()) {
-	s := &surfSession{}
+	s := &surfSession{conns: map[string]surfConn{}}
 	return context.WithValue(ctx, surfSessionKey{}, s), func() {
 		s.mu.Lock()
 		defer s.mu.Unlock()
-		if s.client != nil {
-			s.client.CloseIdleConnections()
+		for _, c := range s.conns {
+			c.client.CloseIdleConnections()
 		}
 	}
 }
 
-// surfClient returns the scrape's Surf client, creating it on first use.
+// surfClient returns the scrape's Surf client for def, creating it on first use.
 // Without a session in ctx it returns a new client each call.
 func surfClient(ctx context.Context, def Definition, globalConfig GlobalConfig) (*http.Client, *cookiejar.Jar, error) {
 	s, _ := ctx.Value(surfSessionKey{}).(*surfSession)
@@ -176,14 +186,16 @@ func surfClient(ctx context.Context, def Definition, globalConfig GlobalConfig) 
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if s.client == nil {
+	c, ok := s.conns[def.ID]
+	if !ok {
 		client, jar, err := newSurfHTTPClient(def, globalConfig)
 		if err != nil {
 			return nil, nil, err
 		}
-		s.client, s.jar = client, jar
+		c = surfConn{client: client, jar: jar}
+		s.conns[def.ID] = c
 	}
-	return s.client, s.jar, nil
+	return c.client, c.jar, nil
 }
 
 func newSurfHTTPClient(def Definition, globalConfig GlobalConfig) (*http.Client, *cookiejar.Jar, error) {
