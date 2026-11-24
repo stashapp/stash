@@ -761,8 +761,9 @@ func (i *Config) GetBlobsStorage() BlobsStorageType {
 	return i.getBlobsStorage()
 }
 
+// getBlobsStorage is GetBlobsStorage without locking, for use by methods that
+// already hold the lock. Assumes read lock held.
 func (i *Config) getBlobsStorage() BlobsStorageType {
-	// assumes read lock held
 	ret := BlobsStorageType(i.forKey(BlobsStorage).String(BlobsStorage))
 
 	if !ret.IsValid() {

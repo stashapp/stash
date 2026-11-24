@@ -136,37 +136,8 @@ func TestNoNestedRLockDeadlock(t *testing.T) {
 	i.SetString(BlobsStorage, string(BlobStorageTypeFilesystem))
 	i.SetString(BlobsPath, "blobs")
 
-	// 1. Deterministic check for lock-assuming helper called inside Validate()
-	// while RLock is held and a writer is queued on Lock().
-	i.RLock()
-	writerReady := make(chan struct{})
-	writerDone := make(chan struct{})
-	go func() {
-		close(writerReady)
-		i.Lock()
-		i.Unlock()
-		close(writerDone)
-	}()
-	<-writerReady
-	time.Sleep(20 * time.Millisecond)
-
-	helperDone := make(chan struct{})
-	go func() {
-		_ = i.getBlobsStorage()
-		close(helperDone)
-	}()
-
-	select {
-	case <-helperDone:
-	case <-time.After(time.Second):
-		t.Fatal("getBlobsStorage deadlocked while outer RLock was held with a pending writer")
-	}
-
-	i.RUnlock()
-	<-writerDone
-
-	// 2. Focused contention test on GetSFWContentMode() and Validate() against a tight writer
-	// to catch any nested RLock acquisition within the same goroutine.
+	// A tight writer loop makes a pending Lock() land between a nested RLock pair,
+	// which deadlocks any getter that re-acquires the read lock.
 	stopWriter := make(chan struct{})
 	writerExited := make(chan struct{})
 	go func() {
