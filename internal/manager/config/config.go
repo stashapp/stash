@@ -324,7 +324,7 @@ const (
 
 // slice default values
 var (
-	defaultVideoExtensions   = []string{"m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm", "f4v"}
+	defaultVideoExtensions   = []string{"m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm", "f4v", "m2ts", "mts"}
 	defaultImageExtensions   = []string{"png", "jpg", "jpeg", "gif", "webp", "avif", "jxl"}
 	defaultGalleryExtensions = []string{"zip", "cbz"}
 	defaultMenuItems         = []string{"scenes", "images", "groups", "markers", "galleries", "performers", "studios", "tags"}
