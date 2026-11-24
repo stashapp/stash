@@ -704,8 +704,6 @@ func (i *Config) getStringMapString(key string) map[string]string {
 // GetSFW returns true if SFW mode is enabled.
 // Default performer images are changed to more agnostic images when enabled.
 func (i *Config) GetSFWContentMode() bool {
-	i.RLock()
-	defer i.RUnlock()
 	return i.getBool(SFWContentMode)
 }
 
@@ -757,7 +755,16 @@ func (i *Config) GetExtraBlobsPaths() []string {
 }
 
 func (i *Config) GetBlobsStorage() BlobsStorageType {
-	ret := BlobsStorageType(i.getString(BlobsStorage))
+	i.RLock()
+	defer i.RUnlock()
+
+	return i.getBlobsStorage()
+}
+
+// getBlobsStorage is GetBlobsStorage without locking, for use by methods that
+// already hold the lock. Assumes read lock held.
+func (i *Config) getBlobsStorage() BlobsStorageType {
+	ret := BlobsStorageType(i.forKey(BlobsStorage).String(BlobsStorage))
 
 	if !ret.IsValid() {
 		// default to database storage
@@ -1948,7 +1955,7 @@ func (i *Config) Validate() error {
 		}
 	}
 
-	if i.GetBlobsStorage() == BlobStorageTypeFilesystem && i.forKey(BlobsPath).String(BlobsPath) == "" {
+	if i.getBlobsStorage() == BlobStorageTypeFilesystem && i.forKey(BlobsPath).String(BlobsPath) == "" {
 		return MissingConfigError{
 			missingFields: []string{BlobsPath},
 		}
