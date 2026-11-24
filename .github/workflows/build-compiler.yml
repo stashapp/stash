@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  COMPILER_IMAGE: ghcr.io/stashapp/compiler:14
+  COMPILER_IMAGE: ghcr.io/stashapp/compiler:15
 
 jobs:
   build-compiler:
