@@ -132,17 +132,19 @@ func newClient(gc GlobalConfig) *http.Client {
 			MaxIdleConnsPerHost: maxIdleConnsPerHost,
 			Proxy:               http.ProxyFromEnvironment,
 		},
-		Timeout: scrapeGetTimeout,
-		// defaultCheckRedirect code with max changed from 10 to maxRedirects
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			if len(via) >= maxRedirects {
-				return fmt.Errorf("%w: gave up after %d redirects", ErrMaxRedirects, maxRedirects)
-			}
-			return nil
-		},
+		Timeout:       scrapeGetTimeout,
+		CheckRedirect: checkRedirect,
 	}
 
 	return client
+}
+
+// checkRedirect is defaultCheckRedirect with max changed from 10 to maxRedirects
+func checkRedirect(req *http.Request, via []*http.Request) error {
+	if len(via) >= maxRedirects {
+		return fmt.Errorf("%w: gave up after %d redirects", ErrMaxRedirects, maxRedirects)
+	}
+	return nil
 }
 
 // NewCache returns a new Cache.
@@ -257,15 +259,15 @@ func (c Cache) ScrapeName(ctx context.Context, id, query string, ty ScrapeConten
 		return nil, fmt.Errorf("%w: cannot use scraper %s to scrape by name", ErrNotSupported, id)
 	}
 
+	ctx, done := withSurfSession(ctx)
+	defer done()
+
 	content, err := ns.viaName(ctx, c.client, query, ty)
 	if err != nil {
 		return nil, fmt.Errorf("error while name scraping with scraper %s: %w", id, err)
 	}
 
-	pp := postScraper{
-		Cache:        c,
-		excludeTagRE: c.compileExcludeTagPatterns(),
-	}
+	pp := newPostScraper(c, s)
 	if err := c.repository.WithReadTxn(ctx, func(ctx context.Context) error {
 		for i, cc := range content {
 			content[i], err = pp.postScrape(ctx, cc)
@@ -298,18 +300,24 @@ func (c Cache) ScrapeFragment(ctx context.Context, id string, input Input) (Scra
 		return nil, fmt.Errorf("%w: cannot use scraper %s as a fragment scraper", ErrNotSupported, id)
 	}
 
+	ctx, done := withSurfSession(ctx)
+	defer done()
+
 	content, err := fs.viaFragment(ctx, c.client, input)
 	if err != nil {
 		return nil, fmt.Errorf("error while fragment scraping with scraper %s: %w", id, err)
 	}
 
-	return c.postScrapeSingle(ctx, content)
+	return c.postScrapeSingle(ctx, content, s)
 }
 
 // ScrapeURL scrapes a given url for the given content. Searches the scraper cache
 // and picks the first scraper capable of scraping the given url into the desired
 // content. Returns the scraped content or an error if the scrape fails.
 func (c Cache) ScrapeURL(ctx context.Context, url string, ty ScrapeContentType) (ScrapedContent, error) {
+	ctx, done := withSurfSession(ctx)
+	defer done()
+
 	for _, s := range c.scrapers {
 		if s.supportsURL(url, ty) {
 			ul, ok := s.(urlScraper)
@@ -325,7 +333,7 @@ func (c Cache) ScrapeURL(ctx context.Context, url string, ty ScrapeContentType) 
 				return ret, nil
 			}
 
-			return c.postScrapeSingle(ctx, ret)
+			return c.postScrapeSingle(ctx, ret, s)
 		}
 	}
 
@@ -341,6 +349,9 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty Scrape
 	if !s.supports(ty) {
 		return nil, fmt.Errorf("%w: cannot use scraper %s to scrape %v content", ErrNotSupported, scraperID, ty)
 	}
+
+	ctx, done := withSurfSession(ctx)
+	defer done()
 
 	var ret ScrapedContent
 	switch ty {
@@ -410,7 +421,14 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty Scrape
 		}
 	}
 
-	return c.postScrapeSingle(ctx, ret)
+	return c.postScrapeSingle(ctx, ret, s)
+}
+
+func definitionForScraper(s scraper) *Definition {
+	if defined, ok := s.(definedScraper); ok {
+		return &defined.config
+	}
+	return nil
 }
 
 func (c Cache) getScene(ctx context.Context, sceneID int) (*models.Scene, error) {
