@@ -145,8 +145,8 @@ func urlFromSurf(ctx context.Context, loadURL string, driverOptions scraperDrive
 
 // usesSurf reports whether loadURL fetches this scraper's pages with Surf.
 // CDP takes precedence over Surf.
-func (d Definition) usesSurf() bool {
-	return d.DriverOptions != nil && d.DriverOptions.UseSurf && !d.DriverOptions.UseCDP
+func (c Definition) usesSurf() bool {
+	return c.DriverOptions != nil && c.DriverOptions.UseSurf && !c.DriverOptions.UseCDP
 }
 
 type surfSessionKey struct{}
