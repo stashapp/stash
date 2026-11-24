@@ -58,7 +58,7 @@ func (t *GenerateTranscodeTask) Start(ctx context.Context) {
 		audioCodec = ffmpeg.ProbeAudioCodec(f.AudioCodec)
 	}
 
-	if !t.Force && ffmpeg.IsStreamable(videoCodec, audioCodec, container) == nil {
+	if !t.Force && ffmpeg.IsStreamable(videoCodec, audioCodec, container, config.GetInstance().GetTranscodeSkipCodecs()) == nil {
 		return
 	}
 
@@ -136,7 +136,7 @@ func (t *GenerateTranscodeTask) required() bool {
 		container = f.Format
 	}
 
-	if ffmpeg.IsStreamable(videoCodec, audioCodec, ffmpeg.Container(container)) == nil {
+	if ffmpeg.IsStreamable(videoCodec, audioCodec, ffmpeg.Container(container), config.GetInstance().GetTranscodeSkipCodecs()) == nil {
 		return false
 	}
 

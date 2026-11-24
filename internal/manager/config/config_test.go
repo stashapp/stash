@@ -49,3 +49,15 @@ func TestConfig_initialisePublicWhitelist(t *testing.T) {
 		assert.Error(t, i.initialisePublicWhitelist(), bad)
 	}
 }
+
+func TestConfig_GetTranscodeSkipCodecs(t *testing.T) {
+	i := InitializeEmpty()
+
+	assert.Equal(t, []string{"h264"}, i.GetTranscodeSkipCodecs())
+
+	i.SetInterface(TranscodeSkipCodecs, []string{" HEVC ", "", "av1"})
+	assert.Equal(t, []string{"hevc", "av1"}, i.GetTranscodeSkipCodecs())
+
+	i.SetInterface(TranscodeSkipCodecs, []string{" "})
+	assert.Equal(t, []string{"h264"}, i.GetTranscodeSkipCodecs())
+}
