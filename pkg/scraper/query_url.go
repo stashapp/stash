@@ -1,7 +1,6 @@
 package scraper
 
 import (
-	"net/url"
 	"path/filepath"
 	"strings"
 
@@ -70,6 +69,7 @@ func queryURLParametersFromGallery(gallery *models.Gallery) queryURLParameters {
 
 	if gallery.Path != "" {
 		ret["filename"] = filepath.Base(gallery.Path)
+		ret["path"] = gallery.Path
 	}
 	if gallery.Title != "" {
 		ret["title"] = gallery.Title
@@ -88,6 +88,7 @@ func queryURLParametersFromImage(image *models.Image) queryURLParameters {
 
 	if image.Path != "" {
 		ret["filename"] = filepath.Base(image.Path)
+		ret["path"] = image.Path
 	}
 	if image.Title != "" {
 		ret["title"] = image.Title
@@ -109,29 +110,10 @@ func (p queryURLParameters) applyReplacements(r queryURLReplacements) {
 	}
 }
 
-func (p queryURLParameters) constructURL(urlStr string) string {
-	ret := urlStr
+func (p queryURLParameters) constructURL(url string) string {
+	ret := url
 	for k, v := range p {
 		ret = strings.ReplaceAll(ret, "{"+k+"}", v)
-	}
-
-	// URL-encode special characters in the query string values
-	if idx := strings.IndexByte(ret, '?'); idx >= 0 {
-		queryStr := ret[idx+1:]
-		// Parse key=value pairs and re-encode only the values
-		pairs := strings.Split(queryStr, "&")
-		encodedPairs := make([]string, 0, len(pairs))
-		for _, pair := range pairs {
-			if eq := strings.IndexByte(pair, '='); eq >= 0 {
-				key := pair[:eq]
-				value := pair[eq+1:]
-				// Encode the value but not the key
-				encodedPairs = append(encodedPairs, key+"="+url.QueryEscape(value))
-			} else {
-				encodedPairs = append(encodedPairs, pair)
-			}
-		}
-		ret = ret[:idx+1] + strings.Join(encodedPairs, "&")
 	}
 
 	return ret
