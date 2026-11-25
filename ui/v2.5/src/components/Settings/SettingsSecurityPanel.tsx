@@ -8,6 +8,7 @@ import { useSettings } from "./context";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
 import { useGenerateAPIKey } from "src/core/StashService";
+import { isPasswordTooLong } from "src/utils/password";
 
 type AuthenticationSettingsInput = Pick<
   GQL.ConfigGeneralInput,
@@ -33,6 +34,7 @@ const AuthenticationInput: React.FC<IAuthenticationInput> = ({
   }
 
   const { username, password } = value;
+  const passwordTooLong = isPasswordTooLong(password ?? "");
 
   return (
     <div>
@@ -58,7 +60,15 @@ const AuthenticationInput: React.FC<IAuthenticationInput> = ({
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             set({ password: e.currentTarget.value })
           }
+          isInvalid={passwordTooLong}
         />
+        <Form.Control.Feedback type="invalid">
+          {passwordTooLong
+            ? intl.formatMessage({
+                id: "config.general.auth.password_too_long",
+              })
+            : ""}
+        </Form.Control.Feedback>
         <Form.Text className="text-muted">
           {intl.formatMessage({ id: "config.general.auth.password_desc" })}
         </Form.Text>
@@ -118,6 +128,15 @@ export const SettingsSecurityPanel: React.FC = () => {
           password: general.password,
         }}
         onChange={(v) => saveGeneral(v)}
+        validateChange={(v) => {
+          if (isPasswordTooLong(v.password ?? "")) {
+            throw new Error(
+              intl.formatMessage({
+                id: "config.general.auth.password_too_long",
+              })
+            );
+          }
+        }}
         renderField={(value, setValue) => (
           <AuthenticationInput value={value ?? {}} setValue={setValue} />
         )}

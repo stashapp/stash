@@ -217,6 +217,13 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 	setSetupDefaults(&input)
 	cfg := s.Config
 
+	// validate before creating any files; the password is only used when a username is set
+	if input.InitialUsername != "" {
+		if err := config.ValidatePasswordLength(input.InitialPassword); err != nil {
+			return fmt.Errorf("error setting initial password: %w", err)
+		}
+	}
+
 	// create the config directory if it does not exist
 	// don't do anything if config is already set in the environment
 	if !config.FileEnvSet() {
@@ -299,7 +306,9 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 
 	if input.InitialUsername != "" && input.InitialPassword != "" {
 		cfg.SetString(config.Username, input.InitialUsername)
-		cfg.SetPassword(input.InitialPassword)
+		if err := cfg.SetPassword(input.InitialPassword); err != nil {
+			return fmt.Errorf("error setting initial password: %w", err)
+		}
 	}
 
 	if err := cfg.Write(); err != nil {
