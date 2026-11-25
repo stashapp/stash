@@ -87,6 +87,13 @@ func (r *mutationResolver) setConfigFloat(key string, value *float64) {
 func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGeneralInput) (*ConfigGeneralResult, error) {
 	c := config.GetInstance()
 
+	// validate before applying any other settings
+	if input.Password != nil {
+		if err := config.ValidatePasswordLength(*input.Password); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+	}
+
 	// #4709 - allow stash paths even if they do not exist, so that users may configure stash
 	// for disconnected drives or network storage.
 	existingPaths := c.GetStashPaths()
@@ -333,31 +340,26 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.SetString(config.GalleryCoverRegex, *input.GalleryCoverRegex)
 	}
 
-	// Validate / set the password before the username block so that a too-long
-	// password fails atomically, without first mutating the username in the
-	// in-memory config. The username block below inspects *input.Password to
-	// decide its log message, so the order swap does not change its behaviour.
-	// See https://github.com/stashapp/stash/issues/7135.
 	if input.Password != nil {
 		// bit of a hack - check if the passed in password is the same as the stored hash
 		// and only set if they are different
 		currentPWHash := c.GetPasswordHash()
 
 		if *input.Password != currentPWHash {
+			if err := c.SetPassword(*input.Password); err != nil {
+				return makeConfigGeneralResult(), fmt.Errorf("error setting password: %w", err)
+			}
 			if *input.Password == "" {
 				logger.Info("Password cleared")
 			} else {
 				logger.Info("Password changed")
-			}
-			if err := c.SetPassword(*input.Password); err != nil {
-				return makeConfigGeneralResult(), fmt.Errorf("error setting password: %v", err)
 			}
 		}
 	}
 
 	if input.Username != nil && *input.Username != c.GetUsername() {
 		c.SetString(config.Username, *input.Username)
-		if *input.Password == "" {
+		if *input.Username == "" {
 			logger.Info("Username cleared")
 		} else {
 			logger.Info("Username changed")

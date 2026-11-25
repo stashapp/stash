@@ -1227,21 +1227,10 @@ func (i *Config) HasCredentials() bool {
 	return username != "" && pwHash != ""
 }
 
-// maxPasswordBytes is the bcrypt-imposed maximum password length in bytes.
-// Passwords longer than this are silently truncated (or, in some bcrypt
-// builds, cause GenerateFromPassword to return an error). We reject them
-// up front so the user gets a clear error instead of a silently empty hash.
-// See https://github.com/stashapp/stash/issues/7135.
+// bcrypt rejects passwords longer than 72 bytes
 const maxPasswordBytes = 72
 
-// ValidatePasswordLength returns an error if the given password exceeds the
-// bcrypt-imposed 72-byte maximum. It is safe to call with an empty password
-// (an empty password means "no password" / disabled auth and is always
-// valid). Callers that need to validate a password before mutating any other
-// state (e.g. before creating config files in Setup, or before applying a
-// username change in ConfigureGeneral) should call this first so that a
-// too-long password fails atomically instead of leaving a half-applied
-// configuration behind.
+// ValidatePasswordLength returns an error if password exceeds bcrypt's byte limit.
 func ValidatePasswordLength(password string) error {
 	if len(password) > maxPasswordBytes {
 		return fmt.Errorf("password exceeds the %d-byte limit imposed by bcrypt", maxPasswordBytes)

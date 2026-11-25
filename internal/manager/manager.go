@@ -212,15 +212,10 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 	setSetupDefaults(&input)
 	cfg := s.Config
 
-	// Validate the initial password (if any) before creating any config files
-	// or directories. A too-long password used to fail much later, at
-	// SetPassword, after the config dir, config file, generated dir, cache
-	// dir and blobs dir had already been created and the in-memory config
-	// had been mutated. Failing here keeps the installation pristine.
-	// See https://github.com/stashapp/stash/issues/7135.
-	if input.InitialPassword != "" {
+	// validate before creating any files; the password is only used when a username is set
+	if input.InitialUsername != "" {
 		if err := config.ValidatePasswordLength(input.InitialPassword); err != nil {
-			return fmt.Errorf("error setting initial password: %v", err)
+			return fmt.Errorf("error setting initial password: %w", err)
 		}
 	}
 
@@ -307,7 +302,7 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 	if input.InitialUsername != "" && input.InitialPassword != "" {
 		cfg.SetString(config.Username, input.InitialUsername)
 		if err := cfg.SetPassword(input.InitialPassword); err != nil {
-			return fmt.Errorf("error setting initial password: %v", err)
+			return fmt.Errorf("error setting initial password: %w", err)
 		}
 	}
 
