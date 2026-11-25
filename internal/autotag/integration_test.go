@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
@@ -1050,4 +1051,189 @@ func TestParseTagGalleries(t *testing.T) {
 
 		return nil
 	})
+}
+
+func TestGlobalAutoTagSingleDigitPrefix(t *testing.T) {
+	databaseFile := filepath.Join(t.TempDir(), "autotag_single_digit.sqlite")
+	localDB := sqlite.NewDatabase()
+	if err := localDB.Open(databaseFile); err != nil {
+		t.Fatalf("failed to open sqlite db: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := localDB.Close(); err != nil {
+			t.Errorf("failed to close sqlite db: %v", err)
+		}
+	})
+
+	repo := localDB.Repository()
+	ctx := context.Background()
+
+	var (
+		tagID       int
+		aliasTagID  int
+		studioID    int
+		performerID int
+		sceneID     int
+		shortScene  int
+	)
+
+	err := repo.WithTxn(ctx, func(ctx context.Context) error {
+		tag := &models.Tag{Name: "1 - Tag [XYZ]"}
+		if err := repo.Tag.Create(ctx, &models.CreateTagInput{Tag: tag}); err != nil {
+			return err
+		}
+		tagID = tag.ID
+
+		aliasTag := &models.Tag{
+			Name:    "Distinct Name",
+			Aliases: models.NewRelatedStrings([]string{"2 - Alias"}),
+		}
+		if err := repo.Tag.Create(ctx, &models.CreateTagInput{Tag: aliasTag}); err != nil {
+			return err
+		}
+		aliasTagID = aliasTag.ID
+
+		studioInput := models.NewCreateStudioInput()
+		studioInput.Name = "3 - Studio"
+		if err := repo.Studio.Create(ctx, &studioInput); err != nil {
+			return err
+		}
+		studioID = studioInput.Studio.ID
+
+		perf := &models.Performer{Name: "4 - Performer"}
+		if err := repo.Performer.Create(ctx, &models.CreatePerformerInput{Performer: perf}); err != nil {
+			return err
+		}
+		performerID = perf.ID
+
+		sceneFile, err := createSceneFile(ctx, filepath.Join("media", "1 - Tag [XYZ]", "2 - Alias", "3 - Studio", "4 - Performer", "video.mp4"), repo.Folder, repo.File)
+		if err != nil {
+			return err
+		}
+		s := &models.Scene{Title: "numeric prefix scene"}
+		if err := repo.Scene.Create(ctx, s, []models.FileID{sceneFile.ID}); err != nil {
+			return err
+		}
+		sceneID = s.ID
+
+		// All-single-character path (under trimExt / direct QueryForAutoTag)
+		shortFile, err := createSceneFile(ctx, filepath.Join("9", "a.mp4"), repo.Folder, repo.File)
+		if err != nil {
+			return err
+		}
+		ss := &models.Scene{Title: "short filename scene"}
+		if err := repo.Scene.Create(ctx, ss, []models.FileID{shortFile.ID}); err != nil {
+			return err
+		}
+		shortScene = ss.ID
+
+		// Also create standalone single-digit tag "9" to match "9/a.mp4"
+		singleTag := &models.Tag{Name: "9"}
+		if err := repo.Tag.Create(ctx, &models.CreateTagInput{Tag: singleTag}); err != nil {
+			return err
+		}
+		_ = singleTag
+
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("failed to seed sqlite db: %v", err)
+	}
+
+	// Verify QueryForAutoTag handles empty words cleanly (e.g. when trimExt leaves only single-char words)
+	if err := repo.WithReadTxn(ctx, func(ctx context.Context) error {
+		emptyTags, err := repo.Tag.QueryForAutoTag(ctx, nil)
+		if err != nil {
+			return fmt.Errorf("Tag.QueryForAutoTag(nil): %w", err)
+		}
+		if len(emptyTags) != 0 {
+			return fmt.Errorf("expected 0 tags for empty words, got %d", len(emptyTags))
+		}
+		emptyStudios, err := repo.Studio.QueryForAutoTag(ctx, nil)
+		if err != nil {
+			return fmt.Errorf("Studio.QueryForAutoTag(nil): %w", err)
+		}
+		if len(emptyStudios) != 0 {
+			return fmt.Errorf("expected 0 studios for empty words, got %d", len(emptyStudios))
+		}
+		emptyPerformers, err := repo.Performer.QueryForAutoTag(ctx, nil)
+		if err != nil {
+			return fmt.Errorf("Performer.QueryForAutoTag(nil): %w", err)
+		}
+		if len(emptyPerformers) != 0 {
+			return fmt.Errorf("expected 0 performers for empty words, got %d", len(emptyPerformers))
+		}
+		return nil
+	}); err != nil {
+		t.Errorf("QueryForAutoTag(nil) failed: %v", err)
+	}
+
+	var cache match.Cache
+	err = repo.WithTxn(ctx, func(ctx context.Context) error {
+		for _, id := range []int{sceneID, shortScene} {
+			s, err := repo.Scene.Find(ctx, id)
+			if err != nil {
+				return err
+			}
+			if err := SceneTags(ctx, s, repo.Scene, repo.Tag, &cache); err != nil {
+				return err
+			}
+			if id == sceneID {
+				if err := SceneStudios(ctx, s, repo.Scene, repo.Studio, &cache); err != nil {
+					return err
+				}
+				if err := ScenePerformers(ctx, s, repo.Scene, repo.Performer, &cache); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("global autotag failed: %v", err)
+	}
+
+	err = repo.WithReadTxn(ctx, func(ctx context.Context) error {
+		tags, err := repo.Tag.FindBySceneID(ctx, sceneID)
+		if err != nil {
+			return err
+		}
+		if len(tags) != 2 {
+			t.Errorf("expected 2 tags on scene %d, got %d (%+v)", sceneID, len(tags), tags)
+		} else {
+			gotTagIDs := map[int]bool{tags[0].ID: true, tags[1].ID: true}
+			if !gotTagIDs[tagID] || !gotTagIDs[aliasTagID] {
+				t.Errorf("expected tag IDs %d and %d, got %v", tagID, aliasTagID, gotTagIDs)
+			}
+		}
+
+		studio, err := repo.Studio.FindBySceneID(ctx, sceneID)
+		if err != nil {
+			return err
+		}
+		if studio == nil || studio.ID != studioID {
+			t.Errorf("expected studio ID %d, got %+v", studioID, studio)
+		}
+
+		performers, err := repo.Performer.FindBySceneID(ctx, sceneID)
+		if err != nil {
+			return err
+		}
+		if len(performers) != 1 || performers[0].ID != performerID {
+			t.Errorf("expected performer ID %d, got %+v", performerID, performers)
+		}
+
+		shortTags, err := repo.Tag.FindBySceneID(ctx, shortScene)
+		if err != nil {
+			return err
+		}
+		if len(shortTags) != 1 || shortTags[0].Name != "9" {
+			t.Errorf("expected tag %q on short scene, got %+v", "9", shortTags)
+		}
+
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("verification query failed: %v", err)
+	}
 }

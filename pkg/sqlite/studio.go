@@ -527,6 +527,9 @@ func (qb *StudioStore) All(ctx context.Context) ([]*models.Studio, error) {
 }
 
 func (qb *StudioStore) QueryForAutoTag(ctx context.Context, words []string) ([]*models.Studio, error) {
+	if len(words) == 0 {
+		return nil, nil
+	}
 	// TODO - Query needs to be changed to support queries of this type, and
 	// this method should be removed
 	table := qb.table()

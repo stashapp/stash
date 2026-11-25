@@ -585,6 +585,9 @@ func (qb *PerformerStore) All(ctx context.Context) ([]*models.Performer, error) 
 }
 
 func (qb *PerformerStore) QueryForAutoTag(ctx context.Context, words []string) ([]*models.Performer, error) {
+	if len(words) == 0 {
+		return nil, nil
+	}
 	// TODO - Query needs to be changed to support queries of this type, and
 	// this method should be removed
 	table := qb.table()
