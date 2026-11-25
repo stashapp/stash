@@ -30,7 +30,7 @@ export function useRatingKeybinds(
   ratingSystemRef.current = ratingSystem;
 
   const mode = useRef<RatingSequenceMode>("idle");
-  const firstChar = useRef<string | undefined>(undefined);
+  const firstDigit = useRef<string | undefined>(undefined);
   const sequenceTimeout = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
@@ -38,20 +38,16 @@ export function useRatingKeybinds(
 
     function endSequence() {
       mode.current = "idle";
-      firstChar.current = undefined;
+      firstDigit.current = undefined;
       if (sequenceTimeout.current) {
         clearTimeout(sequenceTimeout.current);
         sequenceTimeout.current = undefined;
       }
     }
 
-    // "r", the digits and "`" are bound unconditionally for isVisible's
-    // lifetime, and gate their behaviour on `mode` instead of being bound
-    // and unbound per sequence. Callers pass a setRating closure they don't
-    // memoize, so this effect only depends on isVisible/mousetrap -- if it
-    // depended on setRating too, an unrelated re-render could tear down and
-    // rebind this effect mid-sequence, unbinding the digit keys before the
-    // 1s window elapses.
+    // "r", the digits and "`" are bound for isVisible's lifetime and gate
+    // their behaviour on `mode`, instead of being bound and unbound per
+    // sequence.
     mousetrap.bind("r", () => {
       // numeric keypresses get caught by jwplayer, so blur the element
       // if the rating sequence is started
@@ -64,7 +60,7 @@ export function useRatingKeybinds(
         ratingSystemRef.current === RatingSystemType.Stars
           ? "star"
           : "decimal";
-      firstChar.current = undefined;
+      firstDigit.current = undefined;
 
       if (sequenceTimeout.current) clearTimeout(sequenceTimeout.current);
       sequenceTimeout.current = setTimeout(endSequence, 1000);
@@ -84,8 +80,8 @@ export function useRatingKeybinds(
           setRatingRef.current(value);
           endSequence();
         } else if (mode.current === "decimal") {
-          if (firstChar.current !== undefined) {
-            let combined = parseInt(firstChar.current + i.toString(), 10);
+          if (firstDigit.current !== undefined) {
+            let combined = parseInt(firstDigit.current + i.toString(), 10);
             if (combined === 0) {
               combined = 100;
             }
@@ -93,7 +89,7 @@ export function useRatingKeybinds(
             setRatingRef.current(combined);
             endSequence();
           } else {
-            firstChar.current = i.toString();
+            firstDigit.current = i.toString();
           }
         }
       });

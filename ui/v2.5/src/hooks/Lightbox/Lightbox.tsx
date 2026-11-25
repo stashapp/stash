@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Button,
   Col,
@@ -91,6 +85,13 @@ const MIN_VALID_INTERVAL_SECONDS = 1;
 const MIN_ZOOM = 0.1;
 const SCROLL_ZOOM_TIMEOUT = 250;
 const ZOOM_NONE_EPSILON = 0.015;
+
+// The lightbox pauses the global Mousetrap singleton while open, so it owns a
+// separate (non-paused) instance for its own sequence shortcuts (ratings,
+// "d d"); mousetrap-pause tracks `paused` per instance. Module-level because
+// each Mousetrap instance attaches document listeners it can never remove, and
+// the lightbox remounts on every open.
+const lightboxMousetrap = new Mousetrap();
 
 interface IProps {
   images: ILightboxImage[];
@@ -193,16 +194,11 @@ export const LightboxComponent: React.FC<IProps> = ({
     [images, page, pageCallback, setSwitching]
   );
 
-  // The lightbox pauses the global Mousetrap singleton while open, so it owns a
-  // separate (non-paused) instance for its own sequence shortcuts (ratings,
-  // "d d"). The mousetrap-pause plugin tracks `paused` per-instance, so this
-  // instance keeps firing while global shortcuts stay suppressed.
-  const mousetrap = useMemo(() => new Mousetrap(), []);
   useEffect(() => {
     return () => {
-      mousetrap.reset();
+      lightboxMousetrap.reset();
     };
-  }, [mousetrap]);
+  }, []);
 
   const [zoom, setZoom] = useState(1);
 
@@ -642,9 +638,13 @@ export const LightboxComponent: React.FC<IProps> = ({
   };
 
   const currentIndex = index === null ? initialIndex : index;
-  const currentImageId = images[currentIndex]?.id;
+  const currentImage: ILightboxImage | undefined = images[currentIndex];
+  const currentImageId = currentImage?.id;
 
   function setRating(v: number | null) {
+    // Not while a page switch is in flight: the index is parked at 0 then, so
+    // this would rate an image the user isn't viewing.
+    if (isSwitchingPageRef.current) return;
     if (currentImageId) {
       updateImage({
         variables: {
@@ -659,11 +659,13 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   // Rating shortcuts ("r" then digit(s)) via the lightbox-scoped Mousetrap
   // instance, reusing the same hook as the scene/image detail pages.
+  // Disabled while the delete dialog is open so it can't change the image
+  // underneath it.
   useRatingKeybinds(
-    isVisible,
+    isVisible && !deleteTarget,
     config?.ui.ratingSystemOptions?.type,
     (v) => setRating(Number.isNaN(v) ? null : v),
-    mousetrap
+    lightboxMousetrap
   );
 
   // "d d" delete shortcut, using Mousetrap's native sequence binding (matching
@@ -671,20 +673,20 @@ export const LightboxComponent: React.FC<IProps> = ({
   // currentImageId change resets Mousetrap's own sequence tracking, so a "d"
   // press on one image can't combine with a second "d" press after
   // navigating to another.
+  // Unbound while the delete dialog is open so it can't retarget the dialog.
   useEffect(() => {
-    if (!isVisible || currentImageId === undefined) return;
+    if (!isVisible || currentImage?.id === undefined || deleteTarget) return;
 
-    mousetrap.bind("d d", () => {
+    lightboxMousetrap.bind("d d", () => {
       // Not while a page switch is in flight: the index is parked at 0 then,
       // so the shortcut would target an image the user isn't viewing.
       if (isSwitchingPageRef.current) return;
-      const image = images[currentIndex];
-      if (image?.id !== undefined) setDeleteTarget(image);
+      setDeleteTarget(currentImage);
     });
     return () => {
-      mousetrap.unbind("d d");
+      lightboxMousetrap.unbind("d d");
     };
-  }, [isVisible, currentImageId, images, currentIndex, mousetrap]);
+  }, [isVisible, currentImage, deleteTarget]);
 
   useEffect(() => {
     // Don't auto-close while images are still loading. Some entry points open
@@ -907,7 +909,6 @@ export const LightboxComponent: React.FC<IProps> = ({
       return <LoadingIndicator />;
     }
 
-    const currentImage: ILightboxImage | undefined = images[currentIndex];
     const title = currentImage ? imageTitle(currentImage) : undefined;
 
     async function onIncrementClick() {
