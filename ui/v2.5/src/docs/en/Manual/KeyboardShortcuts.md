@@ -142,6 +142,11 @@
 | `→` | Next image |
 | `Escape` | Close lightbox |
 | `d d` | Delete current image |
+| Ratings ||
+| `r {1-5}` | Set rating (stars) |
+| `r 0` | Unset rating (stars) |
+| `r {0-9} {0-9}` | Set rating (decimal - `00` for `10.0`) |
+| ``r ` `` | Unset rating (decimal) |
 
 ## Groups page shortcuts
 

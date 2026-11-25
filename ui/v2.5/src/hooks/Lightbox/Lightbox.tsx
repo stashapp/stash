@@ -15,6 +15,7 @@ import Mousetrap from "mousetrap";
 import { Icon } from "src/components/Shared/Icon";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import useInterval from "../Interval";
+import { useRatingKeybinds } from "../keybinds";
 import usePageVisibility from "../PageVisibility";
 import { useToast } from "../Toast";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -85,6 +86,13 @@ const MIN_ZOOM = 0.1;
 const SCROLL_ZOOM_TIMEOUT = 250;
 const ZOOM_NONE_EPSILON = 0.015;
 
+// The lightbox pauses the global Mousetrap singleton while open, so it owns a
+// separate (non-paused) instance for its own sequence shortcuts (ratings,
+// "d d"); mousetrap-pause tracks `paused` per instance. Module-level because
+// each Mousetrap instance attaches document listeners it can never remove, and
+// the lightbox remounts on every open.
+const lightboxMousetrap = new Mousetrap();
+
 interface IProps {
   images: ILightboxImage[];
   isVisible: boolean;
@@ -146,7 +154,6 @@ export const LightboxComponent: React.FC<IProps> = ({
   // image the index has since moved to (e.g. a page-switch settle landing
   // while the dialog is open).
   const [deleteTarget, setDeleteTarget] = useState<ILightboxImage | null>(null);
-  const lastDKeyTime = useRef<number>(0);
   const [navOffset, setNavOffset] = useState<React.CSSProperties | undefined>();
 
   // An in-flight page switch's intended landing, set synchronously by
@@ -186,6 +193,12 @@ export const LightboxComponent: React.FC<IProps> = ({
     },
     [images, page, pageCallback, setSwitching]
   );
+
+  useEffect(() => {
+    return () => {
+      lightboxMousetrap.reset();
+    };
+  }, []);
 
   const [zoom, setZoom] = useState(1);
 
@@ -536,20 +549,8 @@ export const LightboxComponent: React.FC<IProps> = ({
       if (e.key === "ArrowLeft") handleLeft();
       else if (e.key === "ArrowRight") handleRight();
       else if (e.key === "Escape") close();
-      else if (e.key === "d") {
-        // Not while a page switch is in flight: the index is parked at 0 then,
-        // so the shortcut would target an image the user isn't viewing.
-        const image = images[index ?? initialIndex];
-        if (!isSwitchingPageRef.current && image?.id !== undefined) {
-          const now = Date.now();
-          if (now - lastDKeyTime.current < 1000) {
-            setDeleteTarget(image);
-          }
-          lastDKeyTime.current = now;
-        }
-      }
     },
-    [setInstant, handleLeft, handleRight, close, images, index, initialIndex]
+    [setInstant, handleLeft, handleRight, close]
   );
 
   const [clearCallback, resetCallback] = useInterval(
@@ -637,6 +638,55 @@ export const LightboxComponent: React.FC<IProps> = ({
   };
 
   const currentIndex = index === null ? initialIndex : index;
+  const currentImage: ILightboxImage | undefined = images[currentIndex];
+  const currentImageId = currentImage?.id;
+
+  function setRating(v: number | null) {
+    // Not while a page switch is in flight: the index is parked at 0 then, so
+    // this would rate an image the user isn't viewing.
+    if (isSwitchingPageRef.current) return;
+    if (currentImageId) {
+      updateImage({
+        variables: {
+          input: {
+            id: currentImageId,
+            rating100: v,
+          },
+        },
+      });
+    }
+  }
+
+  // Rating shortcuts ("r" then digit(s)) via the lightbox-scoped Mousetrap
+  // instance, reusing the same hook as the scene/image detail pages.
+  // Disabled while the delete dialog is open so it can't change the image
+  // underneath it.
+  useRatingKeybinds(
+    isVisible && !deleteTarget,
+    config?.ui.ratingSystemOptions?.type,
+    (v) => setRating(Number.isNaN(v) ? null : v),
+    lightboxMousetrap
+  );
+
+  // "d d" delete shortcut, using Mousetrap's native sequence binding (matching
+  // the rest of the app) on the lightbox-scoped instance. Rebinding on
+  // currentImageId change resets Mousetrap's own sequence tracking, so a "d"
+  // press on one image can't combine with a second "d" press after
+  // navigating to another.
+  // Unbound while the delete dialog is open so it can't retarget the dialog.
+  useEffect(() => {
+    if (!isVisible || currentImage?.id === undefined || deleteTarget) return;
+
+    lightboxMousetrap.bind("d d", () => {
+      // Not while a page switch is in flight: the index is parked at 0 then,
+      // so the shortcut would target an image the user isn't viewing.
+      if (isSwitchingPageRef.current) return;
+      setDeleteTarget(currentImage);
+    });
+    return () => {
+      lightboxMousetrap.unbind("d d");
+    };
+  }, [isVisible, currentImage, deleteTarget]);
 
   useEffect(() => {
     // Don't auto-close while images are still loading. Some entry points open
@@ -859,21 +909,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       return <LoadingIndicator />;
     }
 
-    const currentImage: ILightboxImage | undefined = images[currentIndex];
     const title = currentImage ? imageTitle(currentImage) : undefined;
-
-    function setRating(v: number | null) {
-      if (currentImage?.id) {
-        updateImage({
-          variables: {
-            input: {
-              id: currentImage.id,
-              rating100: v,
-            },
-          },
-        });
-      }
-    }
 
     async function onIncrementClick() {
       if (currentImage?.id === undefined) return;
