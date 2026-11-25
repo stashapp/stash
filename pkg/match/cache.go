@@ -6,7 +6,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-const singleFirstCharacterRegex = `^[\p{L}][.\-_ ]`
+const singleFirstCharacterRegex = `^[\p{L}\p{N}](?:$|[^\p{L}\p{N}])`
 
 // Cache is used to cache queries that should not change across an autotag process.
 type Cache struct {
@@ -17,7 +17,7 @@ type Cache struct {
 
 // getSingleLetterPerformers returns all performers with names that start with single character words.
 // The autotag query splits the words into two-character words to query
-// against. This means that performers with single-letter words in their names could potentially
+// against. This means that performers with single-character words in their names could potentially
 // be missed.
 // This query is expensive, so it's queried once and cached, if the cache if provided.
 func getSingleLetterPerformers(ctx context.Context, c *Cache, reader models.PerformerAutoTagQueryer) ([]*models.Performer, error) {
