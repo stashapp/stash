@@ -15,10 +15,10 @@ type PackagesJob struct {
 	OnComplete     func()
 }
 
-func (j *PackagesJob) installPackage(ctx context.Context, p models.PackageSpecInput, progress *job.Progress) error {
+func (j *PackagesJob) installPackage(ctx context.Context, installer *pkg.Installer, p models.PackageSpecInput, progress *job.Progress) error {
 	defer progress.Increment()
 
-	if err := j.PackageManager.Install(ctx, p); err != nil {
+	if err := installer.Install(ctx, p); err != nil {
 		return fmt.Errorf("installing package: %w", err)
 	}
 
@@ -32,6 +32,7 @@ type InstallPackagesJob struct {
 
 func (j *InstallPackagesJob) Execute(ctx context.Context, progress *job.Progress) error {
 	progress.SetTotal(len(j.Packages))
+	installer := j.PackageManager.NewInstaller()
 
 	for _, p := range j.Packages {
 		if job.IsCancelled(ctx) {
@@ -42,7 +43,7 @@ func (j *InstallPackagesJob) Execute(ctx context.Context, progress *job.Progress
 		logger.Infof("Installing package %s", p.ID)
 		taskDesc := fmt.Sprintf("Installing %s", p.ID)
 		progress.ExecuteTask(taskDesc, func() {
-			if err := j.installPackage(ctx, *p, progress); err != nil {
+			if err := j.installPackage(ctx, installer, *p, progress); err != nil {
 				logger.Errorf("Error installing package %s from %s: %v", p.ID, p.SourceURL, err)
 			}
 		})
@@ -80,6 +81,7 @@ func (j *UpdatePackagesJob) Execute(ctx context.Context, progress *job.Progress)
 	}
 
 	progress.SetTotal(len(j.Packages))
+	installer := j.PackageManager.NewInstaller()
 
 	for _, p := range j.Packages {
 		if job.IsCancelled(ctx) {
@@ -90,7 +92,7 @@ func (j *UpdatePackagesJob) Execute(ctx context.Context, progress *job.Progress)
 		logger.Infof("Updating package %s", p.ID)
 		taskDesc := fmt.Sprintf("Updating %s", p.ID)
 		progress.ExecuteTask(taskDesc, func() {
-			if err := j.installPackage(ctx, *p, progress); err != nil {
+			if err := j.installPackage(ctx, installer, *p, progress); err != nil {
 				logger.Errorf("Error updating package %s from %s: %v", p.ID, p.SourceURL, err)
 			}
 		})
