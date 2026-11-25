@@ -24,6 +24,7 @@ import {
   faEyeSlash,
 } from "@fortawesome/free-solid-svg-icons";
 import { ExternalLink } from "../Shared/ExternalLink";
+import { isPasswordTooLong } from "src/utils/password";
 
 interface ISetupContextState {
   configuration: GQL.ConfigDataFragment;
@@ -676,24 +677,10 @@ function validateUsername(username: string) {
   return true;
 }
 
-// bcrypt imposes a 72-byte maximum on passwords. Note this is a byte count,
-// not a character count: a multibyte UTF-8 password can be 72 characters but
-// well over 72 bytes. Validate up front so the wizard's Next button is
-// disabled and the user finds out before they submit (the backend rejects a
-// too-long password in Setup atomically, but failing here is friendlier).
-// See https://github.com/stashapp/stash/issues/7135.
-const MAX_PASSWORD_BYTES = 72;
-
-function passwordByteLength(password: string): number {
-  return new TextEncoder().encode(password).length;
-}
-
 function validatePassword(username: string, password: string) {
   if (!username) return true;
 
-  if (!password.length) return false;
-  if (passwordByteLength(password) > MAX_PASSWORD_BYTES) return false;
-  return true;
+  return password.length > 0 && !isPasswordTooLong(password);
 }
 
 const PasswordField: React.FC<{
@@ -708,7 +695,7 @@ const PasswordField: React.FC<{
   const hideShowTextID = showPassword ? "actions.hide" : "actions.show";
   const icon = showPassword ? faEyeSlash : faEye;
 
-  const tooLong = passwordByteLength(password) > MAX_PASSWORD_BYTES;
+  const tooLong = isPasswordTooLong(password);
 
   return (
     <div className="password-field-group">
@@ -734,7 +721,7 @@ const PasswordField: React.FC<{
         {isInvalid
           ? tooLong
             ? intl.formatMessage({
-                id: "setup.credentials.password_too_long",
+                id: "config.general.auth.password_too_long",
               })
             : intl.formatMessage({
                 id: "setup.credentials.password_invalid",

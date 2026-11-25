@@ -8,6 +8,7 @@ import { useSettings } from "./context";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
 import { useGenerateAPIKey } from "src/core/StashService";
+import { isPasswordTooLong } from "src/utils/password";
 
 type AuthenticationSettingsInput = Pick<
   GQL.ConfigGeneralInput,
@@ -17,17 +18,6 @@ type AuthenticationSettingsInput = Pick<
 interface IAuthenticationInput {
   value: AuthenticationSettingsInput;
   setValue: (v: AuthenticationSettingsInput) => void;
-}
-
-// bcrypt imposes a 72-byte maximum on passwords. Note this is a byte count,
-// not a character count: a multibyte UTF-8 password can be 72 characters
-// but well over 72 bytes. We validate the byte length here so the user gets
-// immediate feedback, and the backend rejects the request atomically if they
-// somehow submit anyway. See #7135.
-const MAX_PASSWORD_BYTES = 72;
-
-function passwordByteLength(password: string): number {
-  return new TextEncoder().encode(password).length;
 }
 
 const AuthenticationInput: React.FC<IAuthenticationInput> = ({
@@ -44,8 +34,7 @@ const AuthenticationInput: React.FC<IAuthenticationInput> = ({
   }
 
   const { username, password } = value;
-  const passwordTooLong =
-    passwordByteLength(password ?? "") > MAX_PASSWORD_BYTES;
+  const passwordTooLong = isPasswordTooLong(password ?? "");
 
   return (
     <div>
@@ -139,6 +128,15 @@ export const SettingsSecurityPanel: React.FC = () => {
           password: general.password,
         }}
         onChange={(v) => saveGeneral(v)}
+        validateChange={(v) => {
+          if (isPasswordTooLong(v.password ?? "")) {
+            throw new Error(
+              intl.formatMessage({
+                id: "config.general.auth.password_too_long",
+              })
+            );
+          }
+        }}
         renderField={(value, setValue) => (
           <AuthenticationInput value={value ?? {}} setValue={setValue} />
         )}
