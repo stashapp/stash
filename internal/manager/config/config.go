@@ -1233,7 +1233,7 @@ const maxPasswordBytes = 72
 // ValidatePasswordLength returns an error if password exceeds bcrypt's byte limit.
 func ValidatePasswordLength(password string) error {
 	if len(password) > maxPasswordBytes {
-		return fmt.Errorf("password exceeds the %d-byte limit imposed by bcrypt", maxPasswordBytes)
+		return fmt.Errorf("password exceeds the %d-byte limit", maxPasswordBytes)
 	}
 
 	return nil
