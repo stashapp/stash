@@ -16,9 +16,16 @@ import {
 import { FavoriteTagCriterionOption } from "./criteria/favorite";
 import { StashIDCriterionOption } from "./criteria/stash-ids";
 import { CustomFieldsCriterionOption } from "./criteria/custom-fields";
+import { RatingCriterionOption } from "./criteria/rating";
 
 const defaultSortBy = "name";
-const sortByOptions = ["name", "random", "scenes_duration", "scenes_size"]
+const sortByOptions = [
+  "name",
+  "rating",
+  "random",
+  "scenes_duration",
+  "scenes_size",
+]
   .map(ListFilterOptions.createSortBy)
   .concat([
     {
@@ -60,6 +67,7 @@ const criterionOptions = [
   FavoriteTagCriterionOption,
   createMandatoryStringCriterionOption("name"),
   createStringCriterionOption("sort_name"),
+  RatingCriterionOption,
   TagIsMissingCriterionOption,
   createStringCriterionOption("aliases"),
   createStringCriterionOption("description"),
