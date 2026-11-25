@@ -107,8 +107,8 @@ importers:
         specifier: ^4.18.1
         version: 4.18.1
       moment:
-        specifier: ^2.30.1
-        version: 2.30.1
+        specifier: ^2.31.0
+        version: 2.31.0
       mousetrap:
         specifier: ^1.6.5
         version: 1.6.5
@@ -3048,6 +3048,9 @@ packages:
 
   moment@2.30.1:
     resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
+
+  moment@2.31.0:
+    resolution: {integrity: sha512-0acOTfMiWOheYS4eoWb80yYMb/JLvVv9SHbs2PehaDzfUG0Bw855SKyk0IKTnPGa5+U2bmi3W68l1+sGLX/pvw==}
 
   mousetrap-pause@1.0.0:
     resolution: {integrity: sha512-/92qasq/TIkogCZKRYZdX+XAiPOD8dBDIipaar+caXSdKrfhYQIe6UmweiXO9yQeETjhNAUWdopwLsU6po/IPw==}
@@ -7204,6 +7207,8 @@ snapshots:
   mkdirp@1.0.4: {}
 
   moment@2.30.1: {}
+
+  moment@2.31.0: {}
 
   mousetrap-pause@1.0.0: {}
 
