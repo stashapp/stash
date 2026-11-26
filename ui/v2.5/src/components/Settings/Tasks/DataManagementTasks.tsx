@@ -36,17 +36,17 @@ import {
 import { CleanGeneratedDialog } from "./CleanGeneratedDialog";
 import { useSettings } from "../context";
 
-interface IVerifyDialog {
+interface IPathSelectDialog {
   pathSelection?: boolean;
-  dryRun: boolean;
-  purgeMissing: boolean;
+  headerID: string;
+  message?: React.ReactNode;
   onClose: (paths?: string[]) => void;
 }
 
-const VerifyDialog: React.FC<IVerifyDialog> = ({
+const PathSelectDialog: React.FC<IPathSelectDialog> = ({
   pathSelection = false,
-  dryRun,
-  purgeMissing,
+  headerID,
+  message,
   onClose,
 }) => {
   const intl = useIntl();
@@ -67,29 +67,14 @@ const VerifyDialog: React.FC<IVerifyDialog> = ({
     }
   }
 
-  let msg: React.ReactNode;
-  if (dryRun) {
-    msg = (
-      <p>{intl.formatMessage({ id: "actions.tasks.dry_mode_selected" })}</p>
-    );
-  } else if (purgeMissing) {
-    msg = (
-      <p>
-        {intl.formatMessage({
-          id: "actions.tasks.verify_purge_confirm_message",
-        })}
-      </p>
-    );
-  }
-
   return (
     <ModalComponent
       show
-      header={<FormattedMessage id="actions.verify_files" />}
+      header={<FormattedMessage id={headerID} />}
       icon={faTrashAlt}
       disabled={pathSelection && paths.length === 0}
       accept={{
-        text: intl.formatMessage({ id: "actions.verify_files" }),
+        text: intl.formatMessage({ id: headerID }),
         variant: "danger",
         onClick: () => onClose(paths),
       }}
@@ -133,9 +118,49 @@ const VerifyDialog: React.FC<IVerifyDialog> = ({
           ) : undefined}
         </div>
 
-        {msg}
+        {message}
       </div>
     </ModalComponent>
+  );
+};
+
+interface IVerifyDialog {
+  pathSelection?: boolean;
+  dryRun: boolean;
+  purgeMissing: boolean;
+  onClose: (paths?: string[]) => void;
+}
+
+const VerifyDialog: React.FC<IVerifyDialog> = ({
+  pathSelection,
+  dryRun,
+  purgeMissing,
+  onClose,
+}) => {
+  const intl = useIntl();
+
+  let msg: React.ReactNode;
+  if (dryRun) {
+    msg = (
+      <p>{intl.formatMessage({ id: "actions.tasks.dry_mode_selected" })}</p>
+    );
+  } else if (purgeMissing) {
+    msg = (
+      <p>
+        {intl.formatMessage({
+          id: "actions.tasks.verify_purge_confirm_message",
+        })}
+      </p>
+    );
+  }
+
+  return (
+    <PathSelectDialog
+      pathSelection={pathSelection}
+      headerID="actions.verify_files"
+      message={msg}
+      onClose={onClose}
+    />
   );
 };
 
@@ -185,97 +210,23 @@ interface IPurgeMissingDialog {
 }
 
 const PurgeMissingDialog: React.FC<IPurgeMissingDialog> = ({
-  pathSelection = false,
+  pathSelection,
   dryRun,
   onClose,
 }) => {
   const intl = useIntl();
-  const { configuration } = useConfigurationContext();
 
-  const libraryPaths = configuration?.general.stashes.map((s) => s.path);
-
-  const [paths, setPaths] = useState<string[]>([]);
-  const [currentDirectory, setCurrentDirectory] = useState<string>("");
-
-  function removePath(p: string) {
-    setPaths(paths.filter((path) => path !== p));
-  }
-
-  function addPath(p: string) {
-    if (p && !paths.includes(p)) {
-      setPaths(paths.concat(p));
-    }
-  }
-
-  let msg: React.ReactNode;
-  if (dryRun) {
-    msg = (
-      <p>{intl.formatMessage({ id: "actions.tasks.dry_mode_selected" })}</p>
-    );
-  } else {
-    msg = (
-      <p>
-        {intl.formatMessage({
-          id: "actions.tasks.purge_missing_confirm_message",
-        })}
-      </p>
-    );
-  }
+  const msgID = dryRun
+    ? "actions.tasks.dry_mode_selected"
+    : "actions.tasks.purge_missing_confirm_message";
 
   return (
-    <ModalComponent
-      show
-      icon={faTrashAlt}
-      header={<FormattedMessage id="config.tasks.purge_missing" />}
-      disabled={pathSelection && paths.length === 0}
-      accept={{
-        text: intl.formatMessage({ id: "config.tasks.purge_missing" }),
-        variant: "danger",
-        onClick: () => onClose(paths),
-      }}
-      cancel={{ onClick: () => onClose() }}
-    >
-      <div className="dialog-container">
-        <div className="mb-3">
-          {paths.map((p) => (
-            <Row className="align-items-center mb-1" key={p}>
-              <Form.Label column xs={10}>
-                {p}
-              </Form.Label>
-              <Col xs={2} className="d-flex justify-content-end">
-                <Button
-                  className="ml-auto"
-                  size="sm"
-                  variant="danger"
-                  title={intl.formatMessage({ id: "actions.delete" })}
-                  onClick={() => removePath(p)}
-                >
-                  <Icon icon={faMinus} />
-                </Button>
-              </Col>
-            </Row>
-          ))}
-
-          {pathSelection ? (
-            <FolderSelect
-              currentDirectory={currentDirectory}
-              onChangeDirectory={setCurrentDirectory}
-              defaultDirectories={libraryPaths}
-              appendButton={
-                <Button
-                  variant="secondary"
-                  onClick={() => addPath(currentDirectory)}
-                >
-                  <Icon icon={faPlus} />
-                </Button>
-              }
-            />
-          ) : undefined}
-        </div>
-
-        {msg}
-      </div>
-    </ModalComponent>
+    <PathSelectDialog
+      pathSelection={pathSelection}
+      headerID="config.tasks.purge_missing"
+      message={<p>{intl.formatMessage({ id: msgID })}</p>}
+      onClose={onClose}
+    />
   );
 };
 
