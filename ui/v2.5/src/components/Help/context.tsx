@@ -12,7 +12,9 @@ export const ManualStateContext = React.createContext<IManualContextState>({
   openManual: () => {},
 });
 
-export const ManualProvider: React.FC = ({ children }) => {
+export const ManualProvider: React.FC<React.PropsWithChildren<unknown>> = ({
+  children,
+}) => {
   const [showManual, setShowManual] = useState(false);
   const [manualLink, setManualLink] = useState<string | undefined>();
 
@@ -43,6 +45,7 @@ export const ManualProvider: React.FC = ({ children }) => {
 
 interface IManualLink {
   tab: string;
+  children?: React.ReactNode;
 }
 
 export const ManualLink: React.FC<IManualLink> = ({ tab, children }) => {

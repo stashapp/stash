@@ -159,7 +159,8 @@
         "from_clipboard": "Depuis le presse-papiers",
         "selective_generate": "Génération sélective",
         "exclude_lowercase": "exclure",
-        "create_parent_tag": "Créer une étiquette parente"
+        "create_parent_tag": "Créer une étiquette parente",
+        "set_as_performer_image": "Définir comme image du performeur"
     },
     "actions_name": "Actions",
     "age": "Âge",
@@ -224,12 +225,12 @@
             "fp_found": "{fpCount, plural, =0 {Aucune nouvelle correspondance d'empreinte trouvée} other {# nouvelles correspondances d'empreintes trouvées}}",
             "fp_matches": "La durée correspond",
             "fp_matches_multi": "La durée correspond à {matchCount}/{durationsLength} empreintes",
-            "hash_matches": "{hash_type} est une correspondance",
+            "hash_matches": "{count, plural, one {# {hash_type} correspond} other {# {hash_type} correspondent}}",
             "match_failed_already_tagged": "Scène déjà étiquetée",
             "match_failed_no_result": "Aucun résultat trouvé",
             "match_success": "Scène étiquetée avec succès",
-            "phash_matches": "{count} empreintes correspondantes",
-            "unnamed": "Sans nom"
+            "unnamed": "Sans nom",
+            "hash_submissions": "{count} envois"
         },
         "verb_match_fp": "Empreintes correspondantes",
         "verb_matched": "Associé",
@@ -452,7 +453,11 @@
             "sprite_screenshot_size_desc": "Taille désirée pour chaque sprite en pixels.",
             "sprite_screenshot_size_head": "Taille des sprites",
             "use_custom_sprite_interval_head": "Utiliser un intervalle de sprite personnalisé",
-            "use_custom_sprite_interval_desc": "Active l'intervalle de sprite personnalisé selon les paramètres ci-dessous."
+            "use_custom_sprite_interval_desc": "Active l'intervalle de sprite personnalisé selon les paramètres ci-dessous.",
+            "default_marker_preview_duration_desc": "Durée (en secondes) des aperçus de marqueurs sans temps de fin. Cette valeur doit être supérieure à 0.",
+            "default_marker_preview_duration_head": "Durée par défaut de l'aperçu des marqueurs",
+            "max_marker_preview_duration_desc": "Durée maximale (en secondes) des aperçus de marqueurs. Une valeur de 0 désactive cette limite.",
+            "max_marker_preview_duration_head": "Durée maximale de l'aperçu des marqueurs"
         },
         "library": {
             "exclusions": "Exceptions",
@@ -502,7 +507,11 @@
             "anonymising_database": "Anonymisation de la base de données",
             "auto_tag": {
                 "auto_tagging_all_paths": "Étiquetage automatique de tous les chemins",
-                "auto_tagging_paths": "Étiquetage automatique des chemins suivants"
+                "auto_tagging_paths": "Étiquetage automatique des chemins suivants",
+                "disable_warning": {
+                    "description": "Désactivez l'avertissement de confirmation affiché avant l'exécution de la fonction d'étiquetage automatique.",
+                    "heading": "Désactiver l'avertissement d'étiquetage automatique"
+                }
             },
             "auto_tag_based_on_filenames": "Étiquetage automatique du contenu basé sur les chemins d'accès des fichiers.",
             "auto_tagging": "Étiquetage automatique",
@@ -905,6 +914,10 @@
                         "heading": "Volume des aperçus"
                     }
                 }
+            },
+            "autostart_gallery_slideshow": {
+                "description": "Lance automatiquement le diaporama lors de l'ouverture de la visionneuse d'une galerie depuis la page des galeries.",
+                "heading": "Lancement automatique du diaporama de la galerie"
             }
         },
         "advanced_mode": "Mode avancé",
@@ -996,7 +1009,6 @@
                 "original": "Original"
             },
             "options": "Options",
-            "page_header": "Page {page} / {total}",
             "reset_zoom_on_nav": "Réinitialisation du facteur de zoom lors d'un changement d'image",
             "scale_up": {
                 "description": "Redimensionner les petites images pour les adapter à l'écran.",
@@ -1034,7 +1046,7 @@
             "marker_screenshots": "Captures d'écran des marqueurs",
             "marker_screenshots_tooltip": "Images JPG statiques des marqueurs",
             "markers": "Aperçus des marqueurs",
-            "markers_tooltip": "Vidéos de 20 secondes qui débutent au repère temporel donné.",
+            "markers_tooltip": "Aperçus vidéo commençant au repère temporel indiqué.",
             "override_preview_generation_options": "Remplacer les options de génération d'aperçu",
             "override_preview_generation_options_desc": "Remplacer les options de génération d'aperçu pour cette opération. Les valeurs par défaut sont définies dans Système -> Génération d'aperçus.",
             "overwrite": "Remplacer les fichiers existants",
@@ -1079,7 +1091,8 @@
         "studios_found": "{count} studios trouvés",
         "tags_found": "{count} étiquettes trouvées",
         "scrape_results_missing": "Manquant",
-        "edit_entity_count_title": "Éditer {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}"
+        "edit_entity_count_title": "Éditer {count} {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+        "dont_show_again": "Ne plus afficher cet avertissement"
     },
     "dimensions": "Dimensions",
     "director": "Réalisateur",
@@ -1245,7 +1258,7 @@
         "video_codec": "Codec vidéo",
         "o_count": "Nombre d'O",
         "md5": "Somme de contrôle MD5",
-        "oshash": "oshash",
+        "oshash": "OSHash",
         "oshash_meaning": "Empreinte OpenSubtitles",
         "phash_meaning": "Empreinte perceptuelle"
     },
@@ -1304,7 +1317,10 @@
         "update_performer": "Mise à jour du performeur",
         "update_performers": "Mise à jour des performeurs",
         "updating_untagged_performers_description": "Une mise à jour des performeurs non étiquetés essaiera de faire correspondre tous les performeurs qui n'ont pas d'identifiant Stash et actualisera les métadonnées.",
-        "performer_names_or_stashids_separated_by_comma": "Noms des performeurs ou identifiants Stash séparés par des virgules"
+        "performer_names_or_stashids_separated_by_comma": "Noms des performeurs ou identifiants Stash séparés par des virgules",
+        "configure_fields": "Configurer les champs",
+        "field_options": "Options de champ",
+        "field_options_description": "Choisissez comment chaque champ doit être mis à jour : « écraser » remplace les données existantes, « fusionner » les ajoute, « ignorer » les laisse inchangées."
     },
     "performer_tags": "Étiquettes de performeur",
     "performers": "Performeurs",
@@ -1352,7 +1368,8 @@
             "database_file_path": "Chemin du fichier de base de données",
             "generated_directory": "Répertoire généré",
             "nearly_there": "Nous y sommes presque !",
-            "stash_library_directories": "Répertoire de la bibliothèque Stash"
+            "stash_library_directories": "Répertoire de la bibliothèque Stash",
+            "password_set_warning": "Remarque: il vous sera demandé de saisir vos identifiants une fois le système créé."
         },
         "creating": {
             "creating_your_system": "Création de votre système"
@@ -1438,7 +1455,13 @@
             "next_step": "Lorsque vous êtes prêt à procéder à la configuration d'un nouveau système, cliquez sur Suivant.",
             "unable_to_locate_specified_config": "Si vous lisez ceci, Stash n'a pas pu trouver le fichier de configuration spécifié en ligne de commande ou dans l'environnement. Cet assistant vous guidera dans le processus de paramétrage d'une nouvelle configuration."
         },
-        "welcome_to_stash": "Bienvenue sur Stash"
+        "welcome_to_stash": "Bienvenue sur Stash",
+        "credentials": {
+            "description": "Saisissez le nom d'utilisateur et le mot de passe que vous souhaitez utiliser pour vous connecter à Stash. Vous pouvez laisser ces champs vides si vous ne souhaitez pas protéger l'accès au système par un nom d'utilisateur et un mot de passe. Ces identifiants sont obligatoires si le système est accessible depuis Internet public.",
+            "heading": "Configurer vos identifiants",
+            "password_invalid": "Un mot de passe est requis si un nom d'utilisateur est défini.",
+            "username_invalid": "Le nom d'utilisateur ne doit pas contenir d'espaces au début ou à la fin."
+        }
     },
     "stash_id": "identifiant Stash",
     "stash_id_endpoint": "URL du point de terminaison de l'identifiant Stash",
@@ -1530,7 +1553,8 @@
         "merged_performers": "Performeurs fusionnés",
         "clipboard_access_denied": "Accès au presse-papiers refusé. Vérifiez les autorisations de votre navigateur.",
         "clipboard_image_pasted": "Image collée depuis le presse-papiers",
-        "clipboard_no_image": "Aucune image trouvée dans le presse-papiers"
+        "clipboard_no_image": "Aucune image trouvée dans le presse-papiers",
+        "screenshot_generated": "Capture d'écran générée"
     },
     "total": "Total",
     "true": "Vrai",
@@ -1694,7 +1718,8 @@
             "create_parent_desc": "Créer les étiquettes parentes manquantes à partir des catégories de Stash-Box, ou attribuer des étiquettes parentes existantes dont le nom correspond exactement",
             "create_parent_label": "Créer des étiquettes parentes"
         },
-        "create_or_tag_parent_tags": "Créer les étiquettes parentes manquantes ou les associer aux étiquettes existantes"
+        "create_or_tag_parent_tags": "Créer les étiquettes parentes manquantes ou les associer aux étiquettes existantes",
+        "parent_tag_no_remote_site_id_warning": "L'étiquette parente n'a pas d'identifiant de site distant et ne sera pas associée à l'instance Stash-Box."
     },
     "tagger": {
         "config": {
@@ -1704,6 +1729,13 @@
             "fields_will_not_be_changed": "Ces champs ne seront pas modifiés lors de la mise à jour de {entity}.",
             "no_fields_are_excluded": "Aucun champ n'est exclu",
             "no_instances_found": "Aucune instance trouvée"
+        },
+        "performers": {
+            "birthdate": "Le performeur correspondant a une date de naissance différente.",
+            "country": "Le performeur correspondant est originaire d'un autre pays.",
+            "ethnicity": "Le performeur correspondant a une origine ethnique différente.",
+            "gender": "Le performeur correspondant a un genre différent.",
+            "stash_mismatch": "Le performeur correspondant a déjà un identifiant Stash différent."
         }
     },
     "unsupported_criteria": "Critère non supporté : {criteria}",
@@ -1713,5 +1745,11 @@
     "sub_folders": "Sous-répertoires",
     "empty_value": "vide",
     "scenes_size": "Taille de la scène",
-    "refer_to": "Merci de consulter {link}."
+    "refer_to": "Merci de consulter {link}.",
+    "related_studios": "En rapport",
+    "sub_group_description": "Description du groupe affilié",
+    "scene_marker_count": "Nombre de marqueurs",
+    "o_count_all": "Nombre d'O (Total)",
+    "performer_count_all": "Nombre de performeurs (Total)",
+    "stash_id_endpoint_any": "Tout point de terminaison"
 }

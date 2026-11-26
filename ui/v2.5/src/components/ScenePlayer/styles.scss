@@ -20,6 +20,7 @@ $sceneTabWidth: 450px;
 
   &.portrait .video-wrapper {
     height: 177.78vw;
+    max-height: calc(100vh - #{$menuHeight});
   }
 }
 
@@ -479,6 +480,24 @@ $sceneTabWidth: 450px;
 
 .scene-player-container {
   padding-right: 15px;
+}
+
+.scene-player-no-file {
+  align-items: center;
+  background-color: #000;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  color: $text-muted;
+  display: flex;
+  justify-content: center;
+
+  // keep the message readable on top of bright cover images
+  span {
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 0.25rem;
+    padding: 0.5rem 1rem;
+  }
 }
 
 .scrubber-wrapper {

@@ -156,10 +156,11 @@
         "invert_selection": "선택 영역 반전",
         "select_directory": "경로 선택",
         "reveal_in_file_manager": "파일 관리자에서 열기",
-        "exclude_lowercase": "제외",
+        "exclude_lowercase": "제외시키기",
         "from_clipboard": "클립보드에서 불러오기",
         "selective_generate": "선택적 생성",
-        "create_parent_tag": "부모 태그 만들기"
+        "create_parent_tag": "부모 태그 생성",
+        "set_as_performer_image": "배우 사진으로 설정"
     },
     "actions_name": "액션",
     "age": "나이",
@@ -223,12 +224,12 @@
             "fp_found": "{fpCount, plural, =0 {일치하는 새로운 식별값을 찾지 못했습니다.} other {# 일치하는 새로운 식별값을 찾았습니다.}}",
             "fp_matches": "영상 길이가 일치함",
             "fp_matches_multi": "영상 길이가 {durationsLength}개 중 {matchCount}개의 식별값과 일치합니다",
-            "hash_matches": "{hash_type}이 일치함",
+            "hash_matches": "{count, plural, one {{hash_type} #개 일치} other {{hash_type} #개 일치}}",
             "match_failed_already_tagged": "이미 태깅된 영상",
             "match_failed_no_result": "결과 없음",
             "match_success": "영상 태깅 성공",
-            "phash_matches": "{count}개의 PHash가 일치함",
-            "unnamed": "이름 없음"
+            "unnamed": "이름 없음",
+            "hash_submissions": "{count}건 제출"
         },
         "verb_match_fp": "식별값 비교하기",
         "verb_matched": "일치함",
@@ -451,7 +452,11 @@
             "sprite_screenshot_size_desc": "각각의 스프라이트의 원하는 크기를 지정합니다 (픽셀).",
             "sprite_screenshot_size_head": "스프라이트 크기",
             "use_custom_sprite_interval_head": "사용자 지정 스프라이트 시간 간격 사용",
-            "use_custom_sprite_interval_desc": "사용자 지정 스프라이트 시간 간격을, 아래 설정과 같이 활성화합니다."
+            "use_custom_sprite_interval_desc": "사용자 지정 스프라이트 시간 간격을, 아래 설정과 같이 활성화합니다.",
+            "default_marker_preview_duration_desc": "종료 시간이 없는 마커 미리보기의 재생 길이(초)입니다. 0보다 커야 합니다.",
+            "default_marker_preview_duration_head": "마커 미리보기 재생 길이의 기본값",
+            "max_marker_preview_duration_desc": "마커 미리보기의 최대 재생 길이입니다. 0으로 설정하면 제한을 두지 않습니다.",
+            "max_marker_preview_duration_head": "마커 미리보기 재생 길이의 최댓값"
         },
         "library": {
             "exclusions": "제외",
@@ -501,7 +506,11 @@
             "anonymising_database": "데이터베이스 익명화 중",
             "auto_tag": {
                 "auto_tagging_all_paths": "모든 경로 자동 태깅 중",
-                "auto_tagging_paths": "다음 경로 자동 태깅 중"
+                "auto_tagging_paths": "다음 경로 자동 태깅 중",
+                "disable_warning": {
+                    "description": "자동 태그를 실행하기 전에 표시된 확인 경고를 비활성화합니다.",
+                    "heading": "자동 태그 경고 비활성화"
+                }
             },
             "auto_tag_based_on_filenames": "파일 경로를 통해 컨텐츠에 자동으로 태깅합니다.",
             "auto_tagging": "자동 태깅",
@@ -608,13 +617,13 @@
                 "include_blobs_desc": "SQLite 데이터베이스 파일만을 백업하려면 비활성화하세요.",
                 "sqlite": "백업 파일은 SQLite 데이터베이스 파일의 복제본이 될 것입니다. (백업 파일 이름: {filename_format})",
                 "to_directory": "{directory} 경로로",
-                "warning_blobs": "blob 파일들은 백업 파일에 포함되지 않을 것입니다. 이는, 백업을 완전히 복원하려면 blob 저장 위치에 blob 파일이 존재해야 함을 의미합니다.",
+                "warning_blobs": "Blob 파일들은 백업 파일에 포함되지 않을 것입니다. 이는, 백업을 완전히 복원하려면 blob 저장 위치에 blob 파일이 존재해야 함을 의미합니다.",
                 "zip": "SQLite 데이터베이스 파일과 blob 파일은 하나의 파일로 압축될 것입니다. (압축 파일 이름: {filename_format})"
             },
             "clean_ignore_zip_contents": "zip 파일 컨텐츠 무시",
-            "clean_ignore_zip_contents_desc": "더 빠르지만 zip 파일 내부에서 제거된 파일이 누락될 수 있습니다. zip 파일 내에서 파일을 삭제하지 않으면 안전하게 활성화할 수 있습니다.",
+            "clean_ignore_zip_contents_desc": "더 빠르지만, zip 파일 내부에서 삭제된 파일이 누락됩니다. zip 파일 내에서 파일을 삭제하지 않는다면 활성화해도 안전합니다.",
             "auto_tag_confirm": "컨텐츠를 기존 메타데이터와 매칭하려 시도합니다.",
-            "auto_tag_warning": "실행하면 되돌릴 수 없으며 잘못 매칭될 수 있습니다."
+            "auto_tag_warning": "이 작업은 실행 후 되돌릴 수 없으며, 잘못 매칭될 수 있습니다."
         },
         "tools": {
             "scene_duplicate_checker": "영상 중복 체크 도구",
@@ -777,7 +786,7 @@
                 "heading": "그리드 뷰",
                 "options": {
                     "show_studio_as_text": "스튜디오 로고를 텍스트로 표시",
-                    "show_studio_as_text_desc": "기본적으로 스튜디오 로고는 그리드 카드에 표시됩니다. 스튜디오 이름을 항상 텍스트로 표시하려면 이 옵션을 활성화하십시오."
+                    "show_studio_as_text_desc": "기본값으로, 격자의 각 카드에 스튜디오 로고가 표시됩니다. 그 대신, 항상 스튜디오 이름을 텍스트로 표시하려면 이 옵션을 활성화하십시오."
                 }
             },
             "scene_player": {
@@ -809,7 +818,7 @@
                 "heading": "영상 / 마커 미리보기",
                 "options": {
                     "display_title": "제목과 태그 표시",
-                    "toggle_sound": "미리보기 호버에서 소리 재생"
+                    "toggle_sound": "마우스를 올릴 때 표시되는 미리보기에서 소리 재생"
                 }
             },
             "scroll_attempts_before_change": {
@@ -862,8 +871,8 @@
                     "heading": "모든 세부사항 보여주기"
                 },
                 "show_studio_text": {
-                    "description": "스튜디오 이름을 아이콘 대신 세부 정보에 텍스트로 표시합니다.",
-                    "heading": "스튜디오 텍스트 표시"
+                    "description": "세부사항 뷰에서, 아이콘 대신 스튜디오 이름을 텍스트로 표시합니다.",
+                    "heading": "스튜디오를 텍스트로 표시"
                 }
             },
             "performer_list": {
@@ -897,13 +906,17 @@
                 "exit": "나가기"
             },
             "scene_view": {
-                "heading": "영상 표시",
+                "heading": "영상 뷰",
                 "options": {
                     "preview_volume": {
-                        "description": "영상을 호버링할 때 표시되는 미리보기의 음량. 0으로 설정하면 음소거.",
+                        "description": "영상에 마우스를 올릴 때 표시되는 미리보기의 음량. 0으로 설정하면 음소거.",
                         "heading": "미리보기 음량"
                     }
                 }
+            },
+            "autostart_gallery_slideshow": {
+                "description": "갤러리 페이지에서 갤러리의 라이트박스를 열 때, 슬라이드쇼를 자동으로 시작합니다.",
+                "heading": "갤러리 슬라이드쇼 자동 시작"
             }
         },
         "advanced_mode": "고급 설정 모드",
@@ -995,7 +1008,6 @@
                 "original": "기본 모드"
             },
             "options": "옵션",
-            "page_header": "{total} 페이지 중 {page} 페이지",
             "reset_zoom_on_nav": "이미지를 바꿀 때 줌 수준 초기화",
             "scale_up": {
                 "description": "작은 이미지들이 화면을 채우도록 확대합니다.",
@@ -1023,7 +1035,7 @@
             "marker_screenshots": "마커 스크린샷",
             "marker_screenshots_tooltip": "마커 고정 JPG 이미지",
             "markers": "마커 미리보기",
-            "markers_tooltip": "주어진 시간 코드에서 시작하는 20초 짜리 비디오입니다.",
+            "markers_tooltip": "주어진 타임코드에서 시작하는 비디오 미리보기입니다.",
             "override_preview_generation_options": "미리보기 생성 옵션 재정의",
             "override_preview_generation_options_desc": "이 작업에 대한 미리보기 생성 옵션을 재정의합니다. 기본값은 '시스템' -> '미리보기 생성'에서 설정됩니다.",
             "overwrite": "기존 파일들 덮어쓰기",
@@ -1078,7 +1090,8 @@
         "studios_found": "{count}개 스튜디오 발견됨",
         "tags_found": "{count}개 태그 발견됨",
         "scrape_results_missing": "없음",
-        "edit_entity_count_title": "{count}개의 {count, plural, one {{singularEntity}} other {{pluralEntity}}} 수정"
+        "edit_entity_count_title": "{count}개의 {count, plural, one {{singularEntity}} other {{pluralEntity}}} 수정",
+        "dont_show_again": "이 경고를 다시 보지 않기"
     },
     "dimensions": "해상도",
     "director": "감독",
@@ -1243,7 +1256,7 @@
         "video_codec": "비디오 코덱",
         "o_count": "싼 횟수",
         "md5": "MD5 체크섬",
-        "oshash": "oshash",
+        "oshash": "OSHash",
         "oshash_meaning": "파일 일치 여부 확인 해시 (OpenSubtitles Hash)",
         "phash_meaning": "시각적 유사성 비교 해시 (Perceptual Hash)"
     },
@@ -1301,7 +1314,10 @@
         "update_performer": "배우 업데이트",
         "update_performers": "배우 업데이트",
         "updating_untagged_performers_description": "'태깅되지 않은 배우 업데이트'를 통해, Stash ID가 없는 배우들에 대한 데이터를 찾아보고, 가능하다면 이를 이용해 배우를 업데이트합니다.",
-        "performer_names_or_stashids_separated_by_comma": "배우 이름 또는 Stash ID (쉼표(,)로 구분)"
+        "performer_names_or_stashids_separated_by_comma": "배우 이름 또는 Stash ID (쉼표(,)로 구분)",
+        "configure_fields": "설정 필드",
+        "field_options": "필드 옵션",
+        "field_options_description": "각 필드가 업데이트되는 방식을 선택합니다: 덮어쓰기는 기존 데이터 대체, 병합은 추가, 건너뛰기는 변경하지 않습니다."
     },
     "performer_tags": "배우 태그",
     "performers": "배우",
@@ -1349,7 +1365,8 @@
             "generated_directory": "생성된 컨텐츠 폴더",
             "nearly_there": "거의 끝났습니다!",
             "stash_library_directories": "Stash 라이브러리 폴더",
-            "blobs_use_database": "<데이터베이스 사용 중>"
+            "blobs_use_database": "<데이터베이스 사용 중>",
+            "password_set_warning": "참고: 시스템이 생성된 후 인증 정보 입력 페이지가 표시됩니다."
         },
         "creating": {
             "creating_your_system": "시스템 생성 중"
@@ -1435,7 +1452,13 @@
             "next_step": "새로운 시스템을 설정할 준비가 되었다면, '다음'을 누르세요.",
             "unable_to_locate_specified_config": "이 오류 문구가 출력되었다면, 명령어 또는 환경에서 지정된 설정 파일을 찾지 못한 것입니다. 설정 마법사가 새로운 설정 파일을 만드는 과정을 도와줄 것입니다."
         },
-        "welcome_to_stash": "Stash에 오신 것을 환영합니다"
+        "welcome_to_stash": "Stash에 오신 것을 환영합니다",
+        "credentials": {
+            "description": "Stash 시스템에 로그인할 사용자 이름과 패스워드를 입력하십시오. 시스템 접속에 사용자 이름 및 패스워드를 설정하지 않으려면 공백으로 둘 수 있습니다. 공개 인터넷을 통해 접속하는 경우에는 인증이 필요합니다.",
+            "heading": "인증 정보 설정",
+            "password_invalid": "사용자 이름이 설정된 경우 패스워드를 비워둘 수 없습니다.",
+            "username_invalid": "사용자 이름의 앞과 뒤에는 공백이 없어야 합니다."
+        }
     },
     "stash_id": "Stash ID",
     "stash_id_endpoint": "Stash ID 엔드포인트 URL",
@@ -1494,7 +1517,8 @@
         "merged_performers": "배우가 병합되었습니다",
         "clipboard_access_denied": "클립보드 접근 거부됨. 브라우저 권한을 확인하십시오",
         "clipboard_image_pasted": "클립보드에서 이미지 복사됨",
-        "clipboard_no_image": "클립보드에 이미지 없음"
+        "clipboard_no_image": "클립보드에 이미지 없음",
+        "screenshot_generated": "스크린샷 생성됨"
     },
     "total": "전체",
     "true": "참",
@@ -1691,10 +1715,11 @@
         "refreshing_will_update_the_data": "새로고침하면, Stash-Box 인스턴스로부터 표준 태그의 데이터를 업데이트할 것입니다.",
         "status_tagging_job_queued": "상태: 표준화 작업 대기열 추가됨",
         "config": {
-            "create_parent_desc": "stash-box 카테고리에서 누락된 부모 태그를 만들거나, 기존 부모 태그를 정확한 이름과 연결하는 태그를 지정합니다",
-            "create_parent_label": "부모 태그 만들기"
+            "create_parent_desc": "stash-box 카테고리로부터 누락된 부모 태그를 만들거나, 이름이 정확히 일치할 시 기존 부모 태그를 표준화합니다",
+            "create_parent_label": "부모 태그 생성"
         },
-        "create_or_tag_parent_tags": "누락된 부모 태그 생성 또는 기존 태그 지정"
+        "create_or_tag_parent_tags": "누락된 부모 태그를 생성하거나 기존 부모 태그 표준화",
+        "parent_tag_no_remote_site_id_warning": "부모 태그에 원격 사이트 ID가 없어, stash-box 인스턴스에 링크되지 않을 것입니다."
     },
     "tagger": {
         "config": {
@@ -1704,14 +1729,27 @@
             "fields_will_not_be_changed": "{entity}를 업데이트할 때 이 항목은 변경되지 않습니다.",
             "no_fields_are_excluded": "제외된 항목 없음",
             "no_instances_found": "인스턴스 없음"
+        },
+        "performers": {
+            "birthdate": "매칭된 배우의 생일이 서로 다릅니다.",
+            "country": "매칭된 배우의 국가 정보가 서로 다릅니다.",
+            "ethnicity": "매칭된 배우의 인종이 서로 다릅니다.",
+            "gender": "매칭된 배우의 성별이 서로 다릅니다.",
+            "stash_mismatch": "매칭된 배우는 이미 다른 stash-id를 가지고 있습니다."
         }
     },
     "unsupported_criteria": "지원되지 않는 기준: {criteria}",
     "include_sub_folders": "하위 폴더 포함",
     "parent_folder": "상위 폴더",
-    "sub_folder_depth": "하위 폴더 깊이 (전체일 경우 비워둠)",
+    "sub_folder_depth": "하위 폴더 깊이 (전체로 설정할 경우 비워두십시오)",
     "sub_folders": "하위 폴더",
     "empty_value": "공백",
     "refer_to": "{link}를 참조해 주십시오.",
-    "scenes_size": "영상 크기"
+    "scenes_size": "영상 크기",
+    "related_studios": "연관됨",
+    "sub_group_description": "서브그룹 설명",
+    "scene_marker_count": "영상 마커 개수",
+    "o_count_all": "싼 횟수(전체)",
+    "performer_count_all": "배우 수(전체)",
+    "stash_id_endpoint_any": "모든 엔드포인트"
 }

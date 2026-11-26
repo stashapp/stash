@@ -141,6 +141,9 @@ export const PluginsLoader: React.FC<
   return <>{children}</>;
 };
 
-export const PluginRoutes: React.FC = PatchFunction("PluginRoutes", (props) => {
-  return <>{props.children}</>;
-}) as React.FC;
+export const PluginRoutes = PatchFunction(
+  "PluginRoutes",
+  (props: React.PropsWithChildren<unknown>) => {
+    return <>{props.children}</>;
+  }
+);

@@ -189,7 +189,7 @@ These options are typically not exposed in the UI and must be changed manually i
 | `no_proxy` | A list of domains for which the proxy must not be used. Default is all local LAN: localhost,127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12 |
 | `sequential_scanning` | Modifies behaviour of the scanning functionality to generate support files (previews/sprites/phash) at the same time as fingerprinting/screenshotting. Useful when scanning cached remote files. |
 | `trusted_proxies` | A list of trusted proxy IPs or CIDR ranges. If a request comes from a trusted proxy or if the request IP address is a local address, the `X-FORWARDED-FOR` header will be used to determine the client's real IP address. Default is empty (no trusted proxies). |
-| `public_whitelist` | A list of public IP addresses or subnets (in CIDR range format eg: `192.168.1.0/24`) that are allowed to access the system when no credentials are configured. |
+| `public_whitelist` | A list of public IP addresses or subnets that are allowed to access the system when no credentials are configured. See the Public whitelist section below. |
 | `signed_url_expiry` | The expiry time for signed URLs, in seconds. Signed URLs are used when authentication is required. Defaults to 4 hours to accommodate long video playback sessions. |
 
 The following environment variables are also supported:
@@ -199,6 +199,19 @@ The following environment variables are also supported:
 | `STASH_SQLITE_CACHE_SIZE` | Sets the SQLite cache size. See https://www.sqlite.org/pragma.html#pragma_cache_size. Default is `-2000` which is 2MB. |
 | `STASH_HW_TEST_TIMEOUT` | Sets the Hardware Acceleration test timeout in seconds. Default is 10 seconds
 | `STASH_HW_DRI_DEVICE` | Overrides the default `/dev/dri` device used for VAAPI hardware acceleration. Default is `/dev/dri/renderD128`
+
+### Public whitelist
+
+When no credentials are configured, requests from public IP addresses are rejected unless they match an entry in `public_whitelist`. Local network addresses are always allowed. Entries can be single IP addresses or subnets in CIDR format. The following is an example configuration:
+
+```
+public_whitelist:
+  - 203.0.113.45
+  - 203.0.113.0/24
+  - 2001:db8::/56
+```
+
+Behind a reverse proxy, the client IP from the `X-FORWARDED-FOR` header is checked, not the proxy's IP. `0.0.0.0/0` only matches IPv4 clients; add `::/0` to also allow IPv6 clients. Stash must be restarted for changes to take effect.
 
 ### Custom favicon
 

@@ -5,6 +5,8 @@ package sqlite_test
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"path/filepath"
 	"testing"
 	"time"
@@ -516,6 +518,56 @@ func Test_fileStore_Find(t *testing.T) {
 	}
 }
 
+func Test_fileStore_FindMultiple(t *testing.T) {
+	zip := fileIDs[fileIdxZip]
+	inZip := fileIDs[fileIdxInZip]
+	video := fileIDs[fileIdxStartVideoFiles]
+	image := fileIDs[fileIdxStartImageFiles]
+
+	tests := []struct {
+		name    string
+		ids     []models.FileID
+		want    []int // file indexes, in expected order
+		wantErr bool
+	}{
+		{"none", nil, nil, false},
+		{"in id order", []models.FileID{zip, inZip, video, image},
+			[]int{fileIdxZip, fileIdxInZip, fileIdxStartVideoFiles, fileIdxStartImageFiles}, false},
+		{"reverse order", []models.FileID{image, video, inZip, zip},
+			[]int{fileIdxStartImageFiles, fileIdxStartVideoFiles, fileIdxInZip, fileIdxZip}, false},
+		{"duplicates", []models.FileID{video, zip, video},
+			[]int{fileIdxStartVideoFiles, fileIdxZip, fileIdxStartVideoFiles}, false},
+		{"one missing", []models.FileID{zip, models.FileID(invalidID), video}, nil, true},
+	}
+
+	qb := db.File
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.Find(ctx, tt.ids...)
+			if tt.wantErr {
+				assert.True(errors.Is(err, sql.ErrNoRows), "want sql.ErrNoRows, got %v", err)
+				assert.Nil(got)
+				return
+			}
+			if !assert.NoError(err) {
+				return
+			}
+
+			var want []models.File
+			for _, idx := range tt.want {
+				f := makeFileWithID(idx)
+				if idx == fileIdxInZip {
+					f.Base().ZipFile = makeZipFileWithID(fileIdxZip)
+				}
+				want = append(want, f)
+			}
+			assert.Equal(want, got)
+		})
+	}
+}
+
 func Test_FileStore_FindByPath(t *testing.T) {
 	getPath := func(index int) string {
 		folderIdx, found := fileFolders[index]
@@ -608,6 +660,43 @@ func TestFileStore_FindByPathCaseInsensitiveTreatsLikeWildcardsLiterally(t *test
 		wildcardMatches, err := qb.FindAllByPath(ctx, getFilePath(folderIdxWithFiles, "scan_lookup_A*1.mp4"), true)
 		assert.NoError(t, err)
 		assert.Len(t, wildcardMatches, 2)
+	})
+}
+
+func TestFileStore_FindMissingInPathsComparesAcrossOffsets(t *testing.T) {
+	qb := db.File
+
+	runWithRollbackTxn(t, "missing since across offsets", func(t *testing.T, ctx context.Context) {
+		now := time.Now()
+		f := &models.BaseFile{
+			Path:           getFilePath(folderIdxWithFiles, "missing_since_offset.mp4"),
+			ParentFolderID: folderIDs[folderIdxWithFiles],
+			Basename:       "missing_since_offset.mp4",
+			DirEntry:       models.DirEntry{ModTime: now},
+			CreatedAt:      now,
+			UpdatedAt:      now,
+		}
+		if !assert.NoError(t, qb.Create(ctx, f)) {
+			return
+		}
+
+		// 12:00+10:00 is 02:00 UTC; a plain string compare against UTC values gets this wrong
+		missingSince := time.Date(2026, 1, 1, 12, 0, 0, 0, time.FixedZone("", 10*60*60))
+		if !assert.NoError(t, qb.SetMissing(ctx, f.ID, &missingSince)) {
+			return
+		}
+
+		after := time.Date(2026, 1, 1, 3, 0, 0, 0, time.UTC)
+		got, err := qb.FindMissingInPaths(ctx, nil, &after, -1, 0)
+		assert.NoError(t, err)
+		if assert.Len(t, got, 1) {
+			assert.Equal(t, f.ID, got[0].Base().ID)
+		}
+
+		before := time.Date(2026, 1, 1, 1, 0, 0, 0, time.UTC)
+		got, err = qb.FindMissingInPaths(ctx, nil, &before, -1, 0)
+		assert.NoError(t, err)
+		assert.Empty(t, got)
 	})
 }
 

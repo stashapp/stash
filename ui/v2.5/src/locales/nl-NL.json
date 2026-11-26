@@ -150,7 +150,16 @@
         "play": "Afspelen",
         "load_filter": "Laad filter",
         "load": "Laden",
-        "add_stash_id": "Stash ID toevoegen"
+        "add_stash_id": "Stash ID toevoegen",
+        "create_new": "Maak nieuw",
+        "create_parent_tag": "Maak ouder tag",
+        "exclude_lowercase": "Uitsluiten",
+        "from_clipboard": "Van Klembord",
+        "reveal_in_file_manager": "Zichtbaar in Bestandsbeheer",
+        "save_and_new": "Opslaan en Nieuw",
+        "select_directory": "Selecteer map",
+        "invert_selection": "Omgekeerd selecteren",
+        "selective_generate": "Selectie genereren"
     },
     "actions_name": "Acties",
     "age": "Leeftijd",
@@ -202,7 +211,6 @@
             "match_failed_already_tagged": "Deze scène is al gelabeld",
             "match_failed_no_result": "Er zijn geen zoekresultaten",
             "match_success": "De scène is gelabeld",
-            "phash_matches": "{count} PHashes komen overeen",
             "unnamed": "Naamloos"
         },
         "verb_match_fp": "Overeenkomen met vingerafdrukken",

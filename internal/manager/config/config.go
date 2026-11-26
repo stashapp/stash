@@ -410,8 +410,8 @@ func (i *Config) initialisePublicWhitelist() error {
 		_, ipNet, err := net.ParseCIDR(ip)
 		if err == nil {
 			i.publicIPWhitelist.nets = append(i.publicIPWhitelist.nets, *ipNet)
-		} else if ip := net.ParseIP(ip); ip == nil {
-			i.publicIPWhitelist.addrs = append(i.publicIPWhitelist.addrs, ip)
+		} else if addr := net.ParseIP(ip); addr != nil {
+			i.publicIPWhitelist.addrs = append(i.publicIPWhitelist.addrs, addr)
 		} else {
 			return fmt.Errorf("invalid entry in public whitelist: %s", ip)
 		}
@@ -527,13 +527,20 @@ func (i *Config) setDefault(key string, value interface{}) {
 	}
 }
 
-func (i *Config) SetPassword(value string) {
+func (i *Config) SetPassword(value string) error {
 	// if blank, don't bother hashing; we want it to be blank
 	if value == "" {
 		i.SetString(Password, "")
-	} else {
-		i.SetString(Password, hashPassword(value))
+		return nil
 	}
+
+	hash, err := hashPassword(value)
+	if err != nil {
+		return err
+	}
+
+	i.SetString(Password, hash)
+	return nil
 }
 
 func (i *Config) Write() error {
@@ -704,8 +711,6 @@ func (i *Config) getStringMapString(key string) map[string]string {
 // GetSFW returns true if SFW mode is enabled.
 // Default performer images are changed to more agnostic images when enabled.
 func (i *Config) GetSFWContentMode() bool {
-	i.RLock()
-	defer i.RUnlock()
 	return i.getBool(SFWContentMode)
 }
 
@@ -757,7 +762,16 @@ func (i *Config) GetExtraBlobsPaths() []string {
 }
 
 func (i *Config) GetBlobsStorage() BlobsStorageType {
-	ret := BlobsStorageType(i.getString(BlobsStorage))
+	i.RLock()
+	defer i.RUnlock()
+
+	return i.getBlobsStorage()
+}
+
+// getBlobsStorage is GetBlobsStorage without locking, for use by methods that
+// already hold the lock. Assumes read lock held.
+func (i *Config) getBlobsStorage() BlobsStorageType {
+	ret := BlobsStorageType(i.forKey(BlobsStorage).String(BlobsStorage))
 
 	if !ret.IsValid() {
 		// default to database storage
@@ -1220,10 +1234,29 @@ func (i *Config) HasCredentials() bool {
 	return username != "" && pwHash != ""
 }
 
-func hashPassword(password string) string {
-	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
+// bcrypt rejects passwords longer than 72 bytes
+const maxPasswordBytes = 72
 
-	return string(hash)
+// ValidatePasswordLength returns an error if password exceeds bcrypt's byte limit.
+func ValidatePasswordLength(password string) error {
+	if len(password) > maxPasswordBytes {
+		return fmt.Errorf("password exceeds the %d-byte limit", maxPasswordBytes)
+	}
+
+	return nil
+}
+
+func hashPassword(password string) (string, error) {
+	if err := ValidatePasswordLength(password); err != nil {
+		return "", err
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
+	if err != nil {
+		return "", fmt.Errorf("error hashing password: %w", err)
+	}
+
+	return string(hash), nil
 }
 
 func (i *Config) ValidateCredentials(username string, password string) bool {
@@ -1948,7 +1981,7 @@ func (i *Config) Validate() error {
 		}
 	}
 
-	if i.GetBlobsStorage() == BlobStorageTypeFilesystem && i.forKey(BlobsPath).String(BlobsPath) == "" {
+	if i.getBlobsStorage() == BlobStorageTypeFilesystem && i.forKey(BlobsPath).String(BlobsPath) == "" {
 		return MissingConfigError{
 			missingFields: []string{BlobsPath},
 		}

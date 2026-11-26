@@ -29,6 +29,11 @@ func (r *queryResolver) ScrapePerformerURL(ctx context.Context, url string) (*mo
 		return nil, err
 	}
 
+	// don't try to convert nil return value
+	if content == nil {
+		return nil, nil
+	}
+
 	return marshalScrapedPerformer(content)
 }
 
@@ -56,6 +61,11 @@ func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*models
 		return nil, err
 	}
 
+	// don't try to convert nil return value
+	if content == nil {
+		return nil, nil
+	}
+
 	ret, err := marshalScrapedScene(content)
 	if err != nil {
 		return nil, err
@@ -68,6 +78,11 @@ func (r *queryResolver) ScrapeGalleryURL(ctx context.Context, url string) (*mode
 	content, err := r.scraperCache().ScrapeURL(ctx, url, scraper.ScrapeContentTypeGallery)
 	if err != nil {
 		return nil, err
+	}
+
+	// don't try to convert nil return value
+	if content == nil {
+		return nil, nil
 	}
 
 	ret, err := marshalScrapedGallery(content)
@@ -84,6 +99,11 @@ func (r *queryResolver) ScrapeImageURL(ctx context.Context, url string) (*models
 		return nil, err
 	}
 
+	// don't try to convert nil return value
+	if content == nil {
+		return nil, nil
+	}
+
 	return marshalScrapedImage(content)
 }
 
@@ -91,6 +111,11 @@ func (r *queryResolver) ScrapeMovieURL(ctx context.Context, url string) (*models
 	content, err := r.scraperCache().ScrapeURL(ctx, url, scraper.ScrapeContentTypeMovie)
 	if err != nil {
 		return nil, err
+	}
+
+	// don't try to convert nil return value
+	if content == nil {
+		return nil, nil
 	}
 
 	ret, err := marshalScrapedMovie(content)
@@ -105,6 +130,11 @@ func (r *queryResolver) ScrapeGroupURL(ctx context.Context, url string) (*models
 	content, err := r.scraperCache().ScrapeURL(ctx, url, scraper.ScrapeContentTypeGroup)
 	if err != nil {
 		return nil, err
+	}
+
+	// don't try to convert nil return value
+	if content == nil {
+		return nil, nil
 	}
 
 	ret, err := marshalScrapedGroup(content)

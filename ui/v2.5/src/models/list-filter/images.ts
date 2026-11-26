@@ -28,7 +28,6 @@ import { FolderCriterionOption } from "./criteria/folder";
 const defaultSortBy = "path";
 
 const sortByOptions = [
-  "filesize",
   "file_count",
   "date",
   "resolution",
@@ -37,6 +36,10 @@ const sortByOptions = [
 ]
   .map(ListFilterOptions.createSortBy)
   .concat([
+    {
+      messageID: "files_size",
+      value: "filesize",
+    },
     {
       messageID: "o_count",
       value: "o_counter",

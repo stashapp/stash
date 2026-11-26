@@ -1630,35 +1630,34 @@ func queryImagesWithCount(ctx context.Context, sqb models.ImageReader, imageFilt
 	return images, result.Count, nil
 }
 
+func createImageTestFile(ctx context.Context, t *testing.T, basename string, size int64, width int, height int) models.FileID {
+	f := &models.ImageFile{
+		BaseFile: &models.BaseFile{
+			Path:           getFilePath(folderIdxWithImageFiles, basename),
+			Basename:       basename,
+			ParentFolderID: folderIDs[folderIdxWithImageFiles],
+			Size:           size,
+		},
+		Width:  width,
+		Height: height,
+	}
+	if err := db.File.Create(ctx, f); err != nil {
+		t.Fatalf("creating file: %v", err)
+	}
+	return f.ID
+}
+
 // #5503 - total size/megapixels must include secondary files of equal size/dimensions
 func TestImageQueryTotalSizeMultipleFiles(t *testing.T) {
 	withRollbackTxn(func(ctx context.Context) error {
 		iqb := db.Image
-		fqb := db.File
 
 		const fileSize = int64(1234)
 		const fileWidth = 1000
 		const fileHeight = 1000
 
-		makeFile := func(basename string) models.FileID {
-			f := &models.ImageFile{
-				BaseFile: &models.BaseFile{
-					Path:           getFilePath(folderIdxWithImageFiles, basename),
-					Basename:       basename,
-					ParentFolderID: folderIDs[folderIdxWithImageFiles],
-					Size:           fileSize,
-				},
-				Width:  fileWidth,
-				Height: fileHeight,
-			}
-			if err := fqb.Create(ctx, f); err != nil {
-				t.Fatalf("creating file: %v", err)
-			}
-			return f.ID
-		}
-
-		f1 := makeFile("multifile-image-1.jpg")
-		f2 := makeFile("multifile-image-2.jpg")
+		f1 := createImageTestFile(ctx, t, "multifile-image-1.jpg", fileSize, fileWidth, fileHeight)
+		f2 := createImageTestFile(ctx, t, "multifile-image-2.jpg", fileSize, fileWidth, fileHeight)
 
 		image := &models.Image{Title: "multifile image"}
 		if err := iqb.Create(ctx, &models.CreateImageInput{
@@ -1686,6 +1685,50 @@ func TestImageQueryTotalSizeMultipleFiles(t *testing.T) {
 		assert.Equal(t, 1, result.Count)
 		assert.Equal(t, float64(fileSize*2), result.TotalSize)
 		assert.Equal(t, float64(fileWidth*fileHeight*2)/1000000, result.Megapixels)
+
+		return nil
+	})
+}
+
+// #7262 - filesize sort must use the combined size of all files
+func TestImageQuerySortFileSizeMultipleFiles(t *testing.T) {
+	withRollbackTxn(func(ctx context.Context) error {
+		iqb := db.Image
+
+		// each file is smaller than the single file, but combined they are larger
+		multiFileImage := &models.Image{Title: "multifile sort image"}
+		if err := iqb.Create(ctx, &models.CreateImageInput{
+			Image: multiFileImage,
+			FileIDs: []models.FileID{
+				createImageTestFile(ctx, t, "sort-multifile-1.jpg", 1000000, 0, 0),
+				createImageTestFile(ctx, t, "sort-multifile-2.jpg", 1000000, 0, 0),
+			},
+		}); err != nil {
+			t.Fatalf("creating image: %v", err)
+		}
+
+		singleFileImage := &models.Image{Title: "single file sort image"}
+		if err := iqb.Create(ctx, &models.CreateImageInput{
+			Image:   singleFileImage,
+			FileIDs: []models.FileID{createImageTestFile(ctx, t, "sort-singlefile.jpg", 1500000, 0, 0)},
+		}); err != nil {
+			t.Fatalf("creating image: %v", err)
+		}
+
+		sort := "filesize"
+		direction := models.SortDirectionEnumDesc
+		perPage := 2
+		images := queryImages(ctx, t, iqb, nil, &models.FindFilterType{
+			Sort:      &sort,
+			Direction: &direction,
+			PerPage:   &perPage,
+		})
+
+		if !assert.Len(t, images, 2) {
+			return nil
+		}
+		assert.Equal(t, multiFileImage.ID, images[0].ID)
+		assert.Equal(t, singleFileImage.ID, images[1].ID)
 
 		return nil
 	})

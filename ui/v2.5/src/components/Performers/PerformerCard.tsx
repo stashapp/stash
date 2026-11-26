@@ -35,8 +35,20 @@ export interface IPerformerCardExtraCriteria {
   performer?: ILabeledId;
 }
 
+// counts restricted to the criteria the list is scoped by, where the list
+// provides them. Fall back to the performer's global counts otherwise.
+export interface IScopedPerformerCounts {
+  scoped_scene_count?: number;
+  scoped_image_count?: number;
+  scoped_gallery_count?: number;
+  scoped_group_count?: number;
+}
+
+export type PerformerCardPerformer = GQL.PerformerDataFragment &
+  IScopedPerformerCounts;
+
 interface IPerformerCardProps {
-  performer: GQL.PerformerDataFragment;
+  performer: PerformerCardPerformer;
   cardWidth?: number;
   ageFromDate?: string;
   selecting?: boolean;
@@ -49,14 +61,20 @@ interface IPerformerCardProps {
 const PerformerCardPopovers: React.FC<IPerformerCardProps> = PatchComponent(
   "PerformerCard.Popovers",
   ({ performer, extraCriteria }) => {
+    const sceneCount = performer.scoped_scene_count ?? performer.scene_count;
+    const imageCount = performer.scoped_image_count ?? performer.image_count;
+    const galleryCount =
+      performer.scoped_gallery_count ?? performer.gallery_count;
+    const groupCount = performer.scoped_group_count ?? performer.group_count;
+
     function maybeRenderScenesPopoverButton() {
-      if (!performer.scene_count) return;
+      if (!sceneCount) return;
 
       return (
         <PopoverCountButton
           className="scene-count"
           type="scene"
-          count={performer.scene_count}
+          count={sceneCount}
           url={NavUtils.makePerformerScenesUrl(
             performer,
             extraCriteria?.performer,
@@ -67,13 +85,13 @@ const PerformerCardPopovers: React.FC<IPerformerCardProps> = PatchComponent(
     }
 
     function maybeRenderImagesPopoverButton() {
-      if (!performer.image_count) return;
+      if (!imageCount) return;
 
       return (
         <PopoverCountButton
           className="image-count"
           type="image"
-          count={performer.image_count}
+          count={imageCount}
           url={NavUtils.makePerformerImagesUrl(
             performer,
             extraCriteria?.performer,
@@ -84,13 +102,13 @@ const PerformerCardPopovers: React.FC<IPerformerCardProps> = PatchComponent(
     }
 
     function maybeRenderGalleriesPopoverButton() {
-      if (!performer.gallery_count) return;
+      if (!galleryCount) return;
 
       return (
         <PopoverCountButton
           className="gallery-count"
           type="gallery"
-          count={performer.gallery_count}
+          count={galleryCount}
           url={NavUtils.makePerformerGalleriesUrl(
             performer,
             extraCriteria?.performer,
@@ -124,13 +142,13 @@ const PerformerCardPopovers: React.FC<IPerformerCardProps> = PatchComponent(
     }
 
     function maybeRenderGroupsPopoverButton() {
-      if (!performer.group_count) return;
+      if (!groupCount) return;
 
       return (
         <PopoverCountButton
           className="group-count"
           type="group"
-          count={performer.group_count}
+          count={groupCount}
           url={NavUtils.makePerformerGroupsUrl(
             performer,
             extraCriteria?.performer,
@@ -141,12 +159,12 @@ const PerformerCardPopovers: React.FC<IPerformerCardProps> = PatchComponent(
     }
 
     if (
-      performer.scene_count ||
-      performer.image_count ||
-      performer.gallery_count ||
+      sceneCount ||
+      imageCount ||
+      galleryCount ||
       performer.tags.length > 0 ||
       performer.o_counter ||
-      performer.group_count
+      groupCount
     ) {
       return (
         <>

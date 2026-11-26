@@ -30,6 +30,11 @@ export function objectPath(s: IObjectWithFiles) {
   return "";
 }
 
+// a scene with no file has no streams, so it can't be played
+export function isPlayable(s: IObjectWithFiles) {
+  return !!s.files?.length;
+}
+
 interface IObjectWithVisualFiles {
   visual_files?: IFile[];
 }

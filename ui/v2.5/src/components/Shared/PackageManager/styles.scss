@@ -70,6 +70,17 @@
     font-size: 0.8rem;
   }
 
+  .package-matched-via {
+    color: $muted-gray;
+    display: block;
+    font-size: 0.8rem;
+    overflow-wrap: anywhere;
+
+    .package-matched-value {
+      color: $text-color;
+    }
+  }
+
   .package-id,
   .package-version,
   .package-date,

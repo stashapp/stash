@@ -24,6 +24,7 @@ import {
   faEyeSlash,
 } from "@fortawesome/free-solid-svg-icons";
 import { ExternalLink } from "../Shared/ExternalLink";
+import { isPasswordTooLong } from "src/utils/password";
 
 interface ISetupContextState {
   configuration: GQL.ConfigDataFragment;
@@ -60,6 +61,7 @@ const SetupContext: React.FC<{
   setupError: string | undefined;
   systemStatus: GQL.SystemStatusQuery;
   configuration: GQL.ConfigDataFragment;
+  children?: React.ReactNode;
 }> = ({ setupState, setupError, systemStatus, configuration, children }) => {
   const status = systemStatus?.systemStatus;
 
@@ -141,7 +143,7 @@ const WelcomeSpecificConfig: React.FC<IWizardStep> = ({ next }) => {
             id="setup.welcome_specific_config.config_path"
             values={{
               path: overrideConfig,
-              code: (chunks: string) => <code>{chunks}</code>,
+              code: (chunks) => <code>{chunks}</code>,
             }}
           />
         </p>
@@ -186,7 +188,7 @@ const DefaultWelcomeStep: React.FC<IWizardStep> = ({ next }) => {
           <FormattedMessage
             id="setup.welcome.config_path_logic_explained"
             values={{
-              code: (chunks: string) => <code>{chunks}</code>,
+              code: (chunks) => <code>{chunks}</code>,
               fallback_path: fallbackConfigPath,
             }}
           />
@@ -195,7 +197,7 @@ const DefaultWelcomeStep: React.FC<IWizardStep> = ({ next }) => {
           <FormattedMessage
             id="setup.welcome.unexpected_explained"
             values={{
-              code: (chunks: string) => <code>{chunks}</code>,
+              code: (chunks) => <code>{chunks}</code>,
             }}
           />
         </Alert>
@@ -217,7 +219,7 @@ const DefaultWelcomeStep: React.FC<IWizardStep> = ({ next }) => {
             <FormattedMessage
               id="setup.welcome.in_current_stash_directory"
               values={{
-                code: (chunks: string) => <code>{chunks}</code>,
+                code: (chunks) => <code>{chunks}</code>,
                 path: fallbackStashDir,
               }}
             />
@@ -234,7 +236,7 @@ const DefaultWelcomeStep: React.FC<IWizardStep> = ({ next }) => {
                 <FormattedMessage
                   id="setup.welcome.in_the_current_working_directory_disabled"
                   values={{
-                    code: (chunks: string) => <code>{chunks}</code>,
+                    code: (chunks) => <code>{chunks}</code>,
                     path: pwd,
                   }}
                 />
@@ -243,7 +245,7 @@ const DefaultWelcomeStep: React.FC<IWizardStep> = ({ next }) => {
                   <FormattedMessage
                     id="setup.welcome.in_the_current_working_directory_disabled_macos"
                     values={{
-                      code: (chunks: string) => <code>{chunks}</code>,
+                      code: (chunks) => <code>{chunks}</code>,
                       br: () => <br />,
                     }}
                   />
@@ -254,7 +256,7 @@ const DefaultWelcomeStep: React.FC<IWizardStep> = ({ next }) => {
                 <FormattedMessage
                   id="setup.welcome.in_the_current_working_directory"
                   values={{
-                    code: (chunks: string) => <code>{chunks}</code>,
+                    code: (chunks) => <code>{chunks}</code>,
                     path: pwd,
                   }}
                 />
@@ -319,14 +321,14 @@ const DatabaseSection: React.FC<{
         <FormattedMessage
           id="setup.paths.where_can_stash_store_its_database_description"
           values={{
-            code: (chunks: string) => <code>{chunks}</code>,
+            code: (chunks) => <code>{chunks}</code>,
           }}
         />
         <br />
         <FormattedMessage
           id="setup.paths.where_can_stash_store_its_database_warning"
           values={{
-            strong: (chunks: string) => <strong>{chunks}</strong>,
+            strong: (chunks) => <strong>{chunks}</strong>,
           }}
         />
       </p>
@@ -400,7 +402,7 @@ const GeneratedSection: React.FC<{
         <FormattedMessage
           id="setup.paths.where_can_stash_store_its_generated_content_description"
           values={{
-            code: (chunks: string) => <code>{chunks}</code>,
+            code: (chunks) => <code>{chunks}</code>,
           }}
         />
       </p>
@@ -430,7 +432,7 @@ const CacheSection: React.FC<{
         <FormattedMessage
           id="setup.paths.where_can_stash_store_cache_files_description"
           values={{
-            code: (chunks: string) => <code>{chunks}</code>,
+            code: (chunks) => <code>{chunks}</code>,
           }}
         />
       </p>
@@ -467,7 +469,7 @@ const BlobsSection: React.FC<{
         <FormattedMessage
           id="setup.paths.where_can_stash_store_blobs_description"
           values={{
-            code: (chunks: string) => <code>{chunks}</code>,
+            code: (chunks) => <code>{chunks}</code>,
           }}
         />
       </p>
@@ -475,8 +477,8 @@ const BlobsSection: React.FC<{
         <FormattedMessage
           id="setup.paths.where_can_stash_store_blobs_description_addendum"
           values={{
-            code: (chunks: string) => <code>{chunks}</code>,
-            strong: (chunks: string) => <strong>{chunks}</strong>,
+            code: (chunks) => <code>{chunks}</code>,
+            strong: (chunks) => <strong>{chunks}</strong>,
           }}
         />
       </p>
@@ -679,8 +681,7 @@ function validateUsername(username: string) {
 function validatePassword(username: string, password: string) {
   if (!username) return true;
 
-  if (!password.length) return false;
-  return true;
+  return password.length > 0 && !isPasswordTooLong(password);
 }
 
 const PasswordField: React.FC<{
@@ -694,6 +695,8 @@ const PasswordField: React.FC<{
   const type = showPassword ? "text" : "password";
   const hideShowTextID = showPassword ? "actions.hide" : "actions.show";
   const icon = showPassword ? faEyeSlash : faEye;
+
+  const tooLong = isPasswordTooLong(password);
 
   return (
     <div className="password-field-group">
@@ -717,9 +720,13 @@ const PasswordField: React.FC<{
       </Button>
       <Form.Control.Feedback type="invalid">
         {isInvalid
-          ? intl.formatMessage({
-              id: "setup.credentials.password_invalid",
-            })
+          ? tooLong
+            ? intl.formatMessage({
+                id: "config.general.auth.password_too_long",
+              })
+            : intl.formatMessage({
+                id: "setup.credentials.password_invalid",
+              })
           : null}
       </Form.Control.Feedback>
     </div>

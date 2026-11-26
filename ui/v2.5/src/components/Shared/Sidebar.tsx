@@ -78,10 +78,9 @@ export const SidebarToggleButton: React.FC<{
   );
 };
 
-export const SidebarPaneContent: React.FC<{ onSidebarToggle: () => void }> = ({
-  onSidebarToggle,
-  children,
-}) => {
+export const SidebarPaneContent: React.FC<
+  React.PropsWithChildren<{ onSidebarToggle: () => void }>
+> = ({ onSidebarToggle, children }) => {
   return (
     <div className="sidebar-pane-content">
       <SidebarToggleButton onClick={onSidebarToggle} />

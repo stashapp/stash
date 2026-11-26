@@ -1,4 +1,11 @@
-import React, { HTMLAttributes, useEffect, useMemo, useState } from "react";
+import React, {
+  HTMLAttributes,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Button,
   ButtonGroup,
@@ -11,8 +18,10 @@ import {
   Tooltip,
 } from "react-bootstrap";
 import {
+  savedFilterFields,
   useConfigureUISetting,
   useFindSavedFilters,
+  useRenameSavedFilter,
   useSavedFilterDestroy,
   useSaveFilter,
 } from "src/core/StashService";
@@ -26,13 +35,21 @@ import { View } from "./views";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared/Icon";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
-import { faBookmark, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBookmark,
+  faEllipsisV,
+  faSave,
+} from "@fortawesome/free-solid-svg-icons";
 import { AlertModal } from "../Shared/Alert";
 import cx from "classnames";
 import { TruncatedInlineText } from "../Shared/TruncatedText";
 import { OperationButton } from "../Shared/OperationButton";
 import { createPortal } from "react-dom";
 import { PatchFunction } from "src/patch";
+import {
+  OperationDropdown,
+  OperationDropdownItem,
+} from "./ListOperationButtons";
 
 const ExistingSavedFilterList: React.FC<{
   name: string;
@@ -181,6 +198,59 @@ export const LoadFilterDialog: React.FC<{
   );
 };
 
+// Renames a saved filter in place. A modal would be portalled to the document
+// body, which the toolbar's dropdown reads as a click outside itself, closing
+// it mid-rename.
+const SavedFilterNameInput: React.FC<{
+  name: string;
+  onCommit: (name: string) => void;
+  onCancel: () => void;
+}> = ({ name: currentName, onCommit, onCancel }) => {
+  const intl = useIntl();
+  const [name, setName] = useState(currentName);
+
+  function commit() {
+    // the backend trims the name and rejects an empty one
+    const newName = name.trim();
+
+    if (!newName || newName === currentName) {
+      onCancel();
+    } else {
+      onCommit(newName);
+    }
+  }
+
+  return (
+    <FormControl
+      className="bg-secondary text-white border-secondary saved-filter-name-input"
+      size="sm"
+      autoFocus
+      value={name}
+      placeholder={`${intl.formatMessage({ id: "filter_name" })}…`}
+      onChange={(e) => setName(e.target.value)}
+      onBlur={onCancel}
+      onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+          commit();
+          e.preventDefault();
+        } else if (e.key === "Escape") {
+          // an enclosing dropdown closes on escape from two separate events -
+          // react-overlays' Dropdown on keydown, useRootClose on keyup - so
+          // stop both, and abandon on keyup while this input still exists
+          e.stopPropagation();
+          e.preventDefault();
+        }
+      }}
+      onKeyUp={(e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Escape") {
+          e.stopPropagation();
+          onCancel();
+        }
+      }}
+    />
+  );
+};
+
 const DeleteAlert: React.FC<{
   deletingFilter: SavedFilterDataFragment | undefined;
   onClose: (confirm?: boolean) => void;
@@ -241,11 +311,83 @@ const OverwriteAlert: React.FC<{
   );
 };
 
+// the operations available for a single saved filter. The menu is portalled to
+// the document body so that it is not clipped by the scrolling filter list.
+const SavedFilterOperations: React.FC<{
+  // unique across every saved filter list on the page, not just within one -
+  // the toolbar dropdown stays mounted once opened, so both lists render a
+  // row per filter at the same time
+  id: string;
+  onOperationChosen?: () => void;
+  onOverwrite: () => void;
+  onRename: () => void;
+  onSetDefault?: () => void;
+  onDelete: () => void;
+}> = ({
+  id,
+  onOperationChosen,
+  onOverwrite,
+  onRename,
+  onSetDefault,
+  onDelete,
+}) => {
+  const intl = useIntl();
+
+  function operation(action: () => void) {
+    return () => {
+      onOperationChosen?.();
+      action();
+    };
+  }
+
+  return (
+    <OperationDropdown
+      className="saved-filter-operations"
+      menuPortalTarget={document.body}
+      icon={faEllipsisV}
+      id={`saved-filter-operations-${id}`}
+      title={intl.formatMessage({ id: "operations" })}
+      toggleClassName="minimal"
+      size="sm"
+      // don't load the filter when interacting with its operations
+      onClick={(e) => e.stopPropagation()}
+    >
+      <OperationDropdownItem
+        text={intl.formatMessage({ id: "actions.overwrite" })}
+        onClick={operation(onOverwrite)}
+      />
+      <OperationDropdownItem
+        text={intl.formatMessage({ id: "actions.rename" })}
+        onClick={operation(onRename)}
+      />
+      {onSetDefault && (
+        <OperationDropdownItem
+          text={intl.formatMessage({ id: "actions.set_as_default" })}
+          onClick={operation(onSetDefault)}
+        />
+      )}
+      <OperationDropdownItem
+        // text-danger rather than a rule of our own - the menu items carry
+        // bootstrap's text-white, which is !important and so cannot be
+        // overridden by specificity
+        className="text-danger"
+        text={intl.formatMessage({ id: "actions.delete" })}
+        onClick={operation(onDelete)}
+      />
+    </OperationDropdown>
+  );
+};
+
 interface ISavedFilterListProps {
   filter: ListFilterModel;
   onSetFilter: (f: ListFilterModel) => void;
   view?: View;
   menuPortalTarget?: Element | DocumentFragment;
+  // Called when an operation is chosen, so that an enclosing dropdown can
+  // stay open - the operation happens inside it. A callback rather than an
+  // event check, since useRootClose tests containment during capture, and by
+  // the time the close arrives the clicked item may be gone.
+  onOperationChosen?: () => void;
 }
 
 export interface ISavedFilterLoaded {
@@ -260,10 +402,107 @@ export const notifySavedFilterLoaded = PatchFunction(
   (event: ISavedFilterLoaded) => event
 );
 
+// renaming and setting a default operate on an existing saved filter rather
+// than on the currently applied filter, so these are shared between the
+// toolbar and sidebar saved filter lists
+function useSavedFilterOperations(props: {
+  savedFilters: SavedFilterDataFragment[];
+  view?: View;
+  setSaving: (saving: boolean) => void;
+  refetch: () => void;
+}) {
+  const { savedFilters, view, setSaving, refetch } = props;
+
+  const Toast = useToast();
+  const intl = useIntl();
+
+  const renameFilter = useRenameSavedFilter();
+  const [saveUISetting] = useConfigureUISetting();
+
+  // resolves false if the rename was rejected, so that the caller can leave
+  // the name being edited in place rather than discarding it
+  async function renameSavedFilter(f: SavedFilterDataFragment, name: string) {
+    // saved filter names are unique per mode. The unique index is
+    // case-sensitive, but SaveFilterDialog matches names case-insensitively,
+    // so do the same here rather than allowing a confusing "foo"/"Foo" pair.
+    const existing = savedFilters.find(
+      (o) => o.id !== f.id && o.name.toLowerCase() === name.toLowerCase()
+    );
+
+    if (existing) {
+      Toast.error(
+        intl.formatMessage(
+          {
+            id: "toast.filter_name_exists",
+          },
+          {
+            entityName: existing.name,
+          }
+        )
+      );
+      return false;
+    }
+
+    try {
+      setSaving(true);
+
+      await renameFilter(f, name);
+
+      Toast.success(
+        intl.formatMessage(
+          {
+            id: "toast.saved_entity",
+          },
+          {
+            entity: intl.formatMessage({ id: "filter" }).toLocaleLowerCase(),
+          }
+        )
+      );
+      refetch();
+      return true;
+    } catch (err) {
+      Toast.error(err);
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function setSavedFilterAsDefault(f: SavedFilterDataFragment) {
+    if (!view) {
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      await saveUISetting({
+        variables: {
+          key: `defaultFilters.${view.toString()}`,
+          value: savedFilterFields(f),
+        },
+      });
+
+      Toast.success(
+        intl.formatMessage({
+          id: "toast.default_filter_set",
+        })
+      );
+    } catch (err) {
+      Toast.error(err);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return { renameSavedFilter, setSavedFilterAsDefault };
+}
+
 export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   filter,
   onSetFilter,
   view,
+  onOperationChosen,
 }) => {
   const Toast = useToast();
   const intl = useIntl();
@@ -278,10 +517,23 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
   const [overwritingFilter, setOverwritingFilter] = useState<
     SavedFilterDataFragment | undefined
   >();
+  const [renamingFilter, setRenamingFilter] = useState<
+    SavedFilterDataFragment | undefined
+  >();
+  const [defaultingFilter, setDefaultingFilter] = useState<
+    SavedFilterDataFragment | undefined
+  >();
 
   const saveFilter = useSaveFilter();
   const [destroyFilter] = useSavedFilterDestroy();
-  const [saveUISetting] = useConfigureUISetting();
+
+  const { renameSavedFilter, setSavedFilterAsDefault } =
+    useSavedFilterOperations({
+      savedFilters: data?.findSavedFilters ?? [],
+      view,
+      setSaving,
+      refetch,
+    });
 
   const savedFilters = data?.findSavedFilters ?? [];
 
@@ -345,40 +597,6 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     }
   }
 
-  async function onSetDefaultFilter() {
-    if (!view) {
-      return;
-    }
-
-    const filterCopy = filter.clone();
-
-    try {
-      setSaving(true);
-
-      await saveUISetting({
-        variables: {
-          key: `defaultFilters.${view.toString()}`,
-          value: {
-            mode: filter.mode,
-            find_filter: filterCopy.makeFindFilter(),
-            object_filter: filterCopy.makeSavedFilter(),
-            ui_options: filterCopy.makeSavedUIOptions(),
-          },
-        },
-      });
-
-      Toast.success(
-        intl.formatMessage({
-          id: "toast.default_filter_set",
-        })
-      );
-    } catch (err) {
-      Toast.error(err);
-    } finally {
-      setSaving(false);
-    }
-  }
-
   function filterClicked(f: SavedFilterDataFragment) {
     const newFilter = filter.clone();
 
@@ -398,44 +616,42 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
     });
   }
 
-  interface ISavedFilterItem {
-    item: SavedFilterDataFragment;
-  }
-  const SavedFilterItem: React.FC<ISavedFilterItem> = ({ item }) => {
+  // a plain render function rather than a component: a component declared in
+  // here would be a new type on every render, so React would remount the rows
+  // and discard the in-place rename the user is part way through
+  function renderSavedFilterItem(item: SavedFilterDataFragment) {
+    if (renamingFilter?.id === item.id) {
+      return (
+        <div className="dropdown-item-container" key={item.name}>
+          <SavedFilterNameInput
+            name={item.name}
+            onCommit={async (name) => {
+              if (await renameSavedFilter(item, name)) {
+                setRenamingFilter(undefined);
+              }
+            }}
+            onCancel={() => setRenamingFilter(undefined)}
+          />
+        </div>
+      );
+    }
+
     return (
-      <div className="dropdown-item-container">
+      <div className="dropdown-item-container" key={item.name}>
         <Dropdown.Item onClick={() => filterClicked(item)} title={item.name}>
           <span>{item.name}</span>
         </Dropdown.Item>
-        <ButtonGroup>
-          <Button
-            className="save-button"
-            variant="secondary"
-            size="sm"
-            title={intl.formatMessage({ id: "actions.overwrite" })}
-            onClick={(e) => {
-              setOverwritingFilter(item);
-              e.stopPropagation();
-            }}
-          >
-            <Icon icon={faSave} />
-          </Button>
-          <Button
-            className="delete-button"
-            variant="secondary"
-            size="sm"
-            title={intl.formatMessage({ id: "actions.delete" })}
-            onClick={(e) => {
-              setDeletingFilter(item);
-              e.stopPropagation();
-            }}
-          >
-            <Icon icon={faTimes} />
-          </Button>
-        </ButtonGroup>
+        <SavedFilterOperations
+          id={`toolbar-${item.id}`}
+          onOperationChosen={onOperationChosen}
+          onOverwrite={() => setOverwritingFilter(item)}
+          onRename={() => setRenamingFilter(item)}
+          onSetDefault={view ? () => setDefaultingFilter(item) : undefined}
+          onDelete={() => setDeletingFilter(item)}
+        />
       </div>
     );
-  };
+  }
 
   function renderSavedFilters() {
     if (error) return <h6 className="text-center">{error.message}</h6>;
@@ -456,30 +672,9 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
               !filterName ||
               f.name.toLowerCase().includes(filterName.toLowerCase())
           )
-          .map((f) => (
-            <SavedFilterItem key={f.name} item={f} />
-          ))}
+          .map((f) => renderSavedFilterItem(f))}
       </ul>
     );
-  }
-
-  function maybeRenderSetDefaultButton() {
-    if (view) {
-      return (
-        <div className="mt-1">
-          <Dropdown.Item
-            as={Button}
-            title={intl.formatMessage({ id: "actions.set_as_default" })}
-            className="set-as-default-button"
-            variant="secondary"
-            size="sm"
-            onClick={() => onSetDefaultFilter()}
-          >
-            {intl.formatMessage({ id: "actions.set_as_default" })}
-          </Dropdown.Item>
-        </div>
-      );
-    }
   }
 
   return (
@@ -501,6 +696,16 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
           }
           setOverwritingFilter(undefined);
         }}
+      />
+      <AlertModal
+        show={!!defaultingFilter}
+        text={<FormattedMessage id="dialogs.set_default_filter_confirm" />}
+        confirmVariant="primary"
+        onConfirm={() => {
+          setSavedFilterAsDefault(defaultingFilter!);
+          setDefaultingFilter(undefined);
+        }}
+        onCancel={() => setDefaultingFilter(undefined)}
       />
       <InputGroup>
         <FormControl
@@ -533,7 +738,6 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
         </InputGroup.Append>
       </InputGroup>
       {renderSavedFilters()}
-      {maybeRenderSetDefaultButton()}
     </>
   );
 };
@@ -541,17 +745,39 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
 interface ISavedFilterItem {
   item: SavedFilterDataFragment;
   onClick: () => void;
+  onOverwrite: () => void;
+  onRename: () => void;
+  onRenameCommit: (name: string) => void;
+  onRenameCancel: () => void;
+  onSetDefault?: () => void;
   onDelete: () => void;
+  renaming?: boolean;
   selected?: boolean;
 }
 
 const SavedFilterItem: React.FC<ISavedFilterItem> = ({
   item,
   onClick,
+  onOverwrite,
+  onRename,
+  onRenameCommit,
+  onRenameCancel,
+  onSetDefault,
   onDelete,
+  renaming = false,
   selected = false,
 }) => {
-  const intl = useIntl();
+  if (renaming) {
+    return (
+      <li className="saved-filter-item">
+        <SavedFilterNameInput
+          name={item.name}
+          onCommit={onRenameCommit}
+          onCancel={onRenameCancel}
+        />
+      </li>
+    );
+  }
 
   return (
     <li className="saved-filter-item">
@@ -563,18 +789,13 @@ const SavedFilterItem: React.FC<ISavedFilterItem> = ({
           />
         </div>
         <div>
-          <Button
-            className="delete-button"
-            variant="minimal"
-            size="sm"
-            title={intl.formatMessage({ id: "actions.delete" })}
-            onClick={(e) => {
-              onDelete();
-              e.stopPropagation();
-            }}
-          >
-            <Icon fixedWidth icon={faTimes} />
-          </Button>
+          <SavedFilterOperations
+            id={`sidebar-${item.id}`}
+            onOverwrite={onOverwrite}
+            onRename={onRename}
+            onSetDefault={onSetDefault}
+            onDelete={onDelete}
+          />
         </div>
       </a>
     </li>
@@ -587,7 +808,13 @@ const SavedFilters: React.FC<{
   saving?: boolean;
   savedFilters: SavedFilterDataFragment[];
   onFilterClicked: (f: SavedFilterDataFragment) => void;
+  onOverwriteClicked: (f: SavedFilterDataFragment) => void;
+  onRenameClicked: (f: SavedFilterDataFragment) => void;
+  onSetDefaultClicked?: (f: SavedFilterDataFragment) => void;
   onDeleteClicked: (f: SavedFilterDataFragment) => void;
+  onRenameCommitted: (f: SavedFilterDataFragment, name: string) => void;
+  onRenameCancelled: () => void;
+  renamingFilterID?: string;
   currentFilterID?: string;
 }> = ({
   error,
@@ -595,7 +822,13 @@ const SavedFilters: React.FC<{
   saving,
   savedFilters,
   onFilterClicked,
+  onOverwriteClicked,
+  onRenameClicked,
+  onSetDefaultClicked,
   onDeleteClicked,
+  onRenameCommitted,
+  onRenameCancelled,
+  renamingFilterID,
   currentFilterID,
 }) => {
   if (error) return <h6 className="text-center">{error}</h6>;
@@ -615,7 +848,15 @@ const SavedFilters: React.FC<{
           key={f.name}
           item={f}
           onClick={() => onFilterClicked(f)}
+          onOverwrite={() => onOverwriteClicked(f)}
+          onRename={() => onRenameClicked(f)}
+          onSetDefault={
+            onSetDefaultClicked ? () => onSetDefaultClicked(f) : undefined
+          }
           onDelete={() => onDeleteClicked(f)}
+          onRenameCommit={(name) => onRenameCommitted(f, name)}
+          onRenameCancel={onRenameCancelled}
+          renaming={renamingFilterID === f.id}
           selected={currentFilterID === f.id}
         />
       ))}
@@ -643,12 +884,29 @@ export const SidebarSavedFilterList: React.FC<ISavedFilterListProps> = ({
   const [deletingFilter, setDeletingFilter] = useState<
     SavedFilterDataFragment | undefined
   >();
+  const [overwritingFilter, setOverwritingFilter] = useState<
+    SavedFilterDataFragment | undefined
+  >();
+  const [renamingFilter, setRenamingFilter] = useState<
+    SavedFilterDataFragment | undefined
+  >();
+  const [defaultingFilter, setDefaultingFilter] = useState<
+    SavedFilterDataFragment | undefined
+  >();
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [settingDefault, setSettingDefault] = useState(false);
 
   const saveFilter = useSaveFilter();
   const [destroyFilter] = useSavedFilterDestroy();
   const [saveUISetting] = useConfigureUISetting();
+
+  const { renameSavedFilter, setSavedFilterAsDefault } =
+    useSavedFilterOperations({
+      savedFilters: data?.findSavedFilters ?? [],
+      view,
+      setSaving,
+      refetch,
+    });
 
   const filteredFilters = useMemo(() => {
     const savedFilters = data?.findSavedFilters ?? [];
@@ -691,8 +949,6 @@ export const SidebarSavedFilterList: React.FC<ISavedFilterListProps> = ({
           }
         )
       );
-      setFilterName("");
-      setShowSaveDialog(false);
       refetch();
     } catch (err) {
       Toast.error(err);
@@ -800,12 +1056,33 @@ export const SidebarSavedFilterList: React.FC<ISavedFilterListProps> = ({
           setDeletingFilter(undefined);
         }}
       />
+      <OverwriteAlert
+        overwritingFilter={overwritingFilter}
+        onClose={(confirm) => {
+          if (confirm) {
+            onSaveFilter(overwritingFilter!.name, overwritingFilter!.id);
+          }
+          setOverwritingFilter(undefined);
+        }}
+      />
+      <AlertModal
+        show={!!defaultingFilter}
+        text={<FormattedMessage id="dialogs.set_default_filter_confirm" />}
+        confirmVariant="primary"
+        onConfirm={() => {
+          setSavedFilterAsDefault(defaultingFilter!);
+          setDefaultingFilter(undefined);
+        }}
+        onCancel={() => setDefaultingFilter(undefined)}
+      />
       {showSaveDialog && (
         <SaveFilterDialog
           mode={filter.mode}
           onClose={(name, id) => {
             setShowSaveDialog(false);
             if (name) {
+              // filterName is the list search box here, not a name field
+              setFilterName("");
               onSaveFilter(name, id);
             }
           }}
@@ -851,33 +1128,73 @@ export const SidebarSavedFilterList: React.FC<ISavedFilterListProps> = ({
         saving={saving}
         savedFilters={filteredFilters}
         onFilterClicked={filterClicked}
+        onOverwriteClicked={setOverwritingFilter}
+        onRenameClicked={setRenamingFilter}
+        onSetDefaultClicked={view ? setDefaultingFilter : undefined}
         onDeleteClicked={setDeletingFilter}
+        onRenameCommitted={async (f, name) => {
+          if (await renameSavedFilter(f, name)) {
+            setRenamingFilter(undefined);
+          }
+        }}
+        onRenameCancelled={() => setRenamingFilter(undefined)}
+        renamingFilterID={renamingFilter?.id}
         currentFilterID={currentSavedFilter?.id}
       />
     </div>
   );
 };
 
+// Declared out here so that its type is stable. Built during render, every
+// re-render would be a new component type, remounting the list and discarding
+// an in-progress rename.
+const SavedFilterDropdownMenu = React.forwardRef<
+  HTMLDivElement,
+  HTMLAttributes<HTMLDivElement> & { listProps: ISavedFilterListProps }
+>(({ style, className, listProps }, ref) => (
+  <div ref={ref} style={style} className={className}>
+    <SavedFilterList {...listProps} />
+  </div>
+));
+SavedFilterDropdownMenu.displayName = "SavedFilterDropdownMenu";
+
 export const SavedFilterDropdown: React.FC<ISavedFilterListProps> = (props) => {
-  const SavedFilterDropdownRef = React.forwardRef<
-    HTMLDivElement,
-    HTMLAttributes<HTMLDivElement>
-  >(({ style, className }: HTMLAttributes<HTMLDivElement>, ref) => (
-    <div ref={ref} style={style} className={className}>
-      <SavedFilterList {...props} />
-    </div>
-  ));
-  SavedFilterDropdownRef.displayName = "SavedFilterDropdown";
+  const [show, setShow] = useState(false);
+
+  const keepOpenRef = useRef(false);
+
+  // see ISavedFilterListProps.onOperationChosen
+  const keepOpen = useCallback(() => {
+    keepOpenRef.current = true;
+
+    // released once the click has finished propagating - it asks to close more
+    // than once, and every one of those should be ignored
+    window.setTimeout(() => {
+      keepOpenRef.current = false;
+    }, 0);
+  }, []);
 
   const menu = (
     <Dropdown.Menu
-      as={SavedFilterDropdownRef}
+      as={SavedFilterDropdownMenu}
       className="saved-filter-list-menu"
+      listProps={{ ...props, onOperationChosen: keepOpen }}
     />
   );
 
   return (
-    <Dropdown as={ButtonGroup} className="saved-filter-dropdown">
+    <Dropdown
+      as={ButtonGroup}
+      className="saved-filter-dropdown"
+      show={show}
+      onToggle={(nextShow) => {
+        if (!nextShow && keepOpenRef.current) {
+          return;
+        }
+
+        setShow(nextShow);
+      }}
+    >
       <OverlayTrigger
         placement="top"
         overlay={

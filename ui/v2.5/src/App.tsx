@@ -109,7 +109,9 @@ const AppContainer: React.FC<React.PropsWithChildren<unknown>> = PatchFunction(
   }
 ) as React.FC;
 
-const MainContainer: React.FC = ({ children }) => {
+const MainContainer: React.FC<React.PropsWithChildren<unknown>> = ({
+  children,
+}) => {
   // use optional here because the configuration may have be loading or errored
   const { configuration } = useConfigurationContextOptional() || {};
   const { sfwContentMode } = configuration?.interface || {};

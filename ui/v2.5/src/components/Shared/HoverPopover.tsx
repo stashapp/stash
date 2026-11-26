@@ -14,6 +14,7 @@ interface IHoverPopover {
   onOpen?: () => void;
   onClose?: () => void;
   target?: React.RefObject<HTMLElement>;
+  children?: React.ReactNode;
 }
 
 export const HoverPopover: React.FC<IHoverPopover> = PatchComponent(
@@ -106,10 +107,9 @@ export const HoverPopover: React.FC<IHoverPopover> = PatchComponent(
 );
 
 // convenience component to set the padding on popover content
-export const PopoverCard: React.FC<{ className?: string }> = ({
-  className,
-  children,
-}) => {
+export const PopoverCard: React.FC<
+  React.PropsWithChildren<{ className?: string }>
+> = ({ className, children }) => {
   return <div className={`popover-card ${className}`}>{children}</div>;
 };
 

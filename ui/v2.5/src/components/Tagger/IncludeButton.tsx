@@ -31,6 +31,7 @@ interface IOptionalField {
   title?: string;
   disabled?: boolean;
   setExclude: (v: boolean) => void;
+  children?: React.ReactNode;
 }
 
 export const OptionalField: React.FC<IOptionalField> = ({

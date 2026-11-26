@@ -9,6 +9,15 @@
         "add_play": "پلۓ شامل کریں",
         "allow_temporarily": "وقتئ اجازت دیں",
         "anonymise": "بےنام کریں",
-        "apply": "لاگو کریں"
+        "apply": "لاگو کریں",
+        "backup": "بیک اپ",
+        "browse_for_image": "تصویر تلاش کریں",
+        "choose_date": "تاریخ منتخب کریں",
+        "clean": "صاف",
+        "clean_generated": "تخلیق شدہ فائلیں صاف کریں",
+        "close": "بند کریں",
+        "confirm": "تصدیق کریں",
+        "continue": "جاری رکھیں",
+        "create": "تخلیق کریں"
     }
 }

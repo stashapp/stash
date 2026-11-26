@@ -333,6 +333,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
           }
         }
       });
+
+      return () => sendSetTimestamp(() => {});
     }, [sendSetTimestamp, getPlayer]);
 
     // Initialize VideoJS player

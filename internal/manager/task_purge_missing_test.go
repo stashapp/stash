@@ -1,0 +1,161 @@
+package manager
+
+import (
+	"context"
+	"github.com/stashapp/stash/pkg/file"
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/stashapp/stash/pkg/image"
+	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/mocks"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+)
+
+func TestFindGalleriesToCleanIncludesNoGalleryFolders(t *testing.T) {
+	cleanPath := t.TempDir()
+	outsideCleanPath := t.TempDir()
+
+	createGalleryFolder := func(root, name string, markers ...string) string {
+		t.Helper()
+
+		path := filepath.Join(root, name)
+		require.NoError(t, os.MkdirAll(path, 0755))
+		for _, marker := range markers {
+			require.NoError(t, os.WriteFile(filepath.Join(path, marker), nil, 0644))
+		}
+
+		return path
+	}
+
+	// Empty path-backed galleries retain the existing clean behaviour.
+	emptyGallery := &models.Gallery{ID: 1, Path: createGalleryFolder(cleanPath, "empty")}
+
+	// A gallery matching both clean rules must only be returned once.
+	emptyNoGalleryFolderID := models.FolderID(2)
+	emptyNoGallery := &models.Gallery{
+		ID:       2,
+		Path:     createGalleryFolder(cleanPath, "empty-nogallery", ".nogallery"),
+		FolderID: &emptyNoGalleryFolderID,
+	}
+
+	// A populated folder gallery is cleaned when its folder opts out.
+	noGalleryFolderID := models.FolderID(3)
+	noGallery := &models.Gallery{
+		ID:       3,
+		Path:     createGalleryFolder(cleanPath, "nogallery", ".nogallery"),
+		FolderID: &noGalleryFolderID,
+	}
+
+	// An ordinary folder gallery has no reason to be cleaned.
+	regularFolderID := models.FolderID(4)
+	regular := &models.Gallery{
+		ID:       4,
+		Path:     createGalleryFolder(cleanPath, "regular"),
+		FolderID: &regularFolderID,
+	}
+
+	// Selective clean must not touch galleries outside the requested paths.
+	outsideFolderID := models.FolderID(5)
+	outside := &models.Gallery{
+		ID:       5,
+		Path:     createGalleryFolder(outsideCleanPath, "nogallery", ".nogallery"),
+		FolderID: &outsideFolderID,
+	}
+
+	// Match Scan semantics: .forcegallery wins when both markers exist.
+	forcedFolderID := models.FolderID(7)
+	forced := &models.Gallery{
+		ID:       7,
+		Path:     createGalleryFolder(cleanPath, "forced", ".nogallery", ".forcegallery"),
+		FolderID: &forcedFolderID,
+	}
+
+	db := mocks.NewDatabase()
+	emptyGalleryFilter := mock.MatchedBy(func(filter *models.GalleryFilterType) bool {
+		return filter != nil && filter.ImageCount != nil &&
+			filter.ImageCount.Value == 0 &&
+			filter.ImageCount.Modifier == models.CriterionModifierEquals
+	})
+	// Only folder galleries need marker checks; filter out user and file galleries in SQL.
+	folderGalleryFilter := mock.MatchedBy(func(filter *models.GalleryFilterType) bool {
+		return filter != nil && filter.FoldersFilter != nil &&
+			filter.FoldersFilter.Path != nil &&
+			filter.FoldersFilter.Path.Modifier == models.CriterionModifierNotNull
+	})
+
+	// A folder whose markers can't be checked is skipped, not deleted.
+	// A NUL byte makes os.Stat fail with an error other than not-exist on every OS.
+	unreadableFolderID := models.FolderID(8)
+	unreadable := &models.Gallery{
+		ID:       8,
+		Path:     filepath.Join(cleanPath, "bad\x00path"),
+		FolderID: &unreadableFolderID,
+	}
+	_, _, statErr := image.GalleryFolderMarkers(unreadable.Path)
+	require.Error(t, statErr, "test relies on the marker check failing for this path")
+
+	db.Gallery.On("Query", mock.Anything, emptyGalleryFilter, mock.Anything).
+		Return([]*models.Gallery{emptyGallery, emptyNoGallery}, 2, nil).Once()
+	db.Gallery.On("Query", mock.Anything, emptyGalleryFilter, mock.Anything).
+		Return([]*models.Gallery{}, 0, nil).Once()
+	db.Gallery.On("Query", mock.Anything, folderGalleryFilter, mock.Anything).
+		Return([]*models.Gallery{emptyNoGallery, noGallery, regular, outside, forced, unreadable}, 6, nil).Once()
+	db.Gallery.On("Query", mock.Anything, folderGalleryFilter, mock.Anything).
+		Return([]*models.Gallery{}, 0, nil).Once()
+
+	j := purgeMissingJob{
+		repository: db.Repository(),
+		options: file.PurgeMissingOptions{
+			Paths: []string{cleanPath},
+		},
+		cleanNoGalleryFolders: true,
+	}
+
+	got, err := j.findGalleriesToClean(context.Background())
+	require.NoError(t, err)
+	assert.Equal(t, []int{emptyGallery.ID, emptyNoGallery.ID, noGallery.ID}, got)
+	db.Gallery.AssertExpectations(t)
+}
+
+func TestCleanGalleriesDryRunDeletesNothing(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "nogallery")
+	require.NoError(t, os.MkdirAll(path, 0755))
+	require.NoError(t, os.WriteFile(filepath.Join(path, ".nogallery"), nil, 0644))
+
+	folderID := models.FolderID(1)
+	g := &models.Gallery{ID: 1, Path: path, FolderID: &folderID}
+
+	db := mocks.NewDatabase()
+	db.Gallery.On("Query", mock.Anything, mock.Anything, mock.Anything).
+		Return([]*models.Gallery{g}, 1, nil).Once()
+	db.Gallery.On("Query", mock.Anything, mock.Anything, mock.Anything).
+		Return([]*models.Gallery{}, 0, nil)
+
+	j := purgeMissingJob{
+		repository:            db.Repository(),
+		options:               file.PurgeMissingOptions{DryRun: true},
+		cleanNoGalleryFolders: true,
+	}
+	j.cleanGalleries(context.Background())
+
+	db.Gallery.AssertNotCalled(t, "Find", mock.Anything, mock.Anything)
+	db.Gallery.AssertNotCalled(t, "Destroy", mock.Anything, mock.Anything)
+}
+
+// The purge task only removes empty galleries; .nogallery folders are not marked missing.
+func TestFindGalleriesToCleanSkipsNoGalleryFoldersWhenDisabled(t *testing.T) {
+	db := mocks.NewDatabase()
+	db.Gallery.On("Query", mock.Anything, mock.Anything, mock.Anything).
+		Return([]*models.Gallery{}, 0, nil)
+
+	j := purgeMissingJob{repository: db.Repository()}
+
+	got, err := j.findGalleriesToClean(context.Background())
+	require.NoError(t, err)
+	assert.Empty(t, got)
+	db.Gallery.AssertNumberOfCalls(t, "Query", 1)
+}

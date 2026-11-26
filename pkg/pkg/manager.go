@@ -5,10 +5,12 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 	"sync"
 
@@ -129,20 +131,6 @@ func (m *Manager) InstalledStatus(ctx context.Context) (PackageStatusIndex, erro
 	return ret, nil
 }
 
-func (m *Manager) packageByID(ctx context.Context, spec models.PackageSpecInput) (*RemotePackage, error) {
-	l, err := m.ListRemote(ctx, spec.SourceURL)
-	if err != nil {
-		return nil, err
-	}
-
-	pkg, found := l[spec]
-	if !found {
-		return nil, nil
-	}
-
-	return &pkg, nil
-}
-
 func (m *Manager) getStore(remoteURL string) *Store {
 	srcPath := m.PackagePathGetter.GetSourcePath(remoteURL)
 	store := m.Local.sub(srcPath)
@@ -150,18 +138,132 @@ func (m *Manager) getStore(remoteURL string) *Store {
 	return store
 }
 
-func (m *Manager) Install(ctx context.Context, spec models.PackageSpecInput) error {
+// NewInstaller returns an Installer for a single job of installs.
+func (m *Manager) NewInstaller() *Installer {
+	return &Installer{
+		m:         m,
+		indexes:   make(map[string]RemotePackageIndex),
+		installed: make(map[models.PackageSpecInput]struct{}),
+		checked:   make(map[models.PackageSpecInput]struct{}),
+	}
+}
+
+// Installer installs packages along with any missing or outdated requirements.
+// It keeps state across the installs of a job, so remote indexes are fetched
+// once and a requirement shared by several packages is installed once.
+type Installer struct {
+	m       *Manager
+	indexes map[string]RemotePackageIndex // by source URL
+	// packages installed by this Installer
+	installed map[models.PackageSpecInput]struct{}
+	// packages whose requirements have been or are being resolved; guards against cycles
+	checked map[models.PackageSpecInput]struct{}
+}
+
+func (i *Installer) remotePackage(ctx context.Context, spec models.PackageSpecInput) (*RemotePackage, error) {
+	index, found := i.indexes[spec.SourceURL]
+	if !found {
+		var err error
+		index, err = i.m.ListRemote(ctx, spec.SourceURL)
+		if err != nil {
+			return nil, err
+		}
+		i.indexes[spec.SourceURL] = index
+	}
+
+	pkg, found := index[spec]
+	if !found {
+		return nil, fmt.Errorf("package %s not found in source %s", spec.ID, spec.SourceURL)
+	}
+
+	return &pkg, nil
+}
+
+// Install installs the package identified by spec, replacing any existing
+// installation, after first installing any of its requirements that are
+// missing or outdated. Packages already installed by this Installer are skipped.
+// If any requirement fails, the package itself is not installed.
+func (i *Installer) Install(ctx context.Context, spec models.PackageSpecInput) error {
+	if _, done := i.installed[spec]; done {
+		return nil
+	}
+	i.checked[spec] = struct{}{}
+
+	pkg, err := i.remotePackage(ctx, spec)
+	if err != nil {
+		return fmt.Errorf("getting remote package: %w", err)
+	}
+
+	if err := i.installRequirements(ctx, *pkg); err != nil {
+		return fmt.Errorf("installing required packages: %w", err)
+	}
+
+	if err := i.m.install(ctx, *pkg); err != nil {
+		return err
+	}
+
+	i.installed[spec] = struct{}{}
+	return nil
+}
+
+// installRequirements ensures every package in pkg.Requires is installed and
+// current. All requirements are attempted, and their errors are joined.
+//
+// requirements are resolved against the same source as pkg itself.
+func (i *Installer) installRequirements(ctx context.Context, pkg RemotePackage) error {
+	var errs []error
+	for _, reqID := range pkg.Requires {
+		reqSpec := models.PackageSpecInput{ID: reqID, SourceURL: pkg.Repository.Path()}
+		if err := i.ensureRequirement(ctx, reqSpec, pkg.ID); err != nil {
+			errs = append(errs, fmt.Errorf("package %s, required by %s: %w", reqID, pkg.ID, err))
+		}
+	}
+
+	return errors.Join(errs...)
+}
+
+// ensureRequirement installs spec if it is missing or outdated. If it is
+// already current, it is left in place but its own requirements are still ensured.
+func (i *Installer) ensureRequirement(ctx context.Context, spec models.PackageSpecInput, requiredBy string) error {
+	if _, done := i.checked[spec]; done {
+		return nil
+	}
+
+	local, err := i.m.getStore(spec.SourceURL).getManifest(ctx, spec.ID)
+	if errors.Is(err, os.ErrNotExist) {
+		logger.Infof("Installing package %s, required by %s", spec.ID, requiredBy)
+		return i.Install(ctx, spec)
+	}
+	if err != nil {
+		return err
+	}
+
+	i.checked[spec] = struct{}{}
+
+	remote, err := i.remotePackage(ctx, spec)
+	if err != nil {
+		return err
+	}
+
+	if local.Upgradable(remote.PackageVersion) {
+		logger.Infof("Updating package %s, required by %s", spec.ID, requiredBy)
+		return i.Install(ctx, spec)
+	}
+
+	return i.installRequirements(ctx, *remote)
+}
+
+// install downloads pkg and installs it, replacing any existing installation.
+// It does not install requirements.
+func (m *Manager) install(ctx context.Context, pkg RemotePackage) error {
+	spec := pkg.PackageSpecInput()
+
 	remote, err := m.remoteFromURL(spec.SourceURL)
 	if err != nil {
 		return fmt.Errorf("creating remote repository: %w", err)
 	}
 
-	pkg, err := m.packageByID(ctx, spec)
-	if err != nil {
-		return fmt.Errorf("getting remote package: %w", err)
-	}
-
-	fromRemote, err := remote.GetPackageZip(ctx, *pkg)
+	fromRemote, err := remote.GetPackageZip(ctx, pkg)
 	if err != nil {
 		return fmt.Errorf("getting remote package: %w", err)
 	}
@@ -192,7 +294,7 @@ func (m *Manager) Install(ctx context.Context, spec models.PackageSpecInput) err
 		}
 	}
 
-	if err := m.installPackage(*pkg, store, zr); err != nil {
+	if err := m.installPackage(pkg, store, zr); err != nil {
 		return fmt.Errorf("installing package: %w", err)
 	}
 
@@ -206,6 +308,7 @@ func (m *Manager) installPackage(pkg RemotePackage, store *Store, zr *zip.Reader
 		Metadata:       pkg.Metadata,
 		PackageVersion: pkg.PackageVersion,
 		RepositoryURL:  pkg.Repository.Path(),
+		Requires:       pkg.Requires,
 	}
 
 	for _, f := range zr.File {

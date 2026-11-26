@@ -215,8 +215,19 @@ For `sceneByFragment` and `sceneByQueryFragment`, the `queryURL` field must also
 - `{oshash}` - the oshash of the scene
 - `{phash}` - the phash of the scene
 - `{filename}` - the base filename of the scene
+- `{path}` - the full path of the scene file. Note that this sends the full local path (including folder names) to the scraped site.
 - `{title}` - the title of the scene
 - `{url}` - the url of the scene
+
+`galleryByFragment` and `imageByFragment` support the same `queryURL` and `queryURLReplace` fields, with the following placeholder fields:
+
+- `{checksum}` - the checksum of the gallery or image
+- `{filename}` - the base filename of the gallery or image (empty for galleries without a file or folder)
+- `{path}` - the full path of the gallery or image file. Note that this sends the full local path (including folder names) to the scraped site.
+- `{title}` - the title of the gallery or image
+- `{url}` - the url of the gallery or image
+
+Placeholder values are inserted into the URL as-is, without URL encoding. Use `queryURLReplace` to escape or strip characters (such as spaces) if the site requires it.
 
 These placeholder field values may be manipulated with regex replacements by adding a `queryURLReplace` section, containing a map of placeholder field to regex configuration which uses the same format as the `replace` post-process action covered below. For example:
 

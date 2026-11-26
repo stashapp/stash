@@ -97,9 +97,6 @@ func getSort(sort string, direction string, tableName string) string {
 		var relationTableName = strings.TrimSuffix(sort, "_count") // TODO: pluralize?
 		colName := getColumn(relationTableName, "id")
 		return " ORDER BY COUNT(distinct " + colName + ") " + direction
-	case strings.Compare(sort, "filesize") == 0:
-		colName := getColumn(tableName, "size")
-		return " ORDER BY " + colName + " " + direction
 	case strings.HasPrefix(sort, randomSeedPrefix):
 		// seed as a parameter from the UI
 		seedStr := sort[len(randomSeedPrefix):]
@@ -146,6 +143,11 @@ func getRandomSort(tableName string, direction string, seed uint64) string {
 
 func getCountSort(primaryTable, joinTable, primaryFK, direction string) string {
 	return fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM %s AS sort WHERE sort.%s = %s.id) %s", joinTable, primaryFK, primaryTable, getSortDirection(direction))
+}
+
+// getFileSizeSort sorts by the combined size of all files attached to the primary object.
+func getFileSizeSort(primaryTable, joinTable, primaryFK, direction string) string {
+	return fmt.Sprintf(" ORDER BY (SELECT COALESCE(SUM(sort_files.size), 0) FROM %s AS sort INNER JOIN %s AS sort_files ON sort.file_id = sort_files.id WHERE sort.%s = %s.id) %s", joinTable, fileTable, primaryFK, primaryTable, getSortDirection(direction))
 }
 
 // getStringSearchClause returns a sqlClause for searching strings in the provided columns.

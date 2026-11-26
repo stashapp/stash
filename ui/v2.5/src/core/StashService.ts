@@ -342,12 +342,26 @@ export const queryFindPerformer = (id: string) =>
     variables: { id },
   });
 
-export const useFindPerformers = (filter?: ListFilterModel) =>
+// filters used to scope the performer count fields to the content the list is
+// restricted to. When provided, the scoped_* count fields are requested.
+export interface IPerformerCountFilters {
+  scene_filter?: GQL.SceneFilterType;
+  image_filter?: GQL.ImageFilterType;
+  gallery_filter?: GQL.GalleryFilterType;
+  group_filter?: GQL.GroupFilterType;
+}
+
+export const useFindPerformers = (
+  filter?: ListFilterModel,
+  countFilters?: IPerformerCountFilters
+) =>
   GQL.useFindPerformersQuery({
     skip: filter === undefined,
     variables: {
       filter: filter?.makeFindFilter(),
       performer_filter: filter?.makeFilter(),
+      scoped_counts: countFilters !== undefined,
+      ...countFilters,
     },
   });
 
@@ -2233,6 +2247,58 @@ export const useSaveFilter = () => {
   return saveFilter;
 };
 
+// Extracts a saved filter's stored fields for sending straight back in a
+// mutation input. Round-tripping them through ListFilterModel would drop any
+// criterion the current UI doesn't recognise, and saving replaces
+// object_filter wholesale, so it would be deleted.
+export function savedFilterFields(filter: GQL.SavedFilterDataFragment) {
+  const findFilter = filter.find_filter;
+
+  return {
+    mode: filter.mode,
+    // rebuilt field by field to drop the __typename that apollo adds
+    find_filter: findFilter
+      ? {
+          q: findFilter.q,
+          page: findFilter.page,
+          per_page: findFilter.per_page,
+          sort: findFilter.sort,
+          direction: findFilter.direction,
+        }
+      : null,
+    object_filter: filter.object_filter,
+    ui_options: filter.ui_options,
+  };
+}
+
+// Renames a saved filter, leaving its contents untouched.
+export const useRenameSavedFilter = () => {
+  const [saveFilterMutation] = GQL.useSaveFilterMutation({
+    update(cache, result) {
+      if (!result.data?.saveFilter) return;
+
+      evictQueries(cache, [GQL.FindSavedFiltersDocument]);
+    },
+  });
+
+  function renameSavedFilter(
+    filter: GQL.SavedFilterDataFragment,
+    name: string
+  ) {
+    return saveFilterMutation({
+      variables: {
+        input: {
+          id: filter.id,
+          name,
+          ...savedFilterFields(filter),
+        },
+      },
+    });
+  }
+
+  return renameSavedFilter;
+};
+
 export const useSavedFilterDestroy = () =>
   GQL.useDestroySavedFilterMutation({
     update(cache, result, { variables }) {
@@ -2939,9 +3005,15 @@ export const mutateMetadataGenerate = (input: GQL.GenerateMetadataInput) =>
     variables: { input },
   });
 
-export const mutateMetadataClean = (input: GQL.CleanMetadataInput) =>
-  client.mutate<GQL.MetadataCleanMutation>({
-    mutation: GQL.MetadataCleanDocument,
+export const mutateVerifyPaths = (input: GQL.VerifyPathsInput) =>
+  client.mutate<GQL.VerifyPathsMutation>({
+    mutation: GQL.VerifyPathsDocument,
+    variables: { input },
+  });
+
+export const mutatePurgeMissing = (input: GQL.PurgeMissingInput) =>
+  client.mutate<GQL.PurgeMissingMutation>({
+    mutation: GQL.PurgeMissingDocument,
     variables: { input },
   });
 

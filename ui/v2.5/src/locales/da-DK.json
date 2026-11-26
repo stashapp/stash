@@ -214,7 +214,6 @@
             "match_failed_already_tagged": "Scene er allerede tagget",
             "match_failed_no_result": "Ingen resultater fundet",
             "match_success": "Scene blev tagget",
-            "phash_matches": "{count} PHashes matcher",
             "unnamed": "Unavngivet"
         },
         "verb_match_fp": "Match fingeraftryk",
@@ -879,8 +878,7 @@
                 "label": "Rulletilstand",
                 "pan_y": "Panorer Y",
                 "zoom": "Zoom"
-            },
-            "page_header": "Side {page} / {total}"
+            }
         },
         "scene_gen": {
             "force_transcodes": "Tving omkodningsgenerering",

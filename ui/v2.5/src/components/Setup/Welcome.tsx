@@ -73,7 +73,7 @@ const SuccessStep: React.FC<{
           <FormattedMessage
             id="setup.success.next_config_step_two"
             values={{
-              code: (chunks: string) => <code>{chunks}</code>,
+              code: (chunks) => <code>{chunks}</code>,
               localized_task: intl.formatMessage({
                 id: "config.categories.tasks",
               }),
@@ -87,7 +87,7 @@ const SuccessStep: React.FC<{
               <FormattedMessage
                 id="setup.success.missing_ffmpeg"
                 values={{
-                  code: (chunks: string) => <code>{chunks}</code>,
+                  code: (chunks) => <code>{chunks}</code>,
                 }}
               />
             </Alert>

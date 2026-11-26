@@ -32,7 +32,9 @@ type ToastFn = (item: IToast) => void;
 
 const ToastContext = createContext<ToastFn | null>(null);
 
-export const ToastProvider: React.FC = ({ children }) => {
+export const ToastProvider: React.FC<React.PropsWithChildren<unknown>> = ({
+  children,
+}) => {
   const [toast, setToast] = useState<IActiveToast>();
   const [hiding, setHiding] = useState(false);
   const [expanded, setExpanded] = useState(false);

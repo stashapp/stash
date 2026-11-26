@@ -216,7 +216,6 @@
             "match_failed_already_tagged": "Scéna byla již otagována",
             "match_failed_no_result": "Nebyly nalezeny žádné výsledky",
             "match_success": "Scéna úspěšně otagována",
-            "phash_matches": "{count} PHash(ů) se shoduje",
             "unnamed": "Bezejmený"
         },
         "verb_match_fp": "Identifikovat otisky",
@@ -487,7 +486,10 @@
             "added_job_to_queue": "Operace {operation_name} byla přidána do fronty úloh",
             "auto_tag": {
                 "auto_tagging_all_paths": "Autotagování všech cest",
-                "auto_tagging_paths": "Autotagování následujících cest"
+                "auto_tagging_paths": "Autotagování následujících cest",
+                "disable_warning": {
+                    "description": "Zakažte potvrzovací varování zobrazené před spuštěním automatického označování."
+                }
             },
             "auto_tag_based_on_filenames": "Autotagování obsahu dle názvu souborů.",
             "auto_tagging": "Autotagování",
@@ -983,7 +985,6 @@
                 "pan_y": "Náklon Y",
                 "zoom": "Zvětšit"
             },
-            "page_header": "Stránka {page} / {total}",
             "disable_animation": "Zakázat animaci přechodu mezi obrázky"
         },
         "scene_gen": {
@@ -1701,7 +1702,8 @@
         "to_use_the_tag_tagger": "Pro použití tag taggeru je nutné nakonfigurovat instanci stash-box.",
         "untagged_tags": "Neoznačené tagy",
         "update_tags": "Aktualizovat tagy",
-        "updating_untagged_tags_description": "Aktualizace neoznačených tagů se pokusí najít všechny tagy, které nemají stashid, a aktualizovat metadata."
+        "updating_untagged_tags_description": "Aktualizace neoznačených tagů se pokusí najít všechny tagy, které nemají stashid, a aktualizovat metadata.",
+        "parent_tag_no_remote_site_id_warning": "Nadřazená značka nemá ID vzdáleného webu a nebude propojena do stash-box instance."
     },
     "tagger": {
         "config": {
@@ -1713,5 +1715,6 @@
             "no_instances_found": "Nenalezeny žádné instance"
         }
     },
-    "unsupported_criteria": "Nepodporovaná kritéria: {criteria}"
+    "unsupported_criteria": "Nepodporovaná kritéria: {criteria}",
+    "related_studios": "Související"
 }

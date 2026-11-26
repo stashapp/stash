@@ -2,6 +2,7 @@ package job
 
 import (
 	"context"
+	"sync"
 	"testing"
 	"time"
 
@@ -126,6 +127,114 @@ func TestAdd(t *testing.T) {
 	assert.NotNil(j2.StartTime)
 }
 
+func TestStart(t *testing.T) {
+	m := NewManager()
+
+	// occupy the queue so a queued job could not run
+	blocker := newTestExec(make(chan struct{}))
+	m.Add(context.Background(), "blocker", blocker)
+	<-blocker.started
+
+	exec := newTestExec(make(chan struct{}))
+	jobID := m.Start(context.Background(), "started job", exec)
+
+	// expect the started job to run concurrently with the blocker
+	select {
+	case <-exec.started:
+	case <-time.After(time.Second):
+		t.Fatal("started job did not run concurrently")
+	}
+
+	close(exec.finish)
+	time.Sleep(sleepTime)
+
+	// expect the finished job to be moved from the queue to the graveyard
+	m.mutex.Lock()
+	_, inQueue := m.getJob(m.queue, jobID)
+	_, inGraveyard := m.getJob(m.graveyard, jobID)
+	m.mutex.Unlock()
+
+	assert.Nil(t, inQueue)
+	assert.NotNil(t, inGraveyard)
+	assert.Equal(t, StatusFinished, m.GetJob(jobID).Status)
+
+	close(blocker.finish)
+}
+
+// a job queued while a started job is still running must still be dispatched
+func TestAddWhileStartedJobRunning(t *testing.T) {
+	m := NewManager()
+
+	started := newTestExec(make(chan struct{}))
+	m.Start(context.Background(), "started job", started)
+	<-started.started
+
+	exec := newTestExec(nil)
+	m.Add(context.Background(), "queued job", exec)
+
+	select {
+	case <-exec.started:
+	case <-time.After(time.Second):
+		t.Fatal("queued job was not dispatched while a started job was running")
+	}
+
+	close(started.finish)
+}
+
+func TestTaskQueueProgress(t *testing.T) {
+	m := NewManager()
+	j := &Job{}
+	p := m.newProgress(j)
+
+	tq := NewTaskQueue(context.Background(), p, 10, make(chan struct{}, 2))
+	for range 3 {
+		tq.Add("task", func(ctx context.Context) {})
+	}
+	tq.Close()
+	tq.Wait()
+
+	assert.Equal(t, 3, p.total)
+	assert.Equal(t, 3, p.processed)
+	assert.Equal(t, float64(1), p.percent)
+}
+
+// queues sharing slots must not run more than cap(slots) tasks between them
+func TestTaskQueueSharedSlots(t *testing.T) {
+	m := NewManager()
+	slots := make(chan struct{}, 2)
+
+	var mu sync.Mutex
+	running, maxRunning := 0, 0
+	task := func(ctx context.Context) {
+		mu.Lock()
+		running++
+		maxRunning = max(maxRunning, running)
+		mu.Unlock()
+
+		time.Sleep(sleepTime)
+
+		mu.Lock()
+		running--
+		mu.Unlock()
+	}
+
+	var queues []*TaskQueue
+	for range 3 {
+		tq := NewTaskQueue(context.Background(), m.newProgress(&Job{}), 10, slots)
+		for range 4 {
+			tq.Add("task", task)
+		}
+		tq.Close()
+		queues = append(queues, tq)
+	}
+
+	for _, tq := range queues {
+		tq.Wait()
+	}
+
+	assert.Equal(t, 2, maxRunning)
+}
+
 func TestCancel(t *testing.T) {
 	m := NewManager()
 
@@ -234,6 +343,29 @@ func TestCancelAll(t *testing.T) {
 		t.Error("cancelled exec was started")
 	default:
 	}
+}
+
+// CancelAll must remove every ready job, not every other one
+func TestCancelAllReadyJobs(t *testing.T) {
+	m := NewManager()
+
+	running := newTestExec(make(chan struct{}))
+	m.Add(context.Background(), "running job", running)
+	<-running.started
+
+	for range 4 {
+		m.Add(context.Background(), "ready job", newTestExec(nil))
+	}
+
+	m.CancelAll()
+
+	// only the running job (now stopping) remains
+	queue := m.GetQueue()
+	if assert.Len(t, queue, 1) {
+		assert.Equal(t, StatusStopping, queue[0].Status)
+	}
+
+	close(running.finish)
 }
 
 func TestSubscribe(t *testing.T) {

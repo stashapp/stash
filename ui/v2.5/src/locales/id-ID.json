@@ -255,7 +255,6 @@
             "match_failed_already_tagged": "Adegan sudah ditag",
             "match_failed_no_result": "Tidak menemukan hasil",
             "match_success": "Adegan berhasil ditag",
-            "phash_matches": "{count} PHash cocok",
             "unnamed": "Belum dinamai",
             "fp_matches_multi": "Durasi cocok {matchCount}/{durationsLength} sidik jari",
             "fp_found": "{fpCount, plural, =0 {Tidak ditemukan kecocokan sidik jari baru} other {# kecocokan sidik jari baru ditemukan}}"
@@ -594,8 +593,7 @@
             "options": "Opsi",
             "scroll_mode": {
                 "zoom": "Perbesar"
-            },
-            "page_header": "Halaman {page} / {total}"
+            }
         },
         "merge": {
             "destination": "Destinasi",

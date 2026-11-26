@@ -38,6 +38,7 @@ interface ITagPopoverProps {
   hide?: boolean;
   placement?: Placement;
   target?: React.RefObject<HTMLElement>;
+  children?: React.ReactNode;
 }
 
 export const TagPopover: React.FC<ITagPopoverProps> = ({

@@ -175,8 +175,7 @@
             "duration_off": "Lengdeskilnad er på {number} s",
             "duration_unknown": "Ukjend lengd",
             "fp_matches": "Lengd samsvarer",
-            "fp_matches_multi": "Lengd samsvarer med {matchCount}/{durationsLength} fingeravtrykk",
-            "phash_matches": "{count} PHashes samsvarer"
+            "fp_matches_multi": "Lengd samsvarer med {matchCount}/{durationsLength} fingeravtrykk"
         },
         "verb_submit_fp": "Send inn {fpCount, plural, one{# fingeravtrykk} other{# fingeravtrykk}}"
     },

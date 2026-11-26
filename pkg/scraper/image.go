@@ -7,14 +7,20 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func setPerformerImage(ctx context.Context, client *http.Client, p *models.ScrapedPerformer, globalConfig GlobalConfig) error {
+func setPerformerImage(ctx context.Context, getter imageGetter, p *models.ScrapedPerformer) error {
+	if len(p.Images) > 0 {
+		getter.fetchSurfImages(ctx, p.Images)
+		return nil
+	}
+
 	// backwards compatibility: we fetch the image if it's a URL and set it to the first image
 	// Image is deprecated, so only do this if Images is unset
-	if p.Image == nil || len(p.Images) > 0 {
+	if p.Image == nil {
 		// nothing to do
 		return nil
 	}
@@ -25,7 +31,7 @@ func setPerformerImage(ctx context.Context, client *http.Client, p *models.Scrap
 		return nil
 	}
 
-	img, err := getImage(ctx, *p.Image, client, globalConfig)
+	img, err := getter.getImage(ctx, *p.Image)
 	if err != nil {
 		return err
 	}
@@ -37,10 +43,15 @@ func setPerformerImage(ctx context.Context, client *http.Client, p *models.Scrap
 	return nil
 }
 
-func setStudioImage(ctx context.Context, client *http.Client, p *models.ScrapedStudio, globalConfig GlobalConfig) error {
+func setStudioImage(ctx context.Context, getter imageGetter, p *models.ScrapedStudio) error {
+	if len(p.Images) > 0 {
+		getter.fetchSurfImages(ctx, p.Images)
+		return nil
+	}
+
 	// backwards compatibility: we fetch the image if it's a URL and set it to the first image
 	// Image is deprecated, so only do this if Images is unset
-	if p.Image == nil || len(p.Images) > 0 {
+	if p.Image == nil {
 		// nothing to do
 		return nil
 	}
@@ -51,7 +62,7 @@ func setStudioImage(ctx context.Context, client *http.Client, p *models.ScrapedS
 		return nil
 	}
 
-	img, err := getImage(ctx, *p.Image, client, globalConfig)
+	img, err := getter.getImage(ctx, *p.Image)
 	if err != nil {
 		return err
 	}
@@ -63,7 +74,7 @@ func setStudioImage(ctx context.Context, client *http.Client, p *models.ScrapedS
 	return nil
 }
 
-func processImageField(ctx context.Context, imageField *string, client *http.Client, globalConfig GlobalConfig) error {
+func processImageField(ctx context.Context, imageField *string, getter imageGetter) error {
 	if imageField == nil {
 		return nil
 	}
@@ -74,7 +85,7 @@ func processImageField(ctx context.Context, imageField *string, client *http.Cli
 		return nil
 	}
 
-	img, err := getImage(ctx, *imageField, client, globalConfig)
+	img, err := getter.getImage(ctx, *imageField)
 	if err != nil {
 		return err
 	}
@@ -83,10 +94,40 @@ func processImageField(ctx context.Context, imageField *string, client *http.Cli
 	return nil
 }
 
+// fetchSurfImages downloads URL images of a Surf scraper into data URIs.
+// The backend later re-fetches URL images with a plain client, which Surf
+// scrapers' sites may block. Images that fail to download are left as URLs.
+func (i *imageGetter) fetchSurfImages(ctx context.Context, images []string) {
+	if i.surfDef == nil {
+		return
+	}
+
+	for j := range images {
+		if err := processImageField(ctx, &images[j], *i); err != nil {
+			logger.Warnf("could not fetch image using URL %s: %v", images[j], err)
+		}
+	}
+}
+
 type imageGetter struct {
-	client          *http.Client
-	globalConfig    GlobalConfig
+	client       *http.Client
+	globalConfig GlobalConfig
+	// surfDef is set when images must be fetched with the scraper's Surf client
+	surfDef         *Definition
 	requestModifier func(req *http.Request)
+}
+
+func newImageGetter(client *http.Client, globalConfig GlobalConfig, definition *Definition) imageGetter {
+	ret := imageGetter{
+		client:       client,
+		globalConfig: globalConfig,
+	}
+
+	if definition != nil && definition.usesSurf() {
+		ret.surfDef = definition
+	}
+
+	return ret
 }
 
 func (i *imageGetter) getImage(ctx context.Context, url string) (*string, error) {
@@ -95,8 +136,14 @@ func (i *imageGetter) getImage(ctx context.Context, url string) (*string, error)
 		return nil, err
 	}
 
-	userAgent := i.globalConfig.GetScraperUserAgent()
-	if userAgent != "" {
+	client := i.client
+	if i.surfDef != nil {
+		// Surf sets its own browser User-Agent and the scrape's cookie jar
+		client, _, err = surfClient(ctx, *i.surfDef, i.globalConfig)
+		if err != nil {
+			return nil, err
+		}
+	} else if userAgent := i.globalConfig.GetScraperUserAgent(); userAgent != "" {
 		req.Header.Set("User-Agent", userAgent)
 	}
 
@@ -111,7 +158,7 @@ func (i *imageGetter) getImage(ctx context.Context, url string) (*string, error)
 		i.requestModifier(req)
 	}
 
-	resp, err := i.client.Do(req)
+	resp, err := client.Do(req)
 
 	if err != nil {
 		return nil, err
@@ -135,15 +182,6 @@ func (i *imageGetter) getImage(ctx context.Context, url string) (*string, error)
 
 	img := "data:" + contentType + ";base64," + utils.GetBase64StringFromData(body)
 	return &img, nil
-}
-
-func getImage(ctx context.Context, url string, client *http.Client, globalConfig GlobalConfig) (*string, error) {
-	g := imageGetter{
-		client:       client,
-		globalConfig: globalConfig,
-	}
-
-	return g.getImage(ctx, url)
 }
 
 func getStashPerformerImage(ctx context.Context, stashURL string, performerID string, imageGetter imageGetter) (*string, error) {

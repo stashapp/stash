@@ -119,6 +119,7 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.SetInterface(AutostartVideoOnPlaySelected, i.GetAutostartVideoOnPlaySelected())
 				i.SetInterface(ContinuePlaylistDefault, i.GetContinuePlaylistDefault())
 				i.SetInterface(PythonPath, i.GetPythonPath())
+				i.SetInterface(SFWContentMode, i.GetSFWContentMode())
 				t.Logf("Worker %v iteration %v took %v", wk, l, time.Since(start))
 			}
 			wg.Done()
@@ -126,4 +127,55 @@ func TestConcurrentConfigAccess(t *testing.T) {
 	}
 
 	wg.Wait()
+}
+
+func TestNoNestedRLockDeadlock(t *testing.T) {
+	i := InitializeEmpty()
+	i.SetString(Database, "stash-go.sqlite")
+	i.SetString(Generated, "generated")
+	i.SetString(BlobsStorage, string(BlobStorageTypeFilesystem))
+	i.SetString(BlobsPath, "blobs")
+
+	// A tight writer loop makes a pending Lock() land between a nested RLock pair,
+	// which deadlocks any getter that re-acquires the read lock.
+	stopWriter := make(chan struct{})
+	writerExited := make(chan struct{})
+	go func() {
+		defer close(writerExited)
+		for {
+			select {
+			case <-stopWriter:
+				return
+			default:
+				i.Lock()
+				i.Unlock()
+			}
+		}
+	}()
+
+	readersDone := make(chan struct{})
+	go func() {
+		var wg sync.WaitGroup
+		for r := 0; r < 4; r++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				for n := 0; n < 2000; n++ {
+					_ = i.GetSFWContentMode()
+					_ = i.Validate()
+				}
+			}()
+		}
+		wg.Wait()
+		close(readersDone)
+	}()
+
+	select {
+	case <-readersDone:
+		close(stopWriter)
+		<-writerExited
+	case <-time.After(5 * time.Second):
+		close(stopWriter)
+		t.Fatal("GetSFWContentMode or Validate deadlocked under concurrent writer contention")
+	}
 }

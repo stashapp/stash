@@ -228,7 +228,6 @@
             "match_failed_already_tagged": "Cena já etiquetada",
             "match_failed_no_result": "Nenhum resultado encontrado",
             "match_success": "Cena etiquetada com sucesso",
-            "phash_matches": "{count} PHashes coincide(m)",
             "unnamed": "Sem nome"
         },
         "verb_match_fp": "Combine as impressões digitais",

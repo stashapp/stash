@@ -116,3 +116,63 @@ jsonScrapers:
 		t.Errorf("expected nil scraped performer when not found, got %v", scrapedPerformer)
 	}
 }
+
+func TestJsonSceneSubObjectAlignment(t *testing.T) {
+	yamlStr := `
+jsonScrapers:
+  sceneScraper:
+    scene:
+      Title: title
+      Performers:
+        Name: models.#.name
+        Gender: models.#.gender
+      Tags:
+        Name: tags
+      Groups:
+        URL: groups
+`
+	// repeated and empty genders must stay with their performer;
+	// duplicate and nameless performers/tags are dropped
+	json := `
+{
+  "title": "Scene",
+  "models": [
+    {"name": "Jane Doe", "gender": "Female"},
+    {"name": "Jane Doe 2", "gender": "Female"},
+    {"name": "Nobody", "gender": ""},
+    {"name": "John Smith", "gender": "Male"},
+    {"name": "Jane Doe", "gender": "Female"},
+    {"name": "", "gender": "Male"}
+  ],
+  "tags": ["a", "b", "a", ""],
+  "groups": ["https://example.com/g1", "https://example.com/g2"]
+}`
+
+	c := &Definition{}
+	if err := yaml.Unmarshal([]byte(yamlStr), &c); err != nil {
+		t.Fatalf("Error loading yaml: %s", err.Error())
+	}
+
+	scene, err := c.JsonScrapers["sceneScraper"].scrapeScene(context.Background(), &jsonQuery{doc: json})
+	if err != nil {
+		t.Fatalf("Error scraping scene: %s", err.Error())
+	}
+
+	want := [][2]string{{"Jane Doe", "Female"}, {"Jane Doe 2", "Female"}, {"Nobody", ""}, {"John Smith", "Male"}}
+	if len(scene.Performers) != len(want) {
+		t.Fatalf("got %d performers, want %d", len(scene.Performers), len(want))
+	}
+	for i, w := range want {
+		verifyField(t, w[0], scene.Performers[i].Name, "Name")
+		verifyField(t, w[1], scene.Performers[i].Gender, "Gender")
+	}
+
+	if len(scene.Tags) != 2 || scene.Tags[0].Name != "a" || scene.Tags[1].Name != "b" {
+		t.Errorf("unexpected tags: %v", scene.Tags)
+	}
+
+	// a list config without a Name mapping must not be filtered
+	if len(scene.Groups) != 2 {
+		t.Errorf("got %d groups, want 2", len(scene.Groups))
+	}
+}

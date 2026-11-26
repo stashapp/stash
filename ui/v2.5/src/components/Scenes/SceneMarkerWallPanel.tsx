@@ -276,7 +276,7 @@ const MarkerWall: React.FC<IMarkerWallProps> = ({
   }, [markers, previewType, erroredImgs, handleError]);
 
   const onClick = useCallback(
-    (_event, { index }) => {
+    (_event: React.MouseEvent, { index }: { index: number }) => {
       history.push(photos[index].link);
     },
     [history, photos]

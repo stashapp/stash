@@ -37,7 +37,9 @@ export const SceneTaggerModalsState =
     createTagModal: () => {},
   });
 
-export const SceneTaggerModals: React.FC = ({ children }) => {
+export const SceneTaggerModals: React.FC<React.PropsWithChildren<unknown>> = ({
+  children,
+}) => {
   const { currentSource } = useContext(TaggerStateContext);
 
   const [performerToCreate, setPerformerToCreate] = useState<

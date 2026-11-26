@@ -362,6 +362,27 @@ func (h *ScanHandler) associateScene(ctx context.Context, existing *models.Galle
 	return nil
 }
 
+// GalleryFolderMarkers reports whether folderPath contains the .forcegallery
+// and .nogallery marker files.
+func GalleryFolderMarkers(folderPath string) (force bool, exempt bool, err error) {
+	exists := func(name string) (bool, error) {
+		if _, err := os.Stat(filepath.Join(folderPath, name)); err == nil {
+			return true, nil
+		} else if !errors.Is(err, os.ErrNotExist) {
+			return false, fmt.Errorf("could not test Path %s: %w", folderPath, err)
+		}
+		return false, nil
+	}
+
+	if force, err = exists(".forcegallery"); err != nil {
+		return false, false, err
+	}
+	if exempt, err = exists(".nogallery"); err != nil {
+		return false, false, err
+	}
+	return force, exempt, nil
+}
+
 func (h *ScanHandler) getOrCreateGallery(ctx context.Context, f models.File) (*models.Gallery, error) {
 	// don't create folder-based galleries for files in zip file
 	if f.Base().ZipFile != nil {
@@ -369,19 +390,9 @@ func (h *ScanHandler) getOrCreateGallery(ctx context.Context, f models.File) (*m
 	}
 
 	// Look for specific filename in Folder to find out if the Folder is marked to be handled differently as the setting
-	folderPath := filepath.Dir(f.Base().Path)
-
-	forceGallery := false
-	if _, err := os.Stat(filepath.Join(folderPath, ".forcegallery")); err == nil {
-		forceGallery = true
-	} else if !errors.Is(err, os.ErrNotExist) {
-		return nil, fmt.Errorf("could not test Path %s: %w", folderPath, err)
-	}
-	exemptGallery := false
-	if _, err := os.Stat(filepath.Join(folderPath, ".nogallery")); err == nil {
-		exemptGallery = true
-	} else if !errors.Is(err, os.ErrNotExist) {
-		return nil, fmt.Errorf("could not test Path %s: %w", folderPath, err)
+	forceGallery, exemptGallery, err := GalleryFolderMarkers(filepath.Dir(f.Base().Path))
+	if err != nil {
+		return nil, err
 	}
 
 	if forceGallery || (h.ScanConfig.GetCreateGalleriesFromFolders() && !exemptGallery) {

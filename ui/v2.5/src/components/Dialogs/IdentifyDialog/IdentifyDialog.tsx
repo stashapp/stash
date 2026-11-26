@@ -270,7 +270,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
   }, [allSources, configData]);
 
   if (configError || scraperError)
-    return <div>{configError ?? scraperError}</div>;
+    return <div>{(configError ?? scraperError)?.message}</div>;
   if (!allSources || !configData) return <div />;
 
   function makeIdentifyInput(): GQL.IdentifyMetadataInput {

@@ -107,7 +107,9 @@ export function useSettingsOptional(): ISettingsContextState {
   return context;
 }
 
-export const SettingsContext: React.FC = ({ children }) => {
+export const SettingsContext: React.FC<React.PropsWithChildren<unknown>> = ({
+  children,
+}) => {
   const Toast = useToast();
 
   const { data, error, loading, refetch } = useConfiguration();
@@ -177,7 +179,7 @@ export const SettingsContext: React.FC = ({ children }) => {
   }, [resetSuccess]);
 
   const onError = useCallback(
-    (err) => {
+    (err: unknown) => {
       Toast.error(err);
       setUpdateSuccess(false);
     },

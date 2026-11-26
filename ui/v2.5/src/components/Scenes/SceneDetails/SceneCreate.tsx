@@ -7,8 +7,9 @@ import { mutateCreateScene, useFindScene } from "src/core/StashService";
 import ImageUtils from "src/utils/image";
 import { LoadingIndicator } from "src/components/Shared/LoadingIndicator";
 import { useToast } from "src/hooks/Toast";
+import { PatchComponent } from "src/patch";
 
-const SceneCreate: React.FC = () => {
+const SceneCreate: React.FC = PatchComponent("SceneCreate", () => {
   const history = useHistory();
   const intl = useIntl();
   const Toast = useToast();
@@ -95,6 +96,6 @@ const SceneCreate: React.FC = () => {
       </div>
     </div>
   );
-};
+});
 
 export default SceneCreate;

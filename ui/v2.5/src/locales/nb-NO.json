@@ -180,7 +180,6 @@
         "results": {
             "duration_off": "Varighet avviker fra forventet verdi med minst {number}s",
             "duration_unknown": "Ukjent varighet",
-            "phash_matches": "{count} PHash-er stemmer overens",
             "unnamed": "Uten navn",
             "hash_matches": "{hash_type} stemmer overens",
             "match_failed_already_tagged": "Scenen er allerede tagget",
@@ -1001,8 +1000,7 @@
             "scale_up": {
                 "description": "Skaler mindre bilder opp for å fylle skjermen",
                 "label": "Skaler opp for å passe"
-            },
-            "page_header": "Side {side} / {totalt}"
+            }
         },
         "merge": {
             "empty_results": "Verdiene i destinasjonsfeltet vil forbli uendret.",

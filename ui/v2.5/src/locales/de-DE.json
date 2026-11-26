@@ -3,7 +3,7 @@
         "add": "Hinzufügen",
         "add_directory": "Ordner hinzufügen",
         "add_entity": "Füge {entityType} hinzu",
-        "add_to_entity": "Hinzufügen zu {entityType}",
+        "add_to_entity": "Hinzufügen zu {entity}",
         "allow": "Erlauben",
         "allow_temporarily": "Vorübergehend erlauben",
         "anonymise": "Anonymisieren",
@@ -85,7 +85,7 @@
         "scan": "Scannen",
         "scrape": "Scrapen",
         "scrape_query": "Scrape Anfrage",
-        "scrape_scene_fragment": "An Fragment scrapen",
+        "scrape_scene_fragment": "Fragment scrapen",
         "scrape_with": "Scrape mit…",
         "search": "Suchen",
         "select_all": "Alle auswählen",
@@ -147,17 +147,20 @@
             "open": "Seitenleiste öffnen"
         },
         "show_count_results": "Zeige {count} Ergebnisse",
-        "show_results": "Ergebnisse anzeigen",
+        "show_results": "Resultate anzeigen",
         "load_filter": "Filter laden",
         "load": "Laden",
         "create_new": "Neu erstellen",
-        "add_stash_id": "Stash-ID hinzufügen",
+        "add_stash_id": "Stash ID hinzufügen",
         "save_and_new": "Speichern & Neu",
         "invert_selection": "Invertiere Auswahl",
         "select_directory": "Ordner Auswählen",
         "from_clipboard": "Aus Zwischenablage",
         "reveal_in_file_manager": "Im Dateimanager anzeigen",
-        "selective_generate": "Selektives Generieren"
+        "selective_generate": "Selektives Generieren",
+        "create_parent_tag": "Übergeordnetes Tag erstellen",
+        "exclude_lowercase": "Ausschließen",
+        "set_as_performer_image": "Als Darstellerbild festlegen"
     },
     "actions_name": "Aktionen",
     "age": "Alter",
@@ -221,12 +224,12 @@
             "fp_found": "{fpCount, plural, =0 {Keine neuen Fingerabdruckübereinstimmungen gefunden} other {# neue Fingerabdruckübereinstimmungen gefunden}}",
             "fp_matches": "Übereinstimmung der Laufzeit",
             "fp_matches_multi": "Laufzeit stimmt mit {matchCount}/{durationsLength} Fingerabdrücken überein",
-            "hash_matches": "Übereinstimmung bei {hash_type}",
+            "hash_matches": "{count, plural, one {# {hash_type}-Übereinstimmung} other {# {hash_type}-Übereinstimmungen}}",
             "match_failed_already_tagged": "Szene bereits getagged",
             "match_failed_no_result": "Keine Übereinstimmungen gefunden",
             "match_success": "Szene erfolgreich getagged",
-            "phash_matches": "{count} PHashes übereinstimmung",
-            "unnamed": "Unbenannt"
+            "unnamed": "Unbenannt",
+            "hash_submissions": "{count, plural, one {# Einreichung} other {# Einreichungen}}"
         },
         "verb_match_fp": "Fingerabdrücke zuordnen",
         "verb_matched": "zugeordnet",
@@ -237,7 +240,7 @@
         "verb_add_as_alias": "Füge Spitzname als Alias hinzu",
         "verb_link_existing": "Link zu bereits existierendem",
         "verb_match_tag": "Tag zuordnen",
-        "verb_scrape_selected": "Ausgewählte \"scrapen\""
+        "verb_scrape_selected": "Ausgewählte Scrapen"
     },
     "config": {
         "about": {
@@ -245,12 +248,14 @@
             "build_time": "Zeitpunkt des Builds:",
             "check_for_new_version": "Suche nach Updates",
             "latest_version": "Aktuellste Version",
-            "latest_version_build_hash": "Neuester Build Hash:",
+            "latest_version_build_hash": "Aktuellster Build Hash:",
             "new_version_notice": "[NEU]",
             "release_date": "Veröffentlichungsdatum:",
-            "stash_home": "Stash ist beheimatet auf {url}",
-            "stash_wiki": "Stash {url} Seite",
-            "version": "Version"
+            "stash_home": "Besuche Stash auf {url}",
+            "stash_wiki": "Wirf einen Blick auf die {url}-Website von Stash.",
+            "version": "Version",
+            "stash_community": "Trete unserem {forumUrl} oder {discordUrl} Community Server bei.",
+            "support_us": "Unterstütze uns auf {openCollectiveUrl} oder {githubSponsorsUrl}."
         },
         "application_paths": {
             "heading": "Anwendungspfade"
@@ -319,8 +324,8 @@
                 "log_file_max_size_desc": "Maximale Größe, in Megabytes, von den Log Files bevor es komprimiert wird. 0MB ist deaktiviert. Benötigt Neustart."
             },
             "backup_directory_path": {
-                "description": "Verzeichnisspeicherort für SQLite-Datenbankdateisicherungen",
-                "heading": "Backup-Verzeichnispfad"
+                "description": "Verzeichnis für Sicherungen der SQLite-Datenbankdatei.",
+                "heading": "Sicherungsverzeichnis"
             },
             "blobs_path": {
                 "description": "Der Ort auf dem Dateisystem an dem die Binärdaten gespeichert werden. Wird nur angewendet, wenn der Binärdaten Speichertyp auf Dateisystem eingestellt ist. ACHTUNG: Eine Änderung des Pfades erfordert das manuelle Verschieben von bereits existierenden Daten.",
@@ -338,7 +343,7 @@
             "check_for_insecure_certificates_desc": "Manche Seiten nutzen unsichere SSL Zertifikate. Wenn diese Option nicht ausgewählt ist, überspringt der Scraper die Überprüfung und erlaubt das Scrapen dieser Seiten. Entfernen Sie das Häkchen, falls Sie Zertifikatsfehler beim Scrapen erhalten.",
             "chrome_cdp_path": "Chrome CDP Pfad",
             "chrome_cdp_path_desc": "Dateipfad zur Chrome Executable oder einer externen Adresse (beginnend mit http:// oder https://, bspw. http://localhost:9222/json/version) die auf eine Chrome Instanz zeigt.",
-            "create_galleries_from_folders_desc": "Wenn ausgewählt, erzeuge standardmäßig Galerien aus Verzeichnissen, welche Bilder enthalten. Erstellen Sie eine Datei .forcegallery oder .nogallery in dem Ordner, um das Verhalten für diesen zu erzwingen/unterdrücken.",
+            "create_galleries_from_folders_desc": "Wenn aktiviert, werden aus Ordnern mit Bildern standardmäßig Galerien erzeugt. Das Anlegen einer Datei namens .forcegallery oder .nogallery in einem Ordner überschreibt diese Einstellung.",
             "create_galleries_from_folders_label": "Erzeuge Galerien aus Verzeichnissen mit Bilder darin",
             "database": "Datenbank",
             "db_path_head": "Datenbankpfad",
@@ -398,16 +403,16 @@
             "hashing": "Hashwertberechnung",
             "heatmap_generation": "Funscript Heatmap Erzeugung",
             "image_ext_desc": "Durch Kommas getrennte Liste von Dateierweiterungen, die als Bilder identifiziert werden.",
-            "image_ext_head": "Bilderweiterungen",
+            "image_ext_head": "Bild-Dateiendungen",
             "include_audio_desc": "Binde Audiostream bei der Erstellung der Videovorschau ein.",
             "include_audio_head": "Audio einbeziehen",
             "logging": "Protokollierung",
-            "maximum_streaming_transcode_size_desc": "Maximale Größe für transcodierte Streams",
+            "maximum_streaming_transcode_size_desc": "Maximale Größe für transcodierte Streams.",
             "maximum_streaming_transcode_size_head": "Maximale Streaming-Transcode-Größe",
-            "maximum_transcode_size_desc": "Maximale Größe für generierte Transcodes",
+            "maximum_transcode_size_desc": "Maximale Größe für generierte Transcodierungen.",
             "maximum_transcode_size_head": "Maximale Transcodierungsgröße",
             "metadata_path": {
-                "description": "Verzeichnis das bei einem vollständigen Export oder Import genutzt wird",
+                "description": "Verzeichnis das bei einem vollständigen Export oder Import genutzt wird.",
                 "heading": "Metadatenpfad"
             },
             "number_of_parallel_task_for_scan_generation_desc": "Für die automatische Erkennung auf 0 setzen. Warnung: Mehr Aufgaben auszuführen, als erforderlich ist, um eine CPU-Auslastung von 100 % zu erreichen, verringert die Leistung und verursacht möglicherweise andere Probleme.",
@@ -415,13 +420,13 @@
             "parallel_scan_head": "Paralleler Scan/Generierung",
             "preview_generation": "Vorschau-Generierung",
             "python_path": {
-                "description": "Ort der Python-Programmdatei. Wird für Script-Scraper und Plugins verwendet. Wenn leer, wird python aus der Umgebung aufgelöst",
+                "description": "Ort der Python-Programmdatei. Wird für Script-Scraper und Plugins verwendet. Wenn leer, wird Python aus der Umgebung aufgelöst.",
                 "heading": "Python Pfad"
             },
-            "scraper_user_agent": "Scraper-Benutzeragent",
-            "scraper_user_agent_desc": "User-Agent-String, der während Scrape-HTTP-Anfragen verwendet wird",
+            "scraper_user_agent": "Scraper-User-Agent",
+            "scraper_user_agent_desc": "User-Agent-String, der bei HTTP-Anfragen von Scrapern verwendet wird.",
             "scrapers_path": {
-                "description": "Verzeichnis für die Konfigurationsdateien des Scrapers",
+                "description": "Verzeichnis für die Konfigurationsdateien des Scrapers.",
                 "heading": "Scraper Pfad"
             },
             "scraping": "Durchsuchen",
@@ -431,20 +436,35 @@
             "video_head": "Video",
             "plugins_path": {
                 "heading": "Dateipfad für Plugins",
-                "description": "Speicherort der Plugin-Konfigurationsdateien"
+                "description": "Speicherort der Plugin-Konfigurationsdateien."
             },
             "delete_trash_path": {
                 "description": "Pfad in den gelöschte Dateien verschoben, anstatt dauerhaft gelöscht werden. Freilassen, um Dateien permanent zu löschen.",
                 "heading": "Papierkorbverzeichnis"
-            }
+            },
+            "sprite_generation_head": "Sprite-Generierung",
+            "sprite_interval_desc": "Zeit zwischen jedem generierten Sprite in Sekunden.",
+            "sprite_interval_head": "Sprite-Intervall",
+            "sprite_maximum_desc": "Maximale Anzahl von Sprites, die für eine Szene generiert werden sollen. Auf 0 setzen, um die Begrenzung zu deaktivieren.",
+            "sprite_maximum_head": "Maximale Sprites",
+            "sprite_minimum_desc": "Mindestanzahl der für eine Szene zu generierenden Sprites",
+            "sprite_minimum_head": "Minimale Sprites",
+            "sprite_screenshot_size_desc": "Gewünschte Größe jedes Sprites in Pixeln.",
+            "sprite_screenshot_size_head": "Sprite-Größe",
+            "use_custom_sprite_interval_head": "Nutze ein benutzerdefiniertes Sprite-Intervall",
+            "use_custom_sprite_interval_desc": "Aktiviere das benutzerdefinierte Sprite-Intervall gemäß den folgenden Einstellungen.",
+            "default_marker_preview_duration_desc": "Dauer in Sekunden für Vorschauen von Markierungen ohne Endzeit. Muss größer als 0 sein.",
+            "default_marker_preview_duration_head": "Standarddauer der Vorschau von Markierungen",
+            "max_marker_preview_duration_desc": "Maximale Dauer in Sekunden für Vorschauen von Markierungen. 0 deaktiviert die Begrenzung.",
+            "max_marker_preview_duration_head": "Maximale Dauer der Vorschau von Markierungen"
         },
         "library": {
             "exclusions": "Ausnahmen",
             "gallery_and_image_options": "Galerie- und Bildoptionen",
-            "media_content_extensions": "Erweiterungen für Medieninhalte"
+            "media_content_extensions": "Dateiendungen für Medieninhalte"
         },
         "logs": {
-            "log_level": "Protokolllevel"
+            "log_level": "Protokollstufe"
         },
         "plugins": {
             "hooks": "Einbindungen",
@@ -455,8 +475,8 @@
         "scraping": {
             "entity_metadata": "{entityType} Metadaten",
             "entity_scrapers": "{entityType} Scraper",
-            "excluded_tag_patterns_desc": "Reguläre Audrücke von Tags zum Ausschließen von Scraping Ergebnissen",
-            "excluded_tag_patterns_head": "Tag Muster ausschließen",
+            "excluded_tag_patterns_desc": "Reguläre Ausdrücke für Tag-Namen, die aus Scraping-Ergebnissen ausgeschlossen werden.",
+            "excluded_tag_patterns_head": "Ausgeschlossene Tag-Muster",
             "scraper": "Scraper",
             "scrapers": "Scraper",
             "search_by_name": "Suche nach Name",
@@ -486,7 +506,11 @@
             "anonymising_database": "Anonymisiere Datenbank",
             "auto_tag": {
                 "auto_tagging_all_paths": "Automatisches Taggen aller Pfade",
-                "auto_tagging_paths": "Automatisches Taggen der folgenden Pfade"
+                "auto_tagging_paths": "Automatisches Taggen der folgenden Pfade",
+                "disable_warning": {
+                    "description": "Deaktiviert die Bestätigungsabfrage vor dem automatischen Taggen.",
+                    "heading": "Warung beim automatischen Taggen deaktivieren"
+                }
             },
             "auto_tag_based_on_filenames": "Inhalte basierend auf Dateipfaden automatisch taggen.",
             "auto_tagging": "Automatisches Tagging",
@@ -540,7 +564,9 @@
                 "tag_skipped_matches": "Übersprungenes Tag passt zu",
                 "tag_skipped_matches_tooltip": "Erstellen Sie ein Tag wie 'Identifizieren: Mehrere Übereinstimmungen“, nach denen Sie in der Scene Tagger-Ansicht filtern und die richtige Übereinstimmung von Hand auswählen können",
                 "tag_skipped_performers": "Setze folgenden Tag bei übersprungenen Darstellern",
-                "tag_skipped_performer_tooltip": "Erstelle einen Tag wie ‘zu identifizieren: Darsteller:in mit einem Namen‘ sodass du in der Scene Tagger Ansicht danach filtern und entscheiden kannst, wie mit diesen Darstellern:innen umgegangen werden soll"
+                "tag_skipped_performer_tooltip": "Erstelle einen Tag wie ‘zu identifizieren: Darsteller:in mit einem Namen‘ sodass du in der Scene Tagger Ansicht danach filtern und entscheiden kannst, wie mit diesen Darstellern:innen umgegangen werden soll",
+                "performer_genders": "Darsteller-Geschlechter",
+                "performer_genders_desc": "Darsteller mit den ausgewählten Geschlechtern werden beim Identifizieren berücksichtigt."
             },
             "import_from_exported_json": "Import aus exportiertem JSON im Metadatenverzeichnis. Löscht die vorhandene Datenbank.",
             "incremental_import": "Inkrementeller Import aus einer Export-ZIP-Datei.",
@@ -580,7 +606,24 @@
             "optimise_database_warning": "Achtung: Während diese Aufgabe ausgeführt wird, schlagen alle Operationen, die die Datenbank verändern, fehl, und je nach Größe Ihrer Datenbank kann es mehrere Minuten dauern, bis sie abgeschlossen ist. Außerdem wird mindestens so viel freier Speicherplatz benötigt, wie Ihre Datenbank groß ist, empfohlen wird jedoch das 1,5-fache.",
             "optimise_database": "Versucht die Performance zu verbessern, indem die Datenbank analysiert und dann neu strukturiert wird.",
             "rescan": "Dateien erneut scannen",
-            "rescan_tooltip": "Alle Dateien im Pfad neu scannen. Erzwingt das Erneuern von Metadaten und das erneute Scannen von ZIP Archiven."
+            "rescan_tooltip": "Alle Dateien im Pfad neu scannen. Erzwingt das Erneuern von Metadaten und das erneute Scannen von ZIP Archiven.",
+            "auto_tag_confirm": "Es wird versucht, deine Inhalte mit vorhandenen Metadaten abzugleichen.",
+            "auto_tag_warning": "Dieser Vorgang kann nicht rückgängig gemacht werden und führt möglicherweise zu falschen Zuordnungen.",
+            "backup_database": {
+                "description": "Erstellt ein Backup der Datenbank und der Blob-Dateien.",
+                "include_blobs": "Blobs in das Backup einschließen",
+                "include_blobs_desc": "Deaktivieren, um nur die SQLite-Datenbankdatei zu sichern.",
+                "sqlite": "Die Backup-Datei ist eine Kopie der SQLite-Datenbankdatei mit dem Dateinamen {filename_format}",
+                "to_directory": "Nach {directory}",
+                "zip": "SQLite-Datenbankdatei und Blob-Dateien werden zu einer einzigen Datei mit dem Dateinamen {filename_format} gepackt",
+                "destination": "Ziel",
+                "download": "Backup herunterladen",
+                "warning_blobs": "Blob-Dateien sind nicht Teil des Backups. Damit die Wiederherstellung des Backups erfolgreich durchgeführt werden kann, müssen die Blob-Dateien im Blob-Speicherort vorhanden sein."
+            },
+            "clean_ignore_zip_contents": "Inhalte von ZIP-Dateien ignorieren",
+            "clean_ignore_zip_contents_desc": "Schneller, übersieht aber Dateien, die innerhalb von ZIP-Dateien entfernt wurden. Kann bedenkenlos aktiviert werden, wenn innerhalb von ZIP-Archiven nichts gelöscht wird.",
+            "generate_image_phashes_during_scan": "Wahrnehmungshashwerte für Bilder generieren",
+            "generate_image_phashes_during_scan_tooltip": "Zur Deduplizierung und Identifizierung."
         },
         "tools": {
             "scene_duplicate_checker": "Duplikatsprüfung für Szenen",
@@ -811,7 +854,7 @@
             "detail": {
                 "compact_expanded_details": {
                     "heading": "Erweiterte Details einklappen",
-                    "description": "Wenn aktiviert, wird diese Option mehr Details anzeigen und dabei einen kompakten beibehalten"
+                    "description": "Wenn aktiviert, werden erweiterte Details angezeigt, dabei aber eine kompakte Darstellung beibehalten."
                 },
                 "enable_background_image": {
                     "heading": "Aktiviere Hintergrundbild",
@@ -821,6 +864,10 @@
                 "show_all_details": {
                     "description": "Wenn aktiviert, werden alle Inhaltsdetails standardmäßig angezeigt, und jedes Detail passt in eine einzelne Spalte",
                     "heading": "Alle Details anzeigen"
+                },
+                "show_studio_text": {
+                    "description": "Zeigt den Studionamen auf Detailseiten immer als Text statt als Logo an.",
+                    "heading": "Studio als Text anzeigen"
                 }
             },
             "use_stash_hosted_funscript": {
@@ -844,12 +891,27 @@
                 "heading": "Benutzerdefinierter Titel"
             },
             "troubleshooting_mode": {
-                "exit": "Abbrechen"
+                "exit": "Abbrechen",
+                "button": "Fehlerbehebungsmodus",
+                "dialog_title": "Fehlerbehebungsmodus aktivieren",
+                "dialog_description": "Deaktiviert vorübergehend alle Anpassungen, um die Diagnose von Problemen zu erleichtern:",
+                "dialog_item_css": "Benutzerdefiniertes CSS",
+                "dialog_item_js": "Benutzerdefiniertes JavaScript",
+                "dialog_item_locales": "Benutzerdefinierte Sprachdateien",
+                "dialog_log_level": "Das Protokolllevel wird für eine detaillierte Diagnose auf „Debug“ gesetzt.",
+                "dialog_reload_note": "Die Seite wird automatisch neu geladen.",
+                "enable": "Aktivieren & neu laden",
+                "overlay_message": "Fehlerbehebungsmodus ist aktiv - alle Anpassungen sind deaktiviert",
+                "dialog_item_plugins": "Alle Plugins"
+            },
+            "autostart_gallery_slideshow": {
+                "description": "Startet die Diashow automatisch, wenn die Lightbox einer Galerie über die Galerien-Seite geöffnet wird.",
+                "heading": "Diashow der Galerie automatisch starten"
             }
         },
         "advanced_mode": "Fortgeschrittener Modus",
         "changelog": {
-            "header": "Änderungsprotokoll"
+            "header": "Änderungshistorie"
         }
     },
     "configuration": "Konfiguration",
@@ -920,11 +982,11 @@
         "export_title": "Export",
         "imagewall": {
             "direction": {
-                "column": "Spalten",
+                "column": "Spalte",
                 "description": "Spalten- oder Reihenlayout.",
-                "row": "Zeilen"
+                "row": "Zeile"
             },
-            "margin_desc": "Anzahl der Marge (in Pixeln) um jedes Bild."
+            "margin_desc": "Außenabstand (in Pixeln) um jedes Bild."
         },
         "lightbox": {
             "delay": "Verzögerung (Sek)",
@@ -935,10 +997,9 @@
                 "original": "Original"
             },
             "options": "Optionen",
-            "page_header": "Seite {page} / {total}",
             "reset_zoom_on_nav": "Zoomstufe beim Bildwechsel zurücksetzen",
             "scale_up": {
-                "description": "Skaliere kleinere Bilder auf Bildschirmgröße",
+                "description": "Skaliere kleinere Bilder auf Bildschirmgröße.",
                 "label": "Skalieren, um zu passen"
             },
             "scroll_mode": {
@@ -1014,7 +1075,9 @@
         "stashid_exists_warning": "Die existierende Stash ID für diese Stash-Box wird ersetzt.",
         "studios_found": "{count} Studios gefunden",
         "scrape_results_missing": "fehlend",
-        "delete_alert_to_trash": "Folgendes {count, plural, one {{singularEntity}} other {{pluralEntity}}} wird in den Papierkorb verschoben:"
+        "delete_alert_to_trash": "Folgendes {count, plural, one {{singularEntity}} other {{pluralEntity}}} wird in den Papierkorb verschoben:",
+        "dont_show_again": "Diese Warning nicht erneut anzeigen",
+        "edit_entity_count_title": "{count} {count, plural, one {{singularEntity}} other {{pluralEntity}}} bearbeiten"
     },
     "dimensions": "Maße",
     "director": "Regisseur",
@@ -1566,7 +1629,7 @@
     "tag_sub_tag_tooltip": "Hat Untertags",
     "include_sub_groups": "Untergruppen einbeziehen",
     "studio_and_parent": "Studio & Mutterstudio",
-    "eta": "Edited to add",
+    "eta": "Restzeit",
     "login": {
         "login": "Login",
         "internal_error": "Unvorhergesehener interner Fehler. Weitere Details in den Logs",
@@ -1589,6 +1652,6 @@
     },
     "duplicated": "Dupliziert",
     "unsupported_criteria": "ungültige Kriterien",
-    "career_end": "Ende der Karriere",
-    "career_start": "Beginn der Karriere"
+    "career_end": "Karriereende",
+    "career_start": "Karrierestart"
 }

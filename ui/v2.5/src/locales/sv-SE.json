@@ -155,7 +155,12 @@
         "save_and_new": "Spara & ny",
         "invert_selection": "Invertera markering",
         "reveal_in_file_manager": "Visa i filhanteraren",
-        "select_directory": "Välj mapp"
+        "select_directory": "Välj mapp",
+        "create_parent_tag": "Skapa överordnad tagg",
+        "exclude_lowercase": "exkludera",
+        "from_clipboard": "Från urklipp",
+        "selective_generate": "Selektiv generering",
+        "set_as_performer_image": "Välj som stjärnbild"
     },
     "actions_name": "Handlingar",
     "age": "Ålder",
@@ -220,12 +225,12 @@
             "fp_found": "{fpCount, plural, =0 {Inga nya fingeravtryck hittades} other {# Nya fingeravtryck hittades}}",
             "fp_matches": "Speltid matchar",
             "fp_matches_multi": "Speltiden matchar {matchCount}/{durationsLength} fingeravtryck",
-            "hash_matches": "{hash_type} matchar",
+            "hash_matches": "{count, plural, one {# {hash_type} match} other {# {hash_type} matchar}}",
             "match_failed_already_tagged": "Scen redan taggad",
             "match_failed_no_result": "Inga resultat hittades",
             "match_success": "Scen taggad",
-            "phash_matches": "{count} PHashar matchar",
-            "unnamed": "Namnlös"
+            "unnamed": "Namnlös",
+            "hash_submissions": "{count} inskickningar"
         },
         "verb_match_fp": "Matcha fingeravtryck",
         "verb_matched": "Matchad",
@@ -247,9 +252,11 @@
             "latest_version_build_hash": "Senaste versionens bygghash:",
             "new_version_notice": "[Ny]",
             "release_date": "Utgivningsdatum:",
-            "stash_home": "Stash hemma vid {url}",
-            "stash_wiki": "Stash {url}-sida",
-            "version": "Version"
+            "stash_home": "Besök Stash på {url}.",
+            "stash_wiki": "Kolla in Stash {url} webbplats.",
+            "version": "Version",
+            "stash_community": "Gå med i på vårat {forumUrl} eller {discordUrl} gemenskaps server.",
+            "support_us": "Stöd oss via {openCollectiveUrl} eller {githubSponsorsUrl}."
         },
         "application_paths": {
             "heading": "Applikationssökväg"
@@ -436,7 +443,7 @@
                 "description": "Sökväg dit raderade filer kommer flyttas till instället för att permanent raderas. Lämna blankt för att permanent radera filer.",
                 "heading": "Skräpsökväg"
             },
-            "sprite_generation_head": "Sprite-generering",
+            "sprite_generation_head": "Sprite generering",
             "sprite_interval_desc": "Tid i sekunder mellan varje genererad sprite.",
             "sprite_interval_head": "Sprite-intervall",
             "sprite_maximum_desc": "Maximalt antal sprites att generera för en scen. Sätt till 0 för att inte begränsa.",
@@ -446,7 +453,11 @@
             "sprite_screenshot_size_desc": "Önskad storlek i pixlar för varje sprite.",
             "sprite_screenshot_size_head": "Sprite-storlek",
             "use_custom_sprite_interval_head": "Använd egen sprite-intervall",
-            "use_custom_sprite_interval_desc": "Aktivera den egna sprite-intervallen enligt inställningarna nedan."
+            "use_custom_sprite_interval_desc": "Aktivera den egna sprite-intervallen enligt inställningarna nedan.",
+            "default_marker_preview_duration_desc": "Tid (sekunder) för markörförhandsvisningar utan en sluttid. Måste vara större än 0.",
+            "default_marker_preview_duration_head": "Standard markörförhandsvisningstid",
+            "max_marker_preview_duration_desc": "Maximal tid (sekunder) för markörförhandsvisningar. 0 stänger av gränsen.",
+            "max_marker_preview_duration_head": "Maximal markörförhandsvisningstid"
         },
         "library": {
             "exclusions": "Exkludera",
@@ -496,7 +507,11 @@
             "anonymising_database": "Anonymiserar databas",
             "auto_tag": {
                 "auto_tagging_all_paths": "Autotagga alla sökvägar",
-                "auto_tagging_paths": "Autotagga följande sökvägar"
+                "auto_tagging_paths": "Autotagga följande sökvägar",
+                "disable_warning": {
+                    "description": "Inaktivera bekräftelsevarningen som visas innan automatisk taggning körs.",
+                    "heading": "Inaktivera varning för automatisk taggning"
+                }
             },
             "auto_tag_based_on_filenames": "Tagga innehåll automatiskt baserat på sökvägar.",
             "auto_tagging": "Automatisk taggning",
@@ -603,9 +618,13 @@
                 "include_blobs_desc": "Stäng av för att endast säkerhetskopiera SQLites databasfil.",
                 "sqlite": "Säkerhetskopiafilen kommer vara en kopia av SQLites databasfil, med namnet {filename_format}",
                 "to_directory": "Till {directory}",
-                "warning_blobs": "Blobb-filer kommer inte inkluderas i säkerhetskopian. Detta betyder att för att komplett återställa från en säkerhetskopia, så måste blobb-filena vara närvarande på blobb-förvaringsplatsen.",
+                "warning_blobs": "Blobb-filer kommer inte inkluderas i säkerhetskopian. Detta betyder att för att komplett lyckas att återställa från en säkerhetskopia, så måste blobb-filena vara närvarande på blobb-förvaringsplatsen.",
                 "zip": "SQLite-databasfilen och blobb-filerna kommer zippas till en enda fil med namnet {filename_format}"
-            }
+            },
+            "auto_tag_confirm": "Detta kommer att försöka matcha ditt innehåll mot befintlig metadata.",
+            "auto_tag_warning": "Den här processen kan inte ångras och kan ge felaktiga matchningar.",
+            "clean_ignore_zip_contents": "Ignorera innehållet i zip-filer",
+            "clean_ignore_zip_contents_desc": "Snabbare men missar filer som tagits bort inuti zip-filer. Säkert att aktivera om du inte tar bort filer inuti zip-filer."
         },
         "tools": {
             "scene_duplicate_checker": "Scen duplikatkontroll",
@@ -677,6 +696,10 @@
                 "show_all_details": {
                     "description": "När aktiverat kommer alla detaljer visas och varje detalj kommer passa i en enda kolumn.",
                     "heading": "Visa alla detaljer"
+                },
+                "show_studio_text": {
+                    "description": "Visa alltid studionamnet som text i detaljvyer istället för en ikon.",
+                    "heading": "Visa studio som text"
                 }
             },
             "editing": {
@@ -782,7 +805,8 @@
             "scene_list": {
                 "heading": "Rutnätsvy",
                 "options": {
-                    "show_studio_as_text": "Visa studionamn som text"
+                    "show_studio_as_text": "Visa studionamn som text",
+                    "show_studio_as_text_desc": "Som standard visas studions logotyp på kort i rutnätet. Aktivera det här alternativet för att alltid visa studions namn som text istället."
                 }
             },
             "scene_player": {
@@ -814,7 +838,7 @@
                 "heading": "Scen / Markörvägg",
                 "options": {
                     "display_title": "Visa titel och taggar",
-                    "toggle_sound": "Aktivera ljud"
+                    "toggle_sound": "Aktivera ljud vid förhandsgranskning, muspekare över"
                 }
             },
             "scroll_attempts_before_change": {
@@ -881,6 +905,19 @@
                 "enable": "Aktivera & ladda om",
                 "overlay_message": "Felsökningsläget är aktivt – alla egna anpassningar är avstängda",
                 "exit": "Avsluta"
+            },
+            "scene_view": {
+                "heading": "Scenvy",
+                "options": {
+                    "preview_volume": {
+                        "description": "Volymen på förhandsgranskningen när du håller muspekaren över en scen. Ställ in på 0 för att tysta.",
+                        "heading": "Förhandsgranskningsvolym"
+                    }
+                }
+            },
+            "autostart_gallery_slideshow": {
+                "description": "Starta bildspelet automatiskt vid öppning av ett galleris lightbox från gallerisidan.",
+                "heading": "Autostarta galleri bildspel"
             }
         },
         "advanced_mode": "Avancerat läge",
@@ -972,7 +1009,6 @@
                 "original": "Original"
             },
             "options": "Alternativ",
-            "page_header": "Sida {page} / {total}",
             "reset_zoom_on_nav": "Återställ zoom vid bildbyte",
             "scale_up": {
                 "description": "Skala mindre bilder så att de fyller skärmen.",
@@ -989,7 +1025,8 @@
         "merge": {
             "destination": "Destination",
             "empty_results": "Destinationens värden kommer ej ändras.",
-            "source": "Källa"
+            "source": "Källa",
+            "combined": "Kombinerad"
         },
         "performers_found": "{count} stjärnor hittade",
         "reassign_entity_title": "{count, plural, one {Omplacera {singularEntity}} other {Omplacera {pluralEntity}}}",
@@ -1009,7 +1046,7 @@
             "marker_screenshots": "Markörskärmklipp",
             "marker_screenshots_tooltip": "Markör statiska JPG-bilder",
             "markers": "Markörförhandsvisningar",
-            "markers_tooltip": "20-sekunders videor som börjar vid angiven tidsstämpel.",
+            "markers_tooltip": "Videoförhandsvisningar som börjar vid angiven tidsstämpel.",
             "override_preview_generation_options": "Åsidosätt inställningar för förhandsvisningsgeneration",
             "override_preview_generation_options_desc": "Åsidosätt inställningar för förhandsvisningsgeneration. Standarden ställs in i System -> Förhandsvisningsgeneration.",
             "overwrite": "Ersätt existerande filer",
@@ -1053,7 +1090,9 @@
         "stashid_exists_warning": "Det existerande stash id:et för denna stash-box kommer ersättas.",
         "studios_found": "{count} studior hittades",
         "tags_found": "{count} taggar hittades",
-        "scrape_results_missing": "Saknat"
+        "scrape_results_missing": "Saknat",
+        "edit_entity_count_title": "Redigera {count} {count, plural, en {{singularEntity}} annan {{pluralEntity}}}",
+        "dont_show_again": "Visa inte den här varningen igen"
     },
     "dimensions": "Mått",
     "director": "Regissör",
@@ -1219,7 +1258,7 @@
         "video_codec": "Videokodek",
         "o_count": "Antal O",
         "md5": "MD5 Checksumma",
-        "oshash": "oshash",
+        "oshash": "OSHash",
         "oshash_meaning": "OpenSubtitles Hash",
         "phash_meaning": "Perceptuell Hash"
     },
@@ -1277,8 +1316,11 @@
         "untagged_performers": "Ej taggade stjärnor",
         "update_performer": "Uppdatera stjärna",
         "update_performers": "Uppdatera stjärnor",
-        "updating_untagged_performers_description": "Uppdatering av ej taggade stjärnor kommer försöka att matcha alla stjärnor som saknar StashID och uppdatera metadatan.",
-        "performer_names_or_stashids_separated_by_comma": "Stjärnors namn eller StashID separerade med komma"
+        "updating_untagged_performers_description": "Uppdatering av ej taggade stjärnor kommer försöka att matcha alla stjärnor som saknar stashid och uppdatera metadatan.",
+        "performer_names_or_stashids_separated_by_comma": "Stjärnors namn eller StashID separerade med komma",
+        "configure_fields": "Konfigurera fält",
+        "field_options": "Fält alternativ",
+        "field_options_description": "Välj hur varje fält uppdateras: överskrivning ersätter befintlig data, sammanslagning lägger till data, hoppa över lämnar den oförändrad."
     },
     "performer_tags": "Stjärntagg",
     "performers": "Stjärnor",
@@ -1326,7 +1368,8 @@
             "database_file_path": "Databas filsökväg",
             "generated_directory": "Genererat sökväg",
             "nearly_there": "Nästan framme!",
-            "stash_library_directories": "Stash bibliotekssökväg"
+            "stash_library_directories": "Stash bibliotekssökväg",
+            "password_set_warning": "Anmärkning: du kommer bli frågad om ditt inlogg efter att systemet är skapat."
         },
         "creating": {
             "creating_your_system": "Skapar ditt system"
@@ -1412,7 +1455,13 @@
             "next_step": "När du är redo att fortsätta med uppstarten av ett nytt system tryck på Nästa.",
             "unable_to_locate_specified_config": "Om du läser detta så kunde Stash inte hitta konfigurationsfilen som specifierades via kommandoraden eller miljön. Denna hjälp kommer guida dig genom processen av att ställa in en ny konfiguration."
         },
-        "welcome_to_stash": "Välkommen till Stash"
+        "welcome_to_stash": "Välkommen till Stash",
+        "credentials": {
+            "description": "Ange användarnamnet och lösenordet som du vill använda för att logga in med i Stash. Dessa kan lämnas tomma om du inte vill använda användarnamn/lösenord för att få tillgång till systemet. Dessa behövs om du ska nå systemet från det offentliga internet.",
+            "heading": "Ställ in ditt inlogg",
+            "password_invalid": "Lösenord får ej vara blankt om användarnamnet är inställt.",
+            "username_invalid": "Användarnamn får inte börja eller sluta med blanksteg."
+        }
     },
     "stash_id": "Stash ID",
     "stash_id_endpoint": "Stash ID Slutpunkt URL",
@@ -1468,7 +1517,7 @@
         "untagged_studios": "Otaggade studior",
         "update_studio": "Uppdatera Studio",
         "update_studios": "Uppdatera Studior",
-        "updating_untagged_studios_description": "Uppdatera otaggade studior kommer försöka matcha studior som saknar Stash ID och uppdatera metadata.",
+        "updating_untagged_studios_description": "Uppdatera otaggade studior kommer försöka matcha studior som saknar stashid och uppdatera metadata.",
         "studio_names_or_stashids_separated_by_comma": "Studionamn eller StashID separerade med komma"
     },
     "studios": "Studior",
@@ -1500,7 +1549,11 @@
         "started_generating": "Började generera",
         "started_importing": "Började importera",
         "updated_entity": "Uppdaterade {entity}",
-        "merged_performers": "Sammanslagna stjärnor"
+        "merged_performers": "Sammanslagna stjärnor",
+        "clipboard_access_denied": "Åtkomst till urklipp nekad. Kontrollera dina webbläsarbehörigheter",
+        "clipboard_image_pasted": "Bild inklistrad från urklipp",
+        "clipboard_no_image": "Ingen bild hittades i urklipp",
+        "screenshot_generated": "Skärmdump genererad"
     },
     "total": "Total",
     "true": "Sant",
@@ -1660,7 +1713,13 @@
         "to_use_the_tag_tagger": "För att använda taggtaggaren så måste en stash-box-instans konfigureras.",
         "untagged_tags": "Otaggade taggar",
         "update_tags": "Uppdatera Taggar",
-        "updating_untagged_tags_description": "Uppdatering av otaggade taggar kommer att försöka matcha alla taggar som saknar StashID och uppdatera deras metadata."
+        "updating_untagged_tags_description": "Uppdatering av otaggade taggar kommer att försöka matcha alla taggar som saknar stashid och uppdatera deras metadata.",
+        "config": {
+            "create_parent_desc": "Skapa saknade överordnade taggar från stashbox kategorier, eller tagga befintliga överordnade taggar med exakta namnmatchningar",
+            "create_parent_label": "Skapa överordnade taggar"
+        },
+        "create_or_tag_parent_tags": "Skapa saknade eller tagga befintliga överordnade taggar",
+        "parent_tag_no_remote_site_id_warning": "Överordnad tagg har inget fjärrplats-ID och kommer inte att länkas till stash-box-instansen."
     },
     "tagger": {
         "config": {
@@ -1668,9 +1727,22 @@
             "edit_excluded_fields": "Ändra Exkluderade Fält",
             "excluded_fields": "Exkluderade fält:",
             "fields_will_not_be_changed": "De här fälten kommer inte ändras när {entity} uppdateras.",
-            "no_fields_are_excluded": "Inga fält är exkluderad",
+            "no_fields_are_excluded": "Inga fält är exkluderade",
             "no_instances_found": "Inga instanser hittades"
         }
     },
-    "unsupported_criteria": "Ej stöttat kriterium: {critera}"
+    "unsupported_criteria": "Ej stöttat kriterium: {critera}",
+    "empty_value": "tom",
+    "include_sub_folders": "Inkludera undermappar",
+    "parent_folder": "Överordnad mapp",
+    "refer_to": "Vänligen se {link}.",
+    "scenes_size": "Scenstorlek",
+    "sub_folder_depth": "Undermappsdjup (tomt för alla)",
+    "sub_folders": "Undermappar",
+    "related_studios": "Relaterade",
+    "sub_group_description": "Beskrivning av undergrupp",
+    "o_count_all": "Antal O (Allt)",
+    "performer_count_all": "Antal Stjärnor (Allt)",
+    "scene_marker_count": "Antal Scenmarkörer",
+    "stash_id_endpoint_any": "Valfri slutpunkt"
 }
