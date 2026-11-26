@@ -304,7 +304,7 @@ func (j *verifyJob) assessFiles(ctx context.Context) error {
 	return nil
 }
 
-// flagFolderForDelete adds folders to the toDelete set, with the leaf folders added first
+// handleMissingFile handles a missing file, along with any files and folders contained in it if it is a zip file.
 func (j *verifyJob) handleMissingFile(ctx context.Context, f models.File) error {
 	r := j.Repository
 
@@ -445,13 +445,9 @@ func (j *verifyJob) handleMissingFolder(ctx context.Context, folder *models.Fold
 
 		for _, cf := range containedFiles {
 			logger.Infof("Marking contained file %q to clean", cf.Base().Path)
-			processed, err := j.missingFileHandler(ctx, cf)
-			if err != nil {
+			// progress is not incremented: assessFiles runs afterwards and counts these files
+			if _, err := j.missingFileHandler(ctx, cf); err != nil {
 				return err
-			}
-
-			if processed {
-				j.progress.Increment()
 			}
 		}
 

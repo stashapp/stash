@@ -48,7 +48,7 @@ func (h *FilteredHandler) Handle(ctx context.Context, f models.File, oldFile mod
 	return nil
 }
 
-// PurgeHandler provides a handler for cleaning Files and Folders.
+// PurgeHandler provides a handler for purging missing Files and Folders.
 type PurgeHandler interface {
 	HandleFile(ctx context.Context, fileDeleter *Deleter, fileID models.FileID) error
 	HandleFolder(ctx context.Context, fileDeleter *Deleter, folderID models.FolderID) error

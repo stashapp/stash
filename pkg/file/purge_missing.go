@@ -116,12 +116,15 @@ func (j *purgeMissingJob) purgeMissingFiles(ctx context.Context, progress *job.P
 			return err
 		}
 
+		failed := 0
 		for _, f := range files {
 			if j.options.DryRun {
 				logger.Infof("Would delete file %q from database", f.Base().Path)
 			} else {
 				logger.Infof("Deleting file %q from database", f.Base().Path)
-				j.deleteFile(ctx, f.Base().ID, f.Base().Path)
+				if !j.deleteFile(ctx, f.Base().ID, f.Base().Path) {
+					failed++
+				}
 			}
 			progress.Increment()
 		}
@@ -129,9 +132,11 @@ func (j *purgeMissingJob) purgeMissingFiles(ctx context.Context, progress *job.P
 		if len(files) != batchSize {
 			more = false
 		} else if j.options.DryRun {
-			// when not in dry run, we should be continuing until there's none left
-			// in dry run, we can just increment the offset and continue to the next batch
+			// in dry run nothing is deleted, so page through the results
 			offset += batchSize
+		} else {
+			// deleted rows drop out of the results; skip past rows that failed to delete
+			offset += failed
 		}
 	}
 
@@ -164,12 +169,15 @@ func (j *purgeMissingJob) purgeMissingFolders(ctx context.Context) error {
 			return err
 		}
 
+		failed := 0
 		for _, f := range folders {
 			if j.options.DryRun {
 				logger.Infof("Would delete folder %q from database", f.Path)
 			} else {
 				logger.Infof("Deleting folder %q from database", f.Path)
-				j.deleteFolder(ctx, f.ID, f.Path)
+				if !j.deleteFolder(ctx, f.ID, f.Path) {
+					failed++
+				}
 			}
 			progress.Increment()
 		}
@@ -177,16 +185,19 @@ func (j *purgeMissingJob) purgeMissingFolders(ctx context.Context) error {
 		if len(folders) != batchSize {
 			more = false
 		} else if j.options.DryRun {
-			// when not in dry run, we should be continuing until there's none left
-			// in dry run, we can just increment the offset and continue to the next batch
+			// in dry run nothing is deleted, so page through the results
 			offset += batchSize
+		} else {
+			// deleted rows drop out of the results; skip past rows that failed to delete
+			offset += failed
 		}
 	}
 
 	return nil
 }
 
-func (j *purgeMissingJob) deleteFile(ctx context.Context, fileID models.FileID, fn string) {
+// deleteFile returns false if the file could not be deleted.
+func (j *purgeMissingJob) deleteFile(ctx context.Context, fileID models.FileID, fn string) bool {
 	// delete associated objects
 	fileDeleter := NewDeleterWithTrash(j.TrashPath)
 	r := j.Repository
@@ -200,11 +211,14 @@ func (j *purgeMissingJob) deleteFile(ctx context.Context, fileID models.FileID, 
 		return r.File.Destroy(ctx, fileID)
 	}); err != nil {
 		logger.Errorf("Error deleting file %q from database: %s", fn, err.Error())
-		return
+		return false
 	}
+
+	return true
 }
 
-func (j *purgeMissingJob) deleteFolder(ctx context.Context, folderID models.FolderID, fn string) {
+// deleteFolder returns false if the folder could not be deleted.
+func (j *purgeMissingJob) deleteFolder(ctx context.Context, folderID models.FolderID, fn string) bool {
 	// delete associated objects
 	fileDeleter := NewDeleterWithTrash(j.TrashPath)
 	r := j.Repository
@@ -218,8 +232,10 @@ func (j *purgeMissingJob) deleteFolder(ctx context.Context, folderID models.Fold
 		return r.Folder.Destroy(ctx, folderID)
 	}); err != nil {
 		logger.Errorf("Error deleting folder %q from database: %s", fn, err.Error())
-		return
+		return false
 	}
+
+	return true
 }
 
 func (j *purgeMissingJob) fireHandlers(ctx context.Context, fileDeleter *Deleter, fileID models.FileID) error {
