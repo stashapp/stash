@@ -140,3 +140,71 @@ func TestScannerScanFileMatchesCaseOnlyRenameOnCaseInsensitiveFilesystem(t *test
 
 	db.File.AssertExpectations(t)
 }
+
+// rejectAllFilter makes unchanged files skip their handlers.
+type rejectAllFilter struct{}
+
+func (rejectAllFilter) Accept(ctx context.Context, f models.File) bool { return false }
+
+func TestScannerScanFileClearsMissingSinceOnUnchangedFile(t *testing.T) {
+	modTime := time.Date(2026, 7, 2, 12, 0, 0, 0, time.UTC)
+	missingSince := modTime.Add(time.Hour)
+	fingerprints := []models.Fingerprint{{Type: models.FingerprintTypeOshash, Fingerprint: "oshash"}}
+
+	for _, tc := range []struct {
+		name         string
+		missingSince *time.Time
+	}{
+		{"previously missing", &missingSince},
+		{"not missing", nil},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx := context.Background()
+			db := mocks.NewDatabase()
+
+			existing := &models.BaseFile{
+				ID:           1,
+				Path:         "/stash/archive.zip",
+				Basename:     "archive.zip",
+				Size:         100,
+				DirEntry:     models.DirEntry{ModTime: modTime, MissingSince: tc.missingSince},
+				Fingerprints: fingerprints,
+			}
+
+			scanner := Scanner{
+				FS:                     scanTestFS{caseSensitive: true},
+				Repository:             Repository{TxnManager: db, File: db.File, Folder: db.Folder},
+				FingerprintCalculator:  scanTestFingerprintCalculator{fingerprints: fingerprints},
+				HandlerRequiredFilters: []Filter{rejectAllFilter{}},
+			}
+
+			scanned := ScannedFile{
+				BaseFile: &models.BaseFile{
+					Path:     existing.Path,
+					Basename: existing.Basename,
+					Size:     existing.Size,
+					DirEntry: models.DirEntry{ModTime: modTime},
+				},
+				FS:   scanTestFS{caseSensitive: true},
+				Info: scanTestFileInfo{name: existing.Basename, size: existing.Size, modTime: modTime},
+			}
+
+			db.File.On("FindByPath", mock.Anything, scanned.Path, true).Return(existing, nil).Once()
+			if tc.missingSince != nil {
+				db.File.On("SetMissing", mock.Anything, existing.ID, (*time.Time)(nil)).Return(nil).Once()
+			}
+
+			result, err := scanner.ScanFile(ctx, scanned)
+			require.NoError(t, err)
+			require.NotNil(t, result)
+			// signals the scan task to rescan zip contents, which were marked missing with the zip
+			assert.Equal(t, tc.missingSince != nil, result.NoLongerMissing)
+			assert.False(t, result.Updated)
+
+			db.File.AssertExpectations(t)
+			if tc.missingSince == nil {
+				db.File.AssertNotCalled(t, "SetMissing", mock.Anything, mock.Anything, mock.Anything)
+			}
+		})
+	}
+}

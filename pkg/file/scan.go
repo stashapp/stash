@@ -954,5 +954,6 @@ func (s *Scanner) onUnchangedFile(ctx context.Context, f ScannedFile, existing m
 		File:            existing,
 		Updated:         true,
 		HandlerRequired: true,
+		NoLongerMissing: wasMissing,
 	}, nil
 }
