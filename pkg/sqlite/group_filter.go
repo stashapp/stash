@@ -64,6 +64,7 @@ func (qb *groupFilterHandler) criterionHandler() criterionHandler {
 	groupFilter := qb.groupFilter
 	return compoundHandler{
 		stringCriterionHandler(groupFilter.Name, "groups.name"),
+		qb.aliasCriterionHandler(groupFilter.Aliases),
 		stringCriterionHandler(groupFilter.Director, "groups.director"),
 		stringCriterionHandler(groupFilter.Synopsis, "groups.description"),
 		intCriterionHandler(groupFilter.Rating100, "groups.rating", nil),
@@ -275,4 +276,18 @@ func (qb *groupFilterHandler) groupOCounterCriterionHandler(count *models.IntCri
 		f.addWhere(clause, args...)
 	}
 
+}
+
+func (qb *groupFilterHandler) aliasCriterionHandler(alias *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		primaryTable: groupTable,
+		primaryFK:    groupIDColumn,
+		joinTable:    groupAliasesTable,
+		stringColumn: groupAliasColumn,
+		addJoinTable: func(f *filterBuilder, joinType joinType) {
+			groupAliasesTableMgr.join(f, joinType, "", "groups.id")
+		},
+	}
+
+	return h.handler(alias)
 }

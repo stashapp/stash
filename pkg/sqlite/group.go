@@ -749,6 +749,6 @@ func (qb *GroupStore) sortByOCounter(direction string) string {
 	return " ORDER BY (" + selectGroupOCountSQL + ") " + direction
 }
 
-func (qb *GroupStore) GetAliases(ctx context.Context, groupId int) ([]string, error) {
-	return groupAliasesTableMgr.get(ctx, groupId)
+func (qb *GroupStore) GetAliases(ctx context.Context, groupID int) ([]string, error) {
+	return groupAliasesTableMgr.get(ctx, groupID)
 }

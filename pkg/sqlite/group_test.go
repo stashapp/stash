@@ -766,7 +766,7 @@ func TestGroupQuery(t *testing.T) {
 	var (
 		frontImage = "front_image"
 		backImage  = "back_image"
-		aliases    = "aliases"
+		alias      = getGroupStringValue(groupIdxWithAlias, "alias")
 	)
 
 	tests := []struct {
@@ -800,14 +800,38 @@ func TestGroupQuery(t *testing.T) {
 			false,
 		},
 		{
-			"is missing aliases",
+			"aliases equals",
 			nil,
 			&models.GroupFilterType{
-				IsMissing: &aliases,
+				Aliases: &models.StringCriterionInput{
+					Value:    alias,
+					Modifier: models.CriterionModifierEquals,
+				},
 			},
-			// just ensure that it doesn't error
+			[]int{groupIdxWithAlias},
+			[]int{groupIdxWithScene},
+			false,
+		},
+		{
+			"aliases is null",
 			nil,
+			&models.GroupFilterType{
+				Aliases: &models.StringCriterionInput{
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			[]int{groupIdxWithScene},
+			[]int{groupIdxWithAlias},
+			false,
+		},
+		{
+			"search by alias",
+			&models.FindFilterType{
+				Q: &alias,
+			},
 			nil,
+			[]int{groupIdxWithAlias},
+			[]int{groupIdxWithScene},
 			false,
 		},
 		{
