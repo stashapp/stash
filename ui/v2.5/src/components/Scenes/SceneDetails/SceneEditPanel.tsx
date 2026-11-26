@@ -61,6 +61,7 @@ import {
   formatCustomFieldInput,
 } from "src/components/Shared/CustomFields";
 import cloneDeep from "lodash-es/cloneDeep";
+import xor from "lodash-es/xor";
 
 const SceneScrapeDialog = lazyComponent(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazyComponent(() => import("./SceneQueryModal"));
@@ -171,6 +172,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
     details: yup.string().ensure(),
     cover_image: yup.string().nullable().optional(),
     custom_fields: yup.object().required().defined(),
+    locked_fields: yup
+      .array(yup.mixed<GQL.SceneLockableField>().required())
+      .defined(),
   });
 
   const initialValues = useMemo(
@@ -192,6 +196,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       details: scene.details ?? "",
       cover_image: initialCoverImage,
       custom_fields: cloneDeep(scene.custom_fields ?? {}),
+      locked_fields: scene.locked_fields ?? [],
     }),
     [scene, initialCoverImage]
   );
@@ -200,12 +205,15 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   const [customFieldsError, setCustomFieldsError] = useState<string>();
 
-  function submit(values: InputValues) {
-    const input = {
+  function getInput(values: InputValues) {
+    return {
       ...schema.cast(values),
       custom_fields: formatCustomFieldInput(isNew, values.custom_fields),
     };
-    onSave(input);
+  }
+
+  function submit(values: InputValues) {
+    onSave(getInput(values));
   }
 
   const formik = useFormik<InputValues>({
@@ -329,11 +337,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   }
 
   async function onSaveAndNewClick() {
-    const input = {
-      ...schema.cast(formik.values),
-      custom_fields: formatCustomFieldInput(isNew, formik.values.custom_fields),
-    };
-    onSave(input, true);
+    onSave(getInput(formik.values), true);
   }
 
   const encodingImage = ImageUtils.usePasteImage(onImageLoad);
@@ -423,6 +427,49 @@ export const SceneEditPanel: React.FC<IProps> = ({
     setScrapedScene(undefined);
   }
 
+  // drops scraped values for locked fields so the dialog neither shows nor applies them
+  function withoutLockedFields(scraped: GQL.ScrapedScene) {
+    const ret = { ...scraped };
+    for (const field of formik.values.locked_fields) {
+      switch (field) {
+        case GQL.SceneLockableField.Title:
+          ret.title = null;
+          break;
+        case GQL.SceneLockableField.Code:
+          ret.code = null;
+          break;
+        case GQL.SceneLockableField.Details:
+          ret.details = null;
+          break;
+        case GQL.SceneLockableField.Director:
+          ret.director = null;
+          break;
+        case GQL.SceneLockableField.Date:
+          ret.date = null;
+          break;
+        case GQL.SceneLockableField.ProductionDate:
+          ret.production_date = null;
+          break;
+        case GQL.SceneLockableField.Studio:
+          ret.studio = null;
+          break;
+        case GQL.SceneLockableField.Urls:
+          ret.urls = null;
+          break;
+        case GQL.SceneLockableField.Performers:
+          ret.performers = null;
+          break;
+        case GQL.SceneLockableField.Tags:
+          ret.tags = null;
+          break;
+        case GQL.SceneLockableField.Groups:
+          ret.groups = null;
+          break;
+      }
+    }
+    return ret;
+  }
+
   function maybeRenderScrapeDialog() {
     if (!scrapedScene) {
       return;
@@ -444,7 +491,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
         sceneTags={tags}
         scenePerformers={performers}
         sceneGroups={groups}
-        scraped={scrapedScene}
+        scraped={withoutLockedFields(scrapedScene)}
         endpoint={endpoint}
         onClose={(s) => onScrapeDialogClosed(s)}
       />
@@ -689,6 +736,32 @@ export const SceneEditPanel: React.FC<IProps> = ({
     renderStashIDsField,
   } = formikUtils(intl, formik, splitProps);
 
+  type FieldProps = Parameters<typeof renderField>[3];
+
+  function isLocked(field: GQL.SceneLockableField) {
+    return formik.values.locked_fields.includes(field);
+  }
+
+  // adds a lock toggle to the field, except on new scenes
+  function lockProps(
+    field: GQL.SceneLockableField,
+    props?: FieldProps
+  ): FieldProps {
+    if (isNew) return props;
+
+    return {
+      ...props,
+      lock: {
+        locked: isLocked(field),
+        onToggle: () =>
+          formik.setFieldValue(
+            "locked_fields",
+            xor(formik.values.locked_fields, [field])
+          ),
+      },
+    };
+  }
+
   function renderGalleriesField() {
     const title = intl.formatMessage({ id: "galleries" });
     const control = (
@@ -699,7 +772,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
       />
     );
 
-    return renderField("gallery_ids", title, control);
+    return renderField(
+      "gallery_ids",
+      title,
+      control,
+      lockProps(GQL.SceneLockableField.Galleries)
+    );
   }
 
   function renderStudioField() {
@@ -711,7 +789,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
       />
     );
 
-    return renderField("studio_id", title, control);
+    return renderField(
+      "studio_id",
+      title,
+      control,
+      lockProps(GQL.SceneLockableField.Studio)
+    );
   }
 
   function renderPerformersField() {
@@ -738,7 +821,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
       />
     );
 
-    return renderField("performer_ids", title, control, fullWidthProps);
+    return renderField(
+      "performer_ids",
+      title,
+      control,
+      lockProps(GQL.SceneLockableField.Performers, fullWidthProps)
+    );
   }
 
   function onSetGroupEntries(input: IGroupEntry[]) {
@@ -758,12 +846,22 @@ export const SceneEditPanel: React.FC<IProps> = ({
       <SceneGroupTable value={groupEntries} onUpdate={onSetGroupEntries} />
     );
 
-    return renderField("groups", title, control, fullWidthProps);
+    return renderField(
+      "groups",
+      title,
+      control,
+      lockProps(GQL.SceneLockableField.Groups, fullWidthProps)
+    );
   }
 
   function renderTagsField() {
     const title = intl.formatMessage({ id: "tags" });
-    return renderField("tag_ids", title, tagsControl(), fullWidthProps);
+    return renderField(
+      "tag_ids",
+      title,
+      tagsControl(),
+      lockProps(GQL.SceneLockableField.Tags, fullWidthProps)
+    );
   }
 
   function renderDetailsField() {
@@ -779,7 +877,12 @@ export const SceneEditPanel: React.FC<IProps> = ({
       },
     };
 
-    return renderInputField("details", "textarea", "details", props);
+    return renderInputField(
+      "details",
+      "textarea",
+      "details",
+      lockProps(GQL.SceneLockableField.Details, props)
+    );
   }
 
   return (
@@ -871,20 +974,43 @@ export const SceneEditPanel: React.FC<IProps> = ({
         </Row>
         <Row className="form-container px-3">
           <Col lg={7} xl={12}>
-            {renderInputField("title")}
-            {renderInputField("code", "text", "scene_code")}
+            {renderInputField(
+              "title",
+              "text",
+              "title",
+              lockProps(GQL.SceneLockableField.Title)
+            )}
+            {renderInputField(
+              "code",
+              "text",
+              "scene_code",
+              lockProps(GQL.SceneLockableField.Code)
+            )}
 
             {renderURLListField(
               "urls",
               onScrapeSceneURL,
               urlScrapable,
               "urls",
-              urlProps
+              lockProps(GQL.SceneLockableField.Urls, urlProps)
             )}
 
-            {renderDateField("date")}
-            {renderDateField("production_date")}
-            {renderInputField("director")}
+            {renderDateField(
+              "date",
+              "date",
+              lockProps(GQL.SceneLockableField.Date)
+            )}
+            {renderDateField(
+              "production_date",
+              "production_date",
+              lockProps(GQL.SceneLockableField.ProductionDate)
+            )}
+            {renderInputField(
+              "director",
+              "text",
+              "director",
+              lockProps(GQL.SceneLockableField.Director)
+            )}
 
             {renderGalleriesField()}
             {renderStudioField()}

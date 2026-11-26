@@ -100,11 +100,20 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 	var scenes []*models.Scene
 	for i, p := range append(matchingPaths, falsePaths...) {
 		scenes = append(scenes, &models.Scene{
-			ID:     i + 1,
-			Path:   p,
-			TagIDs: models.NewRelatedIDs([]int{}),
+			ID:           i + 1,
+			Path:         p,
+			TagIDs:       models.NewRelatedIDs([]int{}),
+			LockedFields: models.NewRelatedStrings([]string{}),
 		})
 	}
+
+	// matching scene with locked tags must not be updated
+	scenes = append(scenes, &models.Scene{
+		ID:           len(scenes) + 1,
+		Path:         matchingPaths[0],
+		TagIDs:       models.NewRelatedIDs([]int{}),
+		LockedFields: models.NewRelatedStrings([]string{models.SceneLockableFieldTags.String()}),
+	})
 
 	tag := models.Tag{
 		ID:   tagID,

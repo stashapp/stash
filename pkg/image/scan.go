@@ -43,6 +43,7 @@ type GalleryFinderCreator interface {
 type ScanSceneFinderUpdater interface {
 	FindByPath(ctx context.Context, p string) ([]*models.Scene, error)
 	AddGalleryIDs(ctx context.Context, sceneID int, galleryIDs []int) error
+	models.LockedFieldLoader
 }
 
 type ScanConfig interface {
@@ -351,10 +352,18 @@ func (h *ScanHandler) associateScene(ctx context.Context, existing *models.Galle
 		return err
 	}
 
-	for _, scene := range scenes {
+	for _, s := range scenes {
+		if err := s.LoadLockedFields(ctx, h.SceneFinderUpdater); err != nil {
+			return err
+		}
+		if s.IsLocked(models.SceneLockableFieldGalleries) {
+			logger.Infof("associate: skipping scene %d for gallery %s: galleries are locked", s.ID, path)
+			continue
+		}
+
 		// found related Scene
-		logger.Infof("associate: Gallery %s is related to scene: %d", path, scene.ID)
-		if err := h.SceneFinderUpdater.AddGalleryIDs(ctx, scene.ID, galleryIDs); err != nil {
+		logger.Infof("associate: Gallery %s is related to scene: %d", path, s.ID)
+		if err := h.SceneFinderUpdater.AddGalleryIDs(ctx, s.ID, galleryIDs); err != nil {
 			return err
 		}
 	}

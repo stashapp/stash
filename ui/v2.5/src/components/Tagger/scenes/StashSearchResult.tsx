@@ -236,6 +236,22 @@ const getFingerprintStatus = (
     );
 };
 
+// maps locked scene fields to the field names used by the tagger
+const taggerFieldNames: Record<GQL.SceneLockableField, string> = {
+  [GQL.SceneLockableField.Title]: "title",
+  [GQL.SceneLockableField.Code]: "code",
+  [GQL.SceneLockableField.Details]: "details",
+  [GQL.SceneLockableField.Director]: "director",
+  [GQL.SceneLockableField.Date]: "date",
+  [GQL.SceneLockableField.ProductionDate]: "production_date",
+  [GQL.SceneLockableField.Studio]: "studio",
+  [GQL.SceneLockableField.Urls]: "url",
+  [GQL.SceneLockableField.Performers]: "performers",
+  [GQL.SceneLockableField.Tags]: "tags",
+  [GQL.SceneLockableField.Groups]: "groups",
+  [GQL.SceneLockableField.Galleries]: "galleries",
+};
+
 interface IStashSearchResultProps {
   scene: IScrapedScene;
   stashScene: GQL.SlimSceneDataFragment;
@@ -308,9 +324,15 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     return scene.studio?.stored_id ?? stashScene.studio?.id;
   }, [stashScene, scene]);
 
+  // locked fields are never changed by the tagger
+  const lockedFields = useMemo(
+    () => stashScene.locked_fields.map((f) => taggerFieldNames[f]),
+    [stashScene.locked_fields]
+  );
+
   const [loading, setLoading] = useState(false);
   const [excludedFields, setExcludedFields] = useState<Record<string, boolean>>(
-    {}
+    () => Object.fromEntries(lockedFields.map((f) => [f, true]))
   );
   const [tagIDs, setTagIDs, setInitialTagIDs] = useInitialState<string[]>(
     getInitialTags()
@@ -358,9 +380,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     });
 
   async function handleSave() {
-    const excludedFieldList = Object.keys(excludedFields).filter(
-      (f) => excludedFields[f]
-    );
+    const excludedFieldList = Object.keys(excludedFields)
+      .filter((f) => excludedFields[f])
+      .concat(lockedFields);
 
     function resolveField<T>(field: string, stashField: T, remoteField: T) {
       // #2452 - don't overwrite fields that are already set if the remote field is empty
@@ -404,11 +426,19 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         scene.production_date
       ),
       performer_ids: uniq(
-        stashScene.performers.map((p) => p.id).concat(filteredPerformerIDs)
+        stashScene.performers
+          .map((p) => p.id)
+          .concat(
+            lockedFields.includes("performers") ? [] : filteredPerformerIDs
+          )
       ),
-      studio_id: studioID,
+      studio_id: lockedFields.includes("studio")
+        ? stashScene.studio?.id
+        : studioID,
       cover_image: resolveField("cover_image", undefined, imgData),
-      tag_ids: tagIDs,
+      tag_ids: lockedFields.includes("tags")
+        ? stashScene.tags.map((t) => t.id)
+        : tagIDs,
       stash_ids: stashScene.stash_ids ?? [],
       code: resolveField("code", stashScene.code, scene.code),
       director: resolveField("director", stashScene.director, scene.director),
@@ -753,8 +783,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     }
   };
 
+  // locked studio, performers and tags are hidden, so that missing objects
+  // are not offered for creation or linking
   const maybeRenderStudioField = () => {
-    if (scene.studio) {
+    if (scene.studio && !lockedFields.includes("studio")) {
       return (
         <div className="mt-2">
           <StudioResult
@@ -828,7 +860,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   );
 
   function maybeRenderTagsField() {
-    if (!config.setTags) return;
+    if (!config.setTags || lockedFields.includes("tags")) return;
 
     const createTags = scene.tags?.filter((t) => !t.stored_id);
 
@@ -925,7 +957,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       {isActive && (
         <div className="col-lg-6">
           {maybeRenderStudioField()}
-          {renderPerformerField()}
+          {!lockedFields.includes("performers") && renderPerformerField()}
           {maybeRenderTagsField()}
 
           <div className="row no-gutters mt-2 align-items-center justify-content-end">

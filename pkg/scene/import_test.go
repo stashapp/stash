@@ -80,6 +80,7 @@ func TestImporterPreImport(t *testing.T) {
 					{Endpoint: endpoint2, StashID: stashID2},
 				},
 				URLs:         []string{url1, url2},
+				LockedFields: []string{"TITLE", "DATE", "TITLE"},
 				Rating:       rating,
 				Organized:    organized,
 				CreatedAt:    json.JSONTime{Time: createdAt},
@@ -97,6 +98,7 @@ func TestImporterPreImport(t *testing.T) {
 					{Endpoint: endpoint2, StashID: stashID2},
 				}),
 				URLs:         models.NewRelatedStrings([]string{url1, url2}),
+				LockedFields: models.NewRelatedStrings([]string{"TITLE", "DATE"}),
 				Rating:       &rating,
 				Organized:    organized,
 				CreatedAt:    createdAt.Truncate(0),
@@ -696,4 +698,12 @@ func TestImporterPreImportDates(t *testing.T) {
 			assert.Equal(t, tt.wantProductionDate, productionDateStr)
 		})
 	}
+}
+
+func TestImporterPreImportInvalidLockedField(t *testing.T) {
+	i := Importer{
+		Input: jsonschema.Scene{LockedFields: []string{"RATING"}},
+	}
+
+	assert.Error(t, i.PreImport(testCtx))
 }

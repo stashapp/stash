@@ -96,6 +96,7 @@ type SceneReader interface {
 	SceneCounter
 
 	URLLoader
+	LockedFieldLoader
 	ViewDateReader
 	ODateReader
 	FileIDLoader

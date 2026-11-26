@@ -198,13 +198,20 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	setOrganized := utils.IsTrue(options.SetOrganized)
 	ret.Partial = getScenePartial(s, scraped, fieldOptions, setOrganized)
 
-	studioID, err := rel.studio(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("error getting studio: %w", err)
+	// skip a locked studio up front so that a missing studio isn't created for nothing
+	if !s.IsLocked(models.SceneLockableFieldStudio) {
+		studioID, err := rel.studio(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("error getting studio: %w", err)
+		}
+
+		if studioID != nil {
+			ret.Partial.StudioID = models.NewOptionalInt(*studioID)
+		}
 	}
 
-	if studioID != nil {
-		ret.Partial.StudioID = models.NewOptionalInt(*studioID)
+	if removed := scene.RemoveLockedFields(s, &ret.Partial); len(removed) > 0 {
+		logger.Infof("Skipping locked fields %v for %s", removed, s.DisplayName())
 	}
 
 	// Determine allowed genders for performer filtering
@@ -222,40 +229,47 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	}
 	// nil allowedGenders means include all performers
 
+	// locked performers and tags are skipped up front so that missing ones aren't created
 	addSkipSingleNamePerformerTag := false
-	performerIDs, err := rel.performers(ctx, allowedGenders)
-	if err != nil {
-		if errors.Is(err, ErrSkipSingleNamePerformer) {
-			addSkipSingleNamePerformerTag = true
-		} else {
+	if !s.IsLocked(models.SceneLockableFieldPerformers) {
+		performerIDs, err := rel.performers(ctx, allowedGenders)
+		if err != nil {
+			if errors.Is(err, ErrSkipSingleNamePerformer) {
+				addSkipSingleNamePerformerTag = true
+			} else {
+				return nil, err
+			}
+		}
+		if performerIDs != nil {
+			ret.Partial.PerformerIDs = &models.UpdateIDs{
+				IDs:  performerIDs,
+				Mode: models.RelationshipUpdateModeSet,
+			}
+		}
+	}
+
+	if !s.IsLocked(models.SceneLockableFieldTags) {
+		tagIDs, err := rel.tags(ctx)
+		if err != nil {
 			return nil, err
 		}
-	}
-	if performerIDs != nil {
-		ret.Partial.PerformerIDs = &models.UpdateIDs{
-			IDs:  performerIDs,
-			Mode: models.RelationshipUpdateModeSet,
+		if addSkipSingleNamePerformerTag && options.SkipSingleNamePerformerTag != nil {
+			tagID, err := strconv.ParseInt(*options.SkipSingleNamePerformerTag, 10, 64)
+			if err != nil {
+				return nil, fmt.Errorf("error converting tag ID %s: %w", *options.SkipSingleNamePerformerTag, err)
+			}
+
+			tagIDs = sliceutil.AppendUnique(tagIDs, int(tagID))
+		}
+		if tagIDs != nil {
+			ret.Partial.TagIDs = &models.UpdateIDs{
+				IDs:  tagIDs,
+				Mode: models.RelationshipUpdateModeSet,
+			}
 		}
 	}
 
-	tagIDs, err := rel.tags(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if addSkipSingleNamePerformerTag && options.SkipSingleNamePerformerTag != nil {
-		tagID, err := strconv.ParseInt(*options.SkipSingleNamePerformerTag, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("error converting tag ID %s: %w", *options.SkipSingleNamePerformerTag, err)
-		}
-
-		tagIDs = sliceutil.AppendUnique(tagIDs, int(tagID))
-	}
-	if tagIDs != nil {
-		ret.Partial.TagIDs = &models.UpdateIDs{
-			IDs:  tagIDs,
-			Mode: models.RelationshipUpdateModeSet,
-		}
-	}
+	var err error
 
 	// SetCoverImage defaults to true if unset
 	if options.SetCoverImage == nil || *options.SetCoverImage {
@@ -286,7 +300,7 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, s *models.Scene, resu
 	var updater *scene.UpdateSet
 	if err := txn.WithTxn(ctx, t.TxnManager, func(ctx context.Context) error {
 		// load scene relationships
-		if err := s.LoadURLs(ctx, t.SceneReaderUpdater); err != nil {
+		if err := scene.LoadLockState(ctx, s, t.SceneReaderUpdater); err != nil {
 			return err
 		}
 		if err := s.LoadPerformerIDs(ctx, t.SceneReaderUpdater); err != nil {
@@ -342,6 +356,13 @@ func (t *SceneIdentifier) addTagToScene(ctx context.Context, s *models.Scene, ta
 		tagID, err := strconv.Atoi(tagToAdd)
 		if err != nil {
 			return fmt.Errorf("error converting tag ID %s: %w", tagToAdd, err)
+		}
+
+		if err := s.LoadLockedFields(ctx, t.SceneReaderUpdater); err != nil {
+			return err
+		}
+		if s.IsLocked(models.SceneLockableFieldTags) {
+			return nil
 		}
 
 		if err := s.LoadTagIDs(ctx, t.SceneReaderUpdater); err != nil {

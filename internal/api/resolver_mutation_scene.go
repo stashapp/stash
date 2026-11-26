@@ -52,6 +52,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input models.SceneCr
 	newScene.Rating = input.Rating100
 	newScene.Organized = translator.bool(input.Organized)
 	newScene.StashIDs = models.NewRelatedStashIDs(models.StashIDInputs(input.StashIds).ToStashIDs())
+	newScene.LockedFields = models.NewRelatedStrings(lockedFieldStrings(input.LockedFields))
 
 	newScene.Date, err = translator.datePtr(input.Date)
 	if err != nil {
@@ -222,6 +223,13 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 
 	updatedScene.URLs = translator.optionalURLs(input.Urls, input.URL)
 
+	if translator.hasField("locked_fields") {
+		updatedScene.LockedFields = &models.UpdateStrings{
+			Values: lockedFieldStrings(input.LockedFields),
+			Mode:   models.RelationshipUpdateModeSet,
+		}
+	}
+
 	updatedScene.PrimaryFileID, err = translator.fileIDPtrFromString(input.PrimaryFileID)
 	if err != nil {
 		return nil, fmt.Errorf("converting primary file id: %w", err)
@@ -255,6 +263,14 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 	return &updatedScene, nil
 }
 
+func lockedFieldStrings(fields []models.SceneLockableField) []string {
+	ret := make([]string, len(fields))
+	for i, f := range fields {
+		ret[i] = f.String()
+	}
+	return sliceutil.AppendUniques(nil, ret)
+}
+
 func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUpdateInput, translator changesetTranslator) (*models.Scene, error) {
 	sceneID, err := strconv.Atoi(input.ID)
 	if err != nil {
@@ -275,6 +291,14 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 	// Populate scene from the input
 	updatedScene, err := scenePartialFromInput(input, translator)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := scene.LoadLockState(ctx, originalScene, qb); err != nil {
+		return nil, err
+	}
+
+	if err := scene.CheckLockedFields(originalScene, *updatedScene); err != nil {
 		return nil, err
 	}
 
@@ -434,18 +458,36 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 		qb := r.repository.Scene
 
 		for _, sceneID := range sceneIDs {
-			scene, err := qb.UpdatePartial(ctx, sceneID, updatedScene)
+			original, err := qb.Find(ctx, sceneID)
+			if err != nil {
+				return err
+			}
+			if original == nil {
+				return fmt.Errorf("scene with id %d not found", sceneID)
+			}
+
+			if err := scene.LoadLockState(ctx, original, qb); err != nil {
+				return err
+			}
+
+			// bulk edits skip locked fields rather than failing the whole batch
+			partial := updatedScene
+			if removed := scene.RemoveLockedFields(original, &partial); len(removed) > 0 {
+				logger.Infof("Bulk update: skipping locked fields %v for scene %d", removed, sceneID)
+			}
+
+			updated, err := qb.UpdatePartial(ctx, sceneID, partial)
 			if err != nil {
 				return err
 			}
 
 			if customFields != nil {
-				if err := qb.SetCustomFields(ctx, scene.ID, *customFields); err != nil {
+				if err := qb.SetCustomFields(ctx, updated.ID, *customFields); err != nil {
 					return err
 				}
 			}
 
-			ret = append(ret, scene)
+			ret = append(ret, updated)
 		}
 
 		return nil

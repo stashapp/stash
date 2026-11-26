@@ -194,74 +194,129 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     // endpoint, then it will be excluded first
     const all = sources.concat(dest);
 
+    // locked destination fields keep their value and offer no alternative
+    function unlessLocked<
+      R extends Pick<ScrapeResult<unknown>, "originalValue">,
+    >(field: GQL.SceneLockableField, result: R): R {
+      if (!dest.locked_fields.includes(field)) return result;
+      return Object.assign(clone(result), {
+        newValue: result.originalValue,
+        useNewValue: false,
+        scraped: false,
+      });
+    }
+
     setTitle(
-      new ScrapeResult(
-        dest.title,
-        sources.find((s) => s.title)?.title,
-        !dest.title
+      unlessLocked(
+        GQL.SceneLockableField.Title,
+        new ScrapeResult(
+          dest.title,
+          sources.find((s) => s.title)?.title,
+          !dest.title
+        )
       )
     );
     setCode(
-      new ScrapeResult(dest.code, sources.find((s) => s.code)?.code, !dest.code)
+      unlessLocked(
+        GQL.SceneLockableField.Code,
+        new ScrapeResult(
+          dest.code,
+          sources.find((s) => s.code)?.code,
+          !dest.code
+        )
+      )
     );
-    setURL(new ScrapeResult(dest.urls, uniq(all.flatMap((s) => s.urls))));
+    setURL(
+      unlessLocked(
+        GQL.SceneLockableField.Urls,
+        new ScrapeResult(dest.urls, uniq(all.flatMap((s) => s.urls)))
+      )
+    );
     setDate(
-      new ScrapeResult(dest.date, sources.find((s) => s.date)?.date, !dest.date)
+      unlessLocked(
+        GQL.SceneLockableField.Date,
+        new ScrapeResult(
+          dest.date,
+          sources.find((s) => s.date)?.date,
+          !dest.date
+        )
+      )
     );
     setProductionDate(
-      new ScrapeResult(
-        dest.production_date,
-        sources.find((s) => s.production_date)?.production_date,
-        !dest.production_date
+      unlessLocked(
+        GQL.SceneLockableField.ProductionDate,
+        new ScrapeResult(
+          dest.production_date,
+          sources.find((s) => s.production_date)?.production_date,
+          !dest.production_date
+        )
       )
     );
 
     const foundStudio = sources.find((s) => s.studio)?.studio;
 
     setStudio(
-      new ScrapeResult<GQL.ScrapedStudio>(
-        dest.studio ? idToStoredID(dest.studio) : undefined,
-        foundStudio
-          ? {
-              stored_id: foundStudio.id,
-              name: foundStudio.name,
-            }
-          : undefined,
-        !dest.studio
+      unlessLocked(
+        GQL.SceneLockableField.Studio,
+        new ScrapeResult<GQL.ScrapedStudio>(
+          dest.studio ? idToStoredID(dest.studio) : undefined,
+          foundStudio
+            ? {
+                stored_id: foundStudio.id,
+                name: foundStudio.name,
+              }
+            : undefined,
+          !dest.studio
+        )
       )
     );
 
     setPerformers(
-      new ObjectListScrapeResult<GQL.ScrapedPerformer>(
-        sortStoredIdObjects(dest.performers.map(idToStoredID)),
-        uniqIDStoredIDs(all.flatMap((s) => s.performers.map(idToStoredID)))
+      unlessLocked(
+        GQL.SceneLockableField.Performers,
+        new ObjectListScrapeResult<GQL.ScrapedPerformer>(
+          sortStoredIdObjects(dest.performers.map(idToStoredID)),
+          uniqIDStoredIDs(all.flatMap((s) => s.performers.map(idToStoredID)))
+        )
       )
     );
     setTags(
-      new ObjectListScrapeResult<GQL.ScrapedTag>(
-        sortStoredIdObjects(dest.tags.map(idToStoredID)),
-        uniqIDStoredIDs(all.flatMap((s) => s.tags.map(idToStoredID)))
+      unlessLocked(
+        GQL.SceneLockableField.Tags,
+        new ObjectListScrapeResult<GQL.ScrapedTag>(
+          sortStoredIdObjects(dest.tags.map(idToStoredID)),
+          uniqIDStoredIDs(all.flatMap((s) => s.tags.map(idToStoredID)))
+        )
       )
     );
     setDetails(
-      new ScrapeResult(
-        dest.details,
-        sources.find((s) => s.details)?.details,
-        !dest.details
+      unlessLocked(
+        GQL.SceneLockableField.Details,
+        new ScrapeResult(
+          dest.details,
+          sources.find((s) => s.details)?.details,
+          !dest.details
+        )
       )
     );
 
     setGroups(
-      new ObjectListScrapeResult<GQL.ScrapedGroup>(
-        sortStoredIdObjects(dest.groups.map(groupToStoredID)),
-        uniqIDStoredIDs(all.flatMap((s) => s.groups.map(groupToStoredID)))
+      unlessLocked(
+        GQL.SceneLockableField.Groups,
+        new ObjectListScrapeResult<GQL.ScrapedGroup>(
+          sortStoredIdObjects(dest.groups.map(groupToStoredID)),
+          uniqIDStoredIDs(all.flatMap((s) => s.groups.map(groupToStoredID)))
+        )
       )
     );
 
     setGalleries(
-      new ScrapeResult(
-        dest.galleries.map((p) => p.id),
-        uniq(all.flatMap((s) => s.galleries.map((p) => p.id)))
+      unlessLocked(
+        GQL.SceneLockableField.Galleries,
+        new ScrapeResult(
+          dest.galleries.map((p) => p.id),
+          uniq(all.flatMap((s) => s.galleries.map((p) => p.id)))
+        )
       )
     );
 

@@ -14,6 +14,10 @@ This task is part of the advanced settings mode.
 
 Scenes that have the Organized flag added to them will not be modified by Identify. You can also use Organized flag status as a filter.
 
+### Locked fields
+
+[Locked fields](/help/LockedFields.md), including performers, tags and studio, are never modified by Identify, regardless of the field strategy. Missing performers, tags and studios are not created for a locked field.
+
 ## Options
 
 The following options can be configured:

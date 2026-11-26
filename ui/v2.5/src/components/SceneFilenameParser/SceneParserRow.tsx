@@ -4,6 +4,7 @@ import clone from "lodash-es/clone";
 import { Form } from "react-bootstrap";
 import {
   ParseSceneFilenamesQuery,
+  SceneLockableField,
   SlimSceneDataFragment,
 } from "src/core/generated-graphql";
 import {
@@ -59,13 +60,25 @@ export class SceneParserResult {
     this.tags.setOriginalValue(this.scene.tags.map((t) => t.id));
     this.studio.setOriginalValue(this.scene.studio?.id);
 
-    this.title.setValue(result.title ?? undefined);
-    this.date.setValue(result.date ?? undefined);
+    // parsed values for locked fields are ignored
+    const locked = this.scene.locked_fields;
+    if (!locked.includes(SceneLockableField.Title)) {
+      this.title.setValue(result.title ?? undefined);
+    }
+    if (!locked.includes(SceneLockableField.Date)) {
+      this.date.setValue(result.date ?? undefined);
+    }
     this.rating.setValue(result.rating ?? undefined);
 
-    this.performers.setValue(result.performer_ids ?? undefined);
-    this.tags.setValue(result.tag_ids ?? undefined);
-    this.studio.setValue(result.studio_id ?? undefined);
+    if (!locked.includes(SceneLockableField.Performers)) {
+      this.performers.setValue(result.performer_ids ?? undefined);
+    }
+    if (!locked.includes(SceneLockableField.Tags)) {
+      this.tags.setValue(result.tag_ids ?? undefined);
+    }
+    if (!locked.includes(SceneLockableField.Studio)) {
+      this.studio.setValue(result.studio_id ?? undefined);
+    }
   }
 
   // returns true if any of its fields have set == true
@@ -81,14 +94,20 @@ export class SceneParserResult {
   }
 
   public toSceneUpdateInput() {
+    // locked fields are never sent, even if the user set or edited them,
+    // so one locked row doesn't fail the whole batch
+    const locked = this.scene.locked_fields;
+    const value = <T,>(r: ParserResult<T>, f?: SceneLockableField) =>
+      r.isSet && !(f && locked.includes(f)) ? r.value : undefined;
+
     return {
       id: this.id,
-      rating: this.rating.isSet ? this.rating.value : undefined,
-      title: this.title.isSet ? this.title.value : undefined,
-      date: this.date.isSet ? this.date.value : undefined,
-      studio_id: this.studio.isSet ? this.studio.value : undefined,
-      performer_ids: this.performers.isSet ? this.performers.value : undefined,
-      tag_ids: this.tags.isSet ? this.tags.value : undefined,
+      rating: value(this.rating),
+      title: value(this.title, SceneLockableField.Title),
+      date: value(this.date, SceneLockableField.Date),
+      studio_id: value(this.studio, SceneLockableField.Studio),
+      performer_ids: value(this.performers, SceneLockableField.Performers),
+      tag_ids: value(this.tags, SceneLockableField.Tags),
     };
   }
 }

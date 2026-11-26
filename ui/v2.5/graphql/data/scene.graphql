@@ -5,6 +5,7 @@ fragment SceneData on Scene {
   details
   director
   urls
+  locked_fields
   date
   production_date
   rating100

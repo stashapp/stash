@@ -46,6 +46,10 @@ type Importer struct {
 func (i *Importer) PreImport(ctx context.Context) error {
 	i.scene = i.sceneJSONToScene(i.Input)
 
+	if err := i.populateLockedFields(); err != nil {
+		return err
+	}
+
 	if err := i.populateFiles(ctx); err != nil {
 		return err
 	}
@@ -83,6 +87,19 @@ func (i *Importer) PreImport(ctx context.Context) error {
 	i.populateViewHistory()
 	i.populateOHistory()
 
+	return nil
+}
+
+func (i *Importer) populateLockedFields() error {
+	fields := []string{}
+	for _, f := range i.Input.LockedFields {
+		if !models.SceneLockableField(f).IsValid() {
+			return fmt.Errorf("invalid locked field %q", f)
+		}
+		fields = sliceutil.AppendUnique(fields, f)
+	}
+
+	i.scene.LockedFields = models.NewRelatedStrings(fields)
 	return nil
 }
 

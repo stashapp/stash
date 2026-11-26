@@ -12,15 +12,18 @@ import (
 type SceneFinderUpdater interface {
 	models.SceneQueryer
 	models.SceneUpdater
+	models.LockedFieldLoader
 }
 
 type ScenePerformerUpdater interface {
 	models.PerformerIDLoader
+	models.LockedFieldLoader
 	models.SceneUpdater
 }
 
 type SceneTagUpdater interface {
 	models.TagIDLoader
+	models.LockedFieldLoader
 	models.SceneUpdater
 }
 
@@ -35,7 +38,17 @@ func getSceneFileTagger(s *models.Scene, cache *match.Cache) tagger {
 }
 
 // ScenePerformers tags the provided scene with performers whose name matches the scene's path.
+//
+// Scenes will not be tagged if performers are locked.
 func ScenePerformers(ctx context.Context, s *models.Scene, rw ScenePerformerUpdater, performerReader models.PerformerAutoTagQueryer, cache *match.Cache) error {
+	if err := s.LoadLockedFields(ctx, rw); err != nil {
+		return err
+	}
+
+	if s.IsLocked(models.SceneLockableFieldPerformers) {
+		return nil
+	}
+
 	t := getSceneFileTagger(s, cache)
 
 	return t.tagPerformers(ctx, performerReader, func(subjectID, otherID int) (bool, error) {
@@ -58,10 +71,18 @@ func ScenePerformers(ctx context.Context, s *models.Scene, rw ScenePerformerUpda
 
 // SceneStudios tags the provided scene with the first studio whose name matches the scene's path.
 //
-// Scenes will not be tagged if studio is already set.
+// Scenes will not be tagged if studio is already set or locked.
 func SceneStudios(ctx context.Context, s *models.Scene, rw SceneFinderUpdater, studioReader models.StudioAutoTagQueryer, cache *match.Cache) error {
 	if s.StudioID != nil {
 		// don't modify
+		return nil
+	}
+
+	if err := s.LoadLockedFields(ctx, rw); err != nil {
+		return err
+	}
+
+	if s.IsLocked(models.SceneLockableFieldStudio) {
 		return nil
 	}
 
@@ -73,7 +94,17 @@ func SceneStudios(ctx context.Context, s *models.Scene, rw SceneFinderUpdater, s
 }
 
 // SceneTags tags the provided scene with tags whose name matches the scene's path.
+//
+// Scenes will not be tagged if tags are locked.
 func SceneTags(ctx context.Context, s *models.Scene, rw SceneTagUpdater, tagReader models.TagAutoTagQueryer, cache *match.Cache) error {
+	if err := s.LoadLockedFields(ctx, rw); err != nil {
+		return err
+	}
+
+	if s.IsLocked(models.SceneLockableFieldTags) {
+		return nil
+	}
+
 	t := getSceneFileTagger(s, cache)
 
 	return t.tagTags(ctx, tagReader, func(subjectID, otherID int) (bool, error) {

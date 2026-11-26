@@ -39,6 +39,7 @@ type Scene struct {
 	PlayDuration float64 `json:"play_duration"`
 
 	URLs         RelatedStrings  `json:"urls"`
+	LockedFields RelatedStrings  `json:"locked_fields"`
 	GalleryIDs   RelatedIDs      `json:"gallery_ids"`
 	TagIDs       RelatedIDs      `json:"tag_ids"`
 	PerformerIDs RelatedIDs      `json:"performer_ids"`
@@ -87,6 +88,7 @@ type ScenePartial struct {
 	PlayDuration OptionalFloat64
 
 	URLs          *UpdateStrings
+	LockedFields  *UpdateStrings
 	GalleryIDs    *UpdateIDs
 	TagIDs        *UpdateIDs
 	PerformerIDs  *UpdateIDs
@@ -105,6 +107,12 @@ func NewScenePartial() ScenePartial {
 func (s *Scene) LoadURLs(ctx context.Context, l URLLoader) error {
 	return s.URLs.load(func() ([]string, error) {
 		return l.GetURLs(ctx, s.ID)
+	})
+}
+
+func (s *Scene) LoadLockedFields(ctx context.Context, l LockedFieldLoader) error {
+	return s.LockedFields.load(func() ([]string, error) {
+		return l.GetLockedFields(ctx, s.ID)
 	})
 }
 
@@ -169,6 +177,10 @@ func (s *Scene) LoadStashIDs(ctx context.Context, l StashIDLoader) error {
 
 func (s *Scene) LoadRelationships(ctx context.Context, l SceneReader) error {
 	if err := s.LoadURLs(ctx, l); err != nil {
+		return err
+	}
+
+	if err := s.LoadLockedFields(ctx, l); err != nil {
 		return err
 	}
 

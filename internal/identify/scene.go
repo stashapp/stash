@@ -27,6 +27,9 @@ type SceneReaderUpdater interface {
 	models.TagIDLoader
 	models.StashIDLoader
 	models.URLLoader
+	models.LockedFieldLoader
+	models.SceneGroupLoader
+	models.GalleryIDLoader
 }
 
 type sceneRelationships struct {

@@ -401,6 +401,23 @@ func (r *sceneResolver) Urls(ctx context.Context, obj *models.Scene) ([]string, 
 	return obj.URLs.List(), nil
 }
 
+func (r *sceneResolver) LockedFields(ctx context.Context, obj *models.Scene) ([]models.SceneLockableField, error) {
+	if !obj.LockedFields.Loaded() {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadLockedFields(ctx, r.repository.Scene)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	ret := make([]models.SceneLockableField, len(obj.LockedFields.List()))
+	for i, f := range obj.LockedFields.List() {
+		ret[i] = models.SceneLockableField(f)
+	}
+
+	return ret, nil
+}
+
 func (r *sceneResolver) OCounter(ctx context.Context, obj *models.Scene) (*int, error) {
 	ret, err := loaders.From(ctx).SceneOCount.Load(obj.ID)
 	if err != nil {

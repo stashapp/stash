@@ -84,6 +84,7 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 	aliasRegex := tc.aliasRegex
 
 	db := mocks.NewDatabase()
+	db.Scene.On("GetLockedFields", mock.Anything, mock.Anything).Return(nil, nil)
 
 	var studioID = 2
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Form } from "react-bootstrap";
+import { Alert, Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import { useBulkSceneUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
@@ -21,6 +21,7 @@ import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
 import { BulkUpdateFormGroup, BulkUpdateTextInput } from "../Shared/BulkUpdate";
 import { BulkUpdateDateInput } from "../Shared/DateInput";
 import { getDateError } from "src/utils/yup";
+import { lockableFieldMessageIDs } from "../Shared/LockFieldButton";
 
 interface IListOperationProps {
   selected: GQL.SlimSceneDataFragment[];
@@ -36,6 +37,23 @@ const sceneFields = [
   "date",
   "production_date",
 ];
+
+// bulk input fields that map to lockable scene fields
+const lockableInputFields: [
+  keyof GQL.BulkSceneUpdateInput,
+  GQL.SceneLockableField,
+][] = [
+  ["code", GQL.SceneLockableField.Code],
+  ["details", GQL.SceneLockableField.Details],
+  ["director", GQL.SceneLockableField.Director],
+  ["date", GQL.SceneLockableField.Date],
+  ["production_date", GQL.SceneLockableField.ProductionDate],
+  ["studio_id", GQL.SceneLockableField.Studio],
+];
+
+function idsChanged(ids: GQL.BulkUpdateIds) {
+  return ids.mode === GQL.BulkUpdateIdMode.Set || !!ids.ids?.length;
+}
 
 export const EditScenesDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
@@ -108,6 +126,48 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     );
   }, [updateInput.production_date, intl]);
 
+  // changed fields that are locked on some selected scenes, which the
+  // backend skips for those scenes
+  const changedLockedFields = useMemo(() => {
+    const changed = lockableInputFields
+      .filter(
+        ([key]) =>
+          updateInput[key] !== undefined &&
+          updateInput[key] !== aggregateState.state[key]
+      )
+      .map(([, field]) => field);
+    if (idsChanged(performerIds))
+      changed.push(GQL.SceneLockableField.Performers);
+    if (idsChanged(tagIds)) changed.push(GQL.SceneLockableField.Tags);
+    if (idsChanged(groupIds)) changed.push(GQL.SceneLockableField.Groups);
+    return changed;
+  }, [updateInput, aggregateState, performerIds, tagIds, groupIds]);
+
+  // number of selected scenes where a changed field is locked
+  const lockedSceneCount = useMemo(
+    () =>
+      props.selected.filter((s) =>
+        s.locked_fields.some((f) => changedLockedFields.includes(f))
+      ).length,
+    [changedLockedFields, props.selected]
+  );
+
+  function skippedMessages() {
+    return changedLockedFields.flatMap((field) => {
+      const count = props.selected.filter((s) =>
+        s.locked_fields.includes(field)
+      ).length;
+      if (count === 0) return [];
+      return intl.formatMessage(
+        { id: "toast.scenes_skipped_locked" },
+        {
+          count,
+          field: intl.formatMessage({ id: lockableFieldMessageIDs[field] }),
+        }
+      );
+    });
+  }
+
   function setUpdateField(input: Partial<GQL.BulkSceneUpdateInput>) {
     setUpdateInput((current) => ({ ...current, ...input }));
   }
@@ -134,12 +194,21 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     setIsUpdating(true);
     try {
       await updateScenes({ variables: { input: getSceneInput() } });
-      Toast.success(
-        intl.formatMessage(
-          { id: "toast.updated_entity" },
-          { entity: intl.formatMessage({ id: "scenes" }).toLocaleLowerCase() }
-        )
+      const updated = intl.formatMessage(
+        { id: "toast.updated_entity" },
+        { entity: intl.formatMessage({ id: "scenes" }).toLocaleLowerCase() }
       );
+      const skipped = skippedMessages();
+      if (skipped.length > 0) {
+        // one toast is shown at a time, so the notice goes in the same toast
+        Toast.toast({
+          variant: "warning",
+          content: [updated, ...skipped].join(". "),
+          delay: 5000,
+        });
+      } else {
+        Toast.success(updated);
+      }
       props.onClose(true);
     } catch (e) {
       Toast.error(e);
@@ -172,6 +241,14 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         }}
         isRunning={isUpdating}
       >
+        {lockedSceneCount > 0 && (
+          <Alert variant="warning">
+            {intl.formatMessage(
+              { id: "dialogs.bulk_edit_locked_fields_warning" },
+              { count: lockedSceneCount }
+            )}
+          </Alert>
+        )}
         <Form>
           <BulkUpdateFormGroup name="rating">
             <RatingSystem

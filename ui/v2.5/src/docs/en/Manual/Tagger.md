@@ -14,6 +14,8 @@ An important thing to note is that it only returns a match *if all query terms a
 
 When a scene is matched stash will try to match the studio and performers against your local studios and performers. If you have previously matched them, they will automatically be selected. If not you either have to select the correct performer/studio from the dropdown, choose create to create a new entity, or skip to ignore it.
 
+[Locked fields](/help/LockedFields.md) are excluded when saving. When a scene's performers, tags or studio are locked, missing objects for that field are not offered for creation or linking.
+
 Once a scene is saved the scene and the matched studio/performers will have the `stash_id` saved which will then be used for future tagging.
 
 By default male performers are not shown, this can be enabled in the tagger config. Likewise scene tags are by default not saved. They can be set to either merge with existing tags on the scene, or overwrite them. It is not recommended to set tags currently since they are hard to deduplicate and can litter your data.

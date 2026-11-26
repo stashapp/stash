@@ -191,6 +191,7 @@ func TestScenePerformers(t *testing.T) {
 			ID:           sceneID,
 			Path:         test.Path,
 			PerformerIDs: models.NewRelatedIDs([]int{}),
+			LockedFields: models.NewRelatedStrings([]string{}),
 		}
 
 		if test.Matches {
@@ -250,6 +251,8 @@ func TestSceneStudios(t *testing.T) {
 			db.Scene.On("UpdatePartial", testCtx, sceneID, matchPartial).Return(nil, nil).Once()
 		}
 
+		db.Scene.On("GetLockedFields", testCtx, sceneID).Return(nil, nil).Once()
+
 		scene := models.Scene{
 			ID:   sceneID,
 			Path: test.Path,
@@ -286,6 +289,17 @@ func TestSceneStudios(t *testing.T) {
 
 		doTest(db, test)
 	}
+
+	// locked studio is not set
+	db := mocks.NewDatabase()
+	db.Studio.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Studio{&studio}, nil).Maybe()
+	lockedScene := models.Scene{
+		ID:           sceneID,
+		Path:         "/" + studioName + "/file" + sceneExt,
+		LockedFields: models.NewRelatedStrings([]string{models.SceneLockableFieldStudio.String()}),
+	}
+	assert.Nil(SceneStudios(testCtx, &lockedScene, db.Scene, db.Studio, nil))
+	db.Scene.AssertNotCalled(t, "UpdatePartial", mock.Anything, mock.Anything, mock.Anything)
 }
 
 func TestSceneTags(t *testing.T) {
@@ -326,9 +340,10 @@ func TestSceneTags(t *testing.T) {
 		}
 
 		scene := models.Scene{
-			ID:     sceneID,
-			Path:   test.Path,
-			TagIDs: models.NewRelatedIDs([]int{}),
+			ID:           sceneID,
+			Path:         test.Path,
+			TagIDs:       models.NewRelatedIDs([]int{}),
+			LockedFields: models.NewRelatedStrings([]string{}),
 		}
 		err := SceneTags(testCtx, &scene, db.Scene, db.Tag, nil)
 
@@ -362,4 +377,22 @@ func TestSceneTags(t *testing.T) {
 
 		doTest(db, test)
 	}
+}
+
+func TestSceneLockedPerformersTags(t *testing.T) {
+	db := mocks.NewDatabase()
+	db.Performer.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Performer{{ID: 2, Name: "performer"}}, nil).Maybe()
+	db.Tag.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Tag{{ID: 2, Name: "tag"}}, nil).Maybe()
+
+	s := models.Scene{
+		ID:           1,
+		Path:         "/performer tag/file.mp4",
+		PerformerIDs: models.NewRelatedIDs([]int{}),
+		TagIDs:       models.NewRelatedIDs([]int{}),
+		LockedFields: models.NewRelatedStrings([]string{models.SceneLockableFieldPerformers.String(), models.SceneLockableFieldTags.String()}),
+	}
+
+	assert.Nil(t, ScenePerformers(testCtx, &s, db.Scene, db.Performer, nil))
+	assert.Nil(t, SceneTags(testCtx, &s, db.Scene, db.Tag, nil))
+	db.Scene.AssertNotCalled(t, "UpdatePartial", mock.Anything, mock.Anything, mock.Anything)
 }

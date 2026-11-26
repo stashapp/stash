@@ -5776,3 +5776,38 @@ func TestSceneQueryPerformerAgeUsesProductionDate(t *testing.T) {
 		assert.Less(withIdx, withoutIdx)
 	})
 }
+
+func Test_sceneQueryBuilder_LockedFields(t *testing.T) {
+	qb := db.Scene
+
+	runWithRollbackTxn(t, "locked fields", func(t *testing.T, ctx context.Context) {
+		assert := assert.New(t)
+
+		s := models.Scene{
+			Title:        "locked",
+			LockedFields: models.NewRelatedStrings([]string{"TITLE", "DATE"}),
+		}
+		if !assert.NoError(qb.Create(ctx, &s, nil)) {
+			return
+		}
+
+		got, err := qb.GetLockedFields(ctx, s.ID)
+		assert.NoError(err)
+		assert.ElementsMatch([]string{"TITLE", "DATE"}, got)
+
+		_, err = qb.UpdatePartial(ctx, s.ID, models.ScenePartial{
+			LockedFields: &models.UpdateStrings{Values: []string{"STUDIO"}, Mode: models.RelationshipUpdateModeSet},
+		})
+		assert.NoError(err)
+
+		got, err = qb.GetLockedFields(ctx, s.ID)
+		assert.NoError(err)
+		assert.Equal([]string{"STUDIO"}, got)
+
+		assert.NoError(qb.Destroy(ctx, s.ID))
+
+		got, err = qb.GetLockedFields(ctx, s.ID)
+		assert.NoError(err)
+		assert.Empty(got)
+	})
+}

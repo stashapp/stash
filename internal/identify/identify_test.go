@@ -116,6 +116,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 	db := mocks.NewDatabase()
 
 	db.Scene.On("GetURLs", mock.Anything, mock.Anything).Return(nil, nil)
+	db.Scene.On("GetLockedFields", mock.Anything, mock.Anything).Return(nil, nil)
 	db.Scene.On("UpdatePartial", mock.Anything, mock.MatchedBy(func(id int) bool {
 		return id == errUpdateID
 	}), mock.Anything).Return(nil, errors.New("update error"))
@@ -256,6 +257,7 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 			args{
 				&models.Scene{
 					URLs:         models.NewRelatedStrings([]string{}),
+					LockedFields: models.NewRelatedStrings([]string{}),
 					PerformerIDs: models.NewRelatedIDs([]int{}),
 					TagIDs:       models.NewRelatedIDs([]int{}),
 					StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
@@ -645,6 +647,7 @@ func Test_getSceneUpdater_performerGenders(t *testing.T) {
 	scene := &models.Scene{
 		ID:           1,
 		URLs:         models.NewRelatedStrings([]string{}),
+		LockedFields: models.NewRelatedStrings([]string{}),
 		PerformerIDs: models.NewRelatedIDs([]int{}),
 		TagIDs:       models.NewRelatedIDs([]int{}),
 		StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
@@ -726,6 +729,65 @@ func Test_getSceneUpdater_performerGenders(t *testing.T) {
 			assert.ElementsMatch(t, tt.wantPerformerIDs, updater.Partial.PerformerIDs.IDs)
 		})
 	}
+}
+
+func Test_getSceneUpdater_lockedFields(t *testing.T) {
+	db := mocks.NewDatabase()
+	boolFalse := false
+	boolTrue := true
+
+	scrapedTitle := "scrapedTitle"
+	scrapedDetails := "scrapedDetails"
+	studioID := "2"
+
+	s := &models.Scene{
+		ID:           1,
+		Title:        "title",
+		URLs:         models.NewRelatedStrings([]string{}),
+		LockedFields: models.NewRelatedStrings([]string{"TITLE", "STUDIO", "PERFORMERS", "TAGS"}),
+		PerformerIDs: models.NewRelatedIDs([]int{}),
+		TagIDs:       models.NewRelatedIDs([]int{}),
+		StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+	}
+
+	identifier := SceneIdentifier{
+		TxnManager:         db,
+		SceneReaderUpdater: db.Scene,
+		StudioReaderWriter: db.Studio,
+		PerformerCreator:   db.Performer,
+		TagFinderCreator:   db.Tag,
+		DefaultOptions: &MetadataOptions{
+			SetCoverImage: &boolFalse,
+			FieldOptions: []*FieldOptions{
+				{Field: "title", Strategy: FieldStrategyOverwrite},
+				{Field: "studio", Strategy: FieldStrategyOverwrite},
+				// missing performers/tags must not be created for locked fields
+				{Field: "performers", Strategy: FieldStrategyOverwrite, CreateMissing: &boolTrue},
+				{Field: "tags", Strategy: FieldStrategyOverwrite, CreateMissing: &boolTrue},
+			},
+		},
+	}
+
+	result := &scrapeResult{
+		source: ScraperSource{},
+		result: &models.ScrapedScene{
+			Title:      &scrapedTitle,
+			Details:    &scrapedDetails,
+			Studio:     &models.ScrapedStudio{StoredID: &studioID},
+			Performers: []*models.ScrapedPerformer{{Name: &scrapedTitle}},
+			Tags:       []*models.ScrapedTag{{Name: scrapedTitle}},
+		},
+	}
+
+	updater, err := identifier.getSceneUpdater(testCtx, s, result)
+	assert.NoError(t, err)
+	assert.False(t, updater.Partial.Title.Set, "locked title should not be set")
+	assert.False(t, updater.Partial.StudioID.Set, "locked studio should not be set")
+	assert.Nil(t, updater.Partial.PerformerIDs, "locked performers should not be set")
+	assert.Nil(t, updater.Partial.TagIDs, "locked tags should not be set")
+	db.Performer.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
+	db.Tag.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
+	assert.Equal(t, scrapedDetails, updater.Partial.Details.Value)
 }
 
 func Test_shouldSetSingleValueField(t *testing.T) {

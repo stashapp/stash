@@ -15,6 +15,7 @@ import (
 type SceneQueryTagUpdater interface {
 	models.SceneQueryer
 	models.TagIDLoader
+	models.LockedFieldLoader
 	models.SceneUpdater
 }
 
@@ -56,6 +57,13 @@ func (tagger *Tagger) TagScenes(ctx context.Context, p *models.Tag, paths []stri
 
 	for _, tt := range t {
 		if err := tt.tagScenes(ctx, paths, rw, func(o *models.Scene) (bool, error) {
+			if err := o.LoadLockedFields(ctx, rw); err != nil {
+				return false, err
+			}
+			if o.IsLocked(models.SceneLockableFieldTags) {
+				return false, nil
+			}
+
 			if err := o.LoadTagIDs(ctx, rw); err != nil {
 				return false, err
 			}

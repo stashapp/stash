@@ -8,6 +8,9 @@ import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
 import { DirectorLink } from "src/components/Shared/Link";
 import { CustomFields } from "src/components/Shared/CustomFields";
+import { Icon } from "src/components/Shared/Icon";
+import { faLock } from "@fortawesome/free-solid-svg-icons";
+import { lockableFieldMessageIDs } from "src/components/Shared/LockFieldButton";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
@@ -78,6 +81,19 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
     );
   }
 
+  function renderLockedFields() {
+    if (props.scene.locked_fields.length === 0) return;
+    const names = props.scene.locked_fields.map((f) =>
+      intl.formatMessage({ id: lockableFieldMessageIDs[f] })
+    );
+    return (
+      <h6 className="scene-locked-fields">
+        <Icon icon={faLock} /> <FormattedMessage id="locked" />:{" "}
+        {intl.formatList(names)}
+      </h6>
+    );
+  }
+
   // filename should use entire row if there is no studio
   const sceneDetailsWidth = props.scene.studio ? "col-9" : "col-12";
 
@@ -112,6 +128,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
               <DirectorLink director={props.scene.director} linkType="scene" />
             </h6>
           )}
+          {renderLockedFields()}
         </div>
       </div>
       <div className="row">

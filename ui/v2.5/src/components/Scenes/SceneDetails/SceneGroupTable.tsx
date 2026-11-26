@@ -1,10 +1,11 @@
-import React, { useMemo } from "react";
+import React, { useContext, useMemo } from "react";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { Form, Row, Col } from "react-bootstrap";
 import { Group, GroupSelect } from "src/components/Groups/GroupSelect";
 import cx from "classnames";
 import { NumberField } from "src/utils/form";
+import { LockContext } from "src/components/Shared/LockFieldButton";
 
 export type GroupSceneIndexMap = Map<string, number | undefined>;
 
@@ -22,6 +23,17 @@ export const SceneGroupTable: React.FC<IProps> = (props) => {
   const { value, onUpdate } = props;
 
   const intl = useIntl();
+  const lock = useContext(LockContext);
+  const locked = !!lock?.locked;
+
+  // only the first select shows the lock toggle
+  function withLock(index: number, select: React.ReactNode) {
+    return index === 0 ? (
+      select
+    ) : (
+      <LockContext.Provider value={undefined}>{select}</LockContext.Provider>
+    );
+  }
 
   const groupIDs = useMemo(() => value.map((m) => m.group.id), [value]);
 
@@ -86,15 +98,20 @@ export const SceneGroupTable: React.FC<IProps> = (props) => {
         {value.map((m, i) => (
           <Row key={m.group.id} className="group-row">
             <Col xs={9}>
-              <GroupSelect
-                onSelect={(items) => onGroupSet(i, items)}
-                values={[m.group!]}
-                excludeIds={groupIDs}
-              />
+              {withLock(
+                i,
+                <GroupSelect
+                  onSelect={(items) => onGroupSet(i, items)}
+                  values={[m.group!]}
+                  excludeIds={groupIDs}
+                  isDisabled={locked}
+                />
+              )}
             </Col>
             <Col xs={3}>
               <NumberField
                 className="text-input"
+                disabled={locked}
                 value={m.scene_index ?? ""}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   updateFieldChanged(
@@ -108,15 +125,21 @@ export const SceneGroupTable: React.FC<IProps> = (props) => {
             </Col>
           </Row>
         ))}
-        <Row className="group-row">
-          <Col xs={12}>
-            <GroupSelect
-              onSelect={(items) => onNewGroupSet(items)}
-              values={[]}
-              excludeIds={groupIDs}
-            />
-          </Col>
-        </Row>
+        {/* while locked, only shown to hold the lock toggle when there are no groups */}
+        {(!locked || !value.length) && (
+          <Row className="group-row">
+            <Col xs={12}>
+              {withLock(
+                value.length,
+                <GroupSelect
+                  onSelect={(items) => onNewGroupSet(items)}
+                  values={[]}
+                  excludeIds={groupIDs}
+                />
+              )}
+            </Col>
+          </Row>
+        )}
       </>
     );
   }

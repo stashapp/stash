@@ -1269,3 +1269,63 @@ input[type="range"].double-range-slider-max {
   margin-top: 0.5rem;
   text-align: center;
 }
+
+/* stylelint-disable selector-class-pattern */
+// the lock toggle sits inside the control, at its right edge
+.lockable-field {
+  position: relative;
+
+  // text inputs and textareas: overlay the toggle on the input's right edge
+  > .form-control {
+    padding-right: 2rem;
+  }
+
+  > .lock-field-button {
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+
+  // inside input groups (date, urls) the toggle stays in the flex flow, pulled
+  // back over the input's right edge so it sits before any appended buttons
+  .input-group > .form-control {
+    padding-right: 2rem;
+  }
+
+  .input-group > .lock-field-button {
+    margin-left: -2rem;
+    z-index: 4;
+  }
+
+  &:hover .lock-field-button,
+  .lock-field-button:focus-visible {
+    opacity: 1;
+  }
+
+  &.locked {
+    .form-control,
+    .react-select__control {
+      background-color: $locked-field-bg;
+      color: $text-muted;
+    }
+
+    .react-select__single-value,
+    .react-select__multi-value {
+      color: $text-muted;
+    }
+  }
+}
+
+button.btn.lock-field-button {
+  box-shadow: none;
+  color: $text-color;
+  opacity: 0.35;
+  padding: 0.375rem 0.5rem;
+  // react-select disables pointer events on a disabled select
+  pointer-events: auto;
+
+  &.locked {
+    opacity: 1;
+  }
+}
+/* stylelint-enable selector-class-pattern */
