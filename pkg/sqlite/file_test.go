@@ -663,6 +663,43 @@ func TestFileStore_FindByPathCaseInsensitiveTreatsLikeWildcardsLiterally(t *test
 	})
 }
 
+func TestFileStore_FindMissingInPathsComparesAcrossOffsets(t *testing.T) {
+	qb := db.File
+
+	runWithRollbackTxn(t, "missing since across offsets", func(t *testing.T, ctx context.Context) {
+		now := time.Now()
+		f := &models.BaseFile{
+			Path:           getFilePath(folderIdxWithFiles, "missing_since_offset.mp4"),
+			ParentFolderID: folderIDs[folderIdxWithFiles],
+			Basename:       "missing_since_offset.mp4",
+			DirEntry:       models.DirEntry{ModTime: now},
+			CreatedAt:      now,
+			UpdatedAt:      now,
+		}
+		if !assert.NoError(t, qb.Create(ctx, f)) {
+			return
+		}
+
+		// 12:00+10:00 is 02:00 UTC; a plain string compare against UTC values gets this wrong
+		missingSince := time.Date(2026, 1, 1, 12, 0, 0, 0, time.FixedZone("", 10*60*60))
+		if !assert.NoError(t, qb.SetMissing(ctx, f.ID, &missingSince)) {
+			return
+		}
+
+		after := time.Date(2026, 1, 1, 3, 0, 0, 0, time.UTC)
+		got, err := qb.FindMissingInPaths(ctx, nil, &after, -1, 0)
+		assert.NoError(t, err)
+		if assert.Len(t, got, 1) {
+			assert.Equal(t, f.ID, got[0].Base().ID)
+		}
+
+		before := time.Date(2026, 1, 1, 1, 0, 0, 0, time.UTC)
+		got, err = qb.FindMissingInPaths(ctx, nil, &before, -1, 0)
+		assert.NoError(t, err)
+		assert.Empty(t, got)
+	})
+}
+
 func TestFileStore_FindByFingerprint(t *testing.T) {
 	tests := []struct {
 		name    string

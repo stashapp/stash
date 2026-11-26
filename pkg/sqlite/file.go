@@ -410,13 +410,8 @@ func (qb *FileStore) SetMissing(ctx context.Context, id models.FileID, missingSi
 
 	table := qb.tableMgr.table
 
-	var timestampValue NullTimestamp
-	if missingSince != nil {
-		timestampValue = NullTimestamp{Timestamp: *missingSince, Valid: true}
-	}
-
 	q := dialect.Update(table).Set(goqu.Record{
-		"missing_since": timestampValue,
+		"missing_since": NullTimestampFromTimePtr(missingSince),
 	}).Where(qb.tableMgr.byID(id))
 
 	if _, err := exec(ctx, q); err != nil {
@@ -763,6 +758,15 @@ func (qb *FileStore) CountAllInPaths(ctx context.Context, p []string) (int, erro
 	return count(ctx, q)
 }
 
+// missingSinceCondition matches rows marked missing, optionally only before the given time.
+func missingSinceCondition(col exp.IdentifierExpression, before *time.Time) exp.Expression {
+	if before == nil {
+		return col.IsNotNull()
+	}
+	// stored values carry the local offset; datetime() normalises both sides to UTC
+	return goqu.L("datetime(?) < datetime(?)", col, before.Format(time.RFC3339))
+}
+
 func (qb *FileStore) FindMissingInPaths(ctx context.Context, p []string, missingSinceBefore *time.Time, limit, offset int) ([]models.File, error) {
 	table := qb.table()
 	folderTable := folderTableMgr.table
@@ -774,12 +778,10 @@ func (qb *FileStore) FindMissingInPaths(ctx context.Context, p []string, missing
 
 	q = qb.allInPaths(q, p)
 
-	if missingSinceBefore != nil {
-		v := missingSinceBefore.Format(time.RFC3339)
-		q = q.Where(qb.table().Col("missing_since").Lt(v))
-	} else {
-		q = q.Where(qb.table().Col("missing_since").IsNotNull())
-	}
+	q = q.Where(missingSinceCondition(qb.table().Col("missing_since"), missingSinceBefore))
+
+	// stable order: purge pages past rows that failed to delete
+	q = q.Order(table.Col(idColumn).Asc())
 
 	if limit > -1 {
 		q = q.Limit(uint(limit))
@@ -799,12 +801,7 @@ func (qb *FileStore) CountMissingInPaths(ctx context.Context, p []string, missin
 	q := qb.countDataset().Prepared(true)
 	q = qb.allInPaths(q, p)
 
-	if missingSinceBefore != nil {
-		v := missingSinceBefore.Format(time.RFC3339)
-		q = q.Where(qb.table().Col("missing_since").Lt(v))
-	} else {
-		q = q.Where(qb.table().Col("missing_since").IsNotNull())
-	}
+	q = q.Where(missingSinceCondition(qb.table().Col("missing_since"), missingSinceBefore))
 
 	return count(ctx, q)
 }
