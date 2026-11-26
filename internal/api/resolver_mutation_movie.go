@@ -34,7 +34,8 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	newGroup := models.NewGroup()
 
 	newGroup.Name = strings.TrimSpace(input.Name)
-	newGroup.Aliases = translator.string(input.Aliases)
+	movieAliases := deprecatedAliasList(input.Aliases)
+	newGroup.Aliases = models.NewRelatedStrings(stringslice.UniqueExcludeFold(movieAliases, newGroup.Name))
 	newGroup.Duration = input.Duration
 	newGroup.Rating = input.Rating100
 	newGroup.Director = translator.string(input.Director)
@@ -133,7 +134,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	updatedGroup := models.NewGroupPartial()
 
 	updatedGroup.Name = translator.optionalString(input.Name, "name")
-	updatedGroup.Aliases = translator.optionalString(input.Aliases, "aliases")
+	updatedGroup.Aliases = translator.updateStrings(deprecatedAliasList(input.Aliases), "aliases")
 	updatedGroup.Duration = translator.optionalInt(input.Duration, "duration")
 	updatedGroup.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedGroup.Director = translator.optionalString(input.Director, "director")
@@ -177,6 +178,10 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	var group *models.Group
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Group
+		if err := r.sanitizeGroupUpdateAliases(ctx, groupID, &updatedGroup); err != nil {
+			return err
+		}
+
 		group, err = qb.UpdatePartial(ctx, groupID, updatedGroup)
 		if err != nil {
 			return err

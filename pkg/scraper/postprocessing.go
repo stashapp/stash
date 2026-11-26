@@ -3,11 +3,13 @@ package scraper
 import (
 	"context"
 	"regexp"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -264,6 +266,15 @@ func (c *postScraper) postScrapeGroup(ctx context.Context, m models.ScrapedGroup
 		if len(urls) > 0 {
 			m.URLs = urls
 		}
+	}
+
+	// populate Aliases/AliasList
+	// if AliasList is provided, only use that
+	if len(m.AliasList) > 0 {
+		aliases := strings.Join(m.AliasList, ", ")
+		m.Aliases = &aliases
+	} else if m.Aliases != nil && *m.Aliases != "" {
+		m.AliasList = stringslice.FromString(*m.Aliases, ",")
 	}
 
 	// post-process - set the image if applicable

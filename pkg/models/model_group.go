@@ -8,7 +8,6 @@ import (
 type Group struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
-	Aliases  string `json:"aliases"`
 	Duration *int   `json:"duration"`
 	Date     *Date  `json:"date"`
 	// Rating expressed in 1-100 scale
@@ -19,8 +18,9 @@ type Group struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 
-	URLs   RelatedStrings `json:"urls"`
-	TagIDs RelatedIDs     `json:"tag_ids"`
+	Aliases RelatedStrings `json:"aliases"`
+	URLs    RelatedStrings `json:"urls"`
+	TagIDs  RelatedIDs     `json:"tag_ids"`
 
 	ContainingGroups RelatedGroupDescriptions `json:"containing_groups"`
 	SubGroups        RelatedGroupDescriptions `json:"sub_groups"`
@@ -66,22 +66,29 @@ func (m *Group) LoadSubGroupIDs(ctx context.Context, l SubGroupLoader) error {
 	})
 }
 
+func (m *Group) LoadAliases(ctx context.Context, l AliasLoader) error {
+	return m.Aliases.load(func() ([]string, error) {
+		return l.GetAliases(ctx, m.ID)
+	})
+}
+
 type GroupPartial struct {
 	Name     OptionalString
-	Aliases  OptionalString
 	Duration OptionalInt
 	Date     OptionalDate
 	// Rating expressed in 1-100 scale
-	Rating           OptionalInt
-	StudioID         OptionalInt
-	Director         OptionalString
-	Synopsis         OptionalString
+	Rating    OptionalInt
+	StudioID  OptionalInt
+	Director  OptionalString
+	Synopsis  OptionalString
+	CreatedAt OptionalTime
+	UpdatedAt OptionalTime
+
+	Aliases          *UpdateStrings
 	URLs             *UpdateStrings
 	TagIDs           *UpdateIDs
 	ContainingGroups *UpdateGroupDescriptions
 	SubGroups        *UpdateGroupDescriptions
-	CreatedAt        OptionalTime
-	UpdatedAt        OptionalTime
 
 	CustomFields CustomFieldsInput
 }

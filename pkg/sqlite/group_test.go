@@ -40,6 +40,11 @@ func loadGroupRelationships(ctx context.Context, expected models.Group, actual *
 			return err
 		}
 	}
+	if expected.Aliases.Loaded() {
+		if err := actual.LoadAliases(ctx, db.Group); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
@@ -48,7 +53,7 @@ func Test_GroupStore_Create(t *testing.T) {
 	var (
 		name                       = "name"
 		url                        = "url"
-		aliases                    = "alias1, alias2"
+		aliases                    = []string{"alias1", "alias2"}
 		director                   = "director"
 		rating                     = 60
 		duration                   = 34
@@ -83,7 +88,7 @@ func Test_GroupStore_Create(t *testing.T) {
 				SubGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
 					{GroupID: groupIDs[groupIdxWithStudio], Description: subGroupDescription},
 				}),
-				Aliases:   aliases,
+				Aliases:   models.NewRelatedStrings(aliases),
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
 			},
@@ -170,7 +175,7 @@ func Test_groupQueryBuilder_Update(t *testing.T) {
 	var (
 		name                       = "name"
 		url                        = "url"
-		aliases                    = "alias1, alias2"
+		aliases                    = []string{"alias1", "alias2"}
 		director                   = "director"
 		rating                     = 60
 		duration                   = 34
@@ -206,7 +211,7 @@ func Test_groupQueryBuilder_Update(t *testing.T) {
 				SubGroups: models.NewRelatedGroupDescriptions([]models.GroupIDDescription{
 					{GroupID: groupIDs[groupIdxWithStudio], Description: subGroupDescription},
 				}),
-				Aliases:   aliases,
+				Aliases:   models.NewRelatedStrings(aliases),
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
 			},
@@ -311,7 +316,7 @@ func Test_groupQueryBuilder_Update(t *testing.T) {
 
 var clearGroupPartial = models.GroupPartial{
 	// leave mandatory fields
-	Aliases:          models.OptionalString{Set: true, Null: true},
+	Aliases:          &models.UpdateStrings{Mode: models.RelationshipUpdateModeSet},
 	Synopsis:         models.OptionalString{Set: true, Null: true},
 	Director:         models.OptionalString{Set: true, Null: true},
 	Duration:         models.OptionalInt{Set: true, Null: true},
@@ -338,7 +343,7 @@ func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 	var (
 		name                       = "name"
 		url                        = "url"
-		aliases                    = "alias1, alias2"
+		aliases                    = []string{"alias1", "alias2"}
 		director                   = "director"
 		rating                     = 60
 		duration                   = 34
@@ -364,7 +369,10 @@ func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 				Name:     models.NewOptionalString(name),
 				Director: models.NewOptionalString(director),
 				Synopsis: models.NewOptionalString(synopsis),
-				Aliases:  models.NewOptionalString(aliases),
+				Aliases: &models.UpdateStrings{
+					Values: aliases,
+					Mode:   models.RelationshipUpdateModeSet,
+				},
 				URLs: &models.UpdateStrings{
 					Values: []string{url},
 					Mode:   models.RelationshipUpdateModeSet,
@@ -399,7 +407,7 @@ func Test_groupQueryBuilder_UpdatePartial(t *testing.T) {
 				Name:      name,
 				Director:  director,
 				Synopsis:  synopsis,
-				Aliases:   aliases,
+				Aliases:   models.NewRelatedStrings(aliases),
 				URLs:      models.NewRelatedStrings([]string{url}),
 				Date:      &date,
 				Duration:  &duration,
@@ -706,10 +714,59 @@ func groupsToIDs(i []*models.Group) []int {
 	return ret
 }
 
+func TestGroupGetAliases(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		// groupIdxWithAlias is the only group with aliases
+		aliases, err := db.Group.GetAliases(ctx, groupIDs[groupIdxWithAlias])
+		if err != nil {
+			t.Errorf("error getting group aliases: %s", err.Error())
+		}
+		assert.ElementsMatch(t, groupAliases(groupIdxWithAlias), aliases)
+
+		// any other group has no aliases
+		aliases, err = db.Group.GetAliases(ctx, groupIDs[groupIdxWithScene])
+		if err != nil {
+			t.Errorf("error getting group aliases: %s", err.Error())
+		}
+		assert.Nil(t, aliases)
+
+		return nil
+	})
+}
+
+func groupQueryIsMissing(ctx context.Context, t *testing.T, m string) []*models.Group {
+	groupFilter := models.GroupFilterType{
+		IsMissing: &m,
+	}
+
+	return queryGroups(ctx, t, &groupFilter, nil)
+}
+
+func TestGroupQueryIsMissingAlias(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		groups := groupQueryIsMissing(ctx, t, "aliases")
+
+		// every group except groupIdxWithAlias should be returned
+		assert.True(t, len(groups) > 0)
+		assert.NotContains(t, groupsToIDs(groups), groupIDs[groupIdxWithAlias])
+
+		for _, group := range groups {
+			a, err := db.Group.GetAliases(ctx, group.ID)
+			if err != nil {
+				t.Errorf("error getting group aliases: %s", err.Error())
+			}
+			assert.Nil(t, a)
+		}
+
+		return nil
+	})
+}
+
 func TestGroupQuery(t *testing.T) {
 	var (
 		frontImage = "front_image"
 		backImage  = "back_image"
+		alias      = getGroupStringValue(groupIdxWithAlias, "alias")
 	)
 
 	tests := []struct {
@@ -740,6 +797,41 @@ func TestGroupQuery(t *testing.T) {
 			// just ensure that it doesn't error
 			nil,
 			nil,
+			false,
+		},
+		{
+			"aliases equals",
+			nil,
+			&models.GroupFilterType{
+				Aliases: &models.StringCriterionInput{
+					Value:    alias,
+					Modifier: models.CriterionModifierEquals,
+				},
+			},
+			[]int{groupIdxWithAlias},
+			[]int{groupIdxWithScene},
+			false,
+		},
+		{
+			"aliases is null",
+			nil,
+			&models.GroupFilterType{
+				Aliases: &models.StringCriterionInput{
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			[]int{groupIdxWithScene},
+			[]int{groupIdxWithAlias},
+			false,
+		},
+		{
+			"search by alias",
+			&models.FindFilterType{
+				Q: &alias,
+			},
+			nil,
+			[]int{groupIdxWithAlias},
+			[]int{groupIdxWithScene},
 			false,
 		},
 		{

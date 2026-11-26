@@ -2,7 +2,9 @@ package models
 
 type GroupFilterType struct {
 	OperatorFilter[GroupFilterType]
-	Name     *StringCriterionInput `json:"name"`
+	Name *StringCriterionInput `json:"name"`
+	// Filter by group aliases
+	Aliases  *StringCriterionInput `json:"aliases"`
 	Director *StringCriterionInput `json:"director"`
 	Synopsis *StringCriterionInput `json:"synopsis"`
 	// Filter by duration (in seconds)

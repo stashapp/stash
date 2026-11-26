@@ -14,6 +14,22 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+// deprecatedAliasList splits the deprecated comma-delimited aliases input into
+// a list, as was done for performer aliases. A blank value means no aliases.
+func deprecatedAliasList(aliases *string) []string {
+	if aliases == nil {
+		return nil
+	}
+
+	ret := []string{}
+	for _, v := range stringslice.FromString(*aliases, ",") {
+		if v != "" {
+			ret = append(ret, v)
+		}
+	}
+	return ret
+}
+
 func groupFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*models.CreateGroupInput, error) {
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
@@ -27,7 +43,14 @@ func groupFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*mo
 	newGroup := newGroupInput.Group
 
 	newGroup.Name = strings.TrimSpace(input.Name)
-	newGroup.Aliases = translator.string(input.Aliases)
+
+	var aliases []string
+	if input.AliasList != nil {
+		aliases = input.AliasList
+	} else {
+		aliases = deprecatedAliasList(input.Aliases)
+	}
+	newGroup.Aliases = models.NewRelatedStrings(stringslice.UniqueExcludeFold(stringslice.TrimSpace(aliases), newGroup.Name))
 	newGroup.Duration = input.Duration
 	newGroup.Rating = input.Rating100
 	newGroup.Director = translator.string(input.Director)
@@ -118,7 +141,12 @@ func groupPartialFromGroupUpdateInput(translator changesetTranslator, input Grou
 	updatedGroup := models.NewGroupPartial()
 
 	updatedGroup.Name = translator.optionalString(input.Name, "name")
-	updatedGroup.Aliases = translator.optionalString(input.Aliases, "aliases")
+
+	if translator.hasField("alias_list") {
+		updatedGroup.Aliases = translator.updateStrings(input.AliasList, "alias_list")
+	} else if translator.hasField("aliases") {
+		updatedGroup.Aliases = translator.updateStrings(deprecatedAliasList(input.Aliases), "aliases")
+	}
 	updatedGroup.Duration = translator.optionalInt(input.Duration, "duration")
 	updatedGroup.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedGroup.Director = translator.optionalString(input.Director, "director")
@@ -198,6 +226,10 @@ func (r *mutationResolver) GroupUpdate(ctx context.Context, input GroupUpdateInp
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		if err := r.sanitizeGroupUpdateAliases(ctx, groupID, &updatedGroup); err != nil {
+			return err
+		}
+
 		frontImage := group.ImageInput{
 			Image: frontimageData,
 			Set:   frontImageIncluded,
@@ -224,6 +256,38 @@ func (r *mutationResolver) GroupUpdate(ctx context.Context, input GroupUpdateInp
 	return r.getGroup(ctx, groupID)
 }
 
+// sanitizeGroupUpdateAliases deduplicates the updated aliases and removes the
+// group name from them. Must be called inside a transaction.
+func (r *mutationResolver) sanitizeGroupUpdateAliases(ctx context.Context, groupID int, updatedGroup *models.GroupPartial) error {
+	if updatedGroup.Aliases == nil {
+		return nil
+	}
+
+	qb := r.repository.Group
+	g, err := qb.Find(ctx, groupID)
+	if err != nil {
+		return err
+	}
+	if g == nil {
+		return nil
+	}
+
+	if err := g.LoadAliases(ctx, qb); err != nil {
+		return err
+	}
+
+	effectiveAliases := updatedGroup.Aliases.Apply(g.Aliases.List())
+	name := g.Name
+	if updatedGroup.Name.Set {
+		name = updatedGroup.Name.Value
+	}
+
+	updatedGroup.Aliases.Values = stringslice.UniqueExcludeFold(effectiveAliases, name)
+	updatedGroup.Aliases.Mode = models.RelationshipUpdateModeSet
+
+	return nil
+}
+
 func groupPartialFromBulkGroupUpdateInput(translator changesetTranslator, input BulkGroupUpdateInput) (ret models.GroupPartial, err error) {
 	updatedGroup := models.NewGroupPartial()
 
@@ -235,6 +299,7 @@ func groupPartialFromBulkGroupUpdateInput(translator changesetTranslator, input 
 	updatedGroup.Synopsis = translator.optionalString(input.Synopsis, "synopsis")
 	updatedGroup.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedGroup.Director = translator.optionalString(input.Director, "director")
+	updatedGroup.Aliases = translator.updateStringsBulk(input.AliasList, "alias_list")
 
 	updatedGroup.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {

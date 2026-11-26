@@ -49,6 +49,7 @@ var (
 	groupsTagsJoinTable     = goqu.T(groupsTagsTable)
 	groupRelationsJoinTable = goqu.T(groupRelationsTable)
 	groupsCustomFieldsTable = goqu.T("group_custom_fields")
+	groupAliasesJoinTable   = goqu.T(groupAliasesTable)
 
 	tagsAliasesJoinTable  = goqu.T(tagAliasesTable)
 	tagRelationsJoinTable = goqu.T(tagRelationsTable)
@@ -417,6 +418,14 @@ var (
 
 	groupRelationshipTableMgr = &table{
 		table: groupRelationsJoinTable,
+	}
+
+	groupAliasesTableMgr = &stringTable{
+		table: table{
+			table:    groupAliasesJoinTable,
+			idColumn: groupAliasesJoinTable.Col(groupIDColumn),
+		},
+		stringColumn: groupAliasesJoinTable.Col(groupAliasColumn),
 	}
 )
 
