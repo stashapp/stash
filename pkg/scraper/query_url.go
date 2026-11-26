@@ -16,6 +16,7 @@ func queryURLParametersFromScene(scene *models.Scene) queryURLParameters {
 	ret["checksum"] = scene.Checksum
 	ret["oshash"] = scene.OSHash
 	ret["filename"] = filepath.Base(scene.Path)
+	ret["path"] = scene.Path
 
 	// pull phash from primary file
 	phashFingerprints := scene.Files.Primary().Base().Fingerprints.Filter(models.FingerprintTypePhash)
@@ -68,6 +69,7 @@ func queryURLParametersFromGallery(gallery *models.Gallery) queryURLParameters {
 
 	if gallery.Path != "" {
 		ret["filename"] = filepath.Base(gallery.Path)
+		ret["path"] = gallery.Path
 	}
 	if gallery.Title != "" {
 		ret["title"] = gallery.Title
@@ -86,6 +88,7 @@ func queryURLParametersFromImage(image *models.Image) queryURLParameters {
 
 	if image.Path != "" {
 		ret["filename"] = filepath.Base(image.Path)
+		ret["path"] = image.Path
 	}
 	if image.Title != "" {
 		ret["title"] = image.Title
