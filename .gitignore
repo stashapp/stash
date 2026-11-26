@@ -64,3 +64,5 @@ node_modules
 dist
 .DS_Store
 /.local*
+.pnpm-store
+.tmp
