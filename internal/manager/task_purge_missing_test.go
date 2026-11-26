@@ -112,6 +112,7 @@ func TestFindGalleriesToCleanIncludesNoGalleryFolders(t *testing.T) {
 		options: file.PurgeMissingOptions{
 			Paths: []string{cleanPath},
 		},
+		cleanNoGalleryFolders: true,
 	}
 
 	got, err := j.findGalleriesToClean(context.Background())
@@ -135,11 +136,26 @@ func TestCleanGalleriesDryRunDeletesNothing(t *testing.T) {
 		Return([]*models.Gallery{}, 0, nil)
 
 	j := purgeMissingJob{
-		repository: db.Repository(),
-		options:    file.PurgeMissingOptions{DryRun: true},
+		repository:            db.Repository(),
+		options:               file.PurgeMissingOptions{DryRun: true},
+		cleanNoGalleryFolders: true,
 	}
 	j.cleanGalleries(context.Background())
 
 	db.Gallery.AssertNotCalled(t, "Find", mock.Anything, mock.Anything)
 	db.Gallery.AssertNotCalled(t, "Destroy", mock.Anything, mock.Anything)
+}
+
+// The purge task only removes empty galleries; .nogallery folders are not marked missing.
+func TestFindGalleriesToCleanSkipsNoGalleryFoldersWhenDisabled(t *testing.T) {
+	db := mocks.NewDatabase()
+	db.Gallery.On("Query", mock.Anything, mock.Anything, mock.Anything).
+		Return([]*models.Gallery{}, 0, nil)
+
+	j := purgeMissingJob{repository: db.Repository()}
+
+	got, err := j.findGalleriesToClean(context.Background())
+	require.NoError(t, err)
+	assert.Empty(t, got)
+	db.Gallery.AssertNumberOfCalls(t, "Query", 1)
 }

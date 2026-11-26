@@ -24,6 +24,10 @@ type purgeMissingJob struct {
 	sceneService SceneService
 	imageService ImageService
 	scanSubs     *subscriptionManager
+
+	// cleanNoGalleryFolders also cleans folder galleries containing .nogallery.
+	// Only set by verify with purge, since those galleries are not marked missing.
+	cleanNoGalleryFolders bool
 }
 
 // galleryCleanCandidate avoids retaining full gallery models for large libraries.
@@ -46,10 +50,8 @@ func (j *purgeMissingJob) Execute(ctx context.Context, progress *job.Progress) e
 		return nil
 	}
 
-	// only clean galleries if not in dry run mode
-	if !j.options.DryRun {
-		j.cleanGalleries(ctx)
-	}
+	// cleanGalleries only logs in dry run mode
+	j.cleanGalleries(ctx)
 
 	j.scanSubs.notify()
 	elapsed := time.Since(start)
@@ -125,6 +127,10 @@ func (j *purgeMissingJob) findGalleriesToClean(ctx context.Context) ([]int, erro
 			}
 		}); err != nil {
 			return err
+		}
+
+		if !j.cleanNoGalleryFolders {
+			return nil
 		}
 
 		folderGalleryFilter := &models.GalleryFilterType{
