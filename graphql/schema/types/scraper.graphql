@@ -58,23 +58,24 @@ type ScraperURLConflictPackage {
   sibling_scraper_ids: [String!]!
 }
 
+"One side of a ScraperURLConflict: a URL pattern declared by a scraper"
+type ScraperURLConflictSide {
+  scraper_id: ID!
+  scraper_name: String!
+  pattern: String!
+  "The installed package containing this scraper. Null if the scraper was not installed from a package."
+  package: ScraperURLConflictPackage
+}
+
 """
 Describes two installed scrapers whose URL patterns for the same content type
 overlap, such that Stash cannot deterministically choose between them when
-scraping by URL.
+scraping by URL. The pair is unordered.
 """
 type ScraperURLConflict {
   type: ScrapeContentType!
-  scraper_id: ID!
-  pattern: String!
-  """
-  The installed package believed to provide this scraper, if one could be
-  found with a matching id. Null if no such package was found.
-  """
-  scraper_package: ScraperURLConflictPackage
-  other_scraper_id: ID!
-  other_pattern: String!
-  other_scraper_package: ScraperURLConflictPackage
+  scraper: ScraperURLConflictSide!
+  other: ScraperURLConflictSide!
 }
 
 type ScrapedStudio {

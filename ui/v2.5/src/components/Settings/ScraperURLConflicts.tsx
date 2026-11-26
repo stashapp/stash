@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Badge, Button } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
@@ -18,105 +18,91 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 
-type Conflict = GQL.ScraperUrlConflictsQuery["scraperURLConflicts"][number];
-type ConflictPackage = NonNullable<Conflict["scraper_package"]>;
+export type ScraperURLConflict =
+  GQL.ScraperUrlConflictsQuery["scraperURLConflicts"][number];
+type ConflictSide = GQL.ScraperUrlConflictSideDataFragment;
+type ConflictPackage = NonNullable<ConflictSide["package"]>;
 
-// a conflict as seen from the perspective of one particular scraper/pattern -
-// "mine" is the side matching the scraper/url being rendered, "other" is the
-// side it conflicts with
-export interface ILocalConflict {
-  mineID: string;
-  minePattern: string;
-  minePackage?: ConflictPackage | null;
-  otherID: string;
-  otherPattern: string;
-  otherPackage?: ConflictPackage | null;
+// all conflicts involving one scraper's URL pattern
+export interface IPatternConflicts {
+  pattern: ConflictSide;
+  conflictsWith: ConflictSide[];
 }
 
-export function findConflict(
-  conflicts: Conflict[] | undefined,
+export function findConflicts(
+  conflicts: ScraperURLConflict[] | undefined,
   scraperID: string,
   url: string
-): ILocalConflict | undefined {
-  const c = conflicts?.find(
-    (conflict) =>
-      (conflict.scraper_id === scraperID && conflict.pattern === url) ||
-      (conflict.other_scraper_id === scraperID &&
-        conflict.other_pattern === url)
-  );
+): IPatternConflicts | undefined {
+  const isPattern = (s: ConflictSide) =>
+    s.scraper_id === scraperID && s.pattern === url;
 
-  if (!c) return undefined;
-
-  if (c.scraper_id === scraperID) {
-    return {
-      mineID: c.scraper_id,
-      minePattern: c.pattern,
-      minePackage: c.scraper_package,
-      otherID: c.other_scraper_id,
-      otherPattern: c.other_pattern,
-      otherPackage: c.other_scraper_package,
-    };
+  let pattern: ConflictSide | undefined;
+  const conflictsWith: ConflictSide[] = [];
+  for (const c of conflicts ?? []) {
+    for (const [side, other] of [
+      [c.scraper, c.other],
+      [c.other, c.scraper],
+    ]) {
+      if (isPattern(side)) {
+        pattern = side;
+        conflictsWith.push(other);
+      }
+    }
   }
 
-  return {
-    mineID: c.other_scraper_id,
-    minePattern: c.other_pattern,
-    minePackage: c.other_scraper_package,
-    otherID: c.scraper_id,
-    otherPattern: c.pattern,
-    otherPackage: c.scraper_package,
-  };
+  return pattern && { pattern, conflictsWith };
 }
 
-function packageIsOlder(
-  a?: ConflictPackage | null,
-  b?: ConflictPackage | null
-) {
-  if (!a?.package.date || !b?.package.date) return false;
-  return new Date(a.package.date) < new Date(b.package.date);
+// returns the scrapers whose package is older than the newest package in the
+// group. Returns none unless every side has a dated package, since the
+// suggestion would otherwise be misleading.
+// shortcut: package date is when the installed version was published, not
+// when the scraper was superseded; an updated but deprecated scraper can look
+// newer than its replacement
+function olderScraperIDs(sides: ConflictSide[]) {
+  const dates = sides.map((s) => s.package?.package.date);
+  if (dates.some((d) => !d)) return new Set<string>();
+
+  const times = dates.map((d) => new Date(d!).getTime());
+  const newest = Math.max(...times);
+  return new Set(
+    sides.filter((_, i) => times[i] < newest).map((s) => s.scraper_id)
+  );
 }
 
-const ConflictSide: React.FC<{
-  name: string;
-  pattern: string;
-  pkg?: ConflictPackage | null;
-  recommended: boolean;
-  onUninstall: () => void;
-}> = ({ name, pattern, pkg, recommended, onUninstall }) => {
+const ConflictSideDetails: React.FC<{
+  side: ConflictSide;
+  older: boolean;
+  onUninstall: (pkg: ConflictPackage) => void;
+}> = ({ side, older, onUninstall }) => {
   const intl = useIntl();
+  const { package: pkg, scraper_name: name } = side;
 
   return (
     <div className="scraper-conflict-side">
       <div className="scraper-conflict-side-heading">
         <strong>{name}</strong>
-        {recommended && (
+        {older && (
           <Badge variant="warning">
             <FormattedMessage id="config.scraping.url_conflict.older" />
           </Badge>
         )}
       </div>
       <div>
-        <code>{pattern}</code>
+        <code>{side.pattern}</code>
       </div>
       {pkg ? (
         <>
           <div className="text-muted">
             {pkg.package.version ?? pkg.package.package_id}
-            {pkg.package.date && (
-              <>
-                {" "}
-                (
-                {intl.formatDate(new Date(pkg.package.date), {
-                  timeZone: "utc",
-                })}
-                )
-              </>
-            )}
+            {pkg.package.date &&
+              ` (${intl.formatDate(new Date(pkg.package.date), { timeZone: "utc" })})`}
           </div>
           <Button
             size="sm"
-            variant={recommended ? "danger" : "secondary"}
-            onClick={onUninstall}
+            variant={older ? "danger" : "secondary"}
+            onClick={() => onUninstall(pkg)}
           >
             <Icon icon={faTrash} />
             <FormattedMessage
@@ -135,11 +121,9 @@ const ConflictSide: React.FC<{
 };
 
 const ScraperConflictModal: React.FC<{
-  conflict: ILocalConflict;
-  mineName: string;
-  otherName: string;
+  conflicts: IPatternConflicts;
   onHide: () => void;
-}> = ({ conflict, mineName, otherName, onHide }) => {
+}> = ({ conflicts, onHide }) => {
   const intl = useIntl();
   const [uninstallTarget, setUninstallTarget] = useState<{
     name: string;
@@ -152,14 +136,9 @@ const ScraperConflictModal: React.FC<{
     onHide();
   });
 
-  const mineIsOlder = packageIsOlder(
-    conflict.minePackage,
-    conflict.otherPackage
-  );
-  const otherIsOlder = packageIsOlder(
-    conflict.otherPackage,
-    conflict.minePackage
-  );
+  const sides = [conflicts.pattern, ...conflicts.conflictsWith];
+  const older = olderScraperIDs(sides);
+  const siblings = uninstallTarget?.pkg.sibling_scraper_ids ?? [];
 
   async function confirmUninstall() {
     if (!uninstallTarget) return;
@@ -189,32 +168,16 @@ const ScraperConflictModal: React.FC<{
           <FormattedMessage id="config.scraping.url_conflict.description" />
         </p>
         <div className="scraper-conflict-sides">
-          <ConflictSide
-            name={mineName}
-            pattern={conflict.minePattern}
-            pkg={conflict.minePackage}
-            recommended={mineIsOlder}
-            onUninstall={() =>
-              conflict.minePackage &&
-              setUninstallTarget({
-                name: mineName,
-                pkg: conflict.minePackage,
-              })
-            }
-          />
-          <ConflictSide
-            name={otherName}
-            pattern={conflict.otherPattern}
-            pkg={conflict.otherPackage}
-            recommended={otherIsOlder}
-            onUninstall={() =>
-              conflict.otherPackage &&
-              setUninstallTarget({
-                name: otherName,
-                pkg: conflict.otherPackage,
-              })
-            }
-          />
+          {sides.map((side) => (
+            <ConflictSideDetails
+              key={`${side.scraper_id}:${side.pattern}`}
+              side={side}
+              older={older.has(side.scraper_id)}
+              onUninstall={(pkg) =>
+                setUninstallTarget({ name: side.scraper_name, pkg })
+              }
+            />
+          ))}
         </div>
       </ModalComponent>
 
@@ -225,11 +188,8 @@ const ScraperConflictModal: React.FC<{
             id="config.scraping.url_conflict.confirm_uninstall"
             values={{
               name: uninstallTarget?.name,
-              siblings: uninstallTarget?.pkg.sibling_scraper_ids.join(", "),
-              hasSiblings:
-                (uninstallTarget?.pkg.sibling_scraper_ids.length ?? 0) > 0
-                  ? 1
-                  : 0,
+              siblings: siblings.join(", "),
+              siblingCount: siblings.length,
             }}
           />
         }
@@ -241,20 +201,15 @@ const ScraperConflictModal: React.FC<{
 };
 
 export const ConflictBadge: React.FC<{
-  conflict: ILocalConflict;
-  mineName: string;
-  otherName: string;
-}> = ({ conflict, mineName, otherName }) => {
+  conflicts: IPatternConflicts;
+}> = ({ conflicts }) => {
   const intl = useIntl();
   const [showModal, setShowModal] = useState(false);
 
-  const tooltip = useMemo(
-    () =>
-      intl.formatMessage(
-        { id: "config.scraping.url_conflict.tooltip" },
-        { name: otherName }
-      ),
-    [intl, otherName]
+  const names = new Set(conflicts.conflictsWith.map((s) => s.scraper_name));
+  const tooltip = intl.formatMessage(
+    { id: "config.scraping.url_conflict.tooltip" },
+    { names: intl.formatList([...names]) }
   );
 
   return (
@@ -270,9 +225,7 @@ export const ConflictBadge: React.FC<{
       </button>
       {showModal && (
         <ScraperConflictModal
-          conflict={conflict}
-          mineName={mineName}
-          otherName={otherName}
+          conflicts={conflicts}
           onHide={() => setShowModal(false)}
         />
       )}

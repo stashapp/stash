@@ -1,23 +1,38 @@
 package scraper
 
-import "strings"
+import (
+	"path/filepath"
+	"strings"
+)
 
-// ScraperURLConflict describes two installed scrapers whose URL patterns for the
+// URLPatternSource is a URL pattern declared by a particular scraper
+type URLPatternSource struct {
+	ScraperID   string
+	ScraperName string
+	Pattern     string
+}
+
+// URLConflict describes two installed scrapers whose URL patterns for the
 // same content type overlap, such that Cache.ScrapeURL cannot deterministically
-// choose between them
-type ScraperURLConflict struct {
-	Type ScrapeContentType `json:"type"`
+// choose between them. The pair is unordered.
+type URLConflict struct {
+	Type    ScrapeContentType
+	Scraper URLPatternSource
+	Other   URLPatternSource
+}
 
-	ScraperID string `json:"scraperID"`
-	Pattern   string `json:"pattern"`
-
-	OtherScraperID string `json:"otherScraperID"`
-	OtherPattern   string `json:"otherPattern"`
+// IDFromFile returns the ID of the scraper defined by the given file path,
+// mirroring how loadConfigFromYAMLFile assigns IDs. Returns false if the file
+// is not a scraper definition.
+func IDFromFile(path string) (string, bool) {
+	if filepath.Ext(path) != ".yml" {
+		return "", false
+	}
+	return strings.TrimSuffix(filepath.Base(path), ".yml"), true
 }
 
 // urlsForType returns the URL patterns declared by spec for the given content
-// type. Movie and Group are treated as the same bucket, since they are
-// matched identically by Definition.matchesURL
+// type. Movie is not handled since it shares Group's patterns.
 func urlsForType(spec Scraper, ty ScrapeContentType) []string {
 	var s *ScraperSpec
 
@@ -30,7 +45,7 @@ func urlsForType(spec Scraper, ty ScrapeContentType) []string {
 		s = spec.Gallery
 	case ScrapeContentTypeImage:
 		s = spec.Image
-	case ScrapeContentTypeGroup, ScrapeContentTypeMovie:
+	case ScrapeContentTypeGroup:
 		s = spec.Group
 	}
 
@@ -42,56 +57,47 @@ func urlsForType(spec Scraper, ty ScrapeContentType) []string {
 }
 
 // FindURLConflicts finds pairs of installed scrapers whose URL patterns for
-// the same content type overlap in a way that makes ScrapeURL's dispatch
-// ambiguous: one pattern is equal to, or a substring of, another pattern
-// belonging to a different scraper
+// the same content type overlap: one pattern is equal to, or a substring of,
+// another pattern belonging to a different scraper. Any URL matching the
+// longer pattern then also matches the shorter one.
 //
-// Each conflicting pattern pair is reported once
-func (c Cache) FindURLConflicts() []ScraperURLConflict {
-	var ret []ScraperURLConflict
+// Patterns that overlap only on some URLs (neither contains the other) are not
+// detected.
+//
+// Each conflicting pattern pair is reported once. A pattern conflicting with
+// several scrapers produces one conflict per scraper.
+func (c Cache) FindURLConflicts() []*URLConflict {
+	var ret []*URLConflict
 
-	tys := make([]ScrapeContentType, 0, len(AllScrapeContentType))
 	for _, ty := range AllScrapeContentType {
-		if ty != ScrapeContentTypeMovie {
-			tys = append(tys, ty)
+		// Movie is an alias of Group
+		if ty == ScrapeContentTypeMovie {
+			continue
 		}
-	}
 
-	type patternSource struct {
-		scraperID string
-		pattern   string
-	}
-
-	for _, ty := range tys {
-		var patterns []patternSource
+		var patterns []URLPatternSource
 		for _, s := range c.scrapers {
 			spec := s.spec()
 			for _, u := range urlsForType(spec, ty) {
-				patterns = append(patterns, patternSource{scraperID: spec.ID, pattern: u})
+				patterns = append(patterns, URLPatternSource{ScraperID: spec.ID, ScraperName: spec.Name, Pattern: u})
 			}
 		}
 
-		for i, a := range patterns {
-			for j, b := range patterns {
-				if i == j || a.scraperID == b.scraperID {
+		for _, a := range patterns {
+			for _, b := range patterns {
+				if a.ScraperID == b.ScraperID || !strings.Contains(a.Pattern, b.Pattern) {
 					continue
 				}
 
-				if !strings.Contains(a.pattern, b.pattern) {
+				// identical patterns match both ways; keep only one ordering
+				if a.Pattern == b.Pattern && a.ScraperID > b.ScraperID {
 					continue
 				}
 
-				// deliberately compare 'greater than' to guarantee a total ordering
-				if a.pattern == b.pattern && a.scraperID > b.scraperID {
-					continue
-				}
-
-				ret = append(ret, ScraperURLConflict{
-					Type:           ty,
-					ScraperID:      a.scraperID,
-					Pattern:        a.pattern,
-					OtherScraperID: b.scraperID,
-					OtherPattern:   b.pattern,
+				ret = append(ret, &URLConflict{
+					Type:    ty,
+					Scraper: a,
+					Other:   b,
 				})
 			}
 		}

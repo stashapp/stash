@@ -493,12 +493,12 @@
       "supported_types": "Supported types",
       "supported_urls": "URLs",
       "url_conflict": {
-        "confirm_uninstall": "Are you sure you want to uninstall {name}?{hasSiblings, select, 1 { This will also remove: {siblings}} other {}}",
-        "description": "These installed scrapers declare URL patterns that overlap, so Stash cannot reliably choose between them when scraping by URL. This usually happens when a scraper is replaced or consolidated upstream, uninstalling the older one is usually the correct fix.",
+        "confirm_uninstall": "Are you sure you want to uninstall {name}?{siblingCount, plural, =0 {} other { This will also remove: {siblings}}}",
+        "description": "These installed scrapers declare URL patterns that overlap, so Stash cannot reliably choose between them when scraping by URL. This often happens when a scraper is replaced or consolidated upstream. Uninstalling the one with the older package is usually the correct fix.",
         "heading": "Conflicting URL patterns",
-        "no_package": "Could not determine which package provides this scraper: it must be removed manually.",
-        "older": "(older)",
-        "tooltip": "This URL pattern overlaps with a pattern from {name}. Click for details",
+        "no_package": "This scraper was not installed from a package: it must be removed manually.",
+        "older": "Older package",
+        "tooltip": "This URL pattern overlaps with a pattern from {names}. Click for details",
         "uninstall": "Uninstall {name}"
       }
     },

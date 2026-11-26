@@ -56,21 +56,11 @@ query ListGroupScrapers {
 query ScraperURLConflicts {
   scraperURLConflicts {
     type
-    scraper_id
-    pattern
-    scraper_package {
-      package {
-        ...PackageData
-      }
-      sibling_scraper_ids
+    scraper {
+      ...ScraperURLConflictSideData
     }
-    other_scraper_id
-    other_pattern
-    other_scraper_package {
-      package {
-        ...PackageData
-      }
-      sibling_scraper_ids
+    other {
+      ...ScraperURLConflictSideData
     }
   }
 }

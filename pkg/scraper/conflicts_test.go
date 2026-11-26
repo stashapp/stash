@@ -5,32 +5,47 @@ import (
 	"testing"
 )
 
-func makeTestScraper(id string, sceneURLs []string, performerURLs []string) scraper {
-	def := Definition{
-		ID:   id,
-		Name: id,
+func byURL(urls []string) []*ByURLDefinition {
+	var ret []*ByURLDefinition
+	for _, u := range urls {
+		ret = append(ret, &ByURLDefinition{URL: []string{u}})
 	}
-
-	for _, u := range sceneURLs {
-		def.SceneByURL = append(def.SceneByURL, &ByURLDefinition{URL: []string{u}})
-	}
-	for _, u := range performerURLs {
-		def.PerformerByURL = append(def.PerformerByURL, &ByURLDefinition{URL: []string{u}})
-	}
-
-	return scraperFromDefinition(def, nil)
+	return ret
 }
 
-func sortConflicts(c []ScraperURLConflict) {
-	sort.Slice(c, func(i, j int) bool {
-		if c[i].ScraperID != c[j].ScraperID {
-			return c[i].ScraperID < c[j].ScraperID
+// test scrapers use their ID as their name
+func src(id, pattern string) URLPatternSource {
+	return URLPatternSource{ScraperID: id, ScraperName: id, Pattern: pattern}
+}
+
+func makeTestScraper(id string, sceneURLs []string, performerURLs []string) scraper {
+	return scraperFromDefinition(Definition{
+		ID:             id,
+		Name:           id,
+		SceneByURL:     byURL(sceneURLs),
+		PerformerByURL: byURL(performerURLs),
+	}, nil)
+}
+
+func sortConflicts(c []*URLConflict) {
+	key := func(x *URLConflict) string {
+		return x.Scraper.ScraperID + "\x00" + x.Scraper.Pattern + "\x00" + x.Other.ScraperID
+	}
+	sort.Slice(c, func(i, j int) bool { return key(c[i]) < key(c[j]) })
+}
+
+func assertConflicts(t *testing.T, got []*URLConflict, want []URLConflict) {
+	t.Helper()
+	sortConflicts(got)
+
+	if len(got) != len(want) {
+		t.Fatalf("FindURLConflicts() returned %d conflicts, want %d: %+v", len(got), len(want), got)
+	}
+	for i := range want {
+		if *got[i] != want[i] {
+			t.Errorf("FindURLConflicts()[%d] = %+v, want %+v", i, *got[i], want[i])
 		}
-		if c[i].Pattern != c[j].Pattern {
-			return c[i].Pattern < c[j].Pattern
-		}
-		return c[i].OtherScraperID < c[j].OtherScraperID
-	})
+	}
 }
 
 func TestCache_FindURLConflicts_Subsumption(t *testing.T) {
@@ -41,25 +56,14 @@ func TestCache_FindURLConflicts_Subsumption(t *testing.T) {
 		},
 	}
 
-	got := c.FindURLConflicts()
-	sortConflicts(got)
-
-	// the longer, more specific pattern ("example.com/scene") contains the
-	// shorter, broader one ("example.com"), so it is reported as the primary
-	// side of the pair: consumers should treat the pair as unordered
-	want := []ScraperURLConflict{
+	// the longer pattern contains the shorter one, so it is reported first
+	assertConflicts(t, c.FindURLConflicts(), []URLConflict{
 		{
-			Type:           ScrapeContentTypeScene,
-			ScraperID:      "b",
-			Pattern:        "example.com/scene",
-			OtherScraperID: "a",
-			OtherPattern:   "example.com",
+			Type:    ScrapeContentTypeScene,
+			Scraper: src("b", "example.com/scene"),
+			Other:   src("a", "example.com"),
 		},
-	}
-
-	if len(got) != len(want) || got[0] != want[0] {
-		t.Errorf("FindURLConflicts() = %+v, want %+v", got, want)
-	}
+	})
 }
 
 func TestCache_FindURLConflicts_DisjointPatternsNoConflict(t *testing.T) {
@@ -70,10 +74,7 @@ func TestCache_FindURLConflicts_DisjointPatternsNoConflict(t *testing.T) {
 		},
 	}
 
-	got := c.FindURLConflicts()
-	if len(got) != 0 {
-		t.Errorf("FindURLConflicts() = %+v, want no conflicts for disjoint patterns on the same domain", got)
-	}
+	assertConflicts(t, c.FindURLConflicts(), nil)
 }
 
 func TestCache_FindURLConflicts_EqualPatternsReportedOnce(t *testing.T) {
@@ -84,13 +85,30 @@ func TestCache_FindURLConflicts_EqualPatternsReportedOnce(t *testing.T) {
 		},
 	}
 
-	got := c.FindURLConflicts()
-	if len(got) != 1 {
-		t.Fatalf("FindURLConflicts() returned %d conflicts for identical patterns, want exactly 1", len(got))
+	assertConflicts(t, c.FindURLConflicts(), []URLConflict{
+		{
+			Type:    ScrapeContentTypeScene,
+			Scraper: src("a", "example.com"),
+			Other:   src("b", "example.com"),
+		},
+	})
+}
+
+func TestCache_FindURLConflicts_ThreeScrapersSamePattern(t *testing.T) {
+	c := Cache{
+		scrapers: map[string]scraper{
+			"a": makeTestScraper("a", []string{"example.com"}, nil),
+			"b": makeTestScraper("b", []string{"example.com"}, nil),
+			"c": makeTestScraper("c", []string{"example.com"}, nil),
+		},
 	}
-	if got[0].ScraperID != "a" || got[0].OtherScraperID != "b" {
-		t.Errorf("FindURLConflicts() = %+v, want scraperID a, otherScraperID b (canonical ordering)", got[0])
-	}
+
+	scene := ScrapeContentTypeScene
+	assertConflicts(t, c.FindURLConflicts(), []URLConflict{
+		{Type: scene, Scraper: src("a", "example.com"), Other: src("b", "example.com")},
+		{Type: scene, Scraper: src("a", "example.com"), Other: src("c", "example.com")},
+		{Type: scene, Scraper: src("b", "example.com"), Other: src("c", "example.com")},
+	})
 }
 
 func TestCache_FindURLConflicts_SameScraperNoSelfConflict(t *testing.T) {
@@ -100,15 +118,11 @@ func TestCache_FindURLConflicts_SameScraperNoSelfConflict(t *testing.T) {
 		},
 	}
 
-	got := c.FindURLConflicts()
-	if len(got) != 0 {
-		t.Errorf("FindURLConflicts() = %+v, want no conflicts within a single scraper's own patterns", got)
-	}
+	assertConflicts(t, c.FindURLConflicts(), nil)
 }
 
 func TestCache_FindURLConflicts_ScopedPerContentType(t *testing.T) {
-	// a scene scraper and a performer scraper on the same domain is not a
-	// conflict, since ScrapeURL dispatches independently per content type
+	// ScrapeURL dispatches independently per content type
 	c := Cache{
 		scrapers: map[string]scraper{
 			"a": makeTestScraper("a", []string{"example.com"}, nil),
@@ -116,8 +130,42 @@ func TestCache_FindURLConflicts_ScopedPerContentType(t *testing.T) {
 		},
 	}
 
-	got := c.FindURLConflicts()
-	if len(got) != 0 {
-		t.Errorf("FindURLConflicts() = %+v, want no conflicts across different content types", got)
+	assertConflicts(t, c.FindURLConflicts(), nil)
+}
+
+func TestCache_FindURLConflicts_MovieAndGroupShareBucket(t *testing.T) {
+	c := Cache{
+		scrapers: map[string]scraper{
+			"a": scraperFromDefinition(Definition{ID: "a", Name: "a", MovieByURL: byURL([]string{"example.com"})}, nil),
+			"b": scraperFromDefinition(Definition{ID: "b", Name: "b", GroupByURL: byURL([]string{"example.com"})}, nil),
+		},
+	}
+
+	assertConflicts(t, c.FindURLConflicts(), []URLConflict{
+		{
+			Type:    ScrapeContentTypeGroup,
+			Scraper: src("a", "example.com"),
+			Other:   src("b", "example.com"),
+		},
+	})
+}
+
+func TestIDFromFile(t *testing.T) {
+	tests := []struct {
+		path   string
+		wantID string
+		wantOK bool
+	}{
+		{"MojoHost.yml", "MojoHost", true},
+		{"MojoHost/MojoHost.yml", "MojoHost", true},
+		{"MojoHost/MojoHost.py", "", false},
+		{"MojoHost/requirements.txt", "", false},
+	}
+
+	for _, tt := range tests {
+		id, ok := IDFromFile(tt.path)
+		if id != tt.wantID || ok != tt.wantOK {
+			t.Errorf("IDFromFile(%q) = %q, %v; want %q, %v", tt.path, id, ok, tt.wantID, tt.wantOK)
+		}
 	}
 }
