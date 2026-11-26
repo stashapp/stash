@@ -312,3 +312,15 @@ fragment ScrapedStashBoxPerformerData on StashBoxPerformerQueryResult {
     ...ScrapedScenePerformerData
   }
 }
+
+fragment ScraperURLConflictSideData on ScraperURLConflictSide {
+  scraper_id
+  scraper_name
+  pattern
+  package {
+    package {
+      ...PackageData
+    }
+    sibling_scraper_ids
+  }
+}

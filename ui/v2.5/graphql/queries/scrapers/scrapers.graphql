@@ -53,6 +53,18 @@ query ListGroupScrapers {
   }
 }
 
+query ScraperURLConflicts {
+  scraperURLConflicts {
+    type
+    scraper {
+      ...ScraperURLConflictSideData
+    }
+    other {
+      ...ScraperURLConflictSideData
+    }
+  }
+}
+
 query ScrapeSingleStudio(
   $source: ScraperSourceInput!
   $input: ScrapeSingleStudioInput!

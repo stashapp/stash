@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
@@ -21,6 +22,73 @@ func (r *queryResolver) ScrapeURL(ctx context.Context, url string, ty scraper.Sc
 
 func (r *queryResolver) ListScrapers(ctx context.Context, types []scraper.ScrapeContentType) ([]*scraper.Scraper, error) {
 	return r.scraperCache().ListScrapers(types), nil
+}
+
+func (r *queryResolver) ScraperURLConflicts(ctx context.Context) ([]*ScraperURLConflict, error) {
+	conflicts := r.scraperCache().FindURLConflicts()
+	if len(conflicts) == 0 {
+		return []*ScraperURLConflict{}, nil
+	}
+
+	// package details are only a hint; still report conflicts without them
+	packages, err := scraperPackagesByID(ctx)
+	if err != nil {
+		logger.Warnf("listing installed scraper packages: %v", err)
+	}
+
+	ret := make([]*ScraperURLConflict, len(conflicts))
+	for i, c := range conflicts {
+		ret[i] = &ScraperURLConflict{
+			Type:    c.Type,
+			Scraper: urlConflictSide(c.Scraper, packages),
+			Other:   urlConflictSide(c.Other, packages),
+		}
+	}
+
+	return ret, nil
+}
+
+// scraperPackagesByID maps each scraper ID to the installed package containing
+// its definition file, with the IDs of the other scrapers in that package
+func scraperPackagesByID(ctx context.Context) (map[string]*ScraperURLConflictPackage, error) {
+	pm, err := getPackageManager(PackageTypeScraper)
+	if err != nil {
+		return nil, err
+	}
+
+	installed, err := pm.ListInstalled(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make(map[string]*ScraperURLConflictPackage)
+	for _, manifest := range installed {
+		var ids []string
+		for _, f := range manifest.Files {
+			if id, ok := scraper.IDFromFile(f); ok {
+				ids = append(ids, id)
+			}
+		}
+
+		p := manifestToPackage(manifest)
+		for _, id := range ids {
+			ret[id] = &ScraperURLConflictPackage{
+				Package:           p,
+				SiblingScraperIds: slices.DeleteFunc(slices.Clone(ids), func(o string) bool { return o == id }),
+			}
+		}
+	}
+
+	return ret, nil
+}
+
+func urlConflictSide(s scraper.URLPatternSource, packages map[string]*ScraperURLConflictPackage) *ScraperURLConflictSide {
+	return &ScraperURLConflictSide{
+		ScraperID:   s.ScraperID,
+		ScraperName: s.ScraperName,
+		Pattern:     s.Pattern,
+		Package:     packages[s.ScraperID],
+	}
 }
 
 func (r *queryResolver) ScrapePerformerURL(ctx context.Context, url string) (*models.ScrapedPerformer, error) {

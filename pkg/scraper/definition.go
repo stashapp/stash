@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"gopkg.in/yaml.v2"
@@ -244,9 +243,8 @@ func loadConfigFromYAMLFile(path string) (*Definition, error) {
 	}
 	defer file.Close()
 
-	// set id to the filename
-	id := filepath.Base(path)
-	id = id[:strings.LastIndex(id, ".")]
+	// set id to the filename; callers only pass .yml files
+	id, _ := IDFromFile(path)
 
 	ret, err := loadConfigFromYAML(id, file)
 	if err != nil {
