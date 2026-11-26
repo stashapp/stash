@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -273,7 +274,7 @@ func (c *postScraper) postScrapeGroup(ctx context.Context, m models.ScrapedGroup
 		aliases := strings.Join(m.AliasList, ", ")
 		m.Aliases = &aliases
 	} else if m.Aliases != nil && *m.Aliases != "" {
-		m.AliasList = []string{*m.Aliases}
+		m.AliasList = stringslice.FromString(*m.Aliases, ",")
 	}
 
 	// post-process - set the image if applicable

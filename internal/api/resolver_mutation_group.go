@@ -14,17 +14,20 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-// deprecatedAliasList converts the deprecated single-string aliases input to a
-// list. Group names can legitimately contain commas, so the value is treated as
-// a single alias rather than being split. A blank value means no aliases.
+// deprecatedAliasList splits the deprecated comma-delimited aliases input into
+// a list, as was done for performer aliases. A blank value means no aliases.
 func deprecatedAliasList(aliases *string) []string {
 	if aliases == nil {
 		return nil
 	}
-	if v := strings.TrimSpace(*aliases); v != "" {
-		return []string{v}
+
+	ret := []string{}
+	for _, v := range stringslice.FromString(*aliases, ",") {
+		if v != "" {
+			ret = append(ret, v)
+		}
 	}
-	return []string{}
+	return ret
 }
 
 func groupFromGroupCreateInput(ctx context.Context, input GroupCreateInput) (*models.CreateGroupInput, error) {
@@ -223,30 +226,8 @@ func (r *mutationResolver) GroupUpdate(ctx context.Context, input GroupUpdateInp
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.Group
-
-		// make sure to deduplicate and exclude name from aliases
-		// in update flow
-		if updatedGroup.Aliases != nil {
-			g, err := qb.Find(ctx, groupID)
-			if err != nil {
-				return err
-			}
-			if g != nil {
-				if err := g.LoadAliases(ctx, qb); err != nil {
-					return err
-				}
-
-				effectiveAliases := updatedGroup.Aliases.Apply(g.Aliases.List())
-				name := g.Name
-				if updatedGroup.Name.Set {
-					name = updatedGroup.Name.Value
-				}
-
-				sanitized := stringslice.UniqueExcludeFold(effectiveAliases, name)
-				updatedGroup.Aliases.Values = sanitized
-				updatedGroup.Aliases.Mode = models.RelationshipUpdateModeSet
-			}
+		if err := r.sanitizeGroupUpdateAliases(ctx, groupID, &updatedGroup); err != nil {
+			return err
 		}
 
 		frontImage := group.ImageInput{
@@ -275,6 +256,38 @@ func (r *mutationResolver) GroupUpdate(ctx context.Context, input GroupUpdateInp
 	return r.getGroup(ctx, groupID)
 }
 
+// sanitizeGroupUpdateAliases deduplicates the updated aliases and removes the
+// group name from them. Must be called inside a transaction.
+func (r *mutationResolver) sanitizeGroupUpdateAliases(ctx context.Context, groupID int, updatedGroup *models.GroupPartial) error {
+	if updatedGroup.Aliases == nil {
+		return nil
+	}
+
+	qb := r.repository.Group
+	g, err := qb.Find(ctx, groupID)
+	if err != nil {
+		return err
+	}
+	if g == nil {
+		return nil
+	}
+
+	if err := g.LoadAliases(ctx, qb); err != nil {
+		return err
+	}
+
+	effectiveAliases := updatedGroup.Aliases.Apply(g.Aliases.List())
+	name := g.Name
+	if updatedGroup.Name.Set {
+		name = updatedGroup.Name.Value
+	}
+
+	updatedGroup.Aliases.Values = stringslice.UniqueExcludeFold(effectiveAliases, name)
+	updatedGroup.Aliases.Mode = models.RelationshipUpdateModeSet
+
+	return nil
+}
+
 func groupPartialFromBulkGroupUpdateInput(translator changesetTranslator, input BulkGroupUpdateInput) (ret models.GroupPartial, err error) {
 	updatedGroup := models.NewGroupPartial()
 
@@ -286,6 +299,7 @@ func groupPartialFromBulkGroupUpdateInput(translator changesetTranslator, input 
 	updatedGroup.Synopsis = translator.optionalString(input.Synopsis, "synopsis")
 	updatedGroup.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedGroup.Director = translator.optionalString(input.Director, "director")
+	updatedGroup.Aliases = translator.updateStringsBulk(input.AliasList, "alias_list")
 
 	updatedGroup.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {

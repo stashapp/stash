@@ -134,18 +134,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	updatedGroup := models.NewGroupPartial()
 
 	updatedGroup.Name = translator.optionalString(input.Name, "name")
-
-	aliases := deprecatedAliasList(input.Aliases)
-
-	// movie is deprecated, so the below case is being ignored
-	// when the new alias is same as old group name and old group name
-	// is not being updated, the deduplication wont happen, and extra alias
-	// would be present, not a major correctness issue though.
-	if updatedGroup.Name.Ptr() != nil {
-		aliases = stringslice.UniqueExcludeFold(aliases, updatedGroup.Name.Value)
-	}
-
-	updatedGroup.Aliases = translator.updateStrings(aliases, "aliases")
+	updatedGroup.Aliases = translator.updateStrings(deprecatedAliasList(input.Aliases), "aliases")
 	updatedGroup.Duration = translator.optionalInt(input.Duration, "duration")
 	updatedGroup.Rating = translator.optionalInt(input.Rating100, "rating100")
 	updatedGroup.Director = translator.optionalString(input.Director, "director")
@@ -189,6 +178,10 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	var group *models.Group
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Group
+		if err := r.sanitizeGroupUpdateAliases(ctx, groupID, &updatedGroup); err != nil {
+			return err
+		}
+
 		group, err = qb.UpdatePartial(ctx, groupID, updatedGroup)
 		if err != nil {
 			return err

@@ -623,7 +623,7 @@ func (m ScrapedMovie) ScrapedGroup() ScrapedGroup {
 	}
 
 	if m.Aliases != nil && *m.Aliases != "" {
-		ret.AliasList = []string{*m.Aliases}
+		ret.AliasList = stringslice.FromString(*m.Aliases, ",")
 	}
 
 	return ret
