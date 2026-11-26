@@ -18,7 +18,7 @@ type SubGroupDescription struct {
 
 type Group struct {
 	Name       string                `json:"name,omitempty"`
-	AliasList  []string              `json:"alias_list,omitempty"`
+	Aliases    StringOrStringList    `json:"aliases,omitempty"`
 	Duration   int                   `json:"duration,omitempty"`
 	Date       string                `json:"date,omitempty"`
 	Rating     int                   `json:"rating,omitempty"`
@@ -36,8 +36,7 @@ type Group struct {
 	CustomFields map[string]interface{} `json:"custom_fields,omitempty"`
 
 	// deprecated - for import only
-	URL     string `json:"url,omitempty"`
-	Aliases string `json:"aliases,omitempty"`
+	URL string `json:"url,omitempty"`
 }
 
 func (s Group) Filename() string {

@@ -2,6 +2,7 @@ package group
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"testing"
 
@@ -45,6 +46,18 @@ func TestImporterName(t *testing.T) {
 	}
 
 	assert.Equal(t, movieName, i.Name())
+}
+
+func TestImporterLegacyAliases(t *testing.T) {
+	// older exports store aliases as a single comma-delimited string
+	for _, data := range []string{`{"aliases": "a, b"}`, `{"aliases": ["a", "b"]}`} {
+		var input jsonschema.Group
+		assert.NoError(t, json.Unmarshal([]byte(data), &input))
+
+		i := Importer{Input: input}
+		assert.NoError(t, i.PreImport(testCtx))
+		assert.Equal(t, []string{"a", "b"}, i.group.Aliases.List(), data)
+	}
 }
 
 func TestImporterPreImport(t *testing.T) {

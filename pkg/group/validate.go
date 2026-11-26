@@ -3,6 +3,7 @@ package group
 import (
 	"context"
 	"errors"
+	"fmt"
 	"slices"
 	"strings"
 
@@ -10,20 +11,23 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil"
 )
 
-var (
-	ErrEmptyAlias      = errors.New("group alias must not be an empty string")
-	ErrAliasNotTrimmed = errors.New("group alias contains spaces at the beginning or the end")
-)
+var ErrEmptyAlias = errors.New("group alias must not be an empty string")
+
+type DuplicateAliasError struct {
+	Alias string
+}
+
+func (e *DuplicateAliasError) Error() string {
+	return fmt.Sprintf("group contains duplicate alias '%s'", e.Alias)
+}
 
 func (s *Service) validateCreate(ctx context.Context, group *models.Group) error {
 	if err := validateName(group.Name); err != nil {
 		return err
 	}
 
-	if group.Aliases.Loaded() {
-		if err := ValidateAliases(ctx, group.Aliases.List()); err != nil {
-			return err
-		}
+	if err := ValidateAliases(group.Name, group.Aliases); err != nil {
+		return err
 	}
 
 	containingIDs := group.ContainingGroups.IDs()
@@ -53,10 +57,11 @@ func (s *Service) validateUpdate(ctx context.Context, id int, partial models.Gro
 		}
 	}
 
-	if partial.Aliases != nil {
-		if err := ValidateAliases(ctx, partial.Aliases.Values); err != nil {
-			return err
-		}
+	if err := existing.LoadAliases(ctx, s.Repository); err != nil {
+		return err
+	}
+	if err := ValidateUpdateAliases(*existing, partial.Name, partial.Aliases); err != nil {
+		return err
 	}
 
 	if err := s.validateUpdateGroupHierarchy(ctx, existing, partial.ContainingGroups, partial.SubGroups); err != nil {
@@ -75,24 +80,50 @@ func validateName(n string) error {
 	return nil
 }
 
-// only validate if aliases are not empty and trimmed
-// no requirement for uniqueness or difference from group name here
-// deduplication and exclusion are ensured at resolver level
-// import bypasses resolver though.
-func ValidateAliases(ctx context.Context, aliases []string) error {
-	for _, a := range aliases {
-		if err := validateName(a); err != nil {
-			if errors.Is(err, ErrEmptyName) {
-				return ErrEmptyAlias
-			}
-			return err
+// ValidateAliases returns an error if an alias is empty, duplicated, or the
+// same as the group name. The comparison is case-insensitive.
+func ValidateAliases(name string, aliases models.RelatedStrings) error {
+	if !aliases.Loaded() {
+		return nil
+	}
+
+	m := make(map[string]bool)
+	m[strings.ToLower(name)] = true
+
+	for _, alias := range aliases.List() {
+		if strings.TrimSpace(alias) == "" {
+			return ErrEmptyAlias
 		}
-		if strings.TrimSpace(a) != a {
-			return ErrAliasNotTrimmed
+
+		aliasL := strings.ToLower(alias)
+		if m[aliasL] {
+			return &DuplicateAliasError{alias}
 		}
+		m[aliasL] = true
 	}
 
 	return nil
+}
+
+func ValidateUpdateAliases(existing models.Group, name models.OptionalString, aliases *models.UpdateStrings) error {
+	// if neither name nor aliases is set, don't check anything
+	if !name.Set && aliases == nil {
+		return nil
+	}
+
+	newName := existing.Name
+	if name.Set {
+		newName = name.Value
+	}
+
+	// If aliases is nil, we're only changing the name - check existing aliases against new name
+	if aliases == nil {
+		return ValidateAliases(newName, existing.Aliases)
+	}
+
+	newAliases := aliases.Apply(existing.Aliases.List())
+
+	return ValidateAliases(newName, models.NewRelatedStrings(newAliases))
 }
 
 func (s *Service) validateGroupHierarchy(ctx context.Context, containingIDs []int, subIDs []int) error {
