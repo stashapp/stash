@@ -2,6 +2,7 @@ package manager
 
 import (
 	"context"
+	"github.com/stashapp/stash/pkg/file"
 	"os"
 	"path/filepath"
 	"testing"
@@ -106,9 +107,9 @@ func TestFindGalleriesToCleanIncludesNoGalleryFolders(t *testing.T) {
 	db.Gallery.On("Query", mock.Anything, folderGalleryFilter, mock.Anything).
 		Return([]*models.Gallery{}, 0, nil).Once()
 
-	j := cleanJob{
+	j := purgeMissingJob{
 		repository: db.Repository(),
-		input: CleanMetadataInput{
+		options: file.PurgeMissingOptions{
 			Paths: []string{cleanPath},
 		},
 	}
@@ -133,9 +134,9 @@ func TestCleanGalleriesDryRunDeletesNothing(t *testing.T) {
 	db.Gallery.On("Query", mock.Anything, mock.Anything, mock.Anything).
 		Return([]*models.Gallery{}, 0, nil)
 
-	j := cleanJob{
+	j := purgeMissingJob{
 		repository: db.Repository(),
-		input:      CleanMetadataInput{DryRun: true},
+		options:    file.PurgeMissingOptions{DryRun: true},
 	}
 	j.cleanGalleries(context.Background())
 
