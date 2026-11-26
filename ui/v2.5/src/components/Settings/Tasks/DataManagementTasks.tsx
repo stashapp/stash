@@ -155,7 +155,7 @@ const VerifyOptions: React.FC<IVerifyOptions> = ({
   return (
     <>
       <BooleanSetting
-        id="verify-ignore-zip-contents"
+        id="verify-check-zip-contents"
         checked={options.checkZipFileContents ?? false}
         headingID="config.tasks.verify_check_zip_contents"
         subHeadingID="config.tasks.verify_check_zip_contents_desc"
