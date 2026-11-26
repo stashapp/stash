@@ -408,17 +408,9 @@ func (qb *FileStore) SetMissing(ctx context.Context, id models.FileID, missingSi
 		return err
 	}
 
-	table := qb.tableMgr.table
-
-	q := dialect.Update(table).Set(goqu.Record{
+	return qb.tableMgr.updateByID(ctx, id, goqu.Record{
 		"missing_since": NullTimestampFromTimePtr(missingSince),
-	}).Where(qb.tableMgr.byID(id))
-
-	if _, err := exec(ctx, q); err != nil {
-		return fmt.Errorf("updating %s: %w", table.GetTable(), err)
-	}
-
-	return nil
+	})
 }
 
 // ModifyFingerprints updates existing fingerprints and adds new ones.

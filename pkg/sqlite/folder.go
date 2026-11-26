@@ -158,17 +158,9 @@ func (qb *FolderStore) SetMissing(ctx context.Context, id models.FolderID, missi
 		return err
 	}
 
-	table := qb.tableMgr.table
-
-	q := dialect.Update(table).Set(goqu.Record{
+	return qb.tableMgr.updateByID(ctx, id, goqu.Record{
 		"missing_since": NullTimestampFromTimePtr(missingSince),
-	}).Where(qb.tableMgr.byID(id))
-
-	if _, err := exec(ctx, q); err != nil {
-		return fmt.Errorf("updating %s: %w", table.GetTable(), err)
-	}
-
-	return nil
+	})
 }
 
 func (qb *FolderStore) Destroy(ctx context.Context, id models.FolderID) error {
