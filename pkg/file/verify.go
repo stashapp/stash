@@ -28,6 +28,7 @@ type missingFolderFn func(ctx context.Context, f *models.Folder) (processed bool
 
 type verifyJob struct {
 	*Verifier
+	purger purger
 
 	progress *job.Progress
 	options  VerifyOptions
@@ -63,6 +64,7 @@ type VerifyOptions struct {
 func (s *Verifier) Verify(ctx context.Context, options VerifyOptions, progress *job.Progress) {
 	j := &verifyJob{
 		Verifier: s,
+		purger:   purger{Repository: s.Repository, PurgeHandlers: s.PurgeHandlers, TrashPath: s.TrashPath},
 		progress: progress,
 		options:  options,
 	}
@@ -222,10 +224,10 @@ func (j *verifyJob) execute(ctx context.Context) error {
 			}
 
 			if ff.fileID != 0 {
-				j.deleteFile(ctx, ff.fileID, j.toDelete.fileIDSet[ff.fileID])
+				j.purger.deleteFile(ctx, ff.fileID, j.toDelete.fileIDSet[ff.fileID])
 			}
 			if ff.folderID != 0 {
-				j.deleteFolder(ctx, ff.folderID, j.toDelete.folderIDSet[ff.folderID])
+				j.purger.deleteFolder(ctx, ff.folderID, j.toDelete.folderIDSet[ff.folderID])
 			}
 
 			progress.Increment()
@@ -236,33 +238,17 @@ func (j *verifyJob) execute(ctx context.Context) error {
 }
 
 func (j *verifyJob) assessFiles(ctx context.Context) error {
-	const batchSize = 1000
-	offset := 0
 	progress := j.progress
-
-	more := true
 	r := j.Repository
-
 	includeZipContents := !j.options.IgnoreZipFileContents
 
-	for more {
-		if job.IsCancelled(ctx) {
-			return nil
+	return forEachBatch(ctx, r, func(ctx context.Context, offset int) ([]models.File, error) {
+		files, err := r.File.FindAllInPaths(ctx, j.options.Paths, includeZipContents, purgeBatchSize, offset)
+		if err != nil {
+			return nil, fmt.Errorf("error querying for files: %w", err)
 		}
-
-		var files []models.File
-		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-			var err error
-			files, err = r.File.FindAllInPaths(ctx, j.options.Paths, includeZipContents, batchSize, offset)
-			if err != nil {
-				return fmt.Errorf("error querying for files: %w", err)
-			}
-
-			return nil
-		}); err != nil {
-			return err
-		}
-
+		return files, nil
+	}, func(files []models.File) (int, error) {
 		for _, f := range files {
 			path := f.Base().Path
 			fileID := f.Base().ID
@@ -290,18 +276,12 @@ func (j *verifyJob) assessFiles(ctx context.Context) error {
 				}
 			})
 			if err != nil {
-				return err
+				return 0, err
 			}
 		}
 
-		if len(files) != batchSize {
-			more = false
-		} else {
-			offset += batchSize
-		}
-	}
-
-	return nil
+		return purgeBatchSize, nil
+	})
 }
 
 // handleMissingFile handles a missing file, along with any files and folders contained in it if it is a zip file.
@@ -364,33 +344,17 @@ func (j *verifyJob) handleMissingFile(ctx context.Context, f models.File) error 
 }
 
 func (j *verifyJob) assessFolders(ctx context.Context) error {
-	const batchSize = 1000
-	offset := 0
 	progress := j.progress
-
+	r := j.Repository
 	includeZipContents := !j.options.IgnoreZipFileContents
 
-	more := true
-	r := j.Repository
-
-	for more {
-		if job.IsCancelled(ctx) {
-			return nil
+	return forEachBatch(ctx, r, func(ctx context.Context, offset int) ([]*models.Folder, error) {
+		folders, err := r.Folder.FindAllInPaths(ctx, j.options.Paths, includeZipContents, purgeBatchSize, offset)
+		if err != nil {
+			return nil, fmt.Errorf("error querying for folders: %w", err)
 		}
-
-		var folders []*models.Folder
-		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-			var err error
-			folders, err = r.Folder.FindAllInPaths(ctx, j.options.Paths, includeZipContents, batchSize, offset)
-			if err != nil {
-				return fmt.Errorf("error querying for folders: %w", err)
-			}
-
-			return nil
-		}); err != nil {
-			return err
-		}
-
+		return folders, nil
+	}, func(folders []*models.Folder) (int, error) {
 		for _, f := range folders {
 			path := f.Path
 			folderID := f.ID
@@ -418,18 +382,12 @@ func (j *verifyJob) assessFolders(ctx context.Context) error {
 				}
 			})
 			if err != nil {
-				return err
+				return 0, err
 			}
 		}
 
-		if len(folders) != batchSize {
-			more = false
-		} else {
-			offset += batchSize
-		}
-	}
-
-	return nil
+		return purgeBatchSize, nil
+	})
 }
 
 func (j *verifyJob) handleMissingFolder(ctx context.Context, folder *models.Folder) error {
@@ -554,60 +512,4 @@ func (j *verifyJob) shouldCleanFolder(ctx context.Context, f *models.Folder) boo
 
 	// don't log anything - assume filter will have logged the reason
 	return !filter.Accept(ctx, path, info, zipFilePath)
-}
-
-func (j *verifyJob) deleteFile(ctx context.Context, fileID models.FileID, fn string) {
-	// delete associated objects
-	fileDeleter := NewDeleterWithTrash(j.TrashPath)
-	r := j.Repository
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		fileDeleter.RegisterHooks(ctx)
-
-		if err := j.fireHandlers(ctx, fileDeleter, fileID); err != nil {
-			return err
-		}
-
-		return r.File.Destroy(ctx, fileID)
-	}); err != nil {
-		logger.Errorf("Error deleting file %q from database: %s", fn, err.Error())
-		return
-	}
-}
-
-func (j *verifyJob) deleteFolder(ctx context.Context, folderID models.FolderID, fn string) {
-	// delete associated objects
-	fileDeleter := NewDeleterWithTrash(j.TrashPath)
-	r := j.Repository
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		fileDeleter.RegisterHooks(ctx)
-
-		if err := j.fireFolderHandlers(ctx, fileDeleter, folderID); err != nil {
-			return err
-		}
-
-		return r.Folder.Destroy(ctx, folderID)
-	}); err != nil {
-		logger.Errorf("Error deleting folder %q from database: %s", fn, err.Error())
-		return
-	}
-}
-
-func (j *verifyJob) fireHandlers(ctx context.Context, fileDeleter *Deleter, fileID models.FileID) error {
-	for _, h := range j.PurgeHandlers {
-		if err := h.HandleFile(ctx, fileDeleter, fileID); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (j *verifyJob) fireFolderHandlers(ctx context.Context, fileDeleter *Deleter, folderID models.FolderID) error {
-	for _, h := range j.PurgeHandlers {
-		if err := h.HandleFolder(ctx, fileDeleter, folderID); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

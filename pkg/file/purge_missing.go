@@ -19,7 +19,7 @@ type MissingPurger struct {
 }
 
 type purgeMissingJob struct {
-	*MissingPurger
+	purger
 
 	progress *job.Progress
 	options  PurgeMissingOptions
@@ -39,9 +39,9 @@ type PurgeMissingOptions struct {
 // PurgeMissing starts the purge missing process.
 func (s *MissingPurger) PurgeMissing(ctx context.Context, options PurgeMissingOptions, progress *job.Progress) {
 	j := &purgeMissingJob{
-		MissingPurger: s,
-		progress:      progress,
-		options:       options,
+		purger:   purger{Repository: s.Repository, PurgeHandlers: s.PurgeHandlers, TrashPath: s.TrashPath},
+		progress: progress,
+		options:  options,
 	}
 
 	if err := j.execute(ctx); err != nil {
@@ -79,7 +79,7 @@ func (j *purgeMissingJob) execute(ctx context.Context) error {
 	progress.AddTotal(fileCount + folderCount)
 	progress.Definite()
 
-	if err := j.purgeMissingFiles(ctx, progress); err != nil {
+	if err := j.purgeMissingFiles(ctx); err != nil {
 		return err
 	}
 
@@ -90,170 +90,63 @@ func (j *purgeMissingJob) execute(ctx context.Context) error {
 	return nil
 }
 
-func (j *purgeMissingJob) purgeMissingFiles(ctx context.Context, progress *job.Progress) error {
-	const batchSize = 1000
-
-	offset := 0
-	more := true
+func (j *purgeMissingJob) purgeMissingFiles(ctx context.Context) error {
 	r := j.Repository
-
-	for more {
-		var files []models.File
-
-		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-			if job.IsCancelled(ctx) {
-				return nil
-			}
-
-			var err error
-			files, err = r.File.FindMissingInPaths(ctx, j.options.Paths, j.options.MissingSinceBefore, batchSize, offset)
-			if err != nil {
-				return fmt.Errorf("error querying for files: %w", err)
-			}
-
-			return nil
-		}); err != nil {
-			return err
+	return forEachBatch(ctx, r, func(ctx context.Context, offset int) ([]models.File, error) {
+		files, err := r.File.FindMissingInPaths(ctx, j.options.Paths, j.options.MissingSinceBefore, purgeBatchSize, offset)
+		if err != nil {
+			return nil, fmt.Errorf("error querying for files: %w", err)
 		}
-
+		return files, nil
+	}, func(files []models.File) (int, error) {
 		failed := 0
 		for _, f := range files {
-			if j.options.DryRun {
-				logger.Infof("Would delete file %q from database", f.Base().Path)
-			} else {
-				logger.Infof("Deleting file %q from database", f.Base().Path)
-				if !j.deleteFile(ctx, f.Base().ID, f.Base().Path) {
-					failed++
-				}
+			if !j.purge("file", f.Base().Path, func() bool { return j.deleteFile(ctx, f.Base().ID, f.Base().Path) }) {
+				failed++
 			}
-			progress.Increment()
+			j.progress.Increment()
 		}
-
-		if len(files) != batchSize {
-			more = false
-		} else if j.options.DryRun {
-			// in dry run nothing is deleted, so page through the results
-			offset += batchSize
-		} else {
-			// deleted rows drop out of the results; skip past rows that failed to delete
-			offset += failed
-		}
-	}
-
-	return nil
+		return j.nextOffset(failed), nil
+	})
 }
 
 func (j *purgeMissingJob) purgeMissingFolders(ctx context.Context) error {
-	const batchSize = 1000
-	offset := 0
-	progress := j.progress
-
-	more := true
 	r := j.Repository
-	for more {
-		if job.IsCancelled(ctx) {
-			return nil
+	return forEachBatch(ctx, r, func(ctx context.Context, offset int) ([]*models.Folder, error) {
+		folders, err := r.Folder.FindMissingInPaths(ctx, j.options.Paths, j.options.MissingSinceBefore, purgeBatchSize, offset)
+		if err != nil {
+			return nil, fmt.Errorf("error querying for folders: %w", err)
 		}
-
-		var folders []*models.Folder
-
-		if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
-			var err error
-			folders, err = r.Folder.FindMissingInPaths(ctx, j.options.Paths, j.options.MissingSinceBefore, batchSize, offset)
-			if err != nil {
-				return fmt.Errorf("error querying for folders: %w", err)
-			}
-
-			return nil
-		}); err != nil {
-			return err
-		}
-
+		return folders, nil
+	}, func(folders []*models.Folder) (int, error) {
 		failed := 0
 		for _, f := range folders {
-			if j.options.DryRun {
-				logger.Infof("Would delete folder %q from database", f.Path)
-			} else {
-				logger.Infof("Deleting folder %q from database", f.Path)
-				if !j.deleteFolder(ctx, f.ID, f.Path) {
-					failed++
-				}
+			if !j.purge("folder", f.Path, func() bool { return j.deleteFolder(ctx, f.ID, f.Path) }) {
+				failed++
 			}
-			progress.Increment()
+			j.progress.Increment()
 		}
-
-		if len(folders) != batchSize {
-			more = false
-		} else if j.options.DryRun {
-			// in dry run nothing is deleted, so page through the results
-			offset += batchSize
-		} else {
-			// deleted rows drop out of the results; skip past rows that failed to delete
-			offset += failed
-		}
-	}
-
-	return nil
+		return j.nextOffset(failed), nil
+	})
 }
 
-// deleteFile returns false if the file could not be deleted.
-func (j *purgeMissingJob) deleteFile(ctx context.Context, fileID models.FileID, fn string) bool {
-	// delete associated objects
-	fileDeleter := NewDeleterWithTrash(j.TrashPath)
-	r := j.Repository
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		fileDeleter.RegisterHooks(ctx)
-
-		if err := j.fireHandlers(ctx, fileDeleter, fileID); err != nil {
-			return err
-		}
-
-		return r.File.Destroy(ctx, fileID)
-	}); err != nil {
-		logger.Errorf("Error deleting file %q from database: %s", fn, err.Error())
-		return false
+// purge logs and runs del, or only logs in dry run. Returns false if the delete failed.
+func (j *purgeMissingJob) purge(kind, path string, del func() bool) bool {
+	if j.options.DryRun {
+		logger.Infof("Would delete %s %q from database", kind, path)
+		return true
 	}
 
-	return true
+	logger.Infof("Deleting %s %q from database", kind, path)
+	return del()
 }
 
-// deleteFolder returns false if the folder could not be deleted.
-func (j *purgeMissingJob) deleteFolder(ctx context.Context, folderID models.FolderID, fn string) bool {
-	// delete associated objects
-	fileDeleter := NewDeleterWithTrash(j.TrashPath)
-	r := j.Repository
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		fileDeleter.RegisterHooks(ctx)
-
-		if err := j.fireFolderHandlers(ctx, fileDeleter, folderID); err != nil {
-			return err
-		}
-
-		return r.Folder.Destroy(ctx, folderID)
-	}); err != nil {
-		logger.Errorf("Error deleting folder %q from database: %s", fn, err.Error())
-		return false
+// nextOffset returns how far to advance after a full batch.
+func (j *purgeMissingJob) nextOffset(failed int) int {
+	if j.options.DryRun {
+		// nothing is deleted, so page through the results
+		return purgeBatchSize
 	}
-
-	return true
-}
-
-func (j *purgeMissingJob) fireHandlers(ctx context.Context, fileDeleter *Deleter, fileID models.FileID) error {
-	for _, h := range j.PurgeHandlers {
-		if err := h.HandleFile(ctx, fileDeleter, fileID); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (j *purgeMissingJob) fireFolderHandlers(ctx context.Context, fileDeleter *Deleter, folderID models.FolderID) error {
-	for _, h := range j.PurgeHandlers {
-		if err := h.HandleFolder(ctx, fileDeleter, folderID); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	// deleted rows drop out of the results; skip past rows that failed to delete
+	return failed
 }
