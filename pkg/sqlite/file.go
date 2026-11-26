@@ -33,6 +33,7 @@ type basicFileRow struct {
 	Basename       string          `db:"basename"`
 	ZipFileID      null.Int        `db:"zip_file_id"`
 	ParentFolderID models.FolderID `db:"parent_folder_id"`
+	MissingSince   NullTimestamp   `db:"missing_since"`
 	Size           int64           `db:"size"`
 	ModTime        Timestamp       `db:"mod_time"`
 	CreatedAt      Timestamp       `db:"created_at"`
@@ -45,6 +46,7 @@ func (r *basicFileRow) fromBasicFile(o models.BaseFile) {
 	r.ZipFileID = nullIntFromFileIDPtr(o.ZipFileID)
 	r.ParentFolderID = o.ParentFolderID
 	r.Size = o.Size
+	r.MissingSince = NullTimestampFromTimePtr(o.MissingSince)
 	r.ModTime = Timestamp{Timestamp: o.ModTime}
 	r.CreatedAt = Timestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = Timestamp{Timestamp: o.UpdatedAt}
@@ -170,6 +172,7 @@ type fileQueryRow struct {
 	Basename       null.String   `db:"basename"`
 	ZipFileID      null.Int      `db:"zip_file_id"`
 	ParentFolderID null.Int      `db:"parent_folder_id"`
+	MissingSince   NullTimestamp `db:"missing_since"`
 	Size           null.Int      `db:"size"`
 	ModTime        NullTimestamp `db:"mod_time"`
 	CreatedAt      NullTimestamp `db:"file_created_at"`
@@ -189,8 +192,9 @@ func (r *fileQueryRow) resolve() models.File {
 	basic := &models.BaseFile{
 		ID: models.FileID(r.FileID.Int64),
 		DirEntry: models.DirEntry{
-			ZipFileID: nullIntFileIDPtr(r.ZipFileID),
-			ModTime:   r.ModTime.Timestamp,
+			ZipFileID:    nullIntFileIDPtr(r.ZipFileID),
+			ModTime:      r.ModTime.Timestamp,
+			MissingSince: r.MissingSince.TimePtr(),
 		},
 		Path:           filepath.Join(r.FolderPath.String, r.Basename.String),
 		ParentFolderID: models.FolderID(r.ParentFolderID.Int64),
@@ -399,6 +403,16 @@ func (qb *FileStore) Update(ctx context.Context, f models.File) error {
 	return nil
 }
 
+func (qb *FileStore) SetMissing(ctx context.Context, id models.FileID, missingSince *time.Time) error {
+	if err := qb.tableMgr.checkIDExists(ctx, int(id)); err != nil {
+		return err
+	}
+
+	return qb.tableMgr.updateByID(ctx, id, goqu.Record{
+		"missing_since": NullTimestampFromTimePtr(missingSince),
+	})
+}
+
 // ModifyFingerprints updates existing fingerprints and adds new ones.
 func (qb *FileStore) ModifyFingerprints(ctx context.Context, fileID models.FileID, fingerprints []models.Fingerprint) error {
 	return FingerprintReaderWriter.upsertJoins(ctx, fileID, fingerprints)
@@ -492,6 +506,7 @@ func (qb *FileStore) selectDataset() *goqu.SelectDataset {
 		table.Col("parent_folder_id"),
 		table.Col("size"),
 		table.Col("mod_time"),
+		table.Col("missing_since"),
 		table.Col("created_at").As("file_created_at"),
 		table.Col("updated_at").As("file_updated_at"),
 		folderTable.Col("path").As("parent_folder_path"),
@@ -735,6 +750,54 @@ func (qb *FileStore) CountAllInPaths(ctx context.Context, p []string) (int, erro
 	return count(ctx, q)
 }
 
+// missingSinceCondition matches rows marked missing, optionally only before the given time.
+func missingSinceCondition(col exp.IdentifierExpression, before *time.Time) exp.Expression {
+	if before == nil {
+		return col.IsNotNull()
+	}
+	// stored values carry the local offset; datetime() normalises both sides to UTC
+	return goqu.L("datetime(?) < datetime(?)", col, before.Format(time.RFC3339))
+}
+
+func (qb *FileStore) FindMissingInPaths(ctx context.Context, p []string, missingSinceBefore *time.Time, limit, offset int) ([]models.File, error) {
+	table := qb.table()
+	folderTable := folderTableMgr.table
+
+	q := dialect.From(table).Prepared(true).InnerJoin(
+		folderTable,
+		goqu.On(table.Col("parent_folder_id").Eq(folderTable.Col(idColumn))),
+	).Select(table.Col(idColumn))
+
+	q = qb.allInPaths(q, p)
+
+	q = q.Where(missingSinceCondition(qb.table().Col("missing_since"), missingSinceBefore))
+
+	// stable order: purge pages past rows that failed to delete
+	q = q.Order(table.Col(idColumn).Asc())
+
+	if limit > -1 {
+		q = q.Limit(uint(limit))
+	}
+
+	q = q.Offset(uint(offset))
+
+	ret, err := qb.findBySubquery(ctx, q)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("getting files by path %s: %w", p, err)
+	}
+
+	return ret, nil
+}
+
+func (qb *FileStore) CountMissingInPaths(ctx context.Context, p []string, missingSinceBefore *time.Time) (int, error) {
+	q := qb.countDataset().Prepared(true)
+	q = qb.allInPaths(q, p)
+
+	q = q.Where(missingSinceCondition(qb.table().Col("missing_since"), missingSinceBefore))
+
+	return count(ctx, q)
+}
+
 func (qb *FileStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]models.File, error) {
 	table := qb.table()
 
@@ -758,6 +821,16 @@ func (qb *FileStore) FindByFingerprint(ctx context.Context, fp models.Fingerprin
 	)
 
 	return qb.findBySubquery(ctx, sq)
+}
+
+func (qb *FileStore) FindByFolderID(ctx context.Context, folderID models.FolderID) ([]models.File, error) {
+	table := qb.table()
+
+	q := qb.selectDataset().Prepared(true).Where(
+		table.Col("parent_folder_id").Eq(folderID),
+	)
+
+	return qb.getMany(ctx, q)
 }
 
 func (qb *FileStore) FindByZipFileID(ctx context.Context, zipFileID models.FileID) ([]models.File, error) {
@@ -981,6 +1054,7 @@ var fileSortOptions = sortOptions{
 	"id",
 	"path",
 	"random",
+	"missing_since",
 	"updated_at",
 }
 
