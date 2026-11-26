@@ -2,10 +2,8 @@ package manager
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/fs"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -79,22 +77,6 @@ func (j *cleanJob) cleanGalleries(ctx context.Context) {
 			j.deleteGallery(ctx, id)
 		}
 	}
-}
-
-func isNoGalleryFolder(path string) (bool, error) {
-	if _, err := os.Stat(filepath.Join(path, ".forcegallery")); err == nil {
-		return false, nil
-	} else if !errors.Is(err, os.ErrNotExist) {
-		return false, err
-	}
-
-	if _, err := os.Stat(filepath.Join(path, ".nogallery")); err == nil {
-		return true, nil
-	} else if !errors.Is(err, os.ErrNotExist) {
-		return false, err
-	}
-
-	return false, nil
 }
 
 func (j *cleanJob) findGalleriesToClean(ctx context.Context) ([]int, error) {
@@ -176,13 +158,14 @@ func (j *cleanJob) findGalleriesToClean(ctx context.Context) ([]int, error) {
 	// Gallery folders may be on slow network filesystems, so check them after
 	// releasing the database transaction.
 	for _, g := range folderGalleries {
-		isNoGallery, err := isNoGalleryFolder(g.path)
+		force, exempt, err := image.GalleryFolderMarkers(g.path)
 		if err != nil {
 			logger.Errorf("Error checking gallery marker files in %q: %v", g.path, err)
 			continue
 		}
 
-		if isNoGallery {
+		// .forcegallery wins, matching Scan
+		if exempt && !force {
 			markForClean(g.id, g.path, "Gallery folder contains .nogallery")
 		}
 	}

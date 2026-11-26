@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stretchr/testify/assert"
@@ -85,12 +86,23 @@ func TestFindGalleriesToCleanIncludesNoGalleryFolders(t *testing.T) {
 			filter.FoldersFilter.Path.Modifier == models.CriterionModifierNotNull
 	})
 
+	// A folder whose markers can't be checked is skipped, not deleted.
+	// A NUL byte makes os.Stat fail with an error other than not-exist on every OS.
+	unreadableFolderID := models.FolderID(8)
+	unreadable := &models.Gallery{
+		ID:       8,
+		Path:     filepath.Join(cleanPath, "bad\x00path"),
+		FolderID: &unreadableFolderID,
+	}
+	_, _, statErr := image.GalleryFolderMarkers(unreadable.Path)
+	require.Error(t, statErr, "test relies on the marker check failing for this path")
+
 	db.Gallery.On("Query", mock.Anything, emptyGalleryFilter, mock.Anything).
 		Return([]*models.Gallery{emptyGallery, emptyNoGallery}, 2, nil).Once()
 	db.Gallery.On("Query", mock.Anything, emptyGalleryFilter, mock.Anything).
 		Return([]*models.Gallery{}, 0, nil).Once()
 	db.Gallery.On("Query", mock.Anything, folderGalleryFilter, mock.Anything).
-		Return([]*models.Gallery{emptyNoGallery, noGallery, regular, outside, forced}, 5, nil).Once()
+		Return([]*models.Gallery{emptyNoGallery, noGallery, regular, outside, forced, unreadable}, 6, nil).Once()
 	db.Gallery.On("Query", mock.Anything, folderGalleryFilter, mock.Anything).
 		Return([]*models.Gallery{}, 0, nil).Once()
 
@@ -105,4 +117,28 @@ func TestFindGalleriesToCleanIncludesNoGalleryFolders(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, []int{emptyGallery.ID, emptyNoGallery.ID, noGallery.ID}, got)
 	db.Gallery.AssertExpectations(t)
+}
+
+func TestCleanGalleriesDryRunDeletesNothing(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "nogallery")
+	require.NoError(t, os.MkdirAll(path, 0755))
+	require.NoError(t, os.WriteFile(filepath.Join(path, ".nogallery"), nil, 0644))
+
+	folderID := models.FolderID(1)
+	g := &models.Gallery{ID: 1, Path: path, FolderID: &folderID}
+
+	db := mocks.NewDatabase()
+	db.Gallery.On("Query", mock.Anything, mock.Anything, mock.Anything).
+		Return([]*models.Gallery{g}, 1, nil).Once()
+	db.Gallery.On("Query", mock.Anything, mock.Anything, mock.Anything).
+		Return([]*models.Gallery{}, 0, nil)
+
+	j := cleanJob{
+		repository: db.Repository(),
+		input:      CleanMetadataInput{DryRun: true},
+	}
+	j.cleanGalleries(context.Background())
+
+	db.Gallery.AssertNotCalled(t, "Find", mock.Anything, mock.Anything)
+	db.Gallery.AssertNotCalled(t, "Destroy", mock.Anything, mock.Anything)
 }
