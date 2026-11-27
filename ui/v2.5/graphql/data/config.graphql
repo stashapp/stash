@@ -120,6 +120,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   handyKey
   funscriptOffset
   useStashHostedFunscript
+  showOpenExternal
 }
 
 fragment ConfigDLNAData on ConfigDLNAResult {

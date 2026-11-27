@@ -91,6 +91,8 @@ export interface IUIConfig {
 
   showAbLoopControls?: boolean;
 
+  showOpenExternal?: boolean;
+
   // maximum number of items to shown in the dropdown list - defaults to 200
   // upper limit of 1000
   maxOptionsShown?: number;
