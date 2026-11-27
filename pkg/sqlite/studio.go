@@ -813,6 +813,12 @@ func (qb *StudioStore) GetAliases(ctx context.Context, studioID int) ([]string, 
 	return studiosAliasesTableMgr.get(ctx, studioID)
 }
 
+// GetAllAliases returns a map of studio id to its aliases. Lets callers that
+// need aliases for many studios avoid N+1 per-id lookups.
+func (qb *StudioStore) GetAllAliases(ctx context.Context) (map[int][]string, error) {
+	return studiosAliasesTableMgr.getAll(ctx)
+}
+
 func (qb *StudioStore) GetURLs(ctx context.Context, studioID int) ([]string, error) {
 	return studiosURLsTableMgr.get(ctx, studioID)
 }

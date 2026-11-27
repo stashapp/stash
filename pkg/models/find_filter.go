@@ -127,3 +127,17 @@ func BatchFindFilter(batchSize int) *FindFilterType {
 		Page:    &page,
 	}
 }
+
+// KeysetFindFilter returns a FindFilterType suitable for id-ordered keyset
+// pagination. Callers pair it with a WHERE id > lastID clause to iterate
+// large tables without paying the O(offset) scan that LIMIT/OFFSET pays
+// on later pages.
+func KeysetFindFilter(batchSize int) *FindFilterType {
+	sort := "id"
+	sortDir := SortDirectionEnumAsc
+	return &FindFilterType{
+		PerPage:   &batchSize,
+		Sort:      &sort,
+		Direction: &sortDir,
+	}
+}
