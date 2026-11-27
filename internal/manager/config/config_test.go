@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/stashapp/stash/pkg/models"
 )
 
 func TestConfig_SetPassword(t *testing.T) {
@@ -69,4 +71,17 @@ func TestConfig_initialisePublicWhitelist(t *testing.T) {
 		i.SetInterface(PublicWhitelist, []string{bad})
 		assert.Error(t, i.initialisePublicWhitelist(), bad)
 	}
+}
+
+func TestConfig_GetGeneratedVideoCodec(t *testing.T) {
+	i := InitializeEmpty()
+
+	assert.Equal(t, models.GeneratedVideoCodecH264, i.GetPreviewCodec(), "unset defaults to H264")
+
+	i.SetString(PreviewCodec, "HEVC")
+	assert.Equal(t, models.GeneratedVideoCodecHevc, i.GetPreviewCodec())
+
+	// a hand-edited config.yml must not leak an unknown codec past the whitelist
+	i.SetString(TranscodeCodec, "vp9")
+	assert.Equal(t, models.GeneratedVideoCodecH264, i.GetTranscodeCodec())
 }

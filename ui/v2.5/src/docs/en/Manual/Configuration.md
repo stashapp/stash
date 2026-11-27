@@ -135,6 +135,16 @@ The ffmpeg arguments configuration is split into `Input` and `Output` arguments.
 
 Arguments are accepted as a list of strings. Each string is a separate argument. For example, a single argument of `-foo bar` would be treated as a single argument `"-foo bar"`. The correct way to pass this argument would be to split it into two separate arguments: `"-foo", "bar"`.
 
+## Generated video codecs
+
+The video codec used for generated previews, marker previews and transcodes can be set to H.264 (the default), HEVC (H.265) or AV1. `Preview codec` under `Settings → System → Preview Generation` applies to both previews and marker previews; `Transcode codec` under `Settings → System → Transcoding` applies to transcodes. HEVC and AV1 produce smaller files than H.264, but are slower to encode.
+
+Only codecs that the configured ffmpeg can encode can be selected. If the selected codec cannot be encoded, the affected generated content is skipped and an error is logged.
+
+Not every browser can play HEVC or AV1, and the settings page shows a warning when the current browser cannot play the selected codec. Take particular care with transcodes: they exist so that browsers can play files they otherwise could not, so a transcode in a codec the browser cannot decode will not play.
+
+Changing a codec only applies to newly generated files. To convert existing files, run Generate with `Overwrite` enabled.
+
 ## Scraping
 
 ### User Agent string

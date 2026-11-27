@@ -7,11 +7,13 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type TranscodeOptions struct {
 	Width  int
 	Height int
+	Codec  models.GeneratedVideoCodec
 }
 
 func (g Generator) Transcode(ctx context.Context, input string, hash string, options TranscodeOptions) error {
@@ -73,17 +75,12 @@ func (g Generator) transcode(input string, options TranscodeOptions) generateFn 
 			videoArgs = videoArgs.VideoFilter(videoFilter)
 		}
 
-		videoArgs = append(videoArgs,
-			"-pix_fmt", "yuv420p",
-			"-profile:v", "high",
-			"-level", "4.2",
-			"-preset", "superfast",
-			"-crf", "23",
-		)
+		videoCodec, codecArgs := videoEncoderArgs(options.Codec, "superfast", 23)
+		videoArgs = append(videoArgs, codecArgs...)
 
 		args := transcoder.Transcode(input, transcoder.TranscodeOptions{
 			OutputPath: tmpFn,
-			VideoCodec: ffmpeg.VideoCodecLibX264,
+			VideoCodec: videoCodec,
 			VideoArgs:  videoArgs,
 			AudioCodec: ffmpeg.AudioCodecAAC,
 
@@ -104,20 +101,15 @@ func (g Generator) transcodeVideo(input string, options TranscodeOptions) genera
 			videoArgs = videoArgs.VideoFilter(videoFilter)
 		}
 
-		videoArgs = append(videoArgs,
-			"-pix_fmt", "yuv420p",
-			"-profile:v", "high",
-			"-level", "4.2",
-			"-preset", "superfast",
-			"-crf", "23",
-		)
+		videoCodec, codecArgs := videoEncoderArgs(options.Codec, "superfast", 23)
+		videoArgs = append(videoArgs, codecArgs...)
 
 		var audioArgs ffmpeg.Args
 		audioArgs = audioArgs.SkipAudio()
 
 		args := transcoder.Transcode(input, transcoder.TranscodeOptions{
 			OutputPath: tmpFn,
-			VideoCodec: ffmpeg.VideoCodecLibX264,
+			VideoCodec: videoCodec,
 			VideoArgs:  videoArgs,
 			AudioArgs:  audioArgs,
 

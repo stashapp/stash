@@ -695,6 +695,11 @@ func getScanHandlers(options ScanGenerateOptions, taskQueue *job.TaskQueue) []fi
 	r := mgr.Repository
 	pluginCache := mgr.PluginCache
 
+	// one error per scan rather than an ffmpeg failure per scene; image previews still run
+	if options.GeneratePreviews != nil && !canEncode(IsGeneratedVideoCodecSupported, c.GetPreviewCodec(), "scan", "preview generation") {
+		options.GeneratePreviews = nil
+	}
+
 	return []file.Handler{
 		&file.FilteredHandler{
 			Filter: file.FilterFunc(imageFileFilter),

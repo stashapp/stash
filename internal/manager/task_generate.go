@@ -45,6 +45,8 @@ type GenerateMetadataInput struct {
 	Overwrite bool `json:"overwrite"`
 	// paths to run generate on, in addition to the other ID lists
 	Paths []string `json:"paths"`
+	// Codec for generated transcodes; defaults to the configured transcode codec
+	TranscodeCodec *models.GeneratedVideoCodec `json:"transcodeCodec"`
 }
 
 type GeneratePreviewOptionsInput struct {
@@ -58,6 +60,8 @@ type GeneratePreviewOptionsInput struct {
 	PreviewExcludeEnd *string `json:"previewExcludeEnd"`
 	// Preset when generating preview
 	PreviewPreset *models.PreviewPreset `json:"previewPreset"`
+	// Codec for previews and marker previews; defaults to the configured preview codec
+	PreviewCodec *models.GeneratedVideoCodec `json:"previewCodec"`
 }
 
 const generateQueueSize = 200000
@@ -68,6 +72,10 @@ type GenerateJob struct {
 
 	overwrite      bool
 	fileNamingAlgo models.HashAlgorithm
+	previewCodec   models.GeneratedVideoCodec
+	transcodeCodec models.GeneratedVideoCodec
+	// set when ffmpeg can't encode previewCodec; image previews are unaffected
+	skipVideoPreviews bool
 
 	totals totalsGenerate
 }
@@ -101,6 +109,8 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) error
 	parallelTasks := config.GetParallelTasksWithAutoDetection()
 
 	logger.Infof("Generate started with %d parallel tasks", parallelTasks)
+
+	j.resolveCodecs(IsGeneratedVideoCodecSupported)
 
 	queue := make(chan Task, generateQueueSize)
 	go func() {
@@ -377,6 +387,56 @@ func (j *GenerateJob) queueImagesTasks(ctx context.Context, g *generate.Generato
 	}
 }
 
+// SupportedGeneratedVideoCodecs returns the generated video codecs the configured ffmpeg can encode.
+func SupportedGeneratedVideoCodecs() []models.GeneratedVideoCodec {
+	var ret []models.GeneratedVideoCodec
+	for _, c := range models.AllGeneratedVideoCodec {
+		if IsGeneratedVideoCodecSupported(c) {
+			ret = append(ret, c)
+		}
+	}
+	return ret
+}
+
+// IsGeneratedVideoCodecSupported returns true if the configured ffmpeg can encode generated videos with c.
+func IsGeneratedVideoCodecSupported(c models.GeneratedVideoCodec) bool {
+	f := GetInstance().FFMpeg
+	return f != nil && f.SupportsEncoder(generate.VideoEncoder(c))
+}
+
+// canEncode reports whether c is supported, logging which generated assets are skipped when it isn't.
+func canEncode(supported func(models.GeneratedVideoCodec) bool, c models.GeneratedVideoCodec, logPrefix string, skipped string) bool {
+	if supported(c) {
+		return true
+	}
+	logger.Errorf("[%s] ffmpeg cannot encode %s (%s): skipping %s", logPrefix, c, generate.VideoEncoder(c).CodeName, skipped)
+	return false
+}
+
+// resolveCodecs sets the job's codecs and skips video asset types whose encoder ffmpeg lacks.
+// There is deliberately no fallback to H.264: that would silently mix codecs in the library.
+func (j *GenerateJob) resolveCodecs(supported func(models.GeneratedVideoCodec) bool) {
+	previewOptions := GeneratePreviewOptionsInput{}
+	if j.input.PreviewOptions != nil {
+		previewOptions = *j.input.PreviewOptions
+	}
+	j.previewCodec = getGeneratePreviewOptions(previewOptions).Codec
+
+	j.transcodeCodec = config.GetInstance().GetTranscodeCodec()
+	if j.input.TranscodeCodec != nil {
+		j.transcodeCodec = *j.input.TranscodeCodec
+	}
+
+	if (j.input.Previews || j.input.Markers) && !canEncode(supported, j.previewCodec, "generate", "previews and marker previews") {
+		j.skipVideoPreviews = true
+		j.input.Markers = false
+	}
+
+	if j.input.Transcodes && !canEncode(supported, j.transcodeCodec, "generate", "transcodes") {
+		j.input.Transcodes = false
+	}
+}
+
 func getGeneratePreviewOptions(optionsInput GeneratePreviewOptionsInput) generate.PreviewOptions {
 	config := config.GetInstance()
 
@@ -386,6 +446,7 @@ func getGeneratePreviewOptions(optionsInput GeneratePreviewOptionsInput) generat
 		ExcludeStart:    config.GetPreviewExcludeStart(),
 		ExcludeEnd:      config.GetPreviewExcludeEnd(),
 		Preset:          config.GetPreviewPreset().String(),
+		Codec:           config.GetPreviewCodec(),
 		Audio:           config.GetPreviewAudio(),
 	}
 
@@ -407,6 +468,10 @@ func getGeneratePreviewOptions(optionsInput GeneratePreviewOptionsInput) generat
 
 	if optionsInput.PreviewPreset != nil {
 		ret.Preset = optionsInput.PreviewPreset.String()
+	}
+
+	if optionsInput.PreviewCodec != nil {
+		ret.Codec = *optionsInput.PreviewCodec
 	}
 
 	return ret
@@ -452,7 +517,7 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 	if j.input.Previews {
 		task := &GeneratePreviewTask{
 			Scene:               *scene,
-			VideoPreview:        true,
+			VideoPreview:        !j.skipVideoPreviews,
 			ImagePreview:        j.input.ImagePreviews,
 			Options:             options,
 			Overwrite:           j.overwrite,
@@ -482,6 +547,7 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 			VideoPreview:        j.input.Markers,
 			ImagePreview:        j.input.MarkerImagePreviews,
 			Screenshot:          j.input.MarkerScreenshots,
+			Codec:               j.previewCodec,
 
 			generator: g,
 		}
@@ -502,6 +568,7 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 			Overwrite:           j.overwrite,
 			Force:               forceTranscode,
 			fileNamingAlgorithm: j.fileNamingAlgo,
+			Codec:               j.transcodeCodec,
 			g:                   g,
 		}
 		if task.required() {
@@ -554,6 +621,7 @@ func (j *GenerateJob) queueMarkerJob(g *generate.Generator, marker *models.Scene
 		VideoPreview:        j.input.Markers,
 		ImagePreview:        j.input.MarkerImagePreviews,
 		Screenshot:          j.input.MarkerScreenshots,
+		Codec:               j.previewCodec,
 		generator:           g,
 	}
 	j.totals.markers++

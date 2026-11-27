@@ -314,6 +314,12 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	if input.PreviewPreset != nil {
 		c.SetString(config.PreviewPreset, input.PreviewPreset.String())
 	}
+	if err := setVideoCodec(c, config.PreviewCodec, input.PreviewCodec, c.GetPreviewCodec(), manager.IsGeneratedVideoCodecSupported); err != nil {
+		return makeConfigGeneralResult(), err
+	}
+	if err := setVideoCodec(c, config.TranscodeCodec, input.TranscodeCodec, c.GetTranscodeCodec(), manager.IsGeneratedVideoCodecSupported); err != nil {
+		return makeConfigGeneralResult(), err
+	}
 	r.setConfigBool(config.UseCustomSpriteInterval, input.UseCustomSpriteInterval)
 	r.setConfigFloat(config.SpriteInterval, input.SpriteInterval)
 	r.setConfigInt(config.MinimumSprites, input.MinimumSprites)
@@ -748,4 +754,17 @@ func (r *mutationResolver) ConfigurePlugin(ctx context.Context, pluginID string,
 	}
 
 	return c.GetPluginConfiguration(pluginID), nil
+}
+
+// setVideoCodec stores a generated video codec setting, rejecting one the configured ffmpeg can't encode.
+// It only validates on change, so a stored codec that ffmpeg later lost doesn't block every other save.
+func setVideoCodec(c *config.Config, key string, v *models.GeneratedVideoCodec, current models.GeneratedVideoCodec, supported func(models.GeneratedVideoCodec) bool) error {
+	if v == nil || *v == current {
+		return nil
+	}
+	if !supported(*v) {
+		return fmt.Errorf("%s %s is not supported by the configured ffmpeg", key, *v)
+	}
+	c.SetString(key, v.String())
+	return nil
 }

@@ -77,3 +77,69 @@ func TestGenerateJobQueuesTaskPerOption(t *testing.T) {
 		})
 	}
 }
+
+// A missing encoder skips only the video assets that need it, with no fallback to another codec.
+func TestGenerateJobResolveCodecs(t *testing.T) {
+	config.InitializeEmpty()
+
+	hevc := models.GeneratedVideoCodecHevc
+	av1 := models.GeneratedVideoCodecAv1
+	onlyH264 := func(c models.GeneratedVideoCodec) bool { return c == models.GeneratedVideoCodecH264 }
+
+	scene := &models.Scene{
+		ID:    1,
+		Path:  "scene.mp4",
+		Files: models.NewRelatedVideoFiles([]*models.VideoFile{{BaseFile: &models.BaseFile{ID: 1}}}),
+	}
+
+	t.Run("defaults to H264 and keeps everything", func(t *testing.T) {
+		j := &GenerateJob{input: GenerateMetadataInput{Previews: true, Markers: true, Transcodes: true}}
+		j.resolveCodecs(onlyH264)
+		assert.Equal(t, models.GeneratedVideoCodecH264, j.previewCodec)
+		assert.Equal(t, models.GeneratedVideoCodecH264, j.transcodeCodec)
+		assert.False(t, j.skipVideoPreviews)
+		assert.True(t, j.input.Markers)
+		assert.True(t, j.input.Transcodes)
+	})
+
+	t.Run("unsupported preview codec skips previews and marker previews only", func(t *testing.T) {
+		j := &GenerateJob{input: GenerateMetadataInput{
+			Previews: true, ImagePreviews: true, Markers: true, MarkerScreenshots: true, Transcodes: true,
+			PreviewOptions: &GeneratePreviewOptionsInput{PreviewCodec: &hevc},
+		}, overwrite: true}
+		j.resolveCodecs(onlyH264)
+		assert.Equal(t, hevc, j.previewCodec, "no silent fallback")
+		assert.True(t, j.skipVideoPreviews)
+		assert.False(t, j.input.Markers)
+		assert.True(t, j.input.MarkerScreenshots)
+		assert.True(t, j.input.Transcodes)
+
+		// image previews don't use the video encoder, so they must still be queued
+		db := mocks.NewDatabase()
+		db.SceneMarker.On("FindBySceneID", mock.Anything, scene.ID).Return([]*models.SceneMarker{}, nil)
+		j.repository = db.Repository()
+		queue := make(chan Task, 10)
+		j.queueSceneJobs(context.Background(), nil, scene, queue)
+		close(queue)
+		var preview *GeneratePreviewTask
+		for task := range queue {
+			if p, ok := task.(*GeneratePreviewTask); ok {
+				preview = p
+			}
+		}
+		if assert.NotNil(t, preview, "image preview task queued") {
+			assert.False(t, preview.VideoPreview)
+			assert.True(t, preview.ImagePreview)
+		}
+		assert.Equal(t, int64(0), j.totals.previews)
+		assert.Equal(t, int64(1), j.totals.imagePreviews)
+	})
+
+	t.Run("unsupported transcode codec skips transcodes only", func(t *testing.T) {
+		j := &GenerateJob{input: GenerateMetadataInput{Previews: true, Transcodes: true, TranscodeCodec: &av1}}
+		j.resolveCodecs(onlyH264)
+		assert.Equal(t, av1, j.transcodeCodec)
+		assert.False(t, j.input.Transcodes)
+		assert.False(t, j.skipVideoPreviews)
+	})
+}

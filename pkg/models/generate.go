@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"io"
+	"slices"
 	"strconv"
 )
 
@@ -90,5 +91,45 @@ func (e *PreviewPreset) UnmarshalGQL(v interface{}) error {
 }
 
 func (e PreviewPreset) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+// GeneratedVideoCodec is the whitelist of codecs generated video assets may use.
+type GeneratedVideoCodec string
+
+const (
+	GeneratedVideoCodecH264 GeneratedVideoCodec = "H264"
+	GeneratedVideoCodecHevc GeneratedVideoCodec = "HEVC"
+	GeneratedVideoCodecAv1  GeneratedVideoCodec = "AV1"
+)
+
+var AllGeneratedVideoCodec = []GeneratedVideoCodec{
+	GeneratedVideoCodecH264,
+	GeneratedVideoCodecHevc,
+	GeneratedVideoCodecAv1,
+}
+
+func (e GeneratedVideoCodec) IsValid() bool {
+	return slices.Contains(AllGeneratedVideoCodec, e)
+}
+
+func (e GeneratedVideoCodec) String() string {
+	return string(e)
+}
+
+func (e *GeneratedVideoCodec) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = GeneratedVideoCodec(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid GeneratedVideoCodec", str)
+	}
+	return nil
+}
+
+func (e GeneratedVideoCodec) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

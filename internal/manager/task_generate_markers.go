@@ -22,6 +22,7 @@ type GenerateMarkersTask struct {
 	VideoPreview bool
 	ImagePreview bool
 	Screenshot   bool
+	Codec        models.GeneratedVideoCodec
 
 	generator *generate.Generator
 }
@@ -131,7 +132,12 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *models.VideoFile, scene 
 	g := t.generator
 
 	if t.VideoPreview {
-		if err := g.MarkerPreviewVideo(context.TODO(), videoFile.Path, sceneHash, seconds, sceneMarker.EndSeconds, instance.Config.GetPreviewAudio(), instance.Config.GetMaxMarkerPreviewDuration(), instance.Config.GetDefaultMarkerPreviewDuration()); err != nil {
+		if err := g.MarkerPreviewVideo(context.TODO(), videoFile.Path, sceneHash, seconds, sceneMarker.EndSeconds, generate.MarkerPreviewVideoOptions{
+			IncludeAudio:    instance.Config.GetPreviewAudio(),
+			MaxDuration:     instance.Config.GetMaxMarkerPreviewDuration(),
+			DefaultDuration: instance.Config.GetDefaultMarkerPreviewDuration(),
+			Codec:           t.Codec,
+		}); err != nil {
 			logger.Errorf("[generator] failed to generate marker video for scene (%d) marker (%d) at %s: %v", scene.ID, sceneMarker.ID, formatSeconds(float64(sceneMarker.Seconds)), err)
 			logErrorOutput(err)
 		}
