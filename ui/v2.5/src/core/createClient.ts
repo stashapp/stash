@@ -193,15 +193,41 @@ Please disable it on the server and refresh the page.`);
     cache,
   });
 
-  // Watch for scan/clean tasks and reset cache when they complete
+  // Watch for scan/clean tasks and reset the cache when they complete.
+  // resetStore() cancels every in-flight fetch ("Store reset while query
+  // was in flight") and then refetches the active queries, so a reset
+  // started while another is still refetching makes the first one reject.
+  // Run one reset at a time and catch failures. A completion that arrives
+  // while a reset is running asks for one more reset afterwards, since
+  // that reset may already have refetched data from before the latest
+  // scan.
+  let resetRunning = false;
+  let resetAgain = false;
+  const resetStore = () => {
+    if (resetRunning) {
+      resetAgain = true;
+      return;
+    }
+    resetRunning = true;
+    resetAgain = false;
+    client
+      .resetStore()
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error("Failed to reset Apollo store after scan", err);
+      })
+      .finally(() => {
+        resetRunning = false;
+        if (resetAgain) resetStore();
+      });
+  };
+
   client
     .subscribe<GQL.ScanCompleteSubscribeSubscription>({
       query: GQL.ScanCompleteSubscribeDocument,
     })
     .subscribe({
-      next: () => {
-        client.resetStore();
-      },
+      next: resetStore,
     });
 
   return {
