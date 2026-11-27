@@ -64,6 +64,7 @@ func (qb *groupFilterHandler) criterionHandler() criterionHandler {
 	groupFilter := qb.groupFilter
 	return compoundHandler{
 		stringCriterionHandler(groupFilter.Name, "groups.name"),
+		stringCriterionHandler(groupFilter.Aliases, "groups.aliases"),
 		stringCriterionHandler(groupFilter.Director, "groups.director"),
 		stringCriterionHandler(groupFilter.Synopsis, "groups.description"),
 		intCriterionHandler(groupFilter.Rating100, "groups.rating", nil),
