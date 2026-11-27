@@ -434,6 +434,17 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 		qb := r.repository.Scene
 
 		for _, sceneID := range sceneIDs {
+			s, err := qb.Find(ctx, sceneID)
+			if err != nil {
+				return err
+			}
+			if s == nil {
+				return fmt.Errorf("scene with id %d not found", sceneID)
+			}
+			if skipOrganizedInBulk(s.Organized, translator, input.Organized) {
+				continue
+			}
+
 			scene, err := qb.UpdatePartial(ctx, sceneID, updatedScene)
 			if err != nil {
 				return err
@@ -925,6 +936,22 @@ func (r *mutationResolver) BulkSceneMarkerUpdate(ctx context.Context, input Bulk
 		qb := r.repository.SceneMarker
 
 		for _, id := range ids {
+			m, err := qb.Find(ctx, id)
+			if err != nil {
+				return err
+			}
+			if m == nil {
+				return fmt.Errorf("scene marker with id %d not found", id)
+			}
+			s, err := r.repository.Scene.Find(ctx, m.SceneID)
+			if err != nil {
+				return err
+			}
+			// bulk edits leave markers of organized scenes alone
+			if s != nil && s.Organized {
+				continue
+			}
+
 			l := partial
 
 			if err := adjustMarkerPartialForTagExclusion(ctx, r.repository.SceneMarker, id, &l); err != nil {

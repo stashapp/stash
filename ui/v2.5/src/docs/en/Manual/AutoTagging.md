@@ -37,7 +37,9 @@ This task is part of the advanced settings mode.
 
 Scenes, images, and galleries that have the Organized flag added to them will not be modified by Auto tag. You can also use Organized flag status as a filter.
 
-Studios also support the Organized flag, however it is purely informational. It serves as a front-end indicator for the user to mark that a studio's collection is complete and does not affect Auto tag behavior. The Ignore Auto tag flag should be used to exclude a studio from Auto tag.
+Bulk edits also skip organized scenes, images, galleries, studios and the markers of organized scenes, except to change rating, favorite or the Organized flag itself. Organized items can still be edited one at a time.
+
+Studios also support the Organized flag. Apart from bulk edits it does not affect Auto tag behavior; the Ignore Auto tag flag should be used to exclude a studio from Auto tag.
 
 ### Ignore auto tag flag
 
