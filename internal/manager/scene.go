@@ -11,15 +11,18 @@ import (
 )
 
 type SceneStreamEndpoint struct {
-	URL      string  `json:"url"`
-	MimeType *string `json:"mime_type"`
-	Label    *string `json:"label"`
+	URL        string  `json:"url"`
+	MimeType   *string `json:"mime_type"`
+	Label      *string `json:"label"`
+	StreamType *string `json:"stream_type"`
+	Resolution *string `json:"resolution"`
 }
 
 type endpointType struct {
-	label     string
-	mimeType  string
-	extension string
+	label      string
+	mimeType   string
+	extension  string
+	streamType string
 }
 
 var (
@@ -27,32 +30,38 @@ var (
 		label:     "Direct stream",
 		mimeType:  ffmpeg.MimeMp4Video,
 		extension: "",
+		streamType: "direct",
 	}
 	mp4EndpointType = endpointType{
 		label:     "MP4",
 		mimeType:  ffmpeg.MimeMp4Video,
 		extension: ".mp4",
+		streamType: "mp4",
 	}
 	mkvEndpointType = endpointType{
 		label: "MKV",
 		// use mp4 mimetype to trick the client, since many clients won't try mkv
 		mimeType:  ffmpeg.MimeMp4Video,
 		extension: ".mkv",
+		streamType: "mkv",
 	}
 	webmEndpointType = endpointType{
 		label:     "WEBM",
 		mimeType:  ffmpeg.MimeWebmVideo,
 		extension: ".webm",
+		streamType: "webm",
 	}
 	hlsEndpointType = endpointType{
 		label:     "HLS",
 		mimeType:  ffmpeg.MimeHLS,
 		extension: ".m3u8",
+		streamType: "hls",
 	}
 	dashEndpointType = endpointType{
 		label:     "DASH",
 		mimeType:  ffmpeg.MimeDASH,
 		extension: ".mpd",
+		streamType: "dash",
 	}
 )
 
@@ -117,8 +126,10 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL *url.URL, maxStrea
 		url.Path += t.extension
 
 		label := t.label
+		resolutionStr := "ORIGINAL"
 
 		if resolution != "" {
+			resolutionStr = string(resolution)
 			v := url.Query()
 			v.Set("resolution", resolution.String())
 			url.RawQuery = v.Encode()
@@ -138,9 +149,11 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL *url.URL, maxStrea
 		}
 
 		return &SceneStreamEndpoint{
-			URL:      url.String(),
-			MimeType: &t.mimeType,
-			Label:    &label,
+			URL:        url.String(),
+			MimeType:   &t.mimeType,
+			Label:      &label,
+			StreamType: &t.streamType,
+			Resolution: &resolutionStr,
 		}
 	}
 
