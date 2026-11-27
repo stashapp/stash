@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -322,6 +323,13 @@ func (m *Manager) installPackage(pkg RemotePackage, store *Store, zr *zip.Reader
 		}
 
 		fn := filepath.Clean(f.Name)
+
+		pkgDir := filepath.Clean(store.packageDir(pkg.ID)) + string(os.PathSeparator)
+		if !strings.HasPrefix(filepath.Join(store.packageDir(pkg.ID), fn), pkgDir) {
+			i.Close()
+			return fmt.Errorf("illegal file path in zip: %s", f.Name)
+		}
+
 		if err := store.writeFile(pkg.ID, fn, f.Mode(), i); err != nil {
 			i.Close()
 			return fmt.Errorf("writing file %q: %w", fn, err)

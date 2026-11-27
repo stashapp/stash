@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/stashapp/stash/pkg/file"
@@ -152,8 +153,14 @@ func (t *ImportTask) unzipFile() error {
 	}
 	defer r.Close()
 
+	cleanBase := filepath.Clean(t.BaseDir) + string(os.PathSeparator)
+
 	for _, f := range r.File {
 		fn := filepath.Join(t.BaseDir, f.Name)
+
+		if !strings.HasPrefix(fn, cleanBase) {
+			return fmt.Errorf("illegal file path in zip: %s", f.Name)
+		}
 
 		if f.FileInfo().IsDir() {
 			if err := os.MkdirAll(fn, os.ModePerm); err != nil {
