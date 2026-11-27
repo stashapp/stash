@@ -180,7 +180,7 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 		ss.URL = &ss.URLs[0]
 	}
 
-	if len(s.Images) > 0 {
+	if len(s.Images) > 0 && !c.skipImages {
 		// TODO - #454 code sorts images by aspect ratio according to a wanted
 		// orientation. I'm just grabbing the first for now
 		ss.Image = getFirstImage(ctx, c.httpClient, s.Images)
