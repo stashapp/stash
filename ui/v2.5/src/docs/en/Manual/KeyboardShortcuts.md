@@ -148,6 +148,18 @@
 | `r {0-9} {0-9}` | Set rating (decimal - `00` for `10.0`) |
 | ``r ` `` | Unset rating (decimal) |
 
+## Lightbox touch gestures
+
+| Gesture | Action |
+|-------------------|--------|
+| `Swipe left` | Next image |
+| `Swipe right` | Previous image |
+| `Swipe up` | Delete current image |
+| `Swipe down` | Close the lightbox |
+| `Double-tap` | Toggle zoom |
+| `Pinch` | Zoom in/out |
+| `Drag (while zoomed in)` | Pan image |
+
 ## Groups page shortcuts
 
 | Keyboard sequence | Action |
