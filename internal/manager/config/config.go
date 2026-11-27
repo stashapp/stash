@@ -81,6 +81,7 @@ const (
 
 	MaxTranscodeSize          = "max_transcode_size"
 	MaxStreamingTranscodeSize = "max_streaming_transcode_size"
+	TranscodeSkipCodecs       = "transcode_skip_codecs"
 
 	// ffmpeg extra args options
 	TranscodeInputArgs      = "ffmpeg.transcode.input_args"
@@ -328,6 +329,8 @@ var (
 	defaultImageExtensions   = []string{"png", "jpg", "jpeg", "gif", "webp", "avif", "jxl"}
 	defaultGalleryExtensions = []string{"zip", "cbz"}
 	defaultMenuItems         = []string{"scenes", "images", "groups", "markers", "galleries", "performers", "studios", "tags"}
+	// only h264 plays in every browser
+	defaultTranscodeSkipCodecs = []string{"h264"}
 )
 
 type MissingConfigError struct {
@@ -1175,6 +1178,23 @@ func (i *Config) GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum {
 	}
 
 	return models.StreamingResolutionEnum(ret)
+}
+
+// GetTranscodeSkipCodecs returns the video codecs for which generated
+// transcodes are skipped. Defaults to h264.
+func (i *Config) GetTranscodeSkipCodecs() []string {
+	var ret []string
+	for _, c := range i.getStringSlice(TranscodeSkipCodecs) {
+		if c = strings.ToLower(strings.TrimSpace(c)); c != "" {
+			ret = append(ret, c)
+		}
+	}
+
+	if len(ret) == 0 {
+		return defaultTranscodeSkipCodecs
+	}
+
+	return ret
 }
 
 func (i *Config) GetTranscodeInputArgs() []string {

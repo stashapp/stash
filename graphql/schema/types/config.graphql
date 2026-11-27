@@ -120,6 +120,8 @@ input ConfigGeneralInput {
   maxTranscodeSize: StreamingResolutionEnum
   "Max streaming transcode size"
   maxStreamingTranscodeSize: StreamingResolutionEnum
+  "Video codecs (as reported by ffprobe) that skip generated transcodes"
+  transcodeSkipCodecs: [String!]
 
   """
   ffmpeg transcode input args - injected before input file
@@ -262,6 +264,8 @@ type ConfigGeneralResult {
   maxTranscodeSize: StreamingResolutionEnum
   "Max streaming transcode size"
   maxStreamingTranscodeSize: StreamingResolutionEnum
+  "Video codecs (as reported by ffprobe) that skip generated transcodes"
+  transcodeSkipCodecs: [String!]!
 
   """
   ffmpeg transcode input args - injected before input file

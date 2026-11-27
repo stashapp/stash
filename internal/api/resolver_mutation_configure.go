@@ -431,6 +431,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		r.setConfigString(config.PythonPath, input.PythonPath)
 	}
 
+	if input.TranscodeSkipCodecs != nil {
+		c.SetInterface(config.TranscodeSkipCodecs, input.TranscodeSkipCodecs)
+	}
+
 	if input.TranscodeInputArgs != nil {
 		c.SetInterface(config.TranscodeInputArgs, input.TranscodeInputArgs)
 	}
