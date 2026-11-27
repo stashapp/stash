@@ -5,6 +5,7 @@ import { Pagination, PaginationIndex } from "./Pagination";
 import { LoadingIndicator } from "../Shared/LoadingIndicator";
 import { ErrorMessage } from "../Shared/ErrorMessage";
 import { FormattedMessage } from "react-intl";
+import { useContentLoading } from "src/hooks/scrollRestoration";
 
 export const LoadedContent: React.FC<
   PropsWithChildren<{
@@ -51,6 +52,10 @@ export const PagedList: React.FC<
   children,
 }) => {
   const pages = Math.ceil(totalCount / filter.itemsPerPage);
+
+  // let an in-progress scroll restoration wait for the list rather than for a
+  // fixed amount of time
+  useContentLoading(result.loading);
 
   const pagination = useMemo(() => {
     return (

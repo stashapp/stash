@@ -8,6 +8,7 @@ import { IHasID } from "src/utils/data";
 import { useConfigurationContext } from "src/hooks/Config";
 import { View } from "./views";
 import { usePrevious } from "src/hooks/state";
+import { isRestoringScroll } from "src/hooks/scrollRestoration";
 import * as GQL from "src/core/generated-graphql";
 import { DisplayMode } from "src/models/list-filter/types";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
@@ -604,6 +605,12 @@ export function useScrollToTopOnPageChange(
   // only scroll to top if the page has changed and is not loading
   useEffect(() => {
     if (loading || currentPage === prevPage || prevPage === undefined) {
+      return;
+    }
+
+    // don't interfere with the scroll position being restored when navigating
+    // back to a list that was showing a different page
+    if (isRestoringScroll()) {
       return;
     }
 
