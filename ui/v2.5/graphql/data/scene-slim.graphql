@@ -28,6 +28,7 @@ fragment SlimSceneData on Scene {
     vtt
     sprite
     funscript
+    interactive_csv
     interactive_heatmap
     caption
   }
