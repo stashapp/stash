@@ -6,11 +6,10 @@ import React, {
   useRef,
   useState,
 } from "react";
-import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
+import videojs from "video.js";
+import type VideoJsPlayer from "video.js/dist/types/player";
 import useScript from "src/hooks/useScript";
-import "videojs-contrib-dash";
 import "videojs-mobile-ui";
-import "videojs-seek-buttons";
 import { UAParser } from "ua-parser-js";
 import "./live";
 import "./PlaylistButtons";
@@ -56,7 +55,7 @@ airplay(videojs);
 chromecast(videojs);
 abLoopPlugin(window, videojs);
 
-function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
+function handleHotkeys(player: VideoJsPlayer, event: globalThis.KeyboardEvent) {
   function seekStep(step: number) {
     const time = player.currentTime() + step;
     const duration = player.duration();
@@ -339,7 +338,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
 
     // Initialize VideoJS player
     useEffect(() => {
-      const options: VideoJsPlayerOptions = {
+      const options = {
         id: VIDEO_PLAYER_ID,
         controls: true,
         controlBar: {
@@ -348,23 +347,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
             inline: false,
           },
           chaptersButton: false,
-        },
-        html5: {
-          dash: {
-            updateSettings: [
-              {
-                streaming: {
-                  buffer: {
-                    bufferTimeAtTopQuality: 30,
-                    bufferTimeAtTopQualityLongForm: 30,
-                  },
-                  gaps: {
-                    jumpGaps: false,
-                    jumpLargeGaps: false,
-                  },
-                },
-              },
-            ],
+          skipButtons: {
+            forward: 10,
+            backward: 10,
           },
         },
         nativeControlsForTouch: false,
@@ -374,7 +359,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
         playsinline: true,
         techOrder: ["chromecast", "html5"],
         userActions: {
-          hotkeys: function (this: VideoJsPlayer, event) {
+          hotkeys: function (
+            this: VideoJsPlayer,
+            event: globalThis.KeyboardEvent
+          ) {
             handleHotkeys(this, event);
           },
         },
@@ -390,10 +378,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
           sourceSelector: {},
           persistVolume: {},
           bigButtons: {},
-          seekButtons: {
-            forward: 10,
-            back: 10,
-          },
+          // Stash's playlist next/previous buttons, not v8's controlBar.skipButtons
           skipButtons: {},
           trackActivity: {},
           vrMenu: {},
@@ -601,7 +586,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
       interactiveClient.pause();
 
       const isSafari = UAParser().browser.name?.includes("Safari");
-      const isLandscape = file.height && file.width && file.width > file.height;
+      const isLandscape = !!(
+        file.height &&
+        file.width &&
+        file.width > file.height
+      );
       const mobileUiOptions = {
         fullscreen: {
           enterOnRotate: true,

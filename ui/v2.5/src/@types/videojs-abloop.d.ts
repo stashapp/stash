@@ -2,6 +2,7 @@
 
 declare module "videojs-abloop" {
   import videojs from "video.js";
+  import type VjsPlugin from "video.js/dist/types/plugin";
 
   declare function abLoopPlugin(
     window: Window & typeof globalThis,
@@ -19,7 +20,7 @@ declare module "videojs-abloop" {
       pauseAfterLooping: boolean;
     }
 
-    class Plugin extends videojs.Plugin {
+    class Plugin extends VjsPlugin {
       getOptions(): Options;
       setOptions(o: Options): void;
     }
@@ -27,8 +28,8 @@ declare module "videojs-abloop" {
 
   export = abLoopPlugin;
 
-  declare module "video.js" {
-    interface VideoJsPlayer {
+  declare module "video.js/dist/types/player" {
+    export default interface Player {
       abLoopPlugin: abLoopPlugin.Plugin;
     }
   }

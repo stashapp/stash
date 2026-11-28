@@ -1,14 +1,19 @@
-import videojs, { VideoJsPlayer } from "video.js";
+import videojs from "video.js";
+import type VideoJsPlayer from "video.js/dist/types/player";
+import type Button from "video.js/dist/types/button";
+import type Plugin from "video.js/dist/types/plugin";
 
 interface IAutostartButtonOptions {
   enabled?: boolean;
 }
 
-interface AutostartButtonOptions extends videojs.ComponentOptions {
+type AutostartButtonOptions = ConstructorParameters<typeof Button>[1] & {
   autostartEnabled: boolean;
-}
+};
 
-class AutostartButton extends videojs.getComponent("Button") {
+class AutostartButton extends (videojs.getComponent(
+  "Button"
+) as typeof Button) {
   private autostartEnabled: boolean;
 
   constructor(player: VideoJsPlayer, options: AutostartButtonOptions) {
@@ -49,7 +54,9 @@ class AutostartButton extends videojs.getComponent("Button") {
   }
 }
 
-class AutostartButtonPlugin extends videojs.getPlugin("plugin") {
+class AutostartButtonPlugin extends (videojs.getPlugin(
+  "plugin"
+) as typeof Plugin) {
   private button: AutostartButton;
   private autostartEnabled: boolean;
   updateAutoStart: (enabled: boolean) => Promise<void> = () => {
@@ -57,7 +64,7 @@ class AutostartButtonPlugin extends videojs.getPlugin("plugin") {
   };
 
   constructor(player: VideoJsPlayer, options?: IAutostartButtonOptions) {
-    super(player, options);
+    super(player);
 
     this.autostartEnabled = options?.enabled ?? false;
 
@@ -82,10 +89,13 @@ class AutostartButtonPlugin extends videojs.getPlugin("plugin") {
     }
 
     // Listen for changes
-    this.button.on("autostartchanged", (_, data: { enabled: boolean }) => {
-      this.autostartEnabled = data.enabled;
-      this.updateAutoStart(this.autostartEnabled);
-    });
+    this.button.on(
+      "autostartchanged",
+      (_: Event, data: { enabled: boolean }) => {
+        this.autostartEnabled = data.enabled;
+        this.updateAutoStart(this.autostartEnabled);
+      }
+    );
   }
 
   public isEnabled(): boolean {
@@ -113,12 +123,9 @@ class AutostartButtonPlugin extends videojs.getPlugin("plugin") {
 videojs.registerComponent("AutostartButton", AutostartButton);
 videojs.registerPlugin("autostartButton", AutostartButtonPlugin);
 
-declare module "video.js" {
-  interface VideoJsPlayer {
+declare module "video.js/dist/types/player" {
+  export default interface Player {
     autostartButton: () => AutostartButtonPlugin;
-  }
-  interface VideoJsPlayerPluginOptions {
-    autostartButton?: IAutostartButtonOptions;
   }
 }
 

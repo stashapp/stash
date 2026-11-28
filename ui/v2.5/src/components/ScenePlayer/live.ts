@@ -1,7 +1,11 @@
 import { debounce } from "lodash-es";
-import videojs, { VideoJsPlayer } from "video.js";
+import videojs from "video.js";
+import type VideoJsPlayer from "video.js/dist/types/player";
+import type Tech from "video.js/dist/types/tech/tech";
 
-export interface ISource extends videojs.Tech.SourceObject {
+export interface ISource {
+  src: string;
+  type?: string;
   offset?: boolean;
   duration?: number;
 }
@@ -83,13 +87,13 @@ function offsetMiddleware(player: VideoJsPlayer) {
   );
 
   return {
-    setTech(newTech: videojs.Tech) {
+    setTech(newTech: Tech) {
       tech = newTech;
 
       const _addRemoteTextTrack = tech.addRemoteTextTrack.bind(tech);
       function addRemoteTextTrack(
         this: VideoJsPlayer,
-        options: videojs.TextTrackOptions,
+        options: Parameters<Tech["addRemoteTextTrack"]>[0],
         manualCleanup: boolean
       ) {
         const textTrack = _addRemoteTextTrack(options, manualCleanup);
@@ -119,10 +123,7 @@ function offsetMiddleware(player: VideoJsPlayer) {
         }
       }
     },
-    setSource(
-      srcObj: ISource,
-      next: (err: unknown, src: videojs.Tech.SourceObject) => void
-    ) {
+    setSource(srcObj: ISource, next: (err: unknown, src: ISource) => void) {
       if (srcObj.offset && srcObj.duration) {
         updateOffsetStart(0);
       } else {
@@ -151,9 +152,8 @@ function offsetMiddleware(player: VideoJsPlayer) {
         timeRanges.push([start, end]);
       }
 
-      // types for createTimeRanges are incorrect, should be number[][] not TimeRange[]
-      // biome-ignore lint/suspicious/noExplicitAny: intentional
-      return videojs.createTimeRanges(timeRanges as any);
+      // v8's types require `end`, but it is ignored when passing an array of ranges
+      return videojs.time.createTimeRanges(timeRanges, 0);
     },
     currentTime(seconds: number) {
       return (offsetStart ?? 0) + seconds;

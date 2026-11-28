@@ -1,4 +1,8 @@
-import videojs, { VideoJsPlayer } from "video.js";
+import videojs from "video.js";
+import type VideoJsPlayer from "video.js/dist/types/player";
+import type MenuButton from "video.js/dist/types/menu/menu-button";
+import type MenuItem from "video.js/dist/types/menu/menu-item";
+import type Plugin from "video.js/dist/types/plugin";
 import "@blaineam/videojs-vr";
 // separate type import, otherwise typescript elides the above import
 // and the plugin does not get initialized
@@ -33,15 +37,16 @@ function isVrDevice() {
   return navigator.userAgent.match(/oculusbrowser|\svr\s/i);
 }
 
-class VRMenuItem extends videojs.getComponent("MenuItem") {
+class VRMenuItem extends (videojs.getComponent("MenuItem") as typeof MenuItem) {
   public type: VRType;
   public isSelected = false;
 
   constructor(parent: VRMenuButton, type: VRType) {
-    const options: videojs.MenuItemOptions = {};
-    options.selectable = true;
-    options.multiSelectable = false;
-    options.label = type;
+    const options = {
+      selectable: true,
+      multiSelectable: false,
+      label: type,
+    };
 
     super(parent.player(), options);
 
@@ -62,7 +67,10 @@ class VRMenuItem extends videojs.getComponent("MenuItem") {
   }
 }
 
-class VRMenuButton extends videojs.getComponent("MenuButton") {
+class VRMenuButton extends (videojs.getComponent(
+  "MenuButton"
+) as typeof MenuButton) {
+  // @ts-expect-error v8's generated types declare MenuButton.items as void
   private items: VRMenuItem[] = [];
   private selectedType: VRType = VRType.Off;
 
@@ -112,7 +120,7 @@ class VRMenuButton extends videojs.getComponent("MenuButton") {
   }
 }
 
-class VRMenuPlugin extends videojs.getPlugin("plugin") {
+class VRMenuPlugin extends (videojs.getPlugin("plugin") as typeof Plugin) {
   private menu: VRMenuButton;
   private showButton: boolean;
   private vr?: VideoJsVRPlugin;
@@ -152,7 +160,7 @@ class VRMenuPlugin extends videojs.getPlugin("plugin") {
     this.vr.on("initialized", () => this.fixTextureColorSpace());
     player.on("loadedmetadata", () => this.fixTextureColorSpace());
 
-    this.menu.on("typeselected", (_, type: VRType) => {
+    this.menu.on("typeselected", (_: Event, type: VRType) => {
       this.loadVR(type);
     });
 
@@ -208,12 +216,9 @@ class VRMenuPlugin extends videojs.getPlugin("plugin") {
 videojs.registerComponent("VRMenuButton", VRMenuButton);
 videojs.registerPlugin("vrMenu", VRMenuPlugin);
 
-declare module "video.js" {
-  interface VideoJsPlayer {
+declare module "video.js/dist/types/player" {
+  export default interface Player {
     vrMenu: () => VRMenuPlugin;
-  }
-  interface VideoJsPlayerPluginOptions {
-    vrMenu?: VRMenuOptions;
   }
 }
 

@@ -1,6 +1,10 @@
-import videojs, { VideoJsPlayer } from "video.js";
+import videojs from "video.js";
+import type VideoJsPlayer from "video.js/dist/types/player";
+import type Plugin from "video.js/dist/types/plugin";
 
-class WakeSentinelPlugin extends videojs.getPlugin("plugin") {
+class WakeSentinelPlugin extends (videojs.getPlugin(
+  "plugin"
+) as typeof Plugin) {
   public wakeLock: WakeLockSentinel | null = null;
   public wakeLockFail: boolean = false;
   constructor(player: VideoJsPlayer) {
@@ -55,8 +59,8 @@ class WakeSentinelPlugin extends videojs.getPlugin("plugin") {
 
 videojs.registerPlugin("wakeSentinel", WakeSentinelPlugin);
 
-declare module "video.js" {
-  interface VideoJsPlayer {
+declare module "video.js/dist/types/player" {
+  export default interface Player {
     wakeSentinel: () => WakeSentinelPlugin;
   }
 }

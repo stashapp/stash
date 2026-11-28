@@ -1,5 +1,5 @@
 import { getPlayer } from "src/components/ScenePlayer/util";
-import type { VideoJsPlayer } from "video.js";
+import type VideoJsPlayer from "video.js/dist/types/player";
 import * as GQL from "src/core/generated-graphql";
 
 export interface IDeviceSettings {
