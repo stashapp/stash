@@ -1,6 +1,7 @@
 
 declare module "@blaineam/videojs-vr" {
   import videojs from "video.js";
+  import type VjsPlugin from "video.js/dist/types/plugin";
   // we don't want to depend on THREE.js directly, these are just typedefs for videojs-vr
   import * as THREE from "three";
 
@@ -88,7 +89,7 @@ declare module "@blaineam/videojs-vr" {
       projection?: ProjectionType;
     }
 
-    class Plugin extends videojs.Plugin {
+    class Plugin extends VjsPlugin {
       setProjection(projection: ProjectionType): void;
       init(): void;
       reset(): void;
@@ -127,8 +128,8 @@ declare module "@blaineam/videojs-vr" {
 
   export = videojsVR;
 
-  declare module "video.js" {
-    interface VideoJsPlayer {
+  declare module "video.js/dist/types/player" {
+    export default interface Player {
       vr: typeof videojsVR;
       mediainfo?: videojsVR.PlayerMediaInfo;
     }

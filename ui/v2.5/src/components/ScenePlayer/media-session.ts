@@ -1,6 +1,10 @@
-import videojs, { VideoJsPlayer } from "video.js";
+import videojs from "video.js";
+import type VideoJsPlayer from "video.js/dist/types/player";
+import type Plugin from "video.js/dist/types/plugin";
 
-class MediaSessionPlugin extends videojs.getPlugin("plugin") {
+class MediaSessionPlugin extends (videojs.getPlugin(
+  "plugin"
+) as typeof Plugin) {
   constructor(player: VideoJsPlayer) {
     super(player);
 
@@ -61,8 +65,8 @@ class MediaSessionPlugin extends videojs.getPlugin("plugin") {
 
 videojs.registerPlugin("mediaSession", MediaSessionPlugin);
 
-declare module "video.js" {
-  interface VideoJsPlayer {
+declare module "video.js/dist/types/player" {
+  export default interface Player {
     mediaSession: () => MediaSessionPlugin;
   }
 }

@@ -1,9 +1,13 @@
-import videojs, { VideoJsPlayer } from "video.js";
+import videojs from "video.js";
+import type VideoJsPlayer from "video.js/dist/types/player";
+import type Plugin from "video.js/dist/types/plugin";
 
 const intervalSeconds = 1; // check every second
 const sendInterval = 10; // send every 10 seconds
 
-class TrackActivityPlugin extends videojs.getPlugin("plugin") {
+class TrackActivityPlugin extends (videojs.getPlugin(
+  "plugin"
+) as typeof Plugin) {
   totalPlayDuration = 0;
   currentPlayDuration = 0;
   minimumPlayPercent = 0;
@@ -128,12 +132,9 @@ class TrackActivityPlugin extends videojs.getPlugin("plugin") {
 // Register the plugin with video.js.
 videojs.registerPlugin("trackActivity", TrackActivityPlugin);
 
-declare module "video.js" {
-  interface VideoJsPlayer {
+declare module "video.js/dist/types/player" {
+  export default interface Player {
     trackActivity: () => TrackActivityPlugin;
-  }
-  interface VideoJsPlayerPluginOptions {
-    trackActivity?: object;
   }
 }
 

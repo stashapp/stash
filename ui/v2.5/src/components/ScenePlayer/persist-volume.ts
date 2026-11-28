@@ -1,4 +1,6 @@
-import videojs, { VideoJsPlayer } from "video.js";
+import videojs from "video.js";
+import type VideoJsPlayer from "video.js/dist/types/player";
+import type Plugin from "video.js/dist/types/plugin";
 import localForage from "localforage";
 
 const levelKey = "volume-level";
@@ -8,11 +10,13 @@ interface IPersistVolumeOptions {
   enabled?: boolean;
 }
 
-class PersistVolumePlugin extends videojs.getPlugin("plugin") {
+class PersistVolumePlugin extends (videojs.getPlugin(
+  "plugin"
+) as typeof Plugin) {
   enabled: boolean;
 
   constructor(player: VideoJsPlayer, options?: IPersistVolumeOptions) {
-    super(player, options);
+    super(player);
 
     this.enabled = options?.enabled ?? true;
 
@@ -46,12 +50,9 @@ class PersistVolumePlugin extends videojs.getPlugin("plugin") {
 // Register the plugin with video.js.
 videojs.registerPlugin("persistVolume", PersistVolumePlugin);
 
-declare module "video.js" {
-  interface VideoJsPlayer {
+declare module "video.js/dist/types/player" {
+  export default interface Player {
     persistVolume: () => PersistVolumePlugin;
-  }
-  interface VideoJsPlayerPluginOptions {
-    persistVolume?: IPersistVolumeOptions;
   }
 }
 

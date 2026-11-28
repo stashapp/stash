@@ -1,4 +1,6 @@
-import videojs, { VideoJsPlayer } from "video.js";
+import videojs from "video.js";
+import type VideoJsPlayer from "video.js/dist/types/player";
+import type Plugin from "video.js/dist/types/plugin";
 import { WebVTT } from "videojs-vtt.js";
 
 export interface IVTTThumbnailsOptions {
@@ -25,7 +27,9 @@ interface IVTTStyle {
   height: string;
 }
 
-class VTTThumbnailsPlugin extends videojs.getPlugin("plugin") {
+class VTTThumbnailsPlugin extends (videojs.getPlugin(
+  "plugin"
+) as typeof Plugin) {
   private source: string | null;
   private showTimestamp: boolean;
 
@@ -38,7 +42,7 @@ class VTTThumbnailsPlugin extends videojs.getPlugin("plugin") {
   private lastStyle?: IVTTStyle;
 
   constructor(player: VideoJsPlayer, options: IVTTThumbnailsOptions) {
-    super(player, options);
+    super(player);
     this.source = options.src ?? null;
     this.showTimestamp = options.showTimestamp ?? false;
 
@@ -385,12 +389,9 @@ class VTTThumbnailsPlugin extends videojs.getPlugin("plugin") {
 // Register the plugin with video.js.
 videojs.registerPlugin("vttThumbnails", VTTThumbnailsPlugin);
 
-declare module "video.js" {
-  interface VideoJsPlayer {
+declare module "video.js/dist/types/player" {
+  export default interface Player {
     vttThumbnails: () => VTTThumbnailsPlugin;
-  }
-  interface VideoJsPlayerPluginOptions {
-    vttThumbnails?: IVTTThumbnailsOptions;
   }
 }
 

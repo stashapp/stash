@@ -1,12 +1,15 @@
-import videojs, { VideoJsPlayer } from "video.js";
+import videojs from "video.js";
+import type VideoJsPlayer from "video.js/dist/types/player";
+import type Plugin from "video.js/dist/types/plugin";
+import type BigPlayButtonType from "video.js/dist/types/big-play-button";
 
 // prettier-ignore
 const BigPlayButton = videojs.getComponent(
   "BigPlayButton"
-) as unknown as typeof videojs.BigPlayButton;
+) as typeof BigPlayButtonType;
 
 class BigPlayPauseButton extends BigPlayButton {
-  handleClick(event: videojs.EventTarget.Event) {
+  handleClick(event: KeyboardEvent | MouseEvent | TouchEvent) {
     if (this.player().paused()) {
       super.handleClick(event);
     } else {
@@ -23,17 +26,12 @@ class BigButtonGroup extends videojs.getComponent("Component") {
   constructor(player: VideoJsPlayer) {
     super(player);
 
-    this.addChild("seekButton", {
-      direction: "back",
-      seconds: 10,
-    });
-
+    // The skip buttons read their seconds from playerOptions, which only
+    // children declared through `children` receive automatically.
+    const skipOptions = { playerOptions: player.options_ };
+    this.addChild("SkipBackward", skipOptions);
     this.addChild("BigPlayPauseButton");
-
-    this.addChild("seekButton", {
-      direction: "forward",
-      seconds: 10,
-    });
+    this.addChild("SkipForward", skipOptions);
   }
 
   createEl() {
@@ -43,7 +41,7 @@ class BigButtonGroup extends videojs.getComponent("Component") {
   }
 }
 
-class BigButtonsPlugin extends videojs.getPlugin("plugin") {
+class BigButtonsPlugin extends (videojs.getPlugin("plugin") as typeof Plugin) {
   constructor(player: VideoJsPlayer) {
     super(player);
 
@@ -58,12 +56,9 @@ videojs.registerComponent("BigButtonGroup", BigButtonGroup);
 videojs.registerComponent("BigPlayPauseButton", BigPlayPauseButton);
 videojs.registerPlugin("bigButtons", BigButtonsPlugin);
 
-declare module "video.js" {
-  interface VideoJsPlayer {
+declare module "video.js/dist/types/player" {
+  export default interface Player {
     bigButtons: () => BigButtonsPlugin;
-  }
-  interface VideoJsPlayerPluginOptions {
-    bigButtons?: object;
   }
 }
 

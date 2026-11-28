@@ -1,11 +1,14 @@
-import videojs, { VideoJsPlayer } from "video.js";
+import videojs from "video.js";
+import type VideoJsPlayer from "video.js/dist/types/player";
+import type Button from "video.js/dist/types/button";
+import type Plugin from "video.js/dist/types/plugin";
 
-interface ControlOptions extends videojs.ComponentOptions {
+type ControlOptions = ConstructorParameters<typeof Button>[1] & {
   direction: "forward" | "back";
   parent: SkipButtonPlugin;
-}
+};
 
-class SkipButtonPlugin extends videojs.getPlugin("plugin") {
+class SkipButtonPlugin extends (videojs.getPlugin("plugin") as typeof Plugin) {
   onNext?: () => void;
   onPrevious?: () => void;
 
@@ -59,7 +62,7 @@ class SkipButtonPlugin extends videojs.getPlugin("plugin") {
   }
 }
 
-class SkipButton extends videojs.getComponent("button") {
+class SkipButton extends (videojs.getComponent("button") as typeof Button) {
   private parentPlugin: SkipButtonPlugin;
   private direction: "forward" | "back";
 
@@ -95,12 +98,9 @@ class SkipButton extends videojs.getComponent("button") {
 videojs.registerComponent("SkipButton", SkipButton);
 videojs.registerPlugin("skipButtons", SkipButtonPlugin);
 
-declare module "video.js" {
-  interface VideoJsPlayer {
+declare module "video.js/dist/types/player" {
+  export default interface Player {
     skipButtons: () => SkipButtonPlugin;
-  }
-  interface VideoJsPlayerPluginOptions {
-    skipButtons?: object;
   }
 }
 

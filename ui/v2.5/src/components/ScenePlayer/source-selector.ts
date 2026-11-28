@@ -1,19 +1,29 @@
-import videojs, { VideoJsPlayer } from "video.js";
+import videojs from "video.js";
+import type VideoJsPlayer from "video.js/dist/types/player";
+import type MenuButton from "video.js/dist/types/menu/menu-button";
+import type MenuItem from "video.js/dist/types/menu/menu-item";
+import type Plugin from "video.js/dist/types/plugin";
+import type HtmlTrackElement from "video.js/dist/types/tracks/html-track-element";
 
-export interface ISource extends videojs.Tech.SourceObject {
+export interface ISource {
+  src: string;
+  type?: string;
   label?: string;
   errored?: boolean;
 }
 
-class SourceMenuItem extends videojs.getComponent("MenuItem") {
+class SourceMenuItem extends (videojs.getComponent(
+  "MenuItem"
+) as typeof MenuItem) {
   public source: ISource;
   public isSelected = false;
 
   constructor(parent: SourceMenuButton, source: ISource) {
-    const options = {} as videojs.MenuItemOptions;
-    options.selectable = true;
-    options.multiSelectable = false;
-    options.label = source.label || source.type;
+    const options = {
+      selectable: true,
+      multiSelectable: false,
+      label: source.label || source.type,
+    };
 
     super(parent.player(), options);
 
@@ -34,7 +44,10 @@ class SourceMenuItem extends videojs.getComponent("MenuItem") {
   }
 }
 
-class SourceMenuButton extends videojs.getComponent("MenuButton") {
+class SourceMenuButton extends (videojs.getComponent(
+  "MenuButton"
+) as typeof MenuButton) {
+  // @ts-expect-error v8's generated types declare MenuButton.items as void
   private items: SourceMenuItem[] = [];
   private selectedSource: ISource | null = null;
 
@@ -100,12 +113,14 @@ class SourceMenuButton extends videojs.getComponent("MenuButton") {
   }
 }
 
-class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
+class SourceSelectorPlugin extends (videojs.getPlugin(
+  "plugin"
+) as typeof Plugin) {
   private menu: SourceMenuButton;
   private sources: ISource[] = [];
   private selectedIndex = -1;
-  private cleanupTextTracks: HTMLTrackElement[] = [];
-  private manualTextTracks: HTMLTrackElement[] = [];
+  private cleanupTextTracks: HtmlTrackElement[] = [];
+  private manualTextTracks: HtmlTrackElement[] = [];
 
   // don't auto play next source if user manually selected a source
   private manuallySelected = false;
@@ -119,7 +134,7 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
 
     this.menu = new SourceMenuButton(player);
 
-    this.menu.on("sourceselected", (_, source: ISource) => {
+    this.menu.on("sourceselected", (_: Event, source: ISource) => {
       this.selectedIndex = this.sources.indexOf(source);
       if (this.selectedIndex === -1) return;
 
@@ -238,11 +253,14 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
     this.shouldAutoplay = fn;
   }
 
-  get textTracks(): HTMLTrackElement[] {
+  get textTracks(): HtmlTrackElement[] {
     return [...this.cleanupTextTracks, ...this.manualTextTracks];
   }
 
-  addTextTrack(options: videojs.TextTrackOptions, manualCleanup: boolean) {
+  addTextTrack(
+    options: Parameters<VideoJsPlayer["addRemoteTextTrack"]>[0],
+    manualCleanup: boolean
+  ) {
     const track = this.player.addRemoteTextTrack(options, true);
     if (manualCleanup) {
       this.manualTextTracks.push(track);
@@ -252,7 +270,7 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
     return track;
   }
 
-  removeTextTrack(track: HTMLTrackElement) {
+  removeTextTrack(track: HtmlTrackElement) {
     this.player.removeRemoteTextTrack(track);
     let index = this.manualTextTracks.indexOf(track);
     if (index !== -1) {
@@ -269,12 +287,9 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
 videojs.registerComponent("SourceMenuButton", SourceMenuButton);
 videojs.registerPlugin("sourceSelector", SourceSelectorPlugin);
 
-declare module "video.js" {
-  interface VideoJsPlayer {
+declare module "video.js/dist/types/player" {
+  export default interface Player {
     sourceSelector: () => SourceSelectorPlugin;
-  }
-  interface VideoJsPlayerPluginOptions {
-    sourceSelector?: object;
   }
 }
 

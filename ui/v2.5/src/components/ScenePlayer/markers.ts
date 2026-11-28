@@ -1,4 +1,6 @@
-import videojs, { VideoJsPlayer } from "video.js";
+import videojs from "video.js";
+import type VideoJsPlayer from "video.js/dist/types/player";
+import type Plugin from "video.js/dist/types/plugin";
 import CryptoJS from "crypto-js";
 
 export interface IMarker {
@@ -8,11 +10,7 @@ export interface IMarker {
   primaryTag: { name: string };
 }
 
-interface IMarkersOptions {
-  markers?: IMarker[];
-}
-
-class MarkersPlugin extends videojs.getPlugin("plugin") {
+class MarkersPlugin extends (videojs.getPlugin("plugin") as typeof Plugin) {
   private markers: IMarker[] = [];
   private markerDivs: {
     dot?: HTMLDivElement;
@@ -457,12 +455,9 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
 
 videojs.registerPlugin("markers", MarkersPlugin);
 
-declare module "video.js" {
-  interface VideoJsPlayer {
+declare module "video.js/dist/types/player" {
+  export default interface Player {
     markers: () => MarkersPlugin;
-  }
-  interface VideoJsPlayerPluginOptions {
-    markers?: IMarkersOptions;
   }
 }
 

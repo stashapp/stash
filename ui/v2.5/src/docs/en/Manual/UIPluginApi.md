@@ -89,7 +89,7 @@ Returns a `Promise<void>` that resolves when all of the components have been loa
 #### `PluginApi.utils.InteractiveUtils`
 
 This namespace provides access to `interactiveClientProvider` and `getPlayer`
- - `getPlayer` returns the current `videojs` player object
+ - `getPlayer` returns the current Video.js 8 player object
  - `interactiveClientProvider` takes `IInteractiveClientProvider` which allows a developer to hook into the lifecycle of funscripts.
 
 ```ts

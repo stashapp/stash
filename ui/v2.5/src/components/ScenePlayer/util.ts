@@ -1,4 +1,5 @@
-import videojs, { VideoJsPlayer } from "video.js";
+import videojs from "video.js";
+import type VideoJsPlayer from "video.js/dist/types/player";
 
 export const VIDEO_PLAYER_ID = "VideoJsPlayer";
 
