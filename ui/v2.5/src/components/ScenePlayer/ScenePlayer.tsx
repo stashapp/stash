@@ -9,6 +9,8 @@ import React, {
 import videojs from "video.js";
 import type VideoJsPlayer from "video.js/dist/types/player";
 import useScript from "src/hooks/useScript";
+// VHS can't play Stash's WebM DASH segments, so DASH still goes through dash.js
+import "videojs-contrib-dash";
 import "videojs-mobile-ui";
 import { UAParser } from "ua-parser-js";
 import "./live";
@@ -350,6 +352,24 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = PatchComponent(
           skipButtons: {
             forward: 10,
             backward: 10,
+          },
+        },
+        html5: {
+          dash: {
+            updateSettings: [
+              {
+                streaming: {
+                  buffer: {
+                    bufferTimeAtTopQuality: 30,
+                    bufferTimeAtTopQualityLongForm: 30,
+                  },
+                  gaps: {
+                    jumpGaps: false,
+                    jumpLargeGaps: false,
+                  },
+                },
+              },
+            ],
           },
         },
         nativeControlsForTouch: false,
