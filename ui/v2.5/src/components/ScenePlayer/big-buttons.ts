@@ -23,13 +23,15 @@ class BigPlayPauseButton extends BigPlayButton {
 }
 
 class BigButtonGroup extends videojs.getComponent("Component") {
-  // options carries playerOptions, which the skip buttons read their seconds from
-  constructor(player: VideoJsPlayer, options?: object) {
-    super(player, options);
+  constructor(player: VideoJsPlayer) {
+    super(player);
 
-    this.addChild("SkipBackward");
+    // The skip buttons read their seconds from playerOptions, which only
+    // children declared through `children` receive automatically.
+    const skipOptions = { playerOptions: player.options_ };
+    this.addChild("SkipBackward", skipOptions);
     this.addChild("BigPlayPauseButton");
-    this.addChild("SkipForward");
+    this.addChild("SkipForward", skipOptions);
   }
 
   createEl() {
