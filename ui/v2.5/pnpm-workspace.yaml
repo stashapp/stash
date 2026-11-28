@@ -8,3 +8,5 @@ overrides:
   "@xmldom/xmldom@0.8.12": "~0.8.13"
   # videojs-vr pins video.js 7 as a hard dependency; share the app's v8 copy
   "@blaineam/videojs-vr>video.js": "$video.js"
+  # videojs-contrib-dash pins video.js 7 as a hard dependency; share the app's v8 copy
+  "videojs-contrib-dash>video.js": "$video.js"
