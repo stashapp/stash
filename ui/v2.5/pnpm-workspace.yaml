@@ -6,3 +6,5 @@ overrides:
   "yaml@1.10.2": "~1.10.3"
   "brace-expansion@1.1.12": "~1.1.13"
   "@xmldom/xmldom@0.8.12": "~0.8.13"
+  # videojs-vr pins video.js 7 as a hard dependency; share the app's v8 copy
+  "@blaineam/videojs-vr>video.js": "$video.js"
